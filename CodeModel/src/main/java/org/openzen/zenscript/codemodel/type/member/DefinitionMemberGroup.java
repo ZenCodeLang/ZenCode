@@ -35,6 +35,12 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
  * @author Hoofdgebruiker
  */
 public class DefinitionMemberGroup {
+	public static DefinitionMemberGroup forMethod(ICallableMember member) {
+		DefinitionMemberGroup instance = new DefinitionMemberGroup();
+		instance.addMethod(member, TypeMemberPriority.SPECIFIED);
+		return instance;
+	}
+	
 	private TypeMember<FieldMember> field;
 	private TypeMember<IGettableMember> getter;
 	private TypeMember<SetterMember> setter;

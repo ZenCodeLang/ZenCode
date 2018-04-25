@@ -10,17 +10,25 @@ import java.util.stream.Collectors;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.member.ICallableMember;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class PartialStaticMemberGroupExpression implements IPartialExpression {
+	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, ICallableMember method) {
+		DefinitionMemberGroup group = new DefinitionMemberGroup();
+		group.addMethod(method, TypeMemberPriority.SPECIFIED);
+		return new PartialStaticMemberGroupExpression(position, group);
+	}
+	
 	private final CodePosition position;
 	private final DefinitionMemberGroup group;
 	
@@ -28,7 +36,7 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 		this.position = position;
 		this.group = group;
 	}
-
+	
 	@Override
 	public Expression eval() {
 		return group.staticGetter(position);

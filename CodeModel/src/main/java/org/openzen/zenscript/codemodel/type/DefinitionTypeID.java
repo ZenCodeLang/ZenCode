@@ -20,7 +20,15 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  * @author Hoofdgebruiker
  */
 public class DefinitionTypeID implements ITypeID {
+	public static DefinitionTypeID forType(HighLevelDefinition definition) {
+		if (!definition.genericParameters.isEmpty())
+			throw new IllegalArgumentException("Definition has type arguments!");
+		
+		return new DefinitionTypeID(definition, NO_TYPE_PARAMETERS);
+	}
+	
 	private static final OuterTypeEntry[] NO_OUTER_ENTRIES = new OuterTypeEntry[0];
+	private static final ITypeID[] NO_TYPE_PARAMETERS = new ITypeID[0];
 	
 	public final HighLevelDefinition definition;
 	public final ITypeID[] typeParameters;
