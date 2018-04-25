@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.scriptingexample;
 
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,11 @@ public class JavaModule {
 	
 	public void register(String classname, byte[] bytecode) {
 		classes.put(classname, bytecode);
+		try(FileOutputStream writer = new FileOutputStream(new File(classname + ".class"))) {
+			writer.write(bytecode);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void execute() {
@@ -47,6 +53,18 @@ public class JavaModule {
 	}
 	
 	private class ScriptClassLoader extends ClassLoader {
-		
+		final Map<String, Class> customClasses = new HashMap<>();
+
+		@Override
+		public Class<?> loadClass(String name) throws ClassNotFoundException {
+			if(customClasses.containsKey(name))
+				return customClasses.get(name);
+			if(classes.containsKey(name)) {
+				final byte[] bytes = classes.get(name);
+				customClasses.put(name, defineClass(name, bytes, 0, bytes.length, null));
+				return customClasses.get(name);
+			}
+			return super.loadClass(name);
+		}
 	}
 }

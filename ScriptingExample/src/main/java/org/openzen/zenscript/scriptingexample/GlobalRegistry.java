@@ -66,7 +66,7 @@ public class GlobalRegistry {
 		return globals;
 	}
 	
-	private static final ClassDefinition printStream = new ClassDefinition("PrintStream", Modifiers.MODIFIER_EXPORT, null);
+	private static final ClassDefinition printStream = new ClassDefinition("Ljava/io/PrintStream;", Modifiers.MODIFIER_EXPORT, null);
 	private static final NativeMethodMember printStreamPrintln = new NativeMethodMember(
 			Modifiers.MODIFIER_EXPORT,
 			"println",
