@@ -29,7 +29,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
-import static org.openzen.zenscript.shared.StringUtils.unescapeString;
+import static org.openzen.zenscript.shared.StringUtils.unescape;
 
 /**
  *
@@ -315,7 +315,7 @@ public abstract class ParsedExpression {
 						indexString2 = parser.optional(T_STRING_DQ);
 					
 					if (indexString2 != null) {
-						base = new ParsedExpressionMember(position, base, unescapeString(indexString2.content), Collections.emptyList());
+						base = new ParsedExpressionMember(position, base, unescape(indexString2.content), Collections.emptyList());
 					} else {
 						ZSToken last = parser.next();
 						throw new ParseException(last, "Invalid expression, last token: " + last.content);
@@ -364,7 +364,7 @@ public abstract class ParsedExpression {
 			case T_STRING_DQ:
 				return new ParsedExpressionString(
 						position,
-						unescapeString(parser.next().content));
+						unescape(parser.next().content));
 			case T_IDENTIFIER: {
 				String name = parser.next().content;
 				List<IParsedType> genericParameters = IParsedType.parseGenericParameters(parser);

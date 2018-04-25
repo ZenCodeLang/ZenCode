@@ -270,20 +270,20 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		registerArithmeticOperations(LONG, LONG);
 		registerArithmeticOperations(FLOAT, FLOAT);
 		registerArithmeticOperations(DOUBLE, DOUBLE);
-		members.addGetter(new ConstantGetterMember("MIN_VALUE", position -> new ConstantIntExpression(position, Integer.MIN_VALUE)), TypeMemberPriority.SPECIFIED);
-		members.addGetter(new ConstantGetterMember("MAX_VALUE", position -> new ConstantIntExpression(position, Integer.MAX_VALUE)), TypeMemberPriority.SPECIFIED);
+		members.addGetter(BuiltinTypeMembers.INT_GET_MIN_VALUE, TypeMemberPriority.SPECIFIED);
+		members.addGetter(BuiltinTypeMembers.INT_GET_MAX_VALUE, TypeMemberPriority.SPECIFIED);
 		
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, 0, BasicTypeID.BYTE), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, 0, BasicTypeID.SBYTE), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, 0, BasicTypeID.SHORT), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, 0, BasicTypeID.USHORT), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.UINT), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.LONG), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.ULONG), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.FLOAT), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.DOUBLE), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, 0, BasicTypeID.CHAR), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.STRING), TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_BYTE, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_SBYTE, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_SHORT, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_USHORT, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_UINT, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_LONG, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_ULONG, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_FLOAT, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_DOUBLE, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_CHAR, TypeMemberPriority.SPECIFIED);
+		members.addCaster(BuiltinTypeMembers.INT_TO_STRING, TypeMemberPriority.SPECIFIED);
 	}
 
 	private void visitUInt() {

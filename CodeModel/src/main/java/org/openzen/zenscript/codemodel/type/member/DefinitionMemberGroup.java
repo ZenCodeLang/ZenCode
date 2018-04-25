@@ -225,6 +225,10 @@ public class DefinitionMemberGroup {
 	
 	public Expression call(CodePosition position, TypeScope scope, Expression target, CallArguments arguments, boolean allowStaticUsage) {
 		ICallableMember method = selectMethod(position, scope, arguments, true, allowStaticUsage);
+		for (int i = 0; i < arguments.arguments.length; i++) {
+			arguments.arguments[i] = arguments.arguments[i].castImplicit(position, scope, method.getHeader().parameters[i].type);
+		}
+		
 		FunctionHeader instancedHeader = method.getHeader().withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
 		return method.call(position, target, instancedHeader, arguments);
 	}

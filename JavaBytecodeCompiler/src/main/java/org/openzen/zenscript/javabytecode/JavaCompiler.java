@@ -12,6 +12,7 @@ import org.objectweb.asm.Opcodes;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.member.BuiltinTypeMembers;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.shared.SourceFile;
@@ -21,6 +22,24 @@ import org.openzen.zenscript.shared.SourceFile;
  * @author Hoofdgebruiker
  */
 public class JavaCompiler {
+	static {
+		JavaClassInfo jInteger = new JavaClassInfo("java/lang/Integer");
+		BuiltinTypeMembers.INT_GET_MIN_VALUE.setTag(JavaFieldInfo.class, new JavaFieldInfo(jInteger, "MIN_VALUE", "I"));
+		BuiltinTypeMembers.INT_GET_MAX_VALUE.setTag(JavaFieldInfo.class, new JavaFieldInfo(jInteger, "MAX_VALUE", "I"));
+		
+		BuiltinTypeMembers.INT_TO_BYTE.setTag(JavaBytecodeImplementation.class, writer -> writer.i2b());
+		BuiltinTypeMembers.INT_TO_SBYTE.setTag(JavaBytecodeImplementation.class, writer -> writer.i2b());
+		BuiltinTypeMembers.INT_TO_SHORT.setTag(JavaBytecodeImplementation.class, writer -> writer.i2s());
+		BuiltinTypeMembers.INT_TO_USHORT.setTag(JavaBytecodeImplementation.class, writer -> writer.i2s());
+		BuiltinTypeMembers.INT_TO_UINT.setTag(JavaBytecodeImplementation.class, writer -> {});
+		BuiltinTypeMembers.INT_TO_LONG.setTag(JavaBytecodeImplementation.class, writer -> writer.i2l());
+		BuiltinTypeMembers.INT_TO_ULONG.setTag(JavaBytecodeImplementation.class, writer -> writer.i2l());
+		BuiltinTypeMembers.INT_TO_FLOAT.setTag(JavaBytecodeImplementation.class, writer -> writer.i2f());
+		BuiltinTypeMembers.INT_TO_DOUBLE.setTag(JavaBytecodeImplementation.class, writer -> writer.i2d());
+		BuiltinTypeMembers.INT_TO_CHAR.setTag(JavaBytecodeImplementation.class, writer -> writer.i2s());
+		BuiltinTypeMembers.INT_TO_STRING.setTag(JavaMethodInfo.class, new JavaMethodInfo(jInteger, "toString", "(I)Ljava/lang/String;", true));
+	}
+	
 	private final JavaModule target;
 	private final List<String> scriptBlockNames = new ArrayList<>();
 	private final ClassWriter scriptsClassWriter;

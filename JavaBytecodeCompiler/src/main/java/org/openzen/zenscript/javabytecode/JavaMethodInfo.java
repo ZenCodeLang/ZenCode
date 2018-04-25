@@ -13,10 +13,16 @@ public class JavaMethodInfo {
 	public final JavaClassInfo javaClass;
 	public final String name;
 	public final String signature;
+	public final boolean isStatic;
 	
 	public JavaMethodInfo(JavaClassInfo javaClass, String name, String signature) {
+		this(javaClass, name, signature, false);
+	}
+	
+	public JavaMethodInfo(JavaClassInfo javaClass, String name, String signature, boolean isStatic) {
 		this.javaClass = javaClass;
 		this.name = name;
 		this.signature = signature;
+		this.isStatic = isStatic;
 	}
 }

@@ -1,6 +1,7 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
 import org.openzen.zenscript.javabytecode.JavaFieldInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
@@ -29,20 +30,32 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitCall(CallExpression expression) {
-
         expression.target.accept(this);
         for (Expression argument : expression.arguments.arguments) {
             argument.accept(this);
         }
 		
+		JavaBytecodeImplementation implementation = expression.member.getTag(JavaBytecodeImplementation.class);
+		if (implementation != null) {
+			implementation.compile(javaWriter);
+			return null;
+		}
+		
 		JavaMethodInfo methodInfo = expression.member.getTag(JavaMethodInfo.class);
 		if (methodInfo == null)
 			throw new IllegalStateException("Call target has no method info!");
 		
-        javaWriter.invokeVirtual(
-				methodInfo.javaClass.internalClassName,
-				methodInfo.name,
-				methodInfo.signature);
+		if (methodInfo.isStatic) {
+			javaWriter.invokeStatic(
+					methodInfo.javaClass.internalClassName,
+					methodInfo.name,
+					methodInfo.signature);
+		} else {
+			javaWriter.invokeVirtual(
+					methodInfo.javaClass.internalClassName,
+					methodInfo.name,
+					methodInfo.signature);
+		}
 		
         return null;
     }
