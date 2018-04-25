@@ -9,7 +9,7 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
     public JavaStatementVisitor(final JavaWriter javaWriter) {
 
         this.javaWriter = javaWriter;
-        this.expressionVisitor = new JavaExpressionVisitor( this);
+        this.expressionVisitor = new JavaExpressionVisitor( javaWriter);
     }
 
     @Override

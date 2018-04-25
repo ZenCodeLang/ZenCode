@@ -8,10 +8,10 @@ import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
-    private final JavaStatementVisitor statementVisitor;
+    private JavaWriter javaWriter;
 
-    public JavaExpressionVisitor(JavaStatementVisitor statementVisitor) {
-        this.statementVisitor = statementVisitor;
+    public JavaExpressionVisitor(final JavaWriter javaWriter) {
+        this.javaWriter = javaWriter;
     }
 
     @Override
@@ -319,7 +319,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
     public JavaWriter getJavaWriter() {
-        return statementVisitor.getJavaWriter();
+        return javaWriter;
     }
 
 
