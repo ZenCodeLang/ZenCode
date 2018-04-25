@@ -115,6 +115,10 @@ public final class TypeMembers {
 		getOrCreateGroup(OperatorType.CALL).addMethod(caller, priority);
 	}
 	
+	public void addCaster(CasterMember caster) {
+		addCaster(caster, TypeMemberPriority.SPECIFIED);
+	}
+	
 	public void addCaster(CasterMember caster, TypeMemberPriority priority) {
 		for (int i = 0; i < casters.size(); i++) {
 			if (casters.get(i).member.getTargetType() == caster.toType) {

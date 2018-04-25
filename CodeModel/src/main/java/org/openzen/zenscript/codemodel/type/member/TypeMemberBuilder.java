@@ -16,8 +16,9 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.CallTranslator;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -26,10 +27,12 @@ import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.EqualsMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
+import org.openzen.zenscript.codemodel.member.TranslatedOperatorMember;
 import org.openzen.zenscript.codemodel.member.builtin.ArrayIteratorKeyValues;
 import org.openzen.zenscript.codemodel.member.builtin.ArrayIteratorValues;
 import org.openzen.zenscript.codemodel.member.builtin.ComparatorMember;
@@ -50,6 +53,7 @@ import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import static org.openzen.zenscript.codemodel.type.member.BuiltinTypeMembers.*;
 import org.openzen.zenscript.shared.CodePosition;
 import static org.openzen.zenscript.shared.CodePosition.BUILTIN;
 
@@ -76,11 +80,16 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 			case BOOL:
 				visitBool();
 				break;
+			case BYTE:
+				visitByte();
 			case INT:
 				visitInt();
 				break;
 			case UINT:
 				visitUInt();
+				break;
+			case LONG:
+				visitLong();
 				break;
 			case CHAR:
 				visitChar();
@@ -261,49 +270,62 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitBool() {
+		members.addOperator(BuiltinTypeMembers.BOOL_NOT);
 		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.NOT, new FunctionHeader(BOOL)), TypeMemberPriority.SPECIFIED);
 	}
 	
+	private void visitByte() {
+		
+	}
+	
 	private void visitInt() {
-		registerUnaryOperations();
+		members.addOperator(INT_NEG);
+		members.addOperator(INT_NOT);
 		
-		members.addOperator(BuiltinTypeMembers.INT_ADD_INT);
-		members.addOperator(BuiltinTypeMembers.INT_ADD_LONG);
-		members.addOperator(BuiltinTypeMembers.INT_ADD_FLOAT);
-		members.addOperator(BuiltinTypeMembers.INT_ADD_DOUBLE);
+		/*members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.PRE_INCREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.PRE_DECREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.POST_INCREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.POST_DECREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);*/
+
+		members.addOperator(OperatorType.COMPARE, new ComparatorMember(members.type), TypeMemberPriority.SPECIFIED);
 		
-		members.addOperator(BuiltinTypeMembers.INT_SUB_INT);
-		members.addOperator(BuiltinTypeMembers.INT_SUB_LONG);
-		members.addOperator(BuiltinTypeMembers.INT_SUB_FLOAT);
-		members.addOperator(BuiltinTypeMembers.INT_SUB_DOUBLE);
+		members.addOperator(INT_ADD_INT);
+		members.addOperator(add(LONG, LONG, castedTargetCall(LONG_ADD_LONG, INT_TO_LONG)));
+		members.addOperator(add(FLOAT, FLOAT, castedTargetCall(FLOAT_ADD_FLOAT, INT_TO_FLOAT)));
+		members.addOperator(add(DOUBLE, DOUBLE, castedTargetCall(DOUBLE_ADD_DOUBLE, INT_TO_DOUBLE)));
 		
-		members.addOperator(BuiltinTypeMembers.INT_MUL_INT);
-		members.addOperator(BuiltinTypeMembers.INT_MUL_LONG);
-		members.addOperator(BuiltinTypeMembers.INT_MUL_FLOAT);
-		members.addOperator(BuiltinTypeMembers.INT_MUL_DOUBLE);
+		members.addOperator(INT_SUB_INT);
+		members.addOperator(sub(LONG, LONG, castedTargetCall(LONG_SUB_LONG, INT_TO_LONG)));
+		members.addOperator(sub(FLOAT, FLOAT, castedTargetCall(FLOAT_SUB_FLOAT, INT_TO_FLOAT)));
+		members.addOperator(sub(DOUBLE, DOUBLE, castedTargetCall(DOUBLE_SUB_DOUBLE, INT_TO_DOUBLE)));
 		
-		members.addOperator(BuiltinTypeMembers.INT_DIV_INT);
-		members.addOperator(BuiltinTypeMembers.INT_DIV_LONG);
-		members.addOperator(BuiltinTypeMembers.INT_DIV_FLOAT);
-		members.addOperator(BuiltinTypeMembers.INT_DIV_DOUBLE);
+		members.addOperator(INT_MUL_INT);
+		members.addOperator(mul(LONG, LONG, castedTargetCall(LONG_MUL_LONG, INT_TO_LONG)));
+		members.addOperator(mul(FLOAT, FLOAT, castedTargetCall(FLOAT_MUL_FLOAT, INT_TO_FLOAT)));
+		members.addOperator(mul(DOUBLE, DOUBLE, castedTargetCall(DOUBLE_MUL_DOUBLE, INT_TO_DOUBLE)));
 		
-		members.addOperator(BuiltinTypeMembers.INT_MOD_INT);
-		members.addOperator(BuiltinTypeMembers.INT_MOD_LONG);
+		members.addOperator(INT_DIV_INT);
+		members.addOperator(div(LONG, LONG, castedTargetCall(LONG_DIV_LONG, INT_TO_LONG)));
+		members.addOperator(div(FLOAT, FLOAT, castedTargetCall(FLOAT_DIV_FLOAT, INT_TO_FLOAT)));
+		members.addOperator(div(DOUBLE, DOUBLE, castedTargetCall(DOUBLE_DIV_DOUBLE, INT_TO_DOUBLE)));
 		
-		members.addGetter(BuiltinTypeMembers.INT_GET_MIN_VALUE, TypeMemberPriority.SPECIFIED);
-		members.addGetter(BuiltinTypeMembers.INT_GET_MAX_VALUE, TypeMemberPriority.SPECIFIED);
+		members.addOperator(INT_MOD_INT);
+		members.addOperator(mod(LONG, LONG, castedTargetCall(LONG_MOD_LONG, INT_TO_LONG)));
 		
-		members.addCaster(BuiltinTypeMembers.INT_TO_BYTE, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_SBYTE, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_SHORT, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_USHORT, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_UINT, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_LONG, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_ULONG, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_FLOAT, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_DOUBLE, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_CHAR, TypeMemberPriority.SPECIFIED);
-		members.addCaster(BuiltinTypeMembers.INT_TO_STRING, TypeMemberPriority.SPECIFIED);
+		members.addGetter(INT_GET_MIN_VALUE);
+		members.addGetter(INT_GET_MAX_VALUE);
+		
+		members.addCaster(INT_TO_BYTE);
+		members.addCaster(INT_TO_SBYTE);
+		members.addCaster(INT_TO_SHORT);
+		members.addCaster(INT_TO_USHORT);
+		members.addCaster(INT_TO_UINT);
+		members.addCaster(INT_TO_LONG);
+		members.addCaster(INT_TO_ULONG);
+		members.addCaster(INT_TO_FLOAT);
+		members.addCaster(INT_TO_DOUBLE);
+		members.addCaster(INT_TO_CHAR);
+		members.addCaster(INT_TO_STRING);
 	}
 
 	private void visitUInt() {
@@ -314,6 +336,51 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		registerArithmeticOperations(DOUBLE, DOUBLE);
 		members.addGetter(new ConstantGetterMember("MIN_VALUE", position -> new ConstantUIntExpression(position, 0)), TypeMemberPriority.SPECIFIED);
 		members.addGetter(new ConstantGetterMember("MAX_VALUE", position -> new ConstantUIntExpression(position, 0xFFFFFFFF)), TypeMemberPriority.SPECIFIED);
+	}
+	
+	private void visitLong() {
+		members.addOperator(LONG_NEG);
+		members.addOperator(LONG_NOT);
+		
+		/*members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.PRE_INCREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.PRE_DECREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.POST_INCREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.POST_DECREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);*/
+
+		members.addOperator(OperatorType.COMPARE, new ComparatorMember(members.type), TypeMemberPriority.SPECIFIED);
+		
+		members.addOperator(LONG_ADD_LONG);
+		members.addOperator(add(FLOAT, FLOAT, castedTargetCall(FLOAT_ADD_FLOAT, LONG_TO_FLOAT)));
+		members.addOperator(add(DOUBLE, DOUBLE, castedTargetCall(DOUBLE_ADD_DOUBLE, LONG_TO_DOUBLE)));
+		
+		members.addOperator(LONG_SUB_LONG);
+		members.addOperator(sub(FLOAT, FLOAT, castedTargetCall(FLOAT_SUB_FLOAT, LONG_TO_FLOAT)));
+		members.addOperator(sub(DOUBLE, DOUBLE, castedTargetCall(DOUBLE_SUB_DOUBLE, LONG_TO_DOUBLE)));
+		
+		members.addOperator(LONG_MUL_LONG);
+		members.addOperator(mul(FLOAT, FLOAT, castedTargetCall(FLOAT_MUL_FLOAT, LONG_TO_FLOAT)));
+		members.addOperator(mul(DOUBLE, DOUBLE, castedTargetCall(DOUBLE_MUL_DOUBLE, LONG_TO_DOUBLE)));
+		
+		members.addOperator(LONG_DIV_LONG);
+		members.addOperator(div(FLOAT, FLOAT, castedTargetCall(FLOAT_DIV_FLOAT, LONG_TO_FLOAT)));
+		members.addOperator(div(DOUBLE, DOUBLE, castedTargetCall(DOUBLE_DIV_DOUBLE, LONG_TO_DOUBLE)));
+		
+		members.addOperator(LONG_MOD_LONG);
+		
+		members.addGetter(LONG_GET_MIN_VALUE);
+		members.addGetter(LONG_GET_MAX_VALUE);
+		
+		members.addCaster(LONG_TO_BYTE);
+		members.addCaster(LONG_TO_SBYTE);
+		members.addCaster(LONG_TO_SHORT);
+		members.addCaster(LONG_TO_USHORT);
+		members.addCaster(LONG_TO_INT);
+		members.addCaster(LONG_TO_UINT);
+		members.addCaster(LONG_TO_ULONG);
+		members.addCaster(LONG_TO_FLOAT);
+		members.addCaster(LONG_TO_DOUBLE);
+		members.addCaster(LONG_TO_CHAR);
+		members.addCaster(LONG_TO_STRING);
 	}
 
 	private void visitChar() {
@@ -389,5 +456,29 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.MUL, binaryHeader), TypeMemberPriority.SPECIFIED);
 		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.DIV, binaryHeader), TypeMemberPriority.SPECIFIED);
 		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.MOD, binaryHeader), TypeMemberPriority.SPECIFIED);
+	}
+	
+	private static OperatorMember add(ITypeID operand, ITypeID result, CallTranslator translator) {
+		return new TranslatedOperatorMember(BUILTIN, 0, OperatorType.ADD, new FunctionHeader(result, new FunctionParameter(operand)), translator);
+	}
+	
+	private static OperatorMember sub(ITypeID operand, ITypeID result, CallTranslator translator) {
+		return new TranslatedOperatorMember(BUILTIN, 0, OperatorType.SUB, new FunctionHeader(result, new FunctionParameter(operand)), translator);
+	}
+	
+	private static OperatorMember mul(ITypeID operand, ITypeID result, CallTranslator translator) {
+		return new TranslatedOperatorMember(BUILTIN, 0, OperatorType.MUL, new FunctionHeader(result, new FunctionParameter(operand)), translator);
+	}
+	
+	private static OperatorMember div(ITypeID operand, ITypeID result, CallTranslator translator) {
+		return new TranslatedOperatorMember(BUILTIN, 0, OperatorType.DIV, new FunctionHeader(result, new FunctionParameter(operand)), translator);
+	}
+	
+	private static OperatorMember mod(ITypeID operand, ITypeID result, CallTranslator translator) {
+		return new TranslatedOperatorMember(BUILTIN, 0, OperatorType.MOD, new FunctionHeader(result, new FunctionParameter(operand)), translator);
+	}
+	
+	private static CallTranslator castedTargetCall(FunctionalMember member, CasterMember caster) {
+		return call -> member.call(call.position, caster.call(call.position, call.target, CallArguments.EMPTY), call.arguments);
 	}
 }

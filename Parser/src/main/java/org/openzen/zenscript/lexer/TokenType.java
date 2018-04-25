@@ -14,7 +14,7 @@ package org.openzen.zenscript.lexer;
  */
 public interface TokenType
 {
-	public String getRegexp();
+	String getRegexp();
 	
-	public boolean isWhitespace();
+	boolean isWhitespace();
 }
