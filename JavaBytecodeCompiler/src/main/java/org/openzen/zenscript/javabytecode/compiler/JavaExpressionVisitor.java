@@ -1,15 +1,16 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.statement.StatementVisitor;
+import org.openzen.zenscript.codemodel.member.DefinitionMember;
+import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
+import org.openzen.zenscript.javabytecode.JavaFieldInfo;
+import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
-    final StatementVisitor<?> statementVisitor;
-    private final JavaWriter javaWriter;
+    private final JavaStatementVisitor statementVisitor;
 
-    public JavaExpressionVisitor(final JavaWriter javaWriter, StatementVisitor<?> statementVisitor) {
-        this.javaWriter = javaWriter;
+    public JavaExpressionVisitor(JavaStatementVisitor statementVisitor) {
         this.statementVisitor = statementVisitor;
     }
 
@@ -34,7 +35,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         for (Expression argument : expression.arguments.arguments) {
             argument.accept(this);
         }
-        expression.member.accept(new JavaMemberVisitor(javaWriter, this));
+        if (!checkAndExecuteByteCodeImplementation(expression.member) && !checkAndExecuteMethodInfo(expression.member))
+            throw new IllegalStateException("Call target has no method info!");
 
         return null;
     }
@@ -86,79 +88,79 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitConstantBool(ConstantBoolExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantByte(ConstantByteExpression expression) {
-        javaWriter.biPush(expression.value);
+        getJavaWriter().biPush(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantChar(ConstantCharExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantDouble(ConstantDoubleExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantFloat(ConstantFloatExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantInt(ConstantIntExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantLong(ConstantLongExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantSByte(ConstantSByteExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantShort(ConstantShortExpression expression) {
-        javaWriter.siPush(expression.value);
+        getJavaWriter().siPush(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantString(ConstantStringExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantUInt(ConstantUIntExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantULong(ConstantULongExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
     @Override
     public Void visitConstantUShort(ConstantUShortExpression expression) {
-        javaWriter.constant(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
@@ -189,6 +191,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetField(GetFieldExpression expression) {
+        if (!checkAndExecuteFieldInfo(expression.field, false))
+            throw new IllegalStateException("Missing field info on a field member!");
         return null;
     }
 
@@ -204,7 +208,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetStaticField(GetStaticFieldExpression expression) {
-        expression.field.accept(new JavaMemberVisitor(javaWriter, this));
+        if (!checkAndExecuteFieldInfo(expression.field, true))
+            throw new IllegalStateException("Missing field info on a field member!");
         return null;
     }
 
@@ -311,5 +316,60 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitWrapOptional(WrapOptionalExpression expression) {
         return null;
+    }
+
+    public JavaWriter getJavaWriter() {
+        return statementVisitor.getJavaWriter();
+    }
+
+
+    //Will return true if a JavaBytecodeImplementation.class tag exists, and will compile that tag
+    private boolean checkAndExecuteByteCodeImplementation(DefinitionMember member) {
+        JavaBytecodeImplementation implementation = member.getTag(JavaBytecodeImplementation.class);
+        if (implementation != null) {
+            implementation.compile(getJavaWriter());
+            return true;
+        }
+        return false;
+    }
+
+    //Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
+    private boolean checkAndExecuteMethodInfo(DefinitionMember member) {
+        JavaMethodInfo methodInfo = member.getTag(JavaMethodInfo.class);
+        if (methodInfo == null)
+            return false;
+        if (methodInfo.isStatic) {
+            getJavaWriter().invokeStatic(
+                    methodInfo.javaClass.internalClassName,
+                    methodInfo.name,
+                    methodInfo.signature);
+        } else {
+            getJavaWriter().invokeVirtual(
+                    methodInfo.javaClass.internalClassName,
+                    methodInfo.name,
+                    methodInfo.signature);
+        }
+        return true;
+    }
+
+
+    //TODO: Should isStatic go to the fieldInfo or stay here?
+    //Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
+    private boolean checkAndExecuteFieldInfo(DefinitionMember field, boolean isStatic) {
+        JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
+        if (fieldInfo == null)
+            return false;
+        if (isStatic) {
+            getJavaWriter().getStaticField(
+                    fieldInfo.javaClass.internalClassName,
+                    fieldInfo.name,
+                    fieldInfo.signature);
+        } else {
+            getJavaWriter().getField(
+                    fieldInfo.javaClass.internalClassName,
+                    fieldInfo.name,
+                    fieldInfo.signature);
+        }
+        return true;
     }
 }

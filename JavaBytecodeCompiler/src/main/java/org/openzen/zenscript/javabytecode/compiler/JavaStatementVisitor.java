@@ -4,10 +4,12 @@ import org.openzen.zenscript.codemodel.statement.*;
 
 public class JavaStatementVisitor implements StatementVisitor<Void> {
     private final JavaWriter javaWriter;
+    private final JavaExpressionVisitor expressionVisitor;
 
     public JavaStatementVisitor(final JavaWriter javaWriter) {
 
         this.javaWriter = javaWriter;
+        this.expressionVisitor = new JavaExpressionVisitor( this);
     }
 
     @Override
@@ -40,7 +42,7 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
 
     @Override
     public Void visitExpression(ExpressionStatement statement) {
-        statement.expression.accept(new JavaExpressionVisitor(javaWriter, this));
+        statement.expression.accept(expressionVisitor);
         return null;
     }
 
@@ -91,5 +93,9 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
     public void end() {
         javaWriter.ret();
         javaWriter.end();
+    }
+
+    public JavaWriter getJavaWriter() {
+        return javaWriter;
     }
 }
