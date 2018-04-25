@@ -1,8 +1,10 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.javabytecode.JavaClassInfo;
+import org.openzen.zenscript.shared.CompileException;
 
-public class JavaTypeVisitor implements ITypeVisitor<String> {
+public class JavaTypeSignatureVisitor implements ITypeVisitor<String> {
     @Override
     public String visitBasic(BasicTypeID basic) {
         switch (basic) {
@@ -60,12 +62,16 @@ public class JavaTypeVisitor implements ITypeVisitor<String> {
 
     @Override
     public String visitDefinition(DefinitionTypeID definition) {
-
-        return definition.definition.name.replaceAll("\"", "");
+		JavaClassInfo classInfo = definition.definition.getTag(JavaClassInfo.class);
+		if (classInfo == null)
+			throw CompileException.internalError("Definition is missing java class tag!");
+		
+        return "L" + classInfo.internalClassName + ";";
     }
 
     @Override
     public String visitGeneric(GenericTypeID generic) {
+		// TODO: type erasure
         return null;
     }
 
@@ -76,7 +82,7 @@ public class JavaTypeVisitor implements ITypeVisitor<String> {
 
     @Override
     public String visitConst(ConstTypeID type) {
-        return null;
+		return type.baseType.accept(this);
     }
 
     @Override

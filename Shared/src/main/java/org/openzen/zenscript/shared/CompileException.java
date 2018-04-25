@@ -10,6 +10,10 @@ package org.openzen.zenscript.shared;
  * @author Hoofdgebruiker
  */
 public class CompileException extends RuntimeException {
+	public static CompileException internalError(String message) {
+		return new CompileException(CodePosition.BUILTIN, CompileExceptionCode.INTERNAL_ERROR, message);
+	}
+	
 	public final CodePosition position;
 	public final CompileExceptionCode code;
 	
