@@ -12,6 +12,9 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
 
     @Override
     public Void visitBlock(BlockStatement statement) {
+        for (Statement statement1 : statement.statements) {
+            statement1.accept(this);
+        }
         return null;
     }
 
@@ -37,7 +40,7 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
 
     @Override
     public Void visitExpression(ExpressionStatement statement) {
-        statement.expression.accept(new JavaExpressionVisitor(javaWriter));
+        statement.expression.accept(new JavaExpressionVisitor(javaWriter, this));
         return null;
     }
 

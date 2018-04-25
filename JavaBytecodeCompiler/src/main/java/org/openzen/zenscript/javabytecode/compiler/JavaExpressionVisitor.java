@@ -1,16 +1,16 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
-import org.openzen.zenscript.javabytecode.JavaFieldInfo;
-import org.openzen.zenscript.javabytecode.JavaMethodInfo;
+import org.openzen.zenscript.codemodel.statement.StatementVisitor;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
+    final StatementVisitor<?> statementVisitor;
     private final JavaWriter javaWriter;
 
-    public JavaExpressionVisitor(final JavaWriter javaWriter) {
+    public JavaExpressionVisitor(final JavaWriter javaWriter, StatementVisitor<?> statementVisitor) {
         this.javaWriter = javaWriter;
+        this.statementVisitor = statementVisitor;
     }
 
     @Override
@@ -34,29 +34,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         for (Expression argument : expression.arguments.arguments) {
             argument.accept(this);
         }
-		
-		JavaBytecodeImplementation implementation = expression.member.getTag(JavaBytecodeImplementation.class);
-		if (implementation != null) {
-			implementation.compile(javaWriter);
-			return null;
-		}
-		
-		JavaMethodInfo methodInfo = expression.member.getTag(JavaMethodInfo.class);
-		if (methodInfo == null)
-			throw new IllegalStateException("Call target has no method info!");
-		
-		if (methodInfo.isStatic) {
-			javaWriter.invokeStatic(
-					methodInfo.javaClass.internalClassName,
-					methodInfo.name,
-					methodInfo.signature);
-		} else {
-			javaWriter.invokeVirtual(
-					methodInfo.javaClass.internalClassName,
-					methodInfo.name,
-					methodInfo.signature);
-		}
-		
+        expression.member.accept(new JavaMemberVisitor(javaWriter, this));
+
         return null;
     }
 
@@ -225,15 +204,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetStaticField(GetStaticFieldExpression expression) {
-		JavaFieldInfo fieldInfo = expression.field.getTag(JavaFieldInfo.class);
-		if (fieldInfo == null)
-			throw new IllegalStateException("Missing field info on a field member!");
-		
-		javaWriter.getStaticField(
-				fieldInfo.javaClass.internalClassName,
-				fieldInfo.name,
-				fieldInfo.signature);
-		
+        expression.field.accept(new JavaMemberVisitor(javaWriter, this));
         return null;
     }
 
