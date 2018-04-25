@@ -19,12 +19,13 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.Taggable;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class ConstantGetterMember implements IGettableMember {
+public class ConstantGetterMember extends Taggable implements IGettableMember {
 	private final String name;
 	private final Function<CodePosition, Expression> value;
 	private final ITypeID type;

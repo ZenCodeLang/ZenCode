@@ -30,6 +30,7 @@ import org.openzen.zenscript.linker.GlobalScriptScope;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 import org.openzen.zenscript.linker.StatementScope;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
+import org.openzen.zenscript.shared.SourceFile;
 
 /**
  *
@@ -144,7 +145,10 @@ public class ParsedFile {
 			for (ParsedStatement statement : this.statements) {
 				statements.add(statement.compile(statementScope));
 			}
-			scripts.add(new ScriptBlock(statements));
+			
+			ScriptBlock block = new ScriptBlock(statements);
+			block.setTag(SourceFile.class, new SourceFile(filename));
+			scripts.add(block);
 		}
 	}
 	

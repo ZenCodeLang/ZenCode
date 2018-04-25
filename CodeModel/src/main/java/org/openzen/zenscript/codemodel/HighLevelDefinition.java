@@ -12,12 +12,13 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.shared.Taggable;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public abstract class HighLevelDefinition {
+public abstract class HighLevelDefinition extends Taggable {
 	public final String name;
 	public final int modifiers;
 	public final List<IDefinitionMember> members = new ArrayList<>();

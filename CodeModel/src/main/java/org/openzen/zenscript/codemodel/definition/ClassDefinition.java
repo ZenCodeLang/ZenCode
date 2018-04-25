@@ -13,6 +13,10 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class ClassDefinition extends HighLevelDefinition {
+	public ClassDefinition(String name, int modifiers) {
+		this(name, modifiers, null);
+	}
+	
 	public ClassDefinition(String name, int modifiers, HighLevelDefinition outerDefinition) {
 		super(name, modifiers, outerDefinition);
 	}

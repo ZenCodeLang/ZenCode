@@ -1,9 +1,8 @@
 package org.openzen.zenscript.scriptingexample.writer;
 
-import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.scriptingexample.NativeFieldMember;
-import org.openzen.zenscript.scriptingexample.NativeMethodMember;
+import org.openzen.zenscript.scriptingexample.JavaFieldInfo;
+import org.openzen.zenscript.scriptingexample.JavaMethodInfo;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
@@ -35,9 +34,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         for (Expression argument : expression.arguments.arguments) {
             argument.accept(this);
         }
-        if (expression.member instanceof NativeMethodMember) {
-            javaWriter.invokeVirtual(((NativeMethodMember) expression.member).className.replaceFirst("L", "").replace(";", ""), ((NativeMethodMember) expression.member).name, ((NativeMethodMember) expression.member).signature);
-        }
+		
+		JavaMethodInfo methodInfo = expression.member.getTag(JavaMethodInfo.class);
+		if (methodInfo == null)
+			throw new IllegalStateException("Call target has no method info!");
+		
+        javaWriter.invokeVirtual(
+				methodInfo.javaClass.internalClassName,
+				methodInfo.name,
+				methodInfo.signature);
+		
         return null;
     }
 
@@ -206,10 +212,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetStaticField(GetStaticFieldExpression expression) {
-
-        if (expression.field instanceof NativeFieldMember)
-
-            javaWriter.getStaticField(((NativeFieldMember) expression.field).className, expression.field.name, Type.getType(expression.type.accept(new JavaTypeVisitor())).getDescriptor());
+		JavaFieldInfo fieldInfo = expression.field.getTag(JavaFieldInfo.class);
+		if (fieldInfo == null)
+			throw new IllegalStateException("Missing field info on a field member!");
+		
+		javaWriter.getStaticField(
+				fieldInfo.javaClass.internalClassName,
+				fieldInfo.name,
+				fieldInfo.signature);
+		
         return null;
     }
 

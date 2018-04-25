@@ -1,6 +1,5 @@
 package org.openzen.zenscript.scriptingexample.writer;
 
-import com.sun.istack.internal.Nullable;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.openzen.zenscript.shared.CodePosition;
@@ -17,7 +16,7 @@ public class JavaWriter {
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();
 
-    public JavaWriter(ClassVisitor visitor, int access, String name, String description, @Nullable String signature, @Nullable String[] exceptions, String... annotations) {
+    public JavaWriter(ClassVisitor visitor, int access, String name, String description, String signature, String[] exceptions, String... annotations) {
         final MethodVisitor methodVisitor = visitor.visitMethod(access, name, description, signature, exceptions);
 
         for (String annotation : annotations) {

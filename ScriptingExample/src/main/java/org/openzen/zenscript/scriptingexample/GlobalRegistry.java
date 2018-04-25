@@ -16,6 +16,8 @@ import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
+import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialMemberGroupExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -42,8 +44,12 @@ public class GlobalRegistry {
 			// eg. package my.package with a class MyClass with a single native method test() returning a string
 			// the visitors can then during compilation check if a method is an instance of NativeMethodMember and treat it accordingly
 			ClassDefinition myClassDefinition = new ClassDefinition("MyClass", Modifiers.MODIFIER_PUBLIC, null);
-			myClassDefinition.addMember(new NativeMethodMember(Modifiers.MODIFIER_PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING), "Lmy/test/MyClass;", "()Ljava/lang/String;"));
-
+			JavaClassInfo myClassInfo = new JavaClassInfo("my/test/MyClass");
+			
+			MethodMember member = new MethodMember(CodePosition.NATIVE, Modifiers.MODIFIER_PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING));
+			member.setTag(JavaMethodInfo.class, new JavaMethodInfo(myClassInfo, "test", "()Ljava/lang/String;"));
+			myClassDefinition.addMember(member);
+			
 			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("package");
 			packageMyPackage.register(myClassDefinition);
 		}
@@ -66,15 +72,27 @@ public class GlobalRegistry {
 		return globals;
 	}
 	
-	private static final ClassDefinition printStream = new ClassDefinition("Ljava/io/PrintStream;", Modifiers.MODIFIER_EXPORT, null);
-	private static final NativeMethodMember printStreamPrintln = new NativeMethodMember(
+	private static final ClassDefinition PRINTSTREAM = new ClassDefinition("PrintStream", Modifiers.MODIFIER_EXPORT);
+	private static final MethodMember PRINTSTREAM_PRINTLN = new MethodMember(
+			CodePosition.NATIVE,
 			Modifiers.MODIFIER_EXPORT,
 			"println",
-			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(BasicTypeID.STRING)),
-			"Ljava/io/PrintStream;",
-			"(Ljava/lang/String;)V");
+			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(BasicTypeID.STRING)));
 	
-	private static final NativeFieldMember systemOut = new NativeFieldMember(Modifiers.MODIFIER_EXPORT, "out", DefinitionTypeID.forType(printStream), true, "java/lang/System");
+	private static final FieldMember SYSTEM_OUT = new FieldMember(
+			CodePosition.NATIVE,
+			Modifiers.MODIFIER_EXPORT,
+			"out",
+			DefinitionTypeID.forType(PRINTSTREAM),
+			true);
+	
+	static {
+		JavaClassInfo jPrintStream = new JavaClassInfo("java/io/PrintStream");
+		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, new JavaMethodInfo(jPrintStream, "println", "(Ljava/lang/String;)V"));
+		
+		JavaClassInfo jSystem = new JavaClassInfo("java/lang/System");
+		SYSTEM_OUT.setTag(JavaFieldInfo.class, new JavaFieldInfo(jSystem, "out", "Ljava/io/PrintStream;"));
+	}
 	
 	private class PrintlnSymbol implements ISymbol {
 
@@ -82,15 +100,15 @@ public class GlobalRegistry {
 		public IPartialExpression getExpression(CodePosition position, GlobalTypeRegistry types, List<ITypeID> typeArguments) {
 			return new PartialMemberGroupExpression(
 					position,
-					new GetStaticFieldExpression(position, systemOut),
-					printStreamPrintln,
+					new GetStaticFieldExpression(position, SYSTEM_OUT),
+					PRINTSTREAM_PRINTLN,
 					false);
 		}
 
 		@Override
 		public ITypeID getType(CodePosition position, GlobalTypeRegistry types, List<ITypeID> typeArguments) {
 			// don't be fooled! this symbol is the System.out.println bound method and thus its type is a function
-			return new FunctionTypeID(printStreamPrintln.header);
+			return new FunctionTypeID(PRINTSTREAM_PRINTLN.header);
 		}
 	}
 }

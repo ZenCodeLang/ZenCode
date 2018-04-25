@@ -7,12 +7,13 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.Taggable;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public abstract class DefinitionMember implements IDefinitionMember {
+public abstract class DefinitionMember extends Taggable implements IDefinitionMember {
 	public final CodePosition position;
 	public final int modifiers;
 	

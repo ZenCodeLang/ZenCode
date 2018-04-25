@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.Taggable;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -29,7 +30,7 @@ import org.openzen.zenscript.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public class ComparatorMember implements ICallableMember {
+public class ComparatorMember extends Taggable implements ICallableMember {
 	private final FunctionHeader header;
 	
 	public ComparatorMember(ITypeID type) {

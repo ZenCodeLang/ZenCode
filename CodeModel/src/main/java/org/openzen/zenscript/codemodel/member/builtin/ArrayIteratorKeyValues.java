@@ -18,12 +18,13 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.Taggable;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class ArrayIteratorKeyValues implements IIteratorMember {
+public class ArrayIteratorKeyValues extends Taggable implements IIteratorMember {
 	private final ArrayTypeID type;
 	private final ITypeID[] loopVariableTypes;
 	

@@ -15,12 +15,12 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.StatementVisitor;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
 import org.openzen.zenscript.scriptingexample.writer.JavaStatementVisitor;
 import org.openzen.zenscript.scriptingexample.writer.JavaWriter;
+import org.openzen.zenscript.shared.SourceFile;
 
 public class Main {
     /**
@@ -95,10 +95,22 @@ public class Main {
 
 		}
 		int statementNo = 0;
+		List<String> scriptBlockNames = new ArrayList<>();
 		for (ScriptBlock script : module.scripts) {
+			SourceFile sourceFile = script.getTag(SourceFile.class);
+			String methodName;
+			if (sourceFile == null) {
+				methodName = "generatedBlock" + (statementNo++);
+			} else {
+				// TODO: remove special characters
+				methodName = sourceFile.filename.substring(0, sourceFile.filename.lastIndexOf('.')).replace("/", "_");
+			}
+			
+			scriptBlockNames.add(methodName);
+			
 			// convert scripts into methods (add them to a Scripts class?)
 			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(classWriter, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, makeName(statementNo++), "()V", null, null));
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(classWriter, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, methodName, "()V", null, null));
 			statementVisitor.start();
 			for (Statement statement : script.statements) {
 				statement.accept(statementVisitor);
@@ -109,8 +121,8 @@ public class Main {
 		// create a Scripts.run() method to run all scripts compiled above
 		final JavaWriter runWriter = new JavaWriter(classWriter, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "run", "()V", null, null);
 		runWriter.start();
-		for (int i = 0; i < statementNo; i++) {
-			runWriter.invokeStatic("Scripts", makeName(i), "()V");
+		for (String scriptBlockName : scriptBlockNames) {
+			runWriter.invokeStatic("Scripts", scriptBlockName, "()V");
 		}
 		runWriter.ret();
 		runWriter.end();

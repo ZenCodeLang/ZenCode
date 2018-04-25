@@ -27,4 +27,8 @@ public interface IDefinitionMember {
 	public IDefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping);
 	
 	public <T> T accept(MemberVisitor<T> visitor);
+	
+	public <T> T getTag(Class<T> tag);
+	
+	public <T> void setTag(Class<T> tag, T value);
 }

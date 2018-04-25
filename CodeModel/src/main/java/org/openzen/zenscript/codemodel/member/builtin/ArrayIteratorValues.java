@@ -17,12 +17,13 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.Taggable;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class ArrayIteratorValues implements IIteratorMember {
+public class ArrayIteratorValues extends Taggable implements IIteratorMember {
 	private final ArrayTypeID type;
 	private final ITypeID[] loopVariableTypes;
 	

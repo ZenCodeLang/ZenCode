@@ -20,12 +20,13 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.Taggable;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class EqualsMember implements ICallableMember {
+public class EqualsMember extends Taggable implements ICallableMember {
 	private final ITypeID type;
 	private final FunctionHeader header;
 	
