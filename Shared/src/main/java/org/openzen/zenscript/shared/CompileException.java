@@ -18,7 +18,7 @@ public class CompileException extends RuntimeException {
 	public final CompileExceptionCode code;
 	
 	public CompileException(CodePosition position, CompileExceptionCode code, String message) {
-		super(position.toString() + ": [" + code + "]" + message);
+		super(position.toString() + ": [" + code + "] " + message);
 		
 		this.position = position;
 		this.code = code;

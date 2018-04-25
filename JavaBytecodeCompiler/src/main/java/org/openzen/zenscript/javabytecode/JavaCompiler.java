@@ -27,6 +27,12 @@ public class JavaCompiler {
 		BuiltinTypeMembers.INT_GET_MIN_VALUE.setTag(JavaFieldInfo.class, new JavaFieldInfo(jInteger, "MIN_VALUE", "I"));
 		BuiltinTypeMembers.INT_GET_MAX_VALUE.setTag(JavaFieldInfo.class, new JavaFieldInfo(jInteger, "MAX_VALUE", "I"));
 		
+		BuiltinTypeMembers.INT_ADD_INT.setTag(JavaBytecodeImplementation.class, writer -> writer.iAdd());
+		BuiltinTypeMembers.INT_SUB_INT.setTag(JavaBytecodeImplementation.class, writer -> writer.iSub());
+		BuiltinTypeMembers.INT_MUL_INT.setTag(JavaBytecodeImplementation.class, writer -> writer.iMul());
+		BuiltinTypeMembers.INT_DIV_INT.setTag(JavaBytecodeImplementation.class, writer -> writer.iDiv());
+		BuiltinTypeMembers.INT_MOD_INT.setTag(JavaBytecodeImplementation.class, writer -> writer.iRem());
+		
 		BuiltinTypeMembers.INT_TO_BYTE.setTag(JavaBytecodeImplementation.class, writer -> writer.i2b());
 		BuiltinTypeMembers.INT_TO_SBYTE.setTag(JavaBytecodeImplementation.class, writer -> writer.i2b());
 		BuiltinTypeMembers.INT_TO_SHORT.setTag(JavaBytecodeImplementation.class, writer -> writer.i2s());

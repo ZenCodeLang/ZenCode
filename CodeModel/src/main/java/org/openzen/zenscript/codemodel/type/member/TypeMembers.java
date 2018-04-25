@@ -126,9 +126,17 @@ public final class TypeMembers {
 		casters.add(new TypeMember<>(priority, caster));
 	}
 	
+	public void addField(FieldMember member) {
+		addField(member, TypeMemberPriority.SPECIFIED);
+	}
+	
 	public void addField(FieldMember member, TypeMemberPriority priority) {
 		DefinitionMemberGroup group = getOrCreateGroup(member.name);
 		group.setField(member, priority);
+	}
+	
+	public void addGetter(IGettableMember member) {
+		addGetter(member, TypeMemberPriority.SPECIFIED);
 	}
 	
 	public void addGetter(IGettableMember member, TypeMemberPriority priority) {
@@ -136,14 +144,26 @@ public final class TypeMembers {
 		group.setGetter(member, priority);
 	}
 	
+	public void addSetter(SetterMember member) {
+		addSetter(member, TypeMemberPriority.SPECIFIED);
+	}
+	
 	public void addSetter(SetterMember member, TypeMemberPriority priority) {
 		DefinitionMemberGroup group = getOrCreateGroup(member.name);
 		group.setSetter(member, priority);
 	}
 	
+	public void addMethod(MethodMember member) {
+		addMethod(member, TypeMemberPriority.SPECIFIED);
+	}
+	
 	public void addMethod(MethodMember member, TypeMemberPriority priority) {
 		DefinitionMemberGroup group = getOrCreateGroup(member.name);
 		group.addMethod(member, priority);
+	}
+	
+	public void addOperator(OperatorMember member) {
+		addOperator(member, TypeMemberPriority.SPECIFIED);
 	}
 	
 	public void addOperator(OperatorMember member, TypeMemberPriority priority) {

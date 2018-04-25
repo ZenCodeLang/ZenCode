@@ -266,10 +266,30 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	
 	private void visitInt() {
 		registerUnaryOperations();
-		registerArithmeticOperations(INT, INT);
-		registerArithmeticOperations(LONG, LONG);
-		registerArithmeticOperations(FLOAT, FLOAT);
-		registerArithmeticOperations(DOUBLE, DOUBLE);
+		
+		members.addOperator(BuiltinTypeMembers.INT_ADD_INT);
+		members.addOperator(BuiltinTypeMembers.INT_ADD_LONG);
+		members.addOperator(BuiltinTypeMembers.INT_ADD_FLOAT);
+		members.addOperator(BuiltinTypeMembers.INT_ADD_DOUBLE);
+		
+		members.addOperator(BuiltinTypeMembers.INT_SUB_INT);
+		members.addOperator(BuiltinTypeMembers.INT_SUB_LONG);
+		members.addOperator(BuiltinTypeMembers.INT_SUB_FLOAT);
+		members.addOperator(BuiltinTypeMembers.INT_SUB_DOUBLE);
+		
+		members.addOperator(BuiltinTypeMembers.INT_MUL_INT);
+		members.addOperator(BuiltinTypeMembers.INT_MUL_LONG);
+		members.addOperator(BuiltinTypeMembers.INT_MUL_FLOAT);
+		members.addOperator(BuiltinTypeMembers.INT_MUL_DOUBLE);
+		
+		members.addOperator(BuiltinTypeMembers.INT_DIV_INT);
+		members.addOperator(BuiltinTypeMembers.INT_DIV_LONG);
+		members.addOperator(BuiltinTypeMembers.INT_DIV_FLOAT);
+		members.addOperator(BuiltinTypeMembers.INT_DIV_DOUBLE);
+		
+		members.addOperator(BuiltinTypeMembers.INT_MOD_INT);
+		members.addOperator(BuiltinTypeMembers.INT_MOD_LONG);
+		
 		members.addGetter(BuiltinTypeMembers.INT_GET_MIN_VALUE, TypeMemberPriority.SPECIFIED);
 		members.addGetter(BuiltinTypeMembers.INT_GET_MAX_VALUE, TypeMemberPriority.SPECIFIED);
 		
