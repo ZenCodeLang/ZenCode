@@ -4,7 +4,10 @@ import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
 import org.openzen.zenscript.javabytecode.JavaFieldInfo;
+import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
@@ -203,6 +206,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
+        final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
+        javaWriter.load(tag.type, tag.local);
         return null;
     }
 
@@ -275,6 +280,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitSetLocalVariable(SetLocalVariableExpression expression) {
+        if(expression.variable.isFinal)
+            throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final variable!");
+        expression.value.accept(this);
+        final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
+
+        javaWriter.store(tag.type, tag.local);
+
         return null;
     }
 

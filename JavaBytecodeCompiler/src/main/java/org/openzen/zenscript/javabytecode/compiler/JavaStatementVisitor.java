@@ -1,6 +1,8 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
+import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.*;
+import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 
 public class JavaStatementVisitor implements StatementVisitor<Void> {
     private final JavaWriter javaWriter;
@@ -78,6 +80,12 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
 
     @Override
     public Void visitVar(VarStatement statement) {
+        if(statement.initializer != null)
+            statement.initializer.accept(expressionVisitor);
+        Type type = Type.getType(statement.type.accept(JavaTypeClassVisitor.INSTANCE));
+        int local = javaWriter.local(type);
+        javaWriter.store(type, local);
+        statement.setTag(JavaLocalVariableInfo.class, new JavaLocalVariableInfo(type, local));
         return null;
     }
 
