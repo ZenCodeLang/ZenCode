@@ -1064,4 +1064,8 @@ public class JavaWriter {
 
         return labelNames.get(lbl);
     }
+
+    public void stringAdd() {
+        invokeVirtual(String.class, "concat", String.class, String.class);
+    }
 }
