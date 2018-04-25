@@ -223,7 +223,7 @@ public class StringUtils {
 	 * @param hex hex digit
 	 * @return converted value
 	 */
-	public static int readHexCharacter(char hex)
+	private static int readHexCharacter(char hex)
 	{
 		if (hex >= '0' && hex <= '9')
 			return hex - '0';
@@ -267,7 +267,7 @@ public class StringUtils {
 	 * @throws IllegalArgumentException if the given string does not contain a
 	 *	valid character entity at the given position
 	 */
-	public static CharacterEntity readCharacterEntity(String str, int offset)
+	private static CharacterEntity readCharacterEntity(String str, int offset)
 	{
 		if (offset + 3 >= str.length())
 			throw new IllegalArgumentException("Not a proper character entity");

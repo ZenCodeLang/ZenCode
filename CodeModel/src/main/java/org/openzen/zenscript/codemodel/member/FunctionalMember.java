@@ -44,6 +44,10 @@ public abstract class FunctionalMember extends DefinitionMember implements ICall
 		return new CallExpression(position, target, this, instancedHeader, arguments);
 	}
 	
+	public final Expression call(CodePosition position, Expression target, CallArguments arguments) {
+		return call(position, target, header, arguments);
+	}
+	
 	@Override
 	public Expression callWithComparator(CodePosition position, CompareType operator, Expression target, FunctionHeader instancedHeader, CallArguments arguments) {
 		return new GenericCompareExpression(position, call(position, target, instancedHeader, arguments), operator);

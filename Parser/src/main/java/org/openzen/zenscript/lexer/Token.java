@@ -11,11 +11,11 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public interface Token<TT extends TokenType>
 {
-	public CodePosition getPosition();
+	CodePosition getPosition();
 	
-	public TT getType();
+	TT getType();
 	
-	public String getContent();
+	String getContent();
 	
-	public String getWhitespaceBefore();
+	String getWhitespaceBefore();
 }

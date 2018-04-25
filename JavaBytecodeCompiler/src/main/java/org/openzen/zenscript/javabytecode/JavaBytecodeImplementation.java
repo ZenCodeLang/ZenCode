@@ -12,5 +12,5 @@ import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
  * @author Hoofdgebruiker
  */
 public interface JavaBytecodeImplementation {
-	public void compile(JavaWriter writer);
+	void compile(JavaWriter writer);
 }
