@@ -1,8 +1,8 @@
-package org.openzen.zenscript.scriptingexample.writer;
+package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.scriptingexample.JavaFieldInfo;
-import org.openzen.zenscript.scriptingexample.JavaMethodInfo;
+import org.openzen.zenscript.javabytecode.JavaFieldInfo;
+import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 

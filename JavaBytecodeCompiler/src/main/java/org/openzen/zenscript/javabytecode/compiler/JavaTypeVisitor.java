@@ -1,4 +1,4 @@
-package org.openzen.zenscript.scriptingexample.writer;
+package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.type.*;
 

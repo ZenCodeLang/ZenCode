@@ -8,6 +8,8 @@ package org.openzen.zenscript.parser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,48 +41,60 @@ import org.openzen.zenscript.shared.SourceFile;
 public class ParsedFile {
 	public static ParsedFile parse(File file) throws IOException {
 		String filename = file.toString();
-		ParsedFile result = new ParsedFile(file.getName());
-		
 		try (FileReader reader = new FileReader(file)) {
-			ZSTokenStream tokens = new ZSTokenStream(filename, reader);
-			
-			while (true) {
-				CodePosition position = tokens.peek().position;
-				int modifiers = 0;
-				while (true) {
-					if (tokens.optional(K_PUBLIC) != null) {
-						modifiers |= Modifiers.MODIFIER_PUBLIC;
-					} else if (tokens.optional(K_PRIVATE) != null) {
-						modifiers |= Modifiers.MODIFIER_PRIVATE;
-					} else if (tokens.optional(K_EXPORT) != null) {
-						modifiers |= Modifiers.MODIFIER_EXPORT;
-					} else if (tokens.optional(K_ABSTRACT) != null) {
-						modifiers |= Modifiers.MODIFIER_ABSTRACT;
-					} else if (tokens.optional(K_FINAL) != null) {
-						modifiers |= Modifiers.MODIFIER_FINAL;
-					} else if (tokens.optional(K_PROTECTED) != null) {
-						modifiers |= Modifiers.MODIFIER_PROTECTED;
-					} else if (tokens.optional(K_IMPLICIT) != null) {
-						modifiers |= Modifiers.MODIFIER_IMPLICIT;
-					} else {
-						break;
-					}
-				}
-				
-				if (tokens.optional(K_IMPORT) != null) {
-					result.imports.add(ParsedImport.parse(position, tokens));
-				} else if (tokens.optional(EOF) != null) {
-					break;
-				} else {
-					ParsedDefinition definition = ParsedDefinition.parse(position, modifiers, tokens, null);
-					if (definition == null) {
-						result.statements.add(ParsedStatement.parse(tokens));
-					} else {
-						result.definitions.add(definition);
-					}
+			return parse(filename, reader);
+		}
+	}
+	
+	public static ParsedFile parse(String filename, String content) {
+		try (StringReader reader = new StringReader(content)) {
+			return parse(filename, reader);
+		} catch (IOException ex) {
+			throw new AssertionError(); // supposed to never happen in a StringReader
+		}
+	}
+	
+	public static ParsedFile parse(String filename, Reader reader) throws IOException {
+		ParsedFile result = new ParsedFile(filename);
+		
+		ZSTokenStream tokens = new ZSTokenStream(filename, reader);
 
-			//tokens.required(EOF, "An import, class, interface, enum, struct, function or alias expected.");
+		while (true) {
+			CodePosition position = tokens.peek().position;
+			int modifiers = 0;
+			while (true) {
+				if (tokens.optional(K_PUBLIC) != null) {
+					modifiers |= Modifiers.MODIFIER_PUBLIC;
+				} else if (tokens.optional(K_PRIVATE) != null) {
+					modifiers |= Modifiers.MODIFIER_PRIVATE;
+				} else if (tokens.optional(K_EXPORT) != null) {
+					modifiers |= Modifiers.MODIFIER_EXPORT;
+				} else if (tokens.optional(K_ABSTRACT) != null) {
+					modifiers |= Modifiers.MODIFIER_ABSTRACT;
+				} else if (tokens.optional(K_FINAL) != null) {
+					modifiers |= Modifiers.MODIFIER_FINAL;
+				} else if (tokens.optional(K_PROTECTED) != null) {
+					modifiers |= Modifiers.MODIFIER_PROTECTED;
+				} else if (tokens.optional(K_IMPLICIT) != null) {
+					modifiers |= Modifiers.MODIFIER_IMPLICIT;
+				} else {
+					break;
 				}
+			}
+
+			if (tokens.optional(K_IMPORT) != null) {
+				result.imports.add(ParsedImport.parse(position, tokens));
+			} else if (tokens.optional(EOF) != null) {
+				break;
+			} else {
+				ParsedDefinition definition = ParsedDefinition.parse(position, modifiers, tokens, null);
+				if (definition == null) {
+					result.statements.add(ParsedStatement.parse(tokens));
+				} else {
+					result.definitions.add(definition);
+				}
+
+				//tokens.required(EOF, "An import, class, interface, enum, struct, function or alias expected.");
 			}
 		}
 		

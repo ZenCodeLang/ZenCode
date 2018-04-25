@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.scriptingexample;
+package org.openzen.zenscript.javabytecode;
 
 /**
  *

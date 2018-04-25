@@ -10,10 +10,10 @@
 // prefer. In this case NetBeans will not add these tasks but you may rely on
 // your own implementation.
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'org.openzen.zenscript.scriptingexample.Main'
+    ext.mainClass = ''
 }
 
 dependencies {
-	compile project(':Parser')
-	compile project(':JavaBytecodeCompiler')
+	compile 'org.ow2.asm:asm-debug-all:6.0_BETA'
+	compile project(':CodeModel')
 }

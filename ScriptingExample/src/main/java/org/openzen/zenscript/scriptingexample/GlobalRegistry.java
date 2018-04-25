@@ -25,6 +25,9 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.javabytecode.JavaClassInfo;
+import org.openzen.zenscript.javabytecode.JavaFieldInfo;
+import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 import org.openzen.zenscript.shared.CodePosition;
 

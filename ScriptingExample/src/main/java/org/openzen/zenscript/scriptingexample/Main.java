@@ -6,21 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.javabytecode.JavaCompiler;
+import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
-import org.openzen.zenscript.scriptingexample.writer.JavaStatementVisitor;
-import org.openzen.zenscript.scriptingexample.writer.JavaWriter;
-import org.openzen.zenscript.shared.SourceFile;
 
 public class Main {
     /**
@@ -85,54 +81,13 @@ public class Main {
 	}
 	
 	private static JavaModule compileSemanticToJava(SemanticModule module) {
-		JavaModule result = new JavaModule();
-		final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
-
-		// TODO: java bytecode compilation
+		JavaCompiler compiler = new JavaCompiler(true);
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			// convert definitions into java classes
-
+			compiler.addDefinition(definition);
 		}
-		int statementNo = 0;
-		List<String> scriptBlockNames = new ArrayList<>();
 		for (ScriptBlock script : module.scripts) {
-			SourceFile sourceFile = script.getTag(SourceFile.class);
-			String methodName;
-			if (sourceFile == null) {
-				methodName = "generatedBlock" + (statementNo++);
-			} else {
-				// TODO: remove special characters
-				methodName = sourceFile.filename.substring(0, sourceFile.filename.lastIndexOf('.')).replace("/", "_");
-			}
-			
-			scriptBlockNames.add(methodName);
-			
-			// convert scripts into methods (add them to a Scripts class?)
-			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(classWriter, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, methodName, "()V", null, null));
-			statementVisitor.start();
-			for (Statement statement : script.statements) {
-				statement.accept(statementVisitor);
-			}
-			statementVisitor.end();
+			compiler.addScriptBlock(script);
 		}
-
-		// create a Scripts.run() method to run all scripts compiled above
-		final JavaWriter runWriter = new JavaWriter(classWriter, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "run", "()V", null, null);
-		runWriter.start();
-		for (String scriptBlockName : scriptBlockNames) {
-			runWriter.invokeStatic("Scripts", scriptBlockName, "()V");
-		}
-		runWriter.ret();
-		runWriter.end();
-		result.register("Scripts", classWriter.toByteArray());
-
-		
-		return result;
-	}
-
-	private static String makeName(int i) {
-    	return "scriptBlock" + i;
+		return compiler.finish();
 	}
 }
