@@ -38,7 +38,6 @@ import org.openzen.zenscript.codemodel.member.builtin.ArrayIteratorValues;
 import org.openzen.zenscript.codemodel.member.builtin.ComparatorMember;
 import org.openzen.zenscript.codemodel.member.builtin.ConstantGetterMember;
 import org.openzen.zenscript.codemodel.member.builtin.RangeIterator;
-import org.openzen.zenscript.codemodel.member.builtin.StringConcatMember;
 import org.openzen.zenscript.codemodel.member.builtin.SubstringMember;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
@@ -82,6 +81,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				break;
 			case BYTE:
 				visitByte();
+				break;
 			case INT:
 				visitInt();
 				break;
@@ -271,7 +271,6 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	
 	private void visitBool() {
 		members.addOperator(BuiltinTypeMembers.BOOL_NOT);
-		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.NOT, new FunctionHeader(BOOL)), TypeMemberPriority.SPECIFIED);
 	}
 	
 	private void visitByte() {
@@ -416,8 +415,10 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(OperatorType.INDEXGET, new SubstringMember(substringHeader), TypeMemberPriority.SPECIFIED);
 		
 		members.addConstructor(new ConstructorMember(BUILTIN, 0, new FunctionHeader(VOID, new FunctionParameter(cache.getRegistry().getArray(CHAR, 1), "characters"))), TypeMemberPriority.SPECIFIED);
+		
+		members.addOperator(STRING_ADD_STRING);
 
-		registerStringConcat(NULL);
+		/*registerStringConcat(NULL);
 		registerStringConcat(BOOL);
 		registerStringConcat(SBYTE);
 		registerStringConcat(BYTE);
@@ -430,12 +431,11 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		registerStringConcat(FLOAT);
 		registerStringConcat(DOUBLE);
 		registerStringConcat(CHAR);
-		registerStringConcat(STRING);
+		registerStringConcat(STRING);*/
 	}
 
 	private void registerStringConcat(ITypeID withType) {
-		FunctionHeader header = new FunctionHeader(STRING, new FunctionParameter(withType));
-		members.addOperator(OperatorType.CAT, new StringConcatMember(header), TypeMemberPriority.SPECIFIED);
+		members.addOperator(STRING_ADD_STRING);
 	}
 
 	private void registerUnaryOperations() {
