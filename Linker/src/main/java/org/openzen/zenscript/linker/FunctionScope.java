@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
-import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -39,7 +39,7 @@ public class FunctionScope extends StatementScope {
 	}
 
 	@Override
-	public Statement getLoop(String name) {
+	public LoopStatement getLoop(String name) {
 		return null; // not in a loop
 	}
 

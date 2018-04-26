@@ -10,7 +10,7 @@ import java.util.function.Function;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -47,7 +47,7 @@ public class GlobalScriptScope extends StatementScope {
 	}
 
 	@Override
-	public Statement getLoop(String name) {
+	public LoopStatement getLoop(String name) {
 		return null;
 	}
 

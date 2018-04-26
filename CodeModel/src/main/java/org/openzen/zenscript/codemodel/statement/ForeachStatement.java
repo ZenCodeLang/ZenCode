@@ -13,14 +13,14 @@ import org.openzen.zenscript.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public class ForeachStatement extends Statement {
+public class ForeachStatement extends LoopStatement {
 	public final VarStatement[] loopVariables;
 	public final Expression list;
 	public final IIteratorMember iterator;
 	public Statement content;
 	
 	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IIteratorMember iterator, Expression list) {
-		super(position);
+		super(position, loopVariables[0].name);
 		
 		this.loopVariables = loopVariables;
 		this.list = list;

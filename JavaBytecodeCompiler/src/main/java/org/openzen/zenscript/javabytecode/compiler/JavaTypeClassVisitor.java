@@ -1,8 +1,8 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.type.*;
 
+import java.lang.reflect.Array;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -47,12 +47,7 @@ public class JavaTypeClassVisitor implements ITypeVisitor<Class> {
 
     @Override
     public Class visitArray(ArrayTypeID array) {
-        try {
-            return Class.forName("[" + Type.getInternalName(array.elementType.accept(this)));
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            return Object[].class;
-        }
+        return Array.newInstance(array.elementType.accept(this), 0).getClass();
     }
 
     @Override

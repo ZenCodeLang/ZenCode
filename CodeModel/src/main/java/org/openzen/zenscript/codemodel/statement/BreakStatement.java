@@ -12,9 +12,9 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class BreakStatement extends Statement {
-	public final Statement target;
+	public final LoopStatement target;
 	
-	public BreakStatement(CodePosition position, Statement target) {
+	public BreakStatement(CodePosition position, LoopStatement target) {
 		super(position);
 		
 		this.target = target;

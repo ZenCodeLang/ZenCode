@@ -6,6 +6,7 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zenscript.codemodel.statement.ContinueStatement;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.linker.StatementScope;
 import org.openzen.zenscript.shared.CodePosition;
@@ -27,7 +28,7 @@ public class ParsedStatementContinue extends ParsedStatement {
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		Statement target = scope.getLoop(name);
+		LoopStatement target = scope.getLoop(name);
 		if (target == null)
 			throw new CompileException(position, CompileExceptionCode.CONTINUE_OUTSIDE_LOOP, name == null ? "Not in a loop" : "No such loop: " + name);
 		return new ContinueStatement(position, target);

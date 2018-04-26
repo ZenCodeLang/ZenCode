@@ -1,9 +1,11 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
+import com.sun.javafx.image.IntPixelGetter;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
+import org.openzen.zenscript.implementations.IntRange;
 import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
 import org.openzen.zenscript.javabytecode.JavaFieldInfo;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
@@ -308,6 +310,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitRange(RangeExpression expression) {
+        if(expression.from.type.accept(JavaTypeClassVisitor.INSTANCE) != int.class)
+            throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Only integer ranges supported");
+        javaWriter.newObject(IntRange.class);
+        javaWriter.dup();
+        expression.from.accept(this);
+        expression.to.accept(this);
+        System.out.println(IntRange.class.getName());
+        javaWriter.invokeSpecial("org/openzen/zenscript/implementations/IntRange", "<init>", "(II)V");
+
         return null;
     }
 
