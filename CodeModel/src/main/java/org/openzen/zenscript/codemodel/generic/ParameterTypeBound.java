@@ -40,4 +40,9 @@ public class ParameterTypeBound extends GenericParameterBound {
 	public GenericParameterBound withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
 		return new ParameterTypeBound(position, type.withGenericArguments(registry, arguments));
 	}
+
+	@Override
+	public <T> T accept(GenericParameterBoundVisitor<T> visitor) {
+		return visitor.visitType(this);
+	}
 }

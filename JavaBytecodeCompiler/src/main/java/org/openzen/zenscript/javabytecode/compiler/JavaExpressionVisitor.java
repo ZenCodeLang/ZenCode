@@ -184,7 +184,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
     @Override
-    public Void visitConstructorCall(ConstructorCallExpression expression) {
+    public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
+        return null;
+    }
+
+    @Override
+    public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
         return null;
     }
 

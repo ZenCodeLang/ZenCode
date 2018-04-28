@@ -62,7 +62,9 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitConstantUShort(ConstantUShortExpression expression);
 	
-	public T visitConstructorCall(ConstructorCallExpression expression);
+	public T visitConstructorThisCall(ConstructorThisCallExpression expression);
+	
+	public T visitConstructorSuperCall(ConstructorSuperCallExpression expression);
 	
 	public T visitEnumConstant(EnumConstantExpression expression);
 	

@@ -19,7 +19,7 @@ import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
- * @author Hoofdgebruiker
+ * @author Stan Hebben
  */
 public class ParsedClass extends BaseParsedDefinition {
 	public static ParsedClass parseClass(CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
@@ -40,7 +40,6 @@ public class ParsedClass extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final String name;
 	private final List<ParsedGenericParameter> genericParameters;
 	private final IParsedType superclass;
 	
@@ -48,7 +47,7 @@ public class ParsedClass extends BaseParsedDefinition {
 	
 	public ParsedClass(CodePosition position, int modifiers, String name, List<ParsedGenericParameter> genericParameters, IParsedType superclass, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
-		this.name = name;
+		
 		this.genericParameters = genericParameters;
 		this.superclass = superclass;
 		

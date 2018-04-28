@@ -25,7 +25,7 @@ public class SetterMember extends FunctionalMember {
 	public final ITypeID type;
 	
 	public SetterMember(CodePosition position, int modifiers, String name, ITypeID type) {
-		super(position, modifiers, new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(type, "$")));
+		super(position, modifiers, name, new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(type, "$")));
 		
 		this.name = name;
 		this.type = type;

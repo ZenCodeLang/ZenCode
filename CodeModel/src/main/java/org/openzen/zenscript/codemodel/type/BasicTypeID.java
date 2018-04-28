@@ -36,8 +36,8 @@ public enum BasicTypeID implements ITypeID {
 	
 	public static final List<ITypeID> HINT_BOOL = Collections.singletonList(BOOL);
 	
-	private final String name;
-	private final String camelCaseName;
+	public final String name;
+	public final String camelCaseName;
 	
 	BasicTypeID(String name, String camelCaseName) {
 		this.name = name;

@@ -23,7 +23,7 @@ public class OperatorMember extends FunctionalMember {
 	public final OperatorType operator;
 	
 	public OperatorMember(CodePosition position, int modifiers, OperatorType operator, FunctionHeader header) {
-		super(position, modifiers, header);
+		super(position, modifiers, operator.operator, header);
 		
 		this.operator = operator;
 	}

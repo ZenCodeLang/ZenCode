@@ -19,14 +19,8 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class MethodMember extends FunctionalMember {
-	public final String name;
-	
-	public String compiledName;
-	
 	public MethodMember(CodePosition position, int modifiers, String name, FunctionHeader header) {
-		super(position, modifiers, header);
-		
-		this.name = name;
+		super(position, modifiers, name, header);
 	}
 
 	@Override

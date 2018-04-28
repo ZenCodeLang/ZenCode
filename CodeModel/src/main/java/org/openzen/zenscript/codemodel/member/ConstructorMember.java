@@ -21,7 +21,7 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class ConstructorMember extends FunctionalMember {
 	public ConstructorMember(CodePosition position, int modifiers, FunctionHeader header) {
-		super(position, modifiers, new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.parameters));
+		super(position, modifiers, "this", new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.parameters));
 	}
 
 	@Override

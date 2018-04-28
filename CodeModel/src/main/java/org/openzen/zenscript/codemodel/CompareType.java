@@ -6,12 +6,18 @@ package org.openzen.zenscript.codemodel;
  * @author Stan Hebben
  */
 public enum CompareType {
-	LT,
-	GT,
-	EQ,
-	NE,
-	LE,
-	GE,
-	SAME,
-	NOTSAME
+	LT("<"),
+	GT(">"),
+	EQ("=="),
+	NE("!="),
+	LE("<="),
+	GE(">="),
+	SAME("==="),
+	NOTSAME("!==");
+	
+	public final String str;
+	
+	CompareType(String str) {
+		this.str = str;
+	}
 }

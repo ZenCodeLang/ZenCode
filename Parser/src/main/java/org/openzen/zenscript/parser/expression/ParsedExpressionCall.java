@@ -10,7 +10,7 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.ConstructorCallExpression;
+import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.ICallableMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
@@ -52,7 +52,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			if (!(member instanceof ConstructorMember))
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
-			return new ConstructorCallExpression(position, scope.getThisType().getSuperType(), (ConstructorMember) member, callArguments);
+			return new ConstructorThisCallExpression(position, scope.getThisType().getSuperType(), (ConstructorMember) member, callArguments);
 		} else if (receiver instanceof ParsedExpressionThis) {
 			// this call (intended as first call in constructor)
 			ITypeID targetType = scope.getThisType();
@@ -63,7 +63,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			if (!(member instanceof ConstructorMember))
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
-			return new ConstructorCallExpression(position, scope.getThisType().getSuperType(), (ConstructorMember) member, callArguments);
+			return new ConstructorThisCallExpression(position, scope.getThisType(), (ConstructorMember) member, callArguments);
 		}
 
 		List<FunctionHeader> headers = cReceiver.getPossibleFunctionHeaders(scope, scope.hints, arguments.arguments.size());
