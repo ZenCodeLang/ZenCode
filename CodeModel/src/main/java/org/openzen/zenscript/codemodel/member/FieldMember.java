@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -21,15 +22,13 @@ import org.openzen.zenscript.shared.CodePosition;
 public class FieldMember extends DefinitionMember {
 	public final String name;
 	public final ITypeID type;
-	public final boolean isFinal;
 	public Expression initializer;
 	
-	public FieldMember(CodePosition position, int modifiers, String name, ITypeID type, boolean isFinal) {
+	public FieldMember(CodePosition position, int modifiers, String name, ITypeID type) {
 		super(position, modifiers);
 		
 		this.name = name;
 		this.type = type;
-		this.isFinal = isFinal;
 	}
 	
 	public void setInitializer(Expression initializer) {
@@ -43,7 +42,7 @@ public class FieldMember extends DefinitionMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new FieldMember(position, modifiers, name, type.withGenericArguments(registry, mapping), isFinal);
+		return new FieldMember(position, modifiers, name, type.withGenericArguments(registry, mapping));
 	}
 
 	@Override

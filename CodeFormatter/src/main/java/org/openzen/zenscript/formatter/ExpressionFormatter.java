@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.expression.CapturedDirectExpression;
 import org.openzen.zenscript.codemodel.expression.CapturedLocalVariableExpression;
 import org.openzen.zenscript.codemodel.expression.CapturedParameterExpression;
 import org.openzen.zenscript.codemodel.expression.CapturedThisExpression;
+import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
 import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
@@ -63,7 +64,6 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
-import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.StringUtils;
@@ -232,16 +232,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				default:
 					throw new UnsupportedOperationException("Unknown operator: " + operator.operator);
 			}
-		} else if (expression.member instanceof CasterMember) {
-			CasterMember casterMember = (CasterMember) expression.member;
-			
-			StringBuilder result = new StringBuilder();
-			result.append(expression.target.accept(this).value);
-			if (!casterMember.isImplicit()) {
-				result.append(" as ");
-				result.append(casterMember.toType.accept(typeFormatter));
-			}
-			return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 		} else {
 			StringBuilder result = new StringBuilder();
 			result.append(expression.target.accept(this).value);
@@ -263,6 +253,9 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	}
 	
 	private void format(StringBuilder result, CallArguments arguments) {
+		if (arguments == null || arguments.typeArguments == null)
+			throw new IllegalArgumentException("Arguments cannot be null!");
+		
 		if (arguments.typeArguments.length > 0) {
 			result.append("<");
 			
@@ -309,6 +302,17 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitCapturedThis(CapturedThisExpression expression) {
 		return new ExpressionString("this", OperatorPriority.PRIMARY);
+	}
+	
+	@Override
+	public ExpressionString visitCast(CastExpression expression) {
+		StringBuilder result = new StringBuilder();
+		result.append(expression.target.accept(this).value);
+		if (!expression.isImplicit) {
+			result.append(" as ");
+			result.append(expression.member.toType.accept(typeFormatter));
+		}
+		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 	}
 
 	@Override

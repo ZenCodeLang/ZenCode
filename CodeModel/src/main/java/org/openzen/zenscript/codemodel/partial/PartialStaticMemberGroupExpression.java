@@ -62,7 +62,7 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 
 	@Override
 	public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return group.callStatic(position, scope, arguments);
 	}
 	
 	@Override

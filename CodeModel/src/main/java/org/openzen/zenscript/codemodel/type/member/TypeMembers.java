@@ -305,7 +305,7 @@ public final class TypeMembers {
 		return false;
 	}
 	
-	public Expression castImplicit(CodePosition position, Expression value, ITypeID toType) {
+	public Expression castImplicit(CodePosition position, Expression value, ITypeID toType, boolean implicit) {
 		if (toType == type || toType == BasicTypeID.UNDETERMINED)
 			return value;
 		if (toType == null)
@@ -314,15 +314,15 @@ public final class TypeMembers {
 		if (type == BasicTypeID.NULL && toType.isOptional())
 			return new NullExpression(position, toType);
 		if (toType.isOptional() && canCastImplicit(toType.unwrap()))
-			return new WrapOptionalExpression(position, castImplicit(position, value, toType.unwrap()), toType);
+			return new WrapOptionalExpression(position, castImplicit(position, value, toType.unwrap(), implicit), toType);
 		if (toType.isConst() && canCastImplicit(toType.unwrap()))
-			return new MakeConstExpression(position, castImplicit(position, value, toType.unwrap()), toType);
+			return new MakeConstExpression(position, castImplicit(position, value, toType.unwrap(), implicit), toType);
 		if (type.isOptional() && type.unwrap() == toType)
 			return new CheckNullExpression(position, value);
 		
 		for (TypeMember<ICasterMember> caster : casters) {
 			if (caster.member.isImplicit() && toType == caster.member.getTargetType())
-				return caster.member.cast(position, value, toType);
+				return caster.member.cast(position, value, implicit);
 		}
 		for (TypeMember<ImplementationMember> implementation : implementations) {
 			if (implementation.member.type == toType)
@@ -334,11 +334,11 @@ public final class TypeMembers {
 	
 	public Expression castExplicit(CodePosition position, Expression value, ITypeID toType, boolean optional) {
 		if (this.canCastImplicit(toType))
-			return castImplicit(position, value, toType);
+			return castImplicit(position, value, toType, false);
 		
 		for (TypeMember<ICasterMember> caster : casters)
 			if (toType == caster.member.getTargetType())
-				return caster.member.cast(position, value, toType);
+				return caster.member.cast(position, value, false);
 		
 		throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Cannot cast " + toString() + " to " + toType + ", even explicitly");
 	}

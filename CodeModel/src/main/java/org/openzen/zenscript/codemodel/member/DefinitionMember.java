@@ -30,4 +30,8 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 	public boolean isStatic() {
 		return Modifiers.isStatic(modifiers);
 	}
+	
+	public boolean isFinal() {
+		return Modifiers.isFinal(modifiers);
+	}
 }

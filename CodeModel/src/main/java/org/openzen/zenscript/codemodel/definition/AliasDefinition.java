@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
@@ -15,8 +16,8 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class AliasDefinition extends HighLevelDefinition {
 	public ITypeID type;
 	
-	public AliasDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(pkg, name, modifiers, outerDefinition);
+	public AliasDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(position, pkg, name, modifiers, outerDefinition);
 	}
 	
 	public void setType(ITypeID type) {

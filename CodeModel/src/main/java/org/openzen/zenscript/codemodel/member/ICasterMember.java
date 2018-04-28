@@ -16,7 +16,7 @@ import org.openzen.zenscript.shared.CodePosition;
 public interface ICasterMember extends IDefinitionMember {
 	public ITypeID getTargetType();
 	
-	public Expression cast(CodePosition position, Expression value, ITypeID toType);
+	public Expression cast(CodePosition position, Expression value, boolean implicit);
 	
 	public boolean isImplicit();
 }

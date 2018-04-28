@@ -9,7 +9,7 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
+import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -52,8 +52,13 @@ public class CasterMember extends FunctionalMember implements ICasterMember {
 	}
 
 	@Override
-	public Expression cast(CodePosition position, Expression value, ITypeID toType) {
-		return new CallExpression(position, value, this, header, CallArguments.EMPTY);
+	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments) {
+		throw new UnsupportedOperationException("Cannot call a caster!");
+	}
+
+	@Override
+	public Expression cast(CodePosition position, Expression value, boolean implicit) {
+		return new CastExpression(position, value, this, implicit);
 	}
 	
 	@Override

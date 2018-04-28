@@ -41,7 +41,7 @@ public class ParsedFunction extends ParsedDefinition {
 		this.header = header;
 		this.body = body;
 		
-		compiled = new FunctionDefinition(pkg, name, modifiers, outerDefinition);
+		compiled = new FunctionDefinition(position, pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override

@@ -6,14 +6,15 @@
 package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class EnumDefinition extends HighLevelDefinition {
-	public EnumDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(pkg, name, modifiers, outerDefinition);
+	public EnumDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(position, pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override

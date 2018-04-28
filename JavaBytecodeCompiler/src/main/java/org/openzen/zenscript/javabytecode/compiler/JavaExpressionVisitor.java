@@ -92,6 +92,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitCapturedThis(CapturedThisExpression expression) {
         return null;
     }
+	
+	@Override
+    public Void visitCast(CastExpression expression) {
+		expression.target.accept(this);
+        if (!checkAndExecuteByteCodeImplementation(expression.member) && !checkAndExecuteMethodInfo(expression.member))
+            throw new IllegalStateException("Call target has no method info!");
+		
+        return null;
+	}
 
     @Override
     public Void visitCheckNull(CheckNullExpression expression) {
@@ -343,7 +352,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitSetField(SetFieldExpression expression) {
         javaWriter.loadObject(0);
-        if (expression.field.isFinal)
+        if (expression.field.isFinal())
             throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
         expression.value.accept(this);
         if (!checkAndPutFieldInfo(expression.field, false))
@@ -373,7 +382,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitSetStaticField(SetStaticFieldExpression expression) {
-        if (expression.field.isFinal)
+        if (expression.field.isFinal())
             throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
         expression.value.accept(this);
         if (!checkAndPutFieldInfo(expression.field, true))
