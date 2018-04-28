@@ -12,7 +12,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class JavaWriter {
     final LocalVariablesSorter visitor;
-    private boolean debug = false;
+    private boolean debug = true;
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();
 
@@ -1063,5 +1063,27 @@ public class JavaWriter {
         }
 
         return labelNames.get(lbl);
+    }
+
+    public String createLabelName() {
+        return "L" + labelIndex++;
+    }
+
+    public void putNamedLabel(Label lbl, String name) {
+        if(labelNames == null)
+            labelNames = new HashMap<>();
+        labelNames.put(lbl, name);
+    }
+
+    public void stringAdd() {
+        invokeVirtual("java/lang/String", "concat", "(Ljava/lang/String;)Ljava/lang/String;");
+    }
+
+    public Label getNamedLabel(String label) {
+        for (Map.Entry<Label, String> entry : labelNames.entrySet()) {
+            if(entry.getValue().matches(label))
+                return entry.getKey();
+        }
+        throw new RuntimeException("Label " + label + " not found!");
     }
 }

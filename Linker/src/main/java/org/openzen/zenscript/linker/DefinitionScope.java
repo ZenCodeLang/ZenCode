@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -20,7 +22,6 @@ import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
-import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -90,7 +91,7 @@ public class DefinitionScope extends BaseScope {
 	}
 
 	@Override
-	public Statement getLoop(String name) {
+	public LoopStatement getLoop(String name) {
 		return null;
 	}
 

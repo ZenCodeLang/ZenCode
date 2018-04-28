@@ -12,9 +12,9 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ContinueStatement extends Statement {
-	public final Statement target;
+	public final LoopStatement target;
 	
-	public ContinueStatement(CodePosition position, Statement target) {
+	public ContinueStatement(CodePosition position, LoopStatement target) {
 		super(position);
 		
 		this.target = target;

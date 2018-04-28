@@ -12,7 +12,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public abstract class LoopStatement extends Statement {
-	public final String label;
+	public String label;
 	
 	public LoopStatement(CodePosition position, String label) {
 		super(position);

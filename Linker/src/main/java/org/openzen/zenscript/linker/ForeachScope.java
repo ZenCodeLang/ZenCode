@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
-import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -59,7 +59,7 @@ public class ForeachScope extends StatementScope {
 	}
 
 	@Override
-	public Statement getLoop(String name) {
+	public LoopStatement getLoop(String name) {
 		if (name == null)
 			return statement;
 		
