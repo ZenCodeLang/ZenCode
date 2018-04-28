@@ -12,7 +12,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class JavaWriter {
     final LocalVariablesSorter visitor;
-    private boolean debug = true;
+    private boolean debug = false;
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();
 

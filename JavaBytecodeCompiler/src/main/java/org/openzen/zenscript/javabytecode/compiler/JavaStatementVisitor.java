@@ -10,7 +10,6 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
     private final JavaExpressionVisitor expressionVisitor;
 
     public JavaStatementVisitor(final JavaWriter javaWriter) {
-
         this.javaWriter = javaWriter;
         this.expressionVisitor = new JavaExpressionVisitor(javaWriter);
     }

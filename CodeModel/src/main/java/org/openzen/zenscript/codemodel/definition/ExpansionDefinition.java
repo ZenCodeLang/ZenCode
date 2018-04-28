@@ -15,8 +15,8 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class ExpansionDefinition extends HighLevelDefinition {
 	public ITypeID target;
 	
-	public ExpansionDefinition(int modifiers, HighLevelDefinition outerDefinition) {
-		super(null, modifiers, outerDefinition);
+	public ExpansionDefinition(ZSPackage pkg, int modifiers, HighLevelDefinition outerDefinition) {
+		super(pkg, null, modifiers, outerDefinition);
 	}
 
 	@Override

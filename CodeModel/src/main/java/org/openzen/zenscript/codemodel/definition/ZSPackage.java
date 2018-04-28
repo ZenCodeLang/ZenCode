@@ -25,6 +25,12 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
  * @author Hoofdgebruiker
  */
 public class ZSPackage {
+	public final String fullName;
+	
+	public ZSPackage(String fullName) {
+		this.fullName = fullName;
+	}
+	
 	private final Map<String, ZSPackage> subPackages = new HashMap<>();
 	private final Map<String, HighLevelDefinition> types = new HashMap<>();
 	
@@ -40,6 +46,10 @@ public class ZSPackage {
 		}
 		
 		return null;
+	}
+	
+	public boolean contains(String name) {
+		return types.containsKey(name) || subPackages.containsKey(name);
 	}
 	
 	public HighLevelDefinition getImport(List<String> name, int depth) {
@@ -83,7 +93,7 @@ public class ZSPackage {
 		if (subPackages.containsKey(name))
 			return subPackages.get(name);
 		
-		ZSPackage result = new ZSPackage();
+		ZSPackage result = new ZSPackage(fullName.isEmpty() ? name : fullName + '.' + name);
 		subPackages.put(name, result);
 		return result;
 	}

@@ -1,8 +1,6 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import com.sun.javafx.image.IntPixelGetter;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.implementations.IntRange;
@@ -16,8 +14,7 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
 import java.util.Map;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
-
-    private JavaWriter javaWriter;
+    private final JavaWriter javaWriter;
 
     public JavaExpressionVisitor(final JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
@@ -376,16 +373,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitStaticSetter(StaticSetterExpression expression) {
-        return null;
-    }
-
-    @Override
-    public Void visitStringConcat(StringConcatExpression expression) {
-        return null;
-    }
-
-    @Override
-    public Void visitSubstring(SubstringExpression expression) {
         return null;
     }
 

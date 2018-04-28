@@ -39,22 +39,22 @@ import org.openzen.zenscript.shared.SourceFile;
  * @author Hoofdgebruiker
  */
 public class ParsedFile {
-	public static ParsedFile parse(File file) throws IOException {
+	public static ParsedFile parse(ZSPackage pkg, File file) throws IOException {
 		String filename = file.toString();
 		try (FileReader reader = new FileReader(file)) {
-			return parse(filename, reader);
+			return parse(pkg, filename, reader);
 		}
 	}
 	
-	public static ParsedFile parse(String filename, String content) {
+	public static ParsedFile parse(ZSPackage pkg, String filename, String content) {
 		try (StringReader reader = new StringReader(content)) {
-			return parse(filename, reader);
+			return parse(pkg, filename, reader);
 		} catch (IOException ex) {
 			throw new AssertionError(); // supposed to never happen in a StringReader
 		}
 	}
 	
-	public static ParsedFile parse(String filename, Reader reader) throws IOException {
+	public static ParsedFile parse(ZSPackage pkg, String filename, Reader reader) throws IOException {
 		ParsedFile result = new ParsedFile(filename);
 		
 		ZSTokenStream tokens = new ZSTokenStream(filename, reader);
@@ -87,7 +87,7 @@ public class ParsedFile {
 			} else if (tokens.optional(EOF) != null) {
 				break;
 			} else {
-				ParsedDefinition definition = ParsedDefinition.parse(position, modifiers, tokens, null);
+				ParsedDefinition definition = ParsedDefinition.parse(pkg, position, modifiers, tokens, null);
 				if (definition == null) {
 					result.statements.add(ParsedStatement.parse(tokens));
 				} else {

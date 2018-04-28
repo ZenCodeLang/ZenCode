@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.BaseScope;
@@ -22,7 +23,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedInterface extends BaseParsedDefinition {
-	public static ParsedInterface parseInterface(CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedInterface parseInterface(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedGenericParameter> genericParameters = ParsedGenericParameter.parseAll(tokens);
 		List<IParsedType> superInterfaces = Collections.emptyList();
@@ -35,27 +36,25 @@ public class ParsedInterface extends BaseParsedDefinition {
 		
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
-		ParsedInterface result = new ParsedInterface(position, modifiers, name, genericParameters, superInterfaces, outerDefinition);
+		ParsedInterface result = new ParsedInterface(pkg, position, modifiers, name, genericParameters, superInterfaces, outerDefinition);
 		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
 			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
 		}
 		return result;
 	}
 	
-	private final String name;
 	private final List<ParsedGenericParameter> genericParameters;
 	private final List<IParsedType> superInterfaces;
 	
 	private final InterfaceDefinition compiled;
 	
-	public ParsedInterface(CodePosition position, int modifiers, String name, List<ParsedGenericParameter> genericParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
+	public ParsedInterface(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedGenericParameter> genericParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
 		
-		this.name = name;
 		this.genericParameters = genericParameters;
 		this.superInterfaces = superInterfaces;
 		
-		compiled = new InterfaceDefinition(name, modifiers, outerDefinition);
+		compiled = new InterfaceDefinition(pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override

@@ -36,24 +36,32 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class GlobalRegistry {
+	private final ZSPackage rootPackage = new ZSPackage("");
+	private final ZSPackage javaIo = rootPackage.getOrCreatePackage("java").getOrCreatePackage("io");
+	private final ZSPackage javaLang = rootPackage.getOrCreatePackage("java").getOrCreatePackage("lang");
 	
+	public GlobalRegistry() {
+		JavaClassInfo jPrintStream = new JavaClassInfo("java/io/PrintStream");
+		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, new JavaMethodInfo(jPrintStream, "println", "(Ljava/lang/String;)V"));
+		
+		JavaClassInfo jSystem = new JavaClassInfo("java/lang/System");
+		SYSTEM_OUT.setTag(JavaFieldInfo.class, new JavaFieldInfo(jSystem, "out", "Ljava/io/PrintStream;"));
+	}
 	
 	public ZSPackage collectPackages() {
-		ZSPackage rootPackage = new ZSPackage();
-		
 		// register packages here
 		
 		{
 			// eg. package my.package with a class MyClass with a single native method test() returning a string
 			// the visitors can then during compilation check if a method is an instance of NativeMethodMember and treat it accordingly
-			ClassDefinition myClassDefinition = new ClassDefinition("MyClass", Modifiers.MODIFIER_PUBLIC, null);
+			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("package");
+			ClassDefinition myClassDefinition = new ClassDefinition(packageMyPackage, "MyClass", Modifiers.MODIFIER_PUBLIC, null);
 			JavaClassInfo myClassInfo = new JavaClassInfo("my/test/MyClass");
 			
 			MethodMember member = new MethodMember(CodePosition.NATIVE, Modifiers.MODIFIER_PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING));
 			member.setTag(JavaMethodInfo.class, new JavaMethodInfo(myClassInfo, "test", "()Ljava/lang/String;"));
 			myClassDefinition.addMember(member);
 			
-			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("package");
 			packageMyPackage.register(myClassDefinition);
 		}
 		
@@ -75,27 +83,20 @@ public class GlobalRegistry {
 		return globals;
 	}
 	
-	private static final ClassDefinition PRINTSTREAM = new ClassDefinition("PrintStream", Modifiers.MODIFIER_EXPORT);
-	private static final MethodMember PRINTSTREAM_PRINTLN = new MethodMember(
+	private final ClassDefinition PRINTSTREAM = new ClassDefinition(javaIo, "PrintStream", Modifiers.MODIFIER_EXPORT);
+	private final ClassDefinition SYSTEM = new ClassDefinition(javaLang, "System", Modifiers.MODIFIER_EXPORT);
+	private final MethodMember PRINTSTREAM_PRINTLN = new MethodMember(
 			CodePosition.NATIVE,
 			Modifiers.MODIFIER_EXPORT,
 			"println",
 			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(BasicTypeID.STRING)));
 	
-	private static final FieldMember SYSTEM_OUT = new FieldMember(
+	private final FieldMember SYSTEM_OUT = new FieldMember(
 			CodePosition.NATIVE,
 			Modifiers.MODIFIER_EXPORT,
 			"out",
-			DefinitionTypeID.forType(PRINTSTREAM),
+			DefinitionTypeID.forType(SYSTEM),
 			true);
-	
-	static {
-		JavaClassInfo jPrintStream = new JavaClassInfo("java/io/PrintStream");
-		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, new JavaMethodInfo(jPrintStream, "println", "(Ljava/lang/String;)V"));
-		
-		JavaClassInfo jSystem = new JavaClassInfo("java/lang/System");
-		SYSTEM_OUT.setTag(JavaFieldInfo.class, new JavaFieldInfo(jSystem, "out", "Ljava/io/PrintStream;"));
-	}
 	
 	private class PrintlnSymbol implements ISymbol {
 

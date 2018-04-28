@@ -116,10 +116,6 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitStaticSetter(StaticSetterExpression expression);
 	
-	public T visitStringConcat(StringConcatExpression expression);
-	
-	public T visitSubstring(SubstringExpression expression);
-	
 	public T visitThis(ThisExpression expression);
 	
 	public T visitWrapOptional(WrapOptionalExpression expression);

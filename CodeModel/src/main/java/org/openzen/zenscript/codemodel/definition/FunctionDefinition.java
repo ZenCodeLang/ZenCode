@@ -18,8 +18,8 @@ public class FunctionDefinition extends HighLevelDefinition {
 	public FunctionHeader header;
 	public List<Statement> statements;
 	
-	public FunctionDefinition(String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(name, modifiers, outerDefinition);
+	public FunctionDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(pkg, name, modifiers, outerDefinition);
 	}
 	
 	public void setHeader(FunctionHeader header) {

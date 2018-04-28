@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -22,7 +23,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Stan Hebben
  */
 public class ParsedClass extends BaseParsedDefinition {
-	public static ParsedClass parseClass(CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedClass parseClass(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedGenericParameter> genericParameters = ParsedGenericParameter.parseAll(tokens);
 		
@@ -33,7 +34,7 @@ public class ParsedClass extends BaseParsedDefinition {
 		
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
-		ParsedClass result = new ParsedClass(position, modifiers, name, genericParameters, superclass, outerDefinition);
+		ParsedClass result = new ParsedClass(pkg, position, modifiers, name, genericParameters, superclass, outerDefinition);
 		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
 			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
 		}
@@ -45,13 +46,13 @@ public class ParsedClass extends BaseParsedDefinition {
 	
 	private final ClassDefinition compiled;
 	
-	public ParsedClass(CodePosition position, int modifiers, String name, List<ParsedGenericParameter> genericParameters, IParsedType superclass, HighLevelDefinition outerDefinition) {
+	public ParsedClass(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedGenericParameter> genericParameters, IParsedType superclass, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
 		
 		this.genericParameters = genericParameters;
 		this.superclass = superclass;
 		
-		compiled = new ClassDefinition(name, modifiers, outerDefinition);
+		compiled = new ClassDefinition(pkg, name, modifiers, outerDefinition);
 		for (ParsedGenericParameter parameter : genericParameters)
 			compiled.addGenericParameter(parameter.compiled);
 	}

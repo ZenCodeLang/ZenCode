@@ -15,8 +15,8 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class AliasDefinition extends HighLevelDefinition {
 	public ITypeID type;
 	
-	public AliasDefinition(String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(name, modifiers, outerDefinition);
+	public AliasDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(pkg, name, modifiers, outerDefinition);
 	}
 	
 	public void setType(ITypeID type) {

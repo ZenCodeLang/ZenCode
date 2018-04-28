@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class FunctionParameter {
+	public int index = -1;
 	public final ITypeID type;
 	public final String name;
 	public final Expression defaultValue;

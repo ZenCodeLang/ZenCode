@@ -9,6 +9,7 @@ package org.openzen.zenscript.parser.definitions;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.linker.FunctionScope;
@@ -22,27 +23,25 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Stanneke
  */
 public class ParsedFunction extends ParsedDefinition {
-	public static ParsedFunction parseFunction(CodePosition position, int modifiers, ZSTokenStream parser, HighLevelDefinition outerDefinition) {
+	public static ParsedFunction parseFunction(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream parser, HighLevelDefinition outerDefinition) {
 		String name = parser.required(T_IDENTIFIER, "identifier expected").content;
 		ParsedFunctionHeader header = ParsedFunctionHeader.parse(parser);
 		ParsedFunctionBody body = ParsedStatement.parseFunctionBody(parser);
-		return new ParsedFunction(position, modifiers, name, header, body, outerDefinition);
+		return new ParsedFunction(pkg, position, modifiers, name, header, body, outerDefinition);
 	}
 	
-	private final String name;
 	private final ParsedFunctionHeader header;
 	private final ParsedFunctionBody body;
 
 	private final FunctionDefinition compiled;
 	
-	private ParsedFunction(CodePosition position, int modifiers, String name, ParsedFunctionHeader header, ParsedFunctionBody body, HighLevelDefinition outerDefinition) {
+	private ParsedFunction(ZSPackage pkg, CodePosition position, int modifiers, String name, ParsedFunctionHeader header, ParsedFunctionBody body, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
 		
-		this.name = name;
 		this.header = header;
 		this.body = body;
 		
-		compiled = new FunctionDefinition(name, modifiers, outerDefinition);
+		compiled = new FunctionDefinition(pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override

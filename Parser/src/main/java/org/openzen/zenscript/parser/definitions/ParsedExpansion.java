@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -22,12 +23,12 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedExpansion extends BaseParsedDefinition {
-	public static ParsedExpansion parseExpansion(CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedExpansion parseExpansion(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
 		List<ParsedGenericParameter> parameters = ParsedGenericParameter.parseAll(tokens);
 		IParsedType target = IParsedType.parse(tokens);
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
-		ParsedExpansion result = new ParsedExpansion(position, modifiers, parameters, target, outerDefinition);
+		ParsedExpansion result = new ParsedExpansion(pkg, position, modifiers, parameters, target, outerDefinition);
 		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
 			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
 		}
@@ -38,13 +39,13 @@ public class ParsedExpansion extends BaseParsedDefinition {
 	private final IParsedType target;
 	private final ExpansionDefinition compiled;
 	
-	public ParsedExpansion(CodePosition position, int modifiers, List<ParsedGenericParameter> parameters, IParsedType target, HighLevelDefinition outerDefinition) {
+	public ParsedExpansion(ZSPackage pkg, CodePosition position, int modifiers, List<ParsedGenericParameter> parameters, IParsedType target, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
 		
 		this.parameters = parameters;
 		this.target = target;
 		
-		this.compiled = new ExpansionDefinition(modifiers, outerDefinition);
+		this.compiled = new ExpansionDefinition(pkg, modifiers, outerDefinition);
 		for (ParsedGenericParameter parameter : parameters)
 			compiled.addGenericParameter(parameter.compiled);
 	}
