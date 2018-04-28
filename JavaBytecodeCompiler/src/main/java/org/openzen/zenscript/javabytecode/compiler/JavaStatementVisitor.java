@@ -7,7 +7,7 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 
 public class JavaStatementVisitor implements StatementVisitor<Void> {
     private final JavaWriter javaWriter;
-    private final JavaExpressionVisitor expressionVisitor;
+    public final JavaExpressionVisitor expressionVisitor;
 
     public JavaStatementVisitor(final JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
@@ -83,7 +83,11 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
         //Create local variables
         for (VarStatement variable : statement.loopVariables) {
             final Type type = Type.getType(variable.type.accept(JavaTypeClassVisitor.INSTANCE));
-            variable.setTag(JavaLocalVariableInfo.class, new JavaLocalVariableInfo(type, javaWriter.local(type)));
+            final Label variableStart = new Label();
+            final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, javaWriter.local(type), variableStart, variable.name);
+            info.end = end;
+            variable.setTag(JavaLocalVariableInfo.class, info);
+            javaWriter.addVariableInfo(info);
         }
 
         //javaWriter.label(min);
@@ -136,18 +140,68 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
 
     @Override
     public Void visitTryCatch(TryCatchStatement statement) {
+        final Label tryCatchStart = new Label();
+        final Label tryFinish = new Label();
+        final Label tryCatchFinish = new Label();
+        final Label finallyStart = new Label();
+
+        javaWriter.label(tryCatchStart);
+        //TODO Check for returns or breaks out of the try-catch and inject finally block before them
+        statement.content.accept(this);
+        javaWriter.label(tryFinish);
+        if (statement.finallyClause != null)
+            statement.finallyClause.accept(this);
+        javaWriter.goTo(tryCatchFinish);
+
+        for (CatchClause catchClause : statement.catchClauses) {
+            final Label catchStart = new Label();
+            javaWriter.label(catchStart);
+
+            //final Type exceptionType = Type.getType(RuntimeException.class);
+            final Type exceptionType = Type.getType(catchClause.exceptionType.accept(JavaTypeClassVisitor.INSTANCE));
+            final int local = javaWriter.local(exceptionType);
+            javaWriter.store(exceptionType, local);
+
+            catchClause.content.accept(this);
+            final Label catchFinish = new Label();
+            javaWriter.label(catchFinish);
+
+            if (statement.finallyClause != null) {
+                statement.finallyClause.accept(this);
+                javaWriter.tryCatch(catchStart, catchFinish, finallyStart, null);
+            }
+
+            javaWriter.tryCatch(tryCatchStart, tryFinish, catchStart, exceptionType.getInternalName());
+            javaWriter.goTo(tryCatchFinish);
+        }
+
+        if (statement.finallyClause != null) {
+            javaWriter.label(finallyStart);
+            final int local = javaWriter.local(Object.class);
+            javaWriter.storeObject(local);
+            statement.finallyClause.accept(this);
+            javaWriter.loadObject(local);
+            javaWriter.aThrow();
+            javaWriter.tryCatch(tryCatchStart, tryFinish, finallyStart, null);
+        }
+        javaWriter.label(tryCatchFinish);
+
         return null;
     }
 
     @Override
     public Void visitVar(VarStatement statement) {
-        Type type = Type.getType(statement.type.accept(JavaTypeClassVisitor.INSTANCE));
+        Type type = statement.type.accept(JavaTypeVisitor.INSTANCE);
         int local = javaWriter.local(type);
         if (statement.initializer != null) {
             statement.initializer.accept(expressionVisitor);
             javaWriter.store(type, local);
         }
-        statement.setTag(JavaLocalVariableInfo.class, new JavaLocalVariableInfo(type, local));
+        final Label variableStart = new Label();
+        javaWriter.label(variableStart);
+        final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, local, variableStart, statement.name);
+        statement.setTag(JavaLocalVariableInfo.class, info);
+        javaWriter.addVariableInfo(info);
         return null;
     }
 

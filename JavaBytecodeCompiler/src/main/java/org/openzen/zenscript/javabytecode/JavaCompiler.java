@@ -14,6 +14,8 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinTypeMembers.*;
+
+import org.openzen.zenscript.javabytecode.compiler.classes_structs.JavaDefinitionVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.shared.SourceFile;
@@ -149,6 +151,8 @@ public class JavaCompiler {
 	
 	public void addDefinition(HighLevelDefinition definition) {
 		// convert definition into java class
+		target.register(definition.name, definition.accept(new JavaDefinitionVisitor()));
+
 	}
 	
 	public void addScriptBlock(ScriptBlock script) {
@@ -170,6 +174,7 @@ public class JavaCompiler {
 		for (Statement statement : script.statements) {
 			statement.accept(statementVisitor);
 		}
+		target.register("Scripts", scriptsClassWriter.toByteArray());
 		statementVisitor.end();
 	}
 	

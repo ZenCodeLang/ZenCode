@@ -31,4 +31,8 @@ public class TagDictionary {
     public <T> T get(Class<T> cls) {
         return (T) tags.get(cls);
     }
+
+    public boolean hasTag(Class<?> cls) {
+        return tags.containsKey(cls);
+    }
 }

@@ -2,7 +2,6 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
-import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;

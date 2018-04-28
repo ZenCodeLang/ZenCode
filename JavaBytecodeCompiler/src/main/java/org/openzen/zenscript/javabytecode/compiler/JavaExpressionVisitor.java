@@ -1,11 +1,12 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import com.sun.javafx.image.IntPixelGetter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.implementations.IntRange;
 import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
 import org.openzen.zenscript.javabytecode.JavaFieldInfo;
@@ -83,6 +84,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitCapturedParameter(CapturedParameterExpression expression) {
+
         return null;
     }
 
@@ -216,26 +218,31 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetField(GetFieldExpression expression) {
-        if (!checkAndGetFieldInfo(expression.field))
+        javaWriter.loadObject(0);
+        if (!checkAndGetFieldInfo(expression.field, false))
             throw new IllegalStateException("Missing field info on a field member!");
         return null;
     }
 
     @Override
     public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
+        javaWriter.load(Type.getType(expression.parameter.type.accept(JavaTypeClassVisitor.INSTANCE)), expression.parameter.index + 1);
         return null;
     }
 
     @Override
     public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
+        final Label label = new Label();
         final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
+        tag.end = label;
         javaWriter.load(tag.type, tag.local);
+        javaWriter.label(label);
         return null;
     }
 
     @Override
     public Void visitGetStaticField(GetStaticFieldExpression expression) {
-        if (!checkAndGetFieldInfo(expression.field))
+        if (!checkAndGetFieldInfo(expression.field, true))
             throw new IllegalStateException("Missing field info on a field member!");
         return null;
     }
@@ -260,8 +267,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
     @Override
-    public Void visitMakeConst(MakeConstExpression expression)
-    {
+    public Void visitMakeConst(MakeConstExpression expression) {
 
         return null;
     }
@@ -283,7 +289,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitNew(NewExpression expression) {
-        String type = Type.getDescriptor(expression.type.accept(JavaTypeClassVisitor.INSTANCE));
+        final String type;
+        if(expression.type instanceof DefinitionTypeID)
+            type = ((DefinitionTypeID) expression.type).definition.name;
+        else
+            type = Type.getDescriptor(expression.type.accept(JavaTypeClassVisitor.INSTANCE));
+
         javaWriter.newObject(type);
         javaWriter.dup();
         StringBuilder signatureBuilder = new StringBuilder("(");
@@ -317,7 +328,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitRange(RangeExpression expression) {
-        if(expression.from.type.accept(JavaTypeClassVisitor.INSTANCE) != int.class)
+        if (expression.from.type.accept(JavaTypeClassVisitor.INSTANCE) != int.class)
             throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Only integer ranges supported");
         javaWriter.newObject(IntRange.class);
         javaWriter.dup();
@@ -331,10 +342,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitSetField(SetFieldExpression expression) {
+        javaWriter.loadObject(0);
         if (expression.field.isFinal)
             throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
         expression.value.accept(this);
-        if (!checkAndPutFieldInfo(expression.field))
+        if (!checkAndPutFieldInfo(expression.field, false))
             throw new IllegalStateException("Missing field info on a field member!");
         return null;
     }
@@ -349,7 +361,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         if (expression.variable.isFinal)
             throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final variable!");
         expression.value.accept(this);
+        Label label = new Label();
+        javaWriter.label(label);
         final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
+        tag.end = label;
 
         javaWriter.store(tag.type, tag.local);
 
@@ -361,7 +376,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         if (expression.field.isFinal)
             throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
         expression.value.accept(this);
-        if (!checkAndPutFieldInfo(expression.field))
+        if (!checkAndPutFieldInfo(expression.field, true))
             throw new IllegalStateException("Missing field info on a field member!");
         return null;
     }
@@ -426,13 +441,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
 
-    //TODO: Should isStatic go to the fieldInfo or stay here?
     //Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
-    private boolean checkAndPutFieldInfo(DefinitionMember field) {
+    private boolean checkAndPutFieldInfo(DefinitionMember field, boolean isStatic) {
         JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
         if (fieldInfo == null)
             return false;
-        if (field.isStatic()) {
+        //TODO Remove isStatic
+        if (field.isStatic() || isStatic) {
             getJavaWriter().putStaticField(fieldInfo.javaClass.internalClassName, fieldInfo.name, fieldInfo.signature);
         } else {
             getJavaWriter().putField(fieldInfo.javaClass.internalClassName, fieldInfo.name, fieldInfo.signature);
@@ -440,11 +455,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         return true;
     }
 
-    private boolean checkAndGetFieldInfo(DefinitionMember field) {
+    private boolean checkAndGetFieldInfo(DefinitionMember field, boolean isStatic) {
         JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
         if (fieldInfo == null)
             return false;
-        if (field.isStatic()) {
+        //TODO Remove isStatic
+        if (field.isStatic() || isStatic) {
             getJavaWriter().getStaticField(fieldInfo.javaClass.internalClassName, fieldInfo.name, fieldInfo.signature);
         } else {
             getJavaWriter().getField(fieldInfo.javaClass.internalClassName, fieldInfo.name, fieldInfo.signature);

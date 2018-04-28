@@ -52,9 +52,9 @@ if (true) {
     } while true;
 }
 
-var test = ["1", "2", "3"];
+var testArray = ["1", "2", "3"];
 
-for item in test {
+for item in testArray {
 	println("test");
 	println(item);
 }
@@ -75,10 +75,20 @@ for i, item in [1, 5, 7] {
 	println(item + i);
 }
 
-for i in 10 .. 20 {
-	println(i);
+for myI in 10 .. 20 {
+	println(myI);
 }
 
 var lateInit as string;
 lateInit = "initialized later";
 println(lateInit);
+
+
+
+
+
+/*
+catch e as string {
+	println("noLuv");
+}
+*/

@@ -19,4 +19,8 @@ public abstract class Taggable {
 	public final <T> T getTag(Class<T> cls) {
 		return tags.get(cls);
 	}
+
+	public final boolean hasTag(Class<?> cls) {
+		return tags.hasTag(cls);
+	}
 }

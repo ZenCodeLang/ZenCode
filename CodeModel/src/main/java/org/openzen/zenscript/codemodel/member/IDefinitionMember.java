@@ -31,4 +31,6 @@ public interface IDefinitionMember {
 	public <T> T getTag(Class<T> tag);
 	
 	public <T> void setTag(Class<T> tag, T value);
+
+	boolean hasTag(Class<?> tag);
 }
