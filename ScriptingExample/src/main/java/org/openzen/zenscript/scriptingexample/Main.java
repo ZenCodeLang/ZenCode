@@ -34,15 +34,16 @@ public class Main {
 		ZSPackage pkg = new ZSPackage("");
 		ParsedFile[] parsedFiles = parse(pkg, inputFiles);
 		
-		GlobalRegistry registry = new GlobalRegistry();
+		ZSPackage global = new ZSPackage("");
+		GlobalRegistry registry = new GlobalRegistry(global);
 		SemanticModule module = compileSyntaxToSemantic(parsedFiles, registry);
 		
-		FormattingSettings settings = new FormattingSettings.Builder().build();
+		/*FormattingSettings settings = new FormattingSettings.Builder().build();
 		for (ScriptBlock block : module.scripts) {
 			FileFormatter formatter = new FileFormatter(settings);
 			System.out.println("== " + block.getTag(SourceFile.class).filename + " ==");
 			System.out.println(formatter.format(pkg, block, Collections.emptyList()));
-		}
+		}*/
 		
 		JavaModule javaModule = compileSemanticToJava(module);
 		javaModule.execute();

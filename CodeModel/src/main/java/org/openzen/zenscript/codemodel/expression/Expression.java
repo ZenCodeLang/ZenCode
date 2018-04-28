@@ -51,7 +51,7 @@ public abstract class Expression implements IPartialExpression {
 	}
 	
 	public Expression castImplicit(CodePosition position, TypeScope scope, ITypeID asType) {
-		return scope.getTypeMembers(type).castImplicit(position, this, asType);
+		return scope.getTypeMembers(type).castImplicit(position, this, asType, true);
 	}
 	
 	@Override

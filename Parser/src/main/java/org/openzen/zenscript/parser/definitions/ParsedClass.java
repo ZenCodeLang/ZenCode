@@ -52,7 +52,7 @@ public class ParsedClass extends BaseParsedDefinition {
 		this.genericParameters = genericParameters;
 		this.superclass = superclass;
 		
-		compiled = new ClassDefinition(pkg, name, modifiers, outerDefinition);
+		compiled = new ClassDefinition(position, pkg, name, modifiers, outerDefinition);
 		for (ParsedGenericParameter parameter : genericParameters)
 			compiled.addGenericParameter(parameter.compiled);
 	}

@@ -30,6 +30,8 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitCapturedThis(CapturedThisExpression expression);
 	
+	public T visitCast(CastExpression expression);
+	
 	public T visitCheckNull(CheckNullExpression expression);
 	
 	public T visitCoalesce(CoalesceExpression expression);

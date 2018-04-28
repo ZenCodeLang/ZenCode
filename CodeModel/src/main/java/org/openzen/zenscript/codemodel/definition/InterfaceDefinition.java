@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
@@ -17,8 +18,8 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class InterfaceDefinition extends HighLevelDefinition {
 	private final List<ITypeID> baseInterfaces = new ArrayList<>();
 	
-	public InterfaceDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(pkg, name, modifiers, outerDefinition);
+	public InterfaceDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(position, pkg, name, modifiers, outerDefinition);
 	}
 	
 	public void addBaseInterface(ITypeID baseInterface) {

@@ -64,10 +64,10 @@ public enum OperatorPriority {
 	}
 	
 	public static boolean shouldWrapLeft(OperatorPriority inner, OperatorPriority outer) {
-		return inner == outer || inner.priority > outer.priority;
+		return inner == outer || inner.priority <= outer.priority;
 	}
 	
 	public static boolean shouldWrapRight(OperatorPriority inner, OperatorPriority outer) {
-		return (inner == outer && inner.isCommutative) || (inner.priority > outer.priority);
+		return (inner == outer && inner.isCommutative) || (inner.priority <= outer.priority);
 	}
 }

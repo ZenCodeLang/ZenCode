@@ -16,7 +16,6 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallTranslator;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
@@ -144,7 +143,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 			FunctionHeader addHeader = new FunctionHeader(VOID, new FunctionParameter(baseType, "value"));
 			members.addMethod(new MethodMember(CodePosition.BUILTIN, 0, "add", addHeader), TypeMemberPriority.SPECIFIED);
 
-			members.addField(new FieldMember(CodePosition.BUILTIN, 0, "length", INT, false), TypeMemberPriority.SPECIFIED);
+			members.addField(new FieldMember(CodePosition.BUILTIN, Modifiers.MODIFIER_FINAL, "length", INT), TypeMemberPriority.SPECIFIED);
 		}
 
 		members.addGetter(new GetterMember(CodePosition.BUILTIN, 0, "empty", BOOL), TypeMemberPriority.SPECIFIED);
@@ -172,7 +171,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		
 		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.CONTAINS, new FunctionHeader(BOOL, new FunctionParameter(keyType, "key"))), TypeMemberPriority.SPECIFIED);
 
-		members.addField(new FieldMember(BUILTIN, 0, "length", INT, true), TypeMemberPriority.SPECIFIED);
+		members.addField(new FieldMember(BUILTIN, Modifiers.MODIFIER_FINAL, "length", INT), TypeMemberPriority.SPECIFIED);
 		members.addGetter(new GetterMember(BUILTIN, 0, "empty", BOOL), TypeMemberPriority.SPECIFIED);
 		members.addGetter(new GetterMember(BUILTIN, 0, "keys", cache.getRegistry().getArray(keyType, 1)), TypeMemberPriority.SPECIFIED);
 		return null;
@@ -252,8 +251,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		ITypeID fromType = range.from;
 		ITypeID toType = range.to;
 
-		members.addField(new FieldMember(BUILTIN, 0, "from", fromType, true), TypeMemberPriority.SPECIFIED);
-		members.addField(new FieldMember(BUILTIN, 0, "to", toType, true), TypeMemberPriority.SPECIFIED);
+		members.addField(new FieldMember(BUILTIN, Modifiers.MODIFIER_FINAL, "from", fromType), TypeMemberPriority.SPECIFIED);
+		members.addField(new FieldMember(BUILTIN, Modifiers.MODIFIER_FINAL, "to", toType), TypeMemberPriority.SPECIFIED);
 		members.addIterator(new RangeIterator(range), TypeMemberPriority.SPECIFIED);
 		return null;
 	}
@@ -478,6 +477,6 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private static CallTranslator castedTargetCall(FunctionalMember member, CasterMember caster) {
-		return call -> member.call(call.position, caster.call(call.position, call.target, CallArguments.EMPTY), call.arguments);
+		return call -> member.call(call.position, caster.cast(call.position, call.target, true), call.arguments);
 	}
 }

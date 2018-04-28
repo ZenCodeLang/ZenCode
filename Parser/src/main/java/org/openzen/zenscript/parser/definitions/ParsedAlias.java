@@ -43,7 +43,7 @@ public class ParsedAlias extends ParsedDefinition {
 		this.parameters = parameters;
 		this.type = type;
 		
-		compiled = new AliasDefinition(pkg, name, modifiers, outerDefinition);
+		compiled = new AliasDefinition(position, pkg, name, modifiers, outerDefinition);
 	}
 	
 	@Override

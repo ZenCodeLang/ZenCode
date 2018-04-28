@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.Taggable;
 
 /**
@@ -20,6 +21,7 @@ import org.openzen.zenscript.shared.Taggable;
  * @author Hoofdgebruiker
  */
 public abstract class HighLevelDefinition extends Taggable {
+	public final CodePosition position;
 	public final ZSPackage pkg;
 	public final String name;
 	public final int modifiers;
@@ -29,7 +31,8 @@ public abstract class HighLevelDefinition extends Taggable {
 	public HighLevelDefinition outerDefinition;
 	public ITypeID superType;
 	
-	public HighLevelDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+	public HighLevelDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		this.position = position;
 		this.pkg = pkg;
 		this.name = name;
 		this.modifiers = modifiers;

@@ -7,18 +7,19 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ClassDefinition extends HighLevelDefinition {
-	public ClassDefinition(ZSPackage pkg, String name, int modifiers) {
-		this(pkg, name, modifiers, null);
+	public ClassDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers) {
+		this(position, pkg, name, modifiers, null);
 	}
 	
-	public ClassDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(pkg, name, modifiers, outerDefinition);
+	public ClassDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(position, pkg, name, modifiers, outerDefinition);
 	}
 	
 	public void setSuperclass(ITypeID superclass) {

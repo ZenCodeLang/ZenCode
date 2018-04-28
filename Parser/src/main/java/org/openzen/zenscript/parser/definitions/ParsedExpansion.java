@@ -45,7 +45,7 @@ public class ParsedExpansion extends BaseParsedDefinition {
 		this.parameters = parameters;
 		this.target = target;
 		
-		this.compiled = new ExpansionDefinition(pkg, modifiers, outerDefinition);
+		this.compiled = new ExpansionDefinition(position, pkg, modifiers, outerDefinition);
 		for (ParsedGenericParameter parameter : parameters)
 			compiled.addGenericParameter(parameter.compiled);
 	}

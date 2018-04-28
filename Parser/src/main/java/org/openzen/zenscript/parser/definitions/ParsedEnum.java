@@ -51,7 +51,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 		
 		this.enumValues = enumValues;
 		
-		compiled = new EnumDefinition(pkg, name, modifiers, outerDefinition);
+		compiled = new EnumDefinition(position, pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override

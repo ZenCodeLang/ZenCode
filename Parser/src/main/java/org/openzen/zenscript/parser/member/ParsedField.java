@@ -6,6 +6,7 @@
 package org.openzen.zenscript.parser.member;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.linker.BaseScope;
@@ -44,7 +45,7 @@ public class ParsedField extends ParsedDefinitionMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new FieldMember(position, modifiers, name, type.compile(scope), isFinal);
+		compiled = new FieldMember(position, modifiers | (isFinal ? Modifiers.MODIFIER_FINAL : 0), name, type.compile(scope));
 	}
 
 	@Override
