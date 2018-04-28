@@ -28,7 +28,7 @@ public class GetterMember extends FunctionalMember implements IGettableMember {
 	public String compiledName;
 	
 	public GetterMember(CodePosition position, int modifiers, String name, ITypeID type) {
-		super(position, modifiers, new FunctionHeader(type));
+		super(position, modifiers, name, new FunctionHeader(type));
 		
 		this.name = name;
 		this.type = type;

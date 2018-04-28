@@ -20,7 +20,7 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class CallerMember extends FunctionalMember {
 	public CallerMember(CodePosition position, int modifiers, FunctionHeader header) {
-		super(position, modifiers, header);
+		super(position, modifiers, "()", header);
 	}
 
 	@Override

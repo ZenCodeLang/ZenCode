@@ -15,6 +15,7 @@ import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenStream;
@@ -189,7 +190,7 @@ public abstract class ParsedDefinitionMember {
 			case K_ALIAS:
 			case K_STRUCT:
 			case K_ENUM:
-				return new ParsedInnerDefinition(ParsedDefinition.parse(start, modifiers, tokens, forDefinition));
+				return new ParsedInnerDefinition(ParsedDefinition.parse(forDefinition.pkg, start, modifiers, tokens, forDefinition));
 			case K_FOR: {
 				tokens.next();
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);

@@ -38,7 +38,6 @@ import org.openzen.zenscript.codemodel.member.builtin.ArrayIteratorValues;
 import org.openzen.zenscript.codemodel.member.builtin.ComparatorMember;
 import org.openzen.zenscript.codemodel.member.builtin.ConstantGetterMember;
 import org.openzen.zenscript.codemodel.member.builtin.RangeIterator;
-import org.openzen.zenscript.codemodel.member.builtin.SubstringMember;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -411,8 +410,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 		members.addGetter(new GetterMember(BUILTIN, 0, "length", INT), TypeMemberPriority.SPECIFIED);
 
-		FunctionHeader substringHeader = new FunctionHeader(STRING, new FunctionParameter(cache.getRegistry().getRange(INT, INT)));
-		members.addOperator(OperatorType.INDEXGET, new SubstringMember(substringHeader), TypeMemberPriority.SPECIFIED);
+		//FunctionHeader substringHeader = new FunctionHeader(STRING, new FunctionParameter(cache.getRegistry().getRange(INT, INT)));
+		//members.addOperator(OperatorType.INDEXGET, new SubstringMember(substringHeader), TypeMemberPriority.SPECIFIED);
 		
 		members.addConstructor(new ConstructorMember(BUILTIN, 0, new FunctionHeader(VOID, new FunctionParameter(cache.getRegistry().getArray(CHAR, 1), "characters"))), TypeMemberPriority.SPECIFIED);
 		

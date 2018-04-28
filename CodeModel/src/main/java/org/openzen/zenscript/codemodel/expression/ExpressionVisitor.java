@@ -62,7 +62,9 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitConstantUShort(ConstantUShortExpression expression);
 	
-	public T visitConstructorCall(ConstructorCallExpression expression);
+	public T visitConstructorThisCall(ConstructorThisCallExpression expression);
+	
+	public T visitConstructorSuperCall(ConstructorSuperCallExpression expression);
 	
 	public T visitEnumConstant(EnumConstantExpression expression);
 	
@@ -113,10 +115,6 @@ public interface ExpressionVisitor<T> {
 	public T visitStaticGetter(StaticGetterExpression expression);
 	
 	public T visitStaticSetter(StaticSetterExpression expression);
-	
-	public T visitStringConcat(StringConcatExpression expression);
-	
-	public T visitSubstring(SubstringExpression expression);
 	
 	public T visitThis(ThisExpression expression);
 	

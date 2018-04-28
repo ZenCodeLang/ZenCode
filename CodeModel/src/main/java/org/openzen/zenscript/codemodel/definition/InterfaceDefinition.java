@@ -17,8 +17,8 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class InterfaceDefinition extends HighLevelDefinition {
 	private final List<ITypeID> baseInterfaces = new ArrayList<>();
 	
-	public InterfaceDefinition(String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(name, modifiers, outerDefinition);
+	public InterfaceDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(pkg, name, modifiers, outerDefinition);
 	}
 	
 	public void addBaseInterface(ITypeID baseInterface) {

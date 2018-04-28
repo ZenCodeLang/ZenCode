@@ -3,6 +3,7 @@ package org.openzen.zenscript.scriptingexample;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,10 +14,13 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.formatter.FileFormatter;
+import org.openzen.zenscript.formatter.FormattingSettings;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
+import org.openzen.zenscript.shared.SourceFile;
 
 public class Main {
     /**
@@ -27,19 +31,27 @@ public class Main {
 		File inputDirectory = new File("scripts");
 		File[] inputFiles = Optional.ofNullable(inputDirectory.listFiles((dir, name) -> name.endsWith(".zs"))).orElseGet(() -> new File[0]);
 		
-		ParsedFile[] parsedFiles = parse(inputFiles);
+		ZSPackage pkg = new ZSPackage("");
+		ParsedFile[] parsedFiles = parse(pkg, inputFiles);
 		
 		GlobalRegistry registry = new GlobalRegistry();
 		SemanticModule module = compileSyntaxToSemantic(parsedFiles, registry);
+		
+		FormattingSettings settings = new FormattingSettings.Builder().build();
+		for (ScriptBlock block : module.scripts) {
+			FileFormatter formatter = new FileFormatter(settings);
+			System.out.println("== " + block.getTag(SourceFile.class).filename + " ==");
+			System.out.println(formatter.format(pkg, block, Collections.emptyList()));
+		}
 		
 		JavaModule javaModule = compileSemanticToJava(module);
 		javaModule.execute();
     }
 	
-	private static ParsedFile[] parse(File[] files) throws IOException {
+	private static ParsedFile[] parse(ZSPackage pkg, File[] files) throws IOException {
 		ParsedFile[] parsedFiles = new ParsedFile[files.length];
 		for (int i = 0; i < files.length; i++) {
-			parsedFiles[i] = ParsedFile.parse(files[i]);
+			parsedFiles[i] = ParsedFile.parse(pkg, files[i]);
 		}
 		return parsedFiles;
 	}
@@ -81,7 +93,7 @@ public class Main {
 	}
 	
 	private static JavaModule compileSemanticToJava(SemanticModule module) {
-		JavaCompiler compiler = new JavaCompiler(true);
+		JavaCompiler compiler = new JavaCompiler(false);
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			compiler.addDefinition(definition);
 		}

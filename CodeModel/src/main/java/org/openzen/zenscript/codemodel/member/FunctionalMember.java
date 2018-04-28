@@ -22,11 +22,13 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public abstract class FunctionalMember extends DefinitionMember implements ICallableMember {
 	public final FunctionHeader header;
+	public final String name;
 	public List<Statement> body;
 	
-	public FunctionalMember(CodePosition position, int modifiers, FunctionHeader header) {
+	public FunctionalMember(CodePosition position, int modifiers, String name, FunctionHeader header) {
 		super(position, modifiers);
 		
+		this.name = name;
 		this.header = header;
 	}
 	

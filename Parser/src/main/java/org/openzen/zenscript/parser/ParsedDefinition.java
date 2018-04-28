@@ -6,6 +6,7 @@
 package org.openzen.zenscript.parser;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import static org.openzen.zenscript.lexer.ZSTokenType.K_ALIAS;
@@ -29,21 +30,21 @@ import org.openzen.zenscript.parser.definitions.ParsedStruct;
  * @author Hoofdgebruiker
  */
 public abstract class ParsedDefinition {
-	public static ParsedDefinition parse(CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedDefinition parse(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
 		if (tokens.optional(K_CLASS) != null) {
-			return ParsedClass.parseClass(position, modifiers, tokens, outerDefinition);
+			return ParsedClass.parseClass(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_INTERFACE) != null) {
-			return ParsedInterface.parseInterface(position, modifiers, tokens, outerDefinition);
+			return ParsedInterface.parseInterface(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_ENUM) != null) {
-			return ParsedEnum.parseEnum(position, modifiers, tokens, outerDefinition);
+			return ParsedEnum.parseEnum(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_STRUCT) != null) {
-			return ParsedStruct.parse(position, modifiers, tokens, outerDefinition);
+			return ParsedStruct.parse(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_ALIAS) != null) {
-			return ParsedAlias.parseAlias(position, modifiers, tokens, outerDefinition);
+			return ParsedAlias.parseAlias(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_FUNCTION) != null) {
-			return ParsedFunction.parseFunction(position, modifiers, tokens, outerDefinition);
+			return ParsedFunction.parseFunction(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_EXPAND) != null) {
-			return ParsedExpansion.parseExpansion(position, modifiers, tokens, outerDefinition);
+			return ParsedExpansion.parseExpansion(pkg, position, modifiers, tokens, outerDefinition);
 		} else {
 			//tokens.required(EOF, "An import, class, interface, enum, struct, function or alias expected.");
 			return null;

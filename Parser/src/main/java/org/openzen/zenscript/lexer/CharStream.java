@@ -10,7 +10,7 @@ package org.openzen.zenscript.lexer;
  */
 public class CharStream
 {
-    private char[] data;
+    private final char[] data;
     private int index;
 
     /**

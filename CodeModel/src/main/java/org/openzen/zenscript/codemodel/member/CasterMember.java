@@ -26,7 +26,7 @@ public class CasterMember extends FunctionalMember implements ICasterMember {
 	public final ITypeID toType;
 	
 	public CasterMember(CodePosition position, int modifiers, ITypeID toType) {
-		super(position, modifiers, new FunctionHeader(toType));
+		super(position, modifiers, "as", new FunctionHeader(toType));
 		
 		this.toType = toType;
 	}

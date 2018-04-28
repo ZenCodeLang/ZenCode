@@ -36,4 +36,9 @@ public class ParameterSuperBound extends GenericParameterBound {
 	public GenericParameterBound withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
+
+	@Override
+	public <T> T accept(GenericParameterBoundVisitor<T> visitor) {
+		return visitor.visitSuper(this);
+	}
 }

@@ -25,6 +25,10 @@ public class CallExpression extends Expression {
 		this.member = member;
 		this.arguments = arguments;
 	}
+	
+	public Expression getFirstArgument() {
+		return arguments.arguments[0];
+	}
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {

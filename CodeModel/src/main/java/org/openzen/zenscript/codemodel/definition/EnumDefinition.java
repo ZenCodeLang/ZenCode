@@ -12,8 +12,8 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
  * @author Hoofdgebruiker
  */
 public class EnumDefinition extends HighLevelDefinition {
-	public EnumDefinition(String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(name, modifiers, outerDefinition);
+	public EnumDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override

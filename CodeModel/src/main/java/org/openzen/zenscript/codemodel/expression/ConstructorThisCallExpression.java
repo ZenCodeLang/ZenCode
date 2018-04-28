@@ -14,12 +14,12 @@ import org.openzen.zenscript.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public class ConstructorCallExpression extends Expression {
+public class ConstructorThisCallExpression extends Expression {
 	public final ITypeID objectType;
 	public final ConstructorMember constructor;
 	public final CallArguments arguments;
 	
-	public ConstructorCallExpression(CodePosition position, ITypeID type, ConstructorMember constructor, CallArguments arguments) {
+	public ConstructorThisCallExpression(CodePosition position, ITypeID type, ConstructorMember constructor, CallArguments arguments) {
 		super(position, BasicTypeID.VOID);
 		
 		this.objectType = type;
@@ -29,6 +29,6 @@ public class ConstructorCallExpression extends Expression {
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
-		return visitor.visitConstructorCall(this);
+		return visitor.visitConstructorThisCall(this);
 	}
 }

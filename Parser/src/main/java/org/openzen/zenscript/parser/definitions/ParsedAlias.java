@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -22,11 +23,11 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedAlias extends ParsedDefinition {
-	public static ParsedAlias parseAlias(CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedAlias parseAlias(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedGenericParameter> parameters = ParsedGenericParameter.parseAll(tokens);
 		IParsedType type = IParsedType.parse(tokens);
-		return new ParsedAlias(position, modifiers, name, parameters, type, outerDefinition);
+		return new ParsedAlias(pkg, position, modifiers, name, parameters, type, outerDefinition);
 	}
 	
 	private final String name;
@@ -35,14 +36,14 @@ public class ParsedAlias extends ParsedDefinition {
 	
 	private final AliasDefinition compiled;
 	
-	public ParsedAlias(CodePosition position, int modifiers, String name, List<ParsedGenericParameter> parameters, IParsedType type, HighLevelDefinition outerDefinition) {
+	public ParsedAlias(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedGenericParameter> parameters, IParsedType type, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
 		
 		this.name = name;
 		this.parameters = parameters;
 		this.type = type;
 		
-		compiled = new AliasDefinition(name, modifiers, outerDefinition);
+		compiled = new AliasDefinition(pkg, name, modifiers, outerDefinition);
 	}
 	
 	@Override

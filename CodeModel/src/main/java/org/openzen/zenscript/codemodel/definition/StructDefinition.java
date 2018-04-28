@@ -12,8 +12,8 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
  * @author Hoofdgebruiker
  */
 public class StructDefinition extends HighLevelDefinition {
-	public StructDefinition(String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(name, modifiers, outerDefinition);
+	public StructDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override

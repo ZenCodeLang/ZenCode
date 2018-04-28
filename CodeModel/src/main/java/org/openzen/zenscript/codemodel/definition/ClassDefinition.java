@@ -13,12 +13,12 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class ClassDefinition extends HighLevelDefinition {
-	public ClassDefinition(String name, int modifiers) {
-		this(name, modifiers, null);
+	public ClassDefinition(ZSPackage pkg, String name, int modifiers) {
+		this(pkg, name, modifiers, null);
 	}
 	
-	public ClassDefinition(String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(name, modifiers, outerDefinition);
+	public ClassDefinition(ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(pkg, name, modifiers, outerDefinition);
 	}
 	
 	public void setSuperclass(ITypeID superclass) {
