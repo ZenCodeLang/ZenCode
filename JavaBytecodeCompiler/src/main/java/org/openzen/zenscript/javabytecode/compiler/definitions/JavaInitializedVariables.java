@@ -1,4 +1,4 @@
-package org.openzen.zenscript.javabytecode.compiler.classes_structs;
+package org.openzen.zenscript.javabytecode.compiler.definitions;
 
 import org.openzen.zenscript.codemodel.member.FieldMember;
 

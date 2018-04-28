@@ -1,4 +1,4 @@
-package org.openzen.zenscript.javabytecode.compiler.classes_structs;
+package org.openzen.zenscript.javabytecode.compiler.definitions;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;

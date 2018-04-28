@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinTypeMembers.*;
 
-import org.openzen.zenscript.javabytecode.compiler.classes_structs.JavaDefinitionVisitor;
+import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.shared.SourceFile;
