@@ -30,10 +30,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
         //TODO calc signature
         String signature = null;
-        int modifier = member.modifiers;
-        if(member.isFinal)
-            modifier |= Modifiers.MODIFIER_FINAL;
-        writer.visitField(modifier, member.name, Type.getDescriptor(member.type.accept(JavaTypeClassVisitor.INSTANCE)), signature, null).visitEnd();
+        writer.visitField(member.modifiers, member.name, Type.getDescriptor(member.type.accept(JavaTypeClassVisitor.INSTANCE)), signature, null).visitEnd();
         return null;
     }
 
