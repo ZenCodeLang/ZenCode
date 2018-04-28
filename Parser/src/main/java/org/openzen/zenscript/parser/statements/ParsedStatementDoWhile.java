@@ -34,7 +34,7 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		Statement content = this.content.compile(scope);
+		//Statement content = this.content.compile(scope);
 		Expression condition = this.condition
 				.compile(new ExpressionScope(scope, BasicTypeID.HINT_BOOL))
 				.eval()

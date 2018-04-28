@@ -10,12 +10,13 @@ import java.util.stream.Collectors;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.shared.Taggable;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public abstract class Statement {
+public abstract class Statement extends Taggable {
 	public final CodePosition position;
 	
 	public Statement(CodePosition position) {

@@ -5,21 +5,30 @@
  */
 package org.openzen.zenscript.shared;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author Hoofdgebruiker
  */
+@SuppressWarnings("unchecked")
 public class TagDictionary {
-	private final Map<Class<?>, Object> tags = new HashMap<>();
-	
-	public <T> void put(Class<T> cls, T tag) {
-		tags.put(cls, tag);
-	}
-	
-	public <T> T get(Class<T> cls) {
-		return (T) tags.get(cls);
-	}
+    private Map<Class<?>, Object> tags = Collections.EMPTY_MAP;
+
+    public <T> void put(Class<T> cls, T tag) {
+        if (tags == Collections.EMPTY_MAP) {
+            tags = Collections.singletonMap(cls, tag);
+        } else if (tags.size() == 1) {
+            Map<Class<?>, Object> newTags = new HashMap<>(tags);
+            newTags.put(cls, tag);
+            this.tags = newTags;
+        } else {
+            tags.put(cls, tag);
+        }
+    }
+
+    public <T> T get(Class<T> cls) {
+        return (T) tags.get(cls);
+    }
 }
