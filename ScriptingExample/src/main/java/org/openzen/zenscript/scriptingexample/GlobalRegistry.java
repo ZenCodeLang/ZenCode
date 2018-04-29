@@ -64,10 +64,10 @@ public class GlobalRegistry {
 			// eg. package my.package with a class MyClass with a single native method test() returning a string
 			// the visitors can then during compilation check if a method is an instance of NativeMethodMember and treat it accordingly
 			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("package");
-			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, packageMyPackage, "MyClass", Modifiers.MODIFIER_PUBLIC, null);
+			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, packageMyPackage, "MyClass", Modifiers.PUBLIC, null);
 			JavaClassInfo myClassInfo = new JavaClassInfo("my/test/MyClass");
 			
-			MethodMember member = new MethodMember(CodePosition.NATIVE, Modifiers.MODIFIER_PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING));
+			MethodMember member = new MethodMember(CodePosition.NATIVE, Modifiers.PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING));
 			member.setTag(JavaMethodInfo.class, new JavaMethodInfo(myClassInfo, "test", "()Ljava/lang/String;"));
 			myClassDefinition.addMember(member);
 			
@@ -92,17 +92,17 @@ public class GlobalRegistry {
 		return globals;
 	}
 	
-	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, javaIo, "PrintStream", Modifiers.MODIFIER_EXPORT);
-	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, javaLang, "System", Modifiers.MODIFIER_EXPORT);
+	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, javaIo, "PrintStream", Modifiers.EXPORT);
+	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, javaLang, "System", Modifiers.EXPORT);
 	private final MethodMember PRINTSTREAM_PRINTLN = new MethodMember(
 			CodePosition.NATIVE,
-			Modifiers.MODIFIER_EXPORT,
+			Modifiers.EXPORT,
 			"println",
 			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(BasicTypeID.STRING)));
 	
 	private final FieldMember SYSTEM_OUT = new FieldMember(
 			CodePosition.NATIVE,
-			Modifiers.MODIFIER_EXPORT | Modifiers.MODIFIER_FINAL,
+			Modifiers.EXPORT | Modifiers.FINAL,
 			"out",
 			DefinitionTypeID.forType(SYSTEM));
 	
@@ -111,7 +111,7 @@ public class GlobalRegistry {
 			CodePosition.NATIVE,
 			globals,
 			"println",
-			Modifiers.MODIFIER_EXPORT,
+			Modifiers.EXPORT,
 			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(BasicTypeID.STRING)));
 	
 	private class PrintlnSymbol implements ISymbol {

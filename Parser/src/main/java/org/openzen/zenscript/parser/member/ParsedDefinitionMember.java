@@ -37,27 +37,27 @@ public abstract class ParsedDefinitionMember {
 		int modifiers = 0;
 		while (true) {
 			if (tokens.optional(ZSTokenType.K_EXPORT) != null) {
-				modifiers |= Modifiers.MODIFIER_EXPORT;
+				modifiers |= Modifiers.EXPORT;
 			} else if (tokens.optional(ZSTokenType.K_PUBLIC) != null) {
-				modifiers |= Modifiers.MODIFIER_PUBLIC;
+				modifiers |= Modifiers.PUBLIC;
 			} else if (tokens.optional(ZSTokenType.K_PRIVATE) != null) {
-				modifiers |= Modifiers.MODIFIER_PRIVATE;
+				modifiers |= Modifiers.PRIVATE;
 			} else if (tokens.optional(ZSTokenType.K_CONST) != null) {
 				if (tokens.optional(ZSTokenType.T_QUEST) != null) {
-					modifiers |= Modifiers.MODIFIER_CONST_OPTIONAL;
+					modifiers |= Modifiers.CONST_OPTIONAL;
 				} else {
-					modifiers |= Modifiers.MODIFIER_CONST;
+					modifiers |= Modifiers.CONST;
 				}
 			} else if (tokens.optional(ZSTokenType.K_ABSTRACT) != null) {
-				modifiers |= Modifiers.MODIFIER_ABSTRACT;
+				modifiers |= Modifiers.ABSTRACT;
 			} else if (tokens.optional(ZSTokenType.K_FINAL) != null) {
-				modifiers |= Modifiers.MODIFIER_FINAL;
+				modifiers |= Modifiers.FINAL;
 			} else if (tokens.optional(ZSTokenType.K_STATIC) != null) {
-				modifiers |= Modifiers.MODIFIER_STATIC;
+				modifiers |= Modifiers.STATIC;
 			} else if (tokens.optional(ZSTokenType.K_PROTECTED) != null) {
-				modifiers |= Modifiers.MODIFIER_PROTECTED;
+				modifiers |= Modifiers.PROTECTED;
 			} else if (tokens.optional(ZSTokenType.K_IMPLICIT) != null) {
-				modifiers |= Modifiers.MODIFIER_IMPLICIT;
+				modifiers |= Modifiers.IMPLICIT;
 			} else {
 				break;
 			}

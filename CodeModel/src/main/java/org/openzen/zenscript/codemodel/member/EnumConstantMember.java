@@ -27,7 +27,7 @@ public class EnumConstantMember extends DefinitionMember {
 	public NewExpression constructor;
 	
 	public EnumConstantMember(CodePosition position, String name, int value) {
-		super(position, Modifiers.MODIFIER_STATIC);
+		super(position, Modifiers.STATIC);
 		
 		this.name = name;
 		this.value = value;

@@ -136,8 +136,8 @@ public class BuiltinTypeMembers {
 	
 	public static final GetterMember FLOAT_BITS = new GetterMember(BUILTIN, 0, "bits", UINT);
 	public static final GetterMember DOUBLE_BITS = new GetterMember(BUILTIN, 0, "bits", ULONG);
-	public static final MethodMember FLOAT_FROMBITS = new MethodMember(BUILTIN, Modifiers.MODIFIER_STATIC, "fromBits", new FunctionHeader(FLOAT, new FunctionParameter(UINT)));
-	public static final MethodMember DOUBLE_FROMBITS = new MethodMember(BUILTIN, Modifiers.MODIFIER_STATIC, "fromBits", new FunctionHeader(DOUBLE, new FunctionParameter(ULONG)));
+	public static final MethodMember FLOAT_FROMBITS = new MethodMember(BUILTIN, Modifiers.STATIC, "fromBits", new FunctionHeader(FLOAT, new FunctionParameter(UINT)));
+	public static final MethodMember DOUBLE_FROMBITS = new MethodMember(BUILTIN, Modifiers.STATIC, "fromBits", new FunctionHeader(DOUBLE, new FunctionParameter(ULONG)));
 	
 	private static OperatorMember not(ITypeID result) {
 		return new OperatorMember(BUILTIN, 0, OperatorType.NOT, new FunctionHeader(result));
@@ -172,6 +172,6 @@ public class BuiltinTypeMembers {
 	}
 	
 	private static CasterMember castImplicit(ITypeID result) {
-		return new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, result);
+		return new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, result);
 	}
 }

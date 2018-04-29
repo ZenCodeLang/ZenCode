@@ -65,7 +65,7 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 	
 	public boolean isStatic() {
-		return (modifiers & Modifiers.MODIFIER_STATIC) > 0;
+		return (modifiers & Modifiers.STATIC) > 0;
 	}
 	
 	public abstract <T> T accept(DefinitionVisitor<T> visitor);

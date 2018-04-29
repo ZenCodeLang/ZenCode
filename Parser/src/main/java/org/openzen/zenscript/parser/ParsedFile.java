@@ -64,19 +64,19 @@ public class ParsedFile {
 			int modifiers = 0;
 			while (true) {
 				if (tokens.optional(K_PUBLIC) != null) {
-					modifiers |= Modifiers.MODIFIER_PUBLIC;
+					modifiers |= Modifiers.PUBLIC;
 				} else if (tokens.optional(K_PRIVATE) != null) {
-					modifiers |= Modifiers.MODIFIER_PRIVATE;
+					modifiers |= Modifiers.PRIVATE;
 				} else if (tokens.optional(K_EXPORT) != null) {
-					modifiers |= Modifiers.MODIFIER_EXPORT;
+					modifiers |= Modifiers.EXPORT;
 				} else if (tokens.optional(K_ABSTRACT) != null) {
-					modifiers |= Modifiers.MODIFIER_ABSTRACT;
+					modifiers |= Modifiers.ABSTRACT;
 				} else if (tokens.optional(K_FINAL) != null) {
-					modifiers |= Modifiers.MODIFIER_FINAL;
+					modifiers |= Modifiers.FINAL;
 				} else if (tokens.optional(K_PROTECTED) != null) {
-					modifiers |= Modifiers.MODIFIER_PROTECTED;
+					modifiers |= Modifiers.PROTECTED;
 				} else if (tokens.optional(K_IMPLICIT) != null) {
-					modifiers |= Modifiers.MODIFIER_IMPLICIT;
+					modifiers |= Modifiers.IMPLICIT;
 				} else {
 					break;
 				}

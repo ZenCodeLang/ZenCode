@@ -69,8 +69,6 @@ public class JavaCompiler {
 		implement(ULONG_ADD_ULONG, JavaWriter::lAdd);
 		implement(FLOAT_ADD_FLOAT, JavaWriter::fAdd);
 		implement(DOUBLE_ADD_DOUBLE, JavaWriter::dAdd);
-		// TODO: STRING_ADD_STRING
-
 		implement(STRING_ADD_STRING, JavaWriter::stringAdd);
 		
 		implement(BYTE_SUB_BYTE, JavaWriter::iSub);

@@ -45,7 +45,7 @@ public class ParsedField extends ParsedDefinitionMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new FieldMember(position, modifiers | (isFinal ? Modifiers.MODIFIER_FINAL : 0), name, type.compile(scope));
+		compiled = new FieldMember(position, modifiers | (isFinal ? Modifiers.FINAL : 0), name, type.compile(scope));
 	}
 
 	@Override

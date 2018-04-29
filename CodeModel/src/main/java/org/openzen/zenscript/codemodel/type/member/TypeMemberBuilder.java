@@ -143,7 +143,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 			FunctionHeader addHeader = new FunctionHeader(VOID, new FunctionParameter(baseType, "value"));
 			members.addMethod(new MethodMember(CodePosition.BUILTIN, 0, "add", addHeader), TypeMemberPriority.SPECIFIED);
 
-			members.addField(new FieldMember(CodePosition.BUILTIN, Modifiers.MODIFIER_FINAL, "length", INT), TypeMemberPriority.SPECIFIED);
+			members.addField(new FieldMember(CodePosition.BUILTIN, Modifiers.FINAL, "length", INT), TypeMemberPriority.SPECIFIED);
 		}
 
 		members.addGetter(new GetterMember(CodePosition.BUILTIN, 0, "empty", BOOL), TypeMemberPriority.SPECIFIED);
@@ -171,7 +171,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		
 		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.CONTAINS, new FunctionHeader(BOOL, new FunctionParameter(keyType, "key"))), TypeMemberPriority.SPECIFIED);
 
-		members.addField(new FieldMember(BUILTIN, Modifiers.MODIFIER_FINAL, "length", INT), TypeMemberPriority.SPECIFIED);
+		members.addField(new FieldMember(BUILTIN, Modifiers.FINAL, "length", INT), TypeMemberPriority.SPECIFIED);
 		members.addGetter(new GetterMember(BUILTIN, 0, "empty", BOOL), TypeMemberPriority.SPECIFIED);
 		members.addGetter(new GetterMember(BUILTIN, 0, "keys", cache.getRegistry().getArray(keyType, 1)), TypeMemberPriority.SPECIFIED);
 		return null;
@@ -211,10 +211,10 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		if (constructors.getMethodMembers().isEmpty()) {
 			if (definition instanceof ClassDefinition) {
 				// add default constructor
-				constructors.addMethod(new ConstructorMember(BUILTIN, Modifiers.MODIFIER_PUBLIC, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
+				constructors.addMethod(new ConstructorMember(BUILTIN, Modifiers.PUBLIC, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
 			} else if (definition instanceof StructDefinition) {
 				// add default struct constructors
-				constructors.addMethod(new ConstructorMember(BUILTIN, Modifiers.MODIFIER_PUBLIC, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
+				constructors.addMethod(new ConstructorMember(BUILTIN, Modifiers.PUBLIC, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
 				
 				List<FieldMember> fields = ((StructDefinition)definition).getFields();
 				if (!fields.isEmpty()) {
@@ -227,7 +227,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				}
 			} else if (definition instanceof EnumDefinition) {
 				// add default constructor
-				constructors.addMethod(new ConstructorMember(BUILTIN, Modifiers.MODIFIER_PRIVATE, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
+				constructors.addMethod(new ConstructorMember(BUILTIN, Modifiers.PRIVATE, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
 			}
 		}
 		
@@ -254,8 +254,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		ITypeID fromType = range.from;
 		ITypeID toType = range.to;
 
-		members.addField(new FieldMember(BUILTIN, Modifiers.MODIFIER_FINAL, "from", fromType), TypeMemberPriority.SPECIFIED);
-		members.addField(new FieldMember(BUILTIN, Modifiers.MODIFIER_FINAL, "to", toType), TypeMemberPriority.SPECIFIED);
+		members.addField(new FieldMember(BUILTIN, Modifiers.FINAL, "from", fromType), TypeMemberPriority.SPECIFIED);
+		members.addField(new FieldMember(BUILTIN, Modifiers.FINAL, "to", toType), TypeMemberPriority.SPECIFIED);
 		members.addIterator(new RangeIterator(range), TypeMemberPriority.SPECIFIED);
 		return null;
 	}
@@ -395,15 +395,15 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		
 		members.addCaster(new CasterMember(CodePosition.BUILTIN, 0, BasicTypeID.BYTE), TypeMemberPriority.SPECIFIED);
 		members.addCaster(new CasterMember(CodePosition.BUILTIN, 0, BasicTypeID.SBYTE), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.SHORT), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.USHORT), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.INT), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.UINT), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.LONG), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.ULONG), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.FLOAT), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.DOUBLE), TypeMemberPriority.SPECIFIED);
-		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.MODIFIER_IMPLICIT, BasicTypeID.STRING), TypeMemberPriority.SPECIFIED);
+		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, BasicTypeID.SHORT), TypeMemberPriority.SPECIFIED);
+		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, BasicTypeID.USHORT), TypeMemberPriority.SPECIFIED);
+		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, BasicTypeID.INT), TypeMemberPriority.SPECIFIED);
+		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, BasicTypeID.UINT), TypeMemberPriority.SPECIFIED);
+		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, BasicTypeID.LONG), TypeMemberPriority.SPECIFIED);
+		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, BasicTypeID.ULONG), TypeMemberPriority.SPECIFIED);
+		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, BasicTypeID.FLOAT), TypeMemberPriority.SPECIFIED);
+		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, BasicTypeID.DOUBLE), TypeMemberPriority.SPECIFIED);
+		members.addCaster(new CasterMember(CodePosition.BUILTIN, Modifiers.IMPLICIT, BasicTypeID.STRING), TypeMemberPriority.SPECIFIED);
 	}
 
 	private void visitString() {
