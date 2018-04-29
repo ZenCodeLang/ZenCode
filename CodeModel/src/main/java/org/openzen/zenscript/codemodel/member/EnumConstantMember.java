@@ -7,6 +7,8 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.expression.CallExpression;
+import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -20,11 +22,15 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class EnumConstantMember extends DefinitionMember {
 	public final String name;
+	public final int value;
 	
-	public EnumConstantMember(CodePosition position, String name) {
+	public NewExpression constructor;
+	
+	public EnumConstantMember(CodePosition position, String name, int value) {
 		super(position, Modifiers.MODIFIER_STATIC);
 		
 		this.name = name;
+		this.value = value;
 	}
 
 	@Override

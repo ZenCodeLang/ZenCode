@@ -1,6 +1,5 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import com.sun.istack.internal.Nullable;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
@@ -1114,7 +1113,7 @@ public class JavaWriter {
             visitor.visitLocalVariable(name, type.getDescriptor(), null, start, end, local);
     }
 
-    public void nameParameter(int modifier, @Nullable String name) {
+    public void nameParameter(int modifier, String name) {
         if (nameVariables)
             visitor.visitParameter(name, modifier);
     }

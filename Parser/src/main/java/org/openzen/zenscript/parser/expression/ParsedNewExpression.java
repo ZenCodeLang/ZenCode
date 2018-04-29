@@ -47,7 +47,7 @@ public class ParsedNewExpression extends ParsedExpression{
 		return true;
 	}
 	
-	public static Expression compile(CodePosition position, ITypeID type, ParsedCallArguments arguments, ExpressionScope scope) {
+	public static NewExpression compile(CodePosition position, ITypeID type, ParsedCallArguments arguments, ExpressionScope scope) {
 		DefinitionMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 		List<ITypeID>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.arguments.size());
 		CallArguments compiledArguments = arguments.compileCall(position, scope, constructors);

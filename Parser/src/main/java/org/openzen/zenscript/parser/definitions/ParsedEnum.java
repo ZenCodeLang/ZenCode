@@ -10,8 +10,12 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
+import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.linker.ExpressionScope;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -26,7 +30,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 		
 		List<ParsedEnumConstant> enumValues = new ArrayList<>();
 		while (!tokens.isNext(ZSTokenType.T_ACLOSE) && !tokens.isNext(ZSTokenType.T_SEMICOLON)) {
-			enumValues.add(ParsedEnumConstant.parse(tokens));
+			enumValues.add(ParsedEnumConstant.parse(tokens, enumValues.size()));
 			if (tokens.optional(ZSTokenType.T_COMMA) == null)
 				break;
 		}
@@ -57,5 +61,25 @@ public class ParsedEnum extends BaseParsedDefinition {
 	@Override
 	public HighLevelDefinition getCompiled() {
 		return compiled;
+	}
+	
+	@Override
+	public void compileMembers(BaseScope scope) {
+		super.compileMembers(scope);
+		
+		for (ParsedEnumConstant constant : enumValues) {
+			compiled.addMember(constant.getCompiled());
+		}
+	}
+
+	@Override
+	public void compileCode(BaseScope scope) {
+		super.compileCode(scope);
+		
+		DefinitionTypeID type = new DefinitionTypeID(compiled, new ITypeID[0]);
+		ExpressionScope evalScope = new ExpressionScope(scope);
+		for (ParsedEnumConstant constant : enumValues) {
+			constant.compileCode(type, evalScope);
+		}
 	}
 }

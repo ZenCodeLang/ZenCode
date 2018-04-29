@@ -211,10 +211,10 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		if (constructors.getMethodMembers().isEmpty()) {
 			if (definition instanceof ClassDefinition) {
 				// add default constructor
-				constructors.addMethod(new ConstructorMember(BUILTIN, 0, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
+				constructors.addMethod(new ConstructorMember(BUILTIN, Modifiers.MODIFIER_PUBLIC, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
 			} else if (definition instanceof StructDefinition) {
 				// add default struct constructors
-				constructors.addMethod(new ConstructorMember(BUILTIN, 0, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
+				constructors.addMethod(new ConstructorMember(BUILTIN, Modifiers.MODIFIER_PUBLIC, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
 				
 				List<FieldMember> fields = ((StructDefinition)definition).getFields();
 				if (!fields.isEmpty()) {
@@ -225,6 +225,9 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 					}
 					constructors.addMethod(new ConstructorMember(BUILTIN, 0, new FunctionHeader(VOID, parameters)), TypeMemberPriority.SPECIFIED);
 				}
+			} else if (definition instanceof EnumDefinition) {
+				// add default constructor
+				constructors.addMethod(new ConstructorMember(BUILTIN, Modifiers.MODIFIER_PRIVATE, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
 			}
 		}
 		
