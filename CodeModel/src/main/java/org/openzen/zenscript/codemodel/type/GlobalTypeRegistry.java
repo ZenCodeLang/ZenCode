@@ -125,7 +125,7 @@ public class GlobalTypeRegistry {
 		}
 	}
 	
-	private OptionalTypeID getOptional(ITypeID original) {
+	public OptionalTypeID getOptional(ITypeID original) {
 		if (optionalTypes.containsKey(original)) {
 			return optionalTypes.get(original);
 		} else {
