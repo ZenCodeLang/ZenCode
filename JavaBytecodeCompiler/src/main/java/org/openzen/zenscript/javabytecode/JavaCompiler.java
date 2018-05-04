@@ -160,6 +160,7 @@ public class JavaCompiler {
 			methodName = "generatedBlock" + (generatedScriptBlockCounter++);
 		} else {
 			// TODO: remove special characters
+			System.out.println("Writing script: " + sourceFile.filename);
 			methodName = sourceFile.filename.substring(0, sourceFile.filename.lastIndexOf('.')).replace("/", "_");
 		}
 
