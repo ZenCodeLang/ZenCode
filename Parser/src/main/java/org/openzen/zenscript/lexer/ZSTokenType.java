@@ -90,6 +90,7 @@ public enum ZSTokenType implements TokenType {
 	K_STATIC,
 	K_PROTECTED,
 	K_IMPLICIT,
+	K_VIRTUAL,
 	
 	K_VAL,
 	K_VAR,

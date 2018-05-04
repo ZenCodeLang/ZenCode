@@ -62,24 +62,36 @@ public class ParsedFile {
 		while (true) {
 			CodePosition position = tokens.peek().position;
 			int modifiers = 0;
-			while (true) {
-				if (tokens.optional(K_PUBLIC) != null) {
-					modifiers |= Modifiers.PUBLIC;
-				} else if (tokens.optional(K_PRIVATE) != null) {
-					modifiers |= Modifiers.PRIVATE;
-				} else if (tokens.optional(K_EXPORT) != null) {
-					modifiers |= Modifiers.EXPORT;
-				} else if (tokens.optional(K_ABSTRACT) != null) {
-					modifiers |= Modifiers.ABSTRACT;
-				} else if (tokens.optional(K_FINAL) != null) {
-					modifiers |= Modifiers.FINAL;
-				} else if (tokens.optional(K_PROTECTED) != null) {
-					modifiers |= Modifiers.PROTECTED;
-				} else if (tokens.optional(K_IMPLICIT) != null) {
-					modifiers |= Modifiers.IMPLICIT;
-				} else {
-					break;
+			outer: while (true) {
+				switch (tokens.peek().type) {
+					case K_PUBLIC:
+						modifiers |= Modifiers.PUBLIC;
+						break;
+					case K_PRIVATE:
+						modifiers |= Modifiers.PRIVATE;
+						break;
+					case K_EXPORT:
+						modifiers |= Modifiers.EXPORT;
+						break;
+					case K_ABSTRACT:
+						modifiers |= Modifiers.ABSTRACT;
+						break;
+					case K_FINAL:
+						modifiers |= Modifiers.FINAL;
+						break;
+					case K_PROTECTED:
+						modifiers |= Modifiers.PROTECTED;
+						break;
+					case K_IMPLICIT:
+						modifiers |= Modifiers.IMPLICIT;
+						break;
+					case K_VIRTUAL:
+						modifiers |= Modifiers.VIRTUAL;
+						break;
+					default:
+						break outer;
 				}
+				tokens.next();
 			}
 
 			if (tokens.optional(K_IMPORT) != null) {

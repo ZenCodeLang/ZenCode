@@ -22,6 +22,7 @@ public class Modifiers {
 	public static final int STATIC = 128;
 	public static final int PROTECTED = 256;
 	public static final int IMPLICIT = 512;
+	public static final int VIRTUAL = 1024;
 	
 	public static boolean isAbstract(int modifiers) {
 		return (modifiers & ABSTRACT) > 0;
@@ -41,5 +42,9 @@ public class Modifiers {
 	
 	public static boolean isImplicit(int modifiers) {
 		return (modifiers & IMPLICIT) > 0;
+	}
+	
+	public static boolean isVirtual(int modifiers) {
+		return (modifiers & VIRTUAL) > 0;
 	}
 }
