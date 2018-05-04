@@ -8,10 +8,7 @@ import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.implementations.IntRange;
-import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
-import org.openzen.zenscript.javabytecode.JavaFieldInfo;
-import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
-import org.openzen.zenscript.javabytecode.JavaMethodInfo;
+import org.openzen.zenscript.javabytecode.*;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 
@@ -20,10 +17,16 @@ import java.util.Map;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     private final JavaWriter javaWriter;
+    private final boolean isInit;
 
 
     public JavaExpressionVisitor(final JavaWriter javaWriter) {
+        this(javaWriter, false);
+    }
+
+    public JavaExpressionVisitor(JavaWriter javaWriter, boolean isInit) {
         this.javaWriter = javaWriter;
+        this.isInit = isInit;
     }
 
     @Override
@@ -197,6 +200,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
+        Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
+        //javaWriter.loadObject(0);
+        for (Expression argument : expression.arguments.arguments) {
+            argument.accept(this);
+        }
+        javaWriter.invokeSpecial(type.getInternalName(), "<init>", CompilerUtils.calcDesc(expression.constructor.header, expression.constructor.hasTag(JavaEnumInfo.class)));
         return null;
     }
 
@@ -352,7 +361,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitSetField(SetFieldExpression expression) {
         javaWriter.loadObject(0);
-        if (expression.field.isFinal())
+        if (expression.field.isFinal() && !isInit)
             throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
         expression.value.accept(this);
         if (!checkAndPutFieldInfo(expression.field, false))
@@ -407,6 +416,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitThis(ThisExpression expression) {
+        javaWriter.loadObject(0);
         return null;
     }
 
