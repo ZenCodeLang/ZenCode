@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -19,8 +20,8 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class MethodMember extends FunctionalMember {
-	public MethodMember(CodePosition position, int modifiers, String name, FunctionHeader header) {
-		super(position, modifiers, name, header);
+	public MethodMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header) {
+		super(position, definition, modifiers, name, header);
 	}
 
 	@Override
@@ -30,7 +31,7 @@ public class MethodMember extends FunctionalMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new MethodMember(position, modifiers, name, header.instance(registry, mapping));
+		return new MethodMember(position, definition, modifiers, name, header.instance(registry, mapping));
 	}
 
 	@Override

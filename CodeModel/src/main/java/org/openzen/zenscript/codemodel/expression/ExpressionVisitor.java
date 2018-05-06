@@ -70,8 +70,6 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitEnumConstant(EnumConstantExpression expression);
 	
-	public T visitEquals(EqualsExpression expression);
-	
 	public T visitFunction(FunctionExpression expression);
 	
 	public T visitGenericCompare(GenericCompareExpression expression);
@@ -95,8 +93,6 @@ public interface ExpressionVisitor<T> {
 	public T visitMap(MapExpression expression);
 	
 	public T visitNew(NewExpression expression);
-	
-	public T visitNot(NotExpression expression);
 	
 	public T visitNull(NullExpression expression);
 	

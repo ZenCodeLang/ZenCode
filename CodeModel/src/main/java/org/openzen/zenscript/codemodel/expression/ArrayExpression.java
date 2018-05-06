@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -14,11 +14,13 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class ArrayExpression extends Expression {
 	public final Expression[] expressions;
+	public final ArrayTypeID arrayType;
 	
-	public ArrayExpression(CodePosition position, Expression[] expressions, ITypeID type) {
+	public ArrayExpression(CodePosition position, Expression[] expressions, ArrayTypeID type) {
 		super(position, type);
 		
 		this.expressions = expressions;
+		this.arrayType = type;
 	}
 
 	@Override

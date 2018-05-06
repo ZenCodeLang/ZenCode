@@ -62,11 +62,6 @@ public class OptionalTypeID implements ITypeID {
 	}
 
 	@Override
-	public String toCamelCaseName() {
-		return "Optional" + baseType.toCamelCaseName();
-	}
-
-	@Override
 	public int hashCode() {
 		int hash = 7;
 		hash = 29 * hash + Objects.hashCode(this.baseType);

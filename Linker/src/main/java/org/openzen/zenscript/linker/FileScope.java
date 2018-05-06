@@ -100,7 +100,7 @@ public class FileScope extends BaseScope {
 			}
 			
 			// TODO: take care of non-static inner classes in generic classes!
-			if (type != null && name.get(name.size() - 1).arguments.size() != type.definition.genericParameters.size())
+			if (type != null && name.get(name.size() - 1).arguments.size() != type.definition.genericParameters.length)
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments");
 			
 			if (type != null)

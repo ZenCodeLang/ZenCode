@@ -17,4 +17,5 @@ dependencies {
 	compile project(':Parser')
 	compile project(':JavaBytecodeCompiler')
 	compile project(':CodeFormatter')
+	compile project(':Validator')
 }

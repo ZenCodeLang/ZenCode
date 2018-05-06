@@ -87,8 +87,10 @@ public class ParsedFunctionHeader {
 	}
 	
 	public FunctionHeader compile(BaseScope scope) {
-		TypeParameter[] genericParameters = ParsedGenericParameter.compile(scope, this.genericParameters);
+		TypeParameter[] genericParameters = ParsedGenericParameter.getCompiled(this.genericParameters);
+		ParsedGenericParameter.compile(scope, genericParameters, this.genericParameters);
 		GenericFunctionScope innerScope = new GenericFunctionScope(scope, genericParameters);
+		
 		ITypeID returnType = this.returnType.compile(innerScope);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.size()];
 		for (int i = 0; i < parameters.length; i++)

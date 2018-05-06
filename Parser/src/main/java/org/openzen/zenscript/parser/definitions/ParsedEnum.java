@@ -28,14 +28,14 @@ public class ParsedEnum extends BaseParsedDefinition {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
-		List<ParsedEnumConstant> enumValues = new ArrayList<>();
+		ParsedEnum result = new ParsedEnum(pkg, position, modifiers, name, outerDefinition);
+		
 		while (!tokens.isNext(ZSTokenType.T_ACLOSE) && !tokens.isNext(ZSTokenType.T_SEMICOLON)) {
-			enumValues.add(ParsedEnumConstant.parse(tokens, enumValues.size()));
+			result.addEnumValue(ParsedEnumConstant.parse(tokens, result.compiled, result.enumValues.size()));
 			if (tokens.optional(ZSTokenType.T_COMMA) == null)
 				break;
 		}
 		
-		ParsedEnum result = new ParsedEnum(pkg, position, modifiers, name, enumValues, outerDefinition);
 		if (tokens.optional(ZSTokenType.T_SEMICOLON) != null) {
 			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
 				result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
@@ -46,16 +46,18 @@ public class ParsedEnum extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final List<ParsedEnumConstant> enumValues;
+	private final List<ParsedEnumConstant> enumValues = new ArrayList<>();
 	
 	private final EnumDefinition compiled;
 	
-	public ParsedEnum(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedEnumConstant> enumValues, HighLevelDefinition outerDefinition) {
+	public ParsedEnum(ZSPackage pkg, CodePosition position, int modifiers, String name, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
 		
-		this.enumValues = enumValues;
-		
 		compiled = new EnumDefinition(position, pkg, name, modifiers, outerDefinition);
+	}
+	
+	public void addEnumValue(ParsedEnumConstant value) {
+		enumValues.add(value);
 	}
 
 	@Override

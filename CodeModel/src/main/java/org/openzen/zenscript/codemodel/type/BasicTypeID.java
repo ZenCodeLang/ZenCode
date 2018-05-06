@@ -15,33 +15,31 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  * @author Hoofdgebruiker
  */
 public enum BasicTypeID implements ITypeID {
-	VOID("void", "Void"),
-	NULL("null", "Null"),
-	ANY("any", "Any"),
-	BOOL("bool", "Bool"),
-	BYTE("byte", "Byte"),
-	SBYTE("sbyte", "SByte"),
-	SHORT("short", "Short"),
-	USHORT("ushort", "UShort"),
-	INT("int", "Int"),
-	UINT("uint", "UInt"),
-	LONG("long", "Long"),
-	ULONG("ulong", "ULong"),
-	FLOAT("float", "Float"),
-	DOUBLE("double", "Double"),
-	CHAR("char", "Char"),
-	STRING("string", "String"),
+	VOID("void"),
+	NULL("null"),
+	ANY("any"),
+	BOOL("bool"),
+	BYTE("byte"),
+	SBYTE("sbyte"),
+	SHORT("short"),
+	USHORT("ushort"),
+	INT("int"),
+	UINT("uint"),
+	LONG("long"),
+	ULONG("ulong"),
+	FLOAT("float"),
+	DOUBLE("double"),
+	CHAR("char"),
+	STRING("string"),
 	
-	UNDETERMINED("undetermined", "Undetermined");
+	UNDETERMINED("undetermined");
 	
 	public static final List<ITypeID> HINT_BOOL = Collections.singletonList(BOOL);
 	
 	public final String name;
-	public final String camelCaseName;
 	
-	BasicTypeID(String name, String camelCaseName) {
+	BasicTypeID(String name) {
 		this.name = name;
-		this.camelCaseName = camelCaseName;
 	}
 	
 	@Override
@@ -77,10 +75,5 @@ public enum BasicTypeID implements ITypeID {
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		return false;
-	}
-
-	@Override
-	public String toCamelCaseName() {
-		return camelCaseName;
 	}
 }

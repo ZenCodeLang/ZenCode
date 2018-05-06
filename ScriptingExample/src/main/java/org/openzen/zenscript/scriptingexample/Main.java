@@ -21,6 +21,8 @@ import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
 import org.openzen.zenscript.shared.SourceFile;
+import org.openzen.zenscript.validator.ValidationLogEntry;
+import org.openzen.zenscript.validator.Validator;
 
 public class Main {
     /**
@@ -38,15 +40,19 @@ public class Main {
 		GlobalRegistry registry = new GlobalRegistry(global);
 		SemanticModule module = compileSyntaxToSemantic(parsedFiles, registry);
 		
-		/*FormattingSettings settings = new FormattingSettings.Builder().build();
+		FormattingSettings settings = new FormattingSettings.Builder().build();
 		for (ScriptBlock block : module.scripts) {
 			FileFormatter formatter = new FileFormatter(settings);
 			System.out.println("== " + block.getTag(SourceFile.class).filename + " ==");
 			System.out.println(formatter.format(pkg, block, Collections.emptyList()));
-		}*/
+		}
 		
-		JavaModule javaModule = compileSemanticToJava(module);
-		javaModule.execute();
+		if (module.isValid) {
+			JavaModule javaModule = compileSemanticToJava(module);
+			javaModule.execute();
+		} else {
+			System.out.println("There were compilation errors");
+		}
     }
 	
 	private static ParsedFile[] parse(ZSPackage pkg, File[] files) throws IOException {
@@ -90,7 +96,20 @@ public class Main {
 			file.compileCode(rootPackage, definitions, globalRegistry, expansions, scripts, globals);
 		}
 		
-		return new SemanticModule(definitions, scripts);
+		Validator validator = new Validator();
+		boolean isValid = true;
+		for (ScriptBlock script : scripts) {
+			isValid &= validator.validate(script);
+		}
+		for (HighLevelDefinition definition : definitions.getAll()) {
+			isValid &= validator.validate(definition);
+		}
+		
+		for (ValidationLogEntry entry : validator.getLog()) {
+			System.out.println(entry.kind + " " + entry.position.toString() + ": " + entry.message);
+		}
+		
+		return new SemanticModule(isValid, definitions, scripts);
 	}
 	
 	private static JavaModule compileSemanticToJava(SemanticModule module) {

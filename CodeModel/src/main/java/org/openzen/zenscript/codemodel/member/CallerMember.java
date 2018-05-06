@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -19,8 +20,8 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class CallerMember extends FunctionalMember {
-	public CallerMember(CodePosition position, int modifiers, FunctionHeader header) {
-		super(position, modifiers, "()", header);
+	public CallerMember(CodePosition position, HighLevelDefinition definition, int modifiers, FunctionHeader header) {
+		super(position, definition, modifiers, "()", header);
 	}
 
 	@Override

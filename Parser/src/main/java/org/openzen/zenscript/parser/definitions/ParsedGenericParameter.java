@@ -45,17 +45,25 @@ public class ParsedGenericParameter {
 		return genericParameters;
 	}
 	
-	public static TypeParameter[] compile(BaseScope scope, List<ParsedGenericParameter> parameters) {
+	public static void compile(BaseScope scope, TypeParameter[] compiled, List<ParsedGenericParameter> parameters) {
+		if (compiled.length == 0)
+			return;
+		
+		GenericFunctionScope innerScope = new GenericFunctionScope(scope, compiled);
+		for (int i = 0; i < compiled.length; i++) {
+			for (ParsedGenericBound bound : parameters.get(i).bounds)
+				compiled[i].addBound(bound.compile(innerScope));
+		}
+	}
+	
+	private static TypeParameter[] NO_TYPE_PARAMETERS = new TypeParameter[0];
+	public static TypeParameter[] getCompiled(List<ParsedGenericParameter> parameters) {
+		if (parameters.isEmpty())
+			return NO_TYPE_PARAMETERS;
+		
 		TypeParameter[] result = new TypeParameter[parameters.size()];
 		for (int i = 0; i < result.length; i++)
 			result[i] = parameters.get(i).compiled;
-		
-		GenericFunctionScope innerScope = new GenericFunctionScope(scope, result);
-		for (int i = 0; i < result.length; i++) {
-			for (ParsedGenericBound bound : parameters.get(i).bounds)
-				result[i].addBound(bound.compile(innerScope));
-		}
-		
 		return result;
 	}
 	

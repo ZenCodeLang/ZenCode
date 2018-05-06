@@ -10,8 +10,8 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.expression.BasicCompareExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.EqualsExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -47,7 +47,7 @@ public class EqualsMember extends Taggable implements ICallableMember {
 
 	@Override
 	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments) {
-		return new EqualsExpression(position, target, arguments.arguments[0]);
+		return new BasicCompareExpression(position, target, arguments.arguments[0], CompareType.EQ);
 	}
 
 	@Override

@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.member;
 
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -19,14 +20,15 @@ public class ParsedGetter extends ParsedFunctionalMember {
 	private final String name;
 	private final IParsedType type;
 	
-	public ParsedGetter(CodePosition position, int modifiers, String name, IParsedType type, ParsedFunctionBody body) {
-		super(position, modifiers, body);
+	public ParsedGetter(CodePosition position, HighLevelDefinition definition, int modifiers, String name, IParsedType type, ParsedFunctionBody body) {
+		super(position, definition, modifiers, body);
+		
 		this.name = name;
 		this.type = type;
 	}
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new GetterMember(position, modifiers, name, type.compile(scope));
+		compiled = new GetterMember(position, definition, modifiers, name, type.compile(scope));
 	}
 }

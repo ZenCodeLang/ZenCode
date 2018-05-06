@@ -53,11 +53,6 @@ public class FunctionTypeID implements ITypeID {
 	}
 
 	@Override
-	public String toCamelCaseName() {
-		return "Function"; // not unique, though
-	}
-
-	@Override
 	public int hashCode() {
 		int hash = 5;
 		hash = 71 * hash + header.returnType.hashCode();

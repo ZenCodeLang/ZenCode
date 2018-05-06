@@ -28,7 +28,15 @@ public class ParsedIterator extends ParsedDefinitionMember {
 	
 	private CustomIteratorMember compiled;
 	
-	public ParsedIterator(CodePosition position, int modifiers, ParsedFunctionHeader header, ParsedFunctionBody body) {
+	public ParsedIterator(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			ParsedFunctionHeader header,
+			ParsedFunctionBody body)
+	{
+		super(definition);
+		
 		this.position = position;
 		this.modifiers = modifiers;
 		this.header = header;
@@ -36,7 +44,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void linkInnerTypes(HighLevelDefinition definition) {
+	public void linkInnerTypes() {
 		// nothing to do
 	}
 
@@ -46,7 +54,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 		for (int i = 0; i < loopVariableTypes.length; i++)
 			loopVariableTypes[i] = header.parameters.get(i).type.compile(scope);
 		
-		compiled = new CustomIteratorMember(position, modifiers, loopVariableTypes);
+		compiled = new CustomIteratorMember(position, definition, modifiers, loopVariableTypes);
 	}
 
 	@Override

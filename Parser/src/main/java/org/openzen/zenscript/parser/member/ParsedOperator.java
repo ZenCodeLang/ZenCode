@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.member;
 
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.linker.BaseScope;
@@ -20,8 +21,8 @@ public class ParsedOperator extends ParsedFunctionalMember {
 	private final OperatorType operator;
 	private final ParsedFunctionHeader header;
 	
-	public ParsedOperator(CodePosition position, int modifiers, OperatorType operator, ParsedFunctionHeader header, ParsedFunctionBody body) {
-		super(position, modifiers, body);
+	public ParsedOperator(CodePosition position, HighLevelDefinition definition, int modifiers, OperatorType operator, ParsedFunctionHeader header, ParsedFunctionBody body) {
+		super(position, definition, modifiers, body);
 		
 		this.operator = operator;
 		this.header = header;
@@ -29,6 +30,6 @@ public class ParsedOperator extends ParsedFunctionalMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new OperatorMember(position, modifiers, operator, header.compile(scope));
+		compiled = new OperatorMember(position, definition, modifiers, operator, header.compile(scope));
 	}
 }

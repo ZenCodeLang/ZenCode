@@ -2,8 +2,6 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -220,11 +218,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
     @Override
-    public Void visitEquals(EqualsExpression expression) {
-        return null;
-    }
-
-    @Override
     public Void visitFunction(FunctionExpression expression) {
         return null;
     }
@@ -323,13 +316,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         signatureBuilder.append(")V");
         javaWriter.invokeSpecial(type, "<init>", signatureBuilder.toString());
 
-        return null;
-    }
-
-    @Override
-    public Void visitNot(NotExpression expression) {
-        expression.value.accept(this);
-        javaWriter.iNeg();
         return null;
     }
 

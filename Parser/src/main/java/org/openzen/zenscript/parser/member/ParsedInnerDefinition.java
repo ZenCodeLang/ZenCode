@@ -15,26 +15,27 @@ import org.openzen.zenscript.parser.ParsedDefinition;
  * @author Hoofdgebruiker
  */
 public class ParsedInnerDefinition extends ParsedDefinitionMember {
-	private final ParsedDefinition definition;
+	private final ParsedDefinition innerDefinition;
+	private final InnerDefinitionMember member;
 	
-	private InnerDefinitionMember member;
-	
-	public ParsedInnerDefinition(ParsedDefinition definition) {
-		this.definition = definition;
+	public ParsedInnerDefinition(HighLevelDefinition outer, ParsedDefinition definition) {
+		super(outer);
 		
-		member = new InnerDefinitionMember(definition.getPosition(), definition.getModifiers(), definition.getCompiled());
+		this.innerDefinition = definition;
+		
+		member = new InnerDefinitionMember(definition.getPosition(), outer, definition.getModifiers(), definition.getCompiled());
 	}
 	
 	@Override
-	public void linkInnerTypes(HighLevelDefinition definition) {
+	public void linkInnerTypes() {
 		definition.addMember(member);
 		
-		this.definition.linkInnerTypes();
+		this.innerDefinition.linkInnerTypes();
 	}
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		definition.compileMembers(scope);
+		this.innerDefinition.compileMembers(scope);
 	}
 
 	@Override
@@ -44,6 +45,6 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 
 	@Override
 	public void compile(BaseScope scope) {
-		definition.compileCode(scope);
+		innerDefinition.compileCode(scope);
 	}
 }

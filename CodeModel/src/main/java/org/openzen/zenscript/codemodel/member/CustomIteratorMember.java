@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.List;
 import java.util.Map;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -24,8 +25,8 @@ public class CustomIteratorMember extends DefinitionMember implements IIteratorM
 	private final ITypeID[] iteratorTypes;
 	private List<Statement> content;
 	
-	public CustomIteratorMember(CodePosition position, int modifiers, ITypeID[] iteratorTypes) {
-		super(position, modifiers);
+	public CustomIteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID[] iteratorTypes) {
+		super(position, definition, modifiers);
 		
 		this.iteratorTypes = iteratorTypes;
 	}
@@ -54,7 +55,7 @@ public class CustomIteratorMember extends DefinitionMember implements IIteratorM
 		ITypeID[] newIteratorTypes = new ITypeID[iteratorTypes.length];
 		for (int i = 0; i < newIteratorTypes.length; i++)
 			newIteratorTypes[i] = iteratorTypes[i].withGenericArguments(registry, mapping);
-		return new CustomIteratorMember(position, modifiers, newIteratorTypes);
+		return new CustomIteratorMember(position, definition, modifiers, newIteratorTypes);
 	}
 
 	@Override
