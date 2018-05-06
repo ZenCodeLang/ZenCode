@@ -47,6 +47,8 @@ import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
+import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
+import org.openzen.zenscript.codemodel.expression.GlobalExpression;
 import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
 import org.openzen.zenscript.codemodel.expression.IsExpression;
 import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
@@ -381,6 +383,16 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 	@Override
 	public Boolean visitGetter(GetterExpression expression) {
 		return expression.target.accept(this);
+	}
+	
+	@Override
+	public Boolean visitGlobal(GlobalExpression expression) {
+		return expression.resolution.accept(this);
+	}
+	
+	@Override
+	public Boolean visitGlobalCall(GlobalCallExpression expression) {
+		return expression.resolution.accept(this);
 	}
 
 	@Override

@@ -262,6 +262,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitGetter(GetterExpression expression) {
         return null;
     }
+	
+	@Override
+	public Void visitGlobal(GlobalExpression expression) {
+		return expression.resolution.accept(this);
+	}
+	
+	@Override
+	public Void visitGlobalCall(GlobalCallExpression expression) {
+		return expression.resolution.accept(this);
+	}
 
     @Override
     public Void visitInterfaceCast(InterfaceCastExpression expression) {

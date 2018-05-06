@@ -45,6 +45,8 @@ import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
+import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
+import org.openzen.zenscript.codemodel.expression.GlobalExpression;
 import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
 import org.openzen.zenscript.codemodel.expression.IsExpression;
 import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
@@ -470,6 +472,19 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append('.');
 		result.append(expression.getter.name);
 		return new ExpressionString(result.toString(), OperatorPriority.MEMBER);
+	}
+	
+	@Override
+	public ExpressionString visitGlobal(GlobalExpression expression) {
+		return new ExpressionString(expression.name, OperatorPriority.PRIMARY);
+	}
+	
+	@Override
+	public ExpressionString visitGlobalCall(GlobalCallExpression expression) {
+		StringBuilder result = new StringBuilder();
+		result.append(expression.name);
+		format(result, expression.arguments);
+		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 	}
 
 	@Override

@@ -84,6 +84,10 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitGetter(GetterExpression expression);
 	
+	public T visitGlobal(GlobalExpression expression);
+	
+	public T visitGlobalCall(GlobalCallExpression expression);
+	
 	public T visitInterfaceCast(InterfaceCastExpression expression);
 	
 	public T visitIs(IsExpression expression);

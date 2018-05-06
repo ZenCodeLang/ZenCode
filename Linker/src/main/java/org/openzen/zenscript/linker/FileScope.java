@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.partial.PartialGlobalExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -74,8 +75,10 @@ public class FileScope extends BaseScope {
 		if (localDefinition != null)
 			return new PartialTypeExpression(position, globalRegistry.getForDefinition(localDefinition, name.arguments));
 		
-		if (globalSymbols.containsKey(name.name))
-			return globalSymbols.get(name.name).getExpression(position, globalRegistry, name.arguments);
+		if (globalSymbols.containsKey(name.name)) {
+			IPartialExpression resolution = globalSymbols.get(name.name).getExpression(position, globalRegistry, name.arguments);
+			return new PartialGlobalExpression(position, name.name, resolution);
+		}
 		
 		return rootPackage.getMember(position, globalRegistry, name);
 	}
