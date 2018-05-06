@@ -2,16 +2,15 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.objectweb.asm.Type;
+import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.implementations.IntRange;
 import org.openzen.zenscript.javabytecode.*;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
-
 
 import java.util.Map;
 
@@ -29,8 +28,34 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         this.isInit = isInit;
     }
 
+    private static Class<?> getForEquals(ITypeID id) {
+        if (CompilerUtils.isPrimitive(id))
+            return id.accept(JavaTypeClassVisitor.INSTANCE);
+        return Object.class;
+    }
+
     @Override
     public Void visitAndAnd(AndAndExpression expression) {
+        Label end = new Label();
+        Label onFalse = new Label();
+
+        expression.left.accept(this);
+
+        javaWriter.ifEQ(onFalse);
+        expression.right.accept(this);
+
+        // //these two calls are redundant but make decompiled code look better. Keep?
+        // javaWriter.ifEQ(onFalse);
+        // javaWriter.iConst1();
+
+        javaWriter.goTo(end);
+
+        javaWriter.label(onFalse);
+        javaWriter.iConst0();
+
+
+        javaWriter.label(end);
+
         return null;
     }
 
@@ -50,6 +75,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitCompare(BasicCompareExpression expression) {
+        expression.left.accept(this);
+        expression.right.accept(this);
+        javaWriter.constant(expression.operator.name());
+
+        javaWriter.invokeStatic(ZenUtils.class, "compare", boolean.class, getForEquals(expression.left.type), getForEquals(expression.right.type), String.class);
+
         return null;
     }
 
@@ -67,6 +98,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitCallStatic(CallStaticExpression expression) {
+        for (Expression argument : expression.arguments.arguments) {
+            argument.accept(this);
+        }
+        //TODO: Test with actual static method
+        final JavaMethodInfo info = expression.member.getTag(JavaMethodInfo.class);
+        javaWriter.invokeStatic(info.javaClass.internalClassName, info.name, info.signature);
         return null;
     }
 
@@ -95,34 +132,65 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitCapturedThis(CapturedThisExpression expression) {
         return null;
     }
-	
-	@Override
+
+    @Override
     public Void visitCast(CastExpression expression) {
-		expression.target.accept(this);
+        expression.target.accept(this);
         if (!checkAndExecuteByteCodeImplementation(expression.member) && !checkAndExecuteMethodInfo(expression.member))
             throw new IllegalStateException("Call target has no method info!");
-		
+
         return null;
-	}
+    }
 
     @Override
     public Void visitCheckNull(CheckNullExpression expression) {
+        final Label end = new Label();
+        expression.value.accept(this);
+        javaWriter.dup();
+        javaWriter.ifNonNull(end);
+        javaWriter.pop();
+        javaWriter.newObject(NullPointerException.class);
+        javaWriter.dup();
+        javaWriter.constant("Tried to convert a null value to nonnull type " + expression.type.accept(JavaTypeClassVisitor.INSTANCE).getSimpleName());
+        javaWriter.invokeSpecial(NullPointerException.class, "<init>", "(Ljava/lang/String;)V");
+        javaWriter.aThrow();
+        javaWriter.label(end);
+
         return null;
     }
 
     @Override
     public Void visitCoalesce(CoalesceExpression expression) {
+        final Label end = new Label();
+        expression.left.accept(this);
+        javaWriter.dup();
+        javaWriter.ifNonNull(end);
+        javaWriter.pop();
+        expression.right.accept(this);
+        javaWriter.label(end);
         return null;
     }
 
     @Override
     public Void visitConditional(ConditionalExpression expression) {
+        final Label end = new Label();
+        final Label onElse = new Label();
+        expression.condition.accept(this);
+        javaWriter.ifEQ(onElse);
+        expression.ifThen.accept(this);
+        javaWriter.goTo(end);
+        javaWriter.label(onElse);
+        expression.ifElse.accept(this);
+        javaWriter.label(end);
         return null;
     }
 
     @Override
     public Void visitConstantBool(ConstantBoolExpression expression) {
-        getJavaWriter().constant(expression.value);
+        if (expression.value)
+            javaWriter.iConst1();
+        else
+            javaWriter.iConst0();
         return null;
     }
 
@@ -211,16 +279,29 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
+        javaWriter.loadObject(0);
+        for (Expression argument : expression.arguments.arguments) {
+            argument.accept(this);
+        }
+        //No super calls in enums possible, and that's already handled in the enum constructor itself.
+        javaWriter.invokeSpecial(expression.objectType.accept(JavaTypeClassVisitor.INSTANCE), "<init>", CompilerUtils.calcDesc(expression.constructor.header, false));
         return null;
     }
 
     @Override
     public Void visitEnumConstant(EnumConstantExpression expression) {
+        final Type type = expression.type.accept(JavaTypeVisitor.INSTANCE);
+        javaWriter.getStaticField(type.getInternalName(), expression.value.name, type.getDescriptor());
         return null;
     }
 
     @Override
     public Void visitEquals(EqualsExpression expression) {
+        expression.left.accept(this);
+        expression.right.accept(this);
+        javaWriter.constant(CompareType.EQ.name());
+        javaWriter.invokeStatic(ZenUtils.class, "compare", boolean.class, getForEquals(expression.left.type), getForEquals(expression.right.type), String.class);
+
         return null;
     }
 
@@ -231,6 +312,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGenericCompare(GenericCompareExpression expression) {
+        //TODO: What am I supposed to do here?
         return null;
     }
 
@@ -286,7 +368,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitMakeConst(MakeConstExpression expression) {
-
+        //TODO: What am I supposed to do here?
         return null;
     }
 
@@ -308,7 +390,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitNew(NewExpression expression) {
         final String type;
-        if(expression.type instanceof DefinitionTypeID)
+        if (expression.type instanceof DefinitionTypeID)
             type = ((DefinitionTypeID) expression.type).definition.name;
         else
             type = Type.getDescriptor(expression.type.accept(JavaTypeClassVisitor.INSTANCE));
@@ -341,6 +423,26 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitOrOr(OrOrExpression expression) {
+        Label end = new Label();
+        Label onTrue = new Label();
+
+        expression.left.accept(this);
+
+        javaWriter.ifNE(onTrue);
+        expression.right.accept(this);
+
+        // //these two calls are redundant but make decompiled code look better. Keep?
+        // javaWriter.ifNE(onTrue);
+        // javaWriter.iConst0();
+
+        javaWriter.goTo(end);
+
+        javaWriter.label(onTrue);
+        javaWriter.iConst1();
+
+
+        javaWriter.label(end);
+
         return null;
     }
 
@@ -371,6 +473,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
+        //TODO is static?
+        final boolean isStatic = false;
+        expression.value.accept(this);
+        javaWriter.store(expression.type.accept(JavaTypeVisitor.INSTANCE), isStatic ? expression.parameter.index : expression.parameter.index + 1);
         return null;
     }
 
@@ -422,6 +528,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitWrapOptional(WrapOptionalExpression expression) {
+        //TODO What am I supposed to do here?
+        expression.value.accept(this);
         return null;
     }
 

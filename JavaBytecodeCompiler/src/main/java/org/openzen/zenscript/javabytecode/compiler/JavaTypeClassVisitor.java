@@ -87,6 +87,6 @@ public class JavaTypeClassVisitor implements ITypeVisitor<Class> {
 
     @Override
     public Class visitOptional(OptionalTypeID optional) {
-        return null;
+        return optional.baseType.accept(this);
     }
 }

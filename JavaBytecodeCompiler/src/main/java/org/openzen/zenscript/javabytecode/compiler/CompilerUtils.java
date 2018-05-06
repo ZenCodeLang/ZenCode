@@ -3,6 +3,8 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 
 public class CompilerUtils {
     public static String calcDesc(FunctionHeader header, boolean isEnum) {
@@ -24,5 +26,26 @@ public class CompilerUtils {
         }
         signatureBuilder.append(")").append(header.returnType.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
         return signatureBuilder.toString();
+    }
+
+    public static boolean isPrimitive(ITypeID id) {
+        if(id instanceof BasicTypeID) {
+            switch ((BasicTypeID) id) {
+                case BOOL:
+                case BYTE:
+                case SBYTE:
+                case SHORT:
+                case USHORT:
+                case INT:
+                case UINT:
+                case LONG:
+                case ULONG:
+                case FLOAT:
+                case DOUBLE:
+                case CHAR:
+                    return true;
+            }
+        }
+        return false;
     }
 }

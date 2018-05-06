@@ -751,6 +751,10 @@ public class JavaWriter {
         visitor.visitMethodInsn(INVOKESPECIAL, owner, name, descriptor, false);
     }
 
+    public void invokeSpecial(Class owner, String name, String descriptor) {
+        invokeSpecial(Type.getInternalName(owner), name, descriptor);
+    }
+
     public void invoke(Class owner, String name, Class result, Class... arguments) {
         if (owner.isInterface()) {
             invokeInterface(owner, name, result, arguments);
