@@ -9,7 +9,6 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.BaseScope;
@@ -39,15 +38,14 @@ public class ParsedExpansion extends BaseParsedDefinition {
 	private final IParsedType target;
 	private final ExpansionDefinition compiled;
 	
-	public ParsedExpansion(ZSPackage pkg, CodePosition position, int modifiers, List<ParsedGenericParameter> parameters, IParsedType target, HighLevelDefinition outerDefinition) {
+	public ParsedExpansion(ZSPackage pkg, CodePosition position, int modifiers, List<ParsedGenericParameter> genericParameters, IParsedType target, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
 		
-		this.parameters = parameters;
+		this.parameters = genericParameters;
 		this.target = target;
 		
-		this.compiled = new ExpansionDefinition(position, pkg, modifiers, outerDefinition);
-		for (ParsedGenericParameter parameter : parameters)
-			compiled.addGenericParameter(parameter.compiled);
+		compiled = new ExpansionDefinition(position, pkg, modifiers, outerDefinition);
+		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(genericParameters));
 	}
 	
 	@Override
@@ -57,8 +55,8 @@ public class ParsedExpansion extends BaseParsedDefinition {
 
 	@Override
 	public void compileMembers(BaseScope scope) {
-		TypeParameter[] parameters = ParsedGenericParameter.compile(scope, this.parameters);
-		compiled.target = target.compile(new GenericFunctionScope(scope, parameters));
+		ParsedGenericParameter.compile(scope, compiled.genericParameters, this.parameters);
+		compiled.target = target.compile(new GenericFunctionScope(scope, compiled.genericParameters));
 		
 		super.compileMembers(scope);
 	}

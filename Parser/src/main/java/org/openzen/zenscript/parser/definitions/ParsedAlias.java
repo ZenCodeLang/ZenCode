@@ -53,13 +53,17 @@ public class ParsedAlias extends ParsedDefinition {
 
 	@Override
 	public void compileMembers(BaseScope scope) {
-		for (ParsedGenericParameter parameter : this.parameters) {
-			compiled.addGenericParameter(parameter.compiled);
+		if (parameters.size() > 0) {
+			TypeParameter[] typeParameters = new TypeParameter[parameters.size()];
+			for (int i = 0; i < parameters.size(); i++) {
+				typeParameters[i] = parameters.get(i).compiled;
+			}
+			compiled.setTypeParameters(typeParameters);
 		}
 		
 		DefinitionScope innerScope = new DefinitionScope(scope, compiled);
-		for (int i = 0; i < compiled.genericParameters.size(); i++) {
-			TypeParameter output = compiled.genericParameters.get(i);
+		for (int i = 0; i < compiled.genericParameters.length; i++) {
+			TypeParameter output = compiled.genericParameters[i];
 			ParsedGenericParameter input = this.parameters.get(i);
 			for (ParsedGenericBound bound : input.bounds) {
 				output.addBound(bound.compile(innerScope));

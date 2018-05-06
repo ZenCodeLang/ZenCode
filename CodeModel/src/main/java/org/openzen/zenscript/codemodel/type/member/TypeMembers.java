@@ -12,11 +12,11 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
 import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
-import org.openzen.zenscript.codemodel.expression.NotExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.CallerMember;
@@ -241,8 +241,10 @@ public final class TypeMembers {
 		} else if (operator == CompareType.NE) {
 			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.EQUALS);
 			for (TypeMember<ICallableMember> member : equal.getMethodMembers()) {
-				if (member.member.getHeader().accepts(scope, right))
-					return new NotExpression(position, equal.call(position, scope, left, new CallArguments(right), false));
+				if (member.member.getHeader().accepts(scope, right)) {
+					Expression equalExpression = equal.call(position, scope, left, new CallArguments(right), false);
+					return new CallExpression(position, equalExpression, BuiltinTypeMembers.BOOL_NOT, BuiltinTypeMembers.BOOL_NOT.header, CallArguments.EMPTY);
+				}
 			}
 		}
 		

@@ -23,14 +23,16 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	
 	protected FunctionalMember compiled;
 	
-	public ParsedFunctionalMember(CodePosition position, int modifiers, ParsedFunctionBody body) {
+	public ParsedFunctionalMember(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedFunctionBody body) {
+		super(definition);
+		
 		this.position = position;
 		this.modifiers = modifiers;
 		this.body = body;
 	}
 	
 	@Override
-	public void linkInnerTypes(HighLevelDefinition definition) {
+	public void linkInnerTypes() {
 		
 	}
 

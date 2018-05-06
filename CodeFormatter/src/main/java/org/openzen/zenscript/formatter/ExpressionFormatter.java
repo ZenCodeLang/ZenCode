@@ -36,7 +36,6 @@ import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
-import org.openzen.zenscript.codemodel.expression.EqualsExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
 import org.openzen.zenscript.codemodel.expression.FunctionExpression;
@@ -46,12 +45,13 @@ import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
+import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
+import org.openzen.zenscript.codemodel.expression.GlobalExpression;
 import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
 import org.openzen.zenscript.codemodel.expression.IsExpression;
 import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
 import org.openzen.zenscript.codemodel.expression.MapExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
-import org.openzen.zenscript.codemodel.expression.NotExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
@@ -428,11 +428,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	}
 
 	@Override
-	public ExpressionString visitEquals(EqualsExpression expression) {
-		return binary(expression.left, expression.right, OperatorPriority.COMPARE, " === ");
-	}
-
-	@Override
 	public ExpressionString visitFunction(FunctionExpression expression) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
@@ -477,6 +472,19 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append('.');
 		result.append(expression.getter.name);
 		return new ExpressionString(result.toString(), OperatorPriority.MEMBER);
+	}
+	
+	@Override
+	public ExpressionString visitGlobal(GlobalExpression expression) {
+		return new ExpressionString(expression.name, OperatorPriority.PRIMARY);
+	}
+	
+	@Override
+	public ExpressionString visitGlobalCall(GlobalCallExpression expression) {
+		StringBuilder result = new StringBuilder();
+		result.append(expression.name);
+		format(result, expression.arguments);
+		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 	}
 
 	@Override
@@ -524,11 +532,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append(expression.type.accept(typeFormatter));
 		format(result, expression.arguments);
 		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
-	}
-
-	@Override
-	public ExpressionString visitNot(NotExpression expression) {
-		return unaryPrefix(expression.value, OperatorPriority.NOT, "!");
 	}
 
 	@Override

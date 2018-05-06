@@ -27,8 +27,14 @@ public class InstancedInnerDefinitionMember extends DefinitionMember {
 	public final HighLevelDefinition definition;
 	public final Map<TypeParameter, ITypeID> outerMapping;
 	
-	public InstancedInnerDefinitionMember(CodePosition position, int modifiers, HighLevelDefinition definition, Map<TypeParameter, ITypeID> outerMapping) {
-		super(position, modifiers);
+	public InstancedInnerDefinitionMember(
+			CodePosition position,
+			HighLevelDefinition outer,
+			int modifiers,
+			HighLevelDefinition definition,
+			Map<TypeParameter, ITypeID> outerMapping)
+	{
+		super(position, outer, modifiers);
 		this.definition = definition;
 		this.outerMapping = outerMapping;
 	}
@@ -49,7 +55,7 @@ public class InstancedInnerDefinitionMember extends DefinitionMember {
 			for (Map.Entry<TypeParameter, ITypeID> entry : mapping.entrySet())
 				totalMap.put(entry.getKey(), entry.getValue());
 			
-			return new InstancedInnerDefinitionMember(position, modifiers, definition, totalMap);
+			return new InstancedInnerDefinitionMember(position, definition, modifiers, definition, totalMap);
 		}
 	}
 

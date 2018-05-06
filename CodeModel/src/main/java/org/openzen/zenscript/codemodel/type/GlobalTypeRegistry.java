@@ -99,7 +99,7 @@ public class GlobalTypeRegistry {
 	
 	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, List<ITypeID> typeParameters, Map<TypeParameter, ITypeID> outerInstance) {
 		DefinitionTypeID id;
-		if (definition.genericParameters.size() > 0 && typeParameters.isEmpty() && outerInstance.isEmpty()) {
+		if (definition.genericParameters.length > 0 && typeParameters.isEmpty() && outerInstance.isEmpty()) {
 			// make it a static one
 			id = new StaticDefinitionTypeID(definition);
 		} else {

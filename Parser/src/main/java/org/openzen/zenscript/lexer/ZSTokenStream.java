@@ -44,6 +44,8 @@ public class ZSTokenStream extends TokenStream<ZSToken, ZSTokenType> {
 		KEYWORDS.put("static", K_STATIC);
 		KEYWORDS.put("protected", K_PROTECTED);
 		KEYWORDS.put("implicit", K_IMPLICIT);
+		KEYWORDS.put("virtual", K_VIRTUAL);
+		KEYWORDS.put("extern", K_EXTERN);
 		
 		KEYWORDS.put("val", K_VAL);
 		KEYWORDS.put("var", K_VAR);

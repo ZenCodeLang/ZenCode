@@ -31,7 +31,7 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 	@Override
 	public void linkInnerTypes() {
 		for (ParsedDefinitionMember member : members)
-			member.linkInnerTypes(getCompiled());
+			member.linkInnerTypes();
 	}
 
 	@Override

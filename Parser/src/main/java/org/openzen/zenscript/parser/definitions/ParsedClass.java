@@ -9,7 +9,6 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.BaseScope;
@@ -53,8 +52,7 @@ public class ParsedClass extends BaseParsedDefinition {
 		this.superclass = superclass;
 		
 		compiled = new ClassDefinition(position, pkg, name, modifiers, outerDefinition);
-		for (ParsedGenericParameter parameter : genericParameters)
-			compiled.addGenericParameter(parameter.compiled);
+		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(genericParameters));
 	}
 
 	@Override
@@ -64,9 +62,9 @@ public class ParsedClass extends BaseParsedDefinition {
 
 	@Override
 	public void compileMembers(BaseScope scope) {
-		TypeParameter[] parameters = ParsedGenericParameter.compile(scope, genericParameters);
+		ParsedGenericParameter.compile(scope, compiled.genericParameters, genericParameters);
 		if (superclass != null)
-			compiled.setSuperclass(superclass.compile(new GenericFunctionScope(scope, parameters)));
+			compiled.setSuperclass(superclass.compile(new GenericFunctionScope(scope, compiled.genericParameters)));
 		
 		super.compileMembers(scope);
 	}

@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -22,8 +23,8 @@ import org.openzen.zenscript.shared.CodePosition;
 public class OperatorMember extends FunctionalMember {
 	public final OperatorType operator;
 	
-	public OperatorMember(CodePosition position, int modifiers, OperatorType operator, FunctionHeader header) {
-		super(position, modifiers, operator.operator, header);
+	public OperatorMember(CodePosition position, HighLevelDefinition definition, int modifiers, OperatorType operator, FunctionHeader header) {
+		super(position, definition, modifiers, operator.operator, header);
 		
 		this.operator = operator;
 	}
@@ -35,7 +36,7 @@ public class OperatorMember extends FunctionalMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new OperatorMember(position, modifiers, operator, header.instance(registry, mapping));
+		return new OperatorMember(position, definition, modifiers, operator, header.instance(registry, mapping));
 	}
 
 	@Override

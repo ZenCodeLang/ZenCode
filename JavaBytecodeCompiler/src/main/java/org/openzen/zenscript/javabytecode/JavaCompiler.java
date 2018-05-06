@@ -48,14 +48,10 @@ public class JavaCompiler {
 		implement(LONG_NOT, JavaWriter::lNot);
 		implement(ULONG_NOT, JavaWriter::lNot);
 		
-		implement(BYTE_NEG, JavaWriter::iNeg);
 		implement(SBYTE_NEG, JavaWriter::iNeg);
 		implement(SHORT_NEG, JavaWriter::iNeg);
-		implement(USHORT_NEG, JavaWriter::iNeg);
 		implement(INT_NEG, JavaWriter::iNeg);
-		implement(UINT_NEG, JavaWriter::iNeg);
 		implement(LONG_NEG, JavaWriter::lNeg);
-		implement(ULONG_NEG, JavaWriter::lNeg);
 		implement(FLOAT_NEG, JavaWriter::fNeg);
 		implement(DOUBLE_NEG, JavaWriter::dNeg);
 		
@@ -160,6 +156,7 @@ public class JavaCompiler {
 			methodName = "generatedBlock" + (generatedScriptBlockCounter++);
 		} else {
 			// TODO: remove special characters
+			System.out.println("Writing script: " + sourceFile.filename);
 			methodName = sourceFile.filename.substring(0, sourceFile.filename.lastIndexOf('.')).replace("/", "_");
 		}
 

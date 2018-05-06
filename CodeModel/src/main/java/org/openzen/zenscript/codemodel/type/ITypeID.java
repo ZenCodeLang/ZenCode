@@ -33,8 +33,6 @@ public interface ITypeID {
 		return this;
 	}
 	
-	public String toCamelCaseName();
-	
 	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments);
 	
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters);

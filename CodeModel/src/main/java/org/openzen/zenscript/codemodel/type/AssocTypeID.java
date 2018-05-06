@@ -54,11 +54,6 @@ public class AssocTypeID implements ITypeID {
 	}
 
 	@Override
-	public String toCamelCaseName() {
-		return keyType.toCamelCaseName() + valueType.toCamelCaseName() + "Map";
-	}
-
-	@Override
 	public int hashCode() {
 		int hash = 7;
 		hash = 29 * hash + keyType.hashCode();

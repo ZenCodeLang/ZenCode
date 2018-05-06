@@ -189,10 +189,10 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitTryCatch(TryCatchStatement statement) {
 		beginSingleLine();
 		result.append("try");
-		if (statement.resourceName != null) {
-			result.append(' ').append(statement.resourceName);
+		if (statement.resource != null) {
+			result.append(' ').append(statement.resource.name);
 			result.append(" = ");
-			result.append(statement.resourceInitializer.accept(expressionFormatter).value);
+			result.append(statement.resource.initializer.accept(expressionFormatter).value);
 		}
 		
 		format(ParentStatementType.TRY, statement.content);

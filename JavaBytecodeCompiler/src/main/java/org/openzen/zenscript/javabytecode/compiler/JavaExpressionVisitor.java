@@ -2,7 +2,6 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -296,16 +295,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
     @Override
-    public Void visitEquals(EqualsExpression expression) {
-        expression.left.accept(this);
-        expression.right.accept(this);
-        javaWriter.constant(CompareType.EQ.name());
-        javaWriter.invokeStatic(ZenUtils.class, "compare", boolean.class, getForEquals(expression.left.type), getForEquals(expression.right.type), String.class);
-
-        return null;
-    }
-
-    @Override
     public Void visitFunction(FunctionExpression expression) {
         return null;
     }
@@ -350,6 +339,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitGetter(GetterExpression expression) {
         return null;
+    }
+
+    @Override
+    public Void visitGlobal(GlobalExpression expression) {
+        return expression.resolution.accept(this);
+    }
+
+    @Override
+    public Void visitGlobalCall(GlobalCallExpression expression) {
+        return expression.resolution.accept(this);
     }
 
     @Override
@@ -405,13 +404,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         signatureBuilder.append(")V");
         javaWriter.invokeSpecial(type, "<init>", signatureBuilder.toString());
 
-        return null;
-    }
-
-    @Override
-    public Void visitNot(NotExpression expression) {
-        expression.value.accept(this);
-        javaWriter.iNeg();
         return null;
     }
 

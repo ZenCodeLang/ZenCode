@@ -6,8 +6,8 @@
 package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -26,8 +26,8 @@ public class EnumConstantMember extends DefinitionMember {
 	
 	public NewExpression constructor;
 	
-	public EnumConstantMember(CodePosition position, String name, int value) {
-		super(position, Modifiers.STATIC);
+	public EnumConstantMember(CodePosition position, HighLevelDefinition definition, String name, int value) {
+		super(position, definition, Modifiers.STATIC);
 		
 		this.name = name;
 		this.value = value;

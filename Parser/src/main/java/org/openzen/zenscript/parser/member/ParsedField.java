@@ -29,7 +29,17 @@ public class ParsedField extends ParsedDefinitionMember {
 	
 	private FieldMember compiled;
 	
-	public ParsedField(CodePosition position, int modifiers, String name, IParsedType type, ParsedExpression expression, boolean isFinal) {
+	public ParsedField(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			String name,
+			IParsedType type,
+			ParsedExpression expression,
+			boolean isFinal)
+	{
+		super(definition);
+		
 		this.position = position;
 		this.modifiers = modifiers;
 		this.name = name;
@@ -39,13 +49,18 @@ public class ParsedField extends ParsedDefinitionMember {
 	}
 	
 	@Override
-	public void linkInnerTypes(HighLevelDefinition definition) {
+	public void linkInnerTypes() {
 		
 	}
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new FieldMember(position, modifiers | (isFinal ? Modifiers.FINAL : 0), name, type.compile(scope));
+		compiled = new FieldMember(
+				position,
+				definition,
+				modifiers | (isFinal ? Modifiers.FINAL : 0),
+				name,
+				type.compile(scope));
 	}
 
 	@Override

@@ -57,11 +57,6 @@ public class ConstTypeID implements ITypeID {
 	}
 
 	@Override
-	public String toCamelCaseName() {
-		return "Const" + baseType.toCamelCaseName();
-	}
-
-	@Override
 	public int hashCode() {
 		int hash = 3;
 		hash = 79 * hash + Objects.hashCode(this.baseType);

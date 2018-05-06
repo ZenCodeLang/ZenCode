@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallTranslator;
@@ -19,8 +20,8 @@ import org.openzen.zenscript.shared.CodePosition;
 public class TranslatedOperatorMember extends OperatorMember {
 	private final CallTranslator translator;
 	
-	public TranslatedOperatorMember(CodePosition position, int modifiers, OperatorType operator, FunctionHeader header, CallTranslator translator) {
-		super(position, modifiers, operator, header);
+	public TranslatedOperatorMember(CodePosition position, HighLevelDefinition definition, int modifiers, OperatorType operator, FunctionHeader header, CallTranslator translator) {
+		super(position, definition, modifiers, operator, header);
 		
 		this.translator = translator;
 	}

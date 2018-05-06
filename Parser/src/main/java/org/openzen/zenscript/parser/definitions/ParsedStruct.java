@@ -37,14 +37,13 @@ public class ParsedStruct extends BaseParsedDefinition {
 	
 	private final StructDefinition compiled;
 	
-	public ParsedStruct(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedGenericParameter> parameters, HighLevelDefinition outerDefinition) {
+	public ParsedStruct(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedGenericParameter> genericParameters, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
 		
-		this.parameters = parameters;
+		this.parameters = genericParameters;
 		
 		compiled = new StructDefinition(position, pkg, name, modifiers, outerDefinition);
-		for (ParsedGenericParameter parameter : parameters)
-			compiled.addGenericParameter(parameter.compiled);
+		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(genericParameters));
 	}
 
 	@Override
@@ -54,8 +53,7 @@ public class ParsedStruct extends BaseParsedDefinition {
 
 	@Override
 	public void compileMembers(BaseScope scope) {
-		ParsedGenericParameter.compile(scope, parameters);
-		
+		ParsedGenericParameter.compile(scope, compiled.genericParameters, parameters);
 		super.compileMembers(scope);
 	}
 }

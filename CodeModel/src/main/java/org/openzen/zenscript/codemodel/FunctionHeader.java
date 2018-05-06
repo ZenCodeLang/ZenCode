@@ -135,12 +135,51 @@ public class FunctionHeader {
 		return true;
 	}
 	
+	/**
+	 * Checks if two function headers are equivalent. Functions headers are
+	 * equivalent if their types are the same.
+	 * 
+	 * @param other
+	 * @return 
+	 */
 	public boolean isEquivalentTo(FunctionHeader other) {
 		if (parameters.length != other.parameters.length)
 			return false;
 		
 		for (int i = 0; i < parameters.length; i++) {
-			if (parameters[i] != other.parameters[i])
+			if (parameters[i].type != other.parameters[i].type)
+				return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Checks if two function headers are similar. "similar" means that there
+	 * exists a set of parameters for which there is no way to determine which
+	 * one to call.
+	 * 
+	 * Note that this does not mean that there is never confusion about which
+	 * method to call. There can be confusion due to implicit conversions. This
+	 * can be resolved by performing the conversions explicitly.
+	 * 
+	 * It is illegal to have two similar methods with the same name.
+	 * 
+	 * @param other
+	 * @return 
+	 */
+	public boolean isSimilarTo(FunctionHeader other) {
+		int common = Math.min(parameters.length, other.parameters.length);
+		for (int i = 0; i < common; i++) {
+			if (parameters[i].type != other.parameters[i].type)
+				return false;
+		}
+		for (int i = common; i < parameters.length; i++) {
+			if (parameters[i].defaultValue == null)
+				return false;
+		}
+		for (int i = common; i < other.parameters.length; i++) {
+			if (other.parameters[i].defaultValue == null)
 				return false;
 		}
 		
@@ -182,6 +221,15 @@ public class FunctionHeader {
 		
 		return new FunctionHeader(typeParameters, returnType, parameters);
 		//return this;
+	}
+	
+	public FunctionParameter getVariadicParameter() {
+		if (parameters.length == 0)
+			return null;
+		if (parameters[parameters.length - 1].variadic)
+			return parameters[parameters.length - 1];
+		
+		return null;
 	}
 	
 	public String explainWhyIncompatible(TypeScope scope, CallArguments arguments) {

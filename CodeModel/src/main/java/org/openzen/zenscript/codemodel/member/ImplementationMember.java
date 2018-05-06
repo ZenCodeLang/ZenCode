@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.member;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -23,8 +24,8 @@ public class ImplementationMember extends DefinitionMember {
 	public final ITypeID type;
 	public final List<IDefinitionMember> members = new ArrayList<>();
 	
-	public ImplementationMember(CodePosition position, int modifiers, ITypeID type) {
-		super(position, modifiers);
+	public ImplementationMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID type) {
+		super(position, definition, modifiers);
 		
 		this.type = type;
 	}
@@ -44,7 +45,7 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
 		ITypeID instancedType = type.withGenericArguments(registry, mapping);
-		ImplementationMember result = new ImplementationMember(position, modifiers, instancedType);
+		ImplementationMember result = new ImplementationMember(position, definition, modifiers, instancedType);
 		for (IDefinitionMember member : members)
 			result.addMember(member.instance(registry, mapping));
 		return result;

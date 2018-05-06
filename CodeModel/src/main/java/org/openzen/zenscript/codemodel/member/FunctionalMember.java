@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.member;
 import java.util.List;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
@@ -25,8 +26,8 @@ public abstract class FunctionalMember extends DefinitionMember implements ICall
 	public final String name;
 	public List<Statement> body;
 	
-	public FunctionalMember(CodePosition position, int modifiers, String name, FunctionHeader header) {
-		super(position, modifiers);
+	public FunctionalMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header) {
+		super(position, definition, modifiers);
 		
 		this.name = name;
 		this.header = header;

@@ -11,17 +11,19 @@ import org.openzen.zenscript.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public class NotExpression extends Expression {
-	public final Expression value;
+public class GlobalExpression extends Expression {
+	public final String name;
+	public final Expression resolution;
 	
-	public NotExpression(CodePosition position, Expression value) {
-		super(position, value.type);
+	public GlobalExpression(CodePosition position, String name, Expression resolution) {
+		super(position, resolution.type);
 		
-		this.value = value;
+		this.name = name;
+		this.resolution = resolution;
 	}
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
-		return visitor.visitNot(this);
+		return visitor.visitGlobal(this);
 	}
 }

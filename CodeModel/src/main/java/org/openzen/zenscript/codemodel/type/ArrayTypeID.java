@@ -52,11 +52,6 @@ public class ArrayTypeID implements ITypeID {
 	}
 
 	@Override
-	public String toCamelCaseName() {
-		return elementType.toCamelCaseName() + "Array";
-	}
-
-	@Override
 	public int hashCode() {
 		int hash = 7;
 		hash = 79 * hash + elementType.hashCode();

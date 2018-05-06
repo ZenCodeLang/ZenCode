@@ -25,7 +25,15 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 	
 	private ImplementationMember compiled;
 	
-	public ParsedImplementation(CodePosition position, int modifiers, IParsedType type, List<ParsedDefinitionMember> members) {
+	public ParsedImplementation(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			IParsedType type,
+			List<ParsedDefinitionMember> members)
+	{
+		super(definition);
+		
 		this.position = position;
 		this.modifiers = modifiers;
 		this.type = type;
@@ -33,13 +41,13 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 	}
 	
 	@Override
-	public void linkInnerTypes(HighLevelDefinition definition) {
+	public void linkInnerTypes() {
 		
 	}
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new ImplementationMember(position, modifiers, type.compile(scope));
+		compiled = new ImplementationMember(position, definition, modifiers, type.compile(scope));
 		
 		for (ParsedDefinitionMember member : members) {
 			member.linkTypes(scope);

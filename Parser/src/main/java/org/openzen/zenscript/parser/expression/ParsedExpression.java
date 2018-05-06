@@ -457,7 +457,7 @@ public abstract class ParsedExpression {
 	}
 	
 	public final CodePosition position;
-
+	
 	public ParsedExpression(CodePosition position) {
 		this.position = position;
 	}

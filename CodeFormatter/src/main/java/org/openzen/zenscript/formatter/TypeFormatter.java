@@ -133,7 +133,7 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 
 	@Override
 	public String visitOptional(OptionalTypeID optional) {
-		return optional.accept(this) + "?";
+		return optional.baseType.accept(this) + "?";
 	}
 	
 	private void formatTypeParameters(StringBuilder result, TypeParameter[] parameters) {

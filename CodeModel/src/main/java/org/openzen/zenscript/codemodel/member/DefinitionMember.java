@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.Taggable;
@@ -15,10 +16,12 @@ import org.openzen.zenscript.shared.Taggable;
  */
 public abstract class DefinitionMember extends Taggable implements IDefinitionMember {
 	public final CodePosition position;
+	public final HighLevelDefinition definition;
 	public final int modifiers;
 	
-	public DefinitionMember(CodePosition position, int modifiers) {
+	public DefinitionMember(CodePosition position, HighLevelDefinition definition, int modifiers) {
 		this.position = position;
+		this.definition = definition;
 		this.modifiers = modifiers;
 	}
 	
@@ -33,5 +36,9 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 	
 	public boolean isFinal() {
 		return Modifiers.isFinal(modifiers);
+	}
+	
+	public boolean isExtern() {
+		return Modifiers.isExtern(modifiers);
 	}
 }

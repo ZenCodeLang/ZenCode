@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CastExpression;
@@ -25,8 +26,8 @@ import org.openzen.zenscript.shared.CodePosition;
 public class CasterMember extends FunctionalMember implements ICasterMember {
 	public final ITypeID toType;
 	
-	public CasterMember(CodePosition position, int modifiers, ITypeID toType) {
-		super(position, modifiers, "as", new FunctionHeader(toType));
+	public CasterMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID toType) {
+		super(position, definition, modifiers, "as", new FunctionHeader(toType));
 		
 		this.toType = toType;
 	}
@@ -43,7 +44,7 @@ public class CasterMember extends FunctionalMember implements ICasterMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new CasterMember(position, modifiers, toType.withGenericArguments(registry, mapping));
+		return new CasterMember(position, definition, modifiers, toType.withGenericArguments(registry, mapping));
 	}
 	
 	@Override

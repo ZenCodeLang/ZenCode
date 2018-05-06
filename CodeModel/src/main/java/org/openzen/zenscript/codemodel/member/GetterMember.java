@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
@@ -25,10 +26,8 @@ public class GetterMember extends FunctionalMember implements IGettableMember {
 	public final String name;
 	public final ITypeID type;
 	
-	public String compiledName;
-	
-	public GetterMember(CodePosition position, int modifiers, String name, ITypeID type) {
-		super(position, modifiers, name, new FunctionHeader(type));
+	public GetterMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, ITypeID type) {
+		super(position, definition, modifiers, name, new FunctionHeader(type));
 		
 		this.name = name;
 		this.type = type;
@@ -61,7 +60,7 @@ public class GetterMember extends FunctionalMember implements IGettableMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new GetterMember(position, modifiers, name, type.withGenericArguments(registry, mapping));
+		return new GetterMember(position, definition, modifiers, name, type.withGenericArguments(registry, mapping));
 	}
 
 	@Override

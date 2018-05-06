@@ -9,6 +9,7 @@ import java.util.Map;
 public class JavaTypeClassVisitor implements ITypeVisitor<Class> {
 
     public static final JavaTypeClassVisitor INSTANCE = new JavaTypeClassVisitor();
+	private final JavaOptionalTypeClassVisitor optional = new JavaOptionalTypeClassVisitor(this);
 
     @Override
     public Class visitBasic(BasicTypeID basic) {
@@ -87,6 +88,6 @@ public class JavaTypeClassVisitor implements ITypeVisitor<Class> {
 
     @Override
     public Class visitOptional(OptionalTypeID optional) {
-        return optional.baseType.accept(this);
+        return optional.baseType.accept(this.optional);
     }
 }

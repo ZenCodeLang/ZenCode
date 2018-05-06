@@ -21,12 +21,14 @@ import org.openzen.zenscript.shared.Taggable;
  * @author Hoofdgebruiker
  */
 public abstract class HighLevelDefinition extends Taggable {
+	private static final TypeParameter[] NO_PARAMETERS = new TypeParameter[0];
+	
 	public final CodePosition position;
 	public final ZSPackage pkg;
 	public final String name;
 	public final int modifiers;
 	public final List<IDefinitionMember> members = new ArrayList<>();
-	public final List<TypeParameter> genericParameters = new ArrayList<>();
+	public TypeParameter[] genericParameters = NO_PARAMETERS;
 	
 	public HighLevelDefinition outerDefinition;
 	public ITypeID superType;
@@ -52,8 +54,8 @@ public abstract class HighLevelDefinition extends Taggable {
 			members.add(member);
 	}
 	
-	public void addGenericParameter(TypeParameter parameter) {
-		genericParameters.add(parameter);
+	public void setTypeParameters(TypeParameter[] typeParameters) {
+		this.genericParameters = typeParameters;
 	}
 	
 	public List<FieldMember> getFields() {

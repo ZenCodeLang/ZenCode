@@ -14,10 +14,12 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
  * @author Hoofdgebruiker
  */
 public class SemanticModule {
+	public final boolean isValid;
 	public final PackageDefinitions definitions;
 	public final List<ScriptBlock> scripts;
 
-	public SemanticModule(PackageDefinitions definitions, List<ScriptBlock> scripts) {
+	public SemanticModule(boolean isValid, PackageDefinitions definitions, List<ScriptBlock> scripts) {
+		this.isValid = isValid;
 		this.definitions = definitions;
 		this.scripts = scripts;
 	}

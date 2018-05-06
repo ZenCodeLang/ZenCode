@@ -19,17 +19,17 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class InnerDefinitionMember extends DefinitionMember {
-	private final HighLevelDefinition definition;
+	public final HighLevelDefinition innerDefinition;
 	
-	public InnerDefinitionMember(CodePosition position, int modifiers, HighLevelDefinition definition) {
-		super(position, modifiers);
+	public InnerDefinitionMember(CodePosition position, HighLevelDefinition outer, int modifiers, HighLevelDefinition definition) {
+		super(position, outer, modifiers);
 		
-		this.definition = definition;
+		this.innerDefinition = definition;
 	}
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addInnerType(definition.name, new InnerDefinition(definition));
+		type.addInnerType(innerDefinition.name, new InnerDefinition(innerDefinition));
 	}
 
 	@Override
@@ -37,13 +37,13 @@ public class InnerDefinitionMember extends DefinitionMember {
 		if (this.isStatic()) {
 			return this;
 		} else {
-			return new InstancedInnerDefinitionMember(position, modifiers, definition, mapping);
+			return new InstancedInnerDefinitionMember(position, definition, modifiers, innerDefinition, mapping);
 		}
 	}
 
 	@Override
 	public String describe() {
-		return "inner type " + definition.name;
+		return "inner type " + innerDefinition.name;
 	}
 
 	@Override

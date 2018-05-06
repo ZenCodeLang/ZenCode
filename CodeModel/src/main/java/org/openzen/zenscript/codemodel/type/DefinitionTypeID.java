@@ -21,7 +21,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  */
 public class DefinitionTypeID implements ITypeID {
 	public static DefinitionTypeID forType(HighLevelDefinition definition) {
-		if (!definition.genericParameters.isEmpty())
+		if (definition.genericParameters.length > 0)
 			throw new IllegalArgumentException("Definition has type arguments!");
 		
 		return new DefinitionTypeID(definition, NO_TYPE_PARAMETERS);
@@ -57,7 +57,7 @@ public class DefinitionTypeID implements ITypeID {
 			Arrays.sort(outerTypeEntries, (a, b) -> a.parameter.name.compareTo(b.parameter.name));
 		}
 		
-		if (typeParameters.length != definition.genericParameters.size())
+		if (typeParameters.length != definition.genericParameters.length)
 			throw new RuntimeException("Invalid number of type parameters");
 	}
 	
@@ -66,7 +66,7 @@ public class DefinitionTypeID implements ITypeID {
 		if (superType != null && typeParameters.length > 0) {
 			Map<TypeParameter, ITypeID> genericSuperArguments = new HashMap<>();
 			for (int i = 0; i < typeParameters.length; i++)
-				genericSuperArguments.put(definition.genericParameters.get(i), typeParameters[i]);
+				genericSuperArguments.put(definition.genericParameters[i], typeParameters[i]);
 			
 			superType = definition.superType.withGenericArguments(registry, genericSuperArguments);
 		}
@@ -81,11 +81,6 @@ public class DefinitionTypeID implements ITypeID {
 		this.outerTypeParameters = Collections.emptyMap();
 		this.outerTypeEntries = NO_OUTER_ENTRIES;
 	}
-
-	@Override
-	public String toCamelCaseName() {
-		return definition.name;
-	}
 	
 	@Override
 	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
@@ -94,7 +89,7 @@ public class DefinitionTypeID implements ITypeID {
 		
 		List<ITypeID> instancedArguments = new ArrayList<>();
 		for (int i = 0; i < typeParameters.length; i++) {
-			instancedArguments.add(arguments.containsKey(definition.genericParameters.get(i)) ? arguments.get(definition.genericParameters.get(i)) : typeParameters[i].withGenericArguments(registry, arguments));
+			instancedArguments.add(arguments.containsKey(definition.genericParameters[i]) ? arguments.get(definition.genericParameters[i]) : typeParameters[i].withGenericArguments(registry, arguments));
 		}
 		Map<TypeParameter, ITypeID> instancedOuter;
 		if (outerTypeParameters.isEmpty()) {

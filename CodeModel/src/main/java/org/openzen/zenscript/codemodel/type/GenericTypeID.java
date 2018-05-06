@@ -49,11 +49,6 @@ public class GenericTypeID implements ITypeID {
 	}
 
 	@Override
-	public String toCamelCaseName() {
-		return parameter.name;
-	}
-
-	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		for (TypeParameter parameter : parameters)
 			if (parameter == this.parameter)

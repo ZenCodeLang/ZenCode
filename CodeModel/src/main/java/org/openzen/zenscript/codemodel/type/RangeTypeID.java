@@ -54,17 +54,6 @@ public class RangeTypeID implements ITypeID {
 	}
 
 	@Override
-	public String toCamelCaseName() {
-		if (from == BasicTypeID.INT && to == BasicTypeID.INT) {
-			return "Range";
-		} else if (from == to) {
-			return from.toCamelCaseName() + "Range";
-		} else {
-			return from.toCamelCaseName() + to.toCamelCaseName() + "Range";
-		}
-	}
-
-	@Override
 	public int hashCode() {
 		int hash = 5;
 		hash = 89 * hash + from.hashCode();

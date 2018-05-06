@@ -59,11 +59,6 @@ public class IteratorTypeID implements ITypeID {
 	}
 
 	@Override
-	public String toCamelCaseName() {
-		return "Iterator" + (iteratorTypes.length == 1 ? "" : iteratorTypes.length);
-	}
-
-	@Override
 	public int hashCode() {
 		int hash = 5;
 		hash = 13 * hash + Arrays.deepHashCode(this.iteratorTypes);

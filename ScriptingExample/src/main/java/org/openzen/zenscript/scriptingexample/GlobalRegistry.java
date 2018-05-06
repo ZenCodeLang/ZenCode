@@ -67,7 +67,7 @@ public class GlobalRegistry {
 			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, packageMyPackage, "MyClass", Modifiers.PUBLIC, null);
 			JavaClassInfo myClassInfo = new JavaClassInfo("my/test/MyClass");
 			
-			MethodMember member = new MethodMember(CodePosition.NATIVE, Modifiers.PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING));
+			MethodMember member = new MethodMember(CodePosition.NATIVE, myClassDefinition, Modifiers.PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING));
 			member.setTag(JavaMethodInfo.class, new JavaMethodInfo(myClassInfo, "test", "()Ljava/lang/String;"));
 			myClassDefinition.addMember(member);
 			
@@ -96,12 +96,14 @@ public class GlobalRegistry {
 	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, javaLang, "System", Modifiers.EXPORT);
 	private final MethodMember PRINTSTREAM_PRINTLN = new MethodMember(
 			CodePosition.NATIVE,
+			PRINTSTREAM,
 			Modifiers.EXPORT,
 			"println",
 			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(BasicTypeID.STRING)));
 	
 	private final FieldMember SYSTEM_OUT = new FieldMember(
 			CodePosition.NATIVE,
+			SYSTEM,
 			Modifiers.EXPORT | Modifiers.FINAL,
 			"out",
 			DefinitionTypeID.forType(SYSTEM));
