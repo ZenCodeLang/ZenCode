@@ -6,6 +6,7 @@
 
 package org.openzen.zenscript.parser.statements;
 
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -27,8 +28,8 @@ public class ParsedStatementVar extends ParsedStatement {
 	private final ParsedExpression initializer;
 	private final boolean isFinal;
 
-	public ParsedStatementVar(CodePosition position, String name, IParsedType type, ParsedExpression initializer, boolean isFinal) {
-		super(position);
+	public ParsedStatementVar(CodePosition position, WhitespaceInfo whitespace, String name, IParsedType type, ParsedExpression initializer, boolean isFinal) {
+		super(position, whitespace);
 
 		this.name = name;
 		this.type = type;
@@ -49,6 +50,6 @@ public class ParsedStatementVar extends ParsedStatement {
 		}
 		VarStatement result = new VarStatement(position, name, type, initializer, isFinal);
 		scope.defineVariable(result);
-		return result;
+		return result(result);
 	}
 }

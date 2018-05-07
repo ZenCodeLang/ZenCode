@@ -7,8 +7,10 @@ package org.openzen.zenscript.shared;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -44,6 +46,30 @@ public class StringUtils {
 			CharacterEntity entity = new CharacterEntity(key, value);
 			NAMED_CHARACTER_ENTITIES.put(entity.stringValue, entity);
 		}
+	}
+
+	/**
+	 * Splits a string in parts, given a specified delimiter.
+	 *
+	 * @param value string to be split
+	 * @param delimiter delimiter
+	 * @return split string
+	 */
+	public static List<String> split(String value, char delimiter)
+	{
+		if (value == null)
+			return null;
+
+		List<String> result = new ArrayList<>();
+		int start = 0;
+		for (int i = 0; i < value.length(); i++) {
+			if (value.charAt(i) == delimiter) {
+				result.add(value.substring(start, i));
+				start = i + 1;
+			}
+		}
+		result.add(value.substring(start));
+		return result;
 	}
 	
 	/**

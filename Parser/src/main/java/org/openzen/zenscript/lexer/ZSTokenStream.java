@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
@@ -95,8 +96,54 @@ public class ZSTokenStream extends TokenStream<ZSToken, ZSTokenType> {
 		KEYWORDS.put("new", K_NEW);
 	}
 	
+	private String whitespaceBuffer = null;
+	
 	public ZSTokenStream(String filename, Reader reader) {
 		super(filename, reader, DFA, ZSTokenType.EOF);
+	}
+	
+	public String loadWhitespace() {
+		if (whitespaceBuffer == null)
+			whitespaceBuffer = peek().whitespaceBefore;
+		
+		return whitespaceBuffer;
+	}
+	
+	public void reloadWhitespace() {
+		whitespaceBuffer = peek().whitespaceBefore;
+	}
+	
+	public String grabWhitespace() {
+		String result = loadWhitespace();
+		whitespaceBuffer = null;
+		return result;
+	}
+	
+	public String grabWhitespaceLine() {
+		String whitespace = loadWhitespace();
+		if (whitespace.contains("\n")) {
+			int index = whitespace.indexOf('\n');
+			whitespaceBuffer = whitespace.substring(index + 1);
+			return whitespace.substring(0, index);
+		} else {
+			whitespaceBuffer = "";
+			return whitespace;
+		}
+	}
+	
+	public void skipWhitespaceNewline() {
+		loadWhitespace();
+		int index = whitespaceBuffer.indexOf('\n');
+		if (index >= 0)
+			whitespaceBuffer = whitespaceBuffer.substring(index + 1);
+	}
+	
+	public WhitespaceInfo collectWhitespaceInfoForBlock(String whitespace) {
+		return WhitespaceInfo.from(whitespace, "");
+	}
+	
+	public WhitespaceInfo collectWhitespaceInfo(String whitespace) {
+		return WhitespaceInfo.from(whitespace, grabWhitespaceLine());
 	}
 	
 	@Override

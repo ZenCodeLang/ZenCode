@@ -18,10 +18,12 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
+import org.openzen.zenscript.codemodel.WhitespacePostComment;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
@@ -58,6 +60,7 @@ public class ParsedFile {
 		ParsedFile result = new ParsedFile(filename);
 		
 		ZSTokenStream tokens = new ZSTokenStream(filename, reader);
+		ZSToken eof = null;
 
 		while (true) {
 			CodePosition position = tokens.peek().position;
@@ -96,7 +99,7 @@ public class ParsedFile {
 
 			if (tokens.optional(K_IMPORT) != null) {
 				result.imports.add(ParsedImport.parse(position, tokens));
-			} else if (tokens.optional(EOF) != null) {
+			} else if ((eof = tokens.optional(EOF)) != null) {
 				break;
 			} else {
 				ParsedDefinition definition = ParsedDefinition.parse(pkg, position, modifiers, tokens, null);
@@ -110,6 +113,7 @@ public class ParsedFile {
 			}
 		}
 		
+		result.postComment = WhitespacePostComment.fromWhitespace(eof.whitespaceBefore);
 		return result;
 	}
 	
@@ -119,6 +123,7 @@ public class ParsedFile {
 	private final List<ParsedDefinition> definitions = new ArrayList<>();
 	private final List<ParsedStatement> statements = new ArrayList<>();
 	private final AccessScope access = new AccessScope();
+	private WhitespacePostComment postComment = null;
 	
 	public ParsedFile(String filename) {
 		this.filename = filename;
@@ -165,7 +170,7 @@ public class ParsedFile {
 			definition.compileCode(scope);
 		}
 		
-		if (!statements.isEmpty()) {
+		if (!statements.isEmpty() || postComment != null) {
 			StatementScope statementScope = new GlobalScriptScope(scope);
 			List<Statement> statements = new ArrayList<>();
 			for (ParsedStatement statement : this.statements) {
@@ -174,6 +179,7 @@ public class ParsedFile {
 			
 			ScriptBlock block = new ScriptBlock(statements);
 			block.setTag(SourceFile.class, new SourceFile(filename));
+			block.setTag(WhitespacePostComment.class, postComment);
 			scripts.add(block);
 		}
 	}

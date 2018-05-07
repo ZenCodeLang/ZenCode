@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.statements;
 
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.DoWhileStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -24,8 +25,8 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 	public final ParsedStatement content;
 	public final ParsedExpression condition;
 	
-	public ParsedStatementDoWhile(CodePosition position, String label, ParsedStatement content, ParsedExpression condition) {
-		super(position);
+	public ParsedStatementDoWhile(CodePosition position, WhitespaceInfo whitespace, String label, ParsedStatement content, ParsedExpression condition) {
+		super(position, whitespace);
 		
 		this.label = label;
 		this.content = content;
@@ -43,6 +44,6 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 		DoWhileStatement result = new DoWhileStatement(position, label, condition);
 		LoopScope innerScope = new LoopScope(result, scope);
 		result.content = this.content.compile(innerScope);
-		return result;
+		return result(result);
 	}
 }

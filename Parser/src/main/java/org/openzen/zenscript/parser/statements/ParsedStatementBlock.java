@@ -2,6 +2,8 @@ package org.openzen.zenscript.parser.statements;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
+import org.openzen.zenscript.codemodel.WhitespacePostComment;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.linker.BlockScope;
@@ -10,11 +12,13 @@ import org.openzen.zenscript.shared.CodePosition;
 
 public class ParsedStatementBlock extends ParsedStatement {
 	private final List<ParsedStatement> statements;
-
-	public ParsedStatementBlock(CodePosition position, List<ParsedStatement> statements) {
-		super(position);
+	private final WhitespacePostComment postComment;
+	
+	public ParsedStatementBlock(CodePosition position, WhitespaceInfo whitespace, WhitespacePostComment postComment, List<ParsedStatement> statements) {
+		super(position, whitespace);
 
 		this.statements = statements;
+		this.postComment = postComment;
 	}
 
 	@Override
@@ -24,6 +28,9 @@ public class ParsedStatementBlock extends ParsedStatement {
 		for (ParsedStatement statement : statements) {
 			compiled.add(statement.compile(blockScope));
 		}
-		return new BlockStatement(position, compiled);
+		BlockStatement block = new BlockStatement(position, compiled);
+		result(block);
+		block.setTag(WhitespacePostComment.class, postComment);
+		return block;
 	}
 }

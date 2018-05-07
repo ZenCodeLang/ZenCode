@@ -1,5 +1,6 @@
 package org.openzen.zenscript.parser.statements;
 
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -14,8 +15,8 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
 public class ParsedStatementReturn extends ParsedStatement {
 	private final ParsedExpression expression;
 
-	public ParsedStatementReturn(CodePosition position, ParsedExpression expression) {
-		super(position);
+	public ParsedStatementReturn(CodePosition position, WhitespaceInfo whitespace, ParsedExpression expression) {
+		super(position, whitespace);
 		
 		this.expression = expression;
 	}
@@ -38,7 +39,7 @@ public class ParsedStatementReturn extends ParsedStatement {
 					.compile(new ExpressionScope(scope, scope.getFunctionHeader().returnType))
 					.eval()
 					.castImplicit(position, scope, scope.getFunctionHeader().returnType);
-			return new ReturnStatement(position, value);
+			return result(new ReturnStatement(position, value));
 		}
 	}
 }

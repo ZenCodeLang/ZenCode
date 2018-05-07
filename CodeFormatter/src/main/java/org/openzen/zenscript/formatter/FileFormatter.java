@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
+import org.openzen.zenscript.codemodel.WhitespacePostComment;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.statement.Statement;
 
@@ -41,6 +42,14 @@ public class FileFormatter {
 		StringBuilder output = new StringBuilder();
 		importer.write(output);
 		output.append(scriptFormatter.toString().trim());
+		
+		WhitespacePostComment postComment = script.getTag(WhitespacePostComment.class);
+		if (postComment != null) {
+			for (String comment : CommentFormatter.format(postComment.comments)) {
+				output.append("\n").append(comment);
+			}
+		}
+		
 		return output.toString();
 	}
 	

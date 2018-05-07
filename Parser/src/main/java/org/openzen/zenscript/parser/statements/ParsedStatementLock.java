@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.statements;
 
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.LockStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -21,8 +22,8 @@ public class ParsedStatementLock extends ParsedStatement {
 	public final ParsedExpression object;
 	public final ParsedStatement content;
 	
-	public ParsedStatementLock(CodePosition position, ParsedExpression object, ParsedStatement content) {
-		super(position);
+	public ParsedStatementLock(CodePosition position, WhitespaceInfo whitespace, ParsedExpression object, ParsedStatement content) {
+		super(position, whitespace);
 		
 		this.object = object;
 		this.content = content;
@@ -32,6 +33,6 @@ public class ParsedStatementLock extends ParsedStatement {
 	public Statement compile(StatementScope scope) {
 		Expression object = this.object.compile(new ExpressionScope(scope)).eval();
 		Statement content = this.content.compile(scope);
-		return new LockStatement(position, object, content);
+		return result(new LockStatement(position, object, content));
 	}
 }
