@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.statements;
 
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
@@ -24,8 +25,8 @@ public class ParsedStatementWhile extends ParsedStatement {
 	public final ParsedStatement content;
 	public final String label;
 	
-	public ParsedStatementWhile(CodePosition position, String label, ParsedExpression condition, ParsedStatement content) {
-		super(position);
+	public ParsedStatementWhile(CodePosition position, WhitespaceInfo whitespace, String label, ParsedExpression condition, ParsedStatement content) {
+		super(position, whitespace);
 		
 		this.condition = condition;
 		this.content = content;
@@ -42,6 +43,6 @@ public class ParsedStatementWhile extends ParsedStatement {
 		WhileStatement result = new WhileStatement(position, label, condition);
 		LoopScope innerScope = new LoopScope(result, scope);
 		result.content = this.content.compile(innerScope);
-		return result;
+		return result(result);
 	}
 }

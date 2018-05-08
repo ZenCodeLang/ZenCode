@@ -7,6 +7,7 @@ package org.openzen.zenscript.parser.statements;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.CatchClause;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -30,12 +31,13 @@ public class ParsedStatementTryCatch extends ParsedStatement {
 	
 	public ParsedStatementTryCatch(
 			CodePosition position,
+			WhitespaceInfo whitespace,
 			String resourceName,
 			ParsedExpression resourceInitializer,
 			ParsedStatement statement,
 			List<ParsedCatchClause> catchClauses,
 			ParsedStatement finallyClause) {
-		super(position);
+		super(position, whitespace);
 		
 		this.resourceName = resourceName;
 		this.resourceInitializer = resourceInitializer;
@@ -57,6 +59,6 @@ public class ParsedStatementTryCatch extends ParsedStatement {
 		if (resourceName != null) {
 			resource = new VarStatement(position, resourceName, resourceInitializer.type, resourceInitializer, true);
 		}
-		return new TryCatchStatement(position, resource, statement, catches, finallyClause);
+		return result(new TryCatchStatement(position, resource, statement, catches, finallyClause));
 	}
 }

@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.statements;
 
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.linker.ExpressionScope;
@@ -19,14 +20,14 @@ import org.openzen.zenscript.shared.CodePosition;
 public class ParsedStatementThrow extends ParsedStatement {
 	private final ParsedExpression expression;
 	
-	public ParsedStatementThrow(CodePosition position, ParsedExpression expression) {
-		super(position);
+	public ParsedStatementThrow(CodePosition position, WhitespaceInfo whitespace, ParsedExpression expression) {
+		super(position, whitespace);
 		
 		this.expression = expression;
 	}
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		return new ThrowStatement(position, expression.compile(new ExpressionScope(scope)).eval());
+		return result(new ThrowStatement(position, expression.compile(new ExpressionScope(scope)).eval()));
 	}
 }

@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.formatter;
 
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
+import org.openzen.zenscript.codemodel.WhitespacePostComment;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.BreakStatement;
@@ -51,43 +53,54 @@ public class StatementFormatter implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitBlock(BlockStatement statement) {
-		beginBlock();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginBlock(whitespace);
 		
 		String oldIndent = indent;
 		indent = oldIndent + settings.indent;
 		for (Statement subStatement : statement.statements) {
 			format(ParentStatementType.NONE, subStatement);
 		}
+		
+		WhitespacePostComment postComment = statement.getTag(WhitespacePostComment.class);
+		if (postComment != null) {
+			writePostComments(postComment.comments);
+		}
+		
 		indent = oldIndent;
-		endBlock();
+		
+		endBlock(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitBreak(BreakStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append("break");
-		if (statement.target != null)
+		if (statement.target.label != null)
 			result.append(' ').append(statement.target.label);
 		result.append(";");
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitContinue(ContinueStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append("continue");
-		if (statement.target != null)
+		if (statement.target.label != null)
 			result.append(' ').append(statement.target.label);
 		result.append(";");
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitDoWhile(DoWhileStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append("do");
 		if (statement.label != null) {
 			if (settings.spaceBeforeLabelColon)
@@ -101,30 +114,33 @@ public class StatementFormatter implements StatementVisitor<Void> {
 		result.append(" while ");
 		appendCondition(statement.condition);
 		result.append(";");
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitEmpty(EmptyStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append(";\n");
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitExpression(ExpressionStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append(statement.expression.accept(expressionFormatter).value)
 			  .append(";");
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitForeach(ForeachStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append("for ");
 		for (int i = 0; i < statement.loopVariables.length; i++) {
 			if (i > 0)
@@ -135,14 +151,15 @@ public class StatementFormatter implements StatementVisitor<Void> {
 		result.append(" in ");
 		result.append(statement.list.accept(expressionFormatter).value);
 		format(ParentStatementType.LOOP, statement.content);
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitIf(IfStatement statement) {
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		ParentStatementType position = this.position;
-		beginSingleLine();
+		beginSingleLine(whitespace);
 		result.append("if ");
 		appendCondition(statement.condition);
 		format(statement.onElse == null ? ParentStatementType.IF : ParentStatementType.IF_WITH_ELSE, statement.onThen);
@@ -150,44 +167,48 @@ public class StatementFormatter implements StatementVisitor<Void> {
 			result.append("else");
 			format(ParentStatementType.ELSE, statement.onElse);
 		}
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitLock(LockStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append("lock ");
 		result.append(statement.object.accept(expressionFormatter).value);
 		statement.content.accept(this);
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitReturn(ReturnStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append("return");
 		if (statement.value != null) {
 			result.append(' ');
 			result.append(statement.value.accept(expressionFormatter).value);
 		}
 		result.append(";");
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitThrow(ThrowStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append("throw ").append(statement.value.accept(expressionFormatter));
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitTryCatch(TryCatchStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append("try");
 		if (statement.resource != null) {
 			result.append(' ').append(statement.resource.name);
@@ -213,13 +234,14 @@ public class StatementFormatter implements StatementVisitor<Void> {
 			
 			format(ParentStatementType.FINALLY, statement.finallyClause);
 		}
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitVar(VarStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append(statement.isFinal ? "val " : "var ");
 		result.append(statement.name);
 		
@@ -232,13 +254,14 @@ public class StatementFormatter implements StatementVisitor<Void> {
 			result.append(statement.initializer.accept(expressionFormatter).value);
 		}
 		result.append(";");
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 
 	@Override
 	public Void visitWhile(WhileStatement statement) {
-		beginSingleLine();
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
 		result.append("while");
 		if (statement.label != null) {
 			if (settings.spaceBeforeLabelColon)
@@ -252,7 +275,7 @@ public class StatementFormatter implements StatementVisitor<Void> {
 		appendCondition(statement.condition);
 		
 		format(ParentStatementType.LOOP, statement.content);
-		endSingleLine();
+		endSingleLine(whitespace);
 		return null;
 	}
 	
@@ -271,11 +294,21 @@ public class StatementFormatter implements StatementVisitor<Void> {
 			result.append(')');
 	}
 	
-	private void beginBlock() {
+	private void beginBlock(WhitespaceInfo whitespace) {
 		result.append(settings.getBlockSeparator(indent, position));
+		
+		if (whitespace != null) {
+			if (whitespace.emptyLine) {
+				result.append("\n").append(indent);
+			}
+			writeComments(whitespace.commentsBefore);
+		}
 	}
 	
-	private void endBlock() {
+	private void endBlock(WhitespaceInfo whitespace) {
+		if (whitespace != null && !whitespace.commentsAfter.isEmpty())
+			result.append(' ').append(whitespace.commentsAfter);
+		
 		result.append("\n").append(indent).append("}");
 		if (position == ParentStatementType.IF_WITH_ELSE) {
 			if (settings.elseBracketOnSameLine)
@@ -285,12 +318,34 @@ public class StatementFormatter implements StatementVisitor<Void> {
 		}
 	}
 	
-	private void beginSingleLine() {
+	private void beginSingleLine(WhitespaceInfo whitespace) {
 		result.append(settings.getSingleLineSeparator(indent, position));
+		
+		if (whitespace != null) {
+			if (whitespace.emptyLine) {
+				result.append("\n").append(indent);
+			}
+			writeComments(whitespace.commentsBefore);
+		}
 	}
 	
-	private void endSingleLine() {
+	private void endSingleLine(WhitespaceInfo whitespace) {
+		if (whitespace != null && !whitespace.commentsAfter.isEmpty())
+			result.append(' ').append(whitespace.commentsAfter);
+		
 		if (position == ParentStatementType.IF_WITH_ELSE)
 			result.append("\n").append(indent);
+	}
+	
+	private void writeComments(String[] comments) {
+		for (String comment : CommentFormatter.format(comments)) {
+			result.append(comment).append("\n").append(indent);
+		}
+	}
+	
+	private void writePostComments(String[] comments) {
+		for (String comment : CommentFormatter.format(comments)) {
+			result.append("\n").append(indent).append(comment);
+		}
 	}
 }

@@ -294,7 +294,7 @@ public abstract class TokenStream<T extends Token<TT>, TT extends TokenType> imp
 					line,
 					lineOffset);
 			
-            next = createToken(position, "", "", eof);
+            next = createToken(position, whitespace, "", eof);
             return;
         }
 		

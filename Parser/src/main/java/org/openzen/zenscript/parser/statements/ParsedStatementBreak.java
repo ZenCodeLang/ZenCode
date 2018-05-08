@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.statements;
 
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.statement.BreakStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -20,8 +21,8 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
 public class ParsedStatementBreak extends ParsedStatement {
 	public final String name;
 	
-	public ParsedStatementBreak(CodePosition position, String name) {
-		super(position);
+	public ParsedStatementBreak(CodePosition position, WhitespaceInfo whitespace, String name) {
+		super(position, whitespace);
 		
 		this.name = name;
 	}
@@ -31,6 +32,6 @@ public class ParsedStatementBreak extends ParsedStatement {
 		LoopStatement target = scope.getLoop(name);
 		if (target == null)
 			throw new CompileException(position, CompileExceptionCode.BREAK_OUTSIDE_LOOP, name == null ? "Not in a loop" : "No such loop: " + name);
-		return new BreakStatement(position, target);
+		return result(new BreakStatement(position, target));
 	}
 }

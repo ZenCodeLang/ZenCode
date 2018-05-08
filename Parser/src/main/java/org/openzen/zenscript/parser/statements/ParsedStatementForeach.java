@@ -1,5 +1,6 @@
 package org.openzen.zenscript.parser.statements;
 
+import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
@@ -19,8 +20,8 @@ public class ParsedStatementForeach extends ParsedStatement {
 	private final ParsedExpression list;
 	private final ParsedStatement body;
 
-	public ParsedStatementForeach(CodePosition position, String[] varnames, ParsedExpression list, ParsedStatement body) {
-		super(position);
+	public ParsedStatementForeach(CodePosition position, WhitespaceInfo whitespace, String[] varnames, ParsedExpression list, ParsedStatement body) {
+		super(position, whitespace);
 
 		this.varnames = varnames;
 		this.list = list;
@@ -43,6 +44,6 @@ public class ParsedStatementForeach extends ParsedStatement {
 		ForeachStatement statement = new ForeachStatement(position, variables, iterator, list);
 		ForeachScope innerScope = new ForeachScope(statement, scope);
 		statement.content = this.body.compile(innerScope);
-		return statement;
+		return result(statement);
 	}
 }

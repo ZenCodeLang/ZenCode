@@ -17,6 +17,9 @@ public class TagDictionary {
     private Map<Class<?>, Object> tags = Collections.EMPTY_MAP;
 
     public <T> void put(Class<T> cls, T tag) {
+		if (tag == null)
+			return;
+		
         if (tags == Collections.EMPTY_MAP) {
             tags = Collections.singletonMap(cls, tag);
         } else if (tags.size() == 1) {
