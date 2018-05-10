@@ -21,9 +21,16 @@ import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 
+    private final ClassWriter outerWriter;
+
+    public JavaDefinitionVisitor(ClassWriter outerWriter) {
+
+        this.outerWriter = outerWriter;
+    }
+
     @Override
     public byte[] visitClass(ClassDefinition definition) {
-
+        //Classes will always be created in a new File/Class
 
         final Type superType;
         if (definition.superType == null)
