@@ -7,7 +7,6 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
@@ -20,7 +19,6 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaEnumInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
-import org.openzen.zenscript.javabytecode.TestIsStaticInfo;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 import java.util.Iterator;
@@ -45,6 +43,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         else
             superType = Type.getType(definition.superType.accept(JavaTypeClassVisitor.INSTANCE));
 
+		JavaClassInfo toClass = new JavaClassInfo(definition.name);
         JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
         //TODO: Calculate signature from generic parameters
@@ -56,8 +55,6 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         for (IDefinitionMember member : definition.members) {
             if (member instanceof ConstructorMember) {
                 final ConstructorMember constructorMember = (ConstructorMember) member;
-
-
                 constructorMember.body.add(0, new ExpressionStatement(constructorMember.position, new Expression(constructorMember.position, BasicTypeID.VOID) {
                     @Override
                     public <T> T accept(ExpressionVisitor<T> visitor) {
@@ -79,9 +76,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
                     }
                 }));
             }
-            member.accept(new JavaMemberVisitor(writer, definition.name));
-
-
+			
+            member.accept(new JavaMemberVisitor(writer, toClass));
         }
         writer.visitEnd();
         return writer.toByteArray();
@@ -89,6 +85,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
     @Override
     public byte[] visitInterface(InterfaceDefinition definition) {
+		JavaClassInfo toClass = new JavaClassInfo(definition.name);
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
         //TODO: Calculate signature from generic parameters
@@ -96,7 +93,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         String signature = null;
         writer.visit(Opcodes.V1_8, definition.modifiers | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, definition.name, signature, Type.getInternalName(Object.class), null);
         for (IDefinitionMember member : definition.members) {
-            member.accept(new JavaMemberVisitor(writer, definition.name));
+            member.accept(new JavaMemberVisitor(writer, toClass));
         }
         writer.visitEnd();
         return writer.toByteArray();
@@ -123,8 +120,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
             }
         }
 
-        final JavaWriter clinitWriter = new JavaWriter(writer, true, Opcodes.ACC_STATIC, "<clinit>", "()V", null, null);
-        final JavaStatementVisitor clinitVisitor = new JavaStatementVisitor(clinitWriter, true);
+		JavaClassInfo toClass = new JavaClassInfo(definition.name);
+		JavaMethodInfo clinitInfo = new JavaMethodInfo(toClass, "<clinit>", "()V", Opcodes.ACC_STATIC);
+        final JavaWriter clinitWriter = new JavaWriter(writer, clinitInfo, null, null);
+        final JavaStatementVisitor clinitVisitor = new JavaStatementVisitor(clinitWriter);
         clinitVisitor.start();
         int constantCount = 0;
         for (IDefinitionMember member : definition.members) {
@@ -151,7 +150,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
                 ++constantCount;
                 member.setTag(JavaEnumInfo.class, new JavaEnumInfo(clinitVisitor));
             }
-            member.accept(new JavaMemberVisitor(writer, definition.name));
+            member.accept(new JavaMemberVisitor(writer, toClass));
         }
 
         clinitWriter.constant(constantCount);
@@ -171,7 +170,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         //Enum Stuff(required!)
         writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL | Opcodes.ACC_SYNTHETIC, "$VALUES", "[L" + definition.name + ";", null, null).visitEnd();
 
-        JavaWriter valuesWriter = new JavaWriter(writer, true, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, "values", "()[L" + definition.name + ";", null, null);
+		JavaMethodInfo valuesMethodInfo = new JavaMethodInfo(toClass, "values", "()[L" + definition.name + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
+        JavaWriter valuesWriter = new JavaWriter(writer, true, valuesMethodInfo, null, null);
         valuesWriter.start();
         valuesWriter.getStaticField(definition.name, "$VALUES", "[L" + definition.name + ";");
         valuesWriter.invokeVirtual("[L" + definition.name + ";", "clone", "()Ljava/lang/Object;");
@@ -179,8 +179,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         valuesWriter.returnObject();
         valuesWriter.end();
 
-
-        JavaWriter valueOfWriter = new JavaWriter(writer, true, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, "valueOf", "(Ljava/lang/String;)L" + definition.name + ";", null, null);
+		JavaMethodInfo valueOfMethodInfo = new JavaMethodInfo(toClass, "valueOf", "(Ljava/lang/String;)L" + definition.name + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
+        JavaWriter valueOfWriter = new JavaWriter(writer, true, valueOfMethodInfo, null, null);
         valueOfWriter.start();
         valueOfWriter.invokeStatic("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
         valueOfWriter.loadObject(0);
@@ -202,7 +202,11 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
     @Override
     public byte[] visitFunction(FunctionDefinition definition) {
         final String signature = CompilerUtils.calcSign(definition.header, false);
-        final JavaWriter writer = new JavaWriter(outerWriter, true, CompilerUtils.calcAccess(definition.modifiers) | Opcodes.ACC_STATIC, definition.name, CompilerUtils.calcDesc(definition.header, false), signature, null);
+		
+		final JavaClassInfo toClass = new JavaClassInfo(CompilerUtils.calcClasName(definition.position));
+		final JavaMethodInfo methodInfo = new JavaMethodInfo(toClass, definition.name, CompilerUtils.calcDesc(definition.header, false), CompilerUtils.calcAccess(definition.modifiers) | Opcodes.ACC_STATIC);
+
+		final JavaWriter writer = new JavaWriter(outerWriter, true, methodInfo, signature, null);
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(writer);
         statementVisitor.start();
         final Iterator<Statement> statementIterator = definition.statements.iterator();
@@ -222,13 +226,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
                     writer.aConstNull();
                 writer.returnType(type.accept(JavaTypeVisitor.INSTANCE));
             }
-
         }
 
         statementVisitor.end();
-
-        final JavaMethodInfo methodInfo = new JavaMethodInfo(new JavaClassInfo(CompilerUtils.calcClasName(definition.position)), definition.name, signature, true);
-
+		
         definition.setTag(JavaMethodInfo.class, methodInfo);
         definition.caller.setTag(JavaMethodInfo.class, methodInfo);
         return null;

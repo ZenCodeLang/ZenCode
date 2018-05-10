@@ -6,10 +6,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaEnumInfo;
@@ -20,11 +18,11 @@ import org.openzen.zenscript.javabytecode.compiler.*;
 public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     private final ClassWriter writer;
-    private final String className;
+	private final JavaClassInfo toClass;
 
-    public JavaMemberVisitor(ClassWriter writer, String className) {
+    public JavaMemberVisitor(ClassWriter writer, JavaClassInfo toClass) {
         this.writer = writer;
-        this.className = className;
+		this.toClass = toClass;
     }
 
     @Override
@@ -34,23 +32,26 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         String signature = null;
         final String descriptor = Type.getDescriptor(member.type.accept(JavaTypeClassVisitor.INSTANCE));
         writer.visitField(member.modifiers, member.name, descriptor, signature, null).visitEnd();
-        member.setTag(JavaFieldInfo.class, new JavaFieldInfo(new JavaClassInfo(className), member.name, descriptor));
+        member.setTag(JavaFieldInfo.class, new JavaFieldInfo(toClass, member.name, descriptor));
         return null;
     }
 
     @Override
     public Void visitConstructor(ConstructorMember member) {
+        final boolean isEnum = member.hasTag(JavaEnumInfo.class);
+		String descriptor = CompilerUtils.calcDesc(member.header, isEnum);
+		final JavaMethodInfo method = new JavaMethodInfo(toClass, "<init>", descriptor, isEnum ? Opcodes.ACC_PRIVATE : CompilerUtils.calcAccess(member.modifiers));
+		
         final Label constructorStart = new Label();
         final Label constructorEnd = new Label();
-        final boolean isEnum = member.hasTag(JavaEnumInfo.class);
-        final JavaWriter constructorWriter = new JavaWriter(writer, isEnum ? Opcodes.ACC_PRIVATE : member.modifiers, "<init>", CompilerUtils.calcDesc(member.header, isEnum), CompilerUtils.calcSign(member.header, isEnum), null);
+        final JavaWriter constructorWriter = new JavaWriter(writer, method, CompilerUtils.calcSign(member.header, isEnum), null);
         constructorWriter.label(constructorStart);
         for (FunctionParameter parameter : member.header.parameters) {
             if(isEnum)
                 parameter.index += 2;
             constructorWriter.nameVariable(parameter.index + 1, parameter.name, constructorStart, constructorEnd, Type.getType(parameter.type.accept(JavaTypeClassVisitor.INSTANCE)));
         }
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(constructorWriter, true);
+        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(constructorWriter);
         statementVisitor.start();
 
         for (Statement statement : member.body) {
@@ -63,10 +64,19 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     @Override
     public Void visitMethod(MethodMember member) {
+        final boolean isAbstract = member.body == null || member.body.isEmpty() || Modifiers.isAbstract(member.modifiers);
+		int modifiers = (isAbstract ? Opcodes.ACC_ABSTRACT : 0)
+				| (member.isStatic() ? Opcodes.ACC_STATIC : 0)
+				| CompilerUtils.calcAccess(member.modifiers);
+		final JavaMethodInfo method = new JavaMethodInfo(
+				toClass,
+				member.name,
+				CompilerUtils.calcSign(member.header, false),
+				modifiers);
+		
         final Label methodStart = new Label();
         final Label methodEnd = new Label();
-        final boolean isAbstract = member.body == null || member.body.isEmpty() || Modifiers.isAbstract(member.modifiers);
-        final JavaWriter methodWriter = new JavaWriter(writer, isAbstract ? member.modifiers | Opcodes.ACC_ABSTRACT : member.modifiers, member.name, CompilerUtils.calcDesc(member.header, false), CompilerUtils.calcSign(member.header, false), null);
+        final JavaWriter methodWriter = new JavaWriter(writer, method, CompilerUtils.calcSign(member.header, false), null);
         methodWriter.label(methodStart);
         for (final FunctionParameter parameter : member.header.parameters) {
             methodWriter.nameParameter(0, parameter.name);
@@ -86,8 +96,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
             statementVisitor.end();
         }
 
-        member.setTag(JavaMethodInfo.class, new JavaMethodInfo(new JavaClassInfo(className), member.name, CompilerUtils.calcSign(member.header, false), member.isStatic()));
-
+        member.setTag(JavaMethodInfo.class, method);
         return null;
     }
 

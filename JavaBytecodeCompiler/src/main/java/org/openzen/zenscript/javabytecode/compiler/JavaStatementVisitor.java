@@ -8,20 +8,13 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 public class JavaStatementVisitor implements StatementVisitor<Void> {
     private final JavaWriter javaWriter;
     public final JavaExpressionVisitor expressionVisitor;
-    private final boolean isInit;
-
-    public JavaStatementVisitor(final JavaWriter javaWriter) {
-        this(javaWriter, false);
-    }
-
+	
     /**
      * @param javaWriter the method writer that compiles the statement
-     * @param isInit is the method a class initializer
      */
-    public JavaStatementVisitor(JavaWriter javaWriter, boolean isInit) {
+    public JavaStatementVisitor(JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
-        this.expressionVisitor = new JavaExpressionVisitor(javaWriter, isInit);
-        this.isInit = isInit;
+        this.expressionVisitor = new JavaExpressionVisitor(javaWriter);
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.objectweb.asm.Opcodes;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -46,7 +47,7 @@ public class GlobalRegistry {
 	
 	public GlobalRegistry(ZSPackage globals) {
 		JavaClassInfo jPrintStream = new JavaClassInfo("java/io/PrintStream");
-		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, new JavaMethodInfo(jPrintStream, "println", "(Ljava/lang/String;)V"));
+		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, new JavaMethodInfo(jPrintStream, "println", "(Ljava/lang/String;)V", Opcodes.ACC_PUBLIC));
 		
 		JavaClassInfo jSystem = new JavaClassInfo("java/lang/System");
 		SYSTEM_OUT.setTag(JavaFieldInfo.class, new JavaFieldInfo(jSystem, "out", "Ljava/io/PrintStream;"));
@@ -68,7 +69,7 @@ public class GlobalRegistry {
 			JavaClassInfo myClassInfo = new JavaClassInfo("my/test/MyClass");
 			
 			MethodMember member = new MethodMember(CodePosition.NATIVE, myClassDefinition, Modifiers.PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING));
-			member.setTag(JavaMethodInfo.class, new JavaMethodInfo(myClassInfo, "test", "()Ljava/lang/String;"));
+			member.setTag(JavaMethodInfo.class, new JavaMethodInfo(myClassInfo, "test", "()Ljava/lang/String;", Opcodes.ACC_PUBLIC));
 			myClassDefinition.addMember(member);
 			
 			packageMyPackage.register(myClassDefinition);

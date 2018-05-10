@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.javabytecode;
 
+import org.objectweb.asm.Opcodes;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -12,17 +14,17 @@ package org.openzen.zenscript.javabytecode;
 public class JavaMethodInfo {
 	public final JavaClassInfo javaClass;
 	public final String name;
-	public final String signature;
-	public final boolean isStatic;
+	public final String descriptor;
+	public final int modifiers;
 	
-	public JavaMethodInfo(JavaClassInfo javaClass, String name, String signature) {
-		this(javaClass, name, signature, false);
-	}
-	
-	public JavaMethodInfo(JavaClassInfo javaClass, String name, String signature, boolean isStatic) {
+	public JavaMethodInfo(JavaClassInfo javaClass, String name, String signature, int modifiers) {
 		this.javaClass = javaClass;
 		this.name = name;
-		this.signature = signature;
-		this.isStatic = isStatic;
+		this.descriptor = signature;
+		this.modifiers = modifiers;
+	}
+	
+	public boolean isStatic() {
+		return (modifiers & Opcodes.ACC_STATIC) > 0;
 	}
 }

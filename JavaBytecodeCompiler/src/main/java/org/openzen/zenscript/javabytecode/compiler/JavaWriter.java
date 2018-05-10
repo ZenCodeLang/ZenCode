@@ -12,8 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
+import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
 public class JavaWriter {
+	public final JavaMethodInfo method;
+	
     private final LocalVariablesSorter visitor;
     private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
     private boolean debug = false;
@@ -21,19 +24,21 @@ public class JavaWriter {
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();
 
-    public JavaWriter(ClassVisitor visitor, boolean nameVariables, int access, String name, String description, String signature, String[] exceptions, String... annotations) {
-        final MethodVisitor methodVisitor = visitor.visitMethod(access, name, description, signature, exceptions);
+    public JavaWriter(ClassVisitor visitor, boolean nameVariables, JavaMethodInfo method, String signature, String[] exceptions, String... annotations) {
+		this.method = method;
+		
+        final MethodVisitor methodVisitor = visitor.visitMethod(method.modifiers, method.name, method.descriptor, signature, exceptions);
 
         for (String annotation : annotations) {
             methodVisitor.visitAnnotation(annotation, true).visitEnd();
         }
 
-        this.visitor = new LocalVariablesSorter(access, description, methodVisitor);
+        this.visitor = new LocalVariablesSorter(method.modifiers, method.descriptor, methodVisitor);
         this.nameVariables = nameVariables;
     }
 
-    public JavaWriter(ClassVisitor visitor, int access, String name, String description, String signature, String[] exceptions, String... annotations) {
-        this(visitor, true, access, name, description, signature, exceptions, annotations);
+    public JavaWriter(ClassVisitor visitor, JavaMethodInfo method, String signature, String[] exceptions, String... annotations) {
+        this(visitor, true, method, signature, exceptions, annotations);
     }
 
     private static String signature(Class aClass) {

@@ -16,16 +16,9 @@ import java.util.Map;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     private final JavaWriter javaWriter;
-    private final boolean isInit;
-
-
-    public JavaExpressionVisitor(final JavaWriter javaWriter) {
-        this(javaWriter, false);
-    }
-
-    public JavaExpressionVisitor(JavaWriter javaWriter, boolean isInit) {
+	
+    public JavaExpressionVisitor(JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
-        this.isInit = isInit;
     }
 
     private static Class<?> getForEquals(ITypeID id) {
@@ -104,7 +97,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         }
         //TODO: Test with actual static method
         final JavaMethodInfo info = expression.member.getTag(JavaMethodInfo.class);
-        javaWriter.invokeStatic(info.javaClass.internalClassName, info.name, info.signature);
+        javaWriter.invokeStatic(info.javaClass.internalClassName, info.name, info.descriptor);
         return null;
     }
 
@@ -459,8 +452,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitSetField(SetFieldExpression expression) {
         javaWriter.loadObject(0);
-        if (expression.field.isFinal() && !isInit)
-            throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
         expression.value.accept(this);
         if (!checkAndPutFieldInfo(expression.field, false))
             throw new IllegalStateException("Missing field info on a field member!");
@@ -469,17 +460,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
-        //TODO is static?
-        final boolean isStatic = false;
         expression.value.accept(this);
-        javaWriter.store(expression.type.accept(JavaTypeVisitor.INSTANCE), isStatic ? expression.parameter.index : expression.parameter.index + 1);
+        javaWriter.store(expression.type.accept(JavaTypeVisitor.INSTANCE), javaWriter.method.isStatic() ? expression.parameter.index : expression.parameter.index + 1);
         return null;
     }
 
     @Override
     public Void visitSetLocalVariable(SetLocalVariableExpression expression) {
-        if (expression.variable.isFinal)
-            throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final variable!");
         expression.value.accept(this);
         Label label = new Label();
         javaWriter.label(label);
@@ -549,16 +536,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         JavaMethodInfo methodInfo = member.getTag(JavaMethodInfo.class);
         if (methodInfo == null)
             return false;
-        if (methodInfo.isStatic) {
-            getJavaWriter().invokeStatic(
-                    methodInfo.javaClass.internalClassName,
+        if (methodInfo.isStatic()) {
+            getJavaWriter().invokeStatic(methodInfo.javaClass.internalClassName,
                     methodInfo.name,
-                    methodInfo.signature);
+                    methodInfo.descriptor);
         } else {
-            getJavaWriter().invokeVirtual(
-                    methodInfo.javaClass.internalClassName,
+            getJavaWriter().invokeVirtual(methodInfo.javaClass.internalClassName,
                     methodInfo.name,
-                    methodInfo.signature);
+                    methodInfo.descriptor);
         }
         return true;
     }

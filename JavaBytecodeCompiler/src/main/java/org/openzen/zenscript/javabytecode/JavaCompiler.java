@@ -5,9 +5,7 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.objectweb.asm.ClassWriter;
@@ -106,7 +104,7 @@ public class JavaCompiler {
 		implement(INT_TO_FLOAT, JavaWriter::i2f);
 		implement(INT_TO_DOUBLE, JavaWriter::i2d);
 		implement(INT_TO_CHAR, JavaWriter::i2s);
-		INT_TO_STRING.setTag(JavaMethodInfo.class, new JavaMethodInfo(jInteger, "toString", "(I)Ljava/lang/String;", true));
+		INT_TO_STRING.setTag(JavaMethodInfo.class, new JavaMethodInfo(jInteger, "toString", "(I)Ljava/lang/String;", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
 		
 		implement(LONG_TO_BYTE, writer -> { writer.l2i(); writer.i2b(); });
 		implement(LONG_TO_SBYTE, writer -> { writer.l2i(); writer.i2b(); });
@@ -118,12 +116,12 @@ public class JavaCompiler {
 		implement(LONG_TO_FLOAT, JavaWriter::l2f);
 		implement(LONG_TO_DOUBLE, JavaWriter::l2d);
 		implement(LONG_TO_CHAR, writer -> { writer.l2i(); writer.i2s(); });
-		LONG_TO_STRING.setTag(JavaMethodInfo.class, new JavaMethodInfo(jLong, "toString", "(J)Ljava/lang/String;", true));
+		LONG_TO_STRING.setTag(JavaMethodInfo.class, new JavaMethodInfo(jLong, "toString", "(J)Ljava/lang/String;", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
 		
-		FLOAT_BITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jFloat, "floatToRawIntBits", "(F)I", true));
-		DOUBLE_BITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jDouble, "doubleToRawLongBits", "(D)J", true));
-		FLOAT_FROMBITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jFloat, "intBitsToFloat", "(I)F", true));
-		DOUBLE_FROMBITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jDouble, "longBitsToDouble", "(J)D", true));
+		FLOAT_BITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jFloat, "floatToRawIntBits", "(F)I", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
+		DOUBLE_BITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jDouble, "doubleToRawLongBits", "(D)J", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
+		FLOAT_FROMBITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jFloat, "intBitsToFloat", "(I)F", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
+		DOUBLE_FROMBITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jDouble, "longBitsToDouble", "(J)D", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
 	}
 	
 	private static void implement(DefinitionMember member, JavaBytecodeImplementation implementation) {
@@ -184,7 +182,8 @@ public class JavaCompiler {
 		// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
 		final JavaClassWriter visitor = scriptBlocks.get(methodName);
 		visitor.hasRun = true;
-		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(visitor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "run", "()V", null, null));
+		JavaMethodInfo method = new JavaMethodInfo(new JavaClassInfo(methodName), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(visitor, method, null, null));
 		statementVisitor.start();
 		for (Statement statement : script.statements) {
 			statement.accept(statementVisitor);
@@ -198,7 +197,8 @@ public class JavaCompiler {
 			throw new IllegalStateException("Already finished!");
 		finished = true;
 		
-		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "run", "()V", null, null);
+		JavaMethodInfo runMethod = new JavaMethodInfo(new JavaClassInfo("Scripts"), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, runMethod, null, null);
 		runWriter.start();
 		for (Map.Entry<String, JavaClassWriter> entry : scriptBlocks.entrySet()) {
 			final String owner = entry.getKey();
