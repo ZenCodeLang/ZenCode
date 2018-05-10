@@ -159,7 +159,7 @@ public class JavaCompiler {
 			scriptBlocks.put(methodName, scriptFileWriter);
 		}
 
-		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(scriptBlocks.get(definition.position.filename))));
+		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(scriptBlocks.get(methodName))));
 
 	}
 	

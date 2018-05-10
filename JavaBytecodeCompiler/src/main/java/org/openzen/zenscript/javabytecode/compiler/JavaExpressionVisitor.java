@@ -317,7 +317,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
-        javaWriter.load(Type.getType(expression.parameter.type.accept(JavaTypeClassVisitor.INSTANCE)), expression.parameter.index + 1);
+        //TODO is Static?
+        final boolean isStatic = false;
+        javaWriter.load(Type.getType(expression.parameter.type.accept(JavaTypeClassVisitor.INSTANCE)), isStatic ? expression.parameter.index : expression.parameter.index + 1);
         return null;
     }
 
