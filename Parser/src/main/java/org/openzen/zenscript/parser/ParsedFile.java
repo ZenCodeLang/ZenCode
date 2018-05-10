@@ -139,6 +139,7 @@ public class ParsedFile {
 	
 	public void listDefinitions(PackageDefinitions definitions) {
 		for (ParsedDefinition definition : this.definitions) {
+			definition.getCompiled().setTag(SourceFile.class, new SourceFile(filename));
 			definitions.add(definition.getCompiled());
 			definition.linkInnerTypes();
 		}
