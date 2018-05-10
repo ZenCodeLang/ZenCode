@@ -3,27 +3,41 @@ package org.openzen.zenscript.javabytecode.compiler.definitions;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
+import org.openzen.zenscript.codemodel.statement.ReturnStatement;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaEnumInfo;
-import org.openzen.zenscript.javabytecode.compiler.JavaExpressionVisitor;
-import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
-import org.openzen.zenscript.javabytecode.compiler.JavaTypeClassVisitor;
-import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
+import org.openzen.zenscript.javabytecode.JavaMethodInfo;
+import org.openzen.zenscript.javabytecode.TestIsStaticInfo;
+import org.openzen.zenscript.javabytecode.compiler.*;
+
+import java.util.Iterator;
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 
+    private final JavaClassWriter outerWriter;
+
+    public JavaDefinitionVisitor(JavaClassWriter outerWriter) {
+
+        this.outerWriter = outerWriter;
+    }
+
     @Override
     public byte[] visitClass(ClassDefinition definition) {
-
+        //Classes will always be created in a new File/Class
 
         final Type superType;
         if (definition.superType == null)
@@ -31,7 +45,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         else
             superType = Type.getType(definition.superType.accept(JavaTypeClassVisitor.INSTANCE));
 
-        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
         //TODO: Calculate signature from generic parameters
         //TODO: Interfaces?
@@ -144,7 +158,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         clinitWriter.newArray(Type.getType("L" + definition.name + ";"));
 
         for (IDefinitionMember member : definition.members) {
-            if(!(member instanceof EnumConstantMember)) continue;
+            if (!(member instanceof EnumConstantMember)) continue;
             final EnumConstantMember constantMember = (EnumConstantMember) member;
             clinitWriter.dup();
             clinitWriter.constant(constantMember.value);
@@ -187,6 +201,36 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
     @Override
     public byte[] visitFunction(FunctionDefinition definition) {
+        final String signature = CompilerUtils.calcSign(definition.header, false);
+        final JavaWriter writer = new JavaWriter(outerWriter, true, CompilerUtils.calcAccess(definition.modifiers) | Opcodes.ACC_STATIC, definition.name, CompilerUtils.calcDesc(definition.header, false), signature, null);
+        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(writer);
+        statementVisitor.start();
+        final Iterator<Statement> statementIterator = definition.statements.iterator();
+
+        //TODO this is dirty, fix when there is a way of knowing if a parameter is static or not
+        for (FunctionParameter parameter : definition.header.parameters) {
+            parameter.index -= 1;
+        }
+        while (statementIterator.hasNext()) {
+            final Statement statement = statementIterator.next();
+            statement.accept(statementVisitor);
+            if (!statementIterator.hasNext() && !(statement instanceof ReturnStatement)) {
+                ITypeID type = definition.header.returnType;
+                if (CompilerUtils.isPrimitive(type))
+                    writer.iConst0();
+                else if (type != BasicTypeID.VOID)
+                    writer.aConstNull();
+                writer.returnType(type.accept(JavaTypeVisitor.INSTANCE));
+            }
+
+        }
+
+        statementVisitor.end();
+
+        final JavaMethodInfo methodInfo = new JavaMethodInfo(new JavaClassInfo(CompilerUtils.calcClasName(definition.position)), definition.name, signature, true);
+
+        definition.setTag(JavaMethodInfo.class, methodInfo);
+        definition.caller.setTag(JavaMethodInfo.class, methodInfo);
         return null;
     }
 

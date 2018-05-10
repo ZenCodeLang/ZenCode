@@ -6,7 +6,10 @@
 package org.openzen.zenscript.javabytecode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -15,6 +18,7 @@ import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinTypeMembers.*;
 
+import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
@@ -127,8 +131,8 @@ public class JavaCompiler {
 	}
 	
 	private final JavaModule target;
-	private final List<String> scriptBlockNames = new ArrayList<>();
-	private final ClassWriter scriptsClassWriter;
+	private final Map<String, JavaClassWriter> scriptBlocks = new HashMap<>();
+	private final JavaClassWriter scriptsClassWriter;
 	private int generatedScriptBlockCounter = 0;
 	private boolean finished = false;
 	
@@ -139,19 +143,29 @@ public class JavaCompiler {
 	public JavaCompiler(boolean debug) {
 		target = new JavaModule();
 		
-		scriptsClassWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES, true);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
 	}
 	
 	public void addDefinition(HighLevelDefinition definition) {
 		// convert definition into java class
-		target.register(definition.name, definition.accept(new JavaDefinitionVisitor()));
+
+		final String methodName = definition.position.filename.substring(0, definition.position.filename.lastIndexOf('.')).replace("/", "_");
+
+
+		if(!scriptBlocks.containsKey(methodName)) {
+			JavaClassWriter scriptFileWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+			scriptFileWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, methodName, null, "java/lang/Object", null);
+			scriptBlocks.put(methodName, scriptFileWriter);
+		}
+
+		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(scriptBlocks.get(methodName))));
 
 	}
 	
 	public void addScriptBlock(ScriptBlock script) {
-		SourceFile sourceFile = script.getTag(SourceFile.class);
-		String methodName;
+		final SourceFile sourceFile = script.getTag(SourceFile.class);
+		final String methodName;
 		if (sourceFile == null) {
 			methodName = "generatedBlock" + (generatedScriptBlockCounter++);
 		} else {
@@ -160,11 +174,17 @@ public class JavaCompiler {
 			methodName = sourceFile.filename.substring(0, sourceFile.filename.lastIndexOf('.')).replace("/", "_");
 		}
 
-		scriptBlockNames.add(methodName);
+		if(!scriptBlocks.containsKey(methodName)) {
+			JavaClassWriter scriptFileWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES, true);
+			scriptFileWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, methodName, null, "java/lang/Object", null);
+			scriptBlocks.put(methodName, scriptFileWriter);
+		}
 
 		// convert scripts into methods (add them to a Scripts class?)
 		// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
-		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(scriptsClassWriter, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, methodName, "()V", null, null));
+		final JavaClassWriter visitor = scriptBlocks.get(methodName);
+		visitor.hasRun = true;
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(visitor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "run", "()V", null, null));
 		statementVisitor.start();
 		for (Statement statement : script.statements) {
 			statement.accept(statementVisitor);
@@ -180,8 +200,13 @@ public class JavaCompiler {
 		
 		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "run", "()V", null, null);
 		runWriter.start();
-		for (String scriptBlockName : scriptBlockNames) {
-			runWriter.invokeStatic("Scripts", scriptBlockName, "()V");
+		for (Map.Entry<String, JavaClassWriter> entry : scriptBlocks.entrySet()) {
+			final String owner = entry.getKey();
+			final JavaClassWriter classWriter = entry.getValue();
+			if(classWriter.hasRun)
+				runWriter.invokeStatic(owner, "run", "()V");
+			classWriter.visitEnd();
+			target.register(owner, classWriter.toByteArray());
 		}
 		runWriter.ret();
 		runWriter.end();

@@ -17,13 +17,14 @@ import java.util.logging.Logger;
  * @author Hoofdgebruiker
  */
 public class JavaModule {
-	private Map<String, byte[]> classes = new HashMap<>();
+	private final Map<String, byte[]> classes = new HashMap<>();
 	
 	public JavaModule() {
 		
 	}
 	
 	public void register(String classname, byte[] bytecode) {
+		if(bytecode == null) return;
 		classes.put(classname, bytecode);
 		try(FileOutputStream writer = new FileOutputStream(new File(classname + ".class"))) {
 			writer.write(bytecode);
@@ -37,23 +38,13 @@ public class JavaModule {
 		
 		try {
 			classLoader.loadClass("Scripts").getMethod("run").invoke(null);
-		} catch (ClassNotFoundException ex) {
-			Logger.getLogger(JavaModule.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (NoSuchMethodException ex) {
-			Logger.getLogger(JavaModule.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (SecurityException ex) {
-			Logger.getLogger(JavaModule.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (IllegalAccessException ex) {
-			Logger.getLogger(JavaModule.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (IllegalArgumentException ex) {
-			Logger.getLogger(JavaModule.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InvocationTargetException ex) {
+		} catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
 			Logger.getLogger(JavaModule.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 	
 	private class ScriptClassLoader extends ClassLoader {
-		final Map<String, Class> customClasses = new HashMap<>();
+		private final Map<String, Class> customClasses = new HashMap<>();
 
 		@Override
 		public Class<?> loadClass(String name) throws ClassNotFoundException {

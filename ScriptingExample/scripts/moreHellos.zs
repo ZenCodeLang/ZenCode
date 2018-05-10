@@ -61,9 +61,9 @@ for item in testArray {
 
 println("");
 
-var test2 = [1, 2, 3];
+var test3 = [1, 2, 3];
 
-for item in test2 {
+for item in test3 {
 	println(item);
 }
 
