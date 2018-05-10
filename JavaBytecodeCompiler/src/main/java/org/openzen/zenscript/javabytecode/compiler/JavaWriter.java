@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
@@ -24,6 +25,7 @@ public class JavaWriter {
 			Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 	
 	public final JavaMethodInfo method;
+	public final HighLevelDefinition forDefinition;
 	
     private final LocalVariablesSorter visitor;
     private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
@@ -32,8 +34,17 @@ public class JavaWriter {
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();
 
-    public JavaWriter(ClassVisitor visitor, boolean nameVariables, JavaMethodInfo method, String signature, String[] exceptions, String... annotations) {
+    public JavaWriter(
+			ClassVisitor visitor,
+			boolean nameVariables,
+			JavaMethodInfo method,
+			HighLevelDefinition forDefinition,
+			String signature,
+			String[] exceptions,
+			String... annotations)
+	{
 		this.method = method;
+		this.forDefinition = forDefinition;
 		
         final MethodVisitor methodVisitor = visitor.visitMethod(method.modifiers, method.name, method.descriptor, signature, exceptions);
 
@@ -45,8 +56,8 @@ public class JavaWriter {
         this.nameVariables = nameVariables;
     }
 
-    public JavaWriter(ClassVisitor visitor, JavaMethodInfo method, String signature, String[] exceptions, String... annotations) {
-        this(visitor, true, method, signature, exceptions, annotations);
+    public JavaWriter(ClassVisitor visitor, JavaMethodInfo method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
+        this(visitor, true, method, forDefinition, signature, exceptions, annotations);
     }
 
     private static String signature(Class aClass) {

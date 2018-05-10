@@ -7,7 +7,6 @@
 package org.openzen.zenscript.parser.expression;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.FunctionExpression;
@@ -66,10 +65,10 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		
 		LambdaClosure closure = new LambdaClosure();
 		StatementScope innerScope = new LambdaScope(scope, closure, header);
-		List<Statement> statements = body.compile(innerScope, header);
+		Statement statements = body.compile(innerScope, header);
 		if (!scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference
-			ITypeID returnType = Statement.getReturnType(scope, statements);
+			ITypeID returnType = statements.getReturnType();
 			Map<TypeParameter, ITypeID> inferredTypes = new HashMap<>();
 			if (!genericHeader.returnType.inferTypeParameters(returnType, inferredTypes))
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");

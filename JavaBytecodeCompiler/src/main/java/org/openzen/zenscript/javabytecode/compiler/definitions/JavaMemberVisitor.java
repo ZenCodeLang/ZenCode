@@ -5,24 +5,26 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
-import org.openzen.zenscript.javabytecode.JavaEnumInfo;
 import org.openzen.zenscript.javabytecode.JavaFieldInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
+import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     private final ClassWriter writer;
 	private final JavaClassInfo toClass;
+	private final HighLevelDefinition definition;
 
-    public JavaMemberVisitor(ClassWriter writer, JavaClassInfo toClass) {
+    public JavaMemberVisitor(ClassWriter writer, JavaClassInfo toClass, HighLevelDefinition definition) {
         this.writer = writer;
 		this.toClass = toClass;
+		this.definition = definition;
     }
 
     @Override
@@ -38,25 +40,48 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     @Override
     public Void visitConstructor(ConstructorMember member) {
-        final boolean isEnum = member.hasTag(JavaEnumInfo.class);
+		System.out.println("Compiling constructor " + member.header.toString());
+		
+        final boolean isEnum = definition instanceof EnumDefinition;
 		String descriptor = CompilerUtils.calcDesc(member.header, isEnum);
 		final JavaMethodInfo method = new JavaMethodInfo(toClass, "<init>", descriptor, isEnum ? Opcodes.ACC_PRIVATE : CompilerUtils.calcAccess(member.modifiers));
 		
         final Label constructorStart = new Label();
         final Label constructorEnd = new Label();
-        final JavaWriter constructorWriter = new JavaWriter(writer, method, CompilerUtils.calcSign(member.header, isEnum), null);
+        final JavaWriter constructorWriter = new JavaWriter(writer, method, definition, CompilerUtils.calcSign(member.header, isEnum), null);
         constructorWriter.label(constructorStart);
+		CompilerUtils.tagConstructorParameters(member.header, isEnum);
         for (FunctionParameter parameter : member.header.parameters) {
-            if(isEnum)
-                parameter.index += 2;
-            constructorWriter.nameVariable(parameter.index + 1, parameter.name, constructorStart, constructorEnd, Type.getType(parameter.type.accept(JavaTypeClassVisitor.INSTANCE)));
+            constructorWriter.nameVariable(
+					parameter.getTag(JavaParameterInfo.class).index,
+					parameter.name,
+					constructorStart,
+					constructorEnd,
+					Type.getType(parameter.type.accept(JavaTypeClassVisitor.INSTANCE)));
         }
+		
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(constructorWriter);
         statementVisitor.start();
-
-        for (Statement statement : member.body) {
-            statement.accept(statementVisitor);
-        }
+		
+		if (!member.isConstructorForwarded()) {
+			if (isEnum) {
+				System.out.println("Writing enum constructor");
+				constructorWriter.getVisitor().newLocal(Type.getType(String.class));
+				constructorWriter.getVisitor().newLocal(Type.getType(int.class));
+				constructorWriter.loadObject(0);
+				constructorWriter.loadObject(1);
+				constructorWriter.loadInt(2);
+				constructorWriter.invokeSpecial(Type.getInternalName(Enum.class), "<init>", "(Ljava/lang/String;I)V");
+			} else if (definition.superType == null) {
+				System.out.println("Writing regular constructor");
+				constructorWriter.load(Type.getType(Object.class), 0);
+				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
+			}
+			
+			CompilerUtils.writeDefaultFieldInitializers(constructorWriter, definition);
+		}
+		
+        member.body.accept(statementVisitor);
         constructorWriter.label(constructorEnd);
         statementVisitor.end();
         return null;
@@ -64,7 +89,9 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     @Override
     public Void visitMethod(MethodMember member) {
-        final boolean isAbstract = member.body == null || member.body.isEmpty() || Modifiers.isAbstract(member.modifiers);
+		CompilerUtils.tagMethodParameters(member.header, member.isStatic());
+		
+        final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.modifiers);
 		int modifiers = (isAbstract ? Opcodes.ACC_ABSTRACT : 0)
 				| (member.isStatic() ? Opcodes.ACC_STATIC : 0)
 				| CompilerUtils.calcAccess(member.modifiers);
@@ -76,22 +103,19 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		
         final Label methodStart = new Label();
         final Label methodEnd = new Label();
-        final JavaWriter methodWriter = new JavaWriter(writer, method, CompilerUtils.calcSign(member.header, false), null);
+        final JavaWriter methodWriter = new JavaWriter(writer, method, definition, CompilerUtils.calcSign(member.header, false), null);
         methodWriter.label(methodStart);
         for (final FunctionParameter parameter : member.header.parameters) {
             methodWriter.nameParameter(0, parameter.name);
             if (!isAbstract)
-                methodWriter.nameVariable(parameter.index + (member.isStatic() ? 0 : 1), parameter.name, methodStart, methodEnd, Type.getType(parameter.type.accept(JavaTypeClassVisitor.INSTANCE)));
+                methodWriter.nameVariable(parameter.getTag(JavaParameterInfo.class).index, parameter.name, methodStart, methodEnd, Type.getType(parameter.type.accept(JavaTypeClassVisitor.INSTANCE)));
         }
 
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(methodWriter);
 
         if (!isAbstract) {
             statementVisitor.start();
-            for (Statement statement : member.body) {
-                statement.accept(statementVisitor);
-            }
-
+			member.body.accept(statementVisitor);
             methodWriter.label(methodEnd);
             statementVisitor.end();
         }
@@ -112,21 +136,6 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     @Override
     public Void visitEnumConstant(EnumConstantMember member) {
-        final JavaStatementVisitor clinitVisitor = member.getTag(JavaEnumInfo.class).clinitVisitor;
-        final JavaWriter clinitWriter = clinitVisitor.getJavaWriter();
-        final String internalName = member.constructor.type.accept(JavaTypeVisitor.INSTANCE).getInternalName();
-
-        clinitWriter.newObject(internalName);
-        clinitWriter.dup();
-        clinitWriter.constant(member.name);
-        clinitWriter.constant(member.value);
-        for (Expression argument : member.constructor.arguments.arguments) {
-            argument.accept(clinitVisitor.expressionVisitor);
-        }
-        clinitWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(member.constructor.constructor.header, true));
-        clinitWriter.putStaticField(internalName, member.name, "L" + internalName + ";");
-
-
         return null;
     }
 
@@ -159,5 +168,4 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
     public Void visitInnerDefinition(InnerDefinitionMember member) {
         return null;
     }
-
 }

@@ -24,7 +24,7 @@ import org.openzen.zenscript.shared.CodePosition;
 public abstract class FunctionalMember extends DefinitionMember implements ICallableMember {
 	public final FunctionHeader header;
 	public final String name;
-	public List<Statement> body;
+	public Statement body;
 	
 	public FunctionalMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header) {
 		super(position, definition, modifiers);
@@ -33,7 +33,7 @@ public abstract class FunctionalMember extends DefinitionMember implements ICall
 		this.header = header;
 	}
 	
-	public void setBody(List<Statement> body) {
+	public void setBody(Statement body) {
 		this.body = body;
 	}
 	

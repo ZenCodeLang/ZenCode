@@ -17,12 +17,13 @@ import org.openzen.zenscript.shared.CodePosition;
 
 public abstract class ParsedStatement {
 	public static ParsedFunctionBody parseLambdaBody(ZSTokenStream tokens, boolean inExpression) {
+		ZSToken start = tokens.peek();
 		if (tokens.optional(T_AOPEN) != null) {
 			List<ParsedStatement> statements = new ArrayList<>();
 			while (tokens.optional(T_ACLOSE) == null)
 				statements.add(ParsedStatement.parse(tokens));
 			
-			return new ParsedStatementsFunctionBody(statements);
+			return new ParsedStatementsFunctionBody(new ParsedStatementBlock(start.position, null, null, statements));
 		} else {
 			ParsedFunctionBody result = new ParsedLambdaFunctionBody(ParsedExpression.parse(tokens));
 			if (!inExpression)
@@ -32,6 +33,7 @@ public abstract class ParsedStatement {
 	}
 	
 	public static ParsedFunctionBody parseFunctionBody(ZSTokenStream tokens) {
+		ZSToken start = tokens.peek();
 		if (tokens.optional(T_LAMBDA) != null) {
 			return parseLambdaBody(tokens, false);
 		} else if (tokens.optional(T_SEMICOLON) != null) {
@@ -42,7 +44,7 @@ public abstract class ParsedStatement {
 			while (tokens.optional(T_ACLOSE) == null) {
 				statements.add(ParsedStatement.parse(tokens));
 			}
-			return new ParsedStatementsFunctionBody(statements);
+			return new ParsedStatementsFunctionBody(new ParsedStatementBlock(start.position, null, null, statements));
 		}
 	}
 	

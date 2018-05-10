@@ -22,7 +22,7 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class FunctionDefinition extends HighLevelDefinition {
 	public FunctionHeader header;
-	public List<Statement> statements;
+	public Statement statement;
 	public OperatorMember caller;
 	public DefinitionMemberGroup callerGroup = new DefinitionMemberGroup();
 	
@@ -41,9 +41,9 @@ public class FunctionDefinition extends HighLevelDefinition {
 		callerGroup.addMethod(caller, TypeMemberPriority.SPECIFIED);
 	}
 	
-	public void setCode(List<Statement> statements) {
-		this.statements = statements;
-		caller.setBody(statements);
+	public void setCode(Statement statement) {
+		this.statement = statement;
+		caller.setBody(statement);
 	}
 
 	@Override

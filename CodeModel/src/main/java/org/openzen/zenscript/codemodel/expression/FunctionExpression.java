@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
@@ -18,18 +17,18 @@ import org.openzen.zenscript.shared.CodePosition;
 public class FunctionExpression extends Expression {
 	public final FunctionHeader header;
 	public final LambdaClosure closure;
-	public final List<Statement> statements;
+	public final Statement body;
 	
 	public FunctionExpression(
 			CodePosition position,
 			FunctionTypeID type,
 			LambdaClosure closure,
-			List<Statement> statements) {
+			Statement body) {
 		super(position, type);
 		
 		this.header = type.header;
 		this.closure = closure;
-		this.statements = statements;
+		this.body = body;
 	}
 
 	@Override

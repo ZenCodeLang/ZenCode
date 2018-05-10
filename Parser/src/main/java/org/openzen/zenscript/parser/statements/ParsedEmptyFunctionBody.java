@@ -5,9 +5,8 @@
  */
 package org.openzen.zenscript.parser.statements;
 
-import java.util.Collections;
-import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.linker.StatementScope;
 import org.openzen.zenscript.shared.CodePosition;
@@ -24,7 +23,7 @@ public class ParsedEmptyFunctionBody extends ParsedFunctionBody {
 	}
 	
 	@Override
-	public List<Statement> compile(StatementScope scope, FunctionHeader header) {
-		return Collections.emptyList();
+	public Statement compile(StatementScope scope, FunctionHeader header) {
+		return new EmptyStatement(position);
 	}
 }

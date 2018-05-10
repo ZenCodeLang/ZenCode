@@ -25,7 +25,6 @@ import org.openzen.zenscript.codemodel.member.MemberVisitor;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
@@ -89,12 +88,11 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 			validator.logError(ValidationLogEntry.Code.BODY_REQUIRED, member.position, "Constructors must have a body");
 		} else {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			for (Statement statement : member.body) {
-				isValid &= statement.accept(statementValidator);
-			}
+			isValid &= member.body.accept(statementValidator);
 			
-			if (!statementValidator.constructorForwarded) {
-				// TODO: does this type have a supertype with no-argument constructor?
+			if (member.definition.superType != null && !statementValidator.constructorForwarded) {
+				validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_MISSING, member.position, "Constructor not forwarded to base type");
+				isValid &= false;
 			}
 		}
 		
@@ -109,9 +107,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			for (Statement statement : member.body) {
-				isValid &= statement.accept(statementValidator);
-			}
+			isValid &= member.body.accept(statementValidator);
 		}
 		
 		return isValid;
@@ -125,9 +121,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			for (Statement statement : member.body) {
-				isValid &= statement.accept(statementValidator);
-			}
+			isValid &= member.body.accept(statementValidator);
 		}
 		
 		return isValid;
@@ -141,9 +135,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			for (Statement statement : member.body) {
-				isValid &= statement.accept(statementValidator);
-			}
+			isValid &= member.body.accept(statementValidator);
 		}
 		
 		return isValid;
@@ -172,9 +164,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			for (Statement statement : member.body) {
-				isValid &= statement.accept(statementValidator);
-			}
+			isValid &= member.body.accept(statementValidator);
 		}
 		
 		return isValid;
@@ -187,9 +177,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			for (Statement statement : member.body) {
-				isValid &= statement.accept(statementValidator);
-			}
+			isValid &= member.body.accept(statementValidator);
 		}
 		
 		return isValid;
@@ -207,9 +195,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			for (Statement statement : member.body) {
-				isValid &= statement.accept(statementValidator);
-			}
+			isValid &= member.body.accept(statementValidator);
 		}
 		
 		return isValid;

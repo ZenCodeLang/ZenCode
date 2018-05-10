@@ -156,14 +156,16 @@ public class JavaCompiler {
 		final SourceFile sourceFile = script.getTag(SourceFile.class);
 		final String className = getClassName(sourceFile == null ? null : sourceFile.filename);
 		JavaScriptFile scriptFile = getScriptFile(className);
+		
+		String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
 
 		// convert scripts into methods (add them to a Scripts class?)
 		// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
 		final JavaClassWriter visitor = scriptFile.classWriter;
-		JavaMethodInfo method = new JavaMethodInfo(new JavaClassInfo(className), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+		JavaMethodInfo method = new JavaMethodInfo(new JavaClassInfo(className), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		scriptFile.scriptMethods.add(method);
 		
-		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(visitor, method, null, null));
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(visitor, method, null, null, null));
 		statementVisitor.start();
 		for (Statement statement : script.statements) {
 			statement.accept(statementVisitor);
@@ -198,7 +200,7 @@ public class JavaCompiler {
 		finished = true;
 		
 		JavaMethodInfo runMethod = new JavaMethodInfo(new JavaClassInfo("Scripts"), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, runMethod, null, null);
+		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, runMethod, null, null, null);
 		runWriter.start();
 		for (Map.Entry<String, JavaScriptFile> entry : scriptBlocks.entrySet()) {
 			for (JavaMethodInfo method : entry.getValue().scriptMethods)

@@ -13,12 +13,18 @@ import org.objectweb.asm.Type;
  */
 public class JavaClassInfo {
 	public static JavaClassInfo get(Class<?> cls) {
-		return new JavaClassInfo(Type.getInternalName(cls));
+		return new JavaClassInfo(Type.getInternalName(cls), cls.isEnum());
 	}
 	
 	public final String internalClassName;
+	public final boolean isEnum;
 	
 	public JavaClassInfo(String internalClassName) {
+		this(internalClassName, false);
+	}
+	
+	public JavaClassInfo(String internalClassName, boolean isEnum) {
 		this.internalClassName = internalClassName;
+		this.isEnum = isEnum;
 	}
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -63,7 +64,17 @@ public abstract class HighLevelDefinition extends Taggable {
 		for (IDefinitionMember member : members)
 			if (member instanceof FieldMember)
 				fields.add((FieldMember)member);
+		
 		return fields;
+	}
+	
+	public List<EnumConstantMember> getEnumConstants() {
+		List<EnumConstantMember> enumMembers = new ArrayList<>();
+		for (IDefinitionMember member : members)
+            if (member instanceof EnumConstantMember)
+				enumMembers.add((EnumConstantMember) member);
+		
+		return enumMembers;
 	}
 	
 	public boolean isStatic() {

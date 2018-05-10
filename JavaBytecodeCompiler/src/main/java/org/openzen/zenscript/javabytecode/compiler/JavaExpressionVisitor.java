@@ -275,11 +275,19 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
         Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
-        //javaWriter.loadObject(0);
+		
+		if (javaWriter.method.javaClass.isEnum) {
+			javaWriter.loadObject(0);
+			javaWriter.loadObject(1);
+			javaWriter.loadInt(2);
+		} else {
+			javaWriter.loadObject(0);
+		}
+		
         for (Expression argument : expression.arguments.arguments) {
             argument.accept(this);
         }
-        javaWriter.invokeSpecial(type.getInternalName(), "<init>", CompilerUtils.calcDesc(expression.constructor.header, expression.constructor.hasTag(JavaEnumInfo.class)));
+        javaWriter.invokeSpecial(type.getInternalName(), "<init>", CompilerUtils.calcDesc(expression.constructor.header, javaWriter.method.javaClass.isEnum));
         return null;
     }
 
@@ -291,6 +299,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         }
         //No super calls in enums possible, and that's already handled in the enum constructor itself.
         javaWriter.invokeSpecial(expression.objectType.accept(JavaTypeClassVisitor.INSTANCE), "<init>", CompilerUtils.calcDesc(expression.constructor.header, false));
+		
+		CompilerUtils.writeDefaultFieldInitializers(javaWriter, javaWriter.forDefinition);
         return null;
     }
 
@@ -322,9 +332,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
-        //TODO is Static?
-        final boolean isStatic = false;
-        javaWriter.load(Type.getType(expression.parameter.type.accept(JavaTypeClassVisitor.INSTANCE)), isStatic ? expression.parameter.index : expression.parameter.index + 1);
+		JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
+        javaWriter.load(Type.getType(expression.parameter.type.accept(JavaTypeClassVisitor.INSTANCE)), parameter.index);
         return null;
     }
 
@@ -473,7 +482,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
         expression.value.accept(this);
-        javaWriter.store(expression.type.accept(JavaTypeVisitor.INSTANCE), javaWriter.method.isStatic() ? expression.parameter.index : expression.parameter.index + 1);
+		JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
+        javaWriter.store(expression.type.accept(JavaTypeVisitor.INSTANCE), parameter.index);
         return null;
     }
 

@@ -33,18 +33,6 @@ public abstract class Statement extends Taggable {
 	
 	public abstract <T> T accept(StatementVisitor<T> visitor);
 	
-	public static ITypeID getReturnType(TypeScope scope, List<Statement> statements) {
-		ITypeID result = null;
-		for (Statement statement : statements) {
-			ITypeID statementType = statement.getReturnType();
-			if (result == null)
-				result = statementType;
-			else
-				result = scope.getTypeMembers(result).union(statementType);
-		}
-		return result;
-	}
-	
 	public static List<Statement> withReturnType(TypeScope scope, List<Statement> statements, ITypeID returnType) {
 		return statements.stream()
 				.map(statement -> statement.withReturnType(scope, returnType))

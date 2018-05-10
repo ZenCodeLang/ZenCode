@@ -11,13 +11,13 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.shared.Taggable;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class FunctionParameter {
-	public int index = -1;
+public class FunctionParameter extends Taggable {
 	public final ITypeID type;
 	public final String name;
 	public final Expression defaultValue;

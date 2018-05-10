@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 
 /**
  *
@@ -35,20 +36,33 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		FormattingUtils.formatModifiers(output, definition.modifiers);
 		output.append("class ");
 		output.append(definition.name);
-		if (definition.genericParameters.length > 0) {
-			
-		}
+		FormattingUtils.formatTypeParameters(output, definition.genericParameters, typeFormatter);
 		output.append(" ");
 		if (definition.superType != null) {
 			output.append("extends ");
 			output.append(definition.superType.accept(typeFormatter));
 			output.append(" ");
 		}
+		if (settings.classBracketOnSameLine) {
+			output.append("{\n");
+		} else {
+			output.append("\n")
+					.append(indent)
+					.append("{\n")
+					.append(indent + settings.indent);
+		}
+		
+		for (IDefinitionMember member : definition.members) {
+			member.accept(new MemberFormatter(settings, output, indent + settings.indent, typeFormatter));
+		}
+		
+		output.append("}\n");
 		return null;
 	}
 
 	@Override
 	public Void visitInterface(InterfaceDefinition definition) {
+		
 		return null;
 	}
 
@@ -64,6 +78,11 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionDefinition definition) {
+		FormattingUtils.formatModifiers(output, definition.modifiers);
+		output.append("function ");
+		output.append(definition.name);
+		FormattingUtils.formatHeader(output, settings, definition.header, typeFormatter);
+		FormattingUtils.formatBody(output, settings, indent, typeFormatter, definition.statement);
 		return null;
 	}
 

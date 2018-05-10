@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.parser.statements;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
@@ -29,19 +27,16 @@ public class ParsedLambdaFunctionBody extends ParsedFunctionBody {
 	}
 	
 	@Override
-	public List<Statement> compile(StatementScope scope, FunctionHeader header) {
-		List<Statement> statements = new ArrayList<>();
+	public Statement compile(StatementScope scope, FunctionHeader header) {
 		if (header.returnType == BasicTypeID.VOID) {
 			Expression value = this.value.compile(new ExpressionScope(scope)).eval();
-			statements.add(new ExpressionStatement(value.position, value));
-			statements.add(new ReturnStatement(value.position, null));
+			return new ExpressionStatement(value.position, value);
 		} else {
 			Expression returnValue = value
 					.compile(new ExpressionScope(scope, header.returnType))
 					.eval()
 					.castImplicit(value.position, scope, header.returnType);
-			statements.add(new ReturnStatement(value.position, returnValue));
+			return new ReturnStatement(value.position, returnValue);
 		}
-		return statements;
 	}
 }

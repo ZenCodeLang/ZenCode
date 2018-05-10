@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
@@ -122,9 +121,7 @@ public class DefinitionValidator implements DefinitionVisitor<Boolean> {
 				definition.name);
 				
 		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header));
-		for (Statement statement : definition.statements) {
-			isValid &= statement.accept(statementValidator);
-		}
+		isValid &= definition.statement.accept(statementValidator);
 		return isValid;
 	}
 

@@ -68,31 +68,7 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 	public String visitFunction(FunctionTypeID function) {
 		StringBuilder result = new StringBuilder();
 		result.append("function");
-		
-		FunctionHeader header = function.header;
-		formatTypeParameters(result, header.typeParameters);
-		result.append("(");
-		int parameterIndex = 0;
-		for (FunctionParameter parameter : header.parameters) {
-			if (parameterIndex > 0)
-				result.append(", ");
-			
-			result.append(parameter.name);
-			if (parameter.variadic)
-				result.append("...");
-			
-			if (!settings.showAnyInFunctionHeaders || parameter.type != BasicTypeID.ANY) {
-				result.append(" as ");
-				result.append(header.returnType.accept(this));
-			}
-			
-			parameterIndex++;
-		}
-		result.append(")");
-		if (!settings.showAnyInFunctionHeaders || header.returnType != BasicTypeID.ANY) {
-			result.append(" as ");
-			result.append(header.returnType.accept(this));
-		}
+		FormattingUtils.formatHeader(result, settings, function.header, this);
 		return result.toString();
 	}
 
@@ -134,29 +110,6 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 	@Override
 	public String visitOptional(OptionalTypeID optional) {
 		return optional.baseType.accept(this) + "?";
-	}
-	
-	private void formatTypeParameters(StringBuilder result, TypeParameter[] parameters) {
-		if (parameters.length > 0) {
-			result.append("<");
-			int index = 0;
-			for (TypeParameter parameter : parameters) {
-				if (index > 0)
-					result.append(", ");
-				
-				result.append(parameter.name);
-				
-				if (parameter.bounds.size() > 0) {
-					for (GenericParameterBound bound : parameter.bounds) {
-						result.append(": ");
-						result.append(bound.accept(this));
-					}
-				}
-				
-				index++;
-			}
-			result.append(">");
-		}
 	}
 
 	@Override

@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.parser.statements;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.linker.StatementScope;
@@ -16,16 +14,14 @@ import org.openzen.zenscript.linker.StatementScope;
  * @author Hoofdgebruiker
  */
 public class ParsedStatementsFunctionBody extends ParsedFunctionBody {
-	private final List<ParsedStatement> statements;
+	private final ParsedStatement body;
 	
-	public ParsedStatementsFunctionBody(List<ParsedStatement> statements) {
-		this.statements = statements;
+	public ParsedStatementsFunctionBody(ParsedStatement body) {
+		this.body = body;
 	}
 	
 	@Override
-	public List<Statement> compile(StatementScope scope, FunctionHeader header) {
-		return statements.stream()
-				.map(s -> s.compile(scope))
-				.collect(Collectors.toList());
+	public Statement compile(StatementScope scope, FunctionHeader header) {
+		return body.compile(scope);
 	}
 }

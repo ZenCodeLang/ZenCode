@@ -33,6 +33,9 @@ public class FormattingSettings {
 	public final boolean loopBracketOnSameLine;
 	public final boolean tryCatchNewLine; // new line between } and catch or } and finally
 	public final boolean tryCatchBracketOnSameLine;
+	public final boolean classBracketOnSameLine;
+	public final boolean functionBracketOnSameLine;
+	public final boolean lambdaMethodOnSameLine;
 	
 	public final String indent;
 	
@@ -58,6 +61,9 @@ public class FormattingSettings {
 		loopBracketOnSameLine = builder.loopBracketOnSameLine;
 		tryCatchNewLine = builder.tryCatchNewLine;
 		tryCatchBracketOnSameLine = builder.tryCatchBracketOnSameLine;
+		classBracketOnSameLine = builder.classBracketOnSameLine;
+		functionBracketOnSameLine = builder.functionBracketOnSameLine;
+		lambdaMethodOnSameLine = builder.lambdaMethodOnSameLine;
 		
 		if (useTabs) {
 			indent = "\t";
@@ -159,6 +165,9 @@ public class FormattingSettings {
 		private boolean loopBracketOnSameLine = true;
 		private boolean tryCatchNewLine = true;
 		private boolean tryCatchBracketOnSameLine = true;
+		private boolean classBracketOnSameLine = false;
+		private boolean functionBracketOnSameLine = false;
+		private boolean lambdaMethodOnSameLine = false;
 		
 		public Builder showAnyInFunctionHeaders(boolean show) {
 			showAnyInFunctionHeaders = show;
@@ -262,6 +271,21 @@ public class FormattingSettings {
 		
 		public Builder tryCatchBracketOnSameLine(boolean sameLine) {
 			tryCatchBracketOnSameLine = sameLine;
+			return this;
+		}
+		
+		public Builder classBracketOnSameLine(boolean sameLine) {
+			classBracketOnSameLine = sameLine;
+			return this;
+		}
+		
+		public Builder functionBracketOnSameLine(boolean sameLine) {
+			functionBracketOnSameLine = sameLine;
+			return this;
+		}
+		
+		public Builder lambdaMethodOnSameLine(boolean sameLine) {
+			lambdaMethodOnSameLine = sameLine;
 			return this;
 		}
 		

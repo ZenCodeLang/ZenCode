@@ -38,18 +38,12 @@ public class FunctionHeader {
 		this.typeParameters = NO_GENERIC_PARAMETERS;
 		this.returnType = returnType;
 		this.parameters = parameters;
-		
-		for (int i = 0; i < parameters.length; i++)
-			parameters[i].index = i;
 	}
 	
 	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, FunctionParameter[] parameters) {
 		this.typeParameters = genericParameters;
 		this.returnType = returnType;
 		this.parameters = parameters;
-		
-		for (int i = 0; i < parameters.length; i++)
-			parameters[i].index = i;
 	}
 	
 	public FunctionHeader instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {

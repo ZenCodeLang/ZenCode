@@ -5,7 +5,7 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 
-public class JavaStatementVisitor implements StatementVisitor<Void> {
+public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     private final JavaWriter javaWriter;
     public final JavaExpressionVisitor expressionVisitor;
 	
@@ -18,27 +18,28 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
     }
 
     @Override
-    public Void visitBlock(BlockStatement statement) {
+    public Boolean visitBlock(BlockStatement statement) {
+		Boolean returns = false;
         for (Statement statement1 : statement.statements) {
-            statement1.accept(this);
+            returns = statement1.accept(this);
         }
-        return null;
+        return returns;
     }
 
     @Override
-    public Void visitBreak(BreakStatement statement) {
+    public Boolean visitBreak(BreakStatement statement) {
         javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_end"));
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitContinue(ContinueStatement statement) {
+    public Boolean visitContinue(ContinueStatement statement) {
         javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_start"));
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitDoWhile(DoWhileStatement statement) {
+    public Boolean visitDoWhile(DoWhileStatement statement) {
         Label start = new Label();
         Label end = new Label();
         if (statement.label == null)
@@ -53,23 +54,23 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
 
         //Only needed for break statements, should be nop if not used
         javaWriter.label(end);
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitEmpty(EmptyStatement statement) {
+    public Boolean visitEmpty(EmptyStatement statement) {
         //No-Op
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitExpression(ExpressionStatement statement) {
+    public Boolean visitExpression(ExpressionStatement statement) {
         statement.expression.accept(expressionVisitor);
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitForeach(ForeachStatement statement) {
+    public Boolean visitForeach(ForeachStatement statement) {
         //Create Labels
         Label start = new Label();
         Label end = new Label();
@@ -97,11 +98,11 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
         statement.iterator.acceptForIterator(new JavaForeachVisitor(this, statement.loopVariables, statement.content, start, end));
         javaWriter.goTo(start);
         javaWriter.label(end);
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitIf(IfStatement statement) {
+    public Boolean visitIf(IfStatement statement) {
         statement.condition.accept(expressionVisitor);
         Label onElse = null;
         Label end = new Label();
@@ -119,30 +120,30 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
             statement.onElse.accept(this);
         }
         javaWriter.label(end);
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitLock(LockStatement statement) {
-        return null;
+    public Boolean visitLock(LockStatement statement) {
+        return false;
     }
 
     @Override
-    public Void visitReturn(ReturnStatement statement) {
+    public Boolean visitReturn(ReturnStatement statement) {
         statement.value.accept(expressionVisitor);
         javaWriter.returnType(Type.getType(statement.value.type.accept(JavaTypeClassVisitor.INSTANCE)));
-        return null;
+        return true;
     }
 
     @Override
-    public Void visitThrow(ThrowStatement statement) {
+    public Boolean visitThrow(ThrowStatement statement) {
         statement.value.accept(expressionVisitor);
         javaWriter.aThrow();
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitTryCatch(TryCatchStatement statement) {
+    public Boolean visitTryCatch(TryCatchStatement statement) {
         final Label tryCatchStart = new Label();
         final Label tryFinish = new Label();
         final Label tryCatchFinish = new Label();
@@ -189,11 +190,11 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
         }
         javaWriter.label(tryCatchFinish);
 
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitVar(VarStatement statement) {
+    public Boolean visitVar(VarStatement statement) {
         Type type = statement.type.accept(JavaTypeVisitor.INSTANCE);
         int local = javaWriter.local(type);
         if (statement.initializer != null) {
@@ -205,11 +206,11 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
         final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, local, variableStart, statement.name);
         statement.setTag(JavaLocalVariableInfo.class, info);
         javaWriter.addVariableInfo(info);
-        return null;
+        return false;
     }
 
     @Override
-    public Void visitWhile(WhileStatement statement) {
+    public Boolean visitWhile(WhileStatement statement) {
         Label start = new Label();
         Label end = new Label();
 
@@ -225,7 +226,7 @@ public class JavaStatementVisitor implements StatementVisitor<Void> {
         statement.content.accept(this);
         javaWriter.goTo(start);
         javaWriter.label(end);
-        return null;
+        return false;
     }
 
     public void start() {
