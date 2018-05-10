@@ -24,7 +24,19 @@ import org.openzen.zenscript.javabytecode.compiler.*;
 import java.util.Iterator;
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
-
+	private static final JavaClassInfo T_CLASS = new JavaClassInfo("java/lang/Class");
+	private static final JavaMethodInfo CLASS_FORNAME = new JavaMethodInfo(
+			T_CLASS,
+			"forName",
+			"(Ljava/lang/String;)Ljava/lang/Class;",
+			Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
+	
+	private static final JavaClassInfo T_ENUM = new JavaClassInfo("java/lang/Enum");
+	private static final JavaMethodInfo ENUM_VALUEOF = new JavaMethodInfo(
+			T_ENUM,
+			"valueOf",
+			"(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;",
+			Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 
     private final JavaClassWriter outerWriter;
 
@@ -169,12 +181,15 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
         //Enum Stuff(required!)
         writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL | Opcodes.ACC_SYNTHETIC, "$VALUES", "[L" + definition.name + ";", null, null).visitEnd();
+		
+		JavaClassInfo arrayClass = new JavaClassInfo("[L" + definition.name + ";");
+		JavaMethodInfo arrayClone = new JavaMethodInfo(arrayClass, "clone", "()Ljava/lang/Object;", Opcodes.ACC_PUBLIC);
 
 		JavaMethodInfo valuesMethodInfo = new JavaMethodInfo(toClass, "values", "()[L" + definition.name + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
         JavaWriter valuesWriter = new JavaWriter(writer, true, valuesMethodInfo, null, null);
         valuesWriter.start();
         valuesWriter.getStaticField(definition.name, "$VALUES", "[L" + definition.name + ";");
-        valuesWriter.invokeVirtual("[L" + definition.name + ";", "clone", "()Ljava/lang/Object;");
+        valuesWriter.invokeVirtual(arrayClone);
         valuesWriter.checkCast("[L" + definition.name + ";");
         valuesWriter.returnObject();
         valuesWriter.end();
@@ -182,9 +197,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		JavaMethodInfo valueOfMethodInfo = new JavaMethodInfo(toClass, "valueOf", "(Ljava/lang/String;)L" + definition.name + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
         JavaWriter valueOfWriter = new JavaWriter(writer, true, valueOfMethodInfo, null, null);
         valueOfWriter.start();
-        valueOfWriter.invokeStatic("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+        valueOfWriter.invokeStatic(CLASS_FORNAME);
         valueOfWriter.loadObject(0);
-        valueOfWriter.invokeStatic("java/lang/Enum", "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;");
+        valueOfWriter.invokeStatic(ENUM_VALUEOF);
         valueOfWriter.checkCast("L" + definition.name + ";");
         valueOfWriter.returnObject();
         valueOfWriter.end();

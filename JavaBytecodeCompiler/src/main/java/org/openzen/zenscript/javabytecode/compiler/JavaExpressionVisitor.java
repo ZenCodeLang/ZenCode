@@ -13,8 +13,11 @@ import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 
 import java.util.Map;
+import org.objectweb.asm.Opcodes;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
+	private static final JavaMethodInfo MAP_PUT = JavaMethodInfo.get(Opcodes.ACC_PUBLIC, Map.class, "put", Object.class, Object.class, Object.class);
+	
     private final JavaWriter javaWriter;
 	
     public JavaExpressionVisitor(JavaWriter javaWriter) {
@@ -73,7 +76,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         final Type operatorType = Type.getType(CompareType.class);
         javaWriter.getStaticField(operatorType.getInternalName(), expression.operator.name(), operatorType.getDescriptor());
 
-        javaWriter.invokeStatic(ZenUtils.class, "compare", boolean.class, getForEquals(expression.left.type), getForEquals(expression.right.type), CompareType.class);
+		// TODO: should be implemented properly
+		JavaMethodInfo compareMethod = JavaMethodInfo.get(
+				0,
+				ZenUtils.class,
+				"compare",
+				boolean.class,
+				getForEquals(expression.left.type),
+				getForEquals(expression.right.type),
+				CompareType.class);
+        javaWriter.invokeStatic(compareMethod);
 
         return null;
     }
@@ -97,7 +109,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         }
         //TODO: Test with actual static method
         final JavaMethodInfo info = expression.member.getTag(JavaMethodInfo.class);
-        javaWriter.invokeStatic(info.javaClass.internalClassName, info.name, info.descriptor);
+        javaWriter.invokeStatic(info);
         return null;
     }
 
@@ -377,7 +389,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
             javaWriter.dup();
             expression.keys[i].accept(this);
             expression.values[i].accept(this);
-            javaWriter.invokeInterface(Map.class, "put", Object.class, Object.class, Object.class);
+            javaWriter.invokeInterface(MAP_PUT);
             javaWriter.pop();
         }
         return null;
@@ -537,13 +549,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         if (methodInfo == null)
             return false;
         if (methodInfo.isStatic()) {
-            getJavaWriter().invokeStatic(methodInfo.javaClass.internalClassName,
-                    methodInfo.name,
-                    methodInfo.descriptor);
+            getJavaWriter().invokeStatic(methodInfo);
         } else {
-            getJavaWriter().invokeVirtual(methodInfo.javaClass.internalClassName,
-                    methodInfo.name,
-                    methodInfo.descriptor);
+            getJavaWriter().invokeVirtual(methodInfo);
         }
         return true;
     }

@@ -5,11 +5,17 @@
  */
 package org.openzen.zenscript.javabytecode;
 
+import org.objectweb.asm.Type;
+
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaClassInfo {
+	public static JavaClassInfo get(Class<?> cls) {
+		return new JavaClassInfo(Type.getInternalName(cls));
+	}
+	
 	public final String internalClassName;
 	
 	public JavaClassInfo(String internalClassName) {

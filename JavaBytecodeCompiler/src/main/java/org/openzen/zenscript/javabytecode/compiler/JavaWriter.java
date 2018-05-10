@@ -12,9 +12,17 @@ import java.util.List;
 import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
+import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
 public class JavaWriter {
+	private static final JavaClassInfo T_STRING = new JavaClassInfo("java/lang/String");
+	private static final JavaMethodInfo STRING_CONCAT = new JavaMethodInfo(
+			T_STRING,
+			"concat",
+			"(Ljava/lang/String;)Ljava/lang/String;",
+			Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+	
 	public final JavaMethodInfo method;
 	
     private final LocalVariablesSorter visitor;
@@ -719,35 +727,15 @@ public class JavaWriter {
 
         visitor.visitTypeInsn(INSTANCEOF, clsName);
     }
-
-    public void invokeStatic(String owner, String name, String descriptor) {
-        if (debug)
-            System.out.println("invokeStatic " + owner + '.' + name + descriptor);
-
-        if (owner == null)
-            throw new IllegalArgumentException("owner cannot be null");
-        if (name == null)
-            throw new IllegalArgumentException("name cannot be null");
-        if (descriptor == null)
-            throw new IllegalArgumentException("descriptor cannot be null");
-
-        visitor.visitMethodInsn(INVOKESTATIC, owner, name, descriptor, false);
-    }
-
-    public void invokeStatic(Class owner, String name, Class result, Class... arguments) {
-        StringBuilder descriptor = new StringBuilder();
-        descriptor.append('(');
-        for (Class argument : arguments) {
-            descriptor.append(signature(argument));
-        }
-        descriptor.append(')');
-        descriptor.append(result == null ? 'V' : signature(result));
-
-        if (debug)
-            System.out.println("invokeStatic " + internal(owner) + '.' + name + descriptor);
-
-        visitor.visitMethodInsn(INVOKESTATIC, internal(owner), name, descriptor.toString(), false);
-    }
+	
+	public void invokeStatic(JavaMethodInfo method) {
+		visitor.visitMethodInsn(
+				INVOKESTATIC,
+				method.javaClass.internalClassName,
+				method.name,
+				method.descriptor,
+				false);
+	}
 
     public void invokeSpecial(String owner, String name, String descriptor) {
         if (debug)
@@ -759,57 +747,19 @@ public class JavaWriter {
     public void invokeSpecial(Class owner, String name, String descriptor) {
         invokeSpecial(Type.getInternalName(owner), name, descriptor);
     }
-
-    public void invoke(Class owner, String name, Class result, Class... arguments) {
-        if (owner.isInterface()) {
-            invokeInterface(owner, name, result, arguments);
-        } else {
-            invokeVirtual(owner, name, result, arguments);
-        }
-    }
-
-    public void invokeVirtual(String owner, String name, String descriptor) {
+	
+	public void invokeVirtual(JavaMethodInfo method) {
         if (debug)
-            System.out.println("invokeVirtual " + owner + '.' + name + descriptor);
+            System.out.println("invokeVirtual " + method.javaClass.internalClassName + '.' + method.name + method.descriptor);
 
-        visitor.visitMethodInsn(INVOKEVIRTUAL, owner, name, descriptor, false);
-    }
+        visitor.visitMethodInsn(INVOKEVIRTUAL, method.javaClass.internalClassName, method.name, method.descriptor, false);
+	}
 
-    public void invokeVirtual(Class owner, String name, Class result, Class... arguments) {
-        StringBuilder descriptor = new StringBuilder();
-        descriptor.append('(');
-        for (Class argument : arguments) {
-            descriptor.append(signature(argument));
-        }
-        descriptor.append(')');
-        descriptor.append(result == null ? 'V' : signature(result));
-
+    public void invokeInterface(JavaMethodInfo method) {
         if (debug)
-            System.out.println("invokeVirtual " + owner + '.' + name + descriptor);
+            System.out.println("invokeInterface " + method.javaClass.internalClassName + '.' + method.name + method.descriptor);
 
-        visitor.visitMethodInsn(INVOKEVIRTUAL, internal(owner), name, descriptor.toString(), false);
-    }
-
-    public void invokeInterface(String owner, String name, String descriptor) {
-        if (debug)
-            System.out.println("invokeInterface " + owner + '.' + name + descriptor);
-
-        visitor.visitMethodInsn(INVOKEINTERFACE, owner, name, descriptor, true);
-    }
-
-    public void invokeInterface(Class owner, String name, Class result, Class... arguments) {
-        StringBuilder descriptor = new StringBuilder();
-        descriptor.append('(');
-        for (Class argument : arguments) {
-            descriptor.append(signature(argument));
-        }
-        descriptor.append(')');
-        descriptor.append(result == null ? 'V' : signature(result));
-
-        if (debug)
-            System.out.println("invokeInterface " + owner + '.' + name + descriptor);
-
-        visitor.visitMethodInsn(INVOKEINTERFACE, internal(owner), name, descriptor.toString(), true);
+        visitor.visitMethodInsn(INVOKEINTERFACE, method.javaClass.internalClassName, method.name, method.descriptor, true);
     }
 
     public void newObject(Class type) {
@@ -1100,7 +1050,7 @@ public class JavaWriter {
     }
 
     public void stringAdd() {
-        invokeVirtual("java/lang/String", "concat", "(Ljava/lang/String;)Ljava/lang/String;");
+        invokeVirtual(STRING_CONCAT);
     }
 
     public Label getNamedLabel(String label) {

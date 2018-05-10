@@ -47,14 +47,15 @@ public class GlobalRegistry {
 	
 	public GlobalRegistry(ZSPackage globals) {
 		JavaClassInfo jPrintStream = new JavaClassInfo("java/io/PrintStream");
-		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, new JavaMethodInfo(jPrintStream, "println", "(Ljava/lang/String;)V", Opcodes.ACC_PUBLIC));
+		JavaMethodInfo printstreamPrintln = new JavaMethodInfo(jPrintStream, "println", "(Ljava/lang/String;)V", Opcodes.ACC_PUBLIC);
+		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, printstreamPrintln);
 		
 		JavaClassInfo jSystem = new JavaClassInfo("java/lang/System");
 		SYSTEM_OUT.setTag(JavaFieldInfo.class, new JavaFieldInfo(jSystem, "out", "Ljava/io/PrintStream;"));
 		
 		PRINTLN.caller.setTag(JavaBytecodeImplementation.class, writer -> {
 			writer.getField(System.class, "out", PrintStream.class);
-			writer.invokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V");
+			writer.invokeVirtual(printstreamPrintln);
 		});
 	}
 	

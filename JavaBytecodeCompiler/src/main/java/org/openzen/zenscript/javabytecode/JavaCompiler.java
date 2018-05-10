@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinTypeMembers.*;
 
 import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
+import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
@@ -129,7 +130,7 @@ public class JavaCompiler {
 	}
 	
 	private final JavaModule target;
-	private final Map<String, JavaClassWriter> scriptBlocks = new HashMap<>();
+	private final Map<String, JavaScriptFile> scriptBlocks = new HashMap<>();
 	private final JavaClassWriter scriptsClassWriter;
 	private int generatedScriptBlockCounter = 0;
 	private boolean finished = false;
@@ -141,48 +142,27 @@ public class JavaCompiler {
 	public JavaCompiler(boolean debug) {
 		target = new JavaModule();
 		
-		scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES, true);
+		scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
 	}
 	
 	public void addDefinition(HighLevelDefinition definition) {
-		// convert definition into java class
-
-		final String methodName = definition.position.filename.substring(0, definition.position.filename.lastIndexOf('.')).replace("/", "_");
-
-
-		if(!scriptBlocks.containsKey(methodName)) {
-			JavaClassWriter scriptFileWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
-			scriptFileWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, methodName, null, "java/lang/Object", null);
-			scriptBlocks.put(methodName, scriptFileWriter);
-		}
-
-		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(scriptBlocks.get(methodName))));
-
+		String className = getClassName(definition.position.filename);
+		JavaScriptFile scriptFile = getScriptFile(className);
+		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(scriptFile.classWriter)));
 	}
 	
 	public void addScriptBlock(ScriptBlock script) {
 		final SourceFile sourceFile = script.getTag(SourceFile.class);
-		final String methodName;
-		if (sourceFile == null) {
-			methodName = "generatedBlock" + (generatedScriptBlockCounter++);
-		} else {
-			// TODO: remove special characters
-			System.out.println("Writing script: " + sourceFile.filename);
-			methodName = sourceFile.filename.substring(0, sourceFile.filename.lastIndexOf('.')).replace("/", "_");
-		}
-
-		if(!scriptBlocks.containsKey(methodName)) {
-			JavaClassWriter scriptFileWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES, true);
-			scriptFileWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, methodName, null, "java/lang/Object", null);
-			scriptBlocks.put(methodName, scriptFileWriter);
-		}
+		final String className = getClassName(sourceFile == null ? null : sourceFile.filename);
+		JavaScriptFile scriptFile = getScriptFile(className);
 
 		// convert scripts into methods (add them to a Scripts class?)
 		// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
-		final JavaClassWriter visitor = scriptBlocks.get(methodName);
-		visitor.hasRun = true;
-		JavaMethodInfo method = new JavaMethodInfo(new JavaClassInfo(methodName), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+		final JavaClassWriter visitor = scriptFile.classWriter;
+		JavaMethodInfo method = new JavaMethodInfo(new JavaClassInfo(className), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+		scriptFile.scriptMethods.add(method);
+		
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(visitor, method, null, null));
 		statementVisitor.start();
 		for (Statement statement : script.statements) {
@@ -190,6 +170,26 @@ public class JavaCompiler {
 		}
 		target.register("Scripts", scriptsClassWriter.toByteArray());
 		statementVisitor.end();
+	}
+	
+	private String getClassName(String filename) {
+		if (filename == null) {
+			return "generatedBlock" + (generatedScriptBlockCounter++);
+		} else {
+			// TODO: remove special characters
+			System.out.println("Writing script: " + filename);
+			return filename.substring(0, filename.lastIndexOf('.')).replace("/", "_");
+		}
+	}
+	
+	private JavaScriptFile getScriptFile(String className) {
+		if (!scriptBlocks.containsKey(className)) {
+			JavaClassWriter scriptFileWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+			scriptFileWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", null);
+			scriptBlocks.put(className, new JavaScriptFile(scriptFileWriter));
+		}
+		
+		return scriptBlocks.get(className);
 	}
 	
 	public JavaModule finish() {
@@ -200,13 +200,12 @@ public class JavaCompiler {
 		JavaMethodInfo runMethod = new JavaMethodInfo(new JavaClassInfo("Scripts"), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, runMethod, null, null);
 		runWriter.start();
-		for (Map.Entry<String, JavaClassWriter> entry : scriptBlocks.entrySet()) {
-			final String owner = entry.getKey();
-			final JavaClassWriter classWriter = entry.getValue();
-			if(classWriter.hasRun)
-				runWriter.invokeStatic(owner, "run", "()V");
-			classWriter.visitEnd();
-			target.register(owner, classWriter.toByteArray());
+		for (Map.Entry<String, JavaScriptFile> entry : scriptBlocks.entrySet()) {
+			for (JavaMethodInfo method : entry.getValue().scriptMethods)
+				runWriter.invokeStatic(method);
+			
+			entry.getValue().classWriter.visitEnd();
+			target.register(entry.getKey(), entry.getValue().classWriter.toByteArray());
 		}
 		runWriter.ret();
 		runWriter.end();

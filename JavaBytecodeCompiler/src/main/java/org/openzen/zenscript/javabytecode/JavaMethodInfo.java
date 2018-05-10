@@ -6,12 +6,24 @@
 package org.openzen.zenscript.javabytecode;
 
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaMethodInfo {
+	public static JavaMethodInfo get(int modifiers, Class owner, String name, Class result, Class... arguments) {
+        StringBuilder descriptor = new StringBuilder();
+        descriptor.append('(');
+        for (Class argument : arguments) {
+            descriptor.append(Type.getDescriptor(argument));
+        }
+        descriptor.append(')');
+        descriptor.append(result == null ? 'V' : Type.getDescriptor(result));
+		return new JavaMethodInfo(new JavaClassInfo(Type.getInternalName(owner)), name, descriptor.toString(), modifiers);
+    }
+	
 	public final JavaClassInfo javaClass;
 	public final String name;
 	public final String descriptor;
