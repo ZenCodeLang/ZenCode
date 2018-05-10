@@ -2,6 +2,7 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
+import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -76,9 +77,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitCompare(BasicCompareExpression expression) {
         expression.left.accept(this);
         expression.right.accept(this);
-        javaWriter.constant(expression.operator.name());
+        final Type operatorType = Type.getType(CompareType.class);
+        javaWriter.getStaticField(operatorType.getInternalName(), expression.operator.name(), operatorType.getDescriptor());
 
-        javaWriter.invokeStatic(ZenUtils.class, "compare", boolean.class, getForEquals(expression.left.type), getForEquals(expression.right.type), String.class);
+        javaWriter.invokeStatic(ZenUtils.class, "compare", boolean.class, getForEquals(expression.left.type), getForEquals(expression.right.type), CompareType.class);
 
         return null;
     }
