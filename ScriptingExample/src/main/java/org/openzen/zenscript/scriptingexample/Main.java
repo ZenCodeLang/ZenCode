@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,12 +41,7 @@ public class Main {
 		GlobalRegistry registry = new GlobalRegistry(global);
 		SemanticModule module = compileSyntaxToSemantic(parsedFiles, registry);
 		
-		FormattingSettings settings = new FormattingSettings.Builder().build();
-		for (ScriptBlock block : module.scripts) {
-			FileFormatter formatter = new FileFormatter(settings);
-			System.out.println("== " + block.getTag(SourceFile.class).filename + " ==");
-			System.out.println(formatter.format(pkg, block, Collections.emptyList()));
-		}
+		formatFiles(pkg, module);
 		
 		if (module.isValid) {
 			JavaModule javaModule = compileSemanticToJava(module);
@@ -61,6 +57,41 @@ public class Main {
 			parsedFiles[i] = ParsedFile.parse(pkg, files[i]);
 		}
 		return parsedFiles;
+	}
+	
+	private static void formatFiles(ZSPackage pkg, SemanticModule module) {
+		Map<String, FileContents> files = new HashMap<>();
+		for (ScriptBlock block : module.scripts) {
+			SourceFile file = block.getTag(SourceFile.class);
+			if (file == null)
+				continue;
+			
+			FileContents contents = new FileContents(file.filename);
+			contents.script = block;
+			files.put(file.filename, contents);
+		}
+		
+		for (HighLevelDefinition definition : module.definitions.getAll()) {
+			SourceFile file = definition.getTag(SourceFile.class);
+			if (file == null)
+				continue;
+			
+			if (!files.containsKey(file.filename))
+				files.put(file.filename, new FileContents(file.filename));
+			
+			files.get(file.filename).definitions.add(definition);
+		}
+		
+		List<String> filenames = new ArrayList<>(files.keySet());
+		Collections.sort(filenames);
+		
+		FormattingSettings settings = new FormattingSettings.Builder().build();
+		for (String filename : filenames) {
+			FileContents contents = files.get(filename);
+			FileFormatter formatter = new FileFormatter(settings);
+			System.out.println("== " + filename + " ==");
+			System.out.println(formatter.format(pkg, contents.script, contents.definitions));
+		}
 	}
 	
 	private static SemanticModule compileSyntaxToSemantic(ParsedFile[] files, GlobalRegistry registry) {

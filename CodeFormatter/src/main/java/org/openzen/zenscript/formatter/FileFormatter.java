@@ -34,6 +34,13 @@ public class FileFormatter {
 		TypeFormatter typeFormatter = new TypeFormatter(settings, importer);
 		ExpressionFormatter expressionFormatter = new ExpressionFormatter(settings, typeFormatter);
 		
+		List<DefinitionFormatter> definitionFormatters = new ArrayList<>();
+		for (HighLevelDefinition definition : definitions) {
+			DefinitionFormatter definitionFormatter = new DefinitionFormatter(settings, typeFormatter, "");
+			definition.accept(definitionFormatter);
+			definitionFormatters.add(definitionFormatter);
+		}
+		
 		StatementFormatter scriptFormatter = new StatementFormatter("", settings, expressionFormatter);
 		for (Statement statement : script.statements) {
 			statement.accept(scriptFormatter);
@@ -41,6 +48,11 @@ public class FileFormatter {
 		
 		StringBuilder output = new StringBuilder();
 		importer.write(output);
+		
+		for (DefinitionFormatter definition : definitionFormatters) {
+			output.append(definition.toString());
+		}
+		
 		output.append(scriptFormatter.toString().trim());
 		
 		WhitespacePostComment postComment = script.getTag(WhitespacePostComment.class);
