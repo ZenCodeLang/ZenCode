@@ -21,7 +21,7 @@ import org.openzen.zenscript.codemodel.definition.StructDefinition;
 public class DefinitionFormatter implements DefinitionVisitor<Void> {
 	private final FormattingSettings settings;
 	private final TypeFormatter typeFormatter;
-	private final StringBuilder builder = new StringBuilder();
+	private final StringBuilder output = new StringBuilder();
 	private final String indent;
 	
 	public DefinitionFormatter(FormattingSettings settings, TypeFormatter typeFormatter, String indent) {
@@ -32,6 +32,18 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitClass(ClassDefinition definition) {
+		FormattingUtils.formatModifiers(output, definition.modifiers);
+		output.append("class ");
+		output.append(definition.name);
+		if (definition.genericParameters.length > 0) {
+			
+		}
+		output.append(" ");
+		if (definition.superType != null) {
+			output.append("extends ");
+			output.append(definition.superType.accept(typeFormatter));
+			output.append(" ");
+		}
 		return null;
 	}
 
@@ -66,6 +78,6 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 	}
 	
 	public String toString() {
-		return builder.toString();
+		return output.toString();
 	}
 }
