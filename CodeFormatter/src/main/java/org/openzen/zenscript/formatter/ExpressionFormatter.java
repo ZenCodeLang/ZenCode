@@ -5,10 +5,10 @@
  */
 package org.openzen.zenscript.formatter;
 
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.AndAndExpression;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.BasicCompareExpression;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.CapturedClosureExpression;
@@ -220,7 +220,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				case CALL: {
 					StringBuilder result = new StringBuilder();
 					result.append(".");
-					format(result, expression.arguments);
+					FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 					return new ExpressionString(result.toString(), OperatorPriority.CALL);
 				}
 				case CAST: {
@@ -237,7 +237,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 			result.append(expression.target.accept(this).value);
 			result.append(".");
 			result.append(expression.member.name);
-			format(result, expression.arguments);
+			FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 			return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 		}
 	}
@@ -245,38 +245,21 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitCallStatic(CallStaticExpression expression) {
 		StringBuilder result = new StringBuilder();
-		result.append(expression.type.accept(typeFormatter));
-		result.append(".");
-		result.append(expression.member.name);
-		format(result, expression.arguments);
-		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
-	}
-	
-	private void format(StringBuilder result, CallArguments arguments) {
-		if (arguments == null || arguments.typeArguments == null)
-			throw new IllegalArgumentException("Arguments cannot be null!");
-		
-		if (arguments.typeArguments.length > 0) {
-			result.append("<");
-			
-			int index = 0;
-			for (ITypeID typeArgument : arguments.typeArguments) {
-				if (index > 0)
-					result.append(", ");
-				result.append(typeArgument.accept(typeFormatter));
-				index++;
+		result.append(expression.target.accept(typeFormatter));
+		if (expression.member instanceof OperatorMember) {
+			OperatorMember operator = (OperatorMember) expression.member;
+			if (operator.operator == OperatorType.CALL) {
+				// nothing
+			} else {
+				result.append(".");
+				result.append(expression.member.name);
 			}
-			result.append(">");
+		} else {
+			result.append(".");
+			result.append(expression.member.name);
 		}
-		result.append("(");
-		int index = 0;
-		for (Expression argument : arguments.arguments) {
-			if (index > 0)
-				result.append(", ");
-			result.append(argument.accept(this).value);
-			index++;
-		}
-		result.append(")");
+		FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
+		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 	}
 
 	@Override
@@ -410,7 +393,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitConstructorThisCall(ConstructorThisCallExpression expression) {
 		StringBuilder result = new StringBuilder();
 		result.append("this");
-		format(result, expression.arguments);
+		FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 	}
 
@@ -418,7 +401,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
 		StringBuilder result = new StringBuilder();
 		result.append("super");
-		format(result, expression.arguments);
+		FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 	}
 
@@ -483,7 +466,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitGlobalCall(GlobalCallExpression expression) {
 		StringBuilder result = new StringBuilder();
 		result.append(expression.name);
-		format(result, expression.arguments);
+		FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 	}
 
@@ -530,7 +513,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append("new ");
 		result.append(expression.type.accept(typeFormatter));
-		format(result, expression.arguments);
+		FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 	}
 

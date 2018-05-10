@@ -33,22 +33,22 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
  */
 public class StatementFormatter implements StatementVisitor<Void> {
 	private final FormattingSettings settings;
-	private final StringBuilder result;
+	private final StringBuilder output;
 	private final ExpressionFormatter expressionFormatter;
 	
 	private String indent;
 	private ParentStatementType position = ParentStatementType.NONE;
 	
-	public StatementFormatter(String indent, FormattingSettings settings, ExpressionFormatter expressionFormatter) {
+	public StatementFormatter(StringBuilder output, String indent, FormattingSettings settings, ExpressionFormatter expressionFormatter) {
+		this.output = output;
 		this.indent = indent;
 		this.settings = settings;
-		result = new StringBuilder();
 		this.expressionFormatter = expressionFormatter;
 	}
 	
 	@Override
 	public String toString() {
-		return result.toString();
+		return output.toString();
 	}
 
 	@Override
@@ -77,10 +77,10 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitBreak(BreakStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append("break");
+		output.append("break");
 		if (statement.target.label != null)
-			result.append(' ').append(statement.target.label);
-		result.append(";");
+			output.append(' ').append(statement.target.label);
+		output.append(";");
 		endSingleLine(whitespace);
 		return null;
 	}
@@ -89,10 +89,10 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitContinue(ContinueStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append("continue");
+		output.append("continue");
 		if (statement.target.label != null)
-			result.append(' ').append(statement.target.label);
-		result.append(";");
+			output.append(' ').append(statement.target.label);
+		output.append(";");
 		endSingleLine(whitespace);
 		return null;
 	}
@@ -101,19 +101,19 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitDoWhile(DoWhileStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append("do");
+		output.append("do");
 		if (statement.label != null) {
 			if (settings.spaceBeforeLabelColon)
-				result.append(' ');
-			result.append(':');
+				output.append(' ');
+			output.append(':');
 			if (settings.spaceAfterLabelColon)
-				result.append(' ');
-			result.append(statement.label);
+				output.append(' ');
+			output.append(statement.label);
 		}
 		format(ParentStatementType.LOOP, statement.content);
-		result.append(" while ");
+		output.append(" while ");
 		appendCondition(statement.condition);
-		result.append(";");
+		output.append(";");
 		endSingleLine(whitespace);
 		return null;
 	}
@@ -122,7 +122,7 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitEmpty(EmptyStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append(";\n");
+		output.append(";\n");
 		endSingleLine(whitespace);
 		return null;
 	}
@@ -131,7 +131,7 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitExpression(ExpressionStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append(statement.expression.accept(expressionFormatter).value)
+		output.append(statement.expression.accept(expressionFormatter).value)
 			  .append(";");
 		endSingleLine(whitespace);
 		return null;
@@ -141,15 +141,15 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitForeach(ForeachStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append("for ");
+		output.append("for ");
 		for (int i = 0; i < statement.loopVariables.length; i++) {
 			if (i > 0)
-				result.append(", ");
+				output.append(", ");
 			
-			result.append(statement.loopVariables[i].name);
+			output.append(statement.loopVariables[i].name);
 		}
-		result.append(" in ");
-		result.append(statement.list.accept(expressionFormatter).value);
+		output.append(" in ");
+		output.append(statement.list.accept(expressionFormatter).value);
 		format(ParentStatementType.LOOP, statement.content);
 		endSingleLine(whitespace);
 		return null;
@@ -160,11 +160,11 @@ public class StatementFormatter implements StatementVisitor<Void> {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		ParentStatementType position = this.position;
 		beginSingleLine(whitespace);
-		result.append("if ");
+		output.append("if ");
 		appendCondition(statement.condition);
 		format(statement.onElse == null ? ParentStatementType.IF : ParentStatementType.IF_WITH_ELSE, statement.onThen);
 		if (statement.onElse != null) {
-			result.append("else");
+			output.append("else");
 			format(ParentStatementType.ELSE, statement.onElse);
 		}
 		endSingleLine(whitespace);
@@ -175,8 +175,8 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitLock(LockStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append("lock ");
-		result.append(statement.object.accept(expressionFormatter).value);
+		output.append("lock ");
+		output.append(statement.object.accept(expressionFormatter).value);
 		statement.content.accept(this);
 		endSingleLine(whitespace);
 		return null;
@@ -186,12 +186,12 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitReturn(ReturnStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append("return");
+		output.append("return");
 		if (statement.value != null) {
-			result.append(' ');
-			result.append(statement.value.accept(expressionFormatter).value);
+			output.append(' ');
+			output.append(statement.value.accept(expressionFormatter).value);
 		}
-		result.append(";");
+		output.append(";");
 		endSingleLine(whitespace);
 		return null;
 	}
@@ -200,7 +200,7 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitThrow(ThrowStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append("throw ").append(statement.value.accept(expressionFormatter));
+		output.append("throw ").append(statement.value.accept(expressionFormatter));
 		endSingleLine(whitespace);
 		return null;
 	}
@@ -209,28 +209,28 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitTryCatch(TryCatchStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append("try");
+		output.append("try");
 		if (statement.resource != null) {
-			result.append(' ').append(statement.resource.name);
-			result.append(" = ");
-			result.append(statement.resource.initializer.accept(expressionFormatter).value);
+			output.append(' ').append(statement.resource.name);
+			output.append(" = ");
+			output.append(statement.resource.initializer.accept(expressionFormatter).value);
 		}
 		
 		format(ParentStatementType.TRY, statement.content);
 		
 		for (CatchClause catchClause : statement.catchClauses) {
-			result.append(indent).append("catch ");
+			output.append(indent).append("catch ");
 			if (catchClause.exceptionName != null)
-				result.append(catchClause.exceptionName);
+				output.append(catchClause.exceptionName);
 			if (catchClause.exceptionType != BasicTypeID.ANY) {
-				result.append(" as ");
+				output.append(" as ");
 				catchClause.exceptionType.accept(expressionFormatter.typeFormatter);
 			}
 			
 			format(ParentStatementType.CATCH, catchClause.content);
 		}
 		if (statement.finallyClause != null) {
-			result.append(indent).append("finally ");
+			output.append(indent).append("finally ");
 			
 			format(ParentStatementType.FINALLY, statement.finallyClause);
 		}
@@ -242,18 +242,18 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitVar(VarStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append(statement.isFinal ? "val " : "var ");
-		result.append(statement.name);
+		output.append(statement.isFinal ? "val " : "var ");
+		output.append(statement.name);
 		
 		if (statement.initializer == null || statement.initializer.type != statement.type) {
-			result.append(" as ");
-			result.append(statement.type.accept(expressionFormatter.typeFormatter));
+			output.append(" as ");
+			output.append(statement.type.accept(expressionFormatter.typeFormatter));
 		}
 		if (statement.initializer != null) {
-			result.append(" = ");
-			result.append(statement.initializer.accept(expressionFormatter).value);
+			output.append(" = ");
+			output.append(statement.initializer.accept(expressionFormatter).value);
 		}
-		result.append(";");
+		output.append(";");
 		endSingleLine(whitespace);
 		return null;
 	}
@@ -262,16 +262,16 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitWhile(WhileStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		result.append("while");
+		output.append("while");
 		if (statement.label != null) {
 			if (settings.spaceBeforeLabelColon)
-				result.append(' ');
-			result.append(':');
+				output.append(' ');
+			output.append(':');
 			if (settings.spaceAfterLabelColon)
-				result.append(' ');
-			result.append(statement.label);
+				output.append(' ');
+			output.append(statement.label);
 		}
-		result.append(' ');
+		output.append(' ');
 		appendCondition(statement.condition);
 		
 		format(ParentStatementType.LOOP, statement.content);
@@ -288,42 +288,44 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	
 	private void appendCondition(Expression condition) {
 		if (settings.bracketsAroundConditions)
-			result.append('(');
-		result.append(condition.accept(expressionFormatter).value);
+			output.append('(');
+		output.append(condition.accept(expressionFormatter).value);
 		if (settings.bracketsAroundConditions)
-			result.append(')');
+			output.append(')');
 	}
 	
 	private void beginBlock(WhitespaceInfo whitespace) {
-		result.append(settings.getBlockSeparator(indent, position));
-		
-		if (whitespace != null) {
-			if (whitespace.emptyLine) {
-				result.append("\n").append(indent);
-			}
-			writeComments(whitespace.commentsBefore);
+		if (whitespace != null && whitespace.emptyLine) {
+			output.append("\n").append(indent);
 		}
+		
+		String separator = settings.getBlockSeparator(indent, position);
+		output.append(separator);
+		
+		if (whitespace != null)
+			writeComments(whitespace.commentsBefore);
 	}
 	
 	private void endBlock(WhitespaceInfo whitespace) {
 		if (whitespace != null && !whitespace.commentsAfter.isEmpty())
-			result.append(' ').append(whitespace.commentsAfter);
+			output.append(' ').append(whitespace.commentsAfter);
 		
-		result.append("\n").append(indent).append("}");
+		output.append("\n").append(indent).append("}");
 		if (position == ParentStatementType.IF_WITH_ELSE) {
 			if (settings.elseBracketOnSameLine)
-				result.append(" ");
+				output.append(" ");
 			else
-				result.append("\n").append(indent);
+				output.append("\n").append(indent);
 		}
 	}
 	
 	private void beginSingleLine(WhitespaceInfo whitespace) {
-		result.append(settings.getSingleLineSeparator(indent, position));
+		String separator = settings.getSingleLineSeparator(indent, position);
+		output.append(separator);
 		
 		if (whitespace != null) {
 			if (whitespace.emptyLine) {
-				result.append("\n").append(indent);
+				output.append("\n").append(indent);
 			}
 			writeComments(whitespace.commentsBefore);
 		}
@@ -331,21 +333,21 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	
 	private void endSingleLine(WhitespaceInfo whitespace) {
 		if (whitespace != null && !whitespace.commentsAfter.isEmpty())
-			result.append(' ').append(whitespace.commentsAfter);
+			output.append(' ').append(whitespace.commentsAfter);
 		
 		if (position == ParentStatementType.IF_WITH_ELSE)
-			result.append("\n").append(indent);
+			output.append("\n").append(indent);
 	}
 	
 	private void writeComments(String[] comments) {
 		for (String comment : CommentFormatter.format(comments)) {
-			result.append(comment).append("\n").append(indent);
+			output.append(comment).append("\n").append(indent);
 		}
 	}
 	
 	private void writePostComments(String[] comments) {
 		for (String comment : CommentFormatter.format(comments)) {
-			result.append("\n").append(indent).append(comment);
+			output.append("\n").append(indent).append(comment);
 		}
 	}
 }

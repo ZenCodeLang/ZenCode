@@ -139,11 +139,11 @@ public class ZSTokenStream extends TokenStream<ZSToken, ZSTokenType> {
 	}
 	
 	public WhitespaceInfo collectWhitespaceInfoForBlock(String whitespace) {
-		return WhitespaceInfo.from(whitespace, "");
+		return WhitespaceInfo.from(whitespace, "", false);
 	}
 	
-	public WhitespaceInfo collectWhitespaceInfo(String whitespace) {
-		return WhitespaceInfo.from(whitespace, grabWhitespaceLine());
+	public WhitespaceInfo collectWhitespaceInfo(String whitespace, boolean skipLineBefore) {
+		return WhitespaceInfo.from(whitespace, grabWhitespaceLine(), skipLineBefore);
 	}
 	
 	@Override

@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.List;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -15,6 +14,7 @@ import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GenericCompareExpression;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -57,12 +57,12 @@ public abstract class FunctionalMember extends DefinitionMember implements ICall
 	}
 	
 	@Override
-	public Expression callStatic(CodePosition position, FunctionHeader instancedHeader, CallArguments arguments) {
-		return new CallStaticExpression(position, this, arguments);
+	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments) {
+		return new CallStaticExpression(position, target, this, arguments);
 	}
 	
 	@Override
-	public Expression callStaticWithComparator(CodePosition position, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments) {
-		return new GenericCompareExpression(position, callStatic(position, instancedHeader, arguments), operator);
+	public Expression callStaticWithComparator(CodePosition position, ITypeID target, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments) {
+		return new GenericCompareExpression(position, callStatic(position, target, instancedHeader, arguments), operator);
 	}
 }

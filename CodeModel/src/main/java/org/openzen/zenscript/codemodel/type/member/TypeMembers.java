@@ -358,7 +358,7 @@ public final class TypeMembers {
 	
 	public IPartialExpression getStaticMemberExpression(CodePosition position, GenericName name) {
 		if (members.containsKey(name.name))
-			return new PartialStaticMemberGroupExpression(position, members.get(name.name));
+			return new PartialStaticMemberGroupExpression(position, type, members.get(name.name));
 		if (innerTypes.containsKey(name.name))
 			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments));
 		

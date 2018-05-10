@@ -58,12 +58,12 @@ public class ComparatorMember extends Taggable implements ICallableMember {
 	}
 
 	@Override
-	public Expression callStatic(CodePosition position, FunctionHeader instancedHeader, CallArguments arguments) {
+	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments) {
 		throw new UnsupportedOperationException("Can't call a comparator");
 	}
 
 	@Override
-	public Expression callStaticWithComparator(CodePosition position, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments) {
+	public Expression callStaticWithComparator(CodePosition position, ITypeID target, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments) {
 		throw new UnsupportedOperationException("Can't call a comparator statically");
 	}
 

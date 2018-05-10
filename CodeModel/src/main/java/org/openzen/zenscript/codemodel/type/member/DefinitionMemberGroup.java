@@ -244,20 +244,21 @@ public class DefinitionMemberGroup {
 		return method.callWithComparator(position, compareType, target, instancedHeader, arguments);
 	}
 	
-	public Expression callStatic(CodePosition position, TypeScope scope, CallArguments arguments) {
+	public Expression callStatic(CodePosition position, ITypeID target, TypeScope scope, CallArguments arguments) {
 		ICallableMember method = selectMethod(position, scope, arguments, false, true);
 		FunctionHeader instancedHeader = method.getHeader().withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
-		return method.callStatic(position, instancedHeader, arguments);
+		return method.callStatic(position, target, instancedHeader, arguments);
 	}
 	
 	public Expression callStaticWithComparator(
 			CodePosition position,
+			ITypeID target, 
 			TypeScope scope,
 			CallArguments arguments,
 			CompareType compareType) {
 		ICallableMember method = selectMethod(position, scope, arguments, false, true);
 		FunctionHeader instancedHeader = method.getHeader().withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
-		return method.callStaticWithComparator(position, compareType, instancedHeader, arguments);
+		return method.callStaticWithComparator(position, target, compareType, instancedHeader, arguments);
 	}
 	
 	public ICallableMember selectMethod(CodePosition position, TypeScope scope, CallArguments arguments, boolean allowNonStatic, boolean allowStatic) {

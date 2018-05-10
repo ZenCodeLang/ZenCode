@@ -8,6 +8,8 @@ package org.openzen.zenscript.formatter;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
@@ -27,6 +29,7 @@ import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
  *
@@ -113,6 +116,34 @@ public class FormattingUtils {
 	
 	public static void formatBody(StringBuilder output, FormattingSettings settings, String indent, TypeFormatter typeFormatter, Statement body) {
 		body.accept(new BodyFormatter(output, settings, indent, typeFormatter));
+		output.append("\n");
+	}
+	
+	public static void formatCall(StringBuilder result, TypeFormatter typeFormatter, ExpressionFormatter expressionFormatter, CallArguments arguments) {
+		if (arguments == null || arguments.typeArguments == null)
+			throw new IllegalArgumentException("Arguments cannot be null!");
+		
+		if (arguments.typeArguments.length > 0) {
+			result.append("<");
+			
+			int index = 0;
+			for (ITypeID typeArgument : arguments.typeArguments) {
+				if (index > 0)
+					result.append(", ");
+				result.append(typeArgument.accept(typeFormatter));
+				index++;
+			}
+			result.append(">");
+		}
+		result.append("(");
+		int index = 0;
+		for (Expression argument : arguments.arguments) {
+			if (index > 0)
+				result.append(", ");
+			result.append(argument.accept(expressionFormatter).value);
+			index++;
+		}
+		result.append(")");
 	}
 	
 	private static class BodyFormatter implements StatementVisitor<Void> {
@@ -128,7 +159,7 @@ public class FormattingUtils {
 			this.indent = indent;
 			this.typeFormatter = typeFormatter;
 			
-			statementFormatter = new StatementFormatter(indent + settings.indent, settings, new ExpressionFormatter(settings, typeFormatter)); 
+			statementFormatter = new StatementFormatter(output, indent, settings, new ExpressionFormatter(settings, typeFormatter)); 
 		}
 
 		@Override
@@ -153,7 +184,7 @@ public class FormattingUtils {
 
 		@Override
 		public Void visitEmpty(EmptyStatement statement) {
-			output.append(";\n");
+			output.append(";");
 			return null;
 		}
 

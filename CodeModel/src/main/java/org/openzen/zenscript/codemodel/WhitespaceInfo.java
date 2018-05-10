@@ -14,7 +14,7 @@ import org.openzen.zenscript.shared.StringUtils;
  * @author Hoofdgebruiker
  */
 public class WhitespaceInfo {
-	public static WhitespaceInfo from(String whitespaceBefore, String lineAfter) {
+	public static WhitespaceInfo from(String whitespaceBefore, String lineAfter, boolean skipLineBefore) {
 		int numNewLines = 0;
 		for (char c : whitespaceBefore.toCharArray())
 			if (c == '\n')
@@ -30,7 +30,7 @@ public class WhitespaceInfo {
 			commentsBefore.add(trimmed);
 		}
 		
-		boolean emptyLine = numNewLines - commentsBefore.size() > 0;
+		boolean emptyLine = !skipLineBefore && numNewLines - commentsBefore.size() > 0;
 		return new WhitespaceInfo(
 				emptyLine,
 				commentsBefore.toArray(new String[commentsBefore.size()]),

@@ -33,6 +33,8 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	private final StringBuilder output;
 	private final String indent;
 	private final TypeFormatter typeFormatter;
+	private boolean isFirst = true;
+	private boolean wasField = false;
 	
 	public MemberFormatter(FormattingSettings settings, StringBuilder output, String indent, TypeFormatter typeFormatter) {
 		this.settings = settings;
@@ -40,9 +42,22 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		this.indent = indent;
 		this.typeFormatter = typeFormatter;
 	}
+	
+	private void visit(boolean field) {
+		output.append(indent);
+		
+		if (isFirst) {
+			isFirst = false;
+		} else if (!field || (wasField != field)) {
+			output.append("\n").append(indent);
+		}
+		
+		wasField = field;
+	}
 
 	@Override
 	public Void visitField(FieldMember member) {
+		visit(true);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		output.append(member.isFinal() ? "val " : "var ")
 				.append(member.name)
@@ -53,12 +68,13 @@ public class MemberFormatter implements MemberVisitor<Void> {
 			output.append(" = ")
 					.append(member.initializer.accept(new ExpressionFormatter(settings, typeFormatter)));
 		}
-		output.append(";").append("\n").append(indent);
+		output.append(";").append("\n");
 		return null;
 	}
 
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
+		visit(false);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		output.append("this");
 		FormattingUtils.formatHeader(output, settings, member.header, typeFormatter);
@@ -68,6 +84,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitMethod(MethodMember member) {
+		visit(false);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		output.append(member.name);
 		FormattingUtils.formatHeader(output, settings, member.header, typeFormatter);
@@ -77,6 +94,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitGetter(GetterMember member) {
+		visit(false);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		output.append("get ");
 		output.append(member.name);
@@ -88,6 +106,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitSetter(SetterMember member) {
+		visit(false);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		output.append("set ");
 		output.append(member.name);
@@ -104,6 +123,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
+		visit(false);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		switch (member.operator) {
 			case ADD: output.append("+"); break;
@@ -145,6 +165,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCaster(CasterMember member) {
+		visit(false);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		output.append(" as ");
 		output.append(member.toType.accept(typeFormatter));
@@ -154,11 +175,13 @@ public class MemberFormatter implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCustomIterator(CustomIteratorMember member) {
+		visit(false);
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
 	public Void visitCaller(CallerMember member) {
+		visit(false);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		FormattingUtils.formatHeader(output, settings, member.header, typeFormatter);
 		formatBody(member.body);
@@ -167,6 +190,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitImplementation(ImplementationMember implementation) {
+		visit(false);
 		FormattingUtils.formatModifiers(output, implementation.modifiers & ~Modifiers.FINAL);
 		output.append("implements ");
 		output.append(implementation.type.accept(typeFormatter));
@@ -186,6 +210,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
+		visit(false);
 		String formatted = member.innerDefinition.accept(new DefinitionFormatter(settings, typeFormatter, indent + settings.indent)).toString();
 		output.append(formatted);
 		return null;

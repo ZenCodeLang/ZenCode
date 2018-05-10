@@ -41,7 +41,8 @@ public class FileFormatter {
 			definitionFormatters.add(definitionFormatter);
 		}
 		
-		StatementFormatter scriptFormatter = new StatementFormatter("", settings, expressionFormatter);
+		StringBuilder scriptOutput = new StringBuilder();
+		StatementFormatter scriptFormatter = new StatementFormatter(scriptOutput, "", settings, expressionFormatter);
 		for (Statement statement : script.statements) {
 			statement.accept(scriptFormatter);
 		}
@@ -49,16 +50,27 @@ public class FileFormatter {
 		StringBuilder output = new StringBuilder();
 		importer.write(output);
 		
+		boolean first = true;
 		for (DefinitionFormatter definition : definitionFormatters) {
+			if (first)
+				first = false;
+			else
+				output.append("\n");
+			
 			output.append(definition.toString());
 		}
 		
-		output.append(scriptFormatter.toString().trim());
-		
-		WhitespacePostComment postComment = script.getTag(WhitespacePostComment.class);
-		if (postComment != null) {
-			for (String comment : CommentFormatter.format(postComment.comments)) {
-				output.append("\n").append(comment);
+		if (script.statements.size() > 0) {
+			if (definitionFormatters.size() > 0)
+				output.append("\n");
+			
+			output.append(scriptOutput.toString().trim());
+
+			WhitespacePostComment postComment = script.getTag(WhitespacePostComment.class);
+			if (postComment != null) {
+				for (String comment : CommentFormatter.format(postComment.comments)) {
+					output.append("\n").append(comment);
+				}
 			}
 		}
 		
