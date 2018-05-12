@@ -131,9 +131,11 @@ public interface ITypeID {
 				if (definitionType.definition != definition.definition)
 					return false;
 				
-				for (int i = 0; i < definitionType.typeParameters.length; i++) {
-					if (!match(definitionType.typeParameters[i], definition.typeParameters[i]))
-						return false;
+				if (definition.typeParameters != null) {
+					for (int i = 0; i < definitionType.typeParameters.length; i++) {
+						if (!match(definitionType.typeParameters[i], definition.typeParameters[i]))
+							return false;
+					}
 				}
 				
 				return true;

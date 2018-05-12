@@ -1128,7 +1128,14 @@ public class JavaWriter {
             visitor.visitParameter(name, modifier);
     }
 
-    public void lookupSwitch(Label defaultLabel, int[] keys, Label[] labels) {
+    public void lookupSwitch(Label defaultLabel, JavaSwitchLabel[] switchLabels) {
+		int[] keys = new int[switchLabels.length];
+		Label[] labels = new Label[switchLabels.length];
+		for (int i = 0; i < switchLabels.length; i++) {
+			keys[i] = switchLabels[i].key;
+			labels[i] = switchLabels[i].label;
+		}
+		
         visitor.visitLookupSwitchInsn(defaultLabel, keys, labels);
     }
 

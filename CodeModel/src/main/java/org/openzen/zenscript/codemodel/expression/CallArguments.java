@@ -32,4 +32,8 @@ public class CallArguments {
 		this.typeArguments = typeArguments;
 		this.arguments = arguments;
 	}
+	
+	public int getNumberOfTypeArguments() {
+		return typeArguments.length;
+	}
 }

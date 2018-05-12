@@ -61,9 +61,11 @@ public class FunctionScope extends StatementScope {
 				}
 			}
 			
-			for (TypeParameter parameter : header.typeParameters) {
-				if (parameter.name.equals(name.name))
-					return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameter));
+			if (header.typeParameters != null) {
+				for (TypeParameter parameter : header.typeParameters) {
+					if (parameter.name.equals(name.name))
+						return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameter));
+				}
 			}
 		}
 		
@@ -73,9 +75,11 @@ public class FunctionScope extends StatementScope {
 	@Override
 	public ITypeID getType(CodePosition position, List<GenericName> name) {
 		if (name.size() == 1 && name.get(0).hasNoArguments()) {
-			for (TypeParameter parameter : header.typeParameters) {
-				if (parameter.name.equals(name.get(0).name))
-					return getTypeRegistry().getGeneric(parameter);
+			if (header.typeParameters != null) {
+				for (TypeParameter parameter : header.typeParameters) {
+					if (parameter.name.equals(name.get(0).name))
+						return getTypeRegistry().getGeneric(parameter);
+				}
 			}
 		}
 		

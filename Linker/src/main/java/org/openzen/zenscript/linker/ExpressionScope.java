@@ -80,7 +80,7 @@ public class ExpressionScope extends BaseScope {
 	}
 	
 	public ExpressionScope forCall(FunctionHeader header) {
-		if (header.typeParameters.length == 0)
+		if (header.typeParameters == null)
 			return this;
 		
 		Map<TypeParameter, ITypeID> genericInferenceMap = new HashMap<>();

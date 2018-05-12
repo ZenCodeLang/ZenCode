@@ -93,7 +93,7 @@ public class FormattingUtils {
 	}
 	
 	public static void formatTypeParameters(StringBuilder result, TypeParameter[] parameters, TypeFormatter typeFormatter) {
-		if (parameters.length > 0) {
+		if (parameters != null) {
 			result.append("<");
 			int index = 0;
 			for (TypeParameter parameter : parameters) {

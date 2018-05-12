@@ -34,8 +34,9 @@ import org.openzen.zenscript.parser.type.ParsedTypeBasic;
  */
 public class ParsedFunctionHeader {
 	public static ParsedFunctionHeader parse(ZSTokenStream tokens) {
-		List<ParsedGenericParameter> genericParameters = new ArrayList<>();
+		List<ParsedGenericParameter> genericParameters = null;
 		if (tokens.optional(ZSTokenType.T_LESS) != null) {
+			genericParameters = new ArrayList<>();
 			do {
 				genericParameters.add(ParsedGenericParameter.parse(tokens));
 			} while (tokens.optional(ZSTokenType.T_COMMA) != null);

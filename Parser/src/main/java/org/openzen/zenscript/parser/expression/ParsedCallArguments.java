@@ -87,7 +87,7 @@ public class ParsedCallArguments {
 			innerScope = scope.forCall(candidates.get(0));
 		} else {
 			candidates = candidates.stream()
-					.filter(candidate -> candidate.typeParameters.length == 0)
+					.filter(candidate -> candidate.typeParameters == null)
 					.collect(Collectors.toList());
 			
 			if (candidates.isEmpty()) {
@@ -115,7 +115,7 @@ public class ParsedCallArguments {
 		ITypeID[] typeParameters = genericParameters;
 		if (typeParameters == null) {
 			for (FunctionHeader candidate : candidates) {
-				if (candidate.typeParameters.length > 0) {
+				if (candidate.typeParameters != null) {
 					typeParameters = new ITypeID[candidate.typeParameters.length];
 					for (int i = 0; i < typeParameters.length; i++) {
 						if (innerScope.genericInferenceMap.get(candidate.typeParameters[i]) == null)
@@ -146,7 +146,7 @@ public class ParsedCallArguments {
 			return false;
 		
 		for (int i = 0; i < arguments.size(); i++) {
-			if (typeParameters == null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
+			if (typeParameters == null && header.typeParameters != null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
 				return false;
 			
 			if (!arguments.get(i).isCompatibleWith(scope, header.parameters[i].type))

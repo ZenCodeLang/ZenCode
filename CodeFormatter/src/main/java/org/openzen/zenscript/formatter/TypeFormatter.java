@@ -76,7 +76,7 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 	@Override
 	public String visitDefinition(DefinitionTypeID definition) {
 		String importedName = importer.importDefinition(definition.definition);
-		if (definition.typeParameters.length == 0)
+		if (definition.typeParameters == null)
 			return importedName;
 		
 		StringBuilder result = new StringBuilder();

@@ -22,7 +22,6 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  * @author Hoofdgebruiker
  */
 public class FunctionHeader {
-	private static final TypeParameter[] NO_GENERIC_PARAMETERS = new TypeParameter[0];
 	private static final FunctionParameter[] NO_PARAMETERS = new FunctionParameter[0];
 	
 	public final TypeParameter[] typeParameters;
@@ -30,13 +29,13 @@ public class FunctionHeader {
 	public final FunctionParameter[] parameters;
 	
 	public FunctionHeader(ITypeID returnType) {
-		this.typeParameters = NO_GENERIC_PARAMETERS;
+		this.typeParameters = null;
 		this.returnType = returnType;
 		this.parameters = NO_PARAMETERS;
 	}
 	
 	public FunctionHeader(ITypeID returnType, FunctionParameter... parameters) {
-		this.typeParameters = NO_GENERIC_PARAMETERS;
+		this.typeParameters = null;
 		this.returnType = returnType;
 		this.parameters = parameters;
 	}
@@ -47,10 +46,16 @@ public class FunctionHeader {
 		this.parameters = parameters;
 	}
 	
+	public int getNumberOfTypeParameters() {
+		return typeParameters == null ? 0 : typeParameters.length;
+	}
+	
 	public FunctionHeader instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		TypeParameter[] genericParameters = new TypeParameter[this.typeParameters.length];
-		for (int i = 0; i < genericParameters.length; i++)
-			genericParameters[i] = this.typeParameters[i].withGenericArguments(registry, mapping);
+		TypeParameter[] genericParameters = this.typeParameters == null ? null : new TypeParameter[this.typeParameters.length];
+		if (genericParameters != null)
+			for (int i = 0; i < genericParameters.length; i++)
+				genericParameters[i] = this.typeParameters[i].withGenericArguments(registry, mapping);
+		
 		ITypeID returnType = this.returnType.withGenericArguments(registry, mapping);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
 		for (int i = 0; i < parameters.length; i++)
@@ -193,8 +198,9 @@ public class FunctionHeader {
 	
 	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, ITypeID[] arguments) {
 		Map<TypeParameter, ITypeID> typeArguments = new HashMap<>();
-		for (int i = 0; i < typeParameters.length; i++)
-			typeArguments.put(typeParameters[i], arguments[i]);
+		if (typeParameters != null)
+			for (int i = 0; i < typeParameters.length; i++)
+				typeArguments.put(typeParameters[i], arguments[i]);
 		
 		ITypeID returnType = this.returnType.withGenericArguments(registry, typeArguments);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];

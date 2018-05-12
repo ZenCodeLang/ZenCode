@@ -163,24 +163,25 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         final boolean hasNoDefault = hasNoDefault(statement);
 
         final List<SwitchCase> cases = statement.cases;
-
-        final int[] keys = new int[hasNoDefault ? cases.size() : cases.size() - 1];
-        final Label[] labels = new Label[keys.length];
+		final JavaSwitchLabel[] switchLabels = new JavaSwitchLabel[hasNoDefault ? cases.size() : cases.size() - 1];
         final Label defaultLabel = new Label();
-
-        Arrays.parallelSetAll(labels, value -> new Label());
-
+		
         int i = 0;
-        for (final SwitchCase switchCase : cases)
-            if (switchCase.value != null)
-                keys[i++] = CompilerUtils.getKeyForSwitch(switchCase.value);
+        for (final SwitchCase switchCase : cases) {
+            if (switchCase.value != null) {
+				switchLabels[i++] = new JavaSwitchLabel(CompilerUtils.getKeyForSwitch(switchCase.value), new Label());
+			}
+		}
+		
+		JavaSwitchLabel[] sortedSwitchLabels = Arrays.copyOf(switchLabels, switchLabels.length);
+		Arrays.sort(sortedSwitchLabels, (a, b) -> a.key - b.key);
 
-        javaWriter.lookupSwitch(defaultLabel, keys, labels);
+        javaWriter.lookupSwitch(defaultLabel, sortedSwitchLabels);
 
         i = 0;
         for (final SwitchCase switchCase : cases) {
             if (hasNoDefault || switchCase.value != null) {
-                javaWriter.label(labels[i++]);
+                javaWriter.label(switchLabels[i++].label);
             } else {
                 javaWriter.label(defaultLabel);
             }
@@ -203,7 +204,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         for (SwitchCase switchCase : switchStatement.cases)
             if (switchCase.value == null) return false;
         return true;
-    }
+	}
 
     @Override
     public Boolean visitThrow(ThrowStatement statement) {

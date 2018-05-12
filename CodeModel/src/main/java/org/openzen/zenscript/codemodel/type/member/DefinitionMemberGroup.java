@@ -215,7 +215,7 @@ public class DefinitionMemberGroup {
 			if (header.parameters.length != arguments)
 				continue;
 			
-			if (header.typeParameters.length > 0) {
+			if (header.typeParameters != null) {
 				for (ITypeID resultHint : typeHints) {
 					Map<TypeParameter, ITypeID> mapping = new HashMap<>();
 					if (header.returnType.inferTypeParameters(scope.getMemberCache(), resultHint, mapping)) {
@@ -293,7 +293,7 @@ public class DefinitionMemberGroup {
 			FunctionHeader header = method.member.getHeader();
 			if (header.parameters.length != arguments.arguments.length)
 				continue;
-			if (header.typeParameters.length != arguments.typeArguments.length)
+			if (header.getNumberOfTypeParameters() != arguments.getNumberOfTypeArguments())
 				continue;
 			
 			if (arguments.typeArguments.length > 0) {
@@ -317,7 +317,7 @@ public class DefinitionMemberGroup {
 			FunctionHeader header = method.member.getHeader();
 			if (header.parameters.length != arguments.arguments.length)
 				continue;
-			if (header.typeParameters.length != arguments.typeArguments.length)
+			if (header.getNumberOfTypeParameters() != arguments.getNumberOfTypeArguments())
 				continue;
 			
 			if (arguments.typeArguments.length > 0) {

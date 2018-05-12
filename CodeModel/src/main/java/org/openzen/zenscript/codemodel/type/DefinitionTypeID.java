@@ -19,7 +19,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  */
 public class DefinitionTypeID implements ITypeID {
 	public static DefinitionTypeID forType(HighLevelDefinition definition) {
-		if (definition.genericParameters.length > 0)
+		if (definition.genericParameters != null)
 			throw new IllegalArgumentException("Definition has type arguments!");
 		
 		return new DefinitionTypeID(definition, null);
