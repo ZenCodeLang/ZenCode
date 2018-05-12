@@ -77,7 +77,7 @@ public class FileScope extends BaseScope {
 		
 		if (globalSymbols.containsKey(name.name)) {
 			IPartialExpression resolution = globalSymbols.get(name.name).getExpression(position, globalRegistry, name.arguments);
-			return new PartialGlobalExpression(position, name.name, resolution);
+			return new PartialGlobalExpression(position, name.name, resolution, name.arguments);
 		}
 		
 		return rootPackage.getMember(position, globalRegistry, name);
@@ -103,7 +103,7 @@ public class FileScope extends BaseScope {
 			}
 			
 			// TODO: take care of non-static inner classes in generic classes!
-			if (type != null && name.get(name.size() - 1).arguments.size() != type.definition.genericParameters.length)
+			if (type != null && name.get(name.size() - 1).getNumberOfArguments() != type.definition.getNumberOfGenericParameters())
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments");
 			
 			if (type != null)

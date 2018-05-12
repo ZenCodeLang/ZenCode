@@ -37,6 +37,8 @@ public interface IPartialExpression {
 	
 	Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments);
 	
+	ITypeID[] getGenericCallTypes();
+	
 	default Expression assign(CodePosition position, TypeScope scope, Expression value) {
 		throw new CompileException(position, CompileExceptionCode.CANNOT_ASSIGN, "This expression is not assignable");
 	}

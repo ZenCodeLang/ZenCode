@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
@@ -17,13 +18,15 @@ public class CallStaticExpression extends Expression {
 	public final FunctionalMember member;
 	public final ITypeID target;
 	public final CallArguments arguments;
+	public final FunctionHeader instancedHeader;
 	
-	public CallStaticExpression(CodePosition position, ITypeID target, FunctionalMember member, CallArguments arguments) {
+	public CallStaticExpression(CodePosition position, ITypeID target, FunctionalMember member, CallArguments arguments, FunctionHeader instancedHeader) {
 		super(position, member.header.returnType);
 		
 		this.member = member;
 		this.target = target;
 		this.arguments = arguments;
+		this.instancedHeader = instancedHeader;
 	}
 
 	@Override

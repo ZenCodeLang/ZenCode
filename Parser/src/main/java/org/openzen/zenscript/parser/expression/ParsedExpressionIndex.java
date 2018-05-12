@@ -107,5 +107,10 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		private Expression getLength(CodePosition position) {
 			return target.getMember(position, scope, scope.hints, new GenericName("length")).eval();
 		}
+
+		@Override
+		public ITypeID[] getGenericCallTypes() {
+			return null;
+		}
 	}
 }

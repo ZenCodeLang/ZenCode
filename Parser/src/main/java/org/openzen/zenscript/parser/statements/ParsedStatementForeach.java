@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.linker.ExpressionScope;
 import org.openzen.zenscript.linker.ForeachScope;
 import org.openzen.zenscript.linker.StatementScope;
@@ -32,7 +33,8 @@ public class ParsedStatementForeach extends ParsedStatement {
 	public Statement compile(StatementScope scope) {
 		Expression list = this.list.compile(new ExpressionScope(scope)).eval();
 		
-		IIteratorMember iterator = scope.getTypeMembers(list.type).getIterator(varnames.length);
+		TypeMembers members = scope.getTypeMembers(list.type);
+		IIteratorMember iterator = members.getIterator(varnames.length);
 		if (iterator == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_ITERATOR, list.type + " doesn't have an iterator with " + varnames.length + " variables");
 		

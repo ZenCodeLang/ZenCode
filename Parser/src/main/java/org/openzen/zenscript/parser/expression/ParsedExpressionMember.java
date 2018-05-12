@@ -6,8 +6,6 @@
 
 package org.openzen.zenscript.parser.expression;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.GenericName;
@@ -37,16 +35,13 @@ public class ParsedExpressionMember extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		List<ITypeID> genericArguments = Collections.emptyList();
-		if (!genericParameters.isEmpty()) {
-			genericArguments = new ArrayList<>();
-			for (IParsedType type : this.genericParameters) {
-				genericArguments.add(type.compile(scope));
-			}
-		}
-		
 		IPartialExpression cValue = value.compile(scope.withoutHints());
-		IPartialExpression member = cValue.getMember(position, scope, scope.hints, new GenericName(this.member, genericArguments));
+		ITypeID[] typeParameters = IParsedType.compileList(genericParameters, scope);
+		IPartialExpression member = cValue.getMember(
+				position,
+				scope,
+				scope.hints,
+				new GenericName(this.member, typeParameters));
 		if (member == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Member not found: " + this.member);
 		return member;

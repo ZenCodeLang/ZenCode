@@ -59,6 +59,11 @@ public class IteratorTypeID implements ITypeID {
 	}
 
 	@Override
+	public boolean hasDefaultValue() {
+		return false;
+	}
+
+	@Override
 	public int hashCode() {
 		int hash = 5;
 		hash = 13 * hash + Arrays.deepHashCode(this.iteratorTypes);

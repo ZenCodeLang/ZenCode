@@ -35,6 +35,7 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.TranslatedOperatorMember;
 import org.openzen.zenscript.codemodel.member.builtin.ArrayIteratorKeyValues;
 import org.openzen.zenscript.codemodel.member.builtin.ArrayIteratorValues;
+import org.openzen.zenscript.codemodel.member.builtin.AssocIterator;
 import org.openzen.zenscript.codemodel.member.builtin.ComparatorMember;
 import org.openzen.zenscript.codemodel.member.builtin.ConstantGetterMember;
 import org.openzen.zenscript.codemodel.member.builtin.RangeIterator;
@@ -48,6 +49,7 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
@@ -61,10 +63,12 @@ import static org.openzen.zenscript.shared.CodePosition.BUILTIN;
  * @author Hoofdgebruiker
  */
 public class TypeMemberBuilder implements ITypeVisitor<Void> {
+	private final GlobalTypeRegistry registry;
 	private final TypeMembers members;
 	private final LocalMemberCache cache;
 
-	public TypeMemberBuilder(TypeMembers members, LocalMemberCache cache) {
+	public TypeMemberBuilder(GlobalTypeRegistry registry, TypeMembers members, LocalMemberCache cache) {
+		this.registry = registry;
 		this.members = members;
 		this.cache = cache;
 		
@@ -178,7 +182,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		FunctionHeader indexSetHeader = new FunctionHeader(VOID, new FunctionParameter(keyType, "key"), new FunctionParameter(valueType, "value"));
 		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.INDEXSET, indexSetHeader));
 		
-		FunctionHeader getOrDefaultHeader = new FunctionHeader(valueType, new FunctionParameter(keyType, "key"), new FunctionParameter(valueType, "defaultValue"));
+		FunctionHeader getOrDefaultHeader = new FunctionHeader(registry.getOptional(valueType), new FunctionParameter(keyType, "key"), new FunctionParameter(valueType, "defaultValue"));
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "getOrDefault", getOrDefaultHeader));
 		
 		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.CONTAINS, new FunctionHeader(BOOL, new FunctionParameter(keyType, "key"))));
@@ -186,6 +190,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addField(new FieldMember(BUILTIN, definition, Modifiers.FINAL, "size", INT));
 		members.addGetter(new GetterMember(BUILTIN, definition, 0, "empty", BOOL));
 		members.addGetter(new GetterMember(BUILTIN, definition, 0, "keys", cache.getRegistry().getArray(keyType, 1)));
+		
+		members.addIterator(new AssocIterator(assoc), TypeMemberPriority.SPECIFIED);
 		return null;
 	}
 	
@@ -195,7 +201,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		
 		ClassDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
 		members.addConstructor(new ConstructorMember(BUILTIN, definition, 0, new FunctionHeader(VOID)));
-		members.addMethod(new MethodMember(BUILTIN, definition, 0, "getOptional", new FunctionHeader(map.keys, valueType, new FunctionParameter[0])));
+		members.addMethod(new MethodMember(BUILTIN, definition, 0, "getOptional", new FunctionHeader(map.keys, registry.getOptional(valueType), new FunctionParameter[0])));
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "put", new FunctionHeader(map.keys, BasicTypeID.VOID, new FunctionParameter(valueType))));
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "contains", new FunctionHeader(map.keys, BasicTypeID.BOOL, new FunctionParameter[0])));
 		return null;
@@ -216,10 +222,12 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	@Override
 	public Void visitDefinition(DefinitionTypeID type) {
 		HighLevelDefinition definition = type.definition;
-		if (type.typeParameters.length > 0 || !type.outerTypeParameters.isEmpty()) {
+		if (type.hasTypeParameters() || !type.outerTypeParameters.isEmpty()) {
 			Map<TypeParameter, ITypeID> mapping = new HashMap<>();
-			for (int i = 0; i < type.typeParameters.length; i++)
-				mapping.put(definition.genericParameters[i], type.typeParameters[i]);
+			if (type.typeParameters != null)
+				for (int i = 0; i < type.typeParameters.length; i++)
+					mapping.put(definition.genericParameters[i], type.typeParameters[i]);
+			
 			for (Map.Entry<TypeParameter, ITypeID> entry : type.outerTypeParameters.entrySet())
 				mapping.put(entry.getKey(), entry.getValue());
 			
@@ -286,7 +294,16 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		ClassDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
 		members.addField(new FieldMember(BUILTIN, definition, Modifiers.FINAL, "from", fromType), TypeMemberPriority.SPECIFIED);
 		members.addField(new FieldMember(BUILTIN, definition, Modifiers.FINAL, "to", toType), TypeMemberPriority.SPECIFIED);
-		members.addIterator(new RangeIterator(range), TypeMemberPriority.SPECIFIED);
+		if (range.from == range.to && (range.from == BasicTypeID.BYTE
+				|| range.from == BasicTypeID.SBYTE
+				|| range.from == BasicTypeID.SHORT
+				|| range.from == BasicTypeID.USHORT
+				|| range.from == BasicTypeID.INT
+				|| range.from == BasicTypeID.UINT
+				|| range.from == BasicTypeID.LONG
+				|| range.from == BasicTypeID.ULONG)) {
+			members.addIterator(new RangeIterator(range), TypeMemberPriority.SPECIFIED);
+		}
 		return null;
 	}
 
@@ -450,6 +467,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(STRING_INDEXGET);
 		members.addOperator(STRING_RANGEGET);
 		members.addGetter(STRING_LENGTH);
+		members.addGetter(STRING_CHARACTERS);
 
 		members.addConstructor(STRING_CONSTRUCTOR_CHARACTERS);
 		members.addConstructor(STRING_CONSTRUCTOR_CHARACTER_RANGE);

@@ -20,6 +20,7 @@ public class CallExpression extends Expression {
 	public final Expression target;
 	public final FunctionalMember member;
 	public final CallArguments arguments;
+	public final FunctionHeader instancedHeader;
 	
 	public CallExpression(CodePosition position, Expression target, FunctionalMember member, FunctionHeader instancedHeader, CallArguments arguments) {
 		super(position, instancedHeader.returnType);
@@ -37,6 +38,7 @@ public class CallExpression extends Expression {
 		this.target = target;
 		this.member = member;
 		this.arguments = arguments;
+		this.instancedHeader = instancedHeader;
 	}
 	
 	public Expression getFirstArgument() {

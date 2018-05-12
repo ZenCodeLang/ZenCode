@@ -39,7 +39,7 @@ public class ForeachScope extends StatementScope {
 
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
-		if (name.arguments.isEmpty()) {
+		if (name.hasNoArguments()) {
 			for (VarStatement loopVariable : statement.loopVariables) {
 				if (loopVariable.name.equals(name.name))
 					return new GetLocalVariableExpression(position, loopVariable);

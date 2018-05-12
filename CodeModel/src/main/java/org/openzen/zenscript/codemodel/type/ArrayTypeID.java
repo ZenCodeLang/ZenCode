@@ -55,6 +55,11 @@ public class ArrayTypeID implements ITypeID {
 	}
 
 	@Override
+	public boolean hasDefaultValue() {
+		return false;
+	}
+
+	@Override
 	public int hashCode() {
 		int hash = 7;
 		hash = 79 * hash + elementType.hashCode();

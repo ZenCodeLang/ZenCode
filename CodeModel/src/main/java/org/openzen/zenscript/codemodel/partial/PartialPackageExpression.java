@@ -55,4 +55,9 @@ public class PartialPackageExpression implements IPartialExpression {
 	public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
 		throw new CompileException(position, CompileExceptionCode.USING_PACKAGE_AS_CALL_TARGET, "Cannot call a package");
 	}
+
+	@Override
+	public ITypeID[] getGenericCallTypes() {
+		return null;
+	}
 }

@@ -9,20 +9,45 @@ import java.io.File;
 import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.openzen.zenscript.constructor.module.DirectoryModuleLoader;
+import org.openzen.zenscript.constructor.module.ModuleReference;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class Project {
-	public final String[] modules;
+	public final ModuleReference[] modules;
 	
-	public Project(File projectFile) throws IOException {
+	public Project(ModuleLoader loader, File directory) throws IOException {
+		if (!directory.exists())
+			throw new ConstructorException("Project directory doesn't exist");
+		if (!directory.isDirectory())
+			throw new ConstructorException("Project directory isn't a directory");
+		
+		File projectFile = new File(directory, "project.json");
+		if (!projectFile.exists())
+			throw new ConstructorException("Missing project.json file in project directory");
+		
 		JSONObject json = JSONUtils.load(projectFile);
 		
 		JSONArray jsonModules = json.getJSONArray("modules");
-		modules = new String[jsonModules.length()];
-		for (int i = 0; i < jsonModules.length(); i++)
-			modules[i] = jsonModules.getString(i);
+		modules = new ModuleReference[jsonModules.length()];
+		for (int i = 0; i < jsonModules.length(); i++) {
+			Object module = jsonModules.get(i);
+			if (module instanceof String) {
+				modules[i] = new DirectoryModuleLoader(loader, module.toString(), new File(directory, module.toString()), false);
+			} else if (module instanceof JSONObject) {
+				JSONObject jsonModule = (JSONObject) module;
+				String name = jsonModule.getString("name");
+				switch (jsonModule.getString("type")) {
+					case "directory":
+						modules[i] = new DirectoryModuleLoader(loader, name, new File(directory, jsonModule.getString("directory")), false);
+						break;
+					default:
+						throw new ConstructorException("Invalid module type: " + jsonModule.getString("type"));
+				}
+			}
+		}
 	}
 }

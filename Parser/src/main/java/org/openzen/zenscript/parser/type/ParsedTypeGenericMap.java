@@ -75,7 +75,7 @@ public class ParsedTypeGenericMap implements IParsedType {
 
 		@Override
 		public IPartialExpression get(CodePosition position, GenericName name) {
-			if (typeParameters.containsKey(name.name) && name.arguments.isEmpty())
+			if (typeParameters.containsKey(name.name) && name.hasNoArguments())
 				return new PartialTypeExpression(position, getTypeRegistry().getGeneric(typeParameters.get(name.name)));
 			
 			return outer.get(position, name);
@@ -83,7 +83,7 @@ public class ParsedTypeGenericMap implements IParsedType {
 
 		@Override
 		public ITypeID getType(CodePosition position, List<GenericName> name) {
-			if (typeParameters.containsKey(name.get(0).name) && name.size() == 1 && name.get(0).arguments.isEmpty())
+			if (typeParameters.containsKey(name.get(0).name) && name.size() == 1 && name.get(0).hasNoArguments())
 				return getTypeRegistry().getGeneric(typeParameters.get(name.get(0).name));
 			
 			return outer.getType(position, name);

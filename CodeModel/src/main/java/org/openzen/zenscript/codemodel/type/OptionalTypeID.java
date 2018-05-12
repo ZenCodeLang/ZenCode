@@ -62,6 +62,11 @@ public class OptionalTypeID implements ITypeID {
 	}
 
 	@Override
+	public boolean hasDefaultValue() {
+		return true;
+	}
+
+	@Override
 	public int hashCode() {
 		int hash = 7;
 		hash = 29 * hash + Objects.hashCode(this.baseType);

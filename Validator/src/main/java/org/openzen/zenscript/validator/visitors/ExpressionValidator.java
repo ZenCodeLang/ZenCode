@@ -145,13 +145,13 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 	public Boolean visitCall(CallExpression expression) {
 		boolean isValid = true;
 		isValid &= expression.target.accept(this);
-		isValid &= checkCallArguments(expression.position, expression.member.header, expression.arguments);
+		isValid &= checkCallArguments(expression.position, expression.member.header, expression.instancedHeader, expression.arguments);
 		return isValid;
 	}
 
 	@Override
 	public Boolean visitCallStatic(CallStaticExpression expression) {
-		return checkCallArguments(expression.position, expression.member.header, expression.arguments);
+		return checkCallArguments(expression.position, expression.member.header, expression.instancedHeader, expression.arguments);
 	}
 
 	@Override
@@ -297,7 +297,7 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 			isValid = false;
 		}
 		scope.markConstructorForwarded();
-		isValid &= checkCallArguments(expression.position, expression.constructor.header, expression.arguments);
+		isValid &= checkCallArguments(expression.position, expression.constructor.header, expression.constructor.header, expression.arguments);
 		return isValid;
 	}
 
@@ -313,7 +313,7 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 			isValid = false;
 		}
 		scope.markConstructorForwarded();
-		isValid &= checkCallArguments(expression.position, expression.constructor.header, expression.arguments);
+		isValid &= checkCallArguments(expression.position, expression.constructor.header, expression.constructor.header, expression.arguments);
 		return isValid;
 	}
 
@@ -331,7 +331,8 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 
 	@Override
 	public Boolean visitFunction(FunctionExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		// TODO
+		return true;
 	}
 
 	@Override
@@ -443,6 +444,7 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 	public Boolean visitNew(NewExpression expression) {
 		boolean isValid = checkCallArguments(
 				expression.position,
+				expression.constructor.header,
 				expression.constructor.header,
 				expression.arguments);
 		return isValid;
@@ -618,23 +620,23 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 	@Override
 	public Boolean visitWrapOptional(WrapOptionalExpression expression) {
 		boolean isValid = expression.value.accept(this);
-		if (expression.type.isOptional()) {
+		if (expression.value.type.isOptional()) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "expression value is already optional");
 			isValid = false;
 		}
 		return isValid;
 	}
 	
-	private boolean checkCallArguments(CodePosition position, FunctionHeader header, CallArguments arguments) {
+	private boolean checkCallArguments(CodePosition position, FunctionHeader originalHeader, FunctionHeader instancedHeader, CallArguments arguments) {
 		boolean isValid = true;
-		isValid &= ValidationUtils.validateTypeArguments(validator, position, header.typeParameters, arguments.typeArguments);
+		isValid &= ValidationUtils.validateTypeArguments(validator, position, originalHeader.typeParameters, arguments.typeArguments);
 		
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			Expression argument = arguments.arguments[i];
 			isValid &= argument.accept(this);
 			
-			if (i >= header.parameters.length) {
-				FunctionParameter variadic = header.getVariadicParameter();
+			if (i >= instancedHeader.parameters.length) {
+				FunctionParameter variadic = instancedHeader.getVariadicParameter();
 				if (variadic == null) {
 					validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "too many call arguments");
 					isValid = false;
@@ -649,7 +651,7 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 				}
 			}
 			
-			FunctionParameter parameter = header.parameters[i];
+			FunctionParameter parameter = instancedHeader.parameters[i];
 			if (parameter.type != argument.type) {
 				validator.logError(
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
@@ -659,8 +661,8 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 			}
 		}
 		
-		for (int i = arguments.arguments.length; i < header.parameters.length; i++) {
-			FunctionParameter parameter = header.parameters[i];
+		for (int i = arguments.arguments.length; i < instancedHeader.parameters.length; i++) {
+			FunctionParameter parameter = instancedHeader.parameters[i];
 			if (parameter.defaultValue == null && !parameter.variadic) {
 				validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "missing call argument for " + parameter.name);
 				isValid = false;

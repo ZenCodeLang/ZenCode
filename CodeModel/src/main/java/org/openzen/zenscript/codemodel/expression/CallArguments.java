@@ -25,7 +25,7 @@ public class CallArguments {
 	
 	public CallArguments(ITypeID[] typeArguments, Expression[] arguments) {
 		if (typeArguments == null)
-			throw new IllegalArgumentException("Type arguments cannot be null!");
+			typeArguments = NO_TYPE_ARGUMENTS;
 		if (arguments == null)
 			throw new IllegalArgumentException("Arguments cannot be null!");
 		

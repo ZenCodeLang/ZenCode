@@ -32,8 +32,8 @@ public class ParameterTypeBound extends GenericParameterBound {
 	}
 
 	@Override
-	public boolean matches(ITypeID type) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	public boolean matches(LocalMemberCache cache, ITypeID type) {
+		return cache.get(type).extendsOrImplements(this.type);
 	}
 
 	@Override

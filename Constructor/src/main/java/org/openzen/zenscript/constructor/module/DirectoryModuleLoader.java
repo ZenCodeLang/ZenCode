@@ -35,6 +35,11 @@ public class DirectoryModuleLoader implements ModuleReference {
 		this.directory = directory;
 		this.isStdlib = isStdlib;
 	}
+	
+	@Override
+	public String getName() {
+		return moduleName;
+	}
 
 	@Override
 	public SemanticModule load() {

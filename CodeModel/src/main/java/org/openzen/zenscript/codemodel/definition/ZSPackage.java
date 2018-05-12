@@ -38,15 +38,15 @@ public class ZSPackage {
 		if (subPackages.containsKey(name))
 			throw new RuntimeException("Such package already exists: " + name);
 		
-		subPackages.put(name, this);
+		subPackages.put(name, subPackage);
 	}
 	
 	public IPartialExpression getMember(CodePosition position, GlobalTypeRegistry registry, GenericName name) {
-		if (subPackages.containsKey(name.name) && name.arguments.isEmpty())
+		if (subPackages.containsKey(name.name) && name.hasNoArguments())
 			return new PartialPackageExpression(position, subPackages.get(name.name));
 		
 		if (types.containsKey(name.name)) {
-			if (types.get(name.name).genericParameters.length != name.arguments.size())
+			if (types.get(name.name).genericParameters.length != name.getNumberOfArguments())
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments");
 			
 			return new PartialTypeExpression(position, registry.getForDefinition(types.get(name.name), name.arguments));
@@ -77,7 +77,7 @@ public class ZSPackage {
 			return null;
 		
 		GenericName name = nameParts.get(depth);
-		if (subPackages.containsKey(name.name) && name.arguments.isEmpty())
+		if (subPackages.containsKey(name.name) && name.hasNoArguments())
 			return subPackages.get(name.name).getType(position, scope, nameParts, depth + 1);
 		
 		if (types.containsKey(name.name)) {

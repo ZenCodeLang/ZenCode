@@ -10,6 +10,7 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
@@ -22,14 +23,12 @@ import org.openzen.zenscript.shared.Taggable;
  * @author Hoofdgebruiker
  */
 public abstract class HighLevelDefinition extends Taggable {
-	private static final TypeParameter[] NO_PARAMETERS = new TypeParameter[0];
-	
 	public final CodePosition position;
 	public final ZSPackage pkg;
 	public final String name;
 	public final int modifiers;
 	public final List<IDefinitionMember> members = new ArrayList<>();
-	public TypeParameter[] genericParameters = NO_PARAMETERS;
+	public TypeParameter[] genericParameters = null;
 	
 	public HighLevelDefinition outerDefinition;
 	public ITypeID superType;
@@ -40,6 +39,13 @@ public abstract class HighLevelDefinition extends Taggable {
 		this.name = name;
 		this.modifiers = modifiers;
 		this.outerDefinition = outerDefinition;
+		
+		if (pkg != null)
+			pkg.register(this);
+	}
+	
+	public int getNumberOfGenericParameters() {
+		return genericParameters == null ? 0 : genericParameters.length;
 	}
 	
 	public void setOuterDefinition(HighLevelDefinition outerDefinition) {
@@ -75,6 +81,17 @@ public abstract class HighLevelDefinition extends Taggable {
 				enumMembers.add((EnumConstantMember) member);
 		
 		return enumMembers;
+	}
+	
+	public boolean hasEmptyConstructor() {
+		for (IDefinitionMember member : members) {
+			if (member instanceof ConstructorMember) {
+				if (((ConstructorMember) member).header.parameters.length == 0)
+					return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public boolean isStatic() {

@@ -12,9 +12,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import static org.openzen.zenscript.lexer.ZSTokenType.T_COMMA;
-import static org.openzen.zenscript.lexer.ZSTokenType.T_GREATER;
-import static org.openzen.zenscript.lexer.ZSTokenType.T_LESS;
+import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.parser.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -64,11 +62,11 @@ public interface IParsedType {
 				break;
 			case K_BYTE:
 				tokens.next();
-				result = ParsedTypeBasic.SBYTE;
-				break;
-			case K_UBYTE:
-				tokens.next();
 				result = ParsedTypeBasic.BYTE;
+				break;
+			case K_SBYTE:
+				tokens.next();
+				result = ParsedTypeBasic.SBYTE;
 				break;
 			case K_SHORT:
 				tokens.next();
@@ -175,7 +173,7 @@ public interface IParsedType {
 	
 	public static List<IParsedType> parseGenericParameters(ZSTokenStream tokens) {
 		if (!tokens.isNext(T_LESS))
-			return Collections.emptyList();
+			return null;
 		
 		tokens.pushMark();
 		tokens.next();
@@ -190,13 +188,32 @@ public interface IParsedType {
 			genericParameters.add(type);
 		} while (tokens.optional(T_COMMA) != null);
 		
-		if (tokens.optional(T_GREATER) == null) {
+		if (tokens.isNext(T_SHR)) {
+			tokens.replace(T_GREATER);
+		} else if (tokens.isNext(T_USHR)) {
+			tokens.replace(T_SHR);
+		} else if (tokens.isNext(T_SHRASSIGN)) {
+			tokens.replace(T_GREATEREQ);
+		} else if (tokens.isNext(T_USHRASSIGN)) {
+			tokens.replace(T_SHRASSIGN);
+		} else if (tokens.optional(T_GREATER) == null) {
 			tokens.reset();
 			return Collections.emptyList();
-		} else {
-			tokens.popMark();
-			return genericParameters;
 		}
+		
+		tokens.popMark();
+		return genericParameters;
+	}
+	
+	public static ITypeID[] compileList(List<IParsedType> typeParameters, BaseScope scope) {
+		ITypeID[] result = null;
+		if (typeParameters != null) {
+			result = new ITypeID[typeParameters.size()];
+			for (int i = 0; i < typeParameters.size(); i++) {
+				result[i] = typeParameters.get(i).compile(scope);
+			}
+		}
+		return result;
 	}
 	
 	public IParsedType withOptional();

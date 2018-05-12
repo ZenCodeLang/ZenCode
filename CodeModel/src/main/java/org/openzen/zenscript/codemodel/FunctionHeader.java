@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 /**
  *
@@ -58,7 +59,7 @@ public class FunctionHeader {
 		return new FunctionHeader(genericParameters, returnType, parameters);
 	}
 	
-	public ITypeID[] inferTypes(CallArguments arguments, List<ITypeID> resultHint) {
+	public ITypeID[] inferTypes(LocalMemberCache cache, CallArguments arguments, List<ITypeID> resultHint) {
 		if (arguments.arguments.length != this.parameters.length)
 			return null;
 		
@@ -66,7 +67,7 @@ public class FunctionHeader {
 		if (!resultHint.isEmpty()) {
 			Map<TypeParameter, ITypeID> temp = new HashMap<>();
 			for (ITypeID hint : resultHint) {
-				if (returnType.inferTypeParameters(hint, temp)) {
+				if (returnType.inferTypeParameters(cache, hint, temp)) {
 					mapping = temp;
 					break;
 				}
@@ -75,7 +76,7 @@ public class FunctionHeader {
 		
 		// TODO: lambda header inference
 		for (int i = 0; i < parameters.length; i++)
-			if (!parameters[i].type.inferTypeParameters(arguments.arguments[i].type, mapping))
+			if (!parameters[i].type.inferTypeParameters(cache, arguments.arguments[i].type, mapping))
 				return null;
 		
 		if (mapping.size() > typeParameters.length)

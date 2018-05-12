@@ -224,6 +224,7 @@ public class BuiltinTypeMembers {
 	public static final OperatorMember STRING_INDEXGET = new OperatorMember(BUILTIN, T_STRING, Modifiers.EXPORT | Modifiers.EXTERN, OperatorType.INDEXGET, new FunctionHeader(CHAR, new FunctionParameter(INT)));
 	public static final OperatorMember STRING_RANGEGET = new OperatorMember(BUILTIN, T_STRING, Modifiers.EXPORT | Modifiers.EXTERN, OperatorType.INDEXGET, new FunctionHeader(STRING, new FunctionParameter(RangeTypeID.INT)));
 	public static final GetterMember STRING_LENGTH = new GetterMember(BUILTIN, T_STRING, Modifiers.EXPORT | Modifiers.EXTERN, "length", INT);
+	public static final GetterMember STRING_CHARACTERS = new GetterMember(BUILTIN, T_STRING, Modifiers.PUBLIC | Modifiers.EXTERN, "characters", ArrayTypeID.CHAR);
 	
 	private static OperatorMember not(ClassDefinition cls, ITypeID result) {
 		return new OperatorMember(BUILTIN, cls, 0, OperatorType.NOT, new FunctionHeader(result));

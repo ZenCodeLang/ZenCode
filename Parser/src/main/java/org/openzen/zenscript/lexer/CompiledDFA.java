@@ -4,7 +4,6 @@ package org.openzen.zenscript.lexer;
 import gnu.trove.iterator.TIntIterator;
 import gnu.trove.map.hash.TIntIntHashMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -21,8 +20,8 @@ public class CompiledDFA<T>
 {
 	public static <T extends TokenType & Comparable<T>> CompiledDFA<T> createLexerDFA(T[] tokenTypes, Class<T> tokenClass)
 	{
-		List<T> tokens = new ArrayList<T>();
-		List<String> regexps = new ArrayList<String>();
+		List<T> tokens = new ArrayList<>();
+		List<String> regexps = new ArrayList<>();
 		for (T tokenType : tokenTypes) {
 			if (tokenType.getRegexp() != null) {
 				tokens.add(tokenType);

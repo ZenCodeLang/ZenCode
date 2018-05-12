@@ -53,6 +53,11 @@ public class FunctionTypeID implements ITypeID {
 	}
 
 	@Override
+	public boolean hasDefaultValue() {
+		return false;
+	}
+
+	@Override
 	public int hashCode() {
 		int hash = 5;
 		hash = 71 * hash + header.returnType.hashCode();

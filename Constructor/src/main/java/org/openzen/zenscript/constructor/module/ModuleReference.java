@@ -10,5 +10,7 @@ package org.openzen.zenscript.constructor.module;
  * @author Hoofdgebruiker
  */
 public interface ModuleReference {
+	public String getName();
+	
 	public SemanticModule load();
 }

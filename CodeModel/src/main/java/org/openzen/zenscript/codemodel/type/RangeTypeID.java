@@ -56,6 +56,11 @@ public class RangeTypeID implements ITypeID {
 	}
 
 	@Override
+	public boolean hasDefaultValue() {
+		return false;
+	}
+
+	@Override
 	public int hashCode() {
 		int hash = 5;
 		hash = 89 * hash + from.hashCode();

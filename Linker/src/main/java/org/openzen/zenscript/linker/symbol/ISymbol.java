@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.linker.symbol;
 
-import java.util.List;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -16,7 +15,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public interface ISymbol {
-	public IPartialExpression getExpression(CodePosition position, GlobalTypeRegistry types, List<ITypeID> typeArguments);
+	public IPartialExpression getExpression(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments);
 	
-	public ITypeID getType(CodePosition position, GlobalTypeRegistry types, List<ITypeID> typeArguments);
+	public ITypeID getType(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments);
 }

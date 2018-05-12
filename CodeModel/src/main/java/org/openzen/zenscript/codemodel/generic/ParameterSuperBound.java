@@ -28,13 +28,17 @@ public class ParameterSuperBound extends GenericParameterBound {
 	}
 
 	@Override
-	public boolean matches(ITypeID type) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	public boolean matches(LocalMemberCache cache, ITypeID type) {
+		return cache.get(this.type).extendsOrImplements(type);
 	}
 
 	@Override
 	public GenericParameterBound withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		ITypeID translated = type.withGenericArguments(registry, arguments);
+		if (translated == type)
+			return this;
+		
+		return new ParameterSuperBound(translated);
 	}
 
 	@Override

@@ -16,7 +16,6 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -205,7 +204,13 @@ public abstract class ParsedDefinitionMember {
 			case T_XORASSIGN:
 			case T_INCREMENT:
 			case T_DECREMENT:
-			case T_DOT2: {
+			case T_DOT2:
+			case T_SHL:
+			case T_SHR:
+			case T_USHR:
+			case T_SHLASSIGN:
+			case T_SHRASSIGN:
+			case T_USHRASSIGN: {
 				ZSToken token = tokens.next();
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
 				ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
@@ -274,6 +279,12 @@ public abstract class ParsedDefinitionMember {
 			case T_INCREMENT: return OperatorType.INCREMENT;
 			case T_DECREMENT: return OperatorType.DECREMENT;
 			case T_DOT2: return OperatorType.RANGE;
+			case T_SHL: return OperatorType.SHL;
+			case T_SHR: return OperatorType.SHR;
+			case T_USHR: return OperatorType.USHR;
+			case T_SHLASSIGN: return OperatorType.SHLASSIGN;
+			case T_SHRASSIGN: return OperatorType.SHRASSIGN;
+			case T_USHRASSIGN: return OperatorType.USHRASSIGN;
 			default:
 				throw new AssertionError("Missing switch case in getOperator");
 		}

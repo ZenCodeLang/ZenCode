@@ -52,6 +52,11 @@ public class GenericMapTypeID implements ITypeID {
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		return value.hasInferenceBlockingTypeParameters(parameters);
 	}
+
+	@Override
+	public boolean hasDefaultValue() {
+		return true;
+	}
 	
 	@Override
 	public String toString() {

@@ -53,22 +53,24 @@ public class ParsedCallArguments {
 	public CallArguments compileCall(
 			CodePosition position, 
 			ExpressionScope scope,
+			ITypeID[] genericParameters,
 			DefinitionMemberGroup member)
 	{
 		List<FunctionHeader> possibleHeaders = member.getMethodMembers().stream()
 				.map(method -> method.member.getHeader())
 				.collect(Collectors.toList());
-		return compileCall(position, scope, possibleHeaders);
+		return compileCall(position, scope, genericParameters, possibleHeaders);
 	}
 	
 	public CallArguments compileCall(
 			CodePosition position,
 			ExpressionScope scope,
+			ITypeID[] genericParameters,
 			List<FunctionHeader> candidateFunctions)
 	{
 		List<FunctionHeader> candidates = new ArrayList<>();
 		for (FunctionHeader header : candidateFunctions) {
-			if (isCompatibleWith(scope, header))
+			if (isCompatibleWith(scope, header, genericParameters))
 				candidates.add(header);
 		}
 		
@@ -110,18 +112,20 @@ public class ParsedCallArguments {
 			cArguments[i] = cArgument.eval();
 		}
 		
-		ITypeID[] typeParameters = CallArguments.NO_TYPE_ARGUMENTS;
-		for (FunctionHeader candidate : candidates) {
-			if (candidate.typeParameters.length > 0) {
-				typeParameters = new ITypeID[candidate.typeParameters.length];
-				for (int i = 0; i < typeParameters.length; i++) {
-					if (innerScope.genericInferenceMap.get(candidate.typeParameters[i]) == null)
-						throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + candidate.typeParameters[i].name);
-					else
-						typeParameters[i] = innerScope.genericInferenceMap.get(candidate.typeParameters[i]);
-				}
+		ITypeID[] typeParameters = genericParameters;
+		if (typeParameters == null) {
+			for (FunctionHeader candidate : candidates) {
+				if (candidate.typeParameters.length > 0) {
+					typeParameters = new ITypeID[candidate.typeParameters.length];
+					for (int i = 0; i < typeParameters.length; i++) {
+						if (innerScope.genericInferenceMap.get(candidate.typeParameters[i]) == null)
+							throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + candidate.typeParameters[i].name);
+						else
+							typeParameters[i] = innerScope.genericInferenceMap.get(candidate.typeParameters[i]);
+					}
 
-				break;
+					break;
+				}
 			}
 		}
 		
@@ -137,12 +141,12 @@ public class ParsedCallArguments {
 		return new CallArguments(new ITypeID[0], cArguments);
 	}
 	
-	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header) {
+	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header, ITypeID[] typeParameters) {
 		if (arguments.size() != header.parameters.length)
 			return false;
 		
 		for (int i = 0; i < arguments.size(); i++) {
-			if (header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
+			if (typeParameters == null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
 				return false;
 			
 			if (!arguments.get(i).isCompatibleWith(scope, header.parameters[i].type))

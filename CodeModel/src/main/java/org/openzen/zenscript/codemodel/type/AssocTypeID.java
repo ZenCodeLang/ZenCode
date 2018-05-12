@@ -22,7 +22,7 @@ public class AssocTypeID implements ITypeID {
 	}
 	
 	@Override
-	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
+	public AssocTypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
 		return registry.getAssociative(
 				keyType.withGenericArguments(registry, arguments),
 				valueType.withGenericArguments(registry, arguments));
@@ -51,6 +51,11 @@ public class AssocTypeID implements ITypeID {
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		return keyType.hasInferenceBlockingTypeParameters(parameters) || valueType.hasInferenceBlockingTypeParameters(parameters);
+	}
+
+	@Override
+	public boolean hasDefaultValue() {
+		return true;
 	}
 
 	@Override

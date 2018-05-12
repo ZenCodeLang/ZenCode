@@ -76,4 +76,9 @@ public enum BasicTypeID implements ITypeID {
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		return false;
 	}
+
+	@Override
+	public boolean hasDefaultValue() {
+		return true;
+	}
 }

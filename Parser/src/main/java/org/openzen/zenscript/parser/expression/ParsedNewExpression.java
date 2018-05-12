@@ -50,7 +50,7 @@ public class ParsedNewExpression extends ParsedExpression{
 	public static NewExpression compile(CodePosition position, ITypeID type, ParsedCallArguments arguments, ExpressionScope scope) {
 		DefinitionMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 		List<ITypeID>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.arguments.size());
-		CallArguments compiledArguments = arguments.compileCall(position, scope, constructors);
+		CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
 		ICallableMember member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 		if (member == null)
 			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching constructor found");

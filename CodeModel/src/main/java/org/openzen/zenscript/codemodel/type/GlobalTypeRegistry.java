@@ -7,7 +7,6 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -111,17 +110,17 @@ public class GlobalTypeRegistry {
 		}
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, List<ITypeID> genericArguments) {
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID[] genericArguments) {
 		return this.getForDefinition(definition, genericArguments, Collections.emptyMap());
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, List<ITypeID> typeParameters, Map<TypeParameter, ITypeID> outerInstance) {
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID[] typeParameters, Map<TypeParameter, ITypeID> outerInstance) {
 		DefinitionTypeID id;
-		if (definition.genericParameters.length > 0 && typeParameters.isEmpty() && outerInstance.isEmpty()) {
+		if (definition.genericParameters == null && typeParameters == null && outerInstance.isEmpty()) {
 			// make it a static one
 			id = new StaticDefinitionTypeID(definition);
 		} else {
-			id = new DefinitionTypeID(definition, typeParameters.toArray(new ITypeID[typeParameters.size()]), outerInstance);
+			id = new DefinitionTypeID(definition, typeParameters, outerInstance);
 		}
 		
 		if (definitionTypes.containsKey(id)) {

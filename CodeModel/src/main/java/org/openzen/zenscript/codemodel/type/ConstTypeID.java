@@ -82,4 +82,9 @@ public class ConstTypeID implements ITypeID {
 	public String toString() {
 		return "const " + baseType.toString();
 	}
+
+	@Override
+	public boolean hasDefaultValue() {
+		return baseType.hasDefaultValue();
+	}
 }

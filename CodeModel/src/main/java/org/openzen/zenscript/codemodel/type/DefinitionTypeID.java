@@ -5,11 +5,9 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -24,11 +22,10 @@ public class DefinitionTypeID implements ITypeID {
 		if (definition.genericParameters.length > 0)
 			throw new IllegalArgumentException("Definition has type arguments!");
 		
-		return new DefinitionTypeID(definition, NO_TYPE_PARAMETERS);
+		return new DefinitionTypeID(definition, null);
 	}
 	
 	private static final OuterTypeEntry[] NO_OUTER_ENTRIES = new OuterTypeEntry[0];
-	private static final ITypeID[] NO_TYPE_PARAMETERS = new ITypeID[0];
 	
 	public final HighLevelDefinition definition;
 	public final ITypeID[] typeParameters;
@@ -57,13 +54,17 @@ public class DefinitionTypeID implements ITypeID {
 			Arrays.sort(outerTypeEntries, (a, b) -> a.parameter.name.compareTo(b.parameter.name));
 		}
 		
-		if (typeParameters.length != definition.genericParameters.length)
+		if ((typeParameters == null ? 0 : typeParameters.length) != definition.getNumberOfGenericParameters())
 			throw new RuntimeException("Invalid number of type parameters");
+	}
+	
+	public boolean hasTypeParameters() {
+		return typeParameters != null && typeParameters.length > 0;
 	}
 	
 	public void init(GlobalTypeRegistry registry) {
 		ITypeID superType = definition.superType;
-		if (superType != null && typeParameters.length > 0) {
+		if (superType != null && hasTypeParameters()) {
 			Map<TypeParameter, ITypeID> genericSuperArguments = new HashMap<>();
 			for (int i = 0; i < typeParameters.length; i++)
 				genericSuperArguments.put(definition.genericParameters[i], typeParameters[i]);
@@ -76,7 +77,7 @@ public class DefinitionTypeID implements ITypeID {
 	// To be used exclusively by StaticDefinitionTypeID
 	protected DefinitionTypeID(HighLevelDefinition definition) {
 		this.definition = definition;
-		this.typeParameters = new ITypeID[0];
+		this.typeParameters = null;
 		this.superType = definition.superType;
 		this.outerTypeParameters = Collections.emptyMap();
 		this.outerTypeEntries = NO_OUTER_ENTRIES;
@@ -84,13 +85,17 @@ public class DefinitionTypeID implements ITypeID {
 	
 	@Override
 	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		if (typeParameters.length == 0 && outerTypeParameters.isEmpty())
+		if (!hasTypeParameters() && outerTypeParameters.isEmpty())
 			return this;
 		
-		List<ITypeID> instancedArguments = new ArrayList<>();
-		for (int i = 0; i < typeParameters.length; i++) {
-			instancedArguments.add(arguments.containsKey(definition.genericParameters[i]) ? arguments.get(definition.genericParameters[i]) : typeParameters[i].withGenericArguments(registry, arguments));
+		ITypeID[] instancedArguments = null;
+		if (typeParameters != null) {
+			instancedArguments = new ITypeID[typeParameters.length];
+			for (int i = 0; i < typeParameters.length; i++) {
+				instancedArguments[i] = arguments.containsKey(definition.genericParameters[i]) ? arguments.get(definition.genericParameters[i]) : typeParameters[i].withGenericArguments(registry, arguments);
+			}
 		}
+		
 		Map<TypeParameter, ITypeID> instancedOuter;
 		if (outerTypeParameters.isEmpty()) {
 			instancedOuter = Collections.emptyMap();
@@ -129,9 +134,11 @@ public class DefinitionTypeID implements ITypeID {
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		for (ITypeID typeParameter : typeParameters)
-			if (typeParameter.hasInferenceBlockingTypeParameters(parameters))
-				return true;
+		if (typeParameters != null) {
+			for (ITypeID typeParameter : typeParameters)
+				if (typeParameter.hasInferenceBlockingTypeParameters(parameters))
+					return true;
+		}
 		
 		return superType != null && superType.hasInferenceBlockingTypeParameters(parameters);
 	}
@@ -164,7 +171,7 @@ public class DefinitionTypeID implements ITypeID {
 	
 	@Override
 	public String toString() {
-		if (typeParameters.length == 0) {
+		if (typeParameters == null) {
 			return definition.name;
 		} else {
 			StringBuilder result = new StringBuilder();
@@ -178,6 +185,11 @@ public class DefinitionTypeID implements ITypeID {
 			result.append('>');
 			return result.toString();
 		}
+	}
+
+	@Override
+	public boolean hasDefaultValue() {
+		return definition.hasEmptyConstructor();
 	}
 	
 	private class OuterTypeEntry {

@@ -78,12 +78,32 @@ public final class TypeMembers {
 		return cache;
 	}
 	
+	public boolean extendsOrImplements(ITypeID other) {
+		ITypeID superType = type.getSuperType();
+		if (superType != null) {
+			if (superType == other)
+				return true;
+			if (cache.get(superType).extendsOrImplements(other))
+				return true;
+		}
+		
+		for (TypeMember<ImplementationMember> implementation : implementations) {
+			if (implementation.member.type == other)
+				return true;
+			if (cache.get(implementation.member.type).extendsOrImplements(other))
+				return true;
+		}
+		
+		return false;
+	}
+	
 	public GlobalTypeRegistry getTypeRegistry() {
 		return cache.getRegistry();
 	}
 	
 	public void copyMembersTo(CodePosition position, TypeMembers other, TypeMemberPriority priority) {
 		other.casters.addAll(casters);
+		other.iterators.addAll(iterators);
 		
 		for (Map.Entry<String, EnumConstantMember> entry : enumMembers.entrySet())
 			other.addEnumMember(entry.getValue(), priority);
@@ -369,14 +389,10 @@ public final class TypeMembers {
 		if (members.containsKey(name.name)) {
 			DefinitionMemberGroup group = members.get(name.name);
 			
-			if (!name.arguments.isEmpty()) {
-				/* ... */
-			}
-			
 			if (group.isStatic)
-				return new PartialStaticMemberGroupExpression(position, type, group);
+				return new PartialStaticMemberGroupExpression(position, type, group, name.arguments);
 			else
-				return new PartialMemberGroupExpression(position, target, group, allowStatic);
+				return new PartialMemberGroupExpression(position, target, group, name.arguments, allowStatic);
 		}
 		
 		return null;
@@ -384,7 +400,7 @@ public final class TypeMembers {
 	
 	public IPartialExpression getStaticMemberExpression(CodePosition position, GenericName name) {
 		if (members.containsKey(name.name))
-			return new PartialStaticMemberGroupExpression(position, type, members.get(name.name));
+			return new PartialStaticMemberGroupExpression(position, type, members.get(name.name), name.arguments);
 		if (innerTypes.containsKey(name.name))
 			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments));
 		

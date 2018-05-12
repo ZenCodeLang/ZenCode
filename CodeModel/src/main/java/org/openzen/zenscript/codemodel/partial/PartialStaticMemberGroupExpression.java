@@ -23,20 +23,22 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  * @author Hoofdgebruiker
  */
 public class PartialStaticMemberGroupExpression implements IPartialExpression {
-	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, ITypeID target, ICallableMember method) {
+	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, ITypeID target, ICallableMember method, ITypeID[] typeArguments) {
 		DefinitionMemberGroup group = new DefinitionMemberGroup(true);
 		group.addMethod(method, TypeMemberPriority.SPECIFIED);
-		return new PartialStaticMemberGroupExpression(position, target, group);
+		return new PartialStaticMemberGroupExpression(position, target, group, typeArguments);
 	}
 	
 	private final CodePosition position;
 	private final ITypeID target;
 	private final DefinitionMemberGroup group;
+	private final ITypeID[] typeArguments;
 	
-	public PartialStaticMemberGroupExpression(CodePosition position, ITypeID target, DefinitionMemberGroup group) {
+	public PartialStaticMemberGroupExpression(CodePosition position, ITypeID target, DefinitionMemberGroup group, ITypeID[] typeArguments) {
 		this.position = position;
 		this.group = group;
 		this.target = target;
+		this.typeArguments = typeArguments;
 	}
 	
 	@Override
@@ -70,5 +72,10 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	@Override
 	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
 		return group.staticSetter(position, scope, value);
+	}
+
+	@Override
+	public ITypeID[] getGenericCallTypes() {
+		return typeArguments;
 	}
 }

@@ -170,6 +170,15 @@ public abstract class TokenStream<T extends Token<TT>, TT extends TokenType> imp
 	{
         tokenMemoryCurrent = marks.pop();
     }
+	
+	/**
+	 * Replaces the current token with another one. Used to split composite tokens.
+	 * 
+	 * @param other 
+	 */
+	public void replace(TT other) {
+		next = createToken(next.getPosition(), next.getWhitespaceBefore(), next.getContent(), other);
+	}
 
     // ===============================
     // === Iterator implementation ===

@@ -31,8 +31,9 @@ public class GenericFunctionScope extends BaseScope {
 	public GenericFunctionScope(BaseScope outer, TypeParameter[] parameters) {
 		this.outer = outer;
 		
-		for (TypeParameter parameter : parameters)
-			this.parameters.put(parameter.name, parameter);
+		if (parameters != null)
+			for (TypeParameter parameter : parameters)
+				this.parameters.put(parameter.name, parameter);
 	}
 	
 	@Override
@@ -42,7 +43,7 @@ public class GenericFunctionScope extends BaseScope {
 
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
-		if (parameters.containsKey(name.name) && name.arguments.isEmpty())
+		if (parameters.containsKey(name.name) && name.hasNoArguments())
 			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameters.get(name.name)));
 		
 		return outer.get(position, name);
@@ -50,7 +51,7 @@ public class GenericFunctionScope extends BaseScope {
 
 	@Override
 	public ITypeID getType(CodePosition position, List<GenericName> name) {
-		if (name.size() == 1 && parameters.containsKey(name.get(0).name) && name.get(0).arguments.isEmpty())
+		if (name.size() == 1 && parameters.containsKey(name.get(0).name) && name.get(0).hasNoArguments())
 			return getTypeRegistry().getGeneric(parameters.get(name.get(0).name));
 		
 		return outer.getType(position, name);

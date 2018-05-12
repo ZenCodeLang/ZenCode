@@ -6,7 +6,6 @@
 
 package org.openzen.zenscript.parser.expression;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
@@ -42,13 +41,15 @@ public class ParsedExpressionVariable extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		List<ITypeID> genericParameters = Collections.emptyList();
-		if (!this.genericParameters.isEmpty()) {
-			genericParameters = new ArrayList<>();
-			for (IParsedType genericType : this.genericParameters)
-				genericParameters.add(genericType.compile(scope));
+		ITypeID[] genericArguments = null;
+		if (genericParameters != null) {
+			genericArguments = new ITypeID[genericParameters.size()];
+			for (int i = 0; i < genericParameters.size(); i++) {
+				genericArguments[i] = genericParameters.get(i).compile(scope);
+			}
 		}
-		IPartialExpression result = scope.get(position, new GenericName(name, genericParameters));
+		
+		IPartialExpression result = scope.get(position, new GenericName(name, genericArguments));
 		if (result == null) {
 			for (ITypeID hint : scope.hints) {
 				EnumConstantMember member = scope.getTypeMembers(hint).getEnumMember(name);

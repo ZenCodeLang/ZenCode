@@ -58,7 +58,7 @@ public abstract class FunctionalMember extends DefinitionMember implements ICall
 	
 	@Override
 	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments) {
-		return new CallStaticExpression(position, target, this, arguments);
+		return new CallStaticExpression(position, target, this, arguments, instancedHeader);
 	}
 	
 	@Override

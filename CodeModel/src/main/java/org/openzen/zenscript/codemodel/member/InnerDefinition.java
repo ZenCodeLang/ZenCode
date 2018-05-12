@@ -6,7 +6,6 @@
 package org.openzen.zenscript.codemodel.member;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -32,7 +31,7 @@ public class InnerDefinition {
 		this.outerTypeArguments = outerTypeArguments;
 	}
 	
-	public DefinitionTypeID instance(GlobalTypeRegistry registry, List<ITypeID> typeArguments) {
+	public DefinitionTypeID instance(GlobalTypeRegistry registry, ITypeID[] typeArguments) {
 		return registry.getForDefinition(definition, typeArguments, outerTypeArguments);
 	}
 }

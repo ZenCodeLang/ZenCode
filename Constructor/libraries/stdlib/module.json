@@ -2,8 +2,10 @@
 	"package": "stdlib",
 	"host": "universal",
 	"globals": {
+		"Comparable": {"type": "Definition", "definition": "Comparable"},
 		"Exception": {"type": "Definition", "definition": "Exception"},
 		"IllegalArgumentException": {"type": "Definition", "definition": "IllegalArgumentException"},
-		"StringBuilder": {"type": "Definition", "definition": "StringBuilder"}
+		"StringBuilder": {"type": "Definition", "definition": "StringBuilder"},
+		"StringBuildable": {"type": "Definition", "definition": "StringBuildable"}
 	}
 }

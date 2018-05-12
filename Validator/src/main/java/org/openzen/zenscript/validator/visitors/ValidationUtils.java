@@ -148,6 +148,11 @@ public class ValidationUtils {
 			TypeParameter[] typeParameters,
 			ITypeID[] typeArguments)
 	{
+		if (typeParameters == null)
+			return typeArguments == null;
+		if (typeArguments == null)
+			return false;
+		
 		if (typeParameters.length != typeArguments.length) {
 			target.logError(
 					ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
@@ -164,13 +169,14 @@ public class ValidationUtils {
 		for (int i = 0; i < typeParameters.length; i++) {
 			TypeParameter typeParameter = typeParameters[i];
 			for (GenericParameterBound bound : typeParameter.bounds) {
-				if (!bound.matches(typeArguments[i])) {
+				// TODO - obtain member cache for validation
+				/*if (!bound.matches(typeArguments[i])) {
 					target.logError(
 							ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
 							position,
 							bound.accept(new TypeParameterBoundErrorVisitor(typeArguments[i], target)));
 					isValid = false;
-				}
+				}*/
 			}
 		}
 		return isValid;

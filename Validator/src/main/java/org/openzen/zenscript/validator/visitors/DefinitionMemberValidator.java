@@ -187,7 +187,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 
 	@Override
 	public Boolean visitCustomIterator(CustomIteratorMember member) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		// TODO: validate iterators
+		return true;
 	}
 
 	@Override

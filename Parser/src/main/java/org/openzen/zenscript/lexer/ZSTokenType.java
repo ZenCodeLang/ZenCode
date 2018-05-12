@@ -108,7 +108,7 @@ public enum ZSTokenType implements TokenType {
 	K_ANY,
 	K_BOOL,
 	K_BYTE,
-	K_UBYTE,
+	K_SBYTE,
 	K_SHORT,
 	K_USHORT,
 	K_INT,

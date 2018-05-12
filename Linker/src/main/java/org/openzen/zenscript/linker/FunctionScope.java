@@ -54,7 +54,7 @@ public class FunctionScope extends StatementScope {
 		if (fromSuper != null)
 			return fromSuper;
 		
-		if (name.arguments.isEmpty()) {
+		if (name.hasNoArguments()) {
 			for (FunctionParameter parameter : header.parameters) {
 				if (parameter.name.equals(name.name)) {
 					return new GetFunctionParameterExpression(position, parameter);
@@ -72,7 +72,7 @@ public class FunctionScope extends StatementScope {
 
 	@Override
 	public ITypeID getType(CodePosition position, List<GenericName> name) {
-		if (name.size() == 1 && name.get(0).arguments.isEmpty()) {
+		if (name.size() == 1 && name.get(0).hasNoArguments()) {
 			for (TypeParameter parameter : header.typeParameters) {
 				if (parameter.name.equals(name.get(0).name))
 					return getTypeRegistry().getGeneric(parameter);

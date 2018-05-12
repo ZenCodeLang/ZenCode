@@ -58,7 +58,7 @@ public class ZSTokenStream extends TokenStream<ZSToken, ZSTokenType> {
 		KEYWORDS.put("any", K_ANY);
 		KEYWORDS.put("bool", K_BOOL);
 		KEYWORDS.put("byte", K_BYTE);
-		KEYWORDS.put("ubyte", K_UBYTE);
+		KEYWORDS.put("sbyte", K_SBYTE);
 		KEYWORDS.put("short", K_SHORT);
 		KEYWORDS.put("ushort", K_USHORT);
 		KEYWORDS.put("int", K_INT);

@@ -20,7 +20,7 @@ public abstract class GenericParameterBound {
 	
 	public abstract void registerMembers(LocalMemberCache cache, TypeMembers type);
 	
-	public abstract boolean matches(ITypeID type);
+	public abstract boolean matches(LocalMemberCache cache, ITypeID type);
 	
 	public abstract GenericParameterBound withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments);
 }

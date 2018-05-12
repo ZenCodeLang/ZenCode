@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.scope;
 
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
@@ -15,6 +16,8 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  */
 public interface TypeScope {
 	public GlobalTypeRegistry getTypeRegistry();
+	
+	public LocalMemberCache getMemberCache();
 	
 	public TypeMembers getTypeMembers(ITypeID type);
 }

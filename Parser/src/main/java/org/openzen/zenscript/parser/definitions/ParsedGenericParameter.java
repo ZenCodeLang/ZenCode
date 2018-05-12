@@ -35,18 +35,19 @@ public class ParsedGenericParameter {
 	}
 	
 	public static List<ParsedGenericParameter> parseAll(ZSTokenStream tokens) {
+		if (tokens.optional(ZSTokenType.T_LESS) == null)
+			return null;
+		
 		List<ParsedGenericParameter> genericParameters = new ArrayList<>();
-		if (tokens.optional(ZSTokenType.T_LESS) != null) {
-			do {
-				genericParameters.add(ParsedGenericParameter.parse(tokens));
-			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
-			tokens.required(ZSTokenType.T_GREATER, "> expected");
-		}
+		do {
+			genericParameters.add(ParsedGenericParameter.parse(tokens));
+		} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+		tokens.required(ZSTokenType.T_GREATER, "> expected");
 		return genericParameters;
 	}
 	
 	public static void compile(BaseScope scope, TypeParameter[] compiled, List<ParsedGenericParameter> parameters) {
-		if (compiled.length == 0)
+		if (compiled == null)
 			return;
 		
 		GenericFunctionScope innerScope = new GenericFunctionScope(scope, compiled);
@@ -58,8 +59,8 @@ public class ParsedGenericParameter {
 	
 	private static TypeParameter[] NO_TYPE_PARAMETERS = new TypeParameter[0];
 	public static TypeParameter[] getCompiled(List<ParsedGenericParameter> parameters) {
-		if (parameters.isEmpty())
-			return NO_TYPE_PARAMETERS;
+		if (parameters == null)
+			return null;
 		
 		TypeParameter[] result = new TypeParameter[parameters.size()];
 		for (int i = 0; i < result.length; i++)

@@ -53,7 +53,7 @@ public class ImplementationScope extends BaseScope {
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		if (members.hasInnerType(name.name))
 			return new PartialTypeExpression(position, members.getInnerType(position, name));
-		if (members.hasMember(name.name) && name.arguments.isEmpty())
+		if (members.hasMember(name.name))
 			return members.getMemberExpression(position, new ThisExpression(position, outer.getThisType()), name, true);
 		
 		return outer.get(position, name);

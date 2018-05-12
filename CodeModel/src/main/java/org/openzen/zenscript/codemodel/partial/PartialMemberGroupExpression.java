@@ -27,19 +27,22 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final Expression target;
 	private final DefinitionMemberGroup group;
+	private final ITypeID[] typeArguments;
 	private final boolean allowStaticUsage;
 	
-	public PartialMemberGroupExpression(CodePosition position, Expression target, DefinitionMemberGroup group, boolean allowStaticMembers) {
+	public PartialMemberGroupExpression(CodePosition position, Expression target, DefinitionMemberGroup group, ITypeID[] typeArguments, boolean allowStaticMembers) {
 		this.position = position;
 		this.target = target;
 		this.group = group;
+		this.typeArguments = typeArguments;
 		this.allowStaticUsage = allowStaticMembers;
 	}
 	
-	public PartialMemberGroupExpression(CodePosition position, Expression target, ICallableMember member, boolean allowStaticMembers) {
+	public PartialMemberGroupExpression(CodePosition position, Expression target, ICallableMember member, ITypeID[] typeArguments, boolean allowStaticMembers) {
 		this.position = position;
 		this.target = target;
 		this.group = DefinitionMemberGroup.forMethod(member);
+		this.typeArguments = typeArguments;
 		this.allowStaticUsage = allowStaticMembers;
 	}
 
@@ -91,6 +94,11 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	
 	@Override
 	public IPartialExpression capture(CodePosition position, LambdaClosure closure) {
-		return new PartialMemberGroupExpression(position, target.capture(position, closure).eval(), group, allowStaticUsage);
+		return new PartialMemberGroupExpression(position, target.capture(position, closure).eval(), group, typeArguments, allowStaticUsage);
+	}
+
+	@Override
+	public ITypeID[] getGenericCallTypes() {
+		return typeArguments;
 	}
 }

@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.linker;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +42,14 @@ public class DefinitionScope extends BaseScope {
 		this.outer = outer;
 		this.definition = definition;
 		
-		List<ITypeID> genericParameterList = new ArrayList<>();
-		for (TypeParameter parameter : definition.genericParameters) {
-			genericParameterList.add(outer.getTypeRegistry().getGeneric(parameter));
-			genericParameters.put(parameter.name, parameter);
+		ITypeID[] genericParameterList = null;
+		if (definition.genericParameters != null) {
+			genericParameterList = new ITypeID[definition.genericParameters.length];
+			for (int i = 0; i < definition.genericParameters.length; i++) {
+				TypeParameter parameter = definition.genericParameters[i];
+				genericParameterList[i] = outer.getTypeRegistry().getGeneric(parameter);
+				genericParameters.put(parameter.name, parameter);
+			}
 		}
 		
 		if (definition instanceof ExpansionDefinition) {
@@ -67,9 +70,9 @@ public class DefinitionScope extends BaseScope {
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		if (members.hasInnerType(name.name))
 			return new PartialTypeExpression(position, members.getInnerType(position, name));
-		if (members.hasMember(name.name) && name.arguments.isEmpty())
+		if (members.hasMember(name.name) && !name.hasArguments())
 			return members.getMemberExpression(position, new ThisExpression(position, type), name, true);
-		if (genericParameters.containsKey(name.name) && name.arguments.isEmpty())
+		if (genericParameters.containsKey(name.name) && !name.hasArguments())
 			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(genericParameters.get(name.name)));
 		
 		return outer.get(position, name);
@@ -83,7 +86,7 @@ public class DefinitionScope extends BaseScope {
 				result = getTypeMembers(result).getInnerType(position, name.get(i));
 			}
 			return result;
-		} else if (genericParameters.containsKey(name.get(0).name) && name.size() == 1 && name.get(0).arguments.isEmpty()) {
+		} else if (genericParameters.containsKey(name.get(0).name) && name.size() == 1 && !name.get(0).hasArguments()) {
 			return getTypeRegistry().getGeneric(genericParameters.get(name.get(0).name));
 		}
 		

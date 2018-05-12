@@ -70,7 +70,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 			// perform type parameter inference
 			ITypeID returnType = statements.getReturnType();
 			Map<TypeParameter, ITypeID> inferredTypes = new HashMap<>();
-			if (!genericHeader.returnType.inferTypeParameters(returnType, inferredTypes))
+			if (!genericHeader.returnType.inferTypeParameters(scope.getMemberCache(), returnType, inferredTypes))
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
 			
 			for (Map.Entry<TypeParameter, ITypeID> type : inferredTypes.entrySet()) {

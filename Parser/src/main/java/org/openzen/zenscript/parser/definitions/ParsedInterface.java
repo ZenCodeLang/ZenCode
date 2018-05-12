@@ -55,6 +55,7 @@ public class ParsedInterface extends BaseParsedDefinition {
 		this.superInterfaces = superInterfaces;
 		
 		compiled = new InterfaceDefinition(position, pkg, name, modifiers, outerDefinition);
+		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(genericParameters));
 	}
 
 	@Override

@@ -47,7 +47,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 				throw new CompileException(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Class has no superclass");
 			
 			DefinitionMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
-			CallArguments callArguments = arguments.compileCall(position, scope, memberGroup);
+			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
 			ICallableMember member = memberGroup.selectMethod(position, scope, callArguments, true, true);
 			if (!(member instanceof ConstructorMember))
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
@@ -58,7 +58,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			ITypeID targetType = scope.getThisType();
 			
 			DefinitionMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
-			CallArguments callArguments = arguments.compileCall(position, scope, memberGroup);
+			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
 			ICallableMember member = memberGroup.selectMethod(position, scope, callArguments, true, true);
 			if (!(member instanceof ConstructorMember))
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
@@ -67,7 +67,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 		}
 
 		List<FunctionHeader> headers = cReceiver.getPossibleFunctionHeaders(scope, scope.hints, arguments.arguments.size());
-		CallArguments callArguments = arguments.compileCall(position, scope, headers);
+		CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getGenericCallTypes(), headers);
 		return cReceiver.call(position, scope, scope.hints, callArguments);
 	}
 

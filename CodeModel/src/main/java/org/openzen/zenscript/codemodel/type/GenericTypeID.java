@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 /**
  *
@@ -19,8 +20,8 @@ public class GenericTypeID implements ITypeID {
 		this.parameter = parameter;
 	}
 	
-	public boolean matches(ITypeID type) {
-		return parameter.matches(type);
+	public boolean matches(LocalMemberCache cache, ITypeID type) {
+		return parameter.matches(cache, type);
 	}
 	
 	@Override
@@ -54,6 +55,11 @@ public class GenericTypeID implements ITypeID {
 			if (parameter == this.parameter)
 				return true;
 		
+		return false;
+	}
+
+	@Override
+	public boolean hasDefaultValue() {
 		return false;
 	}
 

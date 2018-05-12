@@ -79,4 +79,9 @@ public abstract class Expression implements IPartialExpression {
 		TypeMembers members = scope.getTypeMembers(type);
 		return members.getMemberExpression(position, this, name, false);
 	}
+	
+	@Override
+	public ITypeID[] getGenericCallTypes() {
+		return null;
+	}
 }

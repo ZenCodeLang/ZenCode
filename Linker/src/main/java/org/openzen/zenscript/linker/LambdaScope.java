@@ -43,7 +43,7 @@ public class LambdaScope extends StatementScope {
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		IPartialExpression outer = this.outer.get(position, name);
 		if (outer == null) {
-			if (name.arguments.isEmpty()) {
+			if (name.hasNoArguments()) {
 				for (FunctionParameter parameter : header.parameters) {
 					if (parameter.name.equals(name.name))
 						return new GetFunctionParameterExpression(position, parameter);

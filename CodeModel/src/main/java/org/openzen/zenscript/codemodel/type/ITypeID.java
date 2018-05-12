@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 /**
  *
@@ -33,23 +34,27 @@ public interface ITypeID {
 		return this;
 	}
 	
+	public boolean hasDefaultValue();
+	
 	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments);
 	
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters);
 	
 	// Infers type parameters for this type so it matches with targetType
 	// returns false if that isn't possible
-	public default boolean inferTypeParameters(ITypeID targetType, Map<TypeParameter, ITypeID> mapping) {
-		return accept(new MatchingTypeVisitor(targetType, mapping));
+	public default boolean inferTypeParameters(LocalMemberCache cache, ITypeID targetType, Map<TypeParameter, ITypeID> mapping) {
+		return accept(new MatchingTypeVisitor(cache, targetType, mapping));
 	}
 	
 	public static class MatchingTypeVisitor implements ITypeVisitor<Boolean> {
 		private final ITypeID type;
 		private final Map<TypeParameter, ITypeID> mapping;
+		private final LocalMemberCache cache;
 		
-		public MatchingTypeVisitor(ITypeID type, Map<TypeParameter, ITypeID> mapping) {
+		public MatchingTypeVisitor(LocalMemberCache cache, ITypeID type, Map<TypeParameter, ITypeID> mapping) {
 			this.type = type;
 			this.mapping = mapping;
+			this.cache = cache;
 		}
 
 		@Override
@@ -141,7 +146,7 @@ public interface ITypeID {
 		public Boolean visitGeneric(GenericTypeID generic) {
 			if (mapping.containsKey(generic.parameter)) {
 				return mapping.get(generic.parameter) == type;
-			} else if (generic.matches(type)) {
+			} else if (generic.matches(cache, type)) {
 				mapping.put(generic.parameter, type);
 				return true;
 			} else {
@@ -183,7 +188,7 @@ public interface ITypeID {
 			if (type == pattern)
 				return true;
 			
-			return pattern.accept(new MatchingTypeVisitor(type, mapping));
+			return pattern.accept(new MatchingTypeVisitor(cache, type, mapping));
 		}
 
 		@Override

@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import java.util.Collections;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -26,7 +25,7 @@ public class EnumConstantExpression extends Expression {
 	}
 	
 	public EnumConstantExpression(CodePosition position, GlobalTypeRegistry registry, EnumDefinition type, EnumConstantMember value) {
-		super(position, registry.getForDefinition(type, Collections.emptyList()));
+		super(position, registry.getForDefinition(type, null));
 		
 		this.value = value;
 	}

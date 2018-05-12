@@ -121,17 +121,18 @@ public class GlobalRegistry {
 	private class PrintlnSymbol implements ISymbol {
 
 		@Override
-		public IPartialExpression getExpression(CodePosition position, GlobalTypeRegistry types, List<ITypeID> typeArguments) {
+		public IPartialExpression getExpression(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments) {
 			//return new PartialStaticMemberGroupExpression(position, PRINTLN.callerGroup);
 			return new PartialMemberGroupExpression(
 					position,
 					new GetStaticFieldExpression(position, SYSTEM_OUT),
 					PRINTSTREAM_PRINTLN,
+					null,
 					false);
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, GlobalTypeRegistry types, List<ITypeID> typeArguments) {
+		public ITypeID getType(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments) {
 			// don't be fooled! this symbol is the System.out.println bound method and thus its type is a function
 			return new FunctionTypeID(PRINTSTREAM_PRINTLN.header);
 		}

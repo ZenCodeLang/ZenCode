@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.linker.symbol;
 
-import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
@@ -25,12 +24,12 @@ public class TypeSymbol implements ISymbol {
 	}
 	
 	@Override
-	public IPartialExpression getExpression(CodePosition position, GlobalTypeRegistry types, List<ITypeID> typeArguments) {
+	public IPartialExpression getExpression(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments) {
 		return new PartialTypeExpression(position, types.getForDefinition(definition, typeArguments));
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, GlobalTypeRegistry types, List<ITypeID> typeArguments) {
+	public ITypeID getType(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments) {
 		return types.getForDefinition(definition, typeArguments);
 	}
 }

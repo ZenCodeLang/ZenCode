@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -36,9 +37,9 @@ public class TypeParameter {
 		bounds.add(bound);
 	}
 	
-	public boolean matches(ITypeID type) {
+	public boolean matches(LocalMemberCache cache, ITypeID type) {
 		for (GenericParameterBound bound : bounds) {
-			if (!bound.matches(type))
+			if (!bound.matches(cache, type))
 				return false;
 		}
 		

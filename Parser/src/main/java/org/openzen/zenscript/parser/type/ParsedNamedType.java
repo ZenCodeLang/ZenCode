@@ -6,7 +6,6 @@
 package org.openzen.zenscript.parser.type;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -94,21 +93,13 @@ public class ParsedNamedType implements IParsedType {
 		}
 		
 		private GenericName compile(BaseScope scope) {
-			if (typeArguments.isEmpty()) {
-				return new GenericName(name, Collections.emptyList());
-			} else {
-				List<ITypeID> genericTypes = new ArrayList<>();
-				for (IParsedType type : typeArguments)
-					genericTypes.add(type.compile(scope));
-				
-				return new GenericName(name, genericTypes);
-			}
+			return new GenericName(name, IParsedType.compileList(typeArguments, scope));
 		}
 		
 		@Override
 		public String toString() {
 			StringBuilder result = new StringBuilder(name);
-			if (!typeArguments.isEmpty()) {
+			if (typeArguments != null) {
 				result.append("<");
 				for (int i = 0; i < typeArguments.size(); i++) {
 					if (i > 0)

@@ -54,7 +54,7 @@ public class LocalMemberCache {
 	}
 	
 	private void registerMembers(TypeMembers members) {
-		members.type.accept(new TypeMemberBuilder(members, this));
+		members.type.accept(new TypeMemberBuilder(registry, members, this));
 		
 		for (ExpansionDefinition expansion : expansions) {
 			if (expansion.target == null)
@@ -78,7 +78,7 @@ public class LocalMemberCache {
 			return Collections.emptyMap();
 		
 		Map<TypeParameter, ITypeID> mapping = new HashMap<>();
-		if (pattern.inferTypeParameters(type, mapping))
+		if (pattern.inferTypeParameters(this, type, mapping))
 			return mapping;
 		
 		return null;

@@ -26,7 +26,7 @@ public abstract class StatementScope extends BaseScope {
 	
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
-		if (variables.containsKey(name.name) && name.arguments.isEmpty())
+		if (variables.containsKey(name.name) && name.hasNoArguments())
 			return new GetLocalVariableExpression(position, variables.get(name.name));
 		
 		return null;

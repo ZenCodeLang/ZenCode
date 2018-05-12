@@ -24,11 +24,13 @@ public class PartialGlobalExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final String name;
 	private final IPartialExpression resolution;
+	private final ITypeID[] typeParameters;
 	
-	public PartialGlobalExpression(CodePosition position, String name, IPartialExpression resolution) {
+	public PartialGlobalExpression(CodePosition position, String name, IPartialExpression resolution, ITypeID[] typeParameters) {
 		this.position = position;
 		this.name = name;
 		this.resolution = resolution;
+		this.typeParameters = typeParameters;
 	}
 	
 	@Override
@@ -54,5 +56,10 @@ public class PartialGlobalExpression implements IPartialExpression {
 	@Override
 	public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
 		return new GlobalCallExpression(position, name, arguments, resolution.call(position, scope, hints, arguments));
+	}
+
+	@Override
+	public ITypeID[] getGenericCallTypes() {
+		return typeParameters;
 	}
 }
