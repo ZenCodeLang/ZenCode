@@ -3,6 +3,8 @@ public class myTestClass {
 	var nonFinalInt as int = 10;
 	val finalInt as int = 20;
 
+	static var staticNonFinalInt as int = 10;
+
 	public this() {
 
 	}
@@ -67,6 +69,8 @@ public enum myTestEnum {
 
 	private val priority as int;
 	private val isCommutative as bool;
+
+	public static val test as int = 10;
 
 	this(i as int) {
 		this(i, false);
