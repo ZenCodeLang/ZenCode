@@ -3,12 +3,18 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.*;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javabytecode.JavaMethodInfo;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     private final JavaWriter javaWriter;
     public final JavaExpressionVisitor expressionVisitor;
-	
+
     /**
      * @param javaWriter the method writer that compiles the statement
      */
@@ -19,7 +25,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
     @Override
     public Boolean visitBlock(BlockStatement statement) {
-		Boolean returns = false;
+        Boolean returns = false;
         for (Statement statement1 : statement.statements) {
             returns = statement1.accept(this);
         }
@@ -134,11 +140,70 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         javaWriter.returnType(Type.getType(statement.value.type.accept(JavaTypeClassVisitor.INSTANCE)));
         return true;
     }
-	
-	@Override
-	public Boolean visitSwitch(SwitchStatement statement) {
-		throw new UnsupportedOperationException("Not yet implemented!");
-	}
+
+    @Override
+    public Boolean visitSwitch(SwitchStatement statement) {
+
+        final Label start = new Label();
+        final Label end = new Label();
+
+        if (statement.label == null)
+            statement.label = javaWriter.createLabelName() + "Switch";
+
+        javaWriter.putNamedLabel(start, statement.label + "_start");
+        javaWriter.putNamedLabel(end, statement.label + "_end");
+
+
+        javaWriter.label(start);
+        statement.value.accept(expressionVisitor);
+        if(statement.value.type == BasicTypeID.STRING)
+            javaWriter.invokeVirtual(new JavaMethodInfo(new JavaClassInfo("java/lang/Object"), "hashCode", "()I", 0));
+        boolean out = false;
+
+        final boolean hasNoDefault = hasNoDefault(statement);
+
+        final List<SwitchCase> cases = statement.cases;
+
+        final int[] keys = new int[hasNoDefault ? cases.size() : cases.size() - 1];
+        final Label[] labels = new Label[keys.length];
+        final Label defaultLabel = new Label();
+
+        Arrays.parallelSetAll(labels, value -> new Label());
+
+        int i = 0;
+        for (final SwitchCase switchCase : cases)
+            if (switchCase.value != null)
+                keys[i++] = CompilerUtils.getKeyForSwitch(switchCase.value);
+
+        javaWriter.lookupSwitch(defaultLabel, keys, labels);
+
+        i = 0;
+        for (final SwitchCase switchCase : cases) {
+            if (hasNoDefault || switchCase.value != null) {
+                javaWriter.label(labels[i++]);
+            } else {
+                javaWriter.label(defaultLabel);
+            }
+            for (Statement statement1 : switchCase.statements) {
+                out |= statement1.accept(this);
+            }
+        }
+
+        if(hasNoDefault)
+            javaWriter.label(defaultLabel);
+
+        javaWriter.label(end);
+
+
+        //throw new UnsupportedOperationException("Not yet implemented!");
+        return out;
+    }
+
+    private boolean hasNoDefault(SwitchStatement switchStatement) {
+        for (SwitchCase switchCase : switchStatement.cases)
+            if (switchCase.value == null) return false;
+        return true;
+    }
 
     @Override
     public Boolean visitThrow(ThrowStatement statement) {

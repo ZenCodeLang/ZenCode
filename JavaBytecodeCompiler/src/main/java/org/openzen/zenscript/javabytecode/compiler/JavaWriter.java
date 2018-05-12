@@ -1128,6 +1128,10 @@ public class JavaWriter {
             visitor.visitParameter(name, modifier);
     }
 
+    public void lookupSwitch(Label defaultLabel, int[] keys, Label[] labels) {
+        visitor.visitLookupSwitchInsn(defaultLabel, keys, labels);
+    }
+
     public void addVariableInfo(JavaLocalVariableInfo info) {
         localVariableInfos.add(info);
     }

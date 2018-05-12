@@ -97,21 +97,14 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
         writer.visit(Opcodes.V1_8, Opcodes.ACC_ENUM | Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER | Opcodes.ACC_FINAL, definition.name, "Ljava/lang/Enum<L" + definition.name + ";>;", superType.getInternalName(), null);
 
-        for (IDefinitionMember member : definition.members) {
-            if (member instanceof EnumConstantMember) {
-                EnumConstantMember constantMember = (EnumConstantMember) member;
-                writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_ENUM, constantMember.name, "L" + definition.name + ";", null, null).visitEnd();
-            }
-        }
-
 		JavaClassInfo toClass = new JavaClassInfo(definition.name, true);
-		writeEnumStaticInitializer(definition, toClass, writer);
 
         //Enum Stuff(required!)
         writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL | Opcodes.ACC_SYNTHETIC, "$VALUES", "[L" + definition.name + ";", null, null).visitEnd();
-		
+
+        final JavaMemberVisitor visitor = new JavaMemberVisitor(writer, toClass, definition);
         for (IDefinitionMember member : definition.members) {
-            member.accept(new JavaMemberVisitor(writer, toClass, definition));
+            member.accept(visitor);
         }
 		
 		JavaClassInfo arrayClass = new JavaClassInfo("[L" + definition.name + ";");
@@ -140,40 +133,6 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         writer.visitEnd();
         return writer.toByteArray();
     }
-	
-	private void writeEnumStaticInitializer(EnumDefinition definition, JavaClassInfo toClass, ClassWriter writer) {
-		JavaMethodInfo clinitInfo = new JavaMethodInfo(toClass, "<clinit>", "()V", Opcodes.ACC_STATIC);
-        final JavaWriter clinitWriter = new JavaWriter(writer, clinitInfo, definition, null, null);
-        final JavaStatementVisitor clinitVisitor = new JavaStatementVisitor(clinitWriter);
-        clinitVisitor.start();
-		
-		List<EnumConstantMember> enumConstants = definition.getEnumConstants();
-		for (EnumConstantMember enumConstant : enumConstants) {
-			final String internalName = enumConstant.constructor.type.accept(JavaTypeVisitor.INSTANCE).getInternalName();
-
-			clinitWriter.newObject(internalName);
-			clinitWriter.dup();
-			clinitWriter.constant(enumConstant.name);
-			clinitWriter.constant(enumConstant.value);
-			for (Expression argument : enumConstant.constructor.arguments.arguments) {
-				argument.accept(clinitVisitor.expressionVisitor);
-			}
-			clinitWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(enumConstant.constructor.constructor.header, true));
-			clinitWriter.putStaticField(internalName, enumConstant.name, "L" + internalName + ";");
-		}
-
-        clinitWriter.constant(enumConstants.size());
-        clinitWriter.newArray(Type.getType("L" + definition.name + ";"));
-
-        for (EnumConstantMember enumConstant : enumConstants) {
-            clinitWriter.dup();
-            clinitWriter.constant(enumConstant.value);
-            clinitWriter.getStaticField(definition.name, enumConstant.name, "L" + definition.name + ";");
-            clinitWriter.arrayStore(Type.getType("L" + definition.name + ";"));
-        }
-        clinitWriter.putStaticField(definition.name, "$VALUES", "[L" + definition.name + ";");
-        clinitVisitor.end();
-	}
 
     @Override
     public byte[] visitStruct(StructDefinition definition) {

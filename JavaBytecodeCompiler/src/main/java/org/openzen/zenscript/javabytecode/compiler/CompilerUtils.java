@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -76,37 +77,93 @@ public class CompilerUtils {
     public static String calcClasName(CodePosition position) {
         return position.filename.substring(0, position.filename.lastIndexOf('.')).replace("/", "_");
     }
-	
-	public static void tagMethodParameters(FunctionHeader header, boolean isStatic) {
-		JavaTypeVisitor typeVisitor = new JavaTypeVisitor();
-		for (int i = 0; i < header.parameters.length; i++) {
-			FunctionParameter parameter = header.parameters[i];
-			Type parameterType = parameter.type.accept(typeVisitor);
-			parameter.setTag(JavaParameterInfo.class, new JavaParameterInfo(isStatic ? i : i + 1, parameterType));
-		}
-	}
-	
-	public static void tagConstructorParameters(FunctionHeader header, boolean isEnum) {
-		JavaTypeVisitor typeVisitor = new JavaTypeVisitor();
-		for (int i = 0; i < header.parameters.length; i++) {
-			FunctionParameter parameter = header.parameters[i];
-			Type parameterType = parameter.type.accept(typeVisitor);
-			parameter.setTag(JavaParameterInfo.class, new JavaParameterInfo(isEnum ? i + 3 : i + 1, parameterType));
-		}
-	}
-	
-	public static void writeDefaultFieldInitializers(JavaWriter constructorWriter, HighLevelDefinition definition, boolean staticFields) {
-		JavaExpressionVisitor expressionVisitor = new JavaExpressionVisitor(constructorWriter);
-		for (final IDefinitionMember definitionMember : definition.members) {
-			if (!(definitionMember instanceof FieldMember))
-				continue;
-			
-			FieldMember field = (FieldMember) definitionMember;
-			if (field.isStatic() == staticFields && field.initializer != null) {
-				constructorWriter.loadObject(0);
-				field.initializer.accept(expressionVisitor);
-				constructorWriter.putField(definition.name, field.name, Type.getDescriptor(field.type.accept(JavaTypeClassVisitor.INSTANCE)));
-			}
-		}
-	}
+
+    public static void tagMethodParameters(FunctionHeader header, boolean isStatic) {
+        JavaTypeVisitor typeVisitor = new JavaTypeVisitor();
+        for (int i = 0; i < header.parameters.length; i++) {
+            FunctionParameter parameter = header.parameters[i];
+            Type parameterType = parameter.type.accept(typeVisitor);
+            parameter.setTag(JavaParameterInfo.class, new JavaParameterInfo(isStatic ? i : i + 1, parameterType));
+        }
+    }
+
+    public static void tagConstructorParameters(FunctionHeader header, boolean isEnum) {
+        JavaTypeVisitor typeVisitor = new JavaTypeVisitor();
+        for (int i = 0; i < header.parameters.length; i++) {
+            FunctionParameter parameter = header.parameters[i];
+            Type parameterType = parameter.type.accept(typeVisitor);
+            parameter.setTag(JavaParameterInfo.class, new JavaParameterInfo(isEnum ? i + 3 : i + 1, parameterType));
+        }
+    }
+
+    public static void writeDefaultFieldInitializers(JavaWriter constructorWriter, HighLevelDefinition definition, boolean staticFields) {
+        JavaExpressionVisitor expressionVisitor = new JavaExpressionVisitor(constructorWriter);
+        for (final IDefinitionMember definitionMember : definition.members) {
+            if (!(definitionMember instanceof FieldMember))
+                continue;
+
+            FieldMember field = (FieldMember) definitionMember;
+            if (field.isStatic() == staticFields && field.initializer != null) {
+                if (!staticFields)
+                    constructorWriter.loadObject(0);
+                field.initializer.accept(expressionVisitor);
+                if (staticFields)
+                    constructorWriter.putStaticField(definition.name, field.name, Type.getDescriptor(field.type.accept(JavaTypeClassVisitor.INSTANCE)));
+                else
+                    constructorWriter.putField(definition.name, field.name, Type.getDescriptor(field.type.accept(JavaTypeClassVisitor.INSTANCE)));
+            }
+        }
+    }
+
+
+    public static int getKeyForSwitch(Expression expression) {
+        if (expression.type instanceof BasicTypeID)
+            switch ((BasicTypeID) expression.type) {
+                case BOOL:
+                    if (expression instanceof ConstantBoolExpression)
+                        return ((ConstantBoolExpression) expression).value ? 1 : 0;
+                    break;
+                case BYTE:
+                    if (expression instanceof ConstantByteExpression)
+                        return ((ConstantByteExpression) expression).value;
+                    break;
+                case SBYTE:
+                    if (expression instanceof ConstantSByteExpression)
+                        return ((ConstantSByteExpression) expression).value;
+                    break;
+                case SHORT:
+                    if(expression instanceof ConstantShortExpression)
+                        return ((ConstantShortExpression) expression).value;
+                    break;
+                case USHORT:
+                    if (expression instanceof ConstantUShortExpression)
+                        return ((ConstantUShortExpression) expression).value;
+                    break;
+                case INT:
+                    if (expression instanceof ConstantIntExpression)
+                        return ((ConstantIntExpression) expression).value;
+                    break;
+                case UINT:
+                    if (expression instanceof ConstantUIntExpression)
+                        return ((ConstantUIntExpression) expression).value;
+                    break;
+                case LONG:
+                    if(expression instanceof ConstantLongExpression)
+                        return (int)((ConstantLongExpression) expression).value;
+                    break;
+                case ULONG:
+                    if(expression instanceof ConstantULongExpression)
+                        return (int)((ConstantULongExpression) expression).value;
+                    break;
+                case CHAR:
+                    if(expression instanceof ConstantCharExpression)
+                        return ((ConstantCharExpression) expression).value;
+                    break;
+                case STRING:
+                    if(expression instanceof ConstantStringExpression)
+                        return ((ConstantStringExpression) expression).value.hashCode();
+                    break;
+            }
+            throw new RuntimeException("Cannot switch over expression " + expression);
+    }
 }
