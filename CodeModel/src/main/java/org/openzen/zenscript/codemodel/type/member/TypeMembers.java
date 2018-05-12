@@ -88,7 +88,7 @@ public final class TypeMembers {
 		for (Map.Entry<String, EnumConstantMember> entry : enumMembers.entrySet())
 			other.addEnumMember(entry.getValue(), priority);
 		for (Map.Entry<String, DefinitionMemberGroup> entry : members.entrySet())
-			other.getOrCreateGroup(entry.getKey()).merge(position, entry.getValue(), priority);
+			other.getOrCreateGroup(entry.getKey(), entry.getValue().isStatic).merge(position, entry.getValue(), priority);
 		for (Map.Entry<String, InnerDefinition> entry : innerTypes.entrySet())
 			other.innerTypes.put(entry.getKey(), entry.getValue());
 		for (Map.Entry<OperatorType, DefinitionMemberGroup> entry : operators.entrySet())
@@ -109,6 +109,10 @@ public final class TypeMembers {
 	
 	public void addConstructor(ConstructorMember constructor, TypeMemberPriority priority) {
 		getOrCreateGroup(OperatorType.CONSTRUCTOR).addMethod(constructor, priority);
+	}
+	
+	public void addConstructor(ConstructorMember constructor) {
+		getOrCreateGroup(OperatorType.CONSTRUCTOR).addMethod(constructor, TypeMemberPriority.SPECIFIED);
 	}
 	
 	public void addCaller(CallerMember caller, TypeMemberPriority priority) {
@@ -135,7 +139,7 @@ public final class TypeMembers {
 	}
 	
 	public void addField(FieldMember member, TypeMemberPriority priority) {
-		DefinitionMemberGroup group = getOrCreateGroup(member.name);
+		DefinitionMemberGroup group = getOrCreateGroup(member.name, member.isStatic());
 		group.setField(member, priority);
 	}
 	
@@ -144,7 +148,7 @@ public final class TypeMembers {
 	}
 	
 	public void addGetter(IGettableMember member, TypeMemberPriority priority) {
-		DefinitionMemberGroup group = getOrCreateGroup(member.getName());
+		DefinitionMemberGroup group = getOrCreateGroup(member.getName(), member.isStatic());
 		group.setGetter(member, priority);
 	}
 	
@@ -153,7 +157,7 @@ public final class TypeMembers {
 	}
 	
 	public void addSetter(SetterMember member, TypeMemberPriority priority) {
-		DefinitionMemberGroup group = getOrCreateGroup(member.name);
+		DefinitionMemberGroup group = getOrCreateGroup(member.name, member.isStatic());
 		group.setSetter(member, priority);
 	}
 	
@@ -162,7 +166,7 @@ public final class TypeMembers {
 	}
 	
 	public void addMethod(MethodMember member, TypeMemberPriority priority) {
-		DefinitionMemberGroup group = getOrCreateGroup(member.name);
+		DefinitionMemberGroup group = getOrCreateGroup(member.name, member.isStatic());
 		group.addMethod(member, priority);
 	}
 	
@@ -206,16 +210,16 @@ public final class TypeMembers {
 		innerTypes.put(name, type);
 	}
 	
-	public DefinitionMemberGroup getOrCreateGroup(String name) {
+	public DefinitionMemberGroup getOrCreateGroup(String name, boolean isStatic) {
 		if (!members.containsKey(name))
-			members.put(name, new DefinitionMemberGroup());
+			members.put(name, new DefinitionMemberGroup(isStatic));
 		
 		return members.get(name);
 	}
 	
 	public DefinitionMemberGroup getOrCreateGroup(OperatorType operator) {
 		if (!operators.containsKey(operator))
-			operators.put(operator, new DefinitionMemberGroup());
+			operators.put(operator, new DefinitionMemberGroup(false));
 		
 		return operators.get(operator);
 	}
@@ -307,6 +311,18 @@ public final class TypeMembers {
 		return false;
 	}
 	
+	public boolean canCast(ITypeID toType) {
+		if (canCastImplicit(toType))
+			return true;
+		
+		for (TypeMember<ICasterMember> caster : casters) {
+			if (toType == caster.member.getTargetType())
+				return true;
+		}
+		
+		return false;
+	}
+	
 	public Expression castImplicit(CodePosition position, Expression value, ITypeID toType, boolean implicit) {
 		if (toType == type || toType == BasicTypeID.UNDETERMINED)
 			return value;
@@ -350,8 +366,18 @@ public final class TypeMembers {
 	}
 	
 	public IPartialExpression getMemberExpression(CodePosition position, Expression target, GenericName name, boolean allowStatic) {
-		if (members.containsKey(name.name) && name.arguments.isEmpty())
-			return new PartialMemberGroupExpression(position, target, members.get(name.name), allowStatic);
+		if (members.containsKey(name.name)) {
+			DefinitionMemberGroup group = members.get(name.name);
+			
+			if (!name.arguments.isEmpty()) {
+				/* ... */
+			}
+			
+			if (group.isStatic)
+				return new PartialStaticMemberGroupExpression(position, type, group);
+			else
+				return new PartialMemberGroupExpression(position, target, group, allowStatic);
+		}
 		
 		return null;
 	}

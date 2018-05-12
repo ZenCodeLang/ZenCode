@@ -16,12 +16,14 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
+import org.openzen.zenscript.parser.statements.ParsedStatementBlock;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 import org.openzen.zenscript.shared.CodePosition;
@@ -34,31 +36,54 @@ public abstract class ParsedDefinitionMember {
 	public static ParsedDefinitionMember parse(ZSTokenStream tokens, HighLevelDefinition forDefinition) {
 		CodePosition start = tokens.getPosition();
 		int modifiers = 0;
-		while (true) {
-			if (tokens.optional(ZSTokenType.K_EXPORT) != null) {
-				modifiers |= Modifiers.EXPORT;
-			} else if (tokens.optional(ZSTokenType.K_PUBLIC) != null) {
-				modifiers |= Modifiers.PUBLIC;
-			} else if (tokens.optional(ZSTokenType.K_PRIVATE) != null) {
-				modifiers |= Modifiers.PRIVATE;
-			} else if (tokens.optional(ZSTokenType.K_CONST) != null) {
-				if (tokens.optional(ZSTokenType.T_QUEST) != null) {
-					modifiers |= Modifiers.CONST_OPTIONAL;
-				} else {
-					modifiers |= Modifiers.CONST;
-				}
-			} else if (tokens.optional(ZSTokenType.K_ABSTRACT) != null) {
-				modifiers |= Modifiers.ABSTRACT;
-			} else if (tokens.optional(ZSTokenType.K_FINAL) != null) {
-				modifiers |= Modifiers.FINAL;
-			} else if (tokens.optional(ZSTokenType.K_STATIC) != null) {
-				modifiers |= Modifiers.STATIC;
-			} else if (tokens.optional(ZSTokenType.K_PROTECTED) != null) {
-				modifiers |= Modifiers.PROTECTED;
-			} else if (tokens.optional(ZSTokenType.K_IMPLICIT) != null) {
-				modifiers |= Modifiers.IMPLICIT;
-			} else {
-				break;
+		outer: while (true) {
+			switch (tokens.peek().type) {
+				case K_EXPORT:
+					tokens.next();
+					modifiers |= Modifiers.EXPORT;
+					break;
+				case K_PUBLIC:
+					tokens.next();
+					modifiers |= Modifiers.PUBLIC;
+					break;
+				case K_PRIVATE:
+					tokens.next();
+					modifiers |= Modifiers.PRIVATE;
+					break;
+				case K_CONST:
+					tokens.next();
+					if (tokens.optional(ZSTokenType.T_QUEST) != null) {
+						modifiers |= Modifiers.CONST_OPTIONAL;
+					} else {
+						modifiers |= Modifiers.CONST;
+					}
+					break;
+				case K_ABSTRACT:
+					tokens.next();
+					modifiers |= Modifiers.ABSTRACT;
+					break;
+				case K_FINAL:
+					tokens.next();
+					modifiers |= Modifiers.FINAL;
+					break;
+				case K_STATIC:
+					tokens.next();
+					modifiers |= Modifiers.STATIC;
+					break;
+				case K_PROTECTED:
+					tokens.next();
+					modifiers |= Modifiers.PROTECTED;
+					break;
+				case K_IMPLICIT:
+					tokens.next();
+					modifiers |= Modifiers.IMPLICIT;
+					break;
+				case K_EXTERN:
+					tokens.next();
+					modifiers |= Modifiers.EXTERN;
+					break;
+				default:
+					break outer;
 			}
 		}
 		
@@ -72,11 +97,30 @@ public abstract class ParsedDefinitionMember {
 					type = IParsedType.parse(tokens);
 				}
 				ParsedExpression initializer = null;
+				int autoGetter = 0;
+				int autoSetter = 0;
+				if (tokens.optional(ZSTokenType.T_COLON) != null) {
+					do {
+						int accessor = Modifiers.PUBLIC;
+						if (tokens.optional(ZSTokenType.K_PUBLIC) != null) {
+							accessor = Modifiers.PUBLIC;
+						} else if (tokens.optional(ZSTokenType.K_PROTECTED) != null) {
+							accessor = Modifiers.PROTECTED;
+						}
+
+						if (tokens.optional(ZSTokenType.K_GET) != null) {
+							autoGetter = accessor;
+						} else {
+							tokens.required(ZSTokenType.K_SET, "get or set expected");
+							autoSetter = accessor;
+						}
+					} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+				}
 				if (tokens.optional(ZSTokenType.T_ASSIGN) != null) {
 					initializer = ParsedExpression.parse(tokens);
 				}
 				tokens.required(ZSTokenType.T_SEMICOLON, "; expected");
-				return new ParsedField(start, forDefinition, modifiers, name, type, initializer, t.type == ZSTokenType.K_VAL);
+				return new ParsedField(start, forDefinition, modifiers, name, type, initializer, t.type == ZSTokenType.K_VAL, autoGetter, autoSetter);
 			}
 			case K_THIS: {
 				tokens.next();
@@ -160,7 +204,8 @@ public abstract class ParsedDefinitionMember {
 			case T_ORASSIGN:
 			case T_XORASSIGN:
 			case T_INCREMENT:
-			case T_DECREMENT: {
+			case T_DECREMENT:
+			case T_DOT2: {
 				ZSToken token = tokens.next();
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
 				ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
@@ -197,6 +242,10 @@ public abstract class ParsedDefinitionMember {
 				return new ParsedIterator(start, forDefinition, modifiers, header, body);
 			}
 			default:
+				if (modifiers == Modifiers.STATIC && tokens.peek().type == ZSTokenType.T_AOPEN) {
+					ParsedStatementBlock body = ParsedStatementBlock.parseBlock(tokens, true);
+					return new ParsedStaticInitializer(forDefinition, tokens.peek().position, body);
+				}
 				throw new CompileException(tokens.peek().position, CompileExceptionCode.UNEXPECTED_TOKEN, "Unexpected token: " + tokens.peek().content);
 		}
 	}
@@ -222,8 +271,9 @@ public abstract class ParsedDefinitionMember {
 			case T_ANDASSIGN: return OperatorType.ANDASSIGN;
 			case T_ORASSIGN: return OperatorType.ORASSIGN;
 			case T_XORASSIGN: return OperatorType.XORASSIGN;
-			case T_INCREMENT: return OperatorType.POST_INCREMENT;
-			case T_DECREMENT: return OperatorType.POST_DECREMENT;
+			case T_INCREMENT: return OperatorType.INCREMENT;
+			case T_DECREMENT: return OperatorType.DECREMENT;
+			case T_DOT2: return OperatorType.RANGE;
 			default:
 				throw new AssertionError("Missing switch case in getOperator");
 		}

@@ -25,6 +25,8 @@ import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.expression.PostCallExpression;
+import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
@@ -36,7 +38,7 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
  */
 public class DefinitionMemberGroup {
 	public static DefinitionMemberGroup forMethod(ICallableMember member) {
-		DefinitionMemberGroup instance = new DefinitionMemberGroup();
+		DefinitionMemberGroup instance = new DefinitionMemberGroup(member.isStatic());
 		instance.addMethod(member, TypeMemberPriority.SPECIFIED);
 		return instance;
 	}
@@ -45,6 +47,11 @@ public class DefinitionMemberGroup {
 	private TypeMember<IGettableMember> getter;
 	private TypeMember<SetterMember> setter;
 	private final List<TypeMember<ICallableMember>> methods = new ArrayList<>();
+	public final boolean isStatic;
+	
+	public DefinitionMemberGroup(boolean isStatic) {
+		this.isStatic = isStatic;
+	}
 	
 	public void merge(CodePosition position, DefinitionMemberGroup other, TypeMemberPriority priority) {
 		if (other.field != null)
@@ -68,6 +75,10 @@ public class DefinitionMemberGroup {
 	
 	public SetterMember getSetter() {
 		return this.setter == null ? null : this.setter.member;
+	}
+	
+	public boolean hasMethods() {
+		return !methods.isEmpty();
 	}
 	
 	public List<TypeMember<ICallableMember>> getMethodMembers() {
@@ -231,6 +242,18 @@ public class DefinitionMemberGroup {
 		
 		FunctionHeader instancedHeader = method.getHeader().withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
 		return method.call(position, target, instancedHeader, arguments);
+	}
+	
+	public Expression callPostfix(CodePosition position, TypeScope scope, Expression target) {
+		if (methods.isEmpty())
+			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "There is no such operator");
+		
+		ICallableMember method = methods.get(0).member;
+		if (!(method instanceof OperatorMember)) {
+			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Member is not an operator");
+		}
+		OperatorMember operator = (OperatorMember) method;
+		return new PostCallExpression(position, target, operator, operator.header);
 	}
 	
 	public Expression callWithComparator(

@@ -13,6 +13,9 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  * @author Hoofdgebruiker
  */
 public class ArrayTypeID implements ITypeID {
+	public static final ArrayTypeID INT = new ArrayTypeID(BasicTypeID.INT, 1);
+	public static final ArrayTypeID CHAR = new ArrayTypeID(BasicTypeID.CHAR, 1);
+	
 	public final ITypeID elementType;
 	public final int dimension;
 

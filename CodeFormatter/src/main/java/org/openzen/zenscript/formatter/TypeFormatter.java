@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ConstTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
+import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
@@ -120,5 +121,15 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 	@Override
 	public String visitType(ParameterTypeBound bound) {
 		return bound.type.accept(this);
+	}
+
+	@Override
+	public String visitGenericMap(GenericMapTypeID map) {
+		StringBuilder result = new StringBuilder();
+		result.append(map.value.accept(this));
+		result.append("[");
+		FormattingUtils.formatTypeParameters(result, map.keys, this);
+		result.append("]");
+		return result.toString();
 	}
 }

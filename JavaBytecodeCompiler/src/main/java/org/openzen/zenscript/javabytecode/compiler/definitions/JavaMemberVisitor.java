@@ -1,5 +1,7 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -20,6 +22,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
     private final ClassWriter writer;
 	private final JavaClassInfo toClass;
 	private final HighLevelDefinition definition;
+	private final List<StaticInitializerMember> staticInitializers = new ArrayList<>();
 
     public JavaMemberVisitor(ClassWriter writer, JavaClassInfo toClass, HighLevelDefinition definition) {
         this.writer = writer;
@@ -40,9 +43,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     @Override
     public Void visitConstructor(ConstructorMember member) {
-		System.out.println("Compiling constructor " + member.header.toString());
-		
-        final boolean isEnum = definition instanceof EnumDefinition;
+		final boolean isEnum = definition instanceof EnumDefinition;
 		String descriptor = CompilerUtils.calcDesc(member.header, isEnum);
 		final JavaMethodInfo method = new JavaMethodInfo(toClass, "<init>", descriptor, isEnum ? Opcodes.ACC_PRIVATE : CompilerUtils.calcAccess(member.modifiers));
 		
@@ -78,7 +79,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
 			}
 			
-			CompilerUtils.writeDefaultFieldInitializers(constructorWriter, definition);
+			CompilerUtils.writeDefaultFieldInitializers(constructorWriter, definition, false);
 		}
 		
         member.body.accept(statementVisitor);
@@ -168,4 +169,31 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
     public Void visitInnerDefinition(InnerDefinitionMember member) {
         return null;
     }
+
+	@Override
+	public Void visitStaticInitializer(StaticInitializerMember member) {
+		staticInitializers.add(member);
+		return null;
+	}
+	
+	public void end() {
+		final JavaMethodInfo method = new JavaMethodInfo(toClass, "<clinit>", "()V", 0);
+		
+        final Label constructorStart = new Label();
+        final Label constructorEnd = new Label();
+        final JavaWriter constructorWriter = new JavaWriter(writer, method, definition, null, null);
+        constructorWriter.label(constructorStart);
+		
+        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(constructorWriter);
+        statementVisitor.start();
+		
+		CompilerUtils.writeDefaultFieldInitializers(constructorWriter, definition, true);
+		
+		for (StaticInitializerMember member : staticInitializers) {
+	        member.body.accept(statementVisitor);
+		}
+		
+        constructorWriter.label(constructorEnd);
+        statementVisitor.end();
+	}
 }

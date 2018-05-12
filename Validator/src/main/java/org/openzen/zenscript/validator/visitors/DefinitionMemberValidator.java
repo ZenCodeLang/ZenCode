@@ -25,7 +25,9 @@ import org.openzen.zenscript.codemodel.member.MemberVisitor;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
+import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -235,6 +237,11 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 		isValid &= innerDefinition.innerDefinition.accept(new DefinitionValidator(validator));
 		return isValid;
 	}
+
+	@Override
+	public Boolean visitStaticInitializer(StaticInitializerMember member) {
+		return member.body.accept(new StatementValidator(validator, new StaticInitializerScope()));
+	}
 	
 	private class FieldInitializerScope implements ExpressionScope {
 		private final FieldMember field;
@@ -314,6 +321,35 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 		@Override
 		public boolean isStaticInitializer() {
 			return false;
+		}
+
+		@Override
+		public HighLevelDefinition getDefinition() {
+			return definition;
+		}
+	}
+	
+	private class StaticInitializerScope implements StatementScope {
+		private final FunctionHeader header = new FunctionHeader(BasicTypeID.VOID);
+		
+		@Override
+		public boolean isConstructor() {
+			return false;
+		}
+
+		@Override
+		public boolean isStatic() {
+			return true;
+		}
+
+		@Override
+		public FunctionHeader getFunctionHeader() {
+			return header;
+		}
+
+		@Override
+		public boolean isStaticInitializer() {
+			return true;
 		}
 
 		@Override

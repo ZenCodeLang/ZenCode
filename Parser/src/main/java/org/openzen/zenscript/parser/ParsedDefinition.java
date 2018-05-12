@@ -38,7 +38,7 @@ public abstract class ParsedDefinition {
 		} else if (tokens.optional(K_ENUM) != null) {
 			return ParsedEnum.parseEnum(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_STRUCT) != null) {
-			return ParsedStruct.parse(pkg, position, modifiers, tokens, outerDefinition);
+			return ParsedStruct.parseStruct(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_ALIAS) != null) {
 			return ParsedAlias.parseAlias(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_FUNCTION) != null) {
@@ -70,6 +70,10 @@ public abstract class ParsedDefinition {
 	public abstract HighLevelDefinition getCompiled();
 	
 	public abstract void linkInnerTypes();
+	
+	public void compileTypes(BaseScope scope) {
+		
+	}
 	
 	public abstract void compileMembers(BaseScope scope);
 	

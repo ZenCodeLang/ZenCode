@@ -16,6 +16,8 @@ public interface ITypeVisitor<T> {
 	
 	public T visitAssoc(AssocTypeID assoc);
 	
+	public T visitGenericMap(GenericMapTypeID map);
+	
 	public T visitIterator(IteratorTypeID iterator);
 	
 	public T visitFunction(FunctionTypeID function);

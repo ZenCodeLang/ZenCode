@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ConstTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
+import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
@@ -107,5 +108,10 @@ public class JavaOptionalTypeClassVisitor implements ITypeVisitor<Class> {
 	@Override
 	public Class visitOptional(OptionalTypeID optional) {
 		return base.visitOptional(optional);
+	}
+
+	@Override
+	public Class visitGenericMap(GenericMapTypeID map) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }

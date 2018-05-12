@@ -16,6 +16,8 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *
@@ -55,6 +57,9 @@ public class LocalMemberCache {
 		members.type.accept(new TypeMemberBuilder(members, this));
 		
 		for (ExpansionDefinition expansion : expansions) {
+			if (expansion.target == null)
+				throw new CompileException(expansion.position, CompileExceptionCode.INTERNAL_ERROR, "Missing expansion target");
+			
 			Map<TypeParameter, ITypeID> mapping = matchType(members.type, expansion.target);
 			if (mapping != null) {
 				if (mapping.isEmpty()) {

@@ -24,7 +24,7 @@ public class FunctionDefinition extends HighLevelDefinition {
 	public FunctionHeader header;
 	public Statement statement;
 	public OperatorMember caller;
-	public DefinitionMemberGroup callerGroup = new DefinitionMemberGroup();
+	public DefinitionMemberGroup callerGroup = new DefinitionMemberGroup(true);
 	
 	public FunctionDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
 		super(position, pkg, name, modifiers, outerDefinition);

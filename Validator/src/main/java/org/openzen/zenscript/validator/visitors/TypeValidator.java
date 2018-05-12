@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ConstTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
+import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
@@ -110,5 +111,13 @@ public class TypeValidator implements ITypeVisitor<Boolean> {
 	public Boolean visitOptional(OptionalTypeID optional) {
 		// TODO: detect duplicate optional
 		return optional.baseType.accept(this);
+	}
+
+	@Override
+	public Boolean visitGenericMap(GenericMapTypeID map) {
+		boolean isValid = true;
+		isValid &= map.value.accept(this);
+		
+		return isValid;
 	}
 }

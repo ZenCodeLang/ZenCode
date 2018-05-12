@@ -24,7 +24,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  */
 public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, ITypeID target, ICallableMember method) {
-		DefinitionMemberGroup group = new DefinitionMemberGroup();
+		DefinitionMemberGroup group = new DefinitionMemberGroup(true);
 		group.addMethod(method, TypeMemberPriority.SPECIFIED);
 		return new PartialStaticMemberGroupExpression(position, target, group);
 	}

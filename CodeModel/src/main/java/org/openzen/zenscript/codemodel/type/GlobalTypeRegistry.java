@@ -24,6 +24,7 @@ import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_W
 public class GlobalTypeRegistry {
 	private final Map<ArrayTypeID, ArrayTypeID> arrayTypes = new HashMap<>();
 	private final Map<AssocTypeID, AssocTypeID> assocTypes = new HashMap<>();
+	private final Map<GenericMapTypeID, GenericMapTypeID> genericMapTypes = new HashMap<>();
 	private final Map<IteratorTypeID, IteratorTypeID> iteratorTypes = new HashMap<>();
 	private final Map<FunctionTypeID, FunctionTypeID> functionTypes = new HashMap<>();
 	private final Map<RangeTypeID, RangeTypeID> rangeTypes = new HashMap<>();
@@ -32,6 +33,13 @@ public class GlobalTypeRegistry {
 	
 	private final Map<ITypeID, ConstTypeID> constTypes = new HashMap<>();
 	private final Map<ITypeID, OptionalTypeID> optionalTypes = new HashMap<>();
+	
+	public GlobalTypeRegistry() {
+		arrayTypes.put(ArrayTypeID.INT, ArrayTypeID.INT);
+		arrayTypes.put(ArrayTypeID.CHAR, ArrayTypeID.CHAR);
+		
+		rangeTypes.put(RangeTypeID.INT, RangeTypeID.INT);
+	}
 	
 	public ArrayTypeID getArray(ITypeID baseType, int dimension) {
 		ArrayTypeID id = new ArrayTypeID(baseType, dimension);
@@ -49,6 +57,16 @@ public class GlobalTypeRegistry {
 			return assocTypes.get(id);
 		} else {
 			assocTypes.put(id, id);
+			return id;
+		}
+	}
+	
+	public GenericMapTypeID getGenericMap(ITypeID valueType, TypeParameter[] keys) {
+		GenericMapTypeID id = new GenericMapTypeID(valueType, keys);
+		if (genericMapTypes.containsKey(id)) {
+			return genericMapTypes.get(id);
+		} else {
+			genericMapTypes.put(id, id);
 			return id;
 		}
 	}

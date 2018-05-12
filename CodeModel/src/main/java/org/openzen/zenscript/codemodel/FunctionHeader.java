@@ -40,7 +40,7 @@ public class FunctionHeader {
 		this.parameters = parameters;
 	}
 	
-	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, FunctionParameter[] parameters) {
+	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, FunctionParameter... parameters) {
 		this.typeParameters = genericParameters;
 		this.returnType = returnType;
 		this.parameters = parameters;

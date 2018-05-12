@@ -34,6 +34,13 @@ public class ZSPackage {
 	private final Map<String, ZSPackage> subPackages = new HashMap<>();
 	private final Map<String, HighLevelDefinition> types = new HashMap<>();
 	
+	public void add(String name, ZSPackage subPackage) {
+		if (subPackages.containsKey(name))
+			throw new RuntimeException("Such package already exists: " + name);
+		
+		subPackages.put(name, this);
+	}
+	
 	public IPartialExpression getMember(CodePosition position, GlobalTypeRegistry registry, GenericName name) {
 		if (subPackages.containsKey(name.name) && name.arguments.isEmpty())
 			return new PartialPackageExpression(position, subPackages.get(name.name));

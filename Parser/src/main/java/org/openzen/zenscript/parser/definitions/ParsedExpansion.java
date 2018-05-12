@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.linker.DefinitionScope;
 import org.openzen.zenscript.linker.GenericFunctionScope;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -54,10 +55,8 @@ public class ParsedExpansion extends BaseParsedDefinition {
 	}
 
 	@Override
-	public void compileMembers(BaseScope scope) {
+	public void compileTypes(BaseScope scope) {
 		ParsedGenericParameter.compile(scope, compiled.genericParameters, this.parameters);
 		compiled.target = target.compile(new GenericFunctionScope(scope, compiled.genericParameters));
-		
-		super.compileMembers(scope);
 	}
 }

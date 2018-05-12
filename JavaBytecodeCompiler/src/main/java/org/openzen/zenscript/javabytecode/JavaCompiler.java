@@ -58,6 +58,8 @@ public class JavaCompiler {
 		implement(FLOAT_NEG, JavaWriter::fNeg);
 		implement(DOUBLE_NEG, JavaWriter::dNeg);
 		
+		
+		
 		implement(BYTE_ADD_BYTE, JavaWriter::iAdd);
 		implement(SBYTE_ADD_SBYTE, JavaWriter::iAdd);
 		implement(SHORT_ADD_SHORT, JavaWriter::iAdd);

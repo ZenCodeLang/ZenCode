@@ -55,4 +55,9 @@ public class JavaTypeVisitor implements ITypeVisitor<Type> {
     public Type visitOptional(OptionalTypeID optional) {
         return Type.getType(optional.accept(JavaTypeClassVisitor.INSTANCE));
     }
+
+	@Override
+	public Type visitGenericMap(GenericMapTypeID map) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 }

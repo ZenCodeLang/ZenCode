@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.formatter;
 
-import java.util.List;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
@@ -21,7 +20,7 @@ import org.openzen.zenscript.codemodel.member.MemberVisitor;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.codemodel.statement.ReturnStatement;
+import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 
 /**
@@ -153,8 +152,8 @@ public class MemberFormatter implements MemberVisitor<Void> {
 			case ANDASSIGN: output.append("&="); break;
 			case XORASSIGN: output.append("^="); break;
 	
-			case POST_INCREMENT: output.append("++"); break;
-			case POST_DECREMENT: output.append("--"); break;
+			case INCREMENT: output.append("++"); break;
+			case DECREMENT: output.append("--"); break;
 			default:
 				throw new UnsupportedOperationException("Unknown operator: " + member.operator);
 		}
@@ -218,5 +217,13 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	
 	private void formatBody(Statement body) {
 		FormattingUtils.formatBody(output, settings, indent, typeFormatter, body);
+	}
+
+	@Override
+	public Void visitStaticInitializer(StaticInitializerMember member) {
+		visit(false);
+		output.append("static ");
+		formatBody(member.body);
+		return null;
 	}
 }

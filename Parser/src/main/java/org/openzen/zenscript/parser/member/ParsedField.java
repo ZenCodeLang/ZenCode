@@ -27,6 +27,9 @@ public class ParsedField extends ParsedDefinitionMember {
 	private final ParsedExpression expression;
 	private final boolean isFinal;
 	
+	private final int autoGetter;
+	private final int autoSetter;
+	
 	private FieldMember compiled;
 	
 	public ParsedField(
@@ -36,7 +39,9 @@ public class ParsedField extends ParsedDefinitionMember {
 			String name,
 			IParsedType type,
 			ParsedExpression expression,
-			boolean isFinal)
+			boolean isFinal,
+			int autoGetter,
+			int autoSetter)
 	{
 		super(definition);
 		
@@ -46,6 +51,8 @@ public class ParsedField extends ParsedDefinitionMember {
 		this.type = type;
 		this.expression = expression;
 		this.isFinal = isFinal;
+		this.autoGetter = autoGetter;
+		this.autoSetter = autoSetter;
 	}
 	
 	@Override

@@ -134,10 +134,6 @@ public class DefinitionValidator implements DefinitionVisitor<Boolean> {
 				PUBLIC | EXPORT | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid expansion modifier");
-		isValid &= ValidationUtils.validateIdentifier(
-				validator,
-				definition.position,
-				definition.name);
 		
 		isValid &= definition.target.accept(new TypeValidator(validator, definition.position));
 		isValid &= validateMembers(definition);

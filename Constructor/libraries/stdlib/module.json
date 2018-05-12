@@ -1,0 +1,9 @@
+{
+	"package": "stdlib",
+	"host": "universal",
+	"globals": {
+		"Exception": {"type": "Definition", "definition": "Exception"},
+		"IllegalArgumentException": {"type": "Definition", "definition": "IllegalArgumentException"},
+		"StringBuilder": {"type": "Definition", "definition": "StringBuilder"}
+	}
+}

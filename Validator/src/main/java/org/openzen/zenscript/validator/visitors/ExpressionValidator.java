@@ -56,6 +56,7 @@ import org.openzen.zenscript.codemodel.expression.MapExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
+import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetFunctionParameterExpression;
@@ -465,6 +466,14 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Right hand side of || expression is not a bool");
 			isValid = false;
 		}
+		return isValid;
+	}
+	
+	@Override
+	public Boolean visitPostCall(PostCallExpression expression) {
+		boolean isValid = true;
+		expression.target.accept(this);
+		// TODO: is target a valid increment target?
 		return isValid;
 	}
 

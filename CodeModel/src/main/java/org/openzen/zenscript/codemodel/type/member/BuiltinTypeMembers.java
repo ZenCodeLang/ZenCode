@@ -13,12 +13,16 @@ import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantLongExpression;
 import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.builtin.ConstantGetterMember;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.shared.CodePosition;
 import static org.openzen.zenscript.shared.CodePosition.BUILTIN;
 
@@ -66,6 +70,24 @@ public class BuiltinTypeMembers {
 	public static final OperatorMember LONG_NEG = neg(T_LONG, LONG);
 	public static final OperatorMember FLOAT_NEG = neg(T_FLOAT, FLOAT);
 	public static final OperatorMember DOUBLE_NEG = neg(T_DOUBLE, DOUBLE);
+	
+	public static final OperatorMember BYTE_INC = inc(T_BYTE, BYTE);
+	public static final OperatorMember SBYTE_INC = inc(T_SBYTE, SBYTE);
+	public static final OperatorMember SHORT_INC = inc(T_SHORT, SHORT);
+	public static final OperatorMember USHORT_INC = inc(T_USHORT, USHORT);
+	public static final OperatorMember INT_INC = inc(T_INT, INT);
+	public static final OperatorMember UINT_INC = inc(T_UINT, UINT);
+	public static final OperatorMember LONG_INC = inc(T_LONG, LONG);
+	public static final OperatorMember ULONG_INC = inc(T_ULONG, ULONG);
+	
+	public static final OperatorMember BYTE_DEC = dec(T_BYTE, BYTE);
+	public static final OperatorMember SBYTE_DEC = dec(T_SBYTE, SBYTE);
+	public static final OperatorMember SHORT_DEC = dec(T_SHORT, SHORT);
+	public static final OperatorMember USHORT_DEC = dec(T_USHORT, USHORT);
+	public static final OperatorMember INT_DEC = dec(T_INT, INT);
+	public static final OperatorMember UINT_DEC = dec(T_UINT, UINT);
+	public static final OperatorMember LONG_DEC = dec(T_LONG, LONG);
+	public static final OperatorMember ULONG_DEC = dec(T_ULONG, ULONG);
 	
 	public static final OperatorMember BYTE_ADD_BYTE = add(T_BYTE, BYTE, BYTE);
 	public static final OperatorMember SBYTE_ADD_SBYTE = add(T_SBYTE, SBYTE, SBYTE);
@@ -121,6 +143,47 @@ public class BuiltinTypeMembers {
 	public static final OperatorMember LONG_MOD_LONG = mod(T_LONG, LONG, LONG);
 	public static final OperatorMember ULONG_MOD_ULONG = mod(T_ULONG, ULONG, ULONG);
 	
+	public static final OperatorMember BYTE_OR_BYTE = or(T_BYTE, BYTE, BYTE);
+	public static final OperatorMember SBYTE_OR_SBYTE = or(T_SBYTE, SBYTE, SBYTE);
+	public static final OperatorMember SHORT_OR_SHORT = or(T_SHORT, SHORT, SHORT);
+	public static final OperatorMember USHORT_OR_USHORT = or(T_USHORT, USHORT, USHORT);
+	public static final OperatorMember INT_OR_INT = or(T_INT, INT, INT);
+	public static final OperatorMember UINT_OR_UINT = or(T_UINT, UINT, UINT);
+	public static final OperatorMember LONG_OR_LONG = or(T_LONG, LONG, LONG);
+	public static final OperatorMember ULONG_OR_ULONG = or(T_ULONG, ULONG, ULONG);
+	
+	public static final OperatorMember BYTE_AND_BYTE = and(T_BYTE, BYTE, BYTE);
+	public static final OperatorMember SBYTE_AND_SBYTE = and(T_SBYTE, SBYTE, SBYTE);
+	public static final OperatorMember SHORT_AND_SHORT = and(T_SHORT, SHORT, SHORT);
+	public static final OperatorMember USHORT_AND_USHORT = and(T_USHORT, USHORT, USHORT);
+	public static final OperatorMember INT_AND_INT = and(T_INT, INT, INT);
+	public static final OperatorMember UINT_AND_UINT = and(T_UINT, UINT, UINT);
+	public static final OperatorMember LONG_AND_LONG = and(T_LONG, LONG, LONG);
+	public static final OperatorMember ULONG_AND_ULONG = and(T_ULONG, ULONG, ULONG);
+	
+	public static final OperatorMember BYTE_XOR_BYTE = xor(T_BYTE, BYTE, BYTE);
+	public static final OperatorMember SBYTE_XOR_SBYTE = xor(T_SBYTE, SBYTE, SBYTE);
+	public static final OperatorMember SHORT_XOR_SHORT = xor(T_SHORT, SHORT, SHORT);
+	public static final OperatorMember USHORT_XOR_USHORT = xor(T_USHORT, USHORT, USHORT);
+	public static final OperatorMember INT_XOR_INT = xor(T_INT, INT, INT);
+	public static final OperatorMember UINT_XOR_UINT = xor(T_UINT, UINT, UINT);
+	public static final OperatorMember LONG_XOR_LONG = xor(T_LONG, LONG, LONG);
+	public static final OperatorMember ULONG_XOR_ULONG = xor(T_ULONG, ULONG, ULONG);
+	
+	public static final OperatorMember INT_SHL = shl(T_INT, UINT, INT);
+	public static final OperatorMember INT_SHR = shr(T_INT, UINT, INT);
+	public static final OperatorMember INT_USHR = ushr(T_INT, UINT, INT);
+	
+	public static final OperatorMember UINT_SHL = shl(T_UINT, UINT, UINT);
+	public static final OperatorMember UINT_SHR = shr(T_UINT, UINT, UINT);
+	
+	public static final OperatorMember LONG_SHL = shl(T_LONG, UINT, LONG);
+	public static final OperatorMember LONG_SHR = shr(T_LONG, UINT, LONG);
+	public static final OperatorMember LONG_USHR = ushr(T_LONG, UINT, LONG);
+	
+	public static final OperatorMember ULONG_SHL = shl(T_ULONG, UINT, ULONG);
+	public static final OperatorMember ULONG_SHR = shr(T_ULONG, UINT, ULONG);
+	
 	public static final CasterMember INT_TO_BYTE = castExplicit(T_BYTE, BYTE);
 	public static final CasterMember INT_TO_SBYTE = castExplicit(T_SBYTE, SBYTE);
 	public static final CasterMember INT_TO_SHORT = castExplicit(T_SHORT, SHORT);
@@ -150,12 +213,32 @@ public class BuiltinTypeMembers {
 	public static final MethodMember FLOAT_FROMBITS = new MethodMember(BUILTIN, T_FLOAT, Modifiers.STATIC, "fromBits", new FunctionHeader(FLOAT, new FunctionParameter(UINT)));
 	public static final MethodMember DOUBLE_FROMBITS = new MethodMember(BUILTIN, T_FLOAT, Modifiers.STATIC, "fromBits", new FunctionHeader(DOUBLE, new FunctionParameter(ULONG)));
 	
+	public static final ConstructorMember STRING_CONSTRUCTOR_CHARACTERS
+			= new ConstructorMember(BUILTIN, T_STRING, Modifiers.EXPORT | Modifiers.EXTERN, new FunctionHeader(VOID, new FunctionParameter(ArrayTypeID.CHAR)));
+	public static final ConstructorMember STRING_CONSTRUCTOR_CHARACTER_RANGE
+			= new ConstructorMember(BUILTIN, T_STRING, Modifiers.EXPORT | Modifiers.EXTERN, new FunctionHeader(
+					VOID,
+					new FunctionParameter(ArrayTypeID.CHAR),
+					new FunctionParameter(BasicTypeID.INT),
+					new FunctionParameter(BasicTypeID.INT)));
+	public static final OperatorMember STRING_INDEXGET = new OperatorMember(BUILTIN, T_STRING, Modifiers.EXPORT | Modifiers.EXTERN, OperatorType.INDEXGET, new FunctionHeader(CHAR, new FunctionParameter(INT)));
+	public static final OperatorMember STRING_RANGEGET = new OperatorMember(BUILTIN, T_STRING, Modifiers.EXPORT | Modifiers.EXTERN, OperatorType.INDEXGET, new FunctionHeader(STRING, new FunctionParameter(RangeTypeID.INT)));
+	public static final GetterMember STRING_LENGTH = new GetterMember(BUILTIN, T_STRING, Modifiers.EXPORT | Modifiers.EXTERN, "length", INT);
+	
 	private static OperatorMember not(ClassDefinition cls, ITypeID result) {
 		return new OperatorMember(BUILTIN, cls, 0, OperatorType.NOT, new FunctionHeader(result));
 	}
 	
 	private static OperatorMember neg(ClassDefinition cls, ITypeID result) {
 		return new OperatorMember(BUILTIN, cls, 0, OperatorType.NEG, new FunctionHeader(result));
+	}
+	
+	private static OperatorMember inc(ClassDefinition cls, ITypeID result) {
+		return new OperatorMember(BUILTIN, cls, 0, OperatorType.INCREMENT, new FunctionHeader(result));
+	}
+	
+	private static OperatorMember dec(ClassDefinition cls, ITypeID result) {
+		return new OperatorMember(BUILTIN, cls, 0, OperatorType.DECREMENT, new FunctionHeader(result));
 	}
 	
 	private static OperatorMember add(ClassDefinition cls, ITypeID operand, ITypeID result) {
@@ -176,6 +259,30 @@ public class BuiltinTypeMembers {
 	
 	private static OperatorMember mod(ClassDefinition cls, ITypeID operand, ITypeID result) {
 		return new OperatorMember(BUILTIN, cls, 0, OperatorType.MOD, new FunctionHeader(result, new FunctionParameter(operand)));
+	}
+	
+	private static OperatorMember shl(ClassDefinition cls, ITypeID operand, ITypeID result) {
+		return new OperatorMember(BUILTIN, cls, 0, OperatorType.SHL, new FunctionHeader(result, new FunctionParameter(operand)));
+	}
+	
+	private static OperatorMember shr(ClassDefinition cls, ITypeID operand, ITypeID result) {
+		return new OperatorMember(BUILTIN, cls, 0, OperatorType.SHR, new FunctionHeader(result, new FunctionParameter(operand)));
+	}
+	
+	private static OperatorMember ushr(ClassDefinition cls, ITypeID operand, ITypeID result) {
+		return new OperatorMember(BUILTIN, cls, 0, OperatorType.USHR, new FunctionHeader(result, new FunctionParameter(operand)));
+	}
+	
+	private static OperatorMember or(ClassDefinition cls, ITypeID operand, ITypeID result) {
+		return new OperatorMember(BUILTIN, cls, 0, OperatorType.OR, new FunctionHeader(result, new FunctionParameter(operand)));
+	}
+	
+	private static OperatorMember and(ClassDefinition cls, ITypeID operand, ITypeID result) {
+		return new OperatorMember(BUILTIN, cls, 0, OperatorType.AND, new FunctionHeader(result, new FunctionParameter(operand)));
+	}
+	
+	private static OperatorMember xor(ClassDefinition cls, ITypeID operand, ITypeID result) {
+		return new OperatorMember(BUILTIN, cls, 0, OperatorType.XOR, new FunctionHeader(result, new FunctionParameter(operand)));
 	}
 	
 	private static CasterMember castExplicit(ClassDefinition cls, ITypeID result) {

@@ -30,6 +30,8 @@ public interface StatementVisitor<T> {
 	
 	public T visitReturn(ReturnStatement statement);
 	
+	public T visitSwitch(SwitchStatement statement);
+	
 	public T visitThrow(ThrowStatement statement);
 	
 	public T visitTryCatch(TryCatchStatement statement);

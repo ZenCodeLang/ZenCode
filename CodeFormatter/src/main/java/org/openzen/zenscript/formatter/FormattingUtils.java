@@ -24,6 +24,7 @@ import org.openzen.zenscript.codemodel.statement.LockStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.StatementVisitor;
+import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -227,6 +228,11 @@ public class FormattingUtils {
 			output.append(statement.value.accept(new ExpressionFormatter(settings, typeFormatter)));
 			output.append(";");
 			return null;
+		}
+
+		@Override
+		public Void visitSwitch(SwitchStatement statement) {
+			return statementFormatter.visitSwitch(statement);
 		}
 
 		@Override

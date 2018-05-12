@@ -83,6 +83,9 @@ public class ZSTokenStream extends TokenStream<ZSToken, ZSTokenType> {
 		KEYWORDS.put("return", K_RETURN);
 		KEYWORDS.put("break", K_BREAK);
 		KEYWORDS.put("continue", K_CONTINUE);
+		KEYWORDS.put("switch", K_SWITCH);
+		KEYWORDS.put("case", K_CASE);
+		KEYWORDS.put("default", K_DEFAULT);
 		
 		KEYWORDS.put("in", K_IN);
 		KEYWORDS.put("is", K_IS);

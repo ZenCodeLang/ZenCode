@@ -38,7 +38,7 @@ public class ValidationUtils {
 	private ValidationUtils() {}
 	
 	public static boolean validateIdentifier(Validator target, CodePosition position, String identifier) { 
-		if (!IDENTIFIER_PATTERN.matcher(identifier).matches()) {
+		if (identifier == null || !IDENTIFIER_PATTERN.matcher(identifier).matches()) {
 			target.logError(INVALID_IDENTIFIER, position, "Invalid identifier: " + identifier);
 			return false;
 		}

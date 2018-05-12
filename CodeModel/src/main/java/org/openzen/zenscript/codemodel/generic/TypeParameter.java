@@ -55,6 +55,6 @@ public class TypeParameter {
 	}
 	
 	public String toString() {
-		return name + "[" + position.toShortString() + "]";
+		return name + "@" + position.toShortString();
 	}
 }

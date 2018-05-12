@@ -18,6 +18,7 @@ import static org.openzen.zenscript.lexer.ZSTokenType.T_LESS;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.parser.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
+import org.openzen.zenscript.parser.definitions.ParsedGenericParameter;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -147,6 +148,10 @@ public interface IParsedType {
 					
 					if (tokens.optional(ZSTokenType.T_SQCLOSE) != null) {
 						result = new ParsedTypeArray(result, dimension);
+					} else if (tokens.isNext(T_LESS)) {
+						List<ParsedGenericParameter> parameters = ParsedGenericParameter.parseAll(tokens);
+						result = new ParsedTypeGenericMap(parameters, result, modifiers);
+						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
 					} else {
 						IParsedType keyType = parse(tokens);
 						result = new ParsedTypeAssociative(keyType, result);

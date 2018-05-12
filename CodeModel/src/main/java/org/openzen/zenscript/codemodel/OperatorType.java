@@ -24,6 +24,9 @@ public enum OperatorType {
 	MEMBERGETTER(".", "getMember"),
 	MEMBERSETTER(".=", "setMember"),
 	EQUALS("==", "equals"),
+	SHL("<<", "shl"),
+	SHR(">>", "shr"),
+	USHR(">>>", "ushr"),
 	
 	ADDASSIGN("+=", "addAssign", ADD),
 	SUBASSIGN("-=", "subAssign", SUB),
@@ -34,11 +37,14 @@ public enum OperatorType {
 	ORASSIGN("|=", "orAssign", OR),
 	ANDASSIGN("&=", "andAssign", AND),
 	XORASSIGN("^=", "xorAssign", XOR),
+	SHLASSIGN("<<=", "shlAssign", SHL),
+	SHRASSIGN(">>=", "shrAssign", SHR),
+	USHRASSIGN(">>>=", "ushrAssign", USHR),
 	
-	POST_INCREMENT("x++", "postIncrement"),
-	POST_DECREMENT("x--", "postDecrement"),
-	PRE_INCREMENT("++x", "preIncrement"),
-	PRE_DECREMENT("--x", "preDecrement"),
+	INCREMENT("++", "increment"),
+	DECREMENT("--", "decrement"),
+	
+	RANGE("..", "rangeTo"),
 	
 	CONSTRUCTOR("this", "construct"),
 	CALL("()", "call"),

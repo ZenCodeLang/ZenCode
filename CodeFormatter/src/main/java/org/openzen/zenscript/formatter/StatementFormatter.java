@@ -21,6 +21,8 @@ import org.openzen.zenscript.codemodel.statement.LockStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.StatementVisitor;
+import org.openzen.zenscript.codemodel.statement.SwitchCase;
+import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -192,6 +194,36 @@ public class StatementFormatter implements StatementVisitor<Void> {
 			output.append(statement.value.accept(expressionFormatter).value);
 		}
 		output.append(";");
+		endSingleLine(whitespace);
+		return null;
+	}
+
+	@Override
+	public Void visitSwitch(SwitchStatement statement) {
+		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
+		beginSingleLine(whitespace);
+		output.append("switch ");
+		if (statement.label != null)
+			output.append(':').append(statement.label);
+		
+		output.append(settings.getBlockSeparator(indent, position));
+		
+		StatementFormatter innerFormatter = new StatementFormatter(output, indent + settings.indent + settings.indent, settings, expressionFormatter);
+		for (SwitchCase switchCase : statement.cases) {
+			if (switchCase.value == null) {
+				output.append(indent).append(settings.indent).append("default:\n");
+			} else {
+				output.append(indent)
+						.append(settings.indent)
+						.append("case ")
+						.append(switchCase.value.accept(expressionFormatter))
+						.append(":\n");
+			}
+			for (Statement s : switchCase.statements)
+				s.accept(innerFormatter);
+		}
+		
+		output.append("\n").append(indent).append("}");
 		endSingleLine(whitespace);
 		return null;
 	}

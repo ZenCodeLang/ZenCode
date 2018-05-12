@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -23,7 +22,8 @@ import java.util.regex.Pattern;
  */
 public class StringUtils {
 	private static final Map<String, CharacterEntity> NAMED_CHARACTER_ENTITIES;
-	private static final Pattern MATCH_ACCENTS = Pattern.compile("\\p{M}");
+	
+	private StringUtils() {}
 	
 	static
 	{

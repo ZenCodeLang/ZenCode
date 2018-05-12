@@ -8,11 +8,17 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.MapExpression;
+import org.openzen.zenscript.codemodel.expression.NewExpression;
+import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.member.ICallableMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.linker.ExpressionScope;
 import org.openzen.zenscript.shared.CodePosition;
@@ -52,6 +58,12 @@ public class ParsedExpressionMap extends ParsedExpression {
 					valueHints.add(assocHint.valueType);
 				
 				hasAssocHint = true;
+			} else if (hint instanceof GenericMapTypeID) {
+				ICallableMember constructor = scope
+						.getTypeMembers(hint)
+						.getOrCreateGroup(OperatorType.CONSTRUCTOR)
+						.selectMethod(position, scope, CallArguments.EMPTY, true, true);
+				return new NewExpression(position, hint, (ConstructorMember) constructor, CallArguments.EMPTY);
 			}
 		}
 		

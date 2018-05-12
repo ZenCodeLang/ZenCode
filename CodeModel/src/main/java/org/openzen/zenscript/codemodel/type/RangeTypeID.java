@@ -13,6 +13,8 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  * @author Hoofdgebruiker
  */
 public class RangeTypeID implements ITypeID {
+	public static final RangeTypeID INT = new RangeTypeID(BasicTypeID.INT, BasicTypeID.INT);
+	
 	public final ITypeID from;
 	public final ITypeID to;
 	

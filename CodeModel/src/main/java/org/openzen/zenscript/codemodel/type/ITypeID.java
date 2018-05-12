@@ -185,5 +185,10 @@ public interface ITypeID {
 			
 			return pattern.accept(new MatchingTypeVisitor(type, mapping));
 		}
+
+		@Override
+		public Boolean visitGenericMap(GenericMapTypeID map) {
+			return map == type; // TODO: improve this
+		}
 	}
 }

@@ -38,6 +38,7 @@ import org.openzen.zenscript.codemodel.member.builtin.ArrayIteratorValues;
 import org.openzen.zenscript.codemodel.member.builtin.ComparatorMember;
 import org.openzen.zenscript.codemodel.member.builtin.ConstantGetterMember;
 import org.openzen.zenscript.codemodel.member.builtin.RangeIterator;
+import org.openzen.zenscript.codemodel.member.builtin.StringCharIterator;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -45,6 +46,7 @@ import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
 import org.openzen.zenscript.codemodel.type.ConstTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
+import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
@@ -107,7 +109,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 		FunctionParameter[] indexGetParameters = new FunctionParameter[dimension];
 		for (int i = 0; i < dimension; i++)
-			indexGetParameters[i] = new FunctionParameter(INT, null);
+			indexGetParameters[i] = new FunctionParameter(INT);
 
 		FunctionHeader indexGetHeader = new FunctionHeader(baseType, indexGetParameters);
 		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.INDEXGET, indexGetHeader), TypeMemberPriority.SPECIFIED);
@@ -121,6 +123,13 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		FunctionHeader sizedConstructorHeader = new FunctionHeader(VOID, indexGetParameters);
 		members.addConstructor(new ConstructorMember(BUILTIN, definition, 0, sizedConstructorHeader), TypeMemberPriority.SPECIFIED);
 
+		FunctionParameter[] initialValueConstructorParameters = new FunctionParameter[dimension + 1];
+		for (int i = 0; i < dimension; i++)
+			initialValueConstructorParameters[i] = new FunctionParameter(INT);
+		initialValueConstructorParameters[dimension] = new FunctionParameter(baseType);
+		FunctionHeader initialValueConstructorHeader = new FunctionHeader(VOID, initialValueConstructorParameters);
+		members.addConstructor(new ConstructorMember(BUILTIN, definition, 0, initialValueConstructorHeader));
+		
 		FunctionParameter[] lambdaConstructorParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
 			lambdaConstructorParameters[i] = new FunctionParameter(INT, null);
@@ -161,22 +170,34 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		
 		ClassDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
 		
-		members.addConstructor(new ConstructorMember(BUILTIN, definition, 0, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
+		members.addConstructor(new ConstructorMember(BUILTIN, definition, 0, new FunctionHeader(VOID)));
 
 		FunctionHeader indexGetHeader = new FunctionHeader(valueType, new FunctionParameter(keyType, "key"));
-		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.INDEXGET, indexGetHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.INDEXGET, indexGetHeader));
 
 		FunctionHeader indexSetHeader = new FunctionHeader(VOID, new FunctionParameter(keyType, "key"), new FunctionParameter(valueType, "value"));
-		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.INDEXSET, indexSetHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.INDEXSET, indexSetHeader));
 		
 		FunctionHeader getOrDefaultHeader = new FunctionHeader(valueType, new FunctionParameter(keyType, "key"), new FunctionParameter(valueType, "defaultValue"));
-		members.addMethod(new MethodMember(BUILTIN, definition, 0, "getOrDefault", getOrDefaultHeader), TypeMemberPriority.SPECIFIED);
+		members.addMethod(new MethodMember(BUILTIN, definition, 0, "getOrDefault", getOrDefaultHeader));
 		
-		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.CONTAINS, new FunctionHeader(BOOL, new FunctionParameter(keyType, "key"))), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.CONTAINS, new FunctionHeader(BOOL, new FunctionParameter(keyType, "key"))));
 
-		members.addField(new FieldMember(BUILTIN, definition, Modifiers.FINAL, "length", INT), TypeMemberPriority.SPECIFIED);
-		members.addGetter(new GetterMember(BUILTIN, definition, 0, "empty", BOOL), TypeMemberPriority.SPECIFIED);
-		members.addGetter(new GetterMember(BUILTIN, definition, 0, "keys", cache.getRegistry().getArray(keyType, 1)), TypeMemberPriority.SPECIFIED);
+		members.addField(new FieldMember(BUILTIN, definition, Modifiers.FINAL, "size", INT));
+		members.addGetter(new GetterMember(BUILTIN, definition, 0, "empty", BOOL));
+		members.addGetter(new GetterMember(BUILTIN, definition, 0, "keys", cache.getRegistry().getArray(keyType, 1)));
+		return null;
+	}
+	
+	@Override
+	public Void visitGenericMap(GenericMapTypeID map) {
+		ITypeID valueType = map.value;
+		
+		ClassDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
+		members.addConstructor(new ConstructorMember(BUILTIN, definition, 0, new FunctionHeader(VOID)));
+		members.addMethod(new MethodMember(BUILTIN, definition, 0, "getOptional", new FunctionHeader(map.keys, valueType, new FunctionParameter[0])));
+		members.addMethod(new MethodMember(BUILTIN, definition, 0, "put", new FunctionHeader(map.keys, BasicTypeID.VOID, new FunctionParameter(valueType))));
+		members.addMethod(new MethodMember(BUILTIN, definition, 0, "contains", new FunctionHeader(map.keys, BasicTypeID.BOOL, new FunctionParameter[0])));
 		return null;
 	}
 	
@@ -238,6 +259,10 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		if (definition instanceof EnumDefinition) {
 			members.addGetter(new GetterMember(BUILTIN, definition, 0, "name", BasicTypeID.STRING), TypeMemberPriority.SPECIFIED);
 			members.addGetter(new GetterMember(BUILTIN, definition, 0, "ordinal", BasicTypeID.INT), TypeMemberPriority.SPECIFIED);
+			
+			if (!members.canCast(BasicTypeID.STRING)) {
+				members.addCaster(new CasterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN | Modifiers.IMPLICIT, BasicTypeID.STRING));
+			}
 		}
 		
 		return null;
@@ -287,10 +312,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(INT_NEG);
 		members.addOperator(INT_NOT);
 		
-		/*members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.PRE_INCREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
-		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.PRE_DECREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
-		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.POST_INCREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
-		members.addOperator(new OperatorMember(BUILTIN, 0, OperatorType.POST_DECREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);*/
+		members.addOperator(INT_INC);
+		members.addOperator(INT_DEC);
 
 		members.addOperator(OperatorType.COMPARE, new ComparatorMember(members.type), TypeMemberPriority.SPECIFIED);
 		
@@ -317,6 +340,14 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(INT_MOD_INT);
 		members.addOperator(mod(T_INT, LONG, LONG, castedTargetCall(LONG_MOD_LONG, INT_TO_LONG)));
 		
+		members.addOperator(INT_OR_INT);
+		members.addOperator(INT_AND_INT);
+		members.addOperator(INT_XOR_INT);
+		
+		members.addOperator(INT_SHL);
+		members.addOperator(INT_SHR);
+		members.addOperator(INT_USHR);
+		
 		members.addGetter(INT_GET_MIN_VALUE);
 		members.addGetter(INT_GET_MAX_VALUE);
 		
@@ -334,7 +365,11 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 
 	private void visitUInt() {
-		registerUnaryOperations(T_UINT);
+		members.addOperator(UINT_NOT);
+		
+		members.addOperator(UINT_INC);
+		members.addOperator(UINT_DEC);
+		
 		registerArithmeticOperations(T_UINT, UINT, UINT);
 		registerArithmeticOperations(T_UINT, ULONG, ULONG);
 		registerArithmeticOperations(T_UINT, FLOAT, FLOAT);
@@ -412,45 +447,23 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 
 	private void visitString() {
-		FunctionHeader getIndexHeader = new FunctionHeader(CHAR, new FunctionParameter(INT));
-		members.addOperator(new OperatorMember(BUILTIN, T_STRING, 0, OperatorType.INDEXGET, getIndexHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(STRING_INDEXGET);
+		members.addOperator(STRING_RANGEGET);
+		members.addGetter(STRING_LENGTH);
 
-		members.addGetter(new GetterMember(BUILTIN, T_STRING, 0, "length", INT), TypeMemberPriority.SPECIFIED);
-
-		//FunctionHeader substringHeader = new FunctionHeader(STRING, new FunctionParameter(cache.getRegistry().getRange(INT, INT)));
-		//members.addOperator(OperatorType.INDEXGET, new SubstringMember(substringHeader), TypeMemberPriority.SPECIFIED);
-		
-		members.addConstructor(new ConstructorMember(BUILTIN, T_STRING, 0, new FunctionHeader(VOID, new FunctionParameter(cache.getRegistry().getArray(CHAR, 1), "characters"))), TypeMemberPriority.SPECIFIED);
+		members.addConstructor(STRING_CONSTRUCTOR_CHARACTERS);
+		members.addConstructor(STRING_CONSTRUCTOR_CHARACTER_RANGE);
 		
 		members.addOperator(STRING_ADD_STRING);
-
-		/*registerStringConcat(NULL);
-		registerStringConcat(BOOL);
-		registerStringConcat(SBYTE);
-		registerStringConcat(BYTE);
-		registerStringConcat(SHORT);
-		registerStringConcat(USHORT);
-		registerStringConcat(INT);
-		registerStringConcat(UINT);
-		registerStringConcat(LONG);
-		registerStringConcat(ULONG);
-		registerStringConcat(FLOAT);
-		registerStringConcat(DOUBLE);
-		registerStringConcat(CHAR);
-		registerStringConcat(STRING);*/
-	}
-
-	private void registerStringConcat(ITypeID withType) {
-		members.addOperator(STRING_ADD_STRING);
+		
+		members.addIterator(new StringCharIterator(), TypeMemberPriority.SPECIFIED);
 	}
 
 	private void registerUnaryOperations(ClassDefinition definition) {
 		FunctionHeader unaryHeader = new FunctionHeader(members.type);
 		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.NEG, unaryHeader), TypeMemberPriority.SPECIFIED);
-		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.PRE_INCREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
-		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.PRE_DECREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
-		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.POST_INCREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
-		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.POST_DECREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.INCREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
+		members.addOperator(new OperatorMember(BUILTIN, definition, 0, OperatorType.DECREMENT, unaryHeader), TypeMemberPriority.SPECIFIED);
 
 		members.addOperator(OperatorType.COMPARE, new ComparatorMember(members.type), TypeMemberPriority.SPECIFIED);
 	}

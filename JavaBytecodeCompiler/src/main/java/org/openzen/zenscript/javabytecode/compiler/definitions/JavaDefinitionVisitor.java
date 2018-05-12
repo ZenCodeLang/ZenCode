@@ -56,9 +56,11 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 
         writer.visit(Opcodes.V1_8, definition.modifiers, definition.name, signature, superType.getInternalName(), null);
+		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(writer, toClass, definition); 
         for (IDefinitionMember member : definition.members) {
-            member.accept(new JavaMemberVisitor(writer, toClass, definition));
+            member.accept(memberVisitor);
         }
+		memberVisitor.end();
         writer.visitEnd();
         return writer.toByteArray();
     }
@@ -72,9 +74,11 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         //TODO: Extending Interfaces?
         String signature = null;
         writer.visit(Opcodes.V1_8, definition.modifiers | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, definition.name, signature, Type.getInternalName(Object.class), null);
+		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(writer, toClass, definition);
         for (IDefinitionMember member : definition.members) {
-            member.accept(new JavaMemberVisitor(writer, toClass, definition));
+            member.accept(memberVisitor);
         }
+		memberVisitor.end();
         writer.visitEnd();
         return writer.toByteArray();
     }

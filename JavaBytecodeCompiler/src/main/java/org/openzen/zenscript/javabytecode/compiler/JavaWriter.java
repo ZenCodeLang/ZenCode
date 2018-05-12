@@ -15,6 +15,7 @@ import static org.objectweb.asm.Opcodes.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
+import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 
 public class JavaWriter {
 	private static final JavaClassInfo T_STRING = new JavaClassInfo("java/lang/String");
@@ -173,6 +174,13 @@ public class JavaWriter {
 
         visitor.visitInsn(DUP);
     }
+	
+	public void dup(Type type) {
+        if (debug)
+            System.out.println("dup");
+		
+		visitor.visitInsn(type.getSize() == 2 ? DUP2 : DUP);
+	}
 
     public void dup(boolean large) {
         if (debug)
@@ -229,6 +237,34 @@ public class JavaWriter {
 
         visitor.visitVarInsn(type.getOpcode(ILOAD), local);
     }
+	
+	public void load(JavaParameterInfo parameter) {
+        if (debug)
+            System.out.println("load " + parameter.index);
+
+        visitor.visitVarInsn(parameter.type.getOpcode(ILOAD), parameter.index);
+	}
+	
+	public void load(JavaLocalVariableInfo localVariable) {
+        if (debug)
+            System.out.println("load " + localVariable.local);
+
+        visitor.visitVarInsn(localVariable.type.getOpcode(ILOAD), localVariable.local);
+	}
+	
+	public void store(JavaParameterInfo parameter) {
+        if (debug)
+            System.out.println("store " + parameter.index);
+
+        visitor.visitVarInsn(parameter.type.getOpcode(ISTORE), parameter.index);
+	}
+	
+	public void store(JavaLocalVariableInfo localVariable) {
+        if (debug)
+            System.out.println("store " + localVariable.local);
+
+        visitor.visitVarInsn(localVariable.type.getOpcode(ISTORE), localVariable.local);
+	}
 
     public void storeInt(int local) {
         if (debug)
@@ -605,6 +641,10 @@ public class JavaWriter {
     public void iinc(int local) {
         iinc(local, 1);
     }
+	
+	public void idec(int local) {
+		iinc(local, -1);
+	}
 
     public void iinc(int local, int increment) {
         if (debug)

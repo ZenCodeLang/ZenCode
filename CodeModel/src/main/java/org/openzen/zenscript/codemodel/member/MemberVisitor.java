@@ -33,4 +33,6 @@ public interface MemberVisitor<T> {
 	public T visitImplementation(ImplementationMember member);
 	
 	public T visitInnerDefinition(InnerDefinitionMember member);
+	
+	public T visitStaticInitializer(StaticInitializerMember member);
 }

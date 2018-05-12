@@ -134,6 +134,11 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         javaWriter.returnType(Type.getType(statement.value.type.accept(JavaTypeClassVisitor.INSTANCE)));
         return true;
     }
+	
+	@Override
+	public Boolean visitSwitch(SwitchStatement statement) {
+		throw new UnsupportedOperationException("Not yet implemented!");
+	}
 
     @Override
     public Boolean visitThrow(ThrowStatement statement) {

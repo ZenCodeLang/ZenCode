@@ -54,6 +54,7 @@ import org.openzen.zenscript.codemodel.expression.MapExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
+import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetFunctionParameterExpression;
@@ -65,7 +66,6 @@ import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.StringUtils;
 
 /**
@@ -209,13 +209,9 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 					return binary(expression.target, expression.getFirstArgument(), OperatorPriority.XORASSIGN, " &= ");
 				case XORASSIGN:
 					return binary(expression.target, expression.getFirstArgument(), OperatorPriority.XORASSIGN, " ^= ");
-				case POST_INCREMENT:
-					return unaryPostfix(expression.target, OperatorPriority.DECREMENT, "++");
-				case POST_DECREMENT:
-					return unaryPostfix(expression.target, OperatorPriority.DECREMENT, "--");
-				case PRE_INCREMENT:
+				case INCREMENT:
 					return unaryPrefix(expression.target, OperatorPriority.DECREMENT, "++");
-				case PRE_DECREMENT:
+				case DECREMENT:
 					return unaryPrefix(expression.target, OperatorPriority.DECREMENT, "--");
 				case CALL: {
 					StringBuilder result = new StringBuilder();
@@ -525,6 +521,11 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitOrOr(OrOrExpression expression) {
 		return binary(expression.left, expression.right, OperatorPriority.OROR, " || ");
+	}
+	
+	@Override
+	public ExpressionString visitPostCall(PostCallExpression expression) {
+		return unaryPostfix(expression.target, OperatorPriority.INCREMENT, expression.member.operator == OperatorType.INCREMENT ? "++" : "--");
 	}
 
 	@Override

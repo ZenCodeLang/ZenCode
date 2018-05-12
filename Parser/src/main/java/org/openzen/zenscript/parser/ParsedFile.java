@@ -145,6 +145,19 @@ public class ParsedFile {
 		}
 	}
 	
+	public void compileTypes(
+			ZSPackage rootPackage,
+			PackageDefinitions packageDefinitions,
+			GlobalTypeRegistry globalRegistry,
+			List<ExpansionDefinition> expansions,
+			Map<String, ISymbol> globalSymbols) {
+		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols);
+		loadImports(scope, rootPackage);
+		for (ParsedDefinition definition : this.definitions) {
+			definition.compileTypes(scope);
+		}
+	}
+	
 	public void compileMembers(
 			ZSPackage rootPackage,
 			PackageDefinitions packageDefinitions,

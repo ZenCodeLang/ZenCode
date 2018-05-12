@@ -14,6 +14,8 @@ import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 public abstract class ParsedStatement {
 	public static ParsedFunctionBody parseLambdaBody(ZSTokenStream tokens, boolean inExpression) {
@@ -235,6 +237,36 @@ public abstract class ParsedStatement {
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
 				return new ParsedStatementBreak(t.position, whitespace, name);
+			}
+			case K_SWITCH: {
+				ZSToken t = parser.next();
+				String name = null;
+				if (parser.optional(T_COLON) != null)
+					name = parser.next().content;
+				
+				ParsedExpression value = ParsedExpression.parse(parser);
+				ParsedSwitchCase currentCase = null;
+				List<ParsedSwitchCase> cases = new ArrayList<>();
+				
+				parser.required(T_AOPEN, "{ expected");
+				while (parser.optional(T_ACLOSE) == null) {
+					if (parser.optional(K_CASE) != null) {
+						currentCase = new ParsedSwitchCase(ParsedExpression.parse(parser));
+						cases.add(currentCase);
+						parser.required(T_COLON, ": expected");
+					} else if (parser.optional(K_DEFAULT) != null) {
+						currentCase = new ParsedSwitchCase(null);
+						cases.add(currentCase);
+						parser.required(T_COLON, ": expected");
+					} else if (currentCase == null) {
+						throw new CompileException(parser.getPosition(), CompileExceptionCode.STATEMENT_OUTSIDE_SWITCH_CASE, "Statement in switch outside case");
+					} else {
+						currentCase.statements.add(ParsedStatement.parse(parser));
+					}
+				}
+				
+				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
+				return new ParsedStatementSwitch(t.position, whitespace, name, value, cases);
 			}
 		}
 

@@ -300,7 +300,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         //No super calls in enums possible, and that's already handled in the enum constructor itself.
         javaWriter.invokeSpecial(expression.objectType.accept(JavaTypeClassVisitor.INSTANCE), "<init>", CompilerUtils.calcDesc(expression.constructor.header, false));
 		
-		CompilerUtils.writeDefaultFieldInitializers(javaWriter, javaWriter.forDefinition);
+		CompilerUtils.writeDefaultFieldInitializers(javaWriter, javaWriter.forDefinition, false);
         return null;
     }
 
@@ -324,7 +324,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetField(GetFieldExpression expression) {
-        javaWriter.loadObject(0);
+		expression.accept(this);
         if (!checkAndGetFieldInfo(expression.field, false))
             throw new IllegalStateException("Missing field info on a field member!");
         return null;
@@ -455,6 +455,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
         return null;
     }
+	
+	@Override
+	public Void visitPostCall(PostCallExpression expression) {
+		expression.target.accept(this);
+		javaWriter.dup(expression.type.accept(new JavaTypeVisitor()));
+        if (!checkAndExecuteByteCodeImplementation(expression.member) && !checkAndExecuteMethodInfo(expression.member))
+            throw new IllegalStateException("Call target has no method info!");
+		
+		return null;
+	}
 
     @Override
     public Void visitRange(RangeExpression expression) {
@@ -472,7 +482,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitSetField(SetFieldExpression expression) {
-        javaWriter.loadObject(0);
+        expression.target.accept(this);
         expression.value.accept(this);
         if (!checkAndPutFieldInfo(expression.field, false))
             throw new IllegalStateException("Missing field info on a field member!");
@@ -568,7 +578,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 
     //Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
-    private boolean checkAndPutFieldInfo(DefinitionMember field, boolean isStatic) {
+    public boolean checkAndPutFieldInfo(DefinitionMember field, boolean isStatic) {
         JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
         if (fieldInfo == null)
             return false;
@@ -581,7 +591,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         return true;
     }
 
-    private boolean checkAndGetFieldInfo(DefinitionMember field, boolean isStatic) {
+    public boolean checkAndGetFieldInfo(DefinitionMember field, boolean isStatic) {
         JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
         if (fieldInfo == null)
             return false;

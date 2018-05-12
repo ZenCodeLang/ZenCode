@@ -58,11 +58,4 @@ public class CodePosition
 		
 		return shortFilename + ":" + fromLine + ":" + fromLineOffset;
 	}
-	
-	private static int compareLinePosition(int leftLine, int leftLineOffset, int rightLine, int rightLineOffset) {
-		if (leftLine == rightLine)
-			return leftLineOffset - rightLineOffset;
-		else
-			return leftLine - rightLine;
-	}
 }

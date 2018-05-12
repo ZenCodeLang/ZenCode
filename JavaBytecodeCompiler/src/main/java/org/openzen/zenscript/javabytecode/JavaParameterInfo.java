@@ -5,14 +5,18 @@
  */
 package org.openzen.zenscript.javabytecode;
 
+import org.objectweb.asm.Type;
+
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaParameterInfo {
 	public final int index;
+	public final Type type;
 	
-	public JavaParameterInfo(int index) {
+	public JavaParameterInfo(int index, Type type) {
 		this.index = index;
+		this.type = type;
 	}
 }

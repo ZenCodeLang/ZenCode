@@ -78,22 +78,31 @@ public class CompilerUtils {
     }
 	
 	public static void tagMethodParameters(FunctionHeader header, boolean isStatic) {
+		JavaTypeVisitor typeVisitor = new JavaTypeVisitor();
 		for (int i = 0; i < header.parameters.length; i++) {
-			header.parameters[i].setTag(JavaParameterInfo.class, new JavaParameterInfo(isStatic ? i : i + 1));
+			FunctionParameter parameter = header.parameters[i];
+			Type parameterType = parameter.type.accept(typeVisitor);
+			parameter.setTag(JavaParameterInfo.class, new JavaParameterInfo(isStatic ? i : i + 1, parameterType));
 		}
 	}
 	
 	public static void tagConstructorParameters(FunctionHeader header, boolean isEnum) {
+		JavaTypeVisitor typeVisitor = new JavaTypeVisitor();
 		for (int i = 0; i < header.parameters.length; i++) {
-			header.parameters[i].setTag(JavaParameterInfo.class, new JavaParameterInfo(isEnum ? i + 3 : i + 1));
+			FunctionParameter parameter = header.parameters[i];
+			Type parameterType = parameter.type.accept(typeVisitor);
+			parameter.setTag(JavaParameterInfo.class, new JavaParameterInfo(isEnum ? i + 3 : i + 1, parameterType));
 		}
 	}
 	
-	public static void writeDefaultFieldInitializers(JavaWriter constructorWriter, HighLevelDefinition definition) {
+	public static void writeDefaultFieldInitializers(JavaWriter constructorWriter, HighLevelDefinition definition, boolean staticFields) {
 		JavaExpressionVisitor expressionVisitor = new JavaExpressionVisitor(constructorWriter);
 		for (final IDefinitionMember definitionMember : definition.members) {
-			if (definitionMember instanceof FieldMember && ((FieldMember) definitionMember).initializer != null) {
-				final FieldMember field = (FieldMember) definitionMember;
+			if (!(definitionMember instanceof FieldMember))
+				continue;
+			
+			FieldMember field = (FieldMember) definitionMember;
+			if (field.isStatic() == staticFields && field.initializer != null) {
 				constructorWriter.loadObject(0);
 				field.initializer.accept(expressionVisitor);
 				constructorWriter.putField(definition.name, field.name, Type.getDescriptor(field.type.accept(JavaTypeClassVisitor.INSTANCE)));

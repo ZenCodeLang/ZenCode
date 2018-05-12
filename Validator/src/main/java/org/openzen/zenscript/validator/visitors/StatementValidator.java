@@ -24,6 +24,8 @@ import org.openzen.zenscript.codemodel.statement.LockStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.StatementVisitor;
+import org.openzen.zenscript.codemodel.statement.SwitchCase;
+import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -171,6 +173,18 @@ public class StatementValidator implements StatementVisitor<Boolean> {
 		}
 		
 		firstStatement = false;
+		return isValid;
+	}
+
+	@Override
+	public Boolean visitSwitch(SwitchStatement statement) {
+		boolean isValid = true;
+		isValid &= statement.value.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
+		
+		for (SwitchCase switchCase : statement.cases) {
+			// TODO: finish this
+		}
+		
 		return isValid;
 	}
 
