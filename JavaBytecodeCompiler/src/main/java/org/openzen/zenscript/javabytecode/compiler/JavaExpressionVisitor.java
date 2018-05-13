@@ -403,6 +403,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         }
         return null;
     }
+	
+	@Override
+	public Void visitMatch(MatchExpression expression) {
+		throw new UnsupportedOperationException();
+	}
 
     @Override
     public Void visitNew(NewExpression expression) {

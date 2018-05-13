@@ -43,19 +43,19 @@ public class ParsedInterface extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final List<ParsedGenericParameter> genericParameters;
+	private final List<ParsedGenericParameter> typeParameters;
 	private final List<IParsedType> superInterfaces;
 	
 	private final InterfaceDefinition compiled;
 	
-	public ParsedInterface(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedGenericParameter> genericParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
+	public ParsedInterface(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedGenericParameter> typeParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
 		super(position, modifiers);
 		
-		this.genericParameters = genericParameters;
+		this.typeParameters = typeParameters;
 		this.superInterfaces = superInterfaces;
 		
 		compiled = new InterfaceDefinition(position, pkg, name, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(genericParameters));
+		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(typeParameters));
 	}
 
 	@Override
@@ -65,6 +65,8 @@ public class ParsedInterface extends BaseParsedDefinition {
 
 	@Override
 	public void compileMembers(BaseScope scope) {
+		ParsedGenericParameter.compile(scope, compiled.genericParameters, typeParameters);
+		
 		for (IParsedType superInterface : superInterfaces)
 			compiled.addBaseInterface(superInterface.compile(scope));
 		

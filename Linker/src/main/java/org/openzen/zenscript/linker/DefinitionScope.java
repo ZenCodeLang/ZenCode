@@ -39,6 +39,10 @@ public class DefinitionScope extends BaseScope {
 	private final Map<String, TypeParameter> genericParameters = new HashMap<>();
 	
 	public DefinitionScope(BaseScope outer, HighLevelDefinition definition) {
+		this(outer, definition, true);
+	}
+	
+	public DefinitionScope(BaseScope outer, HighLevelDefinition definition, boolean withMembers) {
 		this.outer = outer;
 		this.definition = definition;
 		
@@ -58,7 +62,8 @@ public class DefinitionScope extends BaseScope {
 		} else {
 			type = outer.getTypeRegistry().getForDefinition(definition, genericParameterList);
 		}
-		members = outer.getMemberCache().get(type);
+		
+		members = withMembers ? outer.getMemberCache().get(type) : null;
 	}
 	
 	@Override
@@ -68,10 +73,12 @@ public class DefinitionScope extends BaseScope {
 
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
-		if (members.hasInnerType(name.name))
-			return new PartialTypeExpression(position, members.getInnerType(position, name));
-		if (members.hasMember(name.name) && !name.hasArguments())
-			return members.getMemberExpression(position, new ThisExpression(position, type), name, true);
+		if (members != null) {
+			if (members.hasInnerType(name.name))
+				return new PartialTypeExpression(position, members.getInnerType(position, name));
+			if (members.hasMember(name.name) && !name.hasArguments())
+				return members.getMemberExpression(position, new ThisExpression(position, type), name, true);
+		}
 		if (genericParameters.containsKey(name.name) && !name.hasArguments())
 			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(genericParameters.get(name.name)));
 		
@@ -80,7 +87,7 @@ public class DefinitionScope extends BaseScope {
 
 	@Override
 	public ITypeID getType(CodePosition position, List<GenericName> name) {
-		if (members.hasInnerType(name.get(0).name)) {
+		if (members != null && members.hasInnerType(name.get(0).name)) {
 			ITypeID result = members.getInnerType(position, name.get(0));
 			for (int i = 1; i < name.size(); i++) {
 				result = getTypeMembers(result).getInnerType(position, name.get(i));

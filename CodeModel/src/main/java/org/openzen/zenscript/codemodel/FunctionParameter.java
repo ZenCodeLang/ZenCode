@@ -18,6 +18,8 @@ import org.openzen.zenscript.shared.Taggable;
  * @author Hoofdgebruiker
  */
 public class FunctionParameter extends Taggable {
+	public static final FunctionParameter[] NONE = new FunctionParameter[0];
+	
 	public final ITypeID type;
 	public final String name;
 	public final Expression defaultValue;

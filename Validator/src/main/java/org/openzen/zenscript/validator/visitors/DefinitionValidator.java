@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
@@ -167,6 +168,24 @@ public class DefinitionValidator implements DefinitionVisitor<Boolean> {
 		for (IDefinitionMember member : definition.members) {
 			isValid &= member.accept(memberValidator);
 		}
+		return isValid;
+	}
+
+	@Override
+	public Boolean visitVariant(VariantDefinition variant) {
+		boolean isValid = true;
+		isValid &= ValidationUtils.validateModifiers(
+				validator,
+				variant.modifiers,
+				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				variant.position,
+				"Invalid variant modifier");
+		isValid &= ValidationUtils.validateIdentifier(
+				validator,
+				variant.position,
+				variant.name);
+		
+		isValid &= validateMembers(variant);
 		return isValid;
 	}
 	

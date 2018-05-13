@@ -132,6 +132,43 @@ public class ParsedCallArguments {
 		return new CallArguments(typeParameters, cArguments);
 	}
 	
+	
+	public CallArguments compileCall(
+			CodePosition position,
+			ExpressionScope scope,
+			ITypeID[] genericParameters,
+			FunctionHeader function)
+	{
+		ExpressionScope innerScope = scope.forCall(function);
+		
+		List<ITypeID>[] predictedTypes = new List[arguments.size()];
+		for (int i = 0; i < predictedTypes.length; i++) {
+			predictedTypes[i] = new ArrayList<>();
+			predictedTypes[i].add(function.parameters[i].type);
+		}
+		
+		Expression[] cArguments = new Expression[arguments.size()];
+		for (int i = 0; i < cArguments.length; i++) {
+			IPartialExpression cArgument = arguments.get(i).compile(innerScope.withHints(predictedTypes[i]));
+			cArguments[i] = cArgument.eval();
+		}
+		
+		ITypeID[] typeParameters = genericParameters;
+		if (typeParameters == null) {
+			if (function.typeParameters != null) {
+				typeParameters = new ITypeID[function.typeParameters.length];
+				for (int i = 0; i < typeParameters.length; i++) {
+					if (innerScope.genericInferenceMap.get(function.typeParameters[i]) == null)
+						throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + function.typeParameters[i].name);
+					else
+						typeParameters[i] = innerScope.genericInferenceMap.get(function.typeParameters[i]);
+				}
+			}
+		}
+		
+		return new CallArguments(typeParameters, cArguments);
+	}
+	
 	private CallArguments compileCallNaive(CodePosition position, ExpressionScope scope) {
 		Expression[] cArguments = new Expression[arguments.size()];
 		for (int i = 0; i < cArguments.length; i++) {

@@ -82,6 +82,7 @@ public enum ZSTokenType implements TokenType {
 	K_ENUM,
 	K_STRUCT,
 	K_EXPAND,
+	K_VARIANT,
 	
 	K_ABSTRACT,
 	K_FINAL,
@@ -138,6 +139,7 @@ public enum ZSTokenType implements TokenType {
 	K_IN,
 	K_IS,
 	K_AS,
+	K_MATCH,
 	
 	K_SUPER,
 	K_THIS,

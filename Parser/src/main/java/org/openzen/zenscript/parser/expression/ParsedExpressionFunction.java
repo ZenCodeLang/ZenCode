@@ -31,8 +31,8 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
  * @author Stan
  */
 public class ParsedExpressionFunction extends ParsedExpression {
-	private final ParsedFunctionHeader header;
-	private final ParsedFunctionBody body;
+	public final ParsedFunctionHeader header;
+	public final ParsedFunctionBody body;
 	
 	public ParsedExpressionFunction(CodePosition position, ParsedFunctionHeader header, ParsedFunctionBody body) {
 		super(position);

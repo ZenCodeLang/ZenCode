@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
@@ -64,5 +65,10 @@ public class PartialTypeExpression implements IPartialExpression {
 	@Override
 	public ITypeID[] getGenericCallTypes() {
 		return null;
+	}
+	
+	@Override
+	public IPartialExpression capture(CodePosition position, LambdaClosure closure) {
+		return this;
 	}
 }

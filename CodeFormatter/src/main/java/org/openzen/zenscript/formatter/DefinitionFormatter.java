@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
@@ -154,6 +155,54 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitAlias(AliasDefinition definition) {
+		return null;
+	}
+
+	@Override
+	public Void visitVariant(VariantDefinition variant) {
+		FormattingUtils.formatModifiers(output, variant.modifiers);
+		output.append("variant ");
+		output.append(variant.name);
+		FormattingUtils.formatTypeParameters(output, variant.genericParameters, typeFormatter);
+		output.append(" ");
+		
+		if (settings.classBracketOnSameLine) {
+			output.append("{\n");
+		} else {
+			output.append("\n")
+					.append(indent)
+					.append("{\n");
+		}
+		
+		List<VariantDefinition.Option> options = variant.options;
+		boolean first = true;
+		for (VariantDefinition.Option option : options) {
+			if (first)
+				first = false;
+			else
+				output.append(",\n");
+			
+			output.append(indent).append(settings.indent).append(option.name);
+			if (option.types.length > 0) {
+				output.append("(");
+				for (int i = 0; i < option.types.length; i++) {
+					if (i > 0)
+						output.append(", ");
+					output.append(option.types[i].accept(typeFormatter));
+				}
+			}
+		}
+		
+		if (variant.members.size() > options.size()) {
+			output.append(";\n").append(indent).append(settings.indent).append("\n");
+
+			MemberFormatter memberFormatter = new MemberFormatter(settings, output, indent + settings.indent, typeFormatter);
+			for (IDefinitionMember member : variant.members) {
+				member.accept(memberFormatter);
+			}
+		}
+		
+		output.append("}\n");
 		return null;
 	}
 	

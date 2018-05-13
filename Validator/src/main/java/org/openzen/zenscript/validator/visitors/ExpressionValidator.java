@@ -53,6 +53,7 @@ import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
 import org.openzen.zenscript.codemodel.expression.IsExpression;
 import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
 import org.openzen.zenscript.codemodel.expression.MapExpression;
+import org.openzen.zenscript.codemodel.expression.MatchExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
@@ -440,6 +441,12 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 			}
 		}
 		return isValid;
+	}
+
+	@Override
+	public Boolean visitMatch(MatchExpression expression) {
+		// TODO
+		return true;
 	}
 
 	@Override

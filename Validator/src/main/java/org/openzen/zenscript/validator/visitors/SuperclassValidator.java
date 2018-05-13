@@ -14,6 +14,8 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 
@@ -23,9 +25,11 @@ import org.openzen.zenscript.validator.Validator;
  */
 public class SuperclassValidator implements DefinitionVisitor<Boolean> {
 	private final Validator validator;
+	private final CodePosition position;
 	
-	public SuperclassValidator(Validator validator) {
+	public SuperclassValidator(Validator validator, CodePosition position) {
 		this.validator = validator;
+		this.position = position;
 	}
 
 	@Override
@@ -88,6 +92,15 @@ public class SuperclassValidator implements DefinitionVisitor<Boolean> {
 
 	@Override
 	public Boolean visitAlias(AliasDefinition definition) {
-		throw new AssertionError();
+		return definition.type.accept(new SupertypeValidator(validator, position));
+	}
+
+	@Override
+	public Boolean visitVariant(VariantDefinition variant) {
+		validator.logError(
+				ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS,
+				variant.position,
+				"Superclass cannot be a variant");
+		return false;
 	}
 }

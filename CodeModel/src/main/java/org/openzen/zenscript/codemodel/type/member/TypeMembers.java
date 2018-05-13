@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
@@ -66,6 +67,7 @@ public final class TypeMembers {
 	private final List<TypeMember<IIteratorMember>> iterators = new ArrayList<>();
 	
 	private final Map<String, EnumConstantMember> enumMembers = new HashMap<>();
+	private final Map<String, VariantDefinition.Option> variantOptions = new HashMap<>();
 	private final Map<String, DefinitionMemberGroup> members = new HashMap<>();
 	private final Map<String, InnerDefinition> innerTypes = new HashMap<>();
 	private final Map<OperatorType, DefinitionMemberGroup> operators = new HashMap<>();
@@ -120,6 +122,8 @@ public final class TypeMembers {
 		
 		for (Map.Entry<String, EnumConstantMember> entry : enumMembers.entrySet())
 			other.addEnumMember(entry.getValue(), priority);
+		for (Map.Entry<String, VariantDefinition.Option> entry : variantOptions.entrySet())
+			other.addVariantOption(entry.getValue());
 		for (Map.Entry<String, DefinitionMemberGroup> entry : members.entrySet())
 			other.getOrCreateGroup(entry.getKey(), entry.getValue().isStatic).merge(position, entry.getValue(), priority);
 		for (Map.Entry<String, InnerDefinition> entry : innerTypes.entrySet())
@@ -221,6 +225,10 @@ public final class TypeMembers {
 		group.addMethod(member, priority);
 	}
 	
+	public void addVariantOption(VariantDefinition.Option option) {
+		variantOptions.put(option.name, option);
+	}
+	
 	public void addIterator(IIteratorMember iterator, TypeMemberPriority priority) {
 		for (int i = 0; i < iterators.size(); i++) {
 			if (iterators.get(i).member.getLoopVariableCount() == iterator.getLoopVariableCount()) {
@@ -270,6 +278,10 @@ public final class TypeMembers {
 	
 	public EnumConstantMember getEnumMember(String name) {
 		return enumMembers.get(name);
+	}
+	
+	public VariantDefinition.Option getVariantOption(String name) {
+		return variantOptions.get(name);
 	}
 	
 	public Expression compare(CodePosition position, TypeScope scope, CompareType operator, Expression left, Expression right) {

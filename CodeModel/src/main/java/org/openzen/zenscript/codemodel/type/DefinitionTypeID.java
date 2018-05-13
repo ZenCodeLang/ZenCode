@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
@@ -139,6 +141,16 @@ public class DefinitionTypeID implements ITypeID {
 		return true;
 	}
 
+	@Override
+	public boolean isEnum() {
+		return definition instanceof EnumDefinition;
+	}
+	
+	@Override
+	public boolean isVariant() {
+		return definition instanceof VariantDefinition;
+	}
+	
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		if (typeParameters != null) {

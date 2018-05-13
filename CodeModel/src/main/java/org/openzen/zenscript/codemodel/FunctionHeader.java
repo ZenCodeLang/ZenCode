@@ -34,6 +34,15 @@ public class FunctionHeader {
 		this.parameters = NO_PARAMETERS;
 	}
 	
+	public FunctionHeader(ITypeID returnType, ITypeID... parameterTypes) {
+		this.typeParameters = null;
+		this.returnType = returnType;
+		this.parameters = new FunctionParameter[parameterTypes.length];
+		
+		for (int i = 0; i < parameterTypes.length; i++)
+			parameters[i] = new FunctionParameter(parameterTypes[i], null);
+	}
+	
 	public FunctionHeader(ITypeID returnType, FunctionParameter... parameters) {
 		this.typeParameters = null;
 		this.returnType = returnType;

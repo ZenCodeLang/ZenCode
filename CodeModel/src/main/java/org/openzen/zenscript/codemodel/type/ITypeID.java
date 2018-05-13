@@ -38,6 +38,14 @@ public interface ITypeID {
 	
 	public boolean isObjectType();
 	
+	public default boolean isEnum() {
+		return false;
+	}
+	
+	public default boolean isVariant() {
+		return false;
+	}
+	
 	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments);
 	
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters);

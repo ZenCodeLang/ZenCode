@@ -76,6 +76,9 @@ public class ParsedFile {
 					case K_EXPORT:
 						modifiers |= Modifiers.EXPORT;
 						break;
+					case K_EXTERN:
+						modifiers |= Modifiers.EXTERN;
+						break;
 					case K_ABSTRACT:
 						modifiers |= Modifiers.ABSTRACT;
 						break;

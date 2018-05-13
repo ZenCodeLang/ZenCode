@@ -32,6 +32,7 @@ public class ZSTokenStream extends TokenStream<ZSToken, ZSTokenType> {
 		KEYWORDS.put("struct", K_STRUCT);
 		KEYWORDS.put("expand", K_EXPAND);
 		KEYWORDS.put("function", K_FUNCTION);
+		KEYWORDS.put("variant", K_VARIANT);
 		
 		KEYWORDS.put("abstract", K_ABSTRACT);
 		KEYWORDS.put("final", K_FINAL);
@@ -88,6 +89,7 @@ public class ZSTokenStream extends TokenStream<ZSToken, ZSTokenType> {
 		KEYWORDS.put("in", K_IN);
 		KEYWORDS.put("is", K_IS);
 		KEYWORDS.put("as", K_AS);
+		KEYWORDS.put("match", K_MATCH);
 		
 		KEYWORDS.put("this", K_THIS);
 		KEYWORDS.put("super", K_SUPER);

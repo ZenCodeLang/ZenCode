@@ -96,6 +96,8 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitMap(MapExpression expression);
 	
+	public T visitMatch(MatchExpression expression);
+	
 	public T visitNew(NewExpression expression);
 	
 	public T visitNull(NullExpression expression);

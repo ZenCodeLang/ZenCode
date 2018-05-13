@@ -16,6 +16,7 @@ import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSToken;
@@ -36,175 +37,189 @@ import static org.openzen.zenscript.shared.StringUtils.unescape;
  * @author Stanneke
  */
 public abstract class ParsedExpression {
+	public static class ParsingOptions {
+		public static final ParsingOptions DEFAULT = new ParsingOptions(true);
+		
+		public final boolean allowLambda;
+		
+		public ParsingOptions(boolean allowLambda) {
+			this.allowLambda = allowLambda;
+		}
+	}
+	
 	public static ParsedExpression parse(ZSTokenStream parser) {
-		return readAssignExpression(parser);
+		return readAssignExpression(parser, ParsingOptions.DEFAULT);
+	}
+	
+	public static ParsedExpression parse(ZSTokenStream parser, ParsingOptions options) {
+		return readAssignExpression(parser, options);
 	}
 
-	private static ParsedExpression readAssignExpression(ZSTokenStream parser) {
+	private static ParsedExpression readAssignExpression(ZSTokenStream parser, ParsingOptions options) {
 		CodePosition position = parser.getPosition();
-		ParsedExpression left = readConditionalExpression(position, parser);
+		ParsedExpression left = readConditionalExpression(position, parser, options);
 
 		switch (parser.peek().type) {
 			case T_ASSIGN:
 				parser.next();
-				return new ParsedExpressionAssign(position, left, readAssignExpression(parser));
+				return new ParsedExpressionAssign(position, left, readAssignExpression(parser, options));
 			case T_ADDASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.ADDASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.ADDASSIGN);
 			case T_SUBASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.SUBASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.SUBASSIGN);
 			case T_CATASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.CATASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.CATASSIGN);
 			case T_MULASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.MULASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.MULASSIGN);
 			case T_DIVASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.DIVASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.DIVASSIGN);
 			case T_MODASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.MODASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.MODASSIGN);
 			case T_ORASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.ORASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.ORASSIGN);
 			case T_ANDASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.ANDASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.ANDASSIGN);
 			case T_XORASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.XORASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.XORASSIGN);
 			case T_SHLASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.SHLASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.SHLASSIGN);
 			case T_SHRASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.SHRASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.SHRASSIGN);
 			case T_USHRASSIGN:
 				parser.next();
-				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser), OperatorType.USHRASSIGN);
+				return new ParsedExpressionOpAssign(position, left, readAssignExpression(parser, options), OperatorType.USHRASSIGN);
 		}
 
 		return left;
 	}
 
-	private static ParsedExpression readConditionalExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readOrOrExpression(position, parser);
+	private static ParsedExpression readConditionalExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readOrOrExpression(position, parser, options);
 
 		if (parser.optional(T_QUEST) != null) {
-			ParsedExpression onIf = readOrOrExpression(parser.peek().position, parser);
+			ParsedExpression onIf = readOrOrExpression(parser.peek().position, parser, options);
 			parser.required(T_COLON, ": expected");
-			ParsedExpression onElse = readConditionalExpression(parser.peek().position, parser);
+			ParsedExpression onElse = readConditionalExpression(parser.peek().position, parser, options);
 			return new ParsedExpressionConditional(position, left, onIf, onElse);
 		}
 
 		return left;
 	}
 
-	private static ParsedExpression readOrOrExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readAndAndExpression(position, parser);
+	private static ParsedExpression readOrOrExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readAndAndExpression(position, parser, options);
 
 		while (parser.optional(T_OROR) != null) {
-			ParsedExpression right = readAndAndExpression(parser.peek().position, parser);
+			ParsedExpression right = readAndAndExpression(parser.peek().position, parser, options);
 			left = new ParsedExpressionOrOr(position, left, right);
 		}
 		
 		while (parser.optional(T_COALESCE) != null) {
-			ParsedExpression right = readAndAndExpression(parser.peek().position, parser);
+			ParsedExpression right = readAndAndExpression(parser.peek().position, parser, options);
 			left = new ParsedExpressionCoalesce(position, left, right);
 		}
 		
 		return left;
 	}
 
-	private static ParsedExpression readAndAndExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readOrExpression(position, parser);
+	private static ParsedExpression readAndAndExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readOrExpression(position, parser, options);
 
 		while (parser.optional(T_ANDAND) != null) {
-			ParsedExpression right = readOrExpression(parser.peek().position, parser);
+			ParsedExpression right = readOrExpression(parser.peek().position, parser, options);
 			left = new ParsedExpressionAndAnd(position, left, right);
 		}
 		return left;
 	}
 
-	private static ParsedExpression readOrExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readXorExpression(position, parser);
+	private static ParsedExpression readOrExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readXorExpression(position, parser, options);
 
 		while (parser.optional(T_OR) != null) {
-			ParsedExpression right = readXorExpression(parser.peek().position, parser);
+			ParsedExpression right = readXorExpression(parser.peek().position, parser, options);
 			left = new ParsedExpressionBinary(position, left, right, OperatorType.OR);
 		}
 		return left;
 	}
 
-	private static ParsedExpression readXorExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readAndExpression(position, parser);
+	private static ParsedExpression readXorExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readAndExpression(position, parser, options);
 
 		while (parser.optional(T_XOR) != null) {
-			ParsedExpression right = readAndExpression(parser.peek().position, parser);
+			ParsedExpression right = readAndExpression(parser.peek().position, parser, options);
 			left = new ParsedExpressionBinary(position, left, right, OperatorType.XOR);
 		}
 		return left;
 	}
 
-	private static ParsedExpression readAndExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readCompareExpression(position, parser);
+	private static ParsedExpression readAndExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readCompareExpression(position, parser, options);
 
 		while (parser.optional(T_AND) != null) {
-			ParsedExpression right = readCompareExpression(parser.peek().position, parser);
+			ParsedExpression right = readCompareExpression(parser.peek().position, parser, options);
 			left = new ParsedExpressionBinary(position, left, right, OperatorType.AND);
 		}
 		return left;
 	}
 
-	private static ParsedExpression readCompareExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readShiftExpression(position, parser);
+	private static ParsedExpression readCompareExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readShiftExpression(position, parser, options);
 
 		switch (parser.peek().getType()) {
 			case T_EQUAL2: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.EQ);
 			}
 			case T_EQUAL3: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.SAME);
 			}
 			case T_NOTEQUAL: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.NE);
 			}
 			case T_NOTEQUAL2: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.NOTSAME);
 			}
 			case T_LESS: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.LT);
 			}
 			case T_LESSEQ: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.LE);
 			}
 			case T_GREATER: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.GT);
 			}
 			case T_GREATEREQ: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.GE);
 			}
 			case K_IN: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 				return new ParsedExpressionBinary(position, right, left, OperatorType.CONTAINS);
 			}
 			case K_IS: {
@@ -215,7 +230,7 @@ public abstract class ParsedExpression {
 			case T_NOT: {
 				parser.next();
 				if (parser.optional(K_IN) != null) {
-					ParsedExpression right = readShiftExpression(parser.peek().position, parser);
+					ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
 					return new ParsedExpressionUnary(position, new ParsedExpressionBinary(position, right, left, OperatorType.CONTAINS), OperatorType.NOT);
 				} else if (parser.optional(K_IS) != null) {
 					IParsedType type = IParsedType.parse(parser);
@@ -229,18 +244,18 @@ public abstract class ParsedExpression {
 		return left;
 	}
 	
-	private static ParsedExpression readShiftExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readAddExpression(position, parser);
+	private static ParsedExpression readShiftExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readAddExpression(position, parser, options);
 		
 		while (true) {
 			if (parser.optional(T_SHL) != null) {
-				ParsedExpression right = readAddExpression(parser.peek().position, parser);
+				ParsedExpression right = readAddExpression(parser.peek().position, parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.SHL);
 			} else if (parser.optional(T_SHR) != null) {
-				ParsedExpression right = readAddExpression(parser.peek().position, parser);
+				ParsedExpression right = readAddExpression(parser.peek().position, parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.SHR);
 			} else if (parser.optional(T_USHR) != null) {
-				ParsedExpression right = readAddExpression(parser.peek().position, parser);
+				ParsedExpression right = readAddExpression(parser.peek().position, parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.USHR);
 			} else {
 				break;
@@ -250,18 +265,18 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readAddExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readMulExpression(position, parser);
+	private static ParsedExpression readAddExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readMulExpression(position, parser, options);
 		
 		while (true) {
 			if (parser.optional(T_ADD) != null) {
-				ParsedExpression right = readMulExpression(parser.peek().position, parser);
+				ParsedExpression right = readMulExpression(parser.peek().position, parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.ADD);
 			} else if (parser.optional(T_SUB) != null) {
-				ParsedExpression right = readMulExpression(parser.peek().position, parser);
+				ParsedExpression right = readMulExpression(parser.peek().position, parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.SUB);
 			} else if (parser.optional(T_CAT) != null) {
-				ParsedExpression right = readMulExpression(parser.peek().position, parser);
+				ParsedExpression right = readMulExpression(parser.peek().position, parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.CAT);
 			} else {
 				break;
@@ -270,18 +285,18 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readMulExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression left = readUnaryExpression(position, parser);
+	private static ParsedExpression readMulExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression left = readUnaryExpression(position, parser, options);
 
 		while (true) {
 			if (parser.optional(T_MUL) != null) {
-				ParsedExpression right = readUnaryExpression(parser.peek().position, parser);
+				ParsedExpression right = readUnaryExpression(parser.peek().position, parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.MUL);
 			} else if (parser.optional(T_DIV) != null) {
-				ParsedExpression right = readUnaryExpression(parser.peek().position, parser);
+				ParsedExpression right = readUnaryExpression(parser.peek().position, parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.DIV);
 			} else if (parser.optional(T_MOD) != null) {
-				ParsedExpression right = readUnaryExpression(parser.peek().position, parser);
+				ParsedExpression right = readUnaryExpression(parser.peek().position, parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.MOD);
 			} else {
 				break;
@@ -291,45 +306,45 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readUnaryExpression(CodePosition position, ZSTokenStream parser) {
+	private static ParsedExpression readUnaryExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
 		switch (parser.peek().getType()) {
 			case T_NOT:
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser),
+						readUnaryExpression(parser.peek().position, parser, options),
 						OperatorType.NOT);
 			case T_SUB:
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser),
+						readUnaryExpression(parser.peek().position, parser, options),
 						OperatorType.NEG);
 			case T_CAT:
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser),
+						readUnaryExpression(parser.peek().position, parser, options),
 						OperatorType.CAT);
 			case T_INCREMENT:
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser),
+						readUnaryExpression(parser.peek().position, parser, options),
 						OperatorType.INCREMENT);
 			case T_DECREMENT:
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser),
+						readUnaryExpression(parser.peek().position, parser, options),
 						OperatorType.DECREMENT);
 			default:
-				return readPostfixExpression(position, parser);
+				return readPostfixExpression(position, parser, options);
 		}
 	}
 
-	private static ParsedExpression readPostfixExpression(CodePosition position, ZSTokenStream parser) {
-		ParsedExpression base = readPrimaryExpression(position, parser);
+	private static ParsedExpression readPostfixExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+		ParsedExpression base = readPrimaryExpression(position, parser, options);
 
 		while (true) {
 			if (parser.optional(T_DOT) != null) {
@@ -352,12 +367,12 @@ public abstract class ParsedExpression {
 					}
 				}
 			} else if (parser.optional(T_DOT2) != null) {
-				ParsedExpression to = readAssignExpression(parser);
+				ParsedExpression to = readAssignExpression(parser, options);
 				return new ParsedExpressionRange(position, base, to);
 			} else if (parser.optional(T_SQOPEN) != null) {
 				List<ParsedExpression> indexes = new ArrayList<>();
 				do {
-					indexes.add(readAssignExpression(parser));
+					indexes.add(readAssignExpression(parser, options));
 				} while (parser.optional(ZSTokenType.T_COMMA) != null);
 				parser.required(T_SQCLOSE, "] expected");
 				base = new ParsedExpressionIndex(position, base, indexes);
@@ -371,7 +386,7 @@ public abstract class ParsedExpression {
 				base = new ParsedExpressionPostCall(position, base, OperatorType.INCREMENT);
 			} else if (parser.optional(T_DECREMENT) != null) {
 				base = new ParsedExpressionPostCall(position, base, OperatorType.DECREMENT);
-			} else if (parser.optional(T_LAMBDA) != null) {
+			} else if (options.allowLambda && parser.optional(T_LAMBDA) != null) {
 				ParsedFunctionBody body = ParsedStatement.parseLambdaBody(parser, true);
 				base = new ParsedExpressionFunction(position, base.toLambdaHeader(), body);
 			} else {
@@ -382,7 +397,7 @@ public abstract class ParsedExpression {
 		return base;
 	}
 	
-	private static ParsedExpression readPrimaryExpression(CodePosition position, ZSTokenStream parser) {
+	private static ParsedExpression readPrimaryExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
 		switch (parser.peek().getType()) {
 			case T_INT:
 				return new ParsedExpressionInt(position, Long.parseLong(parser.next().content));
@@ -416,7 +431,7 @@ public abstract class ParsedExpression {
 				List<ParsedExpression> contents = new ArrayList<>();
 				if (parser.optional(T_SQCLOSE) == null) {
 					while (parser.optional(T_SQCLOSE) == null) {
-						contents.add(readAssignExpression(parser));
+						contents.add(readAssignExpression(parser, options));
 						if (parser.optional(T_COMMA) == null) {
 							parser.required(T_SQCLOSE, "] or , expected");
 							break;
@@ -431,13 +446,13 @@ public abstract class ParsedExpression {
 				List<ParsedExpression> keys = new ArrayList<>();
 				List<ParsedExpression> values = new ArrayList<>();
 				while (parser.optional(T_ACLOSE) == null) {
-					ParsedExpression expression = readAssignExpression(parser);
+					ParsedExpression expression = readAssignExpression(parser, options);
 					if (parser.optional(T_COLON) == null) {
 						keys.add(null);
 						values.add(expression);
 					} else {
 						keys.add(expression);
-						values.add(readAssignExpression(parser));
+						values.add(readAssignExpression(parser, options));
 					}
 
 					if (parser.optional(T_COMMA) == null) {
@@ -460,7 +475,7 @@ public abstract class ParsedExpression {
 				parser.next();
 				List<ParsedExpression> expressions = new ArrayList<>();
 				do {
-					expressions.add(readAssignExpression(parser));
+					expressions.add(readAssignExpression(parser, options));
 				} while (parser.optional(ZSTokenType.T_COMMA) != null);
 				parser.required(T_BRCLOSE, ") expected");
 				return new ParsedExpressionBracket(position, expressions);
@@ -473,6 +488,27 @@ public abstract class ParsedExpression {
 					newArguments = ParsedCallArguments.parse(parser);
 				
 				return new ParsedNewExpression(position, type, newArguments);
+			}
+			case K_MATCH: {
+				parser.next();
+				ParsedExpression source = parse(parser);
+				parser.required(T_AOPEN, "{ expected");
+				
+				List<ParsedMatchExpression.Case> cases = new ArrayList<>();
+				while (parser.optional(T_ACLOSE) == null) {
+					ParsedExpression key = null;
+					if (parser.optional(K_DEFAULT) == null)
+						key = parse(parser, new ParsingOptions(false));
+					
+					parser.required(T_LAMBDA, "=> expected");
+					ParsedFunctionBody body = ParsedStatement.parseLambdaBody(parser, true);
+					cases.add(new ParsedMatchExpression.Case(key, body));
+					
+					if (parser.optional(T_COMMA) == null)
+						break;
+				}
+				parser.required(T_ACLOSE, "} expected");
+				return new ParsedMatchExpression(position, source, cases);
 			}
 			default: {
 				IParsedType type = IParsedType.parse(parser);
@@ -507,6 +543,10 @@ public abstract class ParsedExpression {
 
 	public Expression compileKey(ExpressionScope scope) {
 		return compile(scope).eval();
+	}
+	
+	public SwitchValue compileToSwitchValue(ITypeID type, ExpressionScope scope) {
+		throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
 	}
 	
 	public ParsedFunctionHeader toLambdaHeader() {

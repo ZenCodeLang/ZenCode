@@ -23,4 +23,6 @@ public interface DefinitionVisitor<T> {
 	public T visitExpansion(ExpansionDefinition definition);
 	
 	public T visitAlias(AliasDefinition definition);
+	
+	public T visitVariant(VariantDefinition variant);
 }

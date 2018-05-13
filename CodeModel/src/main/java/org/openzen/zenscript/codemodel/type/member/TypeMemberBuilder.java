@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.CallTranslator;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
@@ -40,7 +41,6 @@ import org.openzen.zenscript.codemodel.member.builtin.ComparatorMember;
 import org.openzen.zenscript.codemodel.member.builtin.ConstantGetterMember;
 import org.openzen.zenscript.codemodel.member.builtin.RangeIterator;
 import org.openzen.zenscript.codemodel.member.builtin.StringCharIterator;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -228,9 +228,13 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		HighLevelDefinition definition = type.definition;
 		if (type.hasTypeParameters() || !type.outerTypeParameters.isEmpty()) {
 			Map<TypeParameter, ITypeID> mapping = new HashMap<>();
-			if (type.typeParameters != null)
-				for (int i = 0; i < type.typeParameters.length; i++)
-					mapping.put(definition.genericParameters[i], type.typeParameters[i]);
+			if (type.typeParameters != null) {
+				if (definition.genericParameters == null)
+					System.out.println("Type parameters but no generic parameters");
+				else
+					for (int i = 0; i < type.typeParameters.length; i++)
+						mapping.put(definition.genericParameters[i], type.typeParameters[i]);
+			}
 			
 			if (!type.definition.isStatic())
 				for (Map.Entry<TypeParameter, ITypeID> entry : type.outerTypeParameters.entrySet())
@@ -239,9 +243,21 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 			for (IDefinitionMember member : definition.members) {
 				member.instance(cache.getRegistry(), mapping).registerTo(members, TypeMemberPriority.SPECIFIED);
 			}
+			
+			if (definition instanceof VariantDefinition) {
+				VariantDefinition variant = (VariantDefinition) definition;
+				for (VariantDefinition.Option option : variant.options)
+					members.addVariantOption(option.instance(registry, mapping));
+			}
 		} else {
 			for (IDefinitionMember member : definition.members) {
 				member.registerTo(members, TypeMemberPriority.SPECIFIED);
+			}
+			
+			if (definition instanceof VariantDefinition) {
+				VariantDefinition variant = (VariantDefinition) definition;
+				for (VariantDefinition.Option option : variant.options)
+					members.addVariantOption(option);
 			}
 		}
 
@@ -254,7 +270,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				// add default struct constructors
 				constructors.addMethod(new ConstructorMember(BUILTIN, definition, Modifiers.PUBLIC, new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
 				
-				List<FieldMember> fields = ((StructDefinition)definition).getFields();
+				List<FieldMember> fields = definition.getFields();
 				if (!fields.isEmpty()) {
 					FunctionParameter[] parameters = new FunctionParameter[fields.size()];
 					for (int i = 0; i < parameters.length; i++) {

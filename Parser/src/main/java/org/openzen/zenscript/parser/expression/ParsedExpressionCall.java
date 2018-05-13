@@ -9,14 +9,21 @@ package org.openzen.zenscript.parser.expression;
 import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
+import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
+import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.ICallableMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
@@ -38,7 +45,18 @@ public class ParsedExpressionCall extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		IPartialExpression cReceiver = receiver.compile(scope.withoutHints());
+		if (receiver instanceof ParsedExpressionVariable) {
+			ParsedExpressionVariable variable = (ParsedExpressionVariable) receiver;
+			for (ITypeID hint : scope.hints) {
+				TypeMembers members = scope.getTypeMembers(hint);
+				if (members.getVariantOption(variable.name) != null) {
+					VariantDefinition.Option variantOption = members.getVariantOption(variable.name);
+					FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, variantOption.types);
+					CallArguments cArguments = arguments.compileCall(position, scope, null, header);
+					return new VariantValueExpression(position, hint, variantOption, cArguments.arguments);
+				}
+			}
+		}
 		
 		if (receiver instanceof ParsedExpressionSuper) {
 			// super call (intended as first call in constructor)
@@ -65,10 +83,36 @@ public class ParsedExpressionCall extends ParsedExpression {
 			
 			return new ConstructorThisCallExpression(position, scope.getThisType(), (ConstructorMember) member, callArguments, scope);
 		}
-
+		
+		IPartialExpression cReceiver = receiver.compile(scope.withoutHints());
 		List<FunctionHeader> headers = cReceiver.getPossibleFunctionHeaders(scope, scope.hints, arguments.arguments.size());
 		CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getGenericCallTypes(), headers);
 		return cReceiver.call(position, scope, scope.hints, callArguments);
+	}
+	
+	@Override
+	public SwitchValue compileToSwitchValue(ITypeID type, ExpressionScope scope) {
+		if (!(receiver instanceof ParsedExpressionVariable))
+			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
+		
+		String name = ((ParsedExpressionVariable)receiver).name;
+		TypeMembers members = scope.getTypeMembers(type);
+		if (type.isVariant()) {
+			VariantDefinition.Option option = members.getVariantOption(name);
+			if (option == null)
+				throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Variant option does not exist: " + name);
+			
+			String[] values = new String[arguments.arguments.size()];
+			for (int i = 0; i < values.length; i++) {
+				ParsedExpression argument = arguments.arguments.get(i);
+				ParsedFunctionParameter lambdaHeader = argument.toLambdaParameter();
+				values[i] = lambdaHeader.name;
+			}
+			
+			return new VariantOptionSwitchValue(option, values);
+		} else {
+			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
+		}
 	}
 
 	@Override

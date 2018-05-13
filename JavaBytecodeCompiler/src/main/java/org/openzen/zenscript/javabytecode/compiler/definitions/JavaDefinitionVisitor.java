@@ -1,12 +1,9 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
-import java.util.List;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.definition.*;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -177,4 +174,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
     public byte[] visitAlias(AliasDefinition definition) {
         return null;
     }
+
+	@Override
+	public byte[] visitVariant(VariantDefinition variant) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 }
