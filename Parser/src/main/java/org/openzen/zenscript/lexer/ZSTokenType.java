@@ -87,8 +87,6 @@ public enum ZSTokenType implements TokenType {
 	K_FINAL,
 	K_OVERRIDE,
 	K_CONST,
-	K_SHARED,
-	K_WEAK,
 	K_PRIVATE,
 	K_PUBLIC,
 	K_EXPORT,

@@ -37,10 +37,6 @@ public interface IParsedType {
 		while (true) {
 			if (tokens.optional(ZSTokenType.K_CONST) != null) {
 				modifiers |= TypeMembers.MODIFIER_CONST;
-			} else if (tokens.optional(ZSTokenType.K_SHARED) != null) {
-				modifiers |= TypeMembers.MODIFIER_SHARED;
-			} else if (tokens.optional(ZSTokenType.K_WEAK) != null) {
-				modifiers |= TypeMembers.MODIFIER_WEAK;
 			} else {
 				break;
 			}

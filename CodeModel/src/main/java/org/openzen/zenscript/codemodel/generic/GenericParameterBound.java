@@ -16,6 +16,8 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  * @author Hoofdgebruiker
  */
 public abstract class GenericParameterBound {
+	public abstract boolean isObjectType();
+	
 	public abstract <T> T accept(GenericParameterBoundVisitor<T> visitor);
 	
 	public abstract void registerMembers(LocalMemberCache cache, TypeMembers type);

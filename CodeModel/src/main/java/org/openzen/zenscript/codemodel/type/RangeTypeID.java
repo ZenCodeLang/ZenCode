@@ -49,6 +49,11 @@ public class RangeTypeID implements ITypeID {
 	public boolean isConst() {
 		return false;
 	}
+	
+	@Override
+	public boolean isObjectType() {
+		return false;
+	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {

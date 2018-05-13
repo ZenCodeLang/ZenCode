@@ -59,6 +59,11 @@ public class GenericMapTypeID implements ITypeID {
 	}
 	
 	@Override
+	public boolean isObjectType() {
+		return true;
+	}
+	
+	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append(value.toString());

@@ -27,7 +27,6 @@ import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 /**
  *
@@ -252,12 +251,8 @@ public class StatementFormatter implements StatementVisitor<Void> {
 		
 		for (CatchClause catchClause : statement.catchClauses) {
 			output.append(indent).append("catch ");
-			if (catchClause.exceptionName != null)
-				output.append(catchClause.exceptionName);
-			if (catchClause.exceptionType != BasicTypeID.ANY) {
-				output.append(" as ");
-				catchClause.exceptionType.accept(expressionFormatter.typeFormatter);
-			}
+			if (catchClause.exceptionVariable != null)
+				output.append(catchClause.exceptionVariable.name).append(" as ").append(catchClause.exceptionVariable.type.accept(expressionFormatter.typeFormatter));
 			
 			format(ParentStatementType.CATCH, catchClause.content);
 		}

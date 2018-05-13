@@ -174,6 +174,7 @@ public abstract class ParsedDefinitionMember {
 				return new ParsedCaller(start, forDefinition, modifiers, header, body);
 			}
 			case T_SQOPEN: {
+				tokens.next();
 				tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
 				OperatorType operator = OperatorType.INDEXGET;
 				if (tokens.optional(ZSTokenType.T_ASSIGN) != null) {
@@ -183,9 +184,20 @@ public abstract class ParsedDefinitionMember {
 				ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
 				return new ParsedOperator(start, forDefinition, modifiers, operator, header, body);
 			}
+			case T_CAT:
+				tokens.pushMark();
+				tokens.next();
+				if (tokens.optional(ZSTokenType.K_THIS) != null) {
+					tokens.popMark();
+					
+					// destructor
+					ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
+					return new ParsedDestructor(start, forDefinition, modifiers, body);
+				}
+				tokens.reset();
+				// else it is a ~ operator, continue...
 			case T_ADD:
 			case T_SUB:
-			case T_CAT:
 			case T_MUL:
 			case T_DIV:
 			case T_MOD:

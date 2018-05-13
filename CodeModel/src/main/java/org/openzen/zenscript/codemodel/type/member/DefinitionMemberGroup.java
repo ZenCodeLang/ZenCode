@@ -38,7 +38,7 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
  */
 public class DefinitionMemberGroup {
 	public static DefinitionMemberGroup forMethod(ICallableMember member) {
-		DefinitionMemberGroup instance = new DefinitionMemberGroup(member.isStatic());
+		DefinitionMemberGroup instance = new DefinitionMemberGroup(member.isStatic(), member.getInformalName());
 		instance.addMethod(member, TypeMemberPriority.SPECIFIED);
 		return instance;
 	}
@@ -48,9 +48,11 @@ public class DefinitionMemberGroup {
 	private TypeMember<SetterMember> setter;
 	private final List<TypeMember<ICallableMember>> methods = new ArrayList<>();
 	public final boolean isStatic;
+	public final String name;
 	
-	public DefinitionMemberGroup(boolean isStatic) {
+	public DefinitionMemberGroup(boolean isStatic, String name) {
 		this.isStatic = isStatic;
+		this.name = name;
 	}
 	
 	public void merge(CodePosition position, DefinitionMemberGroup other, TypeMemberPriority priority) {
@@ -241,7 +243,7 @@ public class DefinitionMemberGroup {
 			arguments.arguments[i] = arguments.arguments[i].castImplicit(position, scope, instancedHeader.parameters[i].type);
 		}
 		
-		return method.call(position, target, instancedHeader, arguments);
+		return method.call(position, target, instancedHeader, arguments, scope);
 	}
 	
 	public Expression callPostfix(CodePosition position, TypeScope scope, Expression target) {
@@ -264,13 +266,13 @@ public class DefinitionMemberGroup {
 			CompareType compareType) {
 		ICallableMember method = selectMethod(position, scope, arguments, true, false);
 		FunctionHeader instancedHeader = method.getHeader().withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
-		return method.callWithComparator(position, compareType, target, instancedHeader, arguments);
+		return method.callWithComparator(position, compareType, target, instancedHeader, arguments, scope);
 	}
 	
 	public Expression callStatic(CodePosition position, ITypeID target, TypeScope scope, CallArguments arguments) {
 		ICallableMember method = selectMethod(position, scope, arguments, false, true);
 		FunctionHeader instancedHeader = method.getHeader().withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
-		return method.callStatic(position, target, instancedHeader, arguments);
+		return method.callStatic(position, target, instancedHeader, arguments, scope);
 	}
 	
 	public Expression callStaticWithComparator(
@@ -281,7 +283,7 @@ public class DefinitionMemberGroup {
 			CompareType compareType) {
 		ICallableMember method = selectMethod(position, scope, arguments, false, true);
 		FunctionHeader instancedHeader = method.getHeader().withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
-		return method.callStaticWithComparator(position, target, compareType, instancedHeader, arguments);
+		return method.callStaticWithComparator(position, target, compareType, instancedHeader, arguments, scope);
 	}
 	
 	public ICallableMember selectMethod(CodePosition position, TypeScope scope, CallArguments arguments, boolean allowNonStatic, boolean allowStatic) {
@@ -342,6 +344,10 @@ public class DefinitionMemberGroup {
 		if (selected == null) {
 			// let's figure out why this didn't work out
 			StringBuilder message = new StringBuilder();
+			if (methods.isEmpty()) {
+				throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "This type has no " + name);
+			}
+			
 			outer: for (TypeMember<ICallableMember> method : methods) {
 				if (!(method.member.isStatic() ? allowStatic : allowNonStatic)) {
 					message.append(method.member.isStatic() ? "Method must not be static" : "Method must be static").append('\n');
@@ -351,7 +357,7 @@ public class DefinitionMemberGroup {
 				message.append(method.member.getHeader().explainWhyIncompatible(scope, arguments)).append("\n");
 			}
 			
-			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching method found:\n" + message.toString());
+			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching method found for " + name + ":\n" + message.toString());
 		}
 		
 		return selected;

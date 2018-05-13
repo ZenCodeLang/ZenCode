@@ -94,6 +94,24 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         statementVisitor.end();
         return null;
     }
+	
+	@Override
+	public Void visitDestructor(DestructorMember member) {
+		final JavaMethodInfo method = new JavaMethodInfo(toClass, "close", "()V", Opcodes.ACC_PUBLIC);
+
+        final Label constructorStart = new Label();
+        final Label constructorEnd = new Label();
+        final JavaWriter destructorWriter = new JavaWriter(writer, method, definition, null, null);
+        destructorWriter.label(constructorStart);
+
+        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(destructorWriter);
+        statementVisitor.start();
+		// TODO: destruction of members (to be done when memory tags are implemented)
+        member.body.accept(statementVisitor);
+        destructorWriter.label(constructorEnd);
+        statementVisitor.end();
+        return null;
+	}
 
     @Override
     public Void visitMethod(MethodMember member) {

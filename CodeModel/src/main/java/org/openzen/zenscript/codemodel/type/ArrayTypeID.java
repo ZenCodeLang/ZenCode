@@ -45,6 +45,11 @@ public class ArrayTypeID implements ITypeID {
 	}
 	
 	@Override
+	public boolean isObjectType() {
+		return true;
+	}
+	
+	@Override
 	public ArrayTypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
 		return registry.getArray(elementType.withGenericArguments(registry, arguments), dimension);
 	}

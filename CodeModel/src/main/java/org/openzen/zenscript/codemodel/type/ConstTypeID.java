@@ -55,6 +55,11 @@ public class ConstTypeID implements ITypeID {
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		return baseType.hasInferenceBlockingTypeParameters(parameters);
 	}
+	
+	@Override
+	public boolean isObjectType() {
+		return baseType.isObjectType();
+	}
 
 	@Override
 	public int hashCode() {

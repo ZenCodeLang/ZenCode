@@ -47,6 +47,7 @@ public enum OperatorType {
 	RANGE("..", "rangeTo"),
 	
 	CONSTRUCTOR("this", "construct"),
+	DESTRUCTOR("~this", "destruct"),
 	CALL("()", "call"),
 	CAST("as", "cast");
 	

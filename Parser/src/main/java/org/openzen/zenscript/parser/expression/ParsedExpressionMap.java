@@ -45,13 +45,14 @@ public class ParsedExpressionMap extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
+		AssocTypeID assocHint = null;
 		List<ITypeID> keyHints = new ArrayList<>();
 		List<ITypeID> valueHints = new ArrayList<>();
 		
 		boolean hasAssocHint = false;
 		for (ITypeID hint : scope.hints) {
 			if (hint instanceof AssocTypeID) {
-				AssocTypeID assocHint = (AssocTypeID) hint;
+				assocHint = (AssocTypeID) hint;
 				if (!keyHints.contains(assocHint.keyType))
 					keyHints.add(assocHint.keyType);
 				if (!valueHints.contains(assocHint.valueType))
@@ -65,6 +66,14 @@ public class ParsedExpressionMap extends ParsedExpression {
 						.selectMethod(position, scope, CallArguments.EMPTY, true, true);
 				return new NewExpression(position, hint, (ConstructorMember) constructor, CallArguments.EMPTY);
 			}
+		}
+		
+		if (keys.isEmpty() && keyHints.size() == 1) {
+			ICallableMember constructor = scope
+						.getTypeMembers(assocHint)
+						.getOrCreateGroup(OperatorType.CONSTRUCTOR)
+						.selectMethod(position, scope, CallArguments.EMPTY, true, true);
+				return new NewExpression(position, assocHint, (ConstructorMember) constructor, CallArguments.EMPTY);
 		}
 		
 		if (!hasAssocHint && scope.hints.size() == 1 && scope.hints.get(0) != BasicTypeID.ANY) {

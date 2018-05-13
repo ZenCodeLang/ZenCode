@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
@@ -19,8 +20,10 @@ public class ConstructorThisCallExpression extends Expression {
 	public final ConstructorMember constructor;
 	public final CallArguments arguments;
 	
-	public ConstructorThisCallExpression(CodePosition position, ITypeID type, ConstructorMember constructor, CallArguments arguments) {
+	public ConstructorThisCallExpression(CodePosition position, ITypeID type, ConstructorMember constructor, CallArguments arguments, TypeScope scope) {
 		super(position, BasicTypeID.VOID);
+		
+		arguments = arguments.normalize(position, scope, constructor.header);
 		
 		this.objectType = type;
 		this.constructor = constructor;

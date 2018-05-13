@@ -40,6 +40,7 @@ import org.openzen.zenscript.codemodel.member.builtin.ComparatorMember;
 import org.openzen.zenscript.codemodel.member.builtin.ConstantGetterMember;
 import org.openzen.zenscript.codemodel.member.builtin.RangeIterator;
 import org.openzen.zenscript.codemodel.member.builtin.StringCharIterator;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -161,6 +162,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		}
 
 		members.addGetter(new GetterMember(BUILTIN, definition, 0, "empty", BOOL), TypeMemberPriority.SPECIFIED);
+		members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN, "objectHashCode", BasicTypeID.INT));
 		members.addIterator(new ArrayIteratorKeyValues(array), TypeMemberPriority.SPECIFIED);
 		members.addIterator(new ArrayIteratorValues(array), TypeMemberPriority.SPECIFIED);
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "clear", new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
@@ -190,6 +192,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addField(new FieldMember(BUILTIN, definition, Modifiers.FINAL, "size", INT));
 		members.addGetter(new GetterMember(BUILTIN, definition, 0, "empty", BOOL));
 		members.addGetter(new GetterMember(BUILTIN, definition, 0, "keys", cache.getRegistry().getArray(keyType, 1)));
+		members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN, "objectHashCode", BasicTypeID.INT));
 		
 		members.addIterator(new AssocIterator(assoc), TypeMemberPriority.SPECIFIED);
 		return null;
@@ -204,6 +207,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "getOptional", new FunctionHeader(map.keys, registry.getOptional(valueType), new FunctionParameter[0])));
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "put", new FunctionHeader(map.keys, BasicTypeID.VOID, new FunctionParameter(valueType))));
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "contains", new FunctionHeader(map.keys, BasicTypeID.BOOL, new FunctionParameter[0])));
+		members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN, "objectHashCode", BasicTypeID.INT));
 		return null;
 	}
 	
@@ -228,8 +232,9 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				for (int i = 0; i < type.typeParameters.length; i++)
 					mapping.put(definition.genericParameters[i], type.typeParameters[i]);
 			
-			for (Map.Entry<TypeParameter, ITypeID> entry : type.outerTypeParameters.entrySet())
-				mapping.put(entry.getKey(), entry.getValue());
+			if (!type.definition.isStatic())
+				for (Map.Entry<TypeParameter, ITypeID> entry : type.outerTypeParameters.entrySet())
+					mapping.put(entry.getKey(), entry.getValue());
 			
 			for (IDefinitionMember member : definition.members) {
 				member.instance(cache.getRegistry(), mapping).registerTo(members, TypeMemberPriority.SPECIFIED);
@@ -273,6 +278,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 			}
 		}
 		
+		members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN, "objectHashCode", BasicTypeID.INT));
 		return null;
 	}
 
@@ -516,6 +522,6 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private static CallTranslator castedTargetCall(FunctionalMember member, CasterMember caster) {
-		return call -> member.call(call.position, caster.cast(call.position, call.target, true), call.arguments);
+		return call -> member.call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope);
 	}
 }

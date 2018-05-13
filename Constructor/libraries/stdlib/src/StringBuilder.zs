@@ -3,6 +3,8 @@ export class StringBuilder {
 	public extern this(capacity as int);
 	public extern this(value as string);
 	
+	public extern get empty as bool;
+	
 	public extern <<(value as bool) as StringBuilder;
 	public extern <<(value as char) as StringBuilder;
 	public extern <<(value as byte) as StringBuilder;

@@ -45,4 +45,9 @@ public class ParameterSuperBound extends GenericParameterBound {
 	public <T> T accept(GenericParameterBoundVisitor<T> visitor) {
 		return visitor.visitSuper(this);
 	}
+
+	@Override
+	public boolean isObjectType() {
+		return true;
+	}
 }

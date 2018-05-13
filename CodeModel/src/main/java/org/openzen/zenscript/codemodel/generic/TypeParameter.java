@@ -37,6 +37,14 @@ public class TypeParameter {
 		bounds.add(bound);
 	}
 	
+	public boolean isObjectType() {
+		for (GenericParameterBound bound : bounds)
+			if (bound.isObjectType())
+				return true;
+		
+		return false;
+	}
+	
 	public boolean matches(LocalMemberCache cache, ITypeID type) {
 		for (GenericParameterBound bound : bounds) {
 			if (!bound.matches(cache, type))

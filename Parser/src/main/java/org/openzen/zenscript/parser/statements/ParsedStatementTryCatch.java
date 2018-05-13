@@ -51,8 +51,9 @@ public class ParsedStatementTryCatch extends ParsedStatement {
 		Expression resourceInitializer = this.resourceInitializer == null ? null : this.resourceInitializer.compile(new ExpressionScope(scope)).eval();
 		Statement statement = this.statement.compile(scope);
 		List<CatchClause> catches = new ArrayList<>();
-		for (ParsedCatchClause catchClause : catchClauses)
+		for (ParsedCatchClause catchClause : catchClauses) {
 			catches.add(catchClause.compile(scope));
+		}
 		
 		Statement finallyClause = this.finallyClause == null ? null : this.finallyClause.compile(scope);
 		VarStatement resource = null;

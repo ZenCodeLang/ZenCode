@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
@@ -77,6 +78,15 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		output.append("this");
 		FormattingUtils.formatHeader(output, settings, member.header, typeFormatter);
+		formatBody(member.body);
+		return null;
+	}
+
+	@Override
+	public Void visitDestructor(DestructorMember member) {
+		visit(false);
+		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		output.append("this");
 		formatBody(member.body);
 		return null;
 	}

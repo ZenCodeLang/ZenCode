@@ -5,7 +5,13 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import java.util.Arrays;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *
@@ -35,5 +41,24 @@ public class CallArguments {
 	
 	public int getNumberOfTypeArguments() {
 		return typeArguments.length;
+	}
+	
+	public CallArguments normalize(CodePosition position, TypeScope scope, FunctionHeader header) {
+		CallArguments result = this;
+		
+		for (int i = 0; i < arguments.length; i++) {
+			arguments[i] = arguments[i].castImplicit(position, scope, header.parameters[i].type);
+		}
+		
+		if (arguments.length < header.parameters.length) {
+			Expression[] newArguments = Arrays.copyOf(arguments, header.parameters.length);
+			for (int i = arguments.length; i < header.parameters.length; i++) {
+				if (header.parameters[i].defaultValue == null)
+					throw new CompileException(position, CompileExceptionCode.MISSING_PARAMETER, "Parameter missing and no default value specified");
+				newArguments[i] = header.parameters[i].defaultValue;
+			}
+			result = new CallArguments(typeArguments, newArguments);
+		}
+		return result;
 	}
 }

@@ -58,6 +58,7 @@ import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
+import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
 import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.SetLocalVariableExpression;
@@ -65,6 +66,7 @@ import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
+import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
@@ -496,6 +498,14 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 		}
 		return isValid;
 	}
+	
+	@Override
+	public Boolean visitSameObject(SameObjectExpression expression) {
+		boolean isValid = true;
+		isValid &= expression.left.accept(this);
+		isValid &= expression.right.accept(this);
+		return isValid;
+	}
 
 	@Override
 	public Boolean visitSetField(SetFieldExpression expression) {
@@ -604,6 +614,12 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 					"Trying to set a static property of type " + expression.setter.type + " to a value of type " + expression.value.type);
 			isValid = false;
 		}
+		return isValid;
+	}
+
+	@Override
+	public Boolean visitSupertypeCast(SupertypeCastExpression expression) {
+		boolean isValid = expression.value.accept(this);
 		return isValid;
 	}
 

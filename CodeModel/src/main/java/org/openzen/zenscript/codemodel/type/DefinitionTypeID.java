@@ -54,8 +54,8 @@ public class DefinitionTypeID implements ITypeID {
 			Arrays.sort(outerTypeEntries, (a, b) -> a.parameter.name.compareTo(b.parameter.name));
 		}
 		
-		if ((typeParameters == null ? 0 : typeParameters.length) != definition.getNumberOfGenericParameters())
-			throw new RuntimeException("Invalid number of type parameters");
+		//if ((typeParameters == null ? 0 : typeParameters.length) != definition.getNumberOfGenericParameters())
+		//	throw new RuntimeException("Invalid number of type parameters");
 	}
 	
 	public boolean hasTypeParameters() {
@@ -92,7 +92,9 @@ public class DefinitionTypeID implements ITypeID {
 		if (typeParameters != null) {
 			instancedArguments = new ITypeID[typeParameters.length];
 			for (int i = 0; i < typeParameters.length; i++) {
-				instancedArguments[i] = arguments.containsKey(definition.genericParameters[i]) ? arguments.get(definition.genericParameters[i]) : typeParameters[i].withGenericArguments(registry, arguments);
+				// TODO: why was this line written like this?
+				//instancedArguments[i] = arguments.containsKey(definition.genericParameters[i]) ? arguments.get(definition.genericParameters[i]) : typeParameters[i].withGenericArguments(registry, arguments);
+				instancedArguments[i] = typeParameters[i].withGenericArguments(registry, arguments);
 			}
 		}
 		
@@ -130,6 +132,11 @@ public class DefinitionTypeID implements ITypeID {
 	@Override
 	public boolean isConst() {
 		return false;
+	}
+	
+	@Override
+	public boolean isObjectType() {
+		return true;
 	}
 
 	@Override

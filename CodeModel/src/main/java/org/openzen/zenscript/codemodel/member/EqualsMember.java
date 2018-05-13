@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.expression.BasicCompareExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -36,6 +37,11 @@ public class EqualsMember extends Taggable implements ICallableMember {
 	}
 	
 	@Override
+	public String getInformalName() {
+		return "equals operator";
+	}
+	
+	@Override
 	public boolean isStatic() {
 		return false;
 	}
@@ -46,22 +52,22 @@ public class EqualsMember extends Taggable implements ICallableMember {
 	}
 
 	@Override
-	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments) {
+	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		return new BasicCompareExpression(position, target, arguments.arguments[0], CompareType.EQ);
 	}
 
 	@Override
-	public Expression callWithComparator(CodePosition position, CompareType operator, Expression target, FunctionHeader instancedHeader, CallArguments arguments) {
+	public Expression callWithComparator(CodePosition position, CompareType operator, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		throw new UnsupportedOperationException("Comparator not supported here");
 	}
 
 	@Override
-	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments) {
+	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		throw new UnsupportedOperationException("Cannot be called statically");
 	}
 
 	@Override
-	public Expression callStaticWithComparator(CodePosition position, ITypeID target, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments) {
+	public Expression callStaticWithComparator(CodePosition position, ITypeID target, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		throw new UnsupportedOperationException("Cannot be called statically");
 	}
 

@@ -7,7 +7,6 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -21,39 +20,36 @@ import org.openzen.zenscript.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public class SetterMember extends FunctionalMember {
-	public final String name;
-	public final ITypeID type;
+public class DestructorMember extends FunctionalMember {
+	private static final FunctionHeader HEADER = new FunctionHeader(BasicTypeID.VOID);
 	
-	public SetterMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, ITypeID type) {
-		super(position, definition, modifiers, name, new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(type, "$")));
-		
-		this.name = name;
-		this.type = type;
+	public DestructorMember(CodePosition position, HighLevelDefinition definition, int modifiers) {
+		super(position, definition, modifiers, "~this", HEADER);
 	}
 	
 	@Override
 	public String getInformalName() {
-		return "setter " + name;
+		return "destructor";
 	}
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addSetter(this, priority);
+		if (priority == TypeMemberPriority.SPECIFIED)
+			type.addDestructor(this, priority);
 	}
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new SetterMember(position, definition, modifiers, name, type.withGenericArguments(registry, mapping));
+		return this;
 	}
 
 	@Override
 	public String describe() {
-		return "setter " + name;
+		return "destructor";
 	}
 
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
-		return visitor.visitSetter(this);
+		return visitor.visitDestructor(this);
 	}
 }

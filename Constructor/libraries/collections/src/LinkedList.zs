@@ -1,6 +1,7 @@
 export class LinkedList<T> {
 	var first as Node?;
 	var last as Node?;
+	var size as int : get;
 	
 	public get empty as bool
 		=> first == null;
@@ -14,16 +15,45 @@ export class LinkedList<T> {
 			node.prev = last;
 			last = node;
 		}
+		size++;
+	}
+	
+	public clear() as void {
+		first = last = null;
+		size = 0;
+	}
+	
+	public [](index as int) as T {
+		var node = first;
+		while index > 0 {
+			if node == null
+				throw new NoSuchElementException("index out of bounds");
+			
+			node = node.next;
+		}
+		
+		if node == null
+			throw new NoSuchElementException("index out of bounds");
+		
+		return node.value;
 	}
 	
 	public implements Queue<T> {
-		poll() as T?
-			=> first == null ? null : first.value;
-		
-		peek() as T {
+		poll() as T {
 			if first == null
-				throw new NoSuchElementException("Cannot peek an empty queue");
+				throw new NoSuchElementException("Cannot poll an empty queue");
 			
+			val result = first.value;
+			first = first.next;
+			if first == null
+				last = null;
+			else
+				first.prev = null;
+				
+			size--;
+		}
+		
+		peek() as T? {
 			return first.value;
 		}
 		

@@ -32,6 +32,11 @@ public class GetterMember extends FunctionalMember implements IGettableMember {
 		this.name = name;
 		this.type = type;
 	}
+	
+	@Override
+	public String getInformalName() {
+		return "getter " + name;
+	}
 
 	@Override
 	public String getName() {

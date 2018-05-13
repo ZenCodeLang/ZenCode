@@ -197,6 +197,8 @@ public abstract class ParsedStatement {
 				ParsedStatement content = parse(parser);
 				List<ParsedCatchClause> catchClauses = new ArrayList<>();
 				while (parser.optional(K_CATCH) != null) {
+					CodePosition position = parser.getPosition();
+					
 					String catchName = null;
 					if (parser.isNext(ZSTokenType.T_IDENTIFIER))
 						catchName = parser.next().content;
@@ -206,7 +208,7 @@ public abstract class ParsedStatement {
 						catchType = IParsedType.parse(parser);
 					
 					ParsedStatement catchContent = ParsedStatement.parse(parser);
-					catchClauses.add(new ParsedCatchClause(catchName, catchType, catchContent));
+					catchClauses.add(new ParsedCatchClause(position, catchName, catchType, catchContent));
 				}
 				
 				ParsedStatement finallyClause = null;

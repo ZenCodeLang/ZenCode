@@ -48,6 +48,11 @@ public class GenericTypeID implements ITypeID {
 	public boolean isConst() {
 		return false;
 	}
+	
+	@Override
+	public boolean isObjectType() {
+		return parameter.isObjectType();
+	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {

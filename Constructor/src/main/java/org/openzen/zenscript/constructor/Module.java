@@ -20,7 +20,6 @@ import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.module.ModuleSpace;
 import org.openzen.zenscript.constructor.module.SemanticModule;
 import org.openzen.zenscript.linker.symbol.ISymbol;
@@ -88,13 +87,12 @@ public class Module {
 		Map<String, ISymbol> globals = registry.collectGlobals();
 		boolean failed = false;
 		
-		GlobalTypeRegistry globalRegistry = new GlobalTypeRegistry();
 		for (ParsedFile file : files) {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
 			try {
-				file.compileTypes(rootPackage, definitions, globalRegistry, expansions, globals);
+				file.compileTypes(rootPackage, definitions, registry.typeRegistry, expansions, globals);
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
@@ -109,7 +107,7 @@ public class Module {
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
 			try {
-				file.compileMembers(rootPackage, definitions, globalRegistry, expansions, globals);
+				file.compileMembers(rootPackage, definitions, registry.typeRegistry, expansions, globals);
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
@@ -126,7 +124,7 @@ public class Module {
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
 			try {
-				file.compileCode(rootPackage, definitions, globalRegistry, expansions, scripts, globals);
+				file.compileCode(rootPackage, definitions, registry.typeRegistry, expansions, scripts, globals);
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;

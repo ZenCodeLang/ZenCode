@@ -468,8 +468,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitRange(RangeExpression expression) {
+		// TODO: there are other kinds of ranges also; there should be a Range<T, T> type with creation of synthetic types
         if (expression.from.type.accept(JavaTypeClassVisitor.INSTANCE) != int.class)
             throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Only integer ranges supported");
+		
         javaWriter.newObject(IntRange.class);
         javaWriter.dup();
         expression.from.accept(this);
@@ -479,6 +481,26 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
         return null;
     }
+	
+	@Override
+	public Void visitSameObject(SameObjectExpression expression) {
+		expression.left.accept(this);
+		expression.right.accept(this);
+		
+		Label end = new Label();
+		Label equal = new Label();
+		
+		if (expression.inverted)
+			javaWriter.ifACmpNe(equal);
+		else
+			javaWriter.ifACmpEq(equal);
+		javaWriter.iConst0();
+		javaWriter.goTo(end);
+		javaWriter.label(equal);
+		javaWriter.iConst1();
+		javaWriter.label(end);
+		return null;
+	}
 
     @Override
     public Void visitSetField(SetFieldExpression expression) {
@@ -534,6 +556,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitStaticSetter(StaticSetterExpression expression) {
         return null;
     }
+	
+	@Override
+	public Void visitSupertypeCast(SupertypeCastExpression expression) {
+		return null; // nothing to do
+	}
 
     @Override
     public Void visitThis(ThisExpression expression) {

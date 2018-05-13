@@ -23,6 +23,11 @@ public class CallerMember extends FunctionalMember {
 	public CallerMember(CodePosition position, HighLevelDefinition definition, int modifiers, FunctionHeader header) {
 		super(position, definition, modifiers, "()", header);
 	}
+	
+	@Override
+	public String getInformalName() {
+		return "caller";
+	}
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
@@ -31,7 +36,7 @@ public class CallerMember extends FunctionalMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return new CallerMember(position, definition, modifiers, header.instance(registry, mapping));
 	}
 
 	@Override

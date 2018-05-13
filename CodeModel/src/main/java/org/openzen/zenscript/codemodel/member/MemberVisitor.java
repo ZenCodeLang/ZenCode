@@ -14,6 +14,8 @@ public interface MemberVisitor<T> {
 	
 	public T visitConstructor(ConstructorMember member);
 	
+	public T visitDestructor(DestructorMember member);
+	
 	public T visitMethod(MethodMember member);
 	
 	public T visitGetter(GetterMember member);

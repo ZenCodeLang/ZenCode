@@ -38,7 +38,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 		for (ITypeID hint : scope.hints) {
 			// TODO: what if multiple hints fit?
 			if (hint.getUnmodified() instanceof ArrayTypeID) {
-				ArrayTypeID arrayHint = (ArrayTypeID) hint;
+				ArrayTypeID arrayHint = (ArrayTypeID) hint.getUnmodified();
 				if (arrayHint.dimension == 1) {
 					asBaseType = arrayHint.elementType;
 					asType = arrayHint;

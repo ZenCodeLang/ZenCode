@@ -46,6 +46,11 @@ public class FunctionTypeID implements ITypeID {
 	public boolean isConst() {
 		return false;
 	}
+	
+	@Override
+	public boolean isObjectType() {
+		return true;
+	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {

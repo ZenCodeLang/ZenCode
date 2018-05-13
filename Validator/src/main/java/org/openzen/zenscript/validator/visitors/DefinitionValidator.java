@@ -90,11 +90,15 @@ public class DefinitionValidator implements DefinitionVisitor<Boolean> {
 
 	@Override
 	public Boolean visitStruct(StructDefinition definition) {
+		int validModifiers = PUBLIC | EXPORT | PROTECTED | PRIVATE;
+		if (definition.outerDefinition != null)
+			validModifiers |= STATIC;
+		
 		boolean isValid = true;
 		isValid &= ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				validModifiers,
 				definition.position,
 				"Invalid struct modifier");
 		isValid &= ValidationUtils.validateIdentifier(

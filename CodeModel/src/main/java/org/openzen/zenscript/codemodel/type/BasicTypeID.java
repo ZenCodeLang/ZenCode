@@ -71,6 +71,11 @@ public enum BasicTypeID implements ITypeID {
 	public boolean isConst() {
 		return false;
 	}
+	
+	@Override
+	public boolean isObjectType() {
+		return this == ANY || this == STRING;
+	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {

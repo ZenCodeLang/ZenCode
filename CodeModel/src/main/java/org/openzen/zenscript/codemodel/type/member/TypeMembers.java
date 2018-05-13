@@ -18,10 +18,13 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
 import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
+import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
+import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.ICallableMember;
@@ -54,8 +57,6 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public final class TypeMembers {
 	public static final int MODIFIER_OPTIONAL = 1;
 	public static final int MODIFIER_CONST = 2;
-	public static final int MODIFIER_SHARED = 4;
-	public static final int MODIFIER_WEAK = 8;
 	
 	private final LocalMemberCache cache;
 	public final ITypeID type;
@@ -88,9 +89,21 @@ public final class TypeMembers {
 		}
 		
 		for (TypeMember<ImplementationMember> implementation : implementations) {
-			if (implementation.member.type == other)
+			if (implementation.member.type.equals(other)) // TODO: for some reason duplicate types are generated
 				return true;
 			if (cache.get(implementation.member.type).extendsOrImplements(other))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean extendsType(ITypeID other) {
+		ITypeID superType = type.getSuperType();
+		if (superType != null) {
+			if (superType == other)
+				return true;
+			if (cache.get(superType).extendsType(other))
 				return true;
 		}
 		
@@ -133,6 +146,10 @@ public final class TypeMembers {
 	
 	public void addConstructor(ConstructorMember constructor) {
 		getOrCreateGroup(OperatorType.CONSTRUCTOR).addMethod(constructor, TypeMemberPriority.SPECIFIED);
+	}
+	
+	public void addDestructor(DestructorMember destructor, TypeMemberPriority priority) {
+		getOrCreateGroup(OperatorType.DESTRUCTOR).addMethod(destructor, priority);
 	}
 	
 	public void addCaller(CallerMember caller, TypeMemberPriority priority) {
@@ -232,14 +249,14 @@ public final class TypeMembers {
 	
 	public DefinitionMemberGroup getOrCreateGroup(String name, boolean isStatic) {
 		if (!members.containsKey(name))
-			members.put(name, new DefinitionMemberGroup(isStatic));
+			members.put(name, new DefinitionMemberGroup(isStatic, name));
 		
 		return members.get(name);
 	}
 	
 	public DefinitionMemberGroup getOrCreateGroup(OperatorType operator) {
 		if (!operators.containsKey(operator))
-			operators.put(operator, new DefinitionMemberGroup(false));
+			operators.put(operator, new DefinitionMemberGroup(false, operator.operator + " operator"));
 		
 		return operators.get(operator);
 	}
@@ -256,7 +273,17 @@ public final class TypeMembers {
 	}
 	
 	public Expression compare(CodePosition position, TypeScope scope, CompareType operator, Expression left, Expression right) {
-		if (operator == CompareType.EQ) {
+		if (operator == CompareType.SAME) {
+			if (left.type.isObjectType() && right.type.isObjectType())
+				return new SameObjectExpression(position, left, right, false);
+			else
+				return compare(position, scope, CompareType.EQ, left, right);
+		} else if (operator == CompareType.NOTSAME) {
+			if (left.type.isObjectType() && right.type.isObjectType())
+				return new SameObjectExpression(position, left, right, true);
+			else
+				return compare(position, scope, CompareType.NE, left, right);
+		} else if (operator == CompareType.EQ) {
 			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.EQUALS);
 			for (TypeMember<ICallableMember> member : equal.getMethodMembers()) {
 				if (member.member.getHeader().accepts(scope, right))
@@ -267,7 +294,7 @@ public final class TypeMembers {
 			for (TypeMember<ICallableMember> member : equal.getMethodMembers()) {
 				if (member.member.getHeader().accepts(scope, right)) {
 					Expression equalExpression = equal.call(position, scope, left, new CallArguments(right), false);
-					return new CallExpression(position, equalExpression, BuiltinTypeMembers.BOOL_NOT, BuiltinTypeMembers.BOOL_NOT.header, CallArguments.EMPTY);
+					return new CallExpression(position, equalExpression, BuiltinTypeMembers.BOOL_NOT, BuiltinTypeMembers.BOOL_NOT.header, CallArguments.EMPTY, scope);
 				}
 			}
 		}
@@ -323,12 +350,8 @@ public final class TypeMembers {
 			if (caster.member.isImplicit() && toType == caster.member.getTargetType())
 				return true;
 		}
-		for (TypeMember<ImplementationMember> implementation : implementations) {
-			if (implementation.member.type == toType)
-				return true;
-		}
 		
-		return false;
+		return extendsOrImplements(toType);
 	}
 	
 	public boolean canCast(ITypeID toType) {
@@ -363,9 +386,11 @@ public final class TypeMembers {
 				return caster.member.cast(position, value, implicit);
 		}
 		for (TypeMember<ImplementationMember> implementation : implementations) {
-			if (implementation.member.type == toType)
+			if (implementation.member.type.equals(toType))
 				return new InterfaceCastExpression(position, value, toType);
 		}
+		if (extendsType(toType))
+			return new SupertypeCastExpression(position, value, toType);
 		
 		throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Could not cast " + toString() + " to " + toType);
 	}

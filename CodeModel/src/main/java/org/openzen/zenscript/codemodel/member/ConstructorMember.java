@@ -43,6 +43,11 @@ public class ConstructorMember extends FunctionalMember {
 				firstExpression.expression instanceof ConstructorSuperCallExpression
 				|| firstExpression.expression instanceof ConstructorThisCallExpression);
 	}
+	
+	@Override
+	public String getInformalName() {
+		return "constructor";
+	}
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
@@ -52,7 +57,10 @@ public class ConstructorMember extends FunctionalMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new ConstructorMember(position, definition, modifiers, header.instance(registry, mapping));
+		ConstructorMember result = new ConstructorMember(position, definition, modifiers, header.instance(registry, mapping));
+		if (definition.name.equals("NFAState"))
+			System.out.println("X");
+		return result;
 	}
 
 	@Override

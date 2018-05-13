@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.definition;
 
-import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -24,10 +23,11 @@ public class FunctionDefinition extends HighLevelDefinition {
 	public FunctionHeader header;
 	public Statement statement;
 	public OperatorMember caller;
-	public DefinitionMemberGroup callerGroup = new DefinitionMemberGroup(true);
+	public final DefinitionMemberGroup callerGroup;
 	
 	public FunctionDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
 		super(position, pkg, name, modifiers, outerDefinition);
+		callerGroup = new DefinitionMemberGroup(true, name);
 	}
 	
 	public FunctionDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, FunctionHeader header) {

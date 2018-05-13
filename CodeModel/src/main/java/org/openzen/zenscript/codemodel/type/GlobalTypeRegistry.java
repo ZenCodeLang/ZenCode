@@ -13,8 +13,6 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_CONST;
 import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_OPTIONAL;
-import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_SHARED;
-import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_WEAK;
 
 /**
  *
@@ -160,10 +158,6 @@ public class GlobalTypeRegistry {
 			return getModified(modifiers & ~MODIFIER_OPTIONAL, getOptional(type));
 		if ((modifiers & MODIFIER_CONST) > 0)
 			return getModified(modifiers & ~MODIFIER_CONST, getConst(type));
-		if ((modifiers & MODIFIER_SHARED) > 0)
-			throw new UnsupportedOperationException();
-		if ((modifiers & MODIFIER_WEAK) > 0)
-			throw new UnsupportedOperationException();
 		
 		throw new UnsupportedOperationException();
 	}

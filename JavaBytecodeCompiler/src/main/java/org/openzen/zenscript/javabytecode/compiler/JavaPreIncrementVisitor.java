@@ -55,6 +55,7 @@ import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
+import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
 import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.SetLocalVariableExpression;
@@ -62,6 +63,7 @@ import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
+import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
@@ -353,6 +355,11 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 	public Void visitRange(RangeExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
+	
+	@Override
+	public Void visitSameObject(SameObjectExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
 
 	@Override
 	public Void visitSetField(SetFieldExpression expression) {
@@ -386,6 +393,11 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitStaticSetter(StaticSetterExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+	
+	@Override
+	public Void visitSupertypeCast(SupertypeCastExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
 

@@ -56,6 +56,7 @@ import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
+import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
 import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.SetLocalVariableExpression;
@@ -63,6 +64,7 @@ import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
+import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
@@ -532,6 +534,11 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitRange(RangeExpression expression) {
 		return binary(expression.from, expression.to, OperatorPriority.RANGE, " .. ");
 	}
+	
+	@Override
+	public ExpressionString visitSameObject(SameObjectExpression expression) {
+		return binary(expression.left, expression.right, OperatorPriority.COMPARE, expression.inverted ? " !== " : " === ");
+	}
 
 	@Override
 	public ExpressionString visitSetField(SetFieldExpression expression) {
@@ -580,6 +587,11 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		return new ExpressionString(
 				expression.type.accept(typeFormatter) + "." + expression.setter.name + " = " + expression.setter.name,
 				OperatorPriority.ASSIGN);
+	}
+	
+	@Override
+	public ExpressionString visitSupertypeCast(SupertypeCastExpression expression) {
+		return expression.value.accept(this);
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallTranslator;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -27,7 +28,7 @@ public class TranslatedOperatorMember extends OperatorMember {
 	}
 
 	@Override
-	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments) {
-		return translator.translate(new CallTranslator.Call(position, target, instancedHeader, arguments));
+	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+		return translator.translate(new CallTranslator.Call(position, target, instancedHeader, arguments, scope));
 	}
 }

@@ -36,6 +36,8 @@ public interface ITypeID {
 	
 	public boolean hasDefaultValue();
 	
+	public boolean isObjectType();
+	
 	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments);
 	
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters);

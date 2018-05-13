@@ -40,6 +40,11 @@ public class IteratorTypeID implements ITypeID {
 	public boolean isConst() {
 		return false;
 	}
+	
+	@Override
+	public boolean isObjectType() {
+		return true;
+	}
 
 	@Override
 	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {

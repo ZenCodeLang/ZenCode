@@ -37,8 +37,6 @@ public class ZSTokenStream extends TokenStream<ZSToken, ZSTokenType> {
 		KEYWORDS.put("final", K_FINAL);
 		KEYWORDS.put("override", K_OVERRIDE);
 		KEYWORDS.put("const", K_CONST);
-		KEYWORDS.put("shared", K_SHARED);
-		KEYWORDS.put("weak", K_WEAK);
 		KEYWORDS.put("private", K_PRIVATE);
 		KEYWORDS.put("public", K_PUBLIC);
 		KEYWORDS.put("export", K_EXPORT);

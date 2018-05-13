@@ -5,20 +5,18 @@
  */
 package org.openzen.zenscript.codemodel.statement;
 
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class CatchClause {
-	public final String exceptionName;
-	public final ITypeID exceptionType;
 	public final Statement content;
+	public final VarStatement exceptionVariable;
 	
-	public CatchClause(String exceptionName, ITypeID exceptionType, Statement content) {
-		this.exceptionName = exceptionName;
-		this.exceptionType = exceptionType;
+	public CatchClause(CodePosition position, VarStatement exceptionVariable, Statement content) {
+		this.exceptionVariable = exceptionVariable;
 		this.content = content;
 	}
 }

@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GenericCompareExpression;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
@@ -43,26 +44,26 @@ public abstract class FunctionalMember extends DefinitionMember implements ICall
 	}
 
 	@Override
-	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments) {
-		return new CallExpression(position, target, this, instancedHeader, arguments);
+	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+		return new CallExpression(position, target, this, instancedHeader, arguments, scope);
 	}
 	
-	public final Expression call(CodePosition position, Expression target, CallArguments arguments) {
-		return call(position, target, header, arguments);
-	}
-	
-	@Override
-	public Expression callWithComparator(CodePosition position, CompareType operator, Expression target, FunctionHeader instancedHeader, CallArguments arguments) {
-		return new GenericCompareExpression(position, call(position, target, instancedHeader, arguments), operator);
+	public final Expression call(CodePosition position, Expression target, CallArguments arguments, TypeScope scope) {
+		return call(position, target, header, arguments, scope);
 	}
 	
 	@Override
-	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments) {
-		return new CallStaticExpression(position, target, this, arguments, instancedHeader);
+	public Expression callWithComparator(CodePosition position, CompareType operator, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+		return new GenericCompareExpression(position, call(position, target, instancedHeader, arguments, scope), operator);
 	}
 	
 	@Override
-	public Expression callStaticWithComparator(CodePosition position, ITypeID target, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments) {
-		return new GenericCompareExpression(position, callStatic(position, target, instancedHeader, arguments), operator);
+	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+		return new CallStaticExpression(position, target, this, arguments, instancedHeader, scope);
+	}
+	
+	@Override
+	public Expression callStaticWithComparator(CodePosition position, ITypeID target, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+		return new GenericCompareExpression(position, callStatic(position, target, instancedHeader, arguments, scope), operator);
 	}
 }

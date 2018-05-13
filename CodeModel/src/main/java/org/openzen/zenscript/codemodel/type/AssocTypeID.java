@@ -49,6 +49,11 @@ public class AssocTypeID implements ITypeID {
 	}
 	
 	@Override
+	public boolean isObjectType() {
+		return true;
+	}
+	
+	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		return keyType.hasInferenceBlockingTypeParameters(parameters) || valueType.hasInferenceBlockingTypeParameters(parameters);
 	}

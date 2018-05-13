@@ -28,6 +28,11 @@ public class OperatorMember extends FunctionalMember {
 		
 		this.operator = operator;
 	}
+	
+	@Override
+	public String getInformalName() {
+		return operator.operator + " operator";
+	}
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority) {

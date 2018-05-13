@@ -52,7 +52,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			if (!(member instanceof ConstructorMember))
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
-			return new ConstructorThisCallExpression(position, scope.getThisType().getSuperType(), (ConstructorMember) member, callArguments);
+			return new ConstructorThisCallExpression(position, scope.getThisType().getSuperType(), (ConstructorMember) member, callArguments, scope);
 		} else if (receiver instanceof ParsedExpressionThis) {
 			// this call (intended as first call in constructor)
 			ITypeID targetType = scope.getThisType();
@@ -63,7 +63,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			if (!(member instanceof ConstructorMember))
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
-			return new ConstructorThisCallExpression(position, scope.getThisType(), (ConstructorMember) member, callArguments);
+			return new ConstructorThisCallExpression(position, scope.getThisType(), (ConstructorMember) member, callArguments, scope);
 		}
 
 		List<FunctionHeader> headers = cReceiver.getPossibleFunctionHeaders(scope, scope.hints, arguments.arguments.size());

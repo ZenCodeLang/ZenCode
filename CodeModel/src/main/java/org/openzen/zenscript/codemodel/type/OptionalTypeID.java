@@ -52,6 +52,11 @@ public class OptionalTypeID implements ITypeID {
 	}
 	
 	@Override
+	public boolean isObjectType() {
+		return baseType.isObjectType();
+	}
+	
+	@Override
 	public ITypeID unwrap() {
 		return baseType;
 	}

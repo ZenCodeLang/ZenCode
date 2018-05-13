@@ -23,6 +23,11 @@ public class MethodMember extends FunctionalMember {
 	public MethodMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header) {
 		super(position, definition, modifiers, name, header);
 	}
+	
+	@Override
+	public String getInformalName() {
+		return name + " method";
+	}
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority) {

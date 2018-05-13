@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 
@@ -19,6 +20,7 @@ import org.openzen.zenscript.linker.symbol.ISymbol;
  * @author Hoofdgebruiker
  */
 public class ModuleSpace {
+	public final GlobalTypeRegistry typeRegistry = new GlobalTypeRegistry();
 	public final ZSPackage globalsPackage = new ZSPackage("");
 	private final ZSPackage rootPackage = new ZSPackage("");
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();

@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
@@ -47,6 +48,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 	private final HighLevelDefinition definition;
 	private final Set<EnumConstantMember> initializedEnumConstants = new HashSet<>();
 	private final Set<ITypeID> implementedTypes = new HashSet<>();
+	private boolean hasDestructor = false;
 	
 	public DefinitionMemberValidator(Validator validator, HighLevelDefinition definition) {
 		this.validator = validator;
@@ -98,6 +100,21 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 			}
 		}
 		
+		return isValid;
+	}
+	
+	@Override
+	public Boolean visitDestructor(DestructorMember member) {
+		boolean isValid = true;
+		if (hasDestructor) {
+			validator.logError(ValidationLogEntry.Code.MULTIPLE_DESTRUCTORS, member.position, "A type have only a single destructor");
+			isValid = false;
+		}
+		hasDestructor = true;
+		if (member.body != null) {
+			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
+			isValid &= member.body.accept(statementValidator);
+		}
 		return isValid;
 	}
 

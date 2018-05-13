@@ -237,7 +237,7 @@ public class FunctionHeader {
 		if (this.parameters.length != arguments.arguments.length)
 			return parameters.length + " parameters expected but " + arguments.arguments.length + " given.";
 		
-		if (typeParameters.length != arguments.typeArguments.length)
+		if (getNumberOfTypeParameters() != arguments.getNumberOfTypeArguments())
 			return typeParameters.length + " type parameters expected but " + arguments.typeArguments.length + " given.";
 		
 		for (int i = 0; i < parameters.length; i++) {

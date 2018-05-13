@@ -106,6 +106,8 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitRange(RangeExpression expression);
 	
+	public T visitSameObject(SameObjectExpression expression);
+	
 	public T visitSetField(SetFieldExpression expression);
 	
 	public T visitSetFunctionParameter(SetFunctionParameterExpression expression);
@@ -119,6 +121,8 @@ public interface ExpressionVisitor<T> {
 	public T visitStaticGetter(StaticGetterExpression expression);
 	
 	public T visitStaticSetter(StaticSetterExpression expression);
+	
+	public T visitSupertypeCast(SupertypeCastExpression expression);
 	
 	public T visitThis(ThisExpression expression);
 	

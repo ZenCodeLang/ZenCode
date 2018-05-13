@@ -233,7 +233,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
             javaWriter.label(catchStart);
 
             //final Type exceptionType = Type.getType(RuntimeException.class);
-            final Type exceptionType = Type.getType(catchClause.exceptionType.accept(JavaTypeClassVisitor.INSTANCE));
+            final Type exceptionType = Type.getType(catchClause.exceptionVariable.type.accept(JavaTypeClassVisitor.INSTANCE));
             final int local = javaWriter.local(exceptionType);
             javaWriter.store(exceptionType, local);
 

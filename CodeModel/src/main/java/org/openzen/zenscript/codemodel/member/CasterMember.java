@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -30,6 +31,11 @@ public class CasterMember extends FunctionalMember implements ICasterMember {
 		super(position, definition, modifiers, "as", new FunctionHeader(toType));
 		
 		this.toType = toType;
+	}
+	
+	@Override
+	public String getInformalName() {
+		return "caster to " + toType.toString();
 	}
 
 	@Override
@@ -53,7 +59,7 @@ public class CasterMember extends FunctionalMember implements ICasterMember {
 	}
 
 	@Override
-	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments) {
+	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		throw new UnsupportedOperationException("Cannot call a caster!");
 	}
 

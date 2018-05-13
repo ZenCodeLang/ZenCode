@@ -8,8 +8,11 @@ package org.openzen.zenscript.codemodel.expression;
 import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *
@@ -34,6 +37,11 @@ public class GetFieldExpression extends Expression {
 	@Override
 	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
 		return new CapturedDirectExpression(position, closure, this);
+	}
+	
+	@Override
+	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
+		return new SetFieldExpression(position, target, field, value);
 	}
 
 	@Override

@@ -27,8 +27,13 @@ public class ParsedExpressionString extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		if (scope.hints.contains(BasicTypeID.CHAR) && value.length() == 1) {
-			return new ConstantCharExpression(position, value.charAt(0));
+		if (value.length() == 1) {
+			if (scope.hints.contains(BasicTypeID.CHAR)) {
+				return new ConstantCharExpression(position, value.charAt(0));
+			} else if (!scope.hints.contains(BasicTypeID.STRING)) {
+				if (scope.hints.contains(BasicTypeID.INT))
+					return new ConstantCharExpression(position, value.charAt(0));
+			}
 		}
 		
 		return new ConstantStringExpression(position, value);
