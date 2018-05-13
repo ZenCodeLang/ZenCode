@@ -6,17 +6,17 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import java.util.List;
-import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class SwitchCase {
-	public final Expression value;
+	public final SwitchValue value;
 	public final List<Statement> statements;
 	
-	public SwitchCase(Expression value, List<Statement> statements) {
+	public SwitchCase(SwitchValue value, List<Statement> statements) {
 		this.value = value;
 		this.statements = statements;
 	}

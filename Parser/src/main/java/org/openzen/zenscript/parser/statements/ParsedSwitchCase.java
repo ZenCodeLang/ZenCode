@@ -7,9 +7,10 @@ package org.openzen.zenscript.parser.statements;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.SwitchCase;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.linker.ExpressionScope;
 import org.openzen.zenscript.linker.StatementScope;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
@@ -26,8 +27,8 @@ public class ParsedSwitchCase {
 		this.value = value;
 	}
 	
-	public SwitchCase compile(StatementScope scope) {
-		Expression cValue = value == null ? null : value.compile(new ExpressionScope(scope)).eval();
+	public SwitchCase compile(ITypeID type, StatementScope scope) {
+		SwitchValue cValue = value == null ? null : value.compileToSwitchValue(type, new ExpressionScope(scope));
 		List<Statement> cStatements = new ArrayList<>();
 		for (ParsedStatement statement : statements) {
 			cStatements.add(statement.compile(scope));

@@ -10,7 +10,6 @@ import java.util.function.Function;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -46,7 +45,7 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		SwitchScope innerScope = new SwitchScope(scope, result);
 		
 		for (ParsedSwitchCase switchCase : cases) {
-			result.cases.add(switchCase.compile(innerScope));
+			result.cases.add(switchCase.compile(result.value.type, innerScope));
 		}
 		
 		return result;

@@ -7,6 +7,13 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValueVisitor;
+import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -116,54 +123,35 @@ public class CompilerUtils {
     }
 
 
-    public static int getKeyForSwitch(Expression expression) {
-        if (expression.type instanceof BasicTypeID)
-            switch ((BasicTypeID) expression.type) {
-                case BOOL:
-                    if (expression instanceof ConstantBoolExpression)
-                        return ((ConstantBoolExpression) expression).value ? 1 : 0;
-                    break;
-                case BYTE:
-                    if (expression instanceof ConstantByteExpression)
-                        return ((ConstantByteExpression) expression).value;
-                    break;
-                case SBYTE:
-                    if (expression instanceof ConstantSByteExpression)
-                        return ((ConstantSByteExpression) expression).value;
-                    break;
-                case SHORT:
-                    if(expression instanceof ConstantShortExpression)
-                        return ((ConstantShortExpression) expression).value;
-                    break;
-                case USHORT:
-                    if (expression instanceof ConstantUShortExpression)
-                        return ((ConstantUShortExpression) expression).value;
-                    break;
-                case INT:
-                    if (expression instanceof ConstantIntExpression)
-                        return ((ConstantIntExpression) expression).value;
-                    break;
-                case UINT:
-                    if (expression instanceof ConstantUIntExpression)
-                        return ((ConstantUIntExpression) expression).value;
-                    break;
-                case LONG:
-                    if(expression instanceof ConstantLongExpression)
-                        return (int)((ConstantLongExpression) expression).value;
-                    break;
-                case ULONG:
-                    if(expression instanceof ConstantULongExpression)
-                        return (int)((ConstantULongExpression) expression).value;
-                    break;
-                case CHAR:
-                    if(expression instanceof ConstantCharExpression)
-                        return ((ConstantCharExpression) expression).value;
-                    break;
-                case STRING:
-                    if(expression instanceof ConstantStringExpression)
-                        return ((ConstantStringExpression) expression).value.hashCode();
-                    break;
-            }
-            throw new RuntimeException("Cannot switch over expression " + expression);
+    public static int getKeyForSwitch(SwitchValue expression) {
+		return expression.accept(new SwitchKeyVisitor());
     }
+	
+	private static class SwitchKeyVisitor implements SwitchValueVisitor<Integer> {
+
+		@Override
+		public Integer acceptInt(IntSwitchValue value) {
+			return value.value;
+		}
+
+		@Override
+		public Integer acceptChar(CharSwitchValue value) {
+			return (int)value.value;
+		}
+
+		@Override
+		public Integer acceptString(StringSwitchValue value) {
+			return value.value.hashCode();
+		}
+
+		@Override
+		public Integer acceptEnumConstant(EnumConstantSwitchValue value) {
+			return value.constant.value;
+		}
+
+		@Override
+		public Integer acceptVariantOption(VariantOptionSwitchValue value) {
+			throw new UnsupportedOperationException("Not there yet");
+		}
+	}
 }

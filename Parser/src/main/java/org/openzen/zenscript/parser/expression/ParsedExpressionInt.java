@@ -15,10 +15,16 @@ import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.linker.ExpressionScope;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *
@@ -65,6 +71,14 @@ public class ParsedExpressionInt extends ParsedExpression {
 			return new ConstantIntExpression(position, (int) value);
 		else
 			return new ConstantLongExpression(position, value);
+	}
+	
+	@Override
+	public SwitchValue compileToSwitchValue(ITypeID type, ExpressionScope scope) {
+		if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE)
+			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "value is too large for a switch case");
+		
+		return new IntSwitchValue((int) value);
 	}
 
 	@Override

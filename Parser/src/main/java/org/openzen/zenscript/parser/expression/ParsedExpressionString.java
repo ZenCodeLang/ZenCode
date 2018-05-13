@@ -7,10 +7,16 @@ package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
+import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.linker.ExpressionScope;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *
@@ -37,6 +43,20 @@ public class ParsedExpressionString extends ParsedExpression {
 		}
 		
 		return new ConstantStringExpression(position, value);
+	}
+	
+	@Override
+	public SwitchValue compileToSwitchValue(ITypeID type, ExpressionScope scope) {
+		if (type == BasicTypeID.CHAR) {
+			if (value.length() != 1)
+				throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "char value expected but string given");
+			
+			return new CharSwitchValue(value.charAt(0));
+		} else if (type == BasicTypeID.STRING) {
+			return new StringSwitchValue(value);
+		} else {
+			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Can only use string keys for string values");
+		}
 	}
 
 	@Override
