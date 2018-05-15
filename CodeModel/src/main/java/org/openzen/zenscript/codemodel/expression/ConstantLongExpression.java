@@ -16,7 +16,7 @@ public class ConstantLongExpression extends Expression {
 	public final long value;
 	
 	public ConstantLongExpression(CodePosition position, long value) {
-		super(position, BasicTypeID.LONG);
+		super(position, BasicTypeID.LONG, null);
 		
 		this.value = value;
 	}

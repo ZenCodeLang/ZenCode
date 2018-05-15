@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Map;
 import java.util.Objects;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
@@ -54,6 +55,11 @@ public class OptionalTypeID implements ITypeID {
 	@Override
 	public boolean isObjectType() {
 		return baseType.isObjectType();
+	}
+	
+	@Override
+	public boolean isDefinition(HighLevelDefinition definition) {
+		return baseType.isDefinition(definition);
 	}
 	
 	@Override

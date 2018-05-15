@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -18,7 +19,7 @@ public class IfStatement extends Statement {
 	public final Statement onElse;
 	
 	public IfStatement(CodePosition position, Expression condition, Statement onThen, Statement onElse) {
-		super(position);
+		super(position, getThrownType(condition, onThen, onElse));
 		
 		this.condition = condition;
 		this.onThen = onThen;
@@ -28,5 +29,12 @@ public class IfStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitIf(this);
+	}
+	
+	private static ITypeID getThrownType(Expression condition, Statement onThen, Statement onElse) {
+		ITypeID result = Expression.binaryThrow(onThen.position, condition.thrownType, onThen.thrownType);
+		if (onElse != null)
+			result = Expression.binaryThrow(onElse.position, result, onElse.thrownType);
+		return result;
 	}
 }

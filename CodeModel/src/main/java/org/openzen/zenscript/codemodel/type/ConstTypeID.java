@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Map;
 import java.util.Objects;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
@@ -44,6 +45,11 @@ public class ConstTypeID implements ITypeID {
 	@Override
 	public boolean isConst() {
 		return true;
+	}
+	
+	@Override
+	public boolean isDefinition(HighLevelDefinition definition) {
+		return baseType.isDefinition(definition);
 	}
 	
 	@Override

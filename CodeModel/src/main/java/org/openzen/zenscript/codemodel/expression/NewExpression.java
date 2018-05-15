@@ -18,7 +18,7 @@ public class NewExpression extends Expression {
 	public final CallArguments arguments;
 	
 	public NewExpression(CodePosition position, ITypeID type, ConstructorMember constructor, CallArguments arguments) {
-		super(position, type);
+		super(position, type, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
 		
 		this.constructor = constructor;
 		this.arguments = arguments;

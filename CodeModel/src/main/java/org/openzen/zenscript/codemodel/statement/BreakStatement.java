@@ -15,7 +15,7 @@ public class BreakStatement extends Statement {
 	public final LoopStatement target;
 	
 	public BreakStatement(CodePosition position, LoopStatement target) {
-		super(position);
+		super(position, null);
 		
 		this.target = target;
 	}

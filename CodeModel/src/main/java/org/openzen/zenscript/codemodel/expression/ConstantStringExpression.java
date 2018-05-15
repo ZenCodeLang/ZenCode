@@ -16,7 +16,7 @@ public class ConstantStringExpression extends Expression {
 	public final String value;
 	
 	public ConstantStringExpression(CodePosition position, String value) {
-		super(position, BasicTypeID.STRING);
+		super(position, BasicTypeID.STRING, null);
 		
 		this.value = value;
 	}

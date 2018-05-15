@@ -23,7 +23,7 @@ public class ConditionalExpression extends Expression {
 			Expression ifThen,
 			Expression ifElse,
 			ITypeID type) {
-		super(position, ifThen.type);
+		super(position, ifThen.type, binaryThrow(position, condition.thrownType, binaryThrow(position, ifThen.thrownType, ifElse.thrownType)));
 		
 		if (ifThen.type != ifElse.type)
 			throw new AssertionError();

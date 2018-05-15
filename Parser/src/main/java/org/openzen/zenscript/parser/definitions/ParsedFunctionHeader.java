@@ -15,13 +15,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import static org.openzen.zenscript.lexer.ZSTokenType.K_AS;
-import static org.openzen.zenscript.lexer.ZSTokenType.T_ASSIGN;
-import static org.openzen.zenscript.lexer.ZSTokenType.T_BRCLOSE;
-import static org.openzen.zenscript.lexer.ZSTokenType.T_BROPEN;
-import static org.openzen.zenscript.lexer.ZSTokenType.T_COMMA;
-import static org.openzen.zenscript.lexer.ZSTokenType.T_DOT3;
-import static org.openzen.zenscript.lexer.ZSTokenType.T_IDENTIFIER;
+import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.linker.GenericFunctionScope;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
@@ -68,23 +62,31 @@ public class ParsedFunctionHeader {
 			returnType = IParsedType.parse(tokens);
 		}
 		
-		return new ParsedFunctionHeader(genericParameters, parameters, returnType);
+		IParsedType thrownType = null;
+		if (tokens.optional(K_THROWS) != null) {
+			thrownType = IParsedType.parse(tokens);
+		}
+		
+		return new ParsedFunctionHeader(genericParameters, parameters, returnType, thrownType);
 	}
 	
 	public final List<ParsedGenericParameter> genericParameters;
 	public final List<ParsedFunctionParameter> parameters;
 	public final IParsedType returnType;
+	public final IParsedType thrownType;
 	
-	public ParsedFunctionHeader(List<ParsedFunctionParameter> parameters, IParsedType returnType) {
+	public ParsedFunctionHeader(List<ParsedFunctionParameter> parameters, IParsedType returnType, IParsedType thrownType) {
 		this.genericParameters = Collections.emptyList();
 		this.parameters = parameters;
 		this.returnType = returnType;
+		this.thrownType = thrownType;
 	}
 	
-	public ParsedFunctionHeader(List<ParsedGenericParameter> genericParameters, List<ParsedFunctionParameter> parameters, IParsedType returnType) {
+	public ParsedFunctionHeader(List<ParsedGenericParameter> genericParameters, List<ParsedFunctionParameter> parameters, IParsedType returnType, IParsedType thrownType) {
 		this.genericParameters = genericParameters;
 		this.parameters = parameters;
 		this.returnType = returnType;
+		this.thrownType = thrownType;
 	}
 	
 	public FunctionHeader compile(BaseScope scope) {
@@ -97,6 +99,6 @@ public class ParsedFunctionHeader {
 		for (int i = 0; i < parameters.length; i++)
 			parameters[i] = this.parameters.get(i).compile(innerScope);
 		
-		return new FunctionHeader(genericParameters, returnType, parameters);
+		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(scope), parameters);
 	}
 }

@@ -18,9 +18,11 @@ import org.openzen.zenscript.shared.Taggable;
  */
 public abstract class Statement extends Taggable {
 	public final CodePosition position;
+	public final ITypeID thrownType;
 	
-	public Statement(CodePosition position) {
+	public Statement(CodePosition position, ITypeID thrownType) {
 		this.position = position;
+		this.thrownType = thrownType;
 	}
 	
 	public ITypeID getReturnType() {

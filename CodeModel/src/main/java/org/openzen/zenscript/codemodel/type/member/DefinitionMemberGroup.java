@@ -303,7 +303,7 @@ public class DefinitionMemberGroup {
 			}
 			
 			for (int i = 0; i < header.parameters.length; i++) {
-				if (arguments.arguments[i].getType() != header.parameters[i].type)
+				if (arguments.arguments[i].type != header.parameters[i].type)
 					continue outer;
 			}
 			
@@ -327,7 +327,7 @@ public class DefinitionMemberGroup {
 			}
 			
 			for (int i = 0; i < header.parameters.length; i++) {
-				if (!scope.getTypeMembers(arguments.arguments[i].getType()).canCastImplicit(header.parameters[i].type))
+				if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
 					continue outer;
 			}
 			

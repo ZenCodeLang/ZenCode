@@ -215,7 +215,7 @@ public class StatementFormatter implements StatementVisitor<Void> {
 				output.append(indent)
 						.append(settings.indent)
 						.append("case ")
-						.append(switchCase.value.accept(expressionFormatter))
+						.append(switchCase.value.accept(new SwitchValueFormatter(settings)))
 						.append(":\n");
 			}
 			for (Statement s : switchCase.statements)

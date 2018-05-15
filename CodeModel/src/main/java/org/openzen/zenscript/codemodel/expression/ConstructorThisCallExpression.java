@@ -21,7 +21,7 @@ public class ConstructorThisCallExpression extends Expression {
 	public final CallArguments arguments;
 	
 	public ConstructorThisCallExpression(CodePosition position, ITypeID type, ConstructorMember constructor, CallArguments arguments, TypeScope scope) {
-		super(position, BasicTypeID.VOID);
+		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
 		
 		arguments = arguments.normalize(position, scope, constructor.header);
 		

@@ -69,6 +69,10 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
+import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
+import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
+import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
+import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
@@ -638,6 +642,46 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 		}
 		
 		return true;
+	}
+
+	@Override
+	public Boolean visitTryConvert(TryConvertExpression expression) {
+		boolean isValid = true;
+		isValid &= expression.value.accept(this);
+		return isValid;
+	}
+
+	@Override
+	public Boolean visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
+		boolean isValid = true;
+		isValid &= expression.value.accept(this);
+		return isValid;
+	}
+	
+	@Override
+	public Boolean visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
+		boolean isValid = true;
+		isValid &= expression.value.accept(this);
+		return isValid;
+	}
+
+	@Override
+	public Boolean visitVariantValue(VariantValueExpression expression) {
+		boolean isValid = true;
+		if (expression.getNumberOfArguments() != expression.option.types.length) {
+			validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, expression.position, "Invalid number of variant arguments for variant element " + expression.option.name);
+			isValid = false;
+		}
+		for (int i = 0; i < expression.getNumberOfArguments(); i++) {
+			if (expression.arguments[i].type != expression.option.types[i]) {
+				validator.logError(
+						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
+						expression.position,
+						"Invalid variant argument for argument " + i + ": " + expression.arguments[i].type + " given but " + expression.option.types[i] + " expected");
+				isValid = false;
+			}
+		}
+		return isValid;
 	}
 
 	@Override

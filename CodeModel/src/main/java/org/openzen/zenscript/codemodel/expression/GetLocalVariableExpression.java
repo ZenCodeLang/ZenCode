@@ -17,7 +17,7 @@ public class GetLocalVariableExpression extends Expression {
 	public final VarStatement variable;
 	
 	public GetLocalVariableExpression(CodePosition position, VarStatement variable) {
-		super(position, variable.type);
+		super(position, variable.type, null);
 		
 		this.variable = variable;
 	}

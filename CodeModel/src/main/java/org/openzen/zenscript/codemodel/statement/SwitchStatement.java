@@ -19,7 +19,7 @@ public class SwitchStatement extends LoopStatement {
 	public final List<SwitchCase> cases = new ArrayList<>();
 	
 	public SwitchStatement(CodePosition position, String label, Expression value) {
-		super(position, label);
+		super(position, label, null); // TODO: thrown type
 		
 		this.value = value;
 	}

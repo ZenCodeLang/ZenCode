@@ -140,6 +140,7 @@ public enum ZSTokenType implements TokenType {
 	K_IS,
 	K_AS,
 	K_MATCH,
+	K_THROWS,
 	
 	K_SUPER,
 	K_THIS,

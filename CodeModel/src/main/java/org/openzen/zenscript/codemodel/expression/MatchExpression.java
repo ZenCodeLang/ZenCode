@@ -18,7 +18,7 @@ public class MatchExpression extends Expression {
 	public final Case[] cases;
 	
 	public MatchExpression(CodePosition position, Expression value, ITypeID type, Case[] cases) {
-		super(position, type);
+		super(position, type, binaryThrow(position, value.thrownType, getThrownType(position, cases)));
 		
 		this.value = value;
 		this.cases = cases;
@@ -37,5 +37,16 @@ public class MatchExpression extends Expression {
 			this.key = key;
 			this.value = value;
 		}
+	}
+	
+	private static ITypeID getThrownType(CodePosition position, Case[] cases) {
+		if (cases.length == 0)
+			return null;
+		
+		ITypeID result = cases[0].value.thrownType;
+		for (int i = 1; i < cases.length; i++)
+			result = binaryThrow(position, result, cases[i].value.thrownType);
+		
+		return result;
 	}
 }

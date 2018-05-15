@@ -24,7 +24,7 @@ public class TryCatchStatement extends Statement {
 			Statement content,
 			List<CatchClause> catchClauses,
 			Statement finallyClause) {
-		super(position);
+		super(position, null); // TODO: thrown type
 		
 		this.resource = resource;
 		this.content = content;

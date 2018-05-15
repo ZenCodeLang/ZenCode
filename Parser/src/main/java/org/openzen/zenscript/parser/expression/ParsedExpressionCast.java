@@ -51,7 +51,7 @@ public class ParsedExpressionCast extends ParsedExpression {
 		if (header.returnType != ParsedTypeBasic.ANY)
 			throw new CompileException(position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Lambda parameter already has a return type");
 		
-		return new ParsedFunctionHeader(header.genericParameters, header.parameters, type);
+		return new ParsedFunctionHeader(header.genericParameters, header.parameters, type, null);
 	}
 	
 	@Override

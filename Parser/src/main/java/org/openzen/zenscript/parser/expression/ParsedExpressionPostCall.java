@@ -7,8 +7,6 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.linker.ExpressionScope;
@@ -32,7 +30,7 @@ public class ParsedExpressionPostCall extends ParsedExpression {
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
 		Expression cValue = value.compile(scope).eval();
-		return scope.getTypeMembers(cValue.getType()).getOrCreateGroup(operator).callPostfix(position, scope, cValue);
+		return scope.getTypeMembers(cValue.type).getOrCreateGroup(operator).callPostfix(position, scope, cValue);
 	}
 
 	@Override

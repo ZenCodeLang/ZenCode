@@ -17,7 +17,7 @@ public class SetStaticFieldExpression extends Expression {
 	public final Expression value;
 	
 	public SetStaticFieldExpression(CodePosition position, FieldMember field, Expression value) {
-		super(position, field.type);
+		super(position, field.type, value.thrownType);
 		
 		this.field = field;
 		this.value = value;

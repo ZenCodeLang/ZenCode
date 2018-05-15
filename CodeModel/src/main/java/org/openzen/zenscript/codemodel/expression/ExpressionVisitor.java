@@ -128,5 +128,13 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitThis(ThisExpression expression);
 	
+	public T visitTryConvert(TryConvertExpression expression);
+	
+	public T visitTryRethrowAsException(TryRethrowAsExceptionExpression expression);
+	
+	public T visitTryRethrowAsResult(TryRethrowAsResultExpression expression);
+	
+	public T visitVariantValue(VariantValueExpression expression);
+	
 	public T visitWrapOptional(WrapOptionalExpression expression);
 }

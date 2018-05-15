@@ -26,7 +26,7 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class ConstructorMember extends FunctionalMember {
 	public ConstructorMember(CodePosition position, HighLevelDefinition definition, int modifiers, FunctionHeader header) {
-		super(position, definition, modifiers, "this", new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.parameters));
+		super(position, definition, modifiers, "this", new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters));
 	}
 	
 	public boolean isConstructorForwarded() {

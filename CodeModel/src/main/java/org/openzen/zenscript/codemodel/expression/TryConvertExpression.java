@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -13,20 +12,17 @@ import org.openzen.zenscript.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public class ThisExpression extends Expression {
-	public ThisExpression(CodePosition position, ITypeID type) {
+public class TryConvertExpression extends Expression {
+	public final Expression value;
+	
+	public TryConvertExpression(CodePosition position, ITypeID type, Expression value) {
 		super(position, type, null);
+		
+		this.value = value;
 	}
 	
 	@Override
-	public IPartialExpression capture(CodePosition position, LambdaClosure closure) {
-		CapturedExpression result = new CapturedThisExpression(position, type, closure);
-		closure.add(result);
-		return result;
-	}
-
-	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
-		return visitor.visitThis(this);
+		return visitor.visitTryConvert(this);
 	}
 }

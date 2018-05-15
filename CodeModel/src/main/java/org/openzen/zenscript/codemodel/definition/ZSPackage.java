@@ -59,6 +59,10 @@ public class ZSPackage {
 		return types.containsKey(name) || subPackages.containsKey(name);
 	}
 	
+	public HighLevelDefinition getDefinition(String name) {
+		return types.get(name);
+	}
+	
 	public HighLevelDefinition getImport(List<String> name, int depth) {
 		if (depth >= name.size())
 			return null;
@@ -72,7 +76,19 @@ public class ZSPackage {
 		return null;
 	}
 	
-	public ITypeID getType(CodePosition position, TypeScope scope, List<GenericName> nameParts, int depth) {
+	public ITypeID getType(CodePosition position, TypeScope scope, List<GenericName> nameParts) {
+		return getType(position, scope, nameParts, 0);
+	}
+	
+	public ITypeID getType(CodePosition position, TypeScope scope, GenericName name) {
+		if (types.containsKey(name.name)) {
+			return scope.getTypeRegistry().getForDefinition(types.get(name.name), name.arguments);
+		}
+		
+		return null;
+	}
+	
+	private ITypeID getType(CodePosition position, TypeScope scope, List<GenericName> nameParts, int depth) {
 		if (depth >= nameParts.size())
 			return null;
 		

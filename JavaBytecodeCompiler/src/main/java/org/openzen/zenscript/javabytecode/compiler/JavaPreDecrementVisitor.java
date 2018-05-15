@@ -66,6 +66,10 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
+import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
+import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
+import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
+import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaParameterInfo;
@@ -403,6 +407,26 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitThis(ThisExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+
+	@Override
+	public Void visitTryConvert(TryConvertExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+
+	@Override
+	public Void visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+
+	@Override
+	public Void visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+
+	@Override
+	public Void visitVariantValue(VariantValueExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
 

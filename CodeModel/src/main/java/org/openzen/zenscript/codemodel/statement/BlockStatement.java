@@ -6,6 +6,8 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import java.util.List;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -16,7 +18,7 @@ public class BlockStatement extends Statement {
 	public final List<Statement> statements;
 	
 	public BlockStatement(CodePosition position, List<Statement> statements) {
-		super(position);
+		super(position, getThrownType(statements));
 		
 		this.statements = statements;
 	}
@@ -24,5 +26,12 @@ public class BlockStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitBlock(this);
+	}
+	
+	private static ITypeID getThrownType(List<Statement> statements) {
+		ITypeID result = null;
+		for (Statement statement : statements)
+			result = Expression.binaryThrow(statement.position, result, statement.thrownType);
+		return result;
 	}
 }

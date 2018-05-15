@@ -13,7 +13,7 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class EmptyStatement extends Statement {
 	public EmptyStatement(CodePosition position) {
-		super(position);
+		super(position, null);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class ParsedExpressionUnary extends ParsedExpression {
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
 		Expression cValue = value.compile(scope).eval();
-		return scope.getTypeMembers(cValue.getType()).getOrCreateGroup(operator).call(position, scope, cValue, new CallArguments(), false);
+		return scope.getTypeMembers(cValue.type).getOrCreateGroup(operator).call(position, scope, cValue, new CallArguments(), false);
 	}
 
 	@Override

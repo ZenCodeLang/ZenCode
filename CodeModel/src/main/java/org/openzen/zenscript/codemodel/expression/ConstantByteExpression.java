@@ -16,7 +16,7 @@ public class ConstantByteExpression extends Expression {
 	public final byte value;
 	
 	public ConstantByteExpression(CodePosition position, byte value) {
-		super(position, BasicTypeID.BYTE);
+		super(position, BasicTypeID.BYTE, null);
 		
 		this.value = value;
 	}

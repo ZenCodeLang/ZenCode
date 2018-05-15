@@ -17,7 +17,7 @@ public class AndAndExpression extends Expression {
 	public final Expression right;
 	
 	public AndAndExpression(CodePosition position, Expression left, Expression right) {
-		super(position, BasicTypeID.BOOL);
+		super(position, BasicTypeID.BOOL, binaryThrow(position, left.thrownType, right.thrownType));
 		
 		this.left = left;
 		this.right = right;

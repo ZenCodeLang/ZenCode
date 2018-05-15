@@ -120,7 +120,7 @@ public class FileScope extends BaseScope {
 				return type;
 		}
 		
-		return rootPackage.getType(position, this, name, 0);
+		return rootPackage.getType(position, this, name);
 	}
 
 	@Override

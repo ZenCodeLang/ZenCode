@@ -34,7 +34,7 @@ public class ParsedExpressionBinary extends ParsedExpression {
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
 		Expression cLeft = left.compile(scope).eval();
-		DefinitionMemberGroup members = scope.getTypeMembers(cLeft.getType()).getOrCreateGroup(this.operator);
+		DefinitionMemberGroup members = scope.getTypeMembers(cLeft.type).getOrCreateGroup(this.operator);
 		
 		Expression cRight = right.compile(scope.withHints(members.predictCallTypes(scope, scope.getResultTypeHints(), 1)[0])).eval();
 		return members.call(position, scope, cLeft, new CallArguments(cRight), false);

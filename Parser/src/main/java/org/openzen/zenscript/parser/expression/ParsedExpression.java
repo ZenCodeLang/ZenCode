@@ -338,6 +338,24 @@ public abstract class ParsedExpression {
 						position,
 						readUnaryExpression(parser.peek().position, parser, options),
 						OperatorType.DECREMENT);
+			case K_TRY:
+				parser.next();
+				if (parser.optional(T_QUEST) != null) {
+					// try? - attempts the specified operation returning T and throwing E. The result is converted to Result<T, E> depending on success or failure
+					return new ParsedTryConvertExpression(position, readUnaryExpression(position, parser, options));
+				} else if (parser.optional(T_NOT) != null) {
+					// try! - attempts the specified operation
+					// a) if the operation throws E and returns T
+					//		- if the operation succeeds, returns T
+					//		- if the operation thows and the function throws, will attempt to convert E to the thrown type and throw it
+					//		- if the operation throws and the function returns Result<?, X>, will attempt to convert E to X and return a failure
+					// b) if the operation returns Result<T, E>
+					//		- if the operation succeeds, returns T
+					//		- if the operation fails and the function throws, will attempt to convert E to the thrown type and throw it
+					//		- if the operation fails and the function returns Result<?, X>, will attempt to convert E to X and return a failure
+					// try! can thus be used to convert from exception-based to result-based and vice versa
+					return new ParsedTryRethrowExpression(position, readUnaryExpression(position, parser, options));
+				}
 			default:
 				return readPostfixExpression(position, parser, options);
 		}

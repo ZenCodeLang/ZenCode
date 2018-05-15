@@ -16,7 +16,7 @@ public class GlobalExpression extends Expression {
 	public final Expression resolution;
 	
 	public GlobalExpression(CodePosition position, String name, Expression resolution) {
-		super(position, resolution.type);
+		super(position, resolution.type, resolution.thrownType);
 		
 		this.name = name;
 		this.resolution = resolution;

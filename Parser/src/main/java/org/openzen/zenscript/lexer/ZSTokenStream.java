@@ -90,6 +90,7 @@ public class ZSTokenStream extends TokenStream<ZSToken, ZSTokenType> {
 		KEYWORDS.put("is", K_IS);
 		KEYWORDS.put("as", K_AS);
 		KEYWORDS.put("match", K_MATCH);
+		KEYWORDS.put("throws", K_THROWS);
 		
 		KEYWORDS.put("this", K_THIS);
 		KEYWORDS.put("super", K_SUPER);

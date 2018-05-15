@@ -20,7 +20,7 @@ public class VarStatement extends Statement {
 	public final boolean isFinal;
 	
 	public VarStatement(CodePosition position, String name, ITypeID type, Expression initializer, boolean isFinal) {
-		super(position);
+		super(position, initializer == null ? null : initializer.thrownType);
 		
 		this.name = name;
 		this.type = type;

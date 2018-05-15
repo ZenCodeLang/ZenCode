@@ -17,7 +17,7 @@ public class GetFunctionParameterExpression extends Expression {
 	public final FunctionParameter parameter;
 	
 	public GetFunctionParameterExpression(CodePosition position, FunctionParameter parameter) {
-		super(position, parameter.type);
+		super(position, parameter.type, null);
 		
 		this.parameter = parameter;
 	}

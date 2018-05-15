@@ -18,7 +18,7 @@ public class ReturnStatement extends Statement {
 	public final Expression value;
 	
 	public ReturnStatement(CodePosition position, Expression value) {
-		super(position);
+		super(position, value == null ? null : value.thrownType);
 		
 		this.value = value;
 	}

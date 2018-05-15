@@ -17,7 +17,7 @@ public class DoWhileStatement extends LoopStatement {
 	public final Expression condition;
 	
 	public DoWhileStatement(CodePosition position, String label, Expression condition) {
-		super(position, label);
+		super(position, label, null); // TODO: thrown type
 		
 		this.condition = condition;
 	}

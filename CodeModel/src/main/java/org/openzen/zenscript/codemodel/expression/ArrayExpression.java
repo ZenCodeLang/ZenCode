@@ -17,7 +17,7 @@ public class ArrayExpression extends Expression {
 	public final ArrayTypeID arrayType;
 	
 	public ArrayExpression(CodePosition position, Expression[] expressions, ArrayTypeID type) {
-		super(position, type);
+		super(position, type, multiThrow(position, expressions));
 		
 		this.expressions = expressions;
 		this.arrayType = type;

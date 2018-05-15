@@ -17,7 +17,7 @@ public class LockStatement extends Statement {
 	public final Statement content;
 	
 	public LockStatement(CodePosition position, Expression object, Statement content) {
-		super(position);
+		super(position, Expression.binaryThrow(position, object.thrownType, content.thrownType));
 		
 		this.object = object;
 		this.content = content;

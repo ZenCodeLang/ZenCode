@@ -16,7 +16,7 @@ public class MakeConstExpression extends Expression {
 	public final Expression value;
 	
 	public MakeConstExpression(CodePosition position, Expression value, ITypeID constType) {
-		super(position, constType);
+		super(position, constType, value.thrownType);
 		
 		this.value = value;
 	}

@@ -27,17 +27,20 @@ public class FunctionHeader {
 	public final TypeParameter[] typeParameters;
 	public final ITypeID returnType;
 	public final FunctionParameter[] parameters;
+	public final ITypeID thrownType;
 	
 	public FunctionHeader(ITypeID returnType) {
 		this.typeParameters = null;
 		this.returnType = returnType;
 		this.parameters = NO_PARAMETERS;
+		this.thrownType = null;
 	}
 	
 	public FunctionHeader(ITypeID returnType, ITypeID... parameterTypes) {
 		this.typeParameters = null;
 		this.returnType = returnType;
 		this.parameters = new FunctionParameter[parameterTypes.length];
+		this.thrownType = null;
 		
 		for (int i = 0; i < parameterTypes.length; i++)
 			parameters[i] = new FunctionParameter(parameterTypes[i], null);
@@ -47,12 +50,14 @@ public class FunctionHeader {
 		this.typeParameters = null;
 		this.returnType = returnType;
 		this.parameters = parameters;
+		this.thrownType = null;
 	}
 	
-	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, FunctionParameter... parameters) {
+	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, ITypeID thrownType, FunctionParameter... parameters) {
 		this.typeParameters = genericParameters;
 		this.returnType = returnType;
 		this.parameters = parameters;
+		this.thrownType = thrownType;
 	}
 	
 	public int getNumberOfTypeParameters() {
@@ -70,7 +75,7 @@ public class FunctionHeader {
 		for (int i = 0; i < parameters.length; i++)
 			parameters[i] = this.parameters[i].withGenericArguments(registry, mapping);
 		
-		return new FunctionHeader(genericParameters, returnType, parameters);
+		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.withGenericArguments(registry, mapping), parameters);
 	}
 	
 	public ITypeID[] inferTypes(LocalMemberCache cache, CallArguments arguments, List<ITypeID> resultHint) {
@@ -202,7 +207,7 @@ public class FunctionHeader {
 			ITypeID modified = this.parameters[i].type.withGenericArguments(registry, arguments);
 			parameters[i] = modified == this.parameters[i].type ? this.parameters[i] : new FunctionParameter(modified, this.parameters[i].name);
 		}
-		return new FunctionHeader(typeParameters, returnType, parameters);
+		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.withGenericArguments(registry, arguments), parameters);
 	}
 	
 	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, ITypeID[] arguments) {
@@ -229,8 +234,7 @@ public class FunctionHeader {
 		for (int i = 0; i < lambdaHeader.parameters.length; i++)
 			parameters[i] = new FunctionParameter(this.parameters[i].type, lambdaHeader.parameters[i].name);
 		
-		return new FunctionHeader(typeParameters, returnType, parameters);
-		//return this;
+		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
 	}
 	
 	public FunctionParameter getVariadicParameter() {
@@ -247,11 +251,11 @@ public class FunctionHeader {
 			return parameters.length + " parameters expected but " + arguments.arguments.length + " given.";
 		
 		if (getNumberOfTypeParameters() != arguments.getNumberOfTypeArguments())
-			return typeParameters.length + " type parameters expected but " + arguments.typeArguments.length + " given.";
+			return getNumberOfTypeParameters() + " type parameters expected but " + arguments.getNumberOfTypeArguments() + " given.";
 		
 		for (int i = 0; i < parameters.length; i++) {
-			if (!scope.getTypeMembers(arguments.arguments[i].getType()).canCastImplicit(parameters[i].type)) {
-				return "Parameter " + i + ": cannot cast " + arguments.arguments[i].getType() + " to " + parameters[i].type;
+			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(parameters[i].type)) {
+				return "Parameter " + i + ": cannot cast " + arguments.arguments[i].type + " to " + parameters[i].type;
 			}
 		}
 		

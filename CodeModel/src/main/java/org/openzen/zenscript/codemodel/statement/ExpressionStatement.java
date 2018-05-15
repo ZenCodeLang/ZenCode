@@ -16,7 +16,7 @@ public class ExpressionStatement extends Statement {
 	public final Expression expression;
 	
 	public ExpressionStatement(CodePosition position, Expression expression) {
-		super(position);
+		super(position, expression.thrownType);
 		
 		this.expression = expression;
 	}

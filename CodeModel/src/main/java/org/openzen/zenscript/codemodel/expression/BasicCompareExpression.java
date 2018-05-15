@@ -21,7 +21,7 @@ public class BasicCompareExpression extends Expression {
 	public final CompareType operator;
 	
 	public BasicCompareExpression(CodePosition position, Expression left, Expression right, CompareType operator) {
-		super(position, BasicTypeID.BOOL);
+		super(position, BasicTypeID.BOOL, binaryThrow(position, left.thrownType, right.thrownType));
 		
 		this.left = left;
 		this.right = right;

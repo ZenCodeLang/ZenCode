@@ -17,7 +17,7 @@ public class StaticSetterExpression extends Expression {
 	public final Expression value;
 	
 	public StaticSetterExpression(CodePosition position, SetterMember setter, Expression value) {
-		super(position, setter.type);
+		super(position, setter.type, binaryThrow(position, setter.header.thrownType, value.thrownType));
 		
 		this.setter = setter;
 		this.value = value;

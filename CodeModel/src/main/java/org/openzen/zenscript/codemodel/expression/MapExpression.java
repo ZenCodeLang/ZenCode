@@ -21,7 +21,7 @@ public class MapExpression extends Expression {
 			Expression[] keys,
 			Expression[] values,
 			ITypeID type) {
-		super(position, type);
+		super(position, type, binaryThrow(position, multiThrow(position, keys), multiThrow(position, values)));
 		
 		this.keys = keys;
 		this.values = values;

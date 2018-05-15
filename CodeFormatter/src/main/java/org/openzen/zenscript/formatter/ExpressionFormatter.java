@@ -67,6 +67,10 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
+import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
+import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
+import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
+import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.shared.StringUtils;
@@ -608,6 +612,32 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitThis(ThisExpression expression) {
 		return new ExpressionString("this", OperatorPriority.PRIMARY);
+	}
+
+	@Override
+	public ExpressionString visitTryConvert(TryConvertExpression expression) {
+		ExpressionString value = expression.accept(this);
+		return new ExpressionString("try?" + value.value, value.priority);
+	}
+
+	@Override
+	public ExpressionString visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
+		ExpressionString value = expression.accept(this);
+		return new ExpressionString("try!" + value.value, value.priority);
+	}
+
+	@Override
+	public ExpressionString visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
+		ExpressionString value = expression.accept(this);
+		return new ExpressionString("try!" + value.value, value.priority);
+	}
+	
+	@Override
+	public ExpressionString visitVariantValue(VariantValueExpression expression) {
+		StringBuilder result = new StringBuilder();
+		result.append("new ");
+		// TODO: finish this
+		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
 	}
 
 	@Override

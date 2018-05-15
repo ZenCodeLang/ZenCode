@@ -16,7 +16,7 @@ public class InterfaceCastExpression extends Expression {
 	public final Expression value;
 	
 	public InterfaceCastExpression(CodePosition position, Expression value, ITypeID toType) {
-		super(position, toType);
+		super(position, toType, value.thrownType);
 		
 		this.value = value;
 	}

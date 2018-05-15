@@ -16,7 +16,7 @@ public class ThrowStatement extends Statement {
 	public final Expression value;
 	
 	public ThrowStatement(CodePosition position, Expression value) {
-		super(position);
+		super(position, value.type);
 		
 		this.value = value;
 	}

@@ -21,7 +21,7 @@ public class ConstructorSuperCallExpression extends Expression {
 	public final CallArguments arguments;
 	
 	public ConstructorSuperCallExpression(CodePosition position, ITypeID type, ConstructorMember constructor, CallArguments arguments, TypeScope scope) {
-		super(position, BasicTypeID.VOID);
+		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
 		
 		this.objectType = type;
 		this.constructor = constructor;

@@ -44,7 +44,7 @@ public class ParsedExpressionBracket extends ParsedExpression {
 		for (ParsedExpression expression : expressions)
 			parameters.add(expression.toLambdaParameter());
 		
-		return new ParsedFunctionHeader(parameters, ParsedTypeBasic.ANY);
+		return new ParsedFunctionHeader(parameters, ParsedTypeBasic.ANY, null);
 	}
 
 	@Override

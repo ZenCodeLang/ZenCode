@@ -18,7 +18,7 @@ public class CastExpression extends Expression {
 	public final boolean isImplicit;
 	
 	public CastExpression(CodePosition position, Expression target, CasterMember member, boolean isImplicit) {
-		super(position, member.getTargetType());
+		super(position, member.getTargetType(), binaryThrow(position, target.thrownType, member.header.thrownType));
 		
 		this.target = target;
 		this.member = member;

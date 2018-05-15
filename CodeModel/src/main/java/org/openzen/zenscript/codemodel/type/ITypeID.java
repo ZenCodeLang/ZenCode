@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.Map;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
@@ -43,6 +44,10 @@ public interface ITypeID {
 	}
 	
 	public default boolean isVariant() {
+		return false;
+	}
+	
+	public default boolean isDefinition(HighLevelDefinition definition) {
 		return false;
 	}
 	

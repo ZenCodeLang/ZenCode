@@ -5,26 +5,24 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class GetterExpression extends Expression {
-	public final Expression target;
-	public final GetterMember getter;
+public class TryRethrowAsExceptionExpression extends Expression {
+	public final Expression value;
 	
-	public GetterExpression(CodePosition position, Expression target, GetterMember getter) {
-		super(position, getter.type, target.thrownType);
+	public TryRethrowAsExceptionExpression(CodePosition position, ITypeID type, Expression value, ITypeID thrownType) {
+		super(position, type, thrownType);
 		
-		this.target = target;
-		this.getter = getter;
+		this.value = value;
 	}
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
-		return visitor.visitGetter(this);
+		return visitor.visitTryRethrowAsException(this);
 	}
 }

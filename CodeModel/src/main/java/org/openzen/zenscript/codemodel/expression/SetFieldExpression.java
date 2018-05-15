@@ -18,7 +18,7 @@ public class SetFieldExpression extends Expression {
 	public final Expression value;
 	
 	public SetFieldExpression(CodePosition position, Expression target, FieldMember field, Expression value) {
-		super(position, field.type);
+		super(position, field.type, binaryThrow(position, target.thrownType, value.thrownType));
 		
 		this.target = target;
 		this.field = field;

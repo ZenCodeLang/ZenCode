@@ -15,7 +15,7 @@ public class ContinueStatement extends Statement {
 	public final LoopStatement target;
 	
 	public ContinueStatement(CodePosition position, LoopStatement target) {
-		super(position);
+		super(position, null);
 		
 		this.target = target;
 	}

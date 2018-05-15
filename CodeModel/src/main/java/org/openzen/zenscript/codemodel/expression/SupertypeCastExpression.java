@@ -17,7 +17,7 @@ public class SupertypeCastExpression extends Expression {
 	public final Expression value;
 	
 	public SupertypeCastExpression(CodePosition position, Expression value, ITypeID type) {
-		super(position, type);
+		super(position, type, value.thrownType);
 		
 		this.value = value;
 	}

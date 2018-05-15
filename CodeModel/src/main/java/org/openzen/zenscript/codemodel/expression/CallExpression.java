@@ -21,7 +21,7 @@ public class CallExpression extends Expression {
 	public final FunctionHeader instancedHeader;
 	
 	public CallExpression(CodePosition position, Expression target, FunctionalMember member, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		super(position, instancedHeader.returnType);
+		super(position, instancedHeader.returnType, multiThrow(position, arguments.arguments));
 		
 		this.target = target;
 		this.member = member;

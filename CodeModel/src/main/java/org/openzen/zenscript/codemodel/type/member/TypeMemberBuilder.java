@@ -67,7 +67,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	private final GlobalTypeRegistry registry;
 	private final TypeMembers members;
 	private final LocalMemberCache cache;
-
+	
 	public TypeMemberBuilder(GlobalTypeRegistry registry, TypeMembers members, LocalMemberCache cache) {
 		this.registry = registry;
 		this.members = members;
@@ -204,9 +204,9 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		
 		ClassDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
 		members.addConstructor(new ConstructorMember(BUILTIN, definition, 0, new FunctionHeader(VOID)));
-		members.addMethod(new MethodMember(BUILTIN, definition, 0, "getOptional", new FunctionHeader(map.keys, registry.getOptional(valueType), new FunctionParameter[0])));
-		members.addMethod(new MethodMember(BUILTIN, definition, 0, "put", new FunctionHeader(map.keys, BasicTypeID.VOID, new FunctionParameter(valueType))));
-		members.addMethod(new MethodMember(BUILTIN, definition, 0, "contains", new FunctionHeader(map.keys, BasicTypeID.BOOL, new FunctionParameter[0])));
+		members.addMethod(new MethodMember(BUILTIN, definition, 0, "getOptional", new FunctionHeader(map.keys, registry.getOptional(valueType), null, new FunctionParameter[0])));
+		members.addMethod(new MethodMember(BUILTIN, definition, 0, "put", new FunctionHeader(map.keys, BasicTypeID.VOID, null, new FunctionParameter(valueType))));
+		members.addMethod(new MethodMember(BUILTIN, definition, 0, "contains", new FunctionHeader(map.keys, BasicTypeID.BOOL, null, new FunctionParameter[0])));
 		members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN, "objectHashCode", BasicTypeID.INT));
 		return null;
 	}

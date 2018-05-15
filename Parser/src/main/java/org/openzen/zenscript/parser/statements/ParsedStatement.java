@@ -183,7 +183,16 @@ public abstract class ParsedStatement {
 				return new ParsedStatementThrow(t.position, whitespace, value);
 			}
 			case K_TRY: {
+				parser.pushMark();
 				ZSToken t = parser.next();
+				
+				if (parser.peek().type == T_QUEST || parser.peek().type == T_NOT) {
+					// Stop! This is a try! or try? expression...
+					parser.reset();
+					break;
+				}
+				
+				parser.popMark();
 				
 				String name = null;
 				ParsedExpression initializer = null;

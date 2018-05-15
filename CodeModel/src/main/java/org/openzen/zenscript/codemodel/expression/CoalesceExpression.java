@@ -16,7 +16,7 @@ public class CoalesceExpression extends Expression {
 	public final Expression right;
 	
 	public CoalesceExpression(CodePosition position, Expression left, Expression right) {
-		super(position, right.type);
+		super(position, right.type, binaryThrow(position, left.thrownType, right.thrownType));
 		
 		this.left = left;
 		this.right = right;

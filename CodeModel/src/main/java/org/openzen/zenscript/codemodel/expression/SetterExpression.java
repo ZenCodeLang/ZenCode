@@ -18,7 +18,7 @@ public class SetterExpression extends Expression {
 	public final Expression value;
 	
 	public SetterExpression(CodePosition position, Expression target, SetterMember setter, Expression value) {
-		super(position, setter.type);
+		super(position, setter.type, binaryThrow(position, value.thrownType, setter.header.thrownType));
 		
 		this.target = target;
 		this.setter = setter;

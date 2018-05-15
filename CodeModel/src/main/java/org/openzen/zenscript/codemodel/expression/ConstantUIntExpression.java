@@ -16,7 +16,7 @@ public class ConstantUIntExpression extends Expression {
 	public final int value;
 	
 	public ConstantUIntExpression(CodePosition position, int value) {
-		super(position, BasicTypeID.UINT);
+		super(position, BasicTypeID.UINT, null);
 		
 		this.value = value;
 	}

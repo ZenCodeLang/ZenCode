@@ -16,7 +16,7 @@ public class WrapOptionalExpression extends Expression {
 	public final Expression value;
 	
 	public WrapOptionalExpression(CodePosition position, Expression value, ITypeID optionalType) {
-		super(position, optionalType);
+		super(position, optionalType, value.thrownType);
 		
 		if (value.type.isOptional())
 			throw new IllegalArgumentException("Value is already optional");

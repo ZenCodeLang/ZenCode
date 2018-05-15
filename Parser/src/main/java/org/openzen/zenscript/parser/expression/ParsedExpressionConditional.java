@@ -39,8 +39,8 @@ public class ParsedExpressionConditional extends ParsedExpression {
 		Expression cIfThen = ifThen.compile(scope).eval();
 		Expression cIfElse = ifElse.compile(scope).eval();
 		
-		TypeMembers thenMembers = scope.getTypeMembers(cIfThen.getType());
-		TypeMembers elseMembers = scope.getTypeMembers(cIfElse.getType());
+		TypeMembers thenMembers = scope.getTypeMembers(cIfThen.type);
+		TypeMembers elseMembers = scope.getTypeMembers(cIfElse.type);
 		ITypeID resultType = null;
 		for (ITypeID hint : scope.hints) {
 			if (thenMembers.canCastImplicit(hint) && elseMembers.canCastImplicit(hint)) {
@@ -52,10 +52,10 @@ public class ParsedExpressionConditional extends ParsedExpression {
 		}
 		
 		if (resultType == null)
-			resultType = thenMembers.union(cIfElse.getType());
+			resultType = thenMembers.union(cIfElse.type);
 		
 		if (resultType == null)
-			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + cIfThen.getType() + " and " + cIfElse.getType());
+			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + cIfThen.type + " and " + cIfElse.type);
 		
 		cIfThen = cIfThen.castImplicit(position, scope, resultType);
 		cIfElse = cIfElse.castImplicit(position, scope, resultType);

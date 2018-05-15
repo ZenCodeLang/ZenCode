@@ -19,7 +19,7 @@ public class GetStaticFieldExpression extends Expression {
 	public final FieldMember field;
 	
 	public GetStaticFieldExpression(CodePosition position, FieldMember field) {
-		super(position, field.type);
+		super(position, field.type, null);
 		
 		this.field = field;
 	}

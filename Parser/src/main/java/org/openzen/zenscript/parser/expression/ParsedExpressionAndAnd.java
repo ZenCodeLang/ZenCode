@@ -38,9 +38,9 @@ public class ParsedExpressionAndAnd extends ParsedExpression {
 		Expression left = this.left.compile(scope).eval();
 		Expression right = this.right.compile(scope).eval();
 		
-		ITypeID resultType = scope.getTypeMembers(left.getType()).union(right.getType());
+		ITypeID resultType = scope.getTypeMembers(left.type).union(right.type);
 		if (resultType == null)
-			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + left.getType() + " and " + right.getType());
+			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + left.type + " and " + right.type);
 		
 		left = left.castImplicit(position, scope, resultType);
 		right = right.castImplicit(position, scope, resultType);

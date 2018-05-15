@@ -27,13 +27,13 @@ export class LinkedList<T> {
 		var node = first;
 		while index > 0 {
 			if node == null
-				throw new NoSuchElementException("index out of bounds");
+				return panic<T>("index out of bounds");
 			
 			node = node.next;
 		}
 		
 		if node == null
-			throw new NoSuchElementException("index out of bounds");
+			return panic<T>("index out of bounds");
 		
 		return node.value;
 	}
@@ -41,7 +41,7 @@ export class LinkedList<T> {
 	public implements Queue<T> {
 		poll() as T {
 			if first == null
-				throw new NoSuchElementException("Cannot poll an empty queue");
+				return panic<T>("Cannot poll an empty queue");
 			
 			val result = first.value;
 			first = first.next;

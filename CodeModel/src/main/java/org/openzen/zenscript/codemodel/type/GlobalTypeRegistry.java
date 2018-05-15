@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_CONST;
 import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_OPTIONAL;
@@ -31,7 +32,11 @@ public class GlobalTypeRegistry {
 	private final Map<ITypeID, ConstTypeID> constTypes = new HashMap<>();
 	private final Map<ITypeID, OptionalTypeID> optionalTypes = new HashMap<>();
 	
-	public GlobalTypeRegistry() {
+	public final ZSPackage stdlib;
+	
+	public GlobalTypeRegistry(ZSPackage stdlib) {
+		this.stdlib = stdlib;
+		
 		arrayTypes.put(ArrayTypeID.INT, ArrayTypeID.INT);
 		arrayTypes.put(ArrayTypeID.CHAR, ArrayTypeID.CHAR);
 		
@@ -108,7 +113,7 @@ public class GlobalTypeRegistry {
 		}
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID[] genericArguments) {
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID... genericArguments) {
 		return this.getForDefinition(definition, genericArguments, Collections.emptyMap());
 	}
 	

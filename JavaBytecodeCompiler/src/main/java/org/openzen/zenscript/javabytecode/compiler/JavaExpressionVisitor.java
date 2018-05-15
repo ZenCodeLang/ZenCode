@@ -573,9 +573,30 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         return null;
     }
 
+	@Override
+	public Void visitTryConvert(TryConvertExpression expression) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Void visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Void visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+	
+	@Override
+	public Void visitVariantValue(VariantValueExpression expression) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
     @Override
     public Void visitWrapOptional(WrapOptionalExpression expression) {
-        //TODO What am I supposed to do here?
+		// TODO: convert basic types (char, int, float, ...) to their boxed (Character, Integer, Float, ...) counterparts
+		// -- any object type values can just be passed as-is
         expression.value.accept(this);
         return null;
     }

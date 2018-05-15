@@ -110,7 +110,7 @@ public class Main {
 		List<ExpansionDefinition> expansions = registry.collectExpansions();
 		Map<String, ISymbol> globals = registry.collectGlobals();
 		
-		GlobalTypeRegistry globalRegistry = new GlobalTypeRegistry();
+		GlobalTypeRegistry globalRegistry = new GlobalTypeRegistry(null); // TODO: load stdlib
 		for (ParsedFile file : files) {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
@@ -140,7 +140,10 @@ public class Main {
 			System.out.println(entry.kind + " " + entry.position.toString() + ": " + entry.message);
 		}
 		
-		return new SemanticModule(isValid, definitions, scripts);
+		if (validator.getLog().isEmpty() && !isValid)
+			System.out.println("Module incorrect but no errors logged!");
+		
+		return new SemanticModule(isValid || validator.getLog().isEmpty(), definitions, scripts);
 	}
 	
 	private static JavaModule compileSemanticToJava(SemanticModule module) {

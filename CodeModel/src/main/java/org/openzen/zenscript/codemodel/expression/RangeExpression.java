@@ -17,7 +17,7 @@ public class RangeExpression extends Expression {
 	public final Expression to;
 	
 	public RangeExpression(CodePosition position, GlobalTypeRegistry registry, Expression from, Expression to) {
-		super(position, registry.getRange(from.getType(), to.getType()));
+		super(position, registry.getRange(from.type, to.type), binaryThrow(position, from.thrownType, to.thrownType));
 	
 		this.from = from;
 		this.to = to;

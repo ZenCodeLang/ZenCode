@@ -43,7 +43,7 @@ public class ParsedStatementVar extends ParsedStatement {
 		ITypeID type;
 		if (this.type == null) {
 			initializer = this.initializer == null ? null : this.initializer.compile(new ExpressionScope(scope)).eval();
-			type = initializer == null ? BasicTypeID.ANY : initializer.getType();
+			type = initializer == null ? BasicTypeID.ANY : initializer.type;
 		} else {
 			type = this.type.compile(scope);
 			initializer = this.initializer == null ? null : this.initializer.compile(new ExpressionScope(scope, type)).eval();

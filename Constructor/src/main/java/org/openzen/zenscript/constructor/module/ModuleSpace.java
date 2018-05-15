@@ -20,9 +20,10 @@ import org.openzen.zenscript.linker.symbol.ISymbol;
  * @author Hoofdgebruiker
  */
 public class ModuleSpace {
-	public final GlobalTypeRegistry typeRegistry = new GlobalTypeRegistry();
-	public final ZSPackage globalsPackage = new ZSPackage("");
 	private final ZSPackage rootPackage = new ZSPackage("");
+	private final ZSPackage stdlib = new ZSPackage("");
+	public final GlobalTypeRegistry typeRegistry = new GlobalTypeRegistry(stdlib);
+	public final ZSPackage globalsPackage = new ZSPackage("");
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
 	private final Map<String, ISymbol> globals = new HashMap<>();
 	

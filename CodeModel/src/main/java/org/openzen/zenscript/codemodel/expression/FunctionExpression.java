@@ -24,7 +24,7 @@ public class FunctionExpression extends Expression {
 			FunctionTypeID type,
 			LambdaClosure closure,
 			Statement body) {
-		super(position, type);
+		super(position, type, body.thrownType);
 		
 		this.header = type.header;
 		this.closure = closure;

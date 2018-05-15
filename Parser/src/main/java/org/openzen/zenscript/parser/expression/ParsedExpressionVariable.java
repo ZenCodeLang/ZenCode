@@ -103,7 +103,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 	
 	@Override
 	public ParsedFunctionHeader toLambdaHeader() {
-		return new ParsedFunctionHeader(Collections.singletonList(toLambdaParameter()), ParsedTypeBasic.ANY);
+		return new ParsedFunctionHeader(Collections.singletonList(toLambdaParameter()), ParsedTypeBasic.ANY, null);
 	}
 	
 	@Override

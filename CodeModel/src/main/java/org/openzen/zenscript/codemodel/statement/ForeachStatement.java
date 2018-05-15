@@ -20,7 +20,7 @@ public class ForeachStatement extends LoopStatement {
 	public Statement content;
 	
 	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IIteratorMember iterator, Expression list) {
-		super(position, loopVariables[0].name);
+		super(position, loopVariables[0].name, null); // TODO: thrown type
 		
 		this.loopVariables = loopVariables;
 		this.list = list;

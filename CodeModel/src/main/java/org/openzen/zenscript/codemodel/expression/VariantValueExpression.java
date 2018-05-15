@@ -6,7 +6,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import java.util.List;
-import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -25,19 +24,26 @@ public class VariantValueExpression extends Expression {
 	}
 	
 	public VariantValueExpression(CodePosition position, ITypeID variantType, VariantDefinition.Option option, Expression[] arguments) {
-		super(position, variantType);
+		super(position, variantType, arguments == null ? null : multiThrow(position, arguments));
 		
 		this.option = option;
 		this.arguments = null;
 	}
 	
+	public int getNumberOfArguments() {
+		return arguments == null ? 0 : arguments.length;
+	}
+	
 	@Override
 	public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
+		if (arguments != null)
+			return super.call(position, scope, hints, arguments);
+		
 		return new VariantValueExpression(position, type, option, arguments.arguments);
 	}
-
+	
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return visitor.visitVariantValue(this);
 	}
 }

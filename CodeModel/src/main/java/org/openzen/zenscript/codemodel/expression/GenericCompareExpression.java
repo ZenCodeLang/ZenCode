@@ -18,7 +18,7 @@ public class GenericCompareExpression extends Expression {
 	public final CompareType operator;
 	
 	public GenericCompareExpression(CodePosition position, Expression value, CompareType operator) {
-		super(position, BasicTypeID.BOOL);
+		super(position, BasicTypeID.BOOL, value.thrownType);
 		
 		this.value = value;
 		this.operator = operator;

@@ -15,11 +15,11 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class NullExpression extends Expression {
 	public NullExpression(CodePosition position) {
-		super(position, BasicTypeID.NULL);
+		super(position, BasicTypeID.NULL, null);
 	}
 	
 	public NullExpression(CodePosition position, ITypeID optionalType) {
-		super(position, optionalType);
+		super(position, optionalType, null);
 	}
 
 	@Override

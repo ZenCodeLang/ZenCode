@@ -16,7 +16,7 @@ public abstract class CapturedExpression extends Expression {
 	public final LambdaClosure closure;
 	
 	public CapturedExpression(CodePosition position, ITypeID type, LambdaClosure closure) {
-		super(position, type);
+		super(position, type, null);
 		
 		this.closure = closure;
 	}

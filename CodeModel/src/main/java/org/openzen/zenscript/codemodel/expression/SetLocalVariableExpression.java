@@ -17,7 +17,7 @@ public class SetLocalVariableExpression extends Expression {
 	public final Expression value;
 	
 	public SetLocalVariableExpression(CodePosition position, VarStatement variable, Expression value) {
-		super(position, variable.type);
+		super(position, variable.type, value.thrownType);
 		
 		this.variable = variable;
 		this.value = value;

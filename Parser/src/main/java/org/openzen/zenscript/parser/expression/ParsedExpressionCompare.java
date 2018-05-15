@@ -37,7 +37,7 @@ public class ParsedExpressionCompare extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) {
 		Expression cLeft = left.compile(scope.withoutHints()).eval();
 		Expression cRight = right.compile(scope.withHint(cLeft.type)).eval();
-		return scope.getTypeMembers(cLeft.getType()).compare(position, scope, type, cLeft, cRight);
+		return scope.getTypeMembers(cLeft.type).compare(position, scope, type, cLeft, cRight);
 	}
 
 	@Override
