@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_CONST;
@@ -119,7 +120,7 @@ public class GlobalTypeRegistry {
 	
 	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID[] typeParameters, Map<TypeParameter, ITypeID> outerInstance) {
 		DefinitionTypeID id;
-		if (definition.genericParameters == null && typeParameters == null && outerInstance.isEmpty()) {
+		if ((definition instanceof FunctionDefinition) || (definition.genericParameters == null && typeParameters == null && outerInstance.isEmpty())) {
 			// make it a static one
 			id = new StaticDefinitionTypeID(definition);
 		} else {

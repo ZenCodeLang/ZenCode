@@ -69,11 +69,11 @@ public class FileScope extends BaseScope {
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		if (importedTypes.containsKey(name.name))
-			return new PartialTypeExpression(position, getTypeRegistry().getForDefinition(importedTypes.get(name.name), name.arguments));
+			return new PartialTypeExpression(position, getTypeRegistry().getForDefinition(importedTypes.get(name.name), name.arguments), name.arguments);
 		
 		HighLevelDefinition localDefinition = packageDefinitions.getDefinition(name.name);
 		if (localDefinition != null)
-			return new PartialTypeExpression(position, globalRegistry.getForDefinition(localDefinition, name.arguments));
+			return new PartialTypeExpression(position, globalRegistry.getForDefinition(localDefinition, name.arguments), name.arguments);
 		
 		if (globalSymbols.containsKey(name.name)) {
 			IPartialExpression resolution = globalSymbols.get(name.name).getExpression(position, globalRegistry, name.arguments);

@@ -64,7 +64,7 @@ public class FunctionScope extends StatementScope {
 			if (header.typeParameters != null) {
 				for (TypeParameter parameter : header.typeParameters) {
 					if (parameter.name.equals(name.name))
-						return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameter));
+						return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameter), name.arguments);
 				}
 			}
 		}

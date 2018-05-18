@@ -26,10 +26,12 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class PartialTypeExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final ITypeID type;
+	private final ITypeID[] typeParameters;
 	
-	public PartialTypeExpression(CodePosition position, ITypeID type) {
+	public PartialTypeExpression(CodePosition position, ITypeID type, ITypeID[] typeParameters) {
 		this.position = position;
 		this.type = type;
+		this.typeParameters = typeParameters;
 	}
 
 	@Override
@@ -64,7 +66,7 @@ public class PartialTypeExpression implements IPartialExpression {
 
 	@Override
 	public ITypeID[] getGenericCallTypes() {
-		return null;
+		return typeParameters;
 	}
 	
 	@Override

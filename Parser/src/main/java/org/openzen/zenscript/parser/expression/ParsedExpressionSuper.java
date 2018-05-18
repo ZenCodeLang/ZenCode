@@ -28,7 +28,7 @@ public class ParsedExpressionSuper extends ParsedExpression {
 		if (type.getSuperType() == null)
 			throw new CompileException(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Type has no superclass");
 		
-		return new PartialTypeExpression(position, scope.getThisType().getSuperType());
+		return new PartialTypeExpression(position, scope.getThisType().getSuperType(), null);
 	}
 
 	@Override

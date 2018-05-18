@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
@@ -22,7 +23,7 @@ import org.openzen.zenscript.shared.CodePosition;
 public class FunctionDefinition extends HighLevelDefinition {
 	public FunctionHeader header;
 	public Statement statement;
-	public OperatorMember caller;
+	public CallerMember caller;
 	public final DefinitionMemberGroup callerGroup;
 	
 	public FunctionDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
@@ -37,9 +38,7 @@ public class FunctionDefinition extends HighLevelDefinition {
 	
 	public void setHeader(FunctionHeader header) {
 		this.header = header;
-		this.genericParameters = header.typeParameters;
-		header = new FunctionHeader(null, header.returnType, header.thrownType, header.parameters);
-		addMember(caller = new OperatorMember(position, this, modifiers | Modifiers.STATIC, OperatorType.CALL, header));
+		addMember(caller = new CallerMember(position, this, modifiers | Modifiers.STATIC, header));
 		callerGroup.addMethod(caller, TypeMemberPriority.SPECIFIED);
 	}
 	

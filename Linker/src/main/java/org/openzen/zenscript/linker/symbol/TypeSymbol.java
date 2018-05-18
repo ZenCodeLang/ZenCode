@@ -25,7 +25,7 @@ public class TypeSymbol implements ISymbol {
 	
 	@Override
 	public IPartialExpression getExpression(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments) {
-		return new PartialTypeExpression(position, types.getForDefinition(definition, typeArguments));
+		return new PartialTypeExpression(position, types.getForDefinition(definition, typeArguments), typeArguments);
 	}
 
 	@Override

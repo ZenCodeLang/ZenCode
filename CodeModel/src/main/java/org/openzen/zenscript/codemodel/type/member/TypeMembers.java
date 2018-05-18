@@ -439,7 +439,7 @@ public final class TypeMembers {
 		if (members.containsKey(name.name))
 			return new PartialStaticMemberGroupExpression(position, type, members.get(name.name), name.arguments);
 		if (innerTypes.containsKey(name.name))
-			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments));
+			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments), name.arguments);
 		
 		return null;
 	}

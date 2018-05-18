@@ -44,7 +44,7 @@ public class GenericFunctionScope extends BaseScope {
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		if (parameters.containsKey(name.name) && name.hasNoArguments())
-			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameters.get(name.name)));
+			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameters.get(name.name)), name.arguments);
 		
 		return outer.get(position, name);
 	}

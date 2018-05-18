@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 
@@ -140,11 +140,18 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionDefinition definition) {
-		FormattingUtils.formatModifiers(output, definition.modifiers);
-		output.append("function ");
-		output.append(definition.name);
-		FormattingUtils.formatHeader(output, settings, definition.header, typeFormatter);
-		FormattingUtils.formatBody(output, settings, indent, typeFormatter, definition.statement);
+		for (IDefinitionMember member : definition.members) {
+			if (member instanceof CallerMember) {
+				CallerMember caller = (CallerMember) member;
+				FormattingUtils.formatModifiers(output, definition.modifiers);
+				output.append("function ");
+				output.append(definition.name);
+				
+				FormattingUtils.formatHeader(output, settings, caller.header, typeFormatter);
+				FormattingUtils.formatBody(output, settings, indent, typeFormatter, caller.body);
+			}
+		}
+		
 		return null;
 	}
 

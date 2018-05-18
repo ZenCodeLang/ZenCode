@@ -75,12 +75,12 @@ public class DefinitionScope extends BaseScope {
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		if (members != null) {
 			if (members.hasInnerType(name.name))
-				return new PartialTypeExpression(position, members.getInnerType(position, name));
+				return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
 			if (members.hasMember(name.name) && !name.hasArguments())
 				return members.getMemberExpression(position, new ThisExpression(position, type), name, true);
 		}
 		if (genericParameters.containsKey(name.name) && !name.hasArguments())
-			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(genericParameters.get(name.name)));
+			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(genericParameters.get(name.name)), name.arguments);
 		
 		return outer.get(position, name);
 	}
