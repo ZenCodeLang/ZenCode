@@ -22,8 +22,6 @@ public interface MemberVisitor<T> {
 	
 	public T visitSetter(SetterMember member);
 	
-	public T visitEnumConstant(EnumConstantMember member);
-	
 	public T visitOperator(OperatorMember member);
 	
 	public T visitCaster(CasterMember member);

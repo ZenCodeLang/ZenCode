@@ -24,7 +24,10 @@ public class TypeMember<T extends IDefinitionMember> {
 	
 	public TypeMember<T> resolve(TypeMember<T> other) {
 		if (priority == other.priority)
-			throw new CompileException(other.member.getPosition(), CompileExceptionCode.MEMBER_DUPLICATE, "Duplicate " + other.member.describe());
+			if (priority == TypeMemberPriority.SPECIFIED)
+				throw new CompileException(other.member.getPosition(), CompileExceptionCode.MEMBER_DUPLICATE, "Duplicate " + other.member.describe());
+			else
+				return this;
 		
 		if (priority.compareTo(other.priority) < 0) {
 			return other;

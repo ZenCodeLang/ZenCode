@@ -1,5 +1,8 @@
 export expand string {
-	public get isEmpty as bool => length == 0;
+	public get empty as bool => length == 0;
+	
+	public const in(c as char)as bool
+		=> indexOf(c) >= 0;
 	
 	public const indexOf(c as char) as int {
 		for i in 0 .. length {
@@ -53,6 +56,8 @@ export expand string {
 		result.add(this[start .. $]);
 		return result;
 	}
+	
+	public const extern trim() as string;
 	
 	public const lpad(length as int, c as char) as string
 		=> this.length >= length ? this : c.times(length - this.length) + this;

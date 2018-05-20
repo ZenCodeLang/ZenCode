@@ -43,6 +43,8 @@ public class ParsedFunctionHeader {
 		if (tokens.optional(T_BRCLOSE) == null) {
 			do {
 				ZSToken argName = tokens.required(T_IDENTIFIER, "identifier expected");
+				boolean variadic = tokens.optional(T_DOT3) != null;
+				
 				IParsedType type = ParsedTypeBasic.ANY;
 				if (tokens.optional(K_AS) != null) {
 					type = IParsedType.parse(tokens);
@@ -51,7 +53,6 @@ public class ParsedFunctionHeader {
 				if (tokens.optional(T_ASSIGN) != null) {
 					defaultValue = ParsedExpression.parse(tokens);
 				}
-				boolean variadic = tokens.optional(T_DOT3) != null;
 				parameters.add(new ParsedFunctionParameter(argName.content, type, defaultValue, variadic));
 			} while (tokens.optional(T_COMMA) != null);
 			tokens.required(T_BRCLOSE, ") expected");

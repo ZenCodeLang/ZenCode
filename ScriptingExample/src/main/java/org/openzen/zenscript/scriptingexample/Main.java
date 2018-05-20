@@ -95,6 +95,8 @@ public class Main {
 	}
 	
 	private static SemanticModule compileSyntaxToSemantic(ParsedFile[] files, GlobalRegistry registry) {
+		ZSPackage modulePackage = new ZSPackage(null);
+		
 		// We are considering all these files to be in the same package, so make
 		// a single PackageDefinition instance. If these files were in multiple
 		// packages, we'd need an instance for every package.
@@ -115,7 +117,7 @@ public class Main {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
-			file.compileMembers(rootPackage, definitions, globalRegistry, expansions, globals);
+			file.compileMembers(rootPackage, modulePackage, definitions, globalRegistry, expansions, globals);
 		}
 		
 		// scripts will store all the script blocks encountered in the files
@@ -124,7 +126,7 @@ public class Main {
 			// compileCode will convert the parsed statements and expressions
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
-			file.compileCode(rootPackage, definitions, globalRegistry, expansions, scripts, globals);
+			file.compileCode(rootPackage, modulePackage, definitions, globalRegistry, expansions, scripts, globals);
 		}
 		
 		Validator validator = new Validator();

@@ -159,9 +159,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 		
 		return isValid;
 	}
-
-	@Override
-	public Boolean visitEnumConstant(EnumConstantMember member) {
+	
+	public boolean visitEnumConstant(EnumConstantMember member) {
 		boolean isValid = true;
 		isValid &= ValidationUtils.validateIdentifier(validator, member.position, member.name);
 		if (member.constructor != null) {

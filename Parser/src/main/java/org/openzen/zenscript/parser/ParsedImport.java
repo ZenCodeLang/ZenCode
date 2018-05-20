@@ -18,6 +18,8 @@ import static org.openzen.zenscript.lexer.ZSTokenType.*;
  */
 public class ParsedImport {
 	public static ParsedImport parse(CodePosition position, ZSTokenStream tokens) {
+		boolean relative = tokens.optional(T_DOT) != null;
+		
 		List<String> importName = new ArrayList<>();
 		ZSToken tName = tokens.required(T_IDENTIFIER, "identifier expected");
 		importName.add(tName.content);
@@ -34,15 +36,17 @@ public class ParsedImport {
 		}
 
 		tokens.required(T_SEMICOLON, "; expected");
-		return new ParsedImport(position, importName, rename);
+		return new ParsedImport(position, relative, importName, rename);
 	}
 	
 	public final CodePosition position;
+	private final boolean relative;
 	private final List<String> importName;
 	private final String rename;
 	
-	public ParsedImport(CodePosition position, List<String> importName, String rename) {
+	public ParsedImport(CodePosition position, boolean relative, List<String> importName, String rename) {
 		this.position = position;
+		this.relative = relative;
 		this.importName = importName;
 		this.rename = rename;
 	}
@@ -51,7 +55,22 @@ public class ParsedImport {
 		return rename == null ? importName.get(importName.size() - 1) : rename;
 	}
 	
+	public boolean isRelative() {
+		return relative;
+	}
+	
 	public List<String> getPath() {
 		return importName;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < importName.size(); i++) {
+			if (i > 0)
+				result.append('.');
+			result.append(importName.get(i));
+		}
+		return result.toString();
 	}
 }

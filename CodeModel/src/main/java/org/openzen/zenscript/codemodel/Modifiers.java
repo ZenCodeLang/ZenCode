@@ -24,6 +24,7 @@ public class Modifiers {
 	public static final int IMPLICIT = 512;
 	public static final int VIRTUAL = 1024;
 	public static final int EXTERN = 2048;
+	public static final int OVERRIDE = 4096;
 	
 	public static boolean isPublic(int modifiers) {
 		return (modifiers & PUBLIC) > 0;

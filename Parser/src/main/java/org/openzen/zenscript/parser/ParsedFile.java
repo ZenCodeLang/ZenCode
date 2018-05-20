@@ -150,12 +150,13 @@ public class ParsedFile {
 	
 	public void compileTypes(
 			ZSPackage rootPackage,
+			ZSPackage modulePackage,
 			PackageDefinitions packageDefinitions,
 			GlobalTypeRegistry globalRegistry,
 			List<ExpansionDefinition> expansions,
 			Map<String, ISymbol> globalSymbols) {
 		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols);
-		loadImports(scope, rootPackage);
+		loadImports(scope, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileTypes(scope);
 		}
@@ -163,12 +164,13 @@ public class ParsedFile {
 	
 	public void compileMembers(
 			ZSPackage rootPackage,
+			ZSPackage modulePackage,
 			PackageDefinitions packageDefinitions,
 			GlobalTypeRegistry globalRegistry,
 			List<ExpansionDefinition> expansions,
 			Map<String, ISymbol> globalSymbols) {
 		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols);
-		loadImports(scope, rootPackage);
+		loadImports(scope, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileMembers(scope);
 		}
@@ -176,13 +178,14 @@ public class ParsedFile {
 	
 	public void compileCode(
 			ZSPackage rootPackage,
+			ZSPackage modulePackage,
 			PackageDefinitions packageDefinitions,
 			GlobalTypeRegistry globalRegistry,
 			List<ExpansionDefinition> expansions,
 			List<ScriptBlock> scripts,
 			Map<String, ISymbol> globalSymbols) {
 		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols);
-		loadImports(scope, rootPackage);
+		loadImports(scope, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileCode(scope);
 		}
@@ -201,11 +204,17 @@ public class ParsedFile {
 		}
 	}
 	
-	private void loadImports(FileScope scope, ZSPackage rootPackage) {
+	private void loadImports(FileScope scope, ZSPackage rootPackage, ZSPackage modulePackage) {
 		for (ParsedImport importEntry : imports) {
-			HighLevelDefinition definition = rootPackage.getImport(importEntry.getPath(), 0);
+			HighLevelDefinition definition;
+			if (importEntry.isRelative()) {
+				definition = modulePackage.getImport(importEntry.getPath(), 0);
+			} else {
+				definition = rootPackage.getImport(importEntry.getPath(), 0);
+			}
+			
 			if (definition == null)
-				throw new CompileException(importEntry.position, CompileExceptionCode.IMPORT_NOT_FOUND, "Could not find type");
+				throw new CompileException(importEntry.position, CompileExceptionCode.IMPORT_NOT_FOUND, "Could not find type " + importEntry.toString());
 			
 			scope.register(importEntry.getName(), definition);
 		}

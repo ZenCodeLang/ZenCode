@@ -105,7 +105,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 					.append("{\n");
 		}
 		
-		List<EnumConstantMember> enumConstants = definition.getEnumConstants();
+		List<EnumConstantMember> enumConstants = definition.enumConstants;
 		boolean first = true;
 		ExpressionFormatter expressionFormatter = new ExpressionFormatter(settings, typeFormatter);
 		for (EnumConstantMember enumConstant : enumConstants) {

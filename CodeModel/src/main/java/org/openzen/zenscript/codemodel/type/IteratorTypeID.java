@@ -7,7 +7,6 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
 import java.util.Map;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**

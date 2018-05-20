@@ -126,11 +126,6 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitEnumConstant(EnumConstantMember member) {
-		return null; // TODO: handle separately
-	}
-
-	@Override
 	public Void visitOperator(OperatorMember member) {
 		visit(false);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);

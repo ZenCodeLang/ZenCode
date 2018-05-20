@@ -148,10 +148,28 @@ public class ValidationUtils {
 			TypeParameter[] typeParameters,
 			ITypeID[] typeArguments)
 	{
-		if (typeParameters == null)
-			return typeArguments == null;
-		if (typeArguments == null)
+		if (typeParameters == null || typeParameters.length == 0) {
+			if (typeArguments == null || typeArguments.length == 0) {
+				return true;
+			} else {
+				target.logError(
+					ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
+					position,
+					"Invalid number of type arguments: "
+							+ typeArguments.length
+							+ " arguments given but none expected");
+				return false;
+			}
+		}
+		if (typeArguments == null || typeArguments.length == 0) {
+			target.logError(
+					ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
+					position,
+					"Invalid number of type arguments: "
+							+ typeParameters.length
+							+ " arguments expected but none given");
 			return false;
+		}
 		
 		if (typeParameters.length != typeArguments.length) {
 			target.logError(

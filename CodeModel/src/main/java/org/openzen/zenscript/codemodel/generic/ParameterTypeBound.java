@@ -28,7 +28,7 @@ public class ParameterTypeBound extends GenericParameterBound {
 
 	@Override
 	public void registerMembers(LocalMemberCache cache, TypeMembers type) {
-		cache.get(this.type).copyMembersTo(position, type, TypeMemberPriority.SPECIFIED);
+		cache.get(this.type).copyMembersTo(position, type, TypeMemberPriority.FROM_TYPE_BOUNDS);
 	}
 
 	@Override

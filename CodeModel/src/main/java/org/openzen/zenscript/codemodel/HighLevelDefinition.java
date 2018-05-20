@@ -74,15 +74,6 @@ public abstract class HighLevelDefinition extends Taggable {
 		return fields;
 	}
 	
-	public List<EnumConstantMember> getEnumConstants() {
-		List<EnumConstantMember> enumMembers = new ArrayList<>();
-		for (IDefinitionMember member : members)
-            if (member instanceof EnumConstantMember)
-				enumMembers.add((EnumConstantMember) member);
-		
-		return enumMembers;
-	}
-	
 	public boolean hasEmptyConstructor() {
 		for (IDefinitionMember member : members) {
 			if (member instanceof ConstructorMember) {

@@ -5,51 +5,26 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class EnumConstantMember extends DefinitionMember {
+public class EnumConstantMember {
+	public final CodePosition position;
+	public final HighLevelDefinition definition;
 	public final String name;
 	public final int value;
 	
 	public NewExpression constructor;
 	
 	public EnumConstantMember(CodePosition position, HighLevelDefinition definition, String name, int value) {
-		super(position, definition, Modifiers.STATIC);
-		
+		this.position = position;
+		this.definition = definition;
 		this.name = name;
 		this.value = value;
-	}
-
-	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addEnumMember(this, priority);
-	}
-
-	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		throw new UnsupportedOperationException("Enums can't have type parameters");
-	}
-
-	@Override
-	public String describe() {
-		return "enum member " + name;
-	}
-
-	@Override
-	public <T> T accept(MemberVisitor<T> visitor) {
-		return visitor.visitEnumConstant(this);
 	}
 }

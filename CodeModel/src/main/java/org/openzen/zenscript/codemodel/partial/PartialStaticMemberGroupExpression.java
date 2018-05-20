@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.partial;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -77,5 +78,15 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	@Override
 	public ITypeID[] getGenericCallTypes() {
 		return typeArguments;
+	}
+	
+	@Override
+	public List<ITypeID> getAssignHints() {
+		if (group.getSetter() != null)
+			return Collections.singletonList(group.getSetter().type);
+		if (group.getField() != null)
+			return Collections.singletonList(group.getField().type);
+		
+		return Collections.emptyList();
 	}
 }

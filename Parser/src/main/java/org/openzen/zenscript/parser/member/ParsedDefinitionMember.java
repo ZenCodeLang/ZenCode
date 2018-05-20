@@ -81,6 +81,10 @@ public abstract class ParsedDefinitionMember {
 					tokens.next();
 					modifiers |= Modifiers.EXTERN;
 					break;
+				case K_OVERRIDE:
+					tokens.next();
+					modifiers |= Modifiers.OVERRIDE;
+					break;
 				default:
 					break outer;
 			}

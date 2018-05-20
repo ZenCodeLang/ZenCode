@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type.member;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
@@ -26,6 +28,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.EqualsMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
@@ -58,6 +61,8 @@ import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinTypeMembers.*;
 import static org.openzen.zenscript.shared.CodePosition.BUILTIN;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *
@@ -76,6 +81,35 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		if (members.type != VOID) {
 			members.addOperator(OperatorType.EQUALS, new EqualsMember(members.type), TypeMemberPriority.BUILTIN_DEFAULT);
 		}
+	}
+	
+	private void registerExpansions(ITypeID type) {
+		for (ExpansionDefinition expansion : cache.getExpansions()) {
+			if (expansion.target == null)
+				throw new CompileException(expansion.position, CompileExceptionCode.INTERNAL_ERROR, "Missing expansion target");
+			
+			Map<TypeParameter, ITypeID> mapping = matchType(type, expansion.target);
+			if (mapping != null) {
+				if (mapping.isEmpty()) {
+					for (IDefinitionMember member : expansion.members)
+						member.registerTo(members, TypeMemberPriority.SPECIFIED);
+				} else {
+					for (IDefinitionMember member : expansion.members)
+						member.instance(registry, mapping).registerTo(members, TypeMemberPriority.SPECIFIED);
+				}
+			}
+		}
+	}
+	
+	private Map<TypeParameter, ITypeID> matchType(ITypeID type, ITypeID pattern) {
+		if (type == pattern)
+			return Collections.emptyMap();
+		
+		Map<TypeParameter, ITypeID> mapping = new HashMap<>();
+		if (pattern.inferTypeParameters(cache, type, mapping))
+			return mapping;
+		
+		return null;
 	}
 
 	@Override
@@ -103,6 +137,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				visitString();
 				break;
 		}
+		
+		registerExpansions(basic);
 		return null;
 	}
 
@@ -166,6 +202,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addIterator(new ArrayIteratorKeyValues(array), TypeMemberPriority.SPECIFIED);
 		members.addIterator(new ArrayIteratorValues(array), TypeMemberPriority.SPECIFIED);
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "clear", new FunctionHeader(VOID)), TypeMemberPriority.SPECIFIED);
+		
+		registerExpansions(array);
 		return null;
 	}
 
@@ -195,6 +233,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN, "objectHashCode", BasicTypeID.INT));
 		
 		members.addIterator(new AssocIterator(assoc), TypeMemberPriority.SPECIFIED);
+		
+		registerExpansions(assoc);
 		return null;
 	}
 	
@@ -208,6 +248,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "put", new FunctionHeader(map.keys, BasicTypeID.VOID, null, new FunctionParameter(valueType))));
 		members.addMethod(new MethodMember(BUILTIN, definition, 0, "contains", new FunctionHeader(map.keys, BasicTypeID.BOOL, null, new FunctionParameter[0])));
 		members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN, "objectHashCode", BasicTypeID.INT));
+		
+		registerExpansions(map);
 		return null;
 	}
 	
@@ -220,6 +262,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	public Void visitFunction(FunctionTypeID function) {
 		FunctionDefinition definition = new FunctionDefinition(BUILTIN, null, "", Modifiers.EXPORT, function.header);
 		members.addCaller(new CallerMember(BUILTIN, definition, 0, function.header), TypeMemberPriority.SPECIFIED);
+		
+		registerExpansions(function);
 		return null;
 	}
 
@@ -260,6 +304,13 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 					members.addVariantOption(option);
 			}
 		}
+		
+		if (definition instanceof EnumDefinition) {
+			EnumDefinition enumDef = (EnumDefinition) definition;
+			for (EnumConstantMember constant : enumDef.enumConstants) {
+				members.addEnumMember(constant, TypeMemberPriority.SPECIFIED);
+			}
+		}
 
 		DefinitionMemberGroup constructors = members.getOrCreateGroup(OperatorType.CONSTRUCTOR);
 		if (constructors.getMethodMembers().isEmpty()) {
@@ -286,15 +337,22 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		}
 		
 		if (definition instanceof EnumDefinition) {
-			members.addGetter(new GetterMember(BUILTIN, definition, 0, "name", BasicTypeID.STRING), TypeMemberPriority.SPECIFIED);
-			members.addGetter(new GetterMember(BUILTIN, definition, 0, "ordinal", BasicTypeID.INT), TypeMemberPriority.SPECIFIED);
+			members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC, "name", BasicTypeID.STRING), TypeMemberPriority.SPECIFIED);
+			members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC, "ordinal", BasicTypeID.INT), TypeMemberPriority.SPECIFIED);
+			members.addField(new FieldMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.STATIC, "VALUES", registry.getArray(type, 1)));
 			
 			if (!members.canCast(BasicTypeID.STRING)) {
 				members.addCaster(new CasterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN | Modifiers.IMPLICIT, BasicTypeID.STRING));
 			}
 		}
 		
-		members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN, "objectHashCode", BasicTypeID.INT));
+		if (type.superType != null) {
+			cache.get(type.superType).copyMembersTo(type.definition.position, members, TypeMemberPriority.INHERITED);
+		} else {
+			members.addGetter(new GetterMember(BUILTIN, definition, Modifiers.PUBLIC | Modifiers.EXTERN, "objectHashCode", BasicTypeID.INT));
+		}
+		
+		registerExpansions(type);
 		return null;
 	}
 
@@ -305,6 +363,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		for (GenericParameterBound bound : parameter.bounds) {
 			bound.registerMembers(cache, members);
 		}
+		
 		return null;
 	}
 
@@ -326,17 +385,23 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				|| range.from == BasicTypeID.ULONG)) {
 			members.addIterator(new RangeIterator(range), TypeMemberPriority.SPECIFIED);
 		}
+		
+		registerExpansions(range);
 		return null;
 	}
 
 	@Override
 	public Void visitConst(ConstTypeID type) {
-		return type.baseType.accept(this);
+		type.baseType.accept(this);
+		registerExpansions(type);
+		return null;
 	}
 
 	@Override
 	public Void visitOptional(OptionalTypeID optional) {
-		return optional.baseType.accept(this);
+		optional.baseType.accept(this);
+		registerExpansions(optional);
+		return null;
 	}
 	
 	private void visitBool() {

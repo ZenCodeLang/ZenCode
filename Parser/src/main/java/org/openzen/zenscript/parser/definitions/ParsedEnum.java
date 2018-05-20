@@ -70,7 +70,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 		super.compileMembers(scope);
 		
 		for (ParsedEnumConstant constant : enumValues) {
-			compiled.addMember(constant.getCompiled());
+			compiled.addEnumConstant(constant.getCompiled());
 		}
 	}
 

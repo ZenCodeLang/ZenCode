@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import static org.openzen.zenscript.codemodel.Modifiers.*;
@@ -17,7 +19,9 @@ import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
@@ -167,6 +171,11 @@ public class DefinitionValidator implements DefinitionVisitor<Boolean> {
 		boolean isValid = true;
 		for (IDefinitionMember member : definition.members) {
 			isValid &= member.accept(memberValidator);
+		}
+		if (definition instanceof EnumDefinition) {
+			for (EnumConstantMember constant : ((EnumDefinition) definition).enumConstants) {
+				isValid &= memberValidator.visitEnumConstant(constant);
+			}
 		}
 		return isValid;
 	}

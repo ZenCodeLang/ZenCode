@@ -53,8 +53,8 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	
 	@Override
 	public List<ITypeID> getAssignHints() {
-		if (group.getGetter() != null)
-			return Collections.singletonList(group.getGetter().getType());
+		if (group.getSetter() != null)
+			return Collections.singletonList(group.getSetter().type);
 		if (group.getField() != null)
 			return Collections.singletonList(group.getField().type);
 		

@@ -92,7 +92,7 @@ public class Module {
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
 			try {
-				file.compileTypes(rootPackage, definitions, registry.typeRegistry, expansions, globals);
+				file.compileTypes(rootPackage, pkg, definitions, registry.typeRegistry, expansions, globals);
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
@@ -107,7 +107,7 @@ public class Module {
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
 			try {
-				file.compileMembers(rootPackage, definitions, registry.typeRegistry, expansions, globals);
+				file.compileMembers(rootPackage, pkg, definitions, registry.typeRegistry, expansions, globals);
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
@@ -124,7 +124,7 @@ public class Module {
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
 			try {
-				file.compileCode(rootPackage, definitions, registry.typeRegistry, expansions, scripts, globals);
+				file.compileCode(rootPackage, pkg, definitions, registry.typeRegistry, expansions, scripts, globals);
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
