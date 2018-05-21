@@ -23,4 +23,9 @@ public class CapturedDirectExpression extends CapturedExpression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitCapturedDirect(this);
 	}
+
+	@Override
+	public <T> T accept(CapturedExpressionVisitor<T> visitor) {
+		return visitor.visitCapturedDirect(this);
+	}
 }

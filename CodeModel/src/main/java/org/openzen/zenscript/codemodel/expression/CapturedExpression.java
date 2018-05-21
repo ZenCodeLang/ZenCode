@@ -27,4 +27,6 @@ public abstract class CapturedExpression extends Expression {
 		closure.add(result);
 		return result;
 	}
+	
+	public abstract <T> T accept(CapturedExpressionVisitor<T> visitor);
 }

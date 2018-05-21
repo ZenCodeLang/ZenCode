@@ -25,4 +25,9 @@ public class CapturedLocalVariableExpression extends CapturedExpression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitCapturedLocalVariable(this);
 	}
+
+	@Override
+	public <T> T accept(CapturedExpressionVisitor<T> visitor) {
+		return visitor.visitCapturedLocal(this);
+	}
 }
