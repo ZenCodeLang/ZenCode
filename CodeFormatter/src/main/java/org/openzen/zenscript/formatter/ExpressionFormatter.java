@@ -517,8 +517,9 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append("match ");
 		result.append(expression.value.accept(this));
 		result.append(" {\n");
-		
-		throw new UnsupportedOperationException();
+
+		return new ExpressionString(result.toString(), OperatorPriority.PRIMARY);
+//		throw new UnsupportedOperationException();
 	}
 
 	@Override

@@ -82,7 +82,7 @@ public class ParsedMatchExpression extends ParsedExpression {
 				LambdaClosure closure = new LambdaClosure();
 				StatementScope innerScope = new LambdaScope(scope, closure, header);
 				Statement contents = body.compile(innerScope, header);
-				return new MatchExpression.Case(null, new FunctionExpression(name.position, scope.getTypeRegistry().getFunction(header), closure, contents));
+				return new MatchExpression.Case(null, new FunctionExpression(null, scope.getTypeRegistry().getFunction(header), closure, contents));
 			}
 			
 			SwitchValue switchValue = name.compileToSwitchValue(valueType, scope.withHint(valueType));
