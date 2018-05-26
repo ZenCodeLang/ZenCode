@@ -5,28 +5,19 @@
  */
 package org.openzen.zenscript.lexer;
 
-import org.openzen.zenscript.shared.CodePosition;
-
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ZSToken implements Token<ZSTokenType> {
-	public final CodePosition position;
 	public final ZSTokenType type;
 	public final String content;
 	public final String whitespaceBefore;
 	
-	public ZSToken(CodePosition position, ZSTokenType type, String content, String whitespaceBefore) {
-		this.position = position;
+	public ZSToken(ZSTokenType type, String content, String whitespaceBefore) {
 		this.type = type;
 		this.content = content;
 		this.whitespaceBefore = whitespaceBefore;
-	}
-	
-	@Override
-	public CodePosition getPosition() {
-		return position;
 	}
 
 	@Override

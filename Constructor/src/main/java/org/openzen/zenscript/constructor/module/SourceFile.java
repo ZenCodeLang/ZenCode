@@ -5,14 +5,18 @@
  */
 package org.openzen.zenscript.constructor.module;
 
+import java.io.File;
+
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface ModuleReference {
-	public String getName();
+public class SourceFile {
+	public final String name;
+	public final File file;
 	
-	public SemanticModule load();
-	
-	public SourcePackage getRootPackage();
+	public SourceFile(String name, File file) {
+		this.name = name;
+		this.file = file;
+	}
 }

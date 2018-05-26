@@ -105,13 +105,14 @@ public interface IParsedType {
 				result = ParsedTypeBasic.STRING;
 				break;
 			case K_FUNCTION: {
-				CodePosition position = tokens.next().position;
+				CodePosition position = tokens.getPosition();
+				tokens.next();
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
 				result = new ParsedFunctionType(position, header);
 				break;
 			}
 			case T_IDENTIFIER: {
-				CodePosition position = tokens.peek().position;
+				CodePosition position = tokens.getPosition();
 				List<ParsedNamedType.ParsedNamePart> name = new ArrayList<>();
 				do {
 					String namePart = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;

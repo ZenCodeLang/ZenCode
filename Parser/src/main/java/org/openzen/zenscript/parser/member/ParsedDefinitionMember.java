@@ -265,9 +265,9 @@ public abstract class ParsedDefinitionMember {
 			default:
 				if (modifiers == Modifiers.STATIC && tokens.peek().type == ZSTokenType.T_AOPEN) {
 					ParsedStatementBlock body = ParsedStatementBlock.parseBlock(tokens, true);
-					return new ParsedStaticInitializer(forDefinition, tokens.peek().position, body);
+					return new ParsedStaticInitializer(forDefinition, tokens.getPosition(), body);
 				}
-				throw new CompileException(tokens.peek().position, CompileExceptionCode.UNEXPECTED_TOKEN, "Unexpected token: " + tokens.peek().content);
+				throw new CompileException(tokens.getPosition(), CompileExceptionCode.UNEXPECTED_TOKEN, "Unexpected token: " + tokens.peek().content);
 		}
 	}
 	

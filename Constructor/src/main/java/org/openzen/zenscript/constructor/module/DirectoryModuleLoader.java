@@ -28,6 +28,7 @@ public class DirectoryModuleLoader implements ModuleReference {
 	private final String moduleName;
 	private final File directory;
 	private final boolean isStdlib;
+	private SourcePackage rootPackage = null;
 	
 	public DirectoryModuleLoader(ModuleLoader loader, String moduleName, File directory, boolean isStdlib) {
 		this.loader = loader;
@@ -92,5 +93,27 @@ public class DirectoryModuleLoader implements ModuleReference {
 		} catch (IOException ex) {
 			throw new ConstructorException("Loading module files failed: " + ex.getMessage(), ex);
 		}
+	}
+	
+	@Override
+	public SourcePackage getRootPackage() {
+		if (rootPackage == null)
+			rootPackage = loadPackage("", new File(directory, "src"));
+		
+		return rootPackage;
+	}
+	
+	private SourcePackage loadPackage(String name, File directory) {
+		SourcePackage pkg = new SourcePackage(name);
+		
+		for (File file : directory.listFiles()) {
+			if (file.isDirectory()) {
+				pkg.addPackage(loadPackage(file.getName(), file));
+			} else if (file.isFile() && file.getName().toLowerCase().endsWith(".zs")) {
+				pkg.addFile(new SourceFile(file.getName(), file));
+			}
+		}
+		
+		return pkg;
 	}
 }

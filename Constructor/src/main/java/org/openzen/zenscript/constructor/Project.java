@@ -17,9 +17,13 @@ import org.openzen.zenscript.constructor.module.ModuleReference;
  * @author Hoofdgebruiker
  */
 public class Project {
+	public final String name;
 	public final ModuleReference[] modules;
+	public final Library[] libraries;
 	
 	public Project(ModuleLoader loader, File directory) throws IOException {
+		name = directory.getName();
+		
 		if (!directory.exists())
 			throw new ConstructorException("Project directory doesn't exist");
 		if (!directory.isDirectory())
@@ -30,6 +34,14 @@ public class Project {
 			throw new ConstructorException("Missing project.json file in project directory");
 		
 		JSONObject json = JSONUtils.load(projectFile);
+		
+		JSONObject jsonLibraries = json.getJSONObject("libraries");
+		libraries = new Library[jsonLibraries.length()];
+		int k = 0;
+		for (String key : jsonLibraries.keySet()) {
+			libraries[k] = new Library(loader, directory, key, jsonLibraries.getJSONObject(key));
+			k++;
+		}
 		
 		JSONArray jsonModules = json.getJSONArray("modules");
 		modules = new ModuleReference[jsonModules.length()];

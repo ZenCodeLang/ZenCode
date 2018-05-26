@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
-import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
@@ -20,6 +19,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSToken;
+import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.parser.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -108,9 +108,9 @@ public abstract class ParsedExpression {
 		ParsedExpression left = readOrOrExpression(position, parser, options);
 
 		if (parser.optional(T_QUEST) != null) {
-			ParsedExpression onIf = readOrOrExpression(parser.peek().position, parser, options);
+			ParsedExpression onIf = readOrOrExpression(parser.getPosition(), parser, options);
 			parser.required(T_COLON, ": expected");
-			ParsedExpression onElse = readConditionalExpression(parser.peek().position, parser, options);
+			ParsedExpression onElse = readConditionalExpression(parser.getPosition(), parser, options);
 			return new ParsedExpressionConditional(position, left, onIf, onElse);
 		}
 
@@ -121,12 +121,12 @@ public abstract class ParsedExpression {
 		ParsedExpression left = readAndAndExpression(position, parser, options);
 
 		while (parser.optional(T_OROR) != null) {
-			ParsedExpression right = readAndAndExpression(parser.peek().position, parser, options);
+			ParsedExpression right = readAndAndExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionOrOr(position, left, right);
 		}
 		
 		while (parser.optional(T_COALESCE) != null) {
-			ParsedExpression right = readAndAndExpression(parser.peek().position, parser, options);
+			ParsedExpression right = readAndAndExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionCoalesce(position, left, right);
 		}
 		
@@ -137,7 +137,7 @@ public abstract class ParsedExpression {
 		ParsedExpression left = readOrExpression(position, parser, options);
 
 		while (parser.optional(T_ANDAND) != null) {
-			ParsedExpression right = readOrExpression(parser.peek().position, parser, options);
+			ParsedExpression right = readOrExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionAndAnd(position, left, right);
 		}
 		return left;
@@ -147,7 +147,7 @@ public abstract class ParsedExpression {
 		ParsedExpression left = readXorExpression(position, parser, options);
 
 		while (parser.optional(T_OR) != null) {
-			ParsedExpression right = readXorExpression(parser.peek().position, parser, options);
+			ParsedExpression right = readXorExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionBinary(position, left, right, OperatorType.OR);
 		}
 		return left;
@@ -157,7 +157,7 @@ public abstract class ParsedExpression {
 		ParsedExpression left = readAndExpression(position, parser, options);
 
 		while (parser.optional(T_XOR) != null) {
-			ParsedExpression right = readAndExpression(parser.peek().position, parser, options);
+			ParsedExpression right = readAndExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionBinary(position, left, right, OperatorType.XOR);
 		}
 		return left;
@@ -167,7 +167,7 @@ public abstract class ParsedExpression {
 		ParsedExpression left = readCompareExpression(position, parser, options);
 
 		while (parser.optional(T_AND) != null) {
-			ParsedExpression right = readCompareExpression(parser.peek().position, parser, options);
+			ParsedExpression right = readCompareExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionBinary(position, left, right, OperatorType.AND);
 		}
 		return left;
@@ -179,47 +179,47 @@ public abstract class ParsedExpression {
 		switch (parser.peek().getType()) {
 			case T_EQUAL2: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.EQ);
 			}
 			case T_EQUAL3: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.SAME);
 			}
 			case T_NOTEQUAL: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.NE);
 			}
 			case T_NOTEQUAL2: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.NOTSAME);
 			}
 			case T_LESS: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.LT);
 			}
 			case T_LESSEQ: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.LE);
 			}
 			case T_GREATER: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.GT);
 			}
 			case T_GREATEREQ: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.GE);
 			}
 			case K_IN: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionBinary(position, right, left, OperatorType.CONTAINS);
 			}
 			case K_IS: {
@@ -230,7 +230,7 @@ public abstract class ParsedExpression {
 			case T_NOT: {
 				parser.next();
 				if (parser.optional(K_IN) != null) {
-					ParsedExpression right = readShiftExpression(parser.peek().position, parser, options);
+					ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
 					return new ParsedExpressionUnary(position, new ParsedExpressionBinary(position, right, left, OperatorType.CONTAINS), OperatorType.NOT);
 				} else if (parser.optional(K_IS) != null) {
 					IParsedType type = IParsedType.parse(parser);
@@ -249,13 +249,13 @@ public abstract class ParsedExpression {
 		
 		while (true) {
 			if (parser.optional(T_SHL) != null) {
-				ParsedExpression right = readAddExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readAddExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.SHL);
 			} else if (parser.optional(T_SHR) != null) {
-				ParsedExpression right = readAddExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readAddExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.SHR);
 			} else if (parser.optional(T_USHR) != null) {
-				ParsedExpression right = readAddExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readAddExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.USHR);
 			} else {
 				break;
@@ -270,13 +270,13 @@ public abstract class ParsedExpression {
 		
 		while (true) {
 			if (parser.optional(T_ADD) != null) {
-				ParsedExpression right = readMulExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readMulExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.ADD);
 			} else if (parser.optional(T_SUB) != null) {
-				ParsedExpression right = readMulExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readMulExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.SUB);
 			} else if (parser.optional(T_CAT) != null) {
-				ParsedExpression right = readMulExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readMulExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.CAT);
 			} else {
 				break;
@@ -290,13 +290,13 @@ public abstract class ParsedExpression {
 
 		while (true) {
 			if (parser.optional(T_MUL) != null) {
-				ParsedExpression right = readUnaryExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readUnaryExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.MUL);
 			} else if (parser.optional(T_DIV) != null) {
-				ParsedExpression right = readUnaryExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readUnaryExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.DIV);
 			} else if (parser.optional(T_MOD) != null) {
-				ParsedExpression right = readUnaryExpression(parser.peek().position, parser, options);
+				ParsedExpression right = readUnaryExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.MOD);
 			} else {
 				break;
@@ -312,31 +312,31 @@ public abstract class ParsedExpression {
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser, options),
+						readUnaryExpression(parser.getPosition(), parser, options),
 						OperatorType.NOT);
 			case T_SUB:
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser, options),
+						readUnaryExpression(parser.getPosition(), parser, options),
 						OperatorType.NEG);
 			case T_CAT:
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser, options),
+						readUnaryExpression(parser.getPosition(), parser, options),
 						OperatorType.CAT);
 			case T_INCREMENT:
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser, options),
+						readUnaryExpression(parser.getPosition(), parser, options),
 						OperatorType.INCREMENT);
 			case T_DECREMENT:
 				parser.next();
 				return new ParsedExpressionUnary(
 						position,
-						readUnaryExpression(parser.peek().position, parser, options),
+						readUnaryExpression(parser.getPosition(), parser, options),
 						OperatorType.DECREMENT);
 			case K_TRY:
 				parser.next();
@@ -381,7 +381,7 @@ public abstract class ParsedExpression {
 						base = new ParsedExpressionMember(position, base, unescape(indexString2.content), Collections.emptyList());
 					} else {
 						ZSToken last = parser.next();
-						throw new ParseException(last, "Invalid expression, last token: " + last.content);
+						throw new ParseException(parser.getPosition(), "Invalid expression, last token: " + last.content);
 					}
 				}
 			} else if (parser.optional(T_DOT2) != null) {
@@ -532,7 +532,7 @@ public abstract class ParsedExpression {
 				IParsedType type = IParsedType.parse(parser);
 				if (type == null) {
 					ZSToken last = parser.next();
-					throw new ParseException(last, "Invalid expression, last token: " + last.content);
+					throw new ParseException(parser.getPosition(), "Invalid expression, last token: " + last.content);
 				} else {
 					return new ParsedTypeExpression(position, type);
 				}

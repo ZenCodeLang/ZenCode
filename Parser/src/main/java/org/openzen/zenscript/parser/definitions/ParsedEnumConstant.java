@@ -26,6 +26,7 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class ParsedEnumConstant {
 	public static ParsedEnumConstant parse(ZSTokenStream tokens, EnumDefinition definition, int value) {
+		CodePosition position = tokens.getPosition();
 		ZSToken name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
 		List<ParsedExpression> arguments = new ArrayList<>();
 		if (tokens.optional(ZSTokenType.T_BROPEN) != null) {
@@ -35,7 +36,7 @@ public class ParsedEnumConstant {
 			tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
 		}
 		
-		return new ParsedEnumConstant(name.position, definition, name.content, value, arguments);
+		return new ParsedEnumConstant(position, definition, name.content, value, arguments);
 	}
 	
 	public final CodePosition position;
