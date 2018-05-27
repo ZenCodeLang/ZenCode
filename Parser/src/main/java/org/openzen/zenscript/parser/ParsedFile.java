@@ -58,7 +58,7 @@ public class ParsedFile {
 	}
 	
 	public static ParsedFile parse(ZSPackage pkg, String filename, Reader reader) throws IOException {
-		ZSTokenParser tokens = new ZSTokenParser(filename, reader);
+		ZSTokenParser tokens = ZSTokenParser.create(filename, reader);
 		return parse(pkg, tokens);
 	}
 	

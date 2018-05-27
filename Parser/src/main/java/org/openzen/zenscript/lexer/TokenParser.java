@@ -4,10 +4,9 @@ package org.openzen.zenscript.lexer;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Stack;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  * Represents a token stream. A token stream reads characters from a reader and
@@ -19,25 +18,22 @@ import org.openzen.zenscript.shared.CodePosition;
  * @param <T> token class
  * @param <TT> token type class
  */
-public abstract class TokenParser<T extends Token<TT>, TT extends TokenType> implements Iterator<T>
+public class TokenParser<T extends Token<TT>, TT extends TokenType> implements TokenStream<TT, T>
 {
 	private final String filename;
     private final CountingReader reader;
     private final CompiledDFA<TT> dfa;
-    private final LinkedList<PositionedToken> tokenMemory;
-    private final Stack<Integer> marks;
 	private final TT eof;
+	private final TT invalid;
 	private final int tabSize = 4;
+	private final TokenFactory<T, TT> factory;
 	
-    private PositionedToken next;
+    private PositionedToken<T> next;
 	
     private int nextChar;
     private int line;
     private int lineOffset;
 	
-    private int tokenMemoryOffset;
-    private int tokenMemoryCurrent;
-    
     /**
      * Creates a token stream using the specified reader and DFA.
      *
@@ -46,25 +42,28 @@ public abstract class TokenParser<T extends Token<TT>, TT extends TokenType> imp
      * @param dfa DFA to tokenize the stream
 	 * @param eof end of file token type
      */
-    public TokenParser(String filename, Reader reader, CompiledDFA<TT> dfa, TT eof)
+    public TokenParser(
+			String filename,
+			Reader reader, 
+			CompiledDFA<TT> dfa,
+			TT eof,
+			TT invalid,
+			TokenFactory<T, TT> factory)
 	{
 		if (eof.isWhitespace()) // important for the advance() method
 			throw new IllegalArgumentException("EOF cannot be whitespace");
 		
-        tokenMemoryOffset = 0;
-        tokenMemoryCurrent = 0;
-        tokenMemory = new LinkedList<>();
-        marks = new Stack<>();
-        
         this.reader = new CountingReader(reader);
         this.dfa = dfa;
 		this.filename = filename;
 		this.eof = eof;
+		this.invalid = invalid;
+		this.factory = factory;
 		
 		try {
 	        nextChar = this.reader.read();
 		} catch (IOException ex) {
-			ioException(ex);
+			throw new CompileException(getPosition(), CompileExceptionCode.INTERNAL_ERROR, ex.getMessage());
 		}
 		
         line = 1;
@@ -80,101 +79,22 @@ public abstract class TokenParser<T extends Token<TT>, TT extends TokenType> imp
      * @param dfa DFA to tokenize the stream
 	 * @param eof end of file token type
      */
-    public TokenParser(String filename, String data, CompiledDFA<TT> dfa, TT eof)
+    public TokenParser(String filename, String data, CompiledDFA<TT> dfa, TT eof, TT invalid, TokenFactory<T, TT> factory)
 	{
-        this(filename, new StringReader(data), dfa, eof);
+        this(filename, new StringReader(data), dfa, eof, invalid, factory);
     }
 	
-	public String getFilename()
-	{
-		return filename;
-	}
-	
-	public int getLine()
-	{
-		return line;
-	}
-	
-	public int getLineOffset()
-	{
-		return lineOffset;
-	}
-    
+	@Override
     public T peek()
 	{
-        if (tokenMemoryCurrent < tokenMemoryOffset + tokenMemory.size()) {
-            return tokenMemory.get((tokenMemoryCurrent) - tokenMemoryOffset).token;
-        } else {
-            return next.token;
-        }
-    }
-
-    public boolean isNext(TT type)
-	{
-        return peek().getType() == type;
-    }
-
-    public T optional(TT type)
-	{
-        if (peek().getType() == type) {
-            return next();
-        } else {
-            return null;
-        }
-    }
-
-    public T required(TT type, String error)
-	{
-		T t = peek();
-        if (t.getType() == type) {
-            return next();
-        } else {
-			requiredTokenNotFound(getPosition(), error, t);
-			return null;
-        }
+        return next.token;
     }
 	
+	@Override
 	public CodePosition getPosition()
 	{
-		if (tokenMemoryCurrent < tokenMemoryOffset + tokenMemory.size()) {
-            return tokenMemory.get((tokenMemoryCurrent) - tokenMemoryOffset).position;
-        } else {
-            return next.position;
-        }
+		return next.position;
 	}
-	
-	// =====================
-    // === LL(*) ability ===
-	// =====================
-
-    /**
-     * Pushes a mark on the mark stack.
-     */
-    public void pushMark()
-	{
-        marks.push(tokenMemoryCurrent);
-    }
-
-    /**
-     * Pops a mark from the mark stack without reset.
-     */
-    public void popMark()
-	{
-        marks.pop();
-
-        if (marks.isEmpty()) {
-            tokenMemoryOffset = tokenMemoryCurrent;
-            tokenMemory.clear();
-        }
-    }
-
-    /**
-     * Pops a mark from the mark stack and resets the stream's position to it
-     */
-    public void reset()
-	{
-        tokenMemoryCurrent = marks.pop();
-    }
 	
 	/**
 	 * Replaces the current token with another one. Used to split composite tokens.
@@ -184,99 +104,24 @@ public abstract class TokenParser<T extends Token<TT>, TT extends TokenType> imp
 	public void replace(TT other) {
 		next = new PositionedToken(
 				next.position,
-				createToken(
+				factory.create(
+						other,
 						next.token.getWhitespaceBefore(),
-						next.token.getContent(),
-						other));
+						next.token.getContent()));
 	}
-
-    // ===============================
-    // === Iterator implementation ===
-    // ===============================
-
-	@Override
-    public boolean hasNext()
-	{
-        return next.token.getType() != eof;
-    }
 
 	@Override
     public T next()
 	{
-        if (tokenMemoryCurrent < tokenMemoryOffset + tokenMemory.size()) {
-            return tokenMemory.get((tokenMemoryCurrent++) - tokenMemoryOffset).token;
-        } else {
-            PositionedToken result = next;
-
-            if (marks.isEmpty()) {
-                tokenMemoryOffset++;
-            } else {
-                tokenMemory.add(result);
-            }
-            tokenMemoryCurrent++;
-
-            advance();
-            return result.token;
-        }
+        T result = next.token;
+		advance();
+		return result;
     }
-
+	
 	@Override
-    public void remove()
-	{
-        throw new UnsupportedOperationException("Not supported.");
-    }
-
-    // ==================================
-    // === Protected abstract methods ===
-    // ==================================
-	
-	/**
-	 * Called to create a token. May also be used to postprocess tokens while
-	 * generating them.
-	 * 
-	 * @param position token position (range)
-	 * @param value token value
-	 * @param tokenType token type
-	 * @return newly created token
-	 */
-	protected abstract T createToken(
-			String whitespaceBefore,
-			String value,
-			TT tokenType);
-	
-	/**
-	 * Called when a required token could not be found. Should log an error or
-	 * throw an exception. If no exception is thrown, the calling required
-	 * method will return null as token value.
-	 * 
-	 * @param position erroring position
-	 * @param error error to be logged
-	 * @param token incorrect token
-	 */
-	protected abstract void requiredTokenNotFound(
-			CodePosition position,
-			String error,
-			T token);
-	
-	/**
-	 * Called when the input contains an invalid token. Should either create
-	 * a token indicating an invalid token, or throw an exception.
-	 * 
-	 * @param position erroring position
-	 * @param token token value
-	 * @return a token marking an invalid token
-	 */
-	protected abstract T invalidToken(
-			String whitespaceBefore,
-			String token);
-	
-	/**
-	 * Called when an IO exception occurs. Should throw an exception of some
-	 * kind.
-	 * 
-	 * @param ex exception to be logged
-	 */
-	protected abstract void ioException(IOException ex);
+	public TT getEOF() {
+		return eof;
+	}
 	
     // =======================
     // === Private methods ===
@@ -311,7 +156,7 @@ public abstract class TokenParser<T extends Token<TT>, TT extends TokenType> imp
 					line,
 					lineOffset);
 			
-            next = new PositionedToken(position, createToken(whitespace, "", eof));
+            next = new PositionedToken(position, factory.create(eof, whitespace, ""));
             return;
         }
 		
@@ -335,27 +180,21 @@ public abstract class TokenParser<T extends Token<TT>, TT extends TokenType> imp
             if (dfa.finals[state] != null) {
                 if (state == 0) {
 					value.append((char) nextChar);
-					next = new PositionedToken(position, invalidToken(
-							whitespace,
-							value.toString()));
+					next = new PositionedToken(position, factory.create(invalid, value.toString(), whitespace));
 					nextChar = reader.read();
 				}
 				
-				next = new PositionedToken(position, createToken(
-						whitespace,
-						value.toString(), dfa.finals[state]));
+				next = new PositionedToken(position, factory.create(dfa.finals[state], value.toString(), whitespace));
             } else {
 				if (nextChar < 0 && value.length() == 0)
 					return; // happens on comments at the end of files
 				
 				value.append((char) nextChar);
-				next = new PositionedToken(position, invalidToken(
-						whitespace,
-						value.toString()));
+				next = new PositionedToken(position, factory.create(invalid, value.toString(), whitespace));
 				nextChar = reader.read();
             }
         } catch (IOException ex) {
-            ioException(ex);
+			throw new CompileException(getPosition(), CompileExceptionCode.INTERNAL_ERROR, ex.getMessage());
         }
     }
 
@@ -399,7 +238,7 @@ public abstract class TokenParser<T extends Token<TT>, TT extends TokenType> imp
         }
     }
 	
-	private class PositionedToken {
+	public static class PositionedToken<T> {
 		public final CodePosition position;
 		public final T token;
 		

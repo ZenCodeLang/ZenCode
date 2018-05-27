@@ -45,11 +45,9 @@ public abstract class ParsedStatement {
 	}
 	
 	public static ParsedStatementBlock parseBlock(ZSTokenStream parser, boolean isFirst) {
-		String ws = parser.grabWhitespace();
+		String ws = parser.getLastWhitespace();
 		CodePosition position = parser.getPosition();
 		parser.required(T_AOPEN, "{ expected");
-
-		parser.reloadWhitespace();
 		parser.skipWhitespaceNewline();
 
 		ArrayList<ParsedStatement> statements = new ArrayList<>();
@@ -70,7 +68,7 @@ public abstract class ParsedStatement {
 	}
 	
 	public static ParsedStatement parse(ZSTokenStream parser, boolean isFirst) {
-		String ws = parser.grabWhitespace();
+		String ws = parser.getLastWhitespace();
 		CodePosition position = parser.getPosition();
 		ZSToken next = parser.peek();
 		switch (next.getType()) {
@@ -113,7 +111,6 @@ public abstract class ParsedStatement {
 				ParsedStatement onIf = parse(parser);
 				ParsedStatement onElse = null;
 				if (parser.optional(K_ELSE) != null) {
-					parser.reloadWhitespace();
 					parser.skipWhitespaceNewline();
 					onElse = parse(parser);
 				}

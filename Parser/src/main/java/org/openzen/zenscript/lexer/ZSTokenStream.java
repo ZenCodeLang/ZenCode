@@ -11,14 +11,10 @@ import org.openzen.zenscript.codemodel.WhitespaceInfo;
  *
  * @author Hoofdgebruiker
  */
-public interface ZSTokenStream extends TokenStream<ZSTokenType, ZSToken> {
+public interface ZSTokenStream extends MemoryTokenStream<ZSTokenType, ZSToken> {
 	String getFilename();
 	
-	String loadWhitespace();
-	
-	void reloadWhitespace();
-	
-	String grabWhitespace();
+	String getLastWhitespace();
 	
 	void skipWhitespaceNewline();
 	
