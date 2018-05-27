@@ -9,7 +9,7 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.linker.GenericFunctionScope;
@@ -22,7 +22,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedExpansion extends BaseParsedDefinition {
-	public static ParsedExpansion parseExpansion(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedExpansion parseExpansion(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		List<ParsedGenericParameter> parameters = ParsedGenericParameter.parseAll(tokens);
 		IParsedType target = IParsedType.parse(tokens);
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");

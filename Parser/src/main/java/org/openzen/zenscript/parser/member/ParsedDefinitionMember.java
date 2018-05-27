@@ -17,7 +17,7 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.lexer.ZSToken;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -32,7 +32,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public abstract class ParsedDefinitionMember {
-	public static ParsedDefinitionMember parse(ZSTokenStream tokens, HighLevelDefinition forDefinition) {
+	public static ParsedDefinitionMember parse(ZSTokenParser tokens, HighLevelDefinition forDefinition) {
 		CodePosition start = tokens.getPosition();
 		int modifiers = 0;
 		outer: while (true) {

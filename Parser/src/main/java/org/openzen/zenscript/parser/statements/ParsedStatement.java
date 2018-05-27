@@ -6,7 +6,7 @@ import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.lexer.ZSToken;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.linker.StatementScope;
@@ -18,7 +18,7 @@ import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 
 public abstract class ParsedStatement {
-	public static ParsedFunctionBody parseLambdaBody(ZSTokenStream tokens, boolean inExpression) {
+	public static ParsedFunctionBody parseLambdaBody(ZSTokenParser tokens, boolean inExpression) {
 		CodePosition position = tokens.getPosition();
 		ZSToken start = tokens.peek();
 		if (tokens.optional(T_AOPEN) != null) {
@@ -35,7 +35,7 @@ public abstract class ParsedStatement {
 		}
 	}
 	
-	public static ParsedFunctionBody parseFunctionBody(ZSTokenStream tokens) {
+	public static ParsedFunctionBody parseFunctionBody(ZSTokenParser tokens) {
 		if (tokens.optional(T_LAMBDA) != null)
 			return parseLambdaBody(tokens, false);
 		else if (tokens.optional(T_SEMICOLON) != null)
@@ -44,7 +44,7 @@ public abstract class ParsedStatement {
 			return new ParsedStatementsFunctionBody(parseBlock(tokens, true));
 	}
 	
-	public static ParsedStatementBlock parseBlock(ZSTokenStream parser, boolean isFirst) {
+	public static ParsedStatementBlock parseBlock(ZSTokenParser parser, boolean isFirst) {
 		String ws = parser.getLastWhitespace();
 		CodePosition position = parser.getPosition();
 		parser.required(T_AOPEN, "{ expected");
@@ -63,11 +63,11 @@ public abstract class ParsedStatement {
 		return new ParsedStatementBlock(position, whitespace, postComment, statements);
 	}
 	
-	public static ParsedStatement parse(ZSTokenStream parser) {
+	public static ParsedStatement parse(ZSTokenParser parser) {
 		return parse(parser, false);
 	}
 	
-	public static ParsedStatement parse(ZSTokenStream parser, boolean isFirst) {
+	public static ParsedStatement parse(ZSTokenParser parser, boolean isFirst) {
 		String ws = parser.getLastWhitespace();
 		CodePosition position = parser.getPosition();
 		ZSToken next = parser.peek();

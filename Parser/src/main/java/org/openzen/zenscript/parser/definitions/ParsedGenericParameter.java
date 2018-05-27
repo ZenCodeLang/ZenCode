@@ -10,7 +10,6 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.lexer.ZSTokenStream;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.linker.GenericFunctionScope;
@@ -22,7 +21,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedGenericParameter {
-	public static ParsedGenericParameter parse(ZSTokenStream tokens) {
+	public static ParsedGenericParameter parse(ZSTokenParser tokens) {
 		CodePosition position = tokens.getPosition();
 		ZSToken name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
 		List<ParsedGenericBound> bounds = new ArrayList<>();
@@ -36,7 +35,7 @@ public class ParsedGenericParameter {
 		return new ParsedGenericParameter(position, name.content, bounds);
 	}
 	
-	public static List<ParsedGenericParameter> parseAll(ZSTokenStream tokens) {
+	public static List<ParsedGenericParameter> parseAll(ZSTokenParser tokens) {
 		if (tokens.optional(ZSTokenType.T_LESS) == null)
 			return null;
 		

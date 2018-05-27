@@ -28,7 +28,6 @@ import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.lexer.ZSTokenStream;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.linker.FileScope;
 import org.openzen.zenscript.linker.GlobalScriptScope;
@@ -62,7 +61,7 @@ public class ParsedFile {
 		return parse(pkg, tokens);
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, ZSTokenStream tokens) {
+	public static ParsedFile parse(ZSPackage pkg, ZSTokenParser tokens) {
 		ParsedFile result = new ParsedFile(tokens.getFilename());
 		ZSToken eof = null;
 

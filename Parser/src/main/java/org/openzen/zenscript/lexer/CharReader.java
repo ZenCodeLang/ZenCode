@@ -5,15 +5,14 @@
  */
 package org.openzen.zenscript.lexer;
 
+import java.io.IOException;
+
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface MemoryTokenStream<TT extends TokenType, T extends Token<TT>>
-		extends TokenStream<TT, T> {
-	void pushMark();
+public interface CharReader {
+	int peek() throws IOException;
 	
-	void popMark();
-	
-	void reset();
+	int next() throws IOException;
 }

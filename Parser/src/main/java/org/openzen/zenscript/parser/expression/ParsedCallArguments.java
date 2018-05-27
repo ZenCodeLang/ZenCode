@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.linker.ExpressionScope;
 import org.openzen.zenscript.shared.CodePosition;
@@ -30,7 +30,7 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
 public class ParsedCallArguments {
 	public static final ParsedCallArguments NONE = new ParsedCallArguments(Collections.emptyList());
 	
-	public static ParsedCallArguments parse(ZSTokenStream tokens) {
+	public static ParsedCallArguments parse(ZSTokenParser tokens) {
 		tokens.required(ZSTokenType.T_BROPEN, "( expected");
 		
 		List<ParsedExpression> arguments = new ArrayList<>();

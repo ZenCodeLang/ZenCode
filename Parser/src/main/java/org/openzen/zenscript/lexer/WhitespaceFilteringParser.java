@@ -39,20 +39,10 @@ public class WhitespaceFilteringParser<TT extends TokenType, T extends Token<TT>
 			whitespace = whitespace.substring(index + 1);
 			return result;
 		} else {
+			String result = whitespace;
 			whitespace = "";
-			return whitespace;
+			return result;
 		}
-	}
-
-	@Override
-	public T peek() {
-		return next;
-	}
-
-	@Override
-	public void replace(TT other) {
-		stream.replace(other);
-		next = peek();
 	}
 
 	@Override

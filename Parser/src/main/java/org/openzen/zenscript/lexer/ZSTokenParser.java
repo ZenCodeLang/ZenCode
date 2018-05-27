@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.lexer;
 
+import java.io.IOException;
 import java.io.Reader;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 
@@ -12,9 +13,8 @@ import org.openzen.zenscript.codemodel.WhitespaceInfo;
  *
  * @author Hoofdgebruiker
  */
-public class ZSTokenParser extends MemoryTokenStreamImpl<ZSTokenType, ZSToken>
-		implements ZSTokenStream {
-	public static TokenParser<ZSToken, ZSTokenType> createRaw(String filename, Reader reader) {
+public class ZSTokenParser extends LLParserTokenStream<ZSTokenType, ZSToken> {
+	public static TokenParser<ZSToken, ZSTokenType> createRaw(String filename, CharReader reader) {
 		return new TokenParser<>(
 				filename,
 				reader,
@@ -24,12 +24,12 @@ public class ZSTokenParser extends MemoryTokenStreamImpl<ZSTokenType, ZSToken>
 				ZSTokenFactory.INSTANCE);
 	}
 	
-	public static ZSTokenParser create(String filename, Reader reader) {
-		return create(filename, new WhitespaceFilteringParser(createRaw(filename, reader)));
+	public static ZSTokenParser create(String filename, Reader reader) throws IOException {
+		return create(filename, createRaw(filename, new ReaderCharReader(reader)));
 	}
 	
-	public static ZSTokenParser create(String filename, WhitespaceFilteringParser<ZSTokenType, ZSToken> parser) {
-		return new ZSTokenParser(filename, parser);
+	public static ZSTokenParser create(String filename, TokenStream<ZSTokenType, ZSToken> tokens) {
+		return new ZSTokenParser(filename, new WhitespaceFilteringParser(tokens));
 	}
 	
 	private static final CompiledDFA DFA = CompiledDFA.createLexerDFA(ZSTokenType.values(), ZSTokenType.class);
@@ -44,28 +44,19 @@ public class ZSTokenParser extends MemoryTokenStreamImpl<ZSTokenType, ZSToken>
 		this.filename = filename;
 	}
 	
-	@Override
 	public String getFilename() {
 		return filename;
 	}
 	
-	@Override
 	public String getLastWhitespace() {
 		return whitespaceFilteringParser.getLastWhitespace();
 	}
 	
-	@Override
 	public void skipWhitespaceNewline() {
 		whitespaceFilteringParser.skipWhitespaceNewline();
 	}
 	
-	@Override
 	public WhitespaceInfo collectWhitespaceInfo(String whitespace, boolean skipLineBefore) {
 		return WhitespaceInfo.from(whitespace, whitespaceFilteringParser.grabWhitespaceLine(), skipLineBefore);
-	}
-	
-	@Override
-	public ZSTokenType getEOF() {
-		return ZSTokenType.EOF;
 	}
 }

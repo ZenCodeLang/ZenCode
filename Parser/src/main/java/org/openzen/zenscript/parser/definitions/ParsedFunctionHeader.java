@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSToken;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.linker.BaseScope;
@@ -27,7 +27,7 @@ import org.openzen.zenscript.parser.type.ParsedTypeBasic;
  * @author Hoofdgebruiker
  */
 public class ParsedFunctionHeader {
-	public static ParsedFunctionHeader parse(ZSTokenStream tokens) {
+	public static ParsedFunctionHeader parse(ZSTokenParser tokens) {
 		List<ParsedGenericParameter> genericParameters = null;
 		if (tokens.optional(ZSTokenType.T_LESS) != null) {
 			genericParameters = new ArrayList<>();

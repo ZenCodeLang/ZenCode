@@ -7,8 +7,8 @@ package org.openzen.zenscript.parser;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.lexer.ZSTokenStream;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedAlias;
@@ -25,7 +25,7 @@ import org.openzen.zenscript.parser.definitions.ParsedVariant;
  * @author Hoofdgebruiker
  */
 public abstract class ParsedDefinition {
-	public static ParsedDefinition parse(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedDefinition parse(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		if (tokens.optional(K_CLASS) != null) {
 			return ParsedClass.parseClass(pkg, position, modifiers, tokens, outerDefinition);
 		} else if (tokens.optional(K_INTERFACE) != null) {

@@ -19,7 +19,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSToken;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.parser.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -47,15 +47,15 @@ public abstract class ParsedExpression {
 		}
 	}
 	
-	public static ParsedExpression parse(ZSTokenStream parser) {
+	public static ParsedExpression parse(ZSTokenParser parser) {
 		return readAssignExpression(parser, ParsingOptions.DEFAULT);
 	}
 	
-	public static ParsedExpression parse(ZSTokenStream parser, ParsingOptions options) {
+	public static ParsedExpression parse(ZSTokenParser parser, ParsingOptions options) {
 		return readAssignExpression(parser, options);
 	}
 
-	private static ParsedExpression readAssignExpression(ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readAssignExpression(ZSTokenParser parser, ParsingOptions options) {
 		CodePosition position = parser.getPosition();
 		ParsedExpression left = readConditionalExpression(position, parser, options);
 
@@ -104,7 +104,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readConditionalExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readConditionalExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readOrOrExpression(position, parser, options);
 
 		if (parser.optional(T_QUEST) != null) {
@@ -117,7 +117,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readOrOrExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readOrOrExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readAndAndExpression(position, parser, options);
 
 		while (parser.optional(T_OROR) != null) {
@@ -133,7 +133,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readAndAndExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readAndAndExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readOrExpression(position, parser, options);
 
 		while (parser.optional(T_ANDAND) != null) {
@@ -143,7 +143,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readOrExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readOrExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readXorExpression(position, parser, options);
 
 		while (parser.optional(T_OR) != null) {
@@ -153,7 +153,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readXorExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readXorExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readAndExpression(position, parser, options);
 
 		while (parser.optional(T_XOR) != null) {
@@ -163,7 +163,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readAndExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readAndExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readCompareExpression(position, parser, options);
 
 		while (parser.optional(T_AND) != null) {
@@ -173,7 +173,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readCompareExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readCompareExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readShiftExpression(position, parser, options);
 
 		switch (parser.peek().getType()) {
@@ -244,7 +244,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 	
-	private static ParsedExpression readShiftExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readShiftExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readAddExpression(position, parser, options);
 		
 		while (true) {
@@ -265,7 +265,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readAddExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readAddExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readMulExpression(position, parser, options);
 		
 		while (true) {
@@ -285,7 +285,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readMulExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readMulExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression left = readUnaryExpression(position, parser, options);
 
 		while (true) {
@@ -306,7 +306,7 @@ public abstract class ParsedExpression {
 		return left;
 	}
 
-	private static ParsedExpression readUnaryExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readUnaryExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		switch (parser.peek().getType()) {
 			case T_NOT:
 				parser.next();
@@ -361,7 +361,7 @@ public abstract class ParsedExpression {
 		}
 	}
 
-	private static ParsedExpression readPostfixExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readPostfixExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		ParsedExpression base = readPrimaryExpression(position, parser, options);
 
 		while (true) {
@@ -415,7 +415,7 @@ public abstract class ParsedExpression {
 		return base;
 	}
 	
-	private static ParsedExpression readPrimaryExpression(CodePosition position, ZSTokenStream parser, ParsingOptions options) {
+	private static ParsedExpression readPrimaryExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		switch (parser.peek().getType()) {
 			case T_INT:
 				return new ParsedExpressionInt(position, Long.parseLong(parser.next().content));

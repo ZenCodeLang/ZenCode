@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.linker.BaseScope;
@@ -24,7 +24,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public interface IParsedType {
-	public static IParsedType parse(ZSTokenStream tokens) {
+	public static IParsedType parse(ZSTokenParser tokens) {
 		IParsedType result = tryParse(tokens);
 		if (result == null)
 			throw new ParseException(tokens.getPosition(), "Type expected (got " + tokens.peek().content + ")");
@@ -32,7 +32,7 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public static IParsedType tryParse(ZSTokenStream tokens) {
+	public static IParsedType tryParse(ZSTokenParser tokens) {
 		int modifiers = 0;
 		while (true) {
 			if (tokens.optional(ZSTokenType.K_CONST) != null) {
@@ -168,7 +168,7 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public static List<IParsedType> parseGenericParameters(ZSTokenStream tokens) {
+	public static List<IParsedType> parseGenericParameters(ZSTokenParser tokens) {
 		if (!tokens.isNext(T_LESS))
 			return null;
 		
@@ -186,13 +186,13 @@ public interface IParsedType {
 		} while (tokens.optional(T_COMMA) != null);
 		
 		if (tokens.isNext(T_SHR)) {
-			tokens.replace(T_GREATER);
+			tokens.replace(T_GREATER.flyweight);
 		} else if (tokens.isNext(T_USHR)) {
-			tokens.replace(T_SHR);
+			tokens.replace(T_SHR.flyweight);
 		} else if (tokens.isNext(T_SHRASSIGN)) {
-			tokens.replace(T_GREATEREQ);
+			tokens.replace(T_GREATEREQ.flyweight);
 		} else if (tokens.isNext(T_USHRASSIGN)) {
-			tokens.replace(T_SHRASSIGN);
+			tokens.replace(T_SHRASSIGN.flyweight);
 		} else if (tokens.optional(T_GREATER) == null) {
 			tokens.reset();
 			return Collections.emptyList();
