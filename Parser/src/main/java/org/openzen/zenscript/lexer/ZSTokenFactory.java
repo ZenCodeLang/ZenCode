@@ -96,10 +96,10 @@ public class ZSTokenFactory implements TokenFactory<ZSToken, ZSTokenType> {
 	}
 
 	@Override
-	public ZSToken create(ZSTokenType type, String content, String whitespaceBefore) {
+	public ZSToken create(ZSTokenType type, String content) {
 		if (type == T_IDENTIFIER && KEYWORDS.containsKey(content))
 			type = KEYWORDS.get(content);
 		
-		return new ZSToken(type, content, whitespaceBefore);
+		return new ZSToken(type, content);
 	}
 }

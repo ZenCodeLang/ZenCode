@@ -106,7 +106,6 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements T
 				next.position,
 				factory.create(
 						other,
-						next.token.getWhitespaceBefore(),
 						next.token.getContent()));
 	}
 
@@ -126,27 +125,8 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements T
     // =======================
     // === Private methods ===
     // =======================
-
-    /**
-     * Advances to the next non - whitespace token.
-     */
+	
     private void advance()
-	{
-		StringBuilder whitespace = new StringBuilder();
-        while (true) {
-            advanceToken(whitespace.toString());
-			if (next.token.getType().isWhitespace()) {
-				whitespace.append(next.token.getContent());
-			} else {
-				break;
-			}
-        }
-    }
-
-    /**
-     * Advances to the next token.
-     */
-    private void advanceToken(String whitespace)
 	{
         if (nextChar < 0) {
 			CodePosition position = new CodePosition(
@@ -156,7 +136,7 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements T
 					line,
 					lineOffset);
 			
-            next = new PositionedToken(position, factory.create(eof, whitespace, ""));
+            next = new PositionedToken(position, factory.create(eof, ""));
             return;
         }
 		
@@ -180,17 +160,17 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements T
             if (dfa.finals[state] != null) {
                 if (state == 0) {
 					value.append((char) nextChar);
-					next = new PositionedToken(position, factory.create(invalid, value.toString(), whitespace));
+					next = new PositionedToken(position, factory.create(invalid, value.toString()));
 					nextChar = reader.read();
 				}
 				
-				next = new PositionedToken(position, factory.create(dfa.finals[state], value.toString(), whitespace));
+				next = new PositionedToken(position, factory.create(dfa.finals[state], value.toString()));
             } else {
 				if (nextChar < 0 && value.length() == 0)
 					return; // happens on comments at the end of files
 				
 				value.append((char) nextChar);
-				next = new PositionedToken(position, factory.create(invalid, value.toString(), whitespace));
+				next = new PositionedToken(position, factory.create(invalid, value.toString()));
 				nextChar = reader.read();
             }
         } catch (IOException ex) {

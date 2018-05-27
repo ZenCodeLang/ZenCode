@@ -120,7 +120,7 @@ public class ParsedFile {
 			}
 		}
 		
-		result.postComment = WhitespacePostComment.fromWhitespace(eof.whitespaceBefore);
+		result.postComment = WhitespacePostComment.fromWhitespace(tokens.getLastWhitespace());
 		return result;
 	}
 	

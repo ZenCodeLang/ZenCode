@@ -12,12 +12,10 @@ package org.openzen.zenscript.lexer;
 public class ZSToken implements Token<ZSTokenType> {
 	public final ZSTokenType type;
 	public final String content;
-	public final String whitespaceBefore;
 	
-	public ZSToken(ZSTokenType type, String content, String whitespaceBefore) {
+	public ZSToken(ZSTokenType type, String content) {
 		this.type = type;
 		this.content = content;
-		this.whitespaceBefore = whitespaceBefore;
 	}
 
 	@Override
@@ -28,10 +26,5 @@ public class ZSToken implements Token<ZSTokenType> {
 	@Override
 	public String getContent() {
 		return content;
-	}
-
-	@Override
-	public String getWhitespaceBefore() {
-		return whitespaceBefore;
 	}
 }

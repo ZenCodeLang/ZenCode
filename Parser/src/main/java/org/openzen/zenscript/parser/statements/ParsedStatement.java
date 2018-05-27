@@ -59,7 +59,7 @@ public abstract class ParsedStatement {
 		}
 
 		WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-		WhitespacePostComment postComment = WhitespacePostComment.fromWhitespace(last.whitespaceBefore);
+		WhitespacePostComment postComment = WhitespacePostComment.fromWhitespace(parser.getLastWhitespace());
 		return new ParsedStatementBlock(position, whitespace, postComment, statements);
 	}
 	

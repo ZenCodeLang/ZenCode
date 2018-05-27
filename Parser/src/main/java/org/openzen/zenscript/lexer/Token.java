@@ -12,6 +12,4 @@ public interface Token<TT extends TokenType>
 	TT getType();
 	
 	String getContent();
-	
-	String getWhitespaceBefore();
 }

@@ -10,5 +10,5 @@ package org.openzen.zenscript.lexer;
  * @author Hoofdgebruiker
  */
 public interface TokenFactory<T, TT> {
-	T create(TT type, String content, String whitespaceBefore);
+	T create(TT type, String content);
 }
