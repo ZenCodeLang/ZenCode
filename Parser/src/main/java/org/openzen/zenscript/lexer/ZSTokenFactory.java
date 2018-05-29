@@ -14,14 +14,18 @@ import static org.openzen.zenscript.lexer.ZSTokenType.*;
  * @author Hoofdgebruiker
  */
 public class ZSTokenFactory implements TokenFactory<ZSToken, ZSTokenType> {
-	public static final ZSTokenFactory INSTANCE = new ZSTokenFactory();
-	
 	private static final Map<String, ZSToken> KEYWORDS = new HashMap<>();
 	
 	static {
 		for (ZSTokenType type : ZSTokenType.values())
 			if (type.isKeyword)
 				KEYWORDS.put(type.flyweight.content, type.flyweight);
+	}
+	
+	private final int spacesPerTab;
+	
+	public ZSTokenFactory(int spacesPerTab) {
+		this.spacesPerTab = spacesPerTab;
 	}
 
 	@Override

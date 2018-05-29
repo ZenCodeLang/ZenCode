@@ -15,18 +15,15 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
  *
  * @author Hoofdgebruiker
  */
-public abstract class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> {
-	private final TokenStream<TT, T> stream;
+public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> extends WhitespaceFilteringParser<TT, T> {
     private final LinkedList<PositionedToken> tokenMemory = new LinkedList<>();
     private final Stack<Integer> marks = new Stack<>();
 	
-	private T next;
     private int tokenMemoryOffset = 0;
     private int tokenMemoryCurrent = 0;
 	
 	public LLParserTokenStream(TokenStream<TT, T> stream) {
-		this.stream = stream;
-		next = stream.next();
+		super(stream);
 	}
 	
 	public void pushMark() {
@@ -46,24 +43,21 @@ public abstract class LLParserTokenStream<TT extends TokenType, T extends Token<
         tokenMemoryCurrent = marks.pop();
 	}
 
+	@Override
 	public T peek() {
 		if (tokenMemoryCurrent < tokenMemoryOffset + tokenMemory.size()) {
             return tokenMemory.get((tokenMemoryCurrent) - tokenMemoryOffset).token;
         } else {
-            return next;
+            return super.peek();
         }
 	}
 	
-	public void replace(T other) {
-		next = other;
-	}
-	
+	@Override
 	public T next() {
 		if (tokenMemoryCurrent < tokenMemoryOffset + tokenMemory.size()) {
             return tokenMemory.get((tokenMemoryCurrent++) - tokenMemoryOffset).token;
         } else {
-            T result = next;
-			next = stream.next();
+            T result = super.next();
             if (marks.isEmpty()) {
                 tokenMemoryOffset++;
             } else {
@@ -74,11 +68,12 @@ public abstract class LLParserTokenStream<TT extends TokenType, T extends Token<
         }
 	}
 	
+	@Override
 	public CodePosition getPosition() {
 		if (tokenMemoryCurrent < tokenMemoryOffset + tokenMemory.size()) {
             return tokenMemory.get((tokenMemoryCurrent) - tokenMemoryOffset).position;
         } else {
-            return stream.getPosition();
+            return super.getPosition();
         }
 	}
 	
@@ -104,7 +99,7 @@ public abstract class LLParserTokenStream<TT extends TokenType, T extends Token<
     }
 	
 	public boolean hasNext() {
-		return peek().getType() != stream.getEOF();
+		return peek().getType() != getEOF();
 	}
 	
 	private class PositionedToken {

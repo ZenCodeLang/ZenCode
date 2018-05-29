@@ -2,6 +2,7 @@
 package org.openzen.zenscript.lexer;
 
 import java.io.IOException;
+import java.util.Iterator;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
@@ -16,7 +17,7 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
  * @param <T> token class
  * @param <TT> token type class
  */
-public class TokenParser<T extends Token<TT>, TT extends TokenType> implements TokenStream<TT, T>
+public class TokenParser<T extends Token<TT>, TT extends TokenType> implements Iterator<T>, TokenStream<TT, T>
 {
     private final CountingCharReader reader;
     private final CompiledDFA<TT> dfa;
@@ -69,6 +70,7 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements T
 		return reader.getPosition();
 	}
 	
+	@Override
 	public boolean hasNext() {
 		try {
 			return reader.peek() >= 0;

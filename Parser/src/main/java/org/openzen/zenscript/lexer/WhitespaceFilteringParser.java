@@ -44,6 +44,14 @@ public class WhitespaceFilteringParser<TT extends TokenType, T extends Token<TT>
 			return result;
 		}
 	}
+	
+	public T peek() {
+		return next;
+	}
+	
+	public void replace(T other) {
+		next = other;
+	}
 
 	@Override
 	public T next() {

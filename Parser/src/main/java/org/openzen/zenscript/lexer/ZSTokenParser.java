@@ -14,49 +14,31 @@ import org.openzen.zenscript.codemodel.WhitespaceInfo;
  * @author Hoofdgebruiker
  */
 public class ZSTokenParser extends LLParserTokenStream<ZSTokenType, ZSToken> {
-	public static TokenParser<ZSToken, ZSTokenType> createRaw(String filename, CharReader reader) {
+	private static final CompiledDFA DFA = CompiledDFA.createLexerDFA(ZSTokenType.values(), ZSTokenType.class);
+	
+	public static TokenParser<ZSToken, ZSTokenType> createRaw(String filename, CharReader reader, int spacesPerTab) {
 		return new TokenParser<>(
 				filename,
 				reader,
 				DFA,
 				ZSTokenType.EOF,
 				ZSTokenType.INVALID,
-				ZSTokenFactory.INSTANCE);
+				new ZSTokenFactory(spacesPerTab));
 	}
 	
-	public static ZSTokenParser create(String filename, Reader reader) throws IOException {
-		return create(filename, createRaw(filename, new ReaderCharReader(reader)));
+	public static ZSTokenParser create(String filename, Reader reader, int spacesPerTab) throws IOException {
+		return new ZSTokenParser(createRaw(filename, new ReaderCharReader(reader), spacesPerTab));
 	}
 	
-	public static ZSTokenParser create(String filename, TokenStream<ZSTokenType, ZSToken> tokens) {
-		return new ZSTokenParser(filename, new WhitespaceFilteringParser(tokens));
-	}
-	
-	private static final CompiledDFA DFA = CompiledDFA.createLexerDFA(ZSTokenType.values(), ZSTokenType.class);
-	
-	private final String filename;
-	private final WhitespaceFilteringParser whitespaceFilteringParser;
-	
-	private ZSTokenParser(String filename, WhitespaceFilteringParser<ZSTokenType, ZSToken> parser) {
+	public ZSTokenParser(TokenStream<ZSTokenType, ZSToken> parser) {
 		super(parser);
-		
-		this.whitespaceFilteringParser = parser;
-		this.filename = filename;
 	}
 	
 	public String getFilename() {
-		return filename;
-	}
-	
-	public String getLastWhitespace() {
-		return whitespaceFilteringParser.getLastWhitespace();
-	}
-	
-	public void skipWhitespaceNewline() {
-		whitespaceFilteringParser.skipWhitespaceNewline();
+		return getPosition().filename;
 	}
 	
 	public WhitespaceInfo collectWhitespaceInfo(String whitespace, boolean skipLineBefore) {
-		return WhitespaceInfo.from(whitespace, whitespaceFilteringParser.grabWhitespaceLine(), skipLineBefore);
+		return WhitespaceInfo.from(whitespace, grabWhitespaceLine(), skipLineBefore);
 	}
 }

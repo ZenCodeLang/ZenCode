@@ -13,7 +13,10 @@ public enum ZSTokenType implements TokenType {
 	T_COMMENT_SCRIPT("#[^\n]*[\n\\e]", true),
 	T_COMMENT_SINGLELINE("//[^\n]*[\n\\e]", true),
 	T_COMMENT_MULTILINE("/\\*([^\\*]|(\\*+([^\\*/])))*\\*+/", true),
-	T_WHITESPACE("[ \t\r\n]*", true),
+	T_WHITESPACE_SPACE(true, " ", " "),
+	T_WHITESPACE_TAB(true, "\t", "\t"),
+	T_WHITESPACE_NEWLINE(true, "\n", "\n"),
+	T_WHITESPACE_CARRIAGE_RETURN(true, "\r", "\r"),
 	T_IDENTIFIER("[a-zA-Z_][a-zA-Z_0-9]*"),
 	T_FLOAT("\\-?(0|[1-9][0-9]*)\\.[0-9]+([eE][\\+\\-]?[0-9]+)?"),
 	T_INT("\\-?(0|[1-9][0-9]*)"),
@@ -184,14 +187,21 @@ public enum ZSTokenType implements TokenType {
 		this.regexp = regexp;
 		this.whitespace = false;
 		this.isKeyword = false;
-		this.flyweight = new ZSToken(this, content);
+		this.flyweight = new ZSToken(this, content, content);
+	}
+	
+	private ZSTokenType(boolean isWhitespace, String regexp, String content) {
+		this.regexp = regexp;
+		this.whitespace = isWhitespace;
+		this.isKeyword = false;
+		this.flyweight = new ZSToken(this, content, content);
 	}
 	
 	private ZSTokenType(boolean isKeyword, String content) {
 		this.regexp = null;
 		this.whitespace = false;
 		this.isKeyword = isKeyword;
-		this.flyweight = new ZSToken(this, content);
+		this.flyweight = new ZSToken(this, content, content);
 	}
 
 	@Override
