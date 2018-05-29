@@ -19,7 +19,7 @@ import org.openzen.zenscript.lexer.ZSTokenType;
  * @author Hoofdgebruiker
  */
 public class TokenReparser {
-	private final List<SourceEditor.Line> lines;
+	private final List<TokenLine> lines;
 	private final String filename;
 	private final int toLine;
 	private final int toToken;
@@ -28,7 +28,7 @@ public class TokenReparser {
 	private int lineIndex;
 	private int token;
 	
-	public TokenReparser(String filename, List<SourceEditor.Line> lines, int fromLine, int fromToken, int toLine, int toToken, int spacesPerTab) {
+	public TokenReparser(String filename, List<TokenLine> lines, int fromLine, int fromToken, int toLine, int toToken, int spacesPerTab) {
 		if (fromToken < 0 || toToken < 0)
 			throw new IllegalArgumentException("fromToken or toToken cannot be < 0");
 		
@@ -52,19 +52,19 @@ public class TokenReparser {
 	}
 	
 	private String get() {
-		SourceEditor.Line line = lines.get(lineIndex);
-		if (token == line.tokens.size())
+		TokenLine line = lines.get(lineIndex);
+		if (token == line.getTokenCount())
 			return "\n"; // special "newline" token for transitions to next line
 		
-		return line.tokens.get(token).content;
+		return line.getToken(token).content;
 	}
 	
 	private boolean advance() {
-		if (lineIndex == lines.size() - 1 && token == lines.get(lineIndex).tokens.size())
+		if (lineIndex == lines.size() - 1 && token == lines.get(lineIndex).getTokenCount())
 			return false;
 		
 		token++;
-		if (token > lines.get(lineIndex).tokens.size()) {
+		if (token > lines.get(lineIndex).getTokenCount()) {
 			lineIndex++;
 			token = 0;
 		}

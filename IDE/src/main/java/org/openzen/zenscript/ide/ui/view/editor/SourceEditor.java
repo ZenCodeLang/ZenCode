@@ -6,9 +6,6 @@
 package org.openzen.zenscript.ide.ui.view.editor;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.openzen.drawablegui.DCanvas;
@@ -24,6 +21,7 @@ import org.openzen.drawablegui.DKeyEvent.KeyCode;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DRectangle;
 import org.openzen.drawablegui.DTransform2D;
+import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.zenscript.ide.host.IDESourceFile;
@@ -43,6 +41,8 @@ public class SourceEditor implements DComponent {
 	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(new DDimensionPreferences(0, 0));
 	private final String tab = "    ";
 	private final IDESourceFile sourceFile;
+	private final TokenModel tokens;
+	private final ListenerHandle<TokenModel.Listener> tokenListener;
 	
 	private DRectangle bounds;
 	private DDrawingContext context;
@@ -50,7 +50,6 @@ public class SourceEditor implements DComponent {
 	private int textLineHeight;
 	private int fullLineHeight;
 	private int selectionLineHeight;
-	private final List<Line> lines = new ArrayList<>();
 	
 	private int lineBarWidth;
 	private CursorPosition cursorStart = null;
@@ -65,6 +64,8 @@ public class SourceEditor implements DComponent {
 	
 	public SourceEditor(IDESourceFile sourceFile) {
 		this.sourceFile = sourceFile;
+		tokens = new TokenModel(sourceFile.getName(), tab.length());
+		tokenListener = tokens.addListener(new TokenListener());
 		
 		blink.scheduleAtFixedRate(new TimerTask() {
 			@Override
@@ -74,7 +75,8 @@ public class SourceEditor implements DComponent {
 		}, 300, 300);
 		
 		try {
-			parse();
+			TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(sourceFile.getName(), new ReaderCharReader(sourceFile.read()), tab.length());
+			tokens.set(parser);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
@@ -88,7 +90,7 @@ public class SourceEditor implements DComponent {
 		fullLineHeight = textLineHeight + fontMetrics.getLeading() + style.extraLineSpacing;
 		selectionLineHeight = textLineHeight + style.selectionPaddingTop + style.selectionPaddingBottom;
 		
-		dimensionPreferences.setValue(new DDimensionPreferences(0, fullLineHeight * lines.size()));
+		dimensionPreferences.setValue(new DDimensionPreferences(0, fullLineHeight * tokens.getLineCount()));
 	}
 
 	@Override
@@ -111,7 +113,7 @@ public class SourceEditor implements DComponent {
 		DIRectangle canvasBounds = canvas.getBounds();
 		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 0xFFFFFFFF);
 		
-		lineBarWidth = Math.max(50, fontMetrics.getWidth(Integer.toString(lines.size()))) + 5;
+		lineBarWidth = Math.max(50, fontMetrics.getWidth(Integer.toString(tokens.getLineCount()))) + 5;
 		canvas.fillRectangle(bounds.x, bounds.y, lineBarWidth, bounds.height, 0xFFE9E8E2);
 		canvas.strokePath(tracer -> {
 			tracer.moveTo(bounds.x + lineBarWidth, bounds.y);
@@ -148,14 +150,14 @@ public class SourceEditor implements DComponent {
 		
 		int y = bounds.y + style.selectionPaddingTop;
 		int lineIndex = 1;
-		for (Line line : lines) {
+		for (TokenLine line : tokens.getLines()) {
 			if (y + textLineHeight  >= canvasBounds.y && y < canvasBounds.y + canvasBounds.height) {
 				String lineNumber = Integer.toString(lineIndex);
 				int lineNumberX = x - 15 - (int)canvas.measureTextLength(font, lineNumber);
 				canvas.drawText(font, 0xFFA0A0A0, lineNumberX, y + fontMetrics.getAscent(), lineNumber);
 
 				int lineX = x;
-				for (ZSToken token : line.tokens) {
+				for (ZSToken token : line.getTokens()) {
 					String content = getDisplayContent(token);
 					canvas.drawText(font, TokenClass.get(token.type).color, lineX, y + fontMetrics.getAscent(), content);
 					lineX += canvas.measureTextLength(font, content);
@@ -248,19 +250,19 @@ public class SourceEditor implements DComponent {
 					int line = cursorEnd.line - 1;
 					CursorPosition position = new CursorPosition(
 							line,
-							Math.min(lines.get(line).length, cursorEnd.offset));
+							Math.min(tokens.getLineLength(line), cursorEnd.offset));
 					setCursor(shift ? cursorStart : position, position);
 				}
 				break;
 			case DOWN:
-				if (cursorEnd == null || cursorEnd.line >= lines.size() - 1)
+				if (cursorEnd == null || cursorEnd.line >= tokens.getLineCount() - 1)
 					return;
 				
 				{
 					int line = cursorEnd.line + 1;
 					CursorPosition position = new CursorPosition(
 							line,
-							Math.min(lines.get(line).length, cursorEnd.offset));
+							Math.min(tokens.getLineLength(line), cursorEnd.offset));
 					setCursor(shift ? cursorStart : position, position);
 				}
 				break;
@@ -272,7 +274,7 @@ public class SourceEditor implements DComponent {
 					CursorPosition position;
 					if (cursorEnd.offset == 0) {
 						int line = cursorEnd.line - 1;
-						position = new CursorPosition(line, lines.get(line).length);
+						position = new CursorPosition(line, tokens.getLineLength(line));
 					} else {
 						position = new CursorPosition(cursorEnd.line, cursorEnd.offset - 1);
 					}
@@ -280,12 +282,12 @@ public class SourceEditor implements DComponent {
 				}
 				break;
 			case RIGHT:
-				if (cursorEnd == null || (cursorEnd.offset == lines.get(cursorEnd.line).length && cursorEnd.line >= lines.size() - 1))
+				if (cursorEnd == null || (cursorEnd.offset == tokens.getLineLength(cursorEnd.line) && cursorEnd.line >= tokens.getLineCount() - 1))
 					return;
 				
 				{
 					CursorPosition position;
-					if (cursorEnd.offset == lines.get(cursorEnd.line).length) {
+					if (cursorEnd.offset == tokens.getLineLength(cursorEnd.line)) {
 						position = new CursorPosition(cursorEnd.line + 1, 0);
 					} else {
 						position = new CursorPosition(cursorEnd.line, cursorEnd.offset + 1);
@@ -303,7 +305,7 @@ public class SourceEditor implements DComponent {
 				newline();
 				break;
 			case TAB:
-				type(tab);
+				type("\t");
 				break;
 			default:
 				if (e.character == DKeyEvent.CHAR_UNDEFINED)
@@ -326,38 +328,22 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private void save() {
-		String content = contentToString();
+		String content = tokens.toString();
 		sourceFile.update(content);
 	}
 	
-	private String contentToString() {
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < lines.size(); i++) {
-			if (i > 0)
-				result.append("\n");
-			
-			Line line = lines.get(i);
-			for (ZSToken token : line.tokens) {
-				result.append(token.content);
-			}
-		}
-		return result.toString();
-	}
-	
 	private void delete() {
-		Line line = lines.get(cursorEnd.line);
-		if (cursorEnd.offset == line.length) {
+		TokenLine line = tokens.getLine(cursorEnd.line);
+		if (cursorEnd.offset == line.length()) {
 			// merge 2 lines
-			if (cursorEnd.line == lines.size() - 1)
+			if (cursorEnd.line == tokens.getLineCount() - 1)
 				return;
 			
-			line.merge(cursorEnd.line, lines.get(cursorEnd.line + 1));
-			lines.remove(cursorEnd.line + 1);
-			onLinesUpdated();
+			tokens.deleteNewline(cursorEnd.line);
 			return;
 		}
 		
-		line.delete(cursorEnd.line, cursorEnd.offset);
+		tokens.deleteCharacter(cursorEnd.line, cursorEnd.offset);
 		repaintLine(cursorEnd.line);
 	}
 	
@@ -366,47 +352,42 @@ public class SourceEditor implements DComponent {
 			if (cursorEnd.line == 0)
 				return;
 			
-			int length = lines.get(cursorEnd.line - 1).length;
-			lines.get(cursorEnd.line - 1).merge(cursorEnd.line - 1, lines.get(cursorEnd.line));
-			lines.remove(cursorEnd.line);
-			onLinesUpdated();
+			int length = tokens.getLineLength(cursorEnd.line - 1);
+			tokens.deleteNewline(cursorEnd.line - 1);
 			
 			CursorPosition position = new CursorPosition(cursorEnd.line - 1, length);
 			setCursor(position, position);
 			return;
 		}
 		
-		lines.get(cursorEnd.line).delete(cursorEnd.line, cursorEnd.offset - 1);
+		tokens.deleteCharacter(cursorEnd.line, cursorEnd.offset - 1);
 		CursorPosition position = new CursorPosition(cursorEnd.line, cursorEnd.offset - 1);
 		setCursor(position, position);
-		repaintLine(cursorEnd.line);
 	}
 	
 	private void type(String value) {
-		lines.get(cursorEnd.line).insert(cursorEnd.line, cursorEnd.offset, value);
+		tokens.insert(cursorEnd.line, cursorEnd.offset, value);
 		CursorPosition position = new CursorPosition(cursorEnd.line, cursorEnd.offset + value.length());
 		setCursor(position, position);
-		repaintLine(cursorEnd.line);
 	}
 	
 	private void newline() {
-		lines.get(cursorEnd.line).split(cursorEnd.line, cursorEnd.offset);
-		onLinesUpdated();
-		
-		CursorPosition position = new CursorPosition(cursorEnd.line + 1, 0);
+		String indent = tokens.getLine(cursorEnd.line).getIndent();
+		tokens.insert(cursorEnd.line, cursorEnd.offset, "\n" + indent);
+		CursorPosition position = new CursorPosition(cursorEnd.line + 1, indent.length());
 		setCursor(position, position);
 	}
 	
 	private TokenPosition getTokenAt(CursorPosition position) {
-		Line line = lines.get(position.line);
+		TokenLine line = tokens.getLine(position.line);
 		int offset = 0;
-		for (ZSToken token : line.tokens) {
+		for (ZSToken token : line.getTokens()) {
 			if (offset + token.content.length() > position.offset)
 				return new TokenPosition(token, position.offset - offset);
 			offset += token.content.length();
 		}
 		
-		return new TokenPosition(line.tokens.get(line.tokens.size() - 1), position.offset - offset);
+		return new TokenPosition(line.getLastToken(), position.offset - offset);
 	}
 	
 	private class TokenPosition {
@@ -433,6 +414,9 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private void repaintLine(int line) {
+		if (bounds == null)
+			return;
+		
 		context.repaint(bounds.x, lineToY(line), bounds.width, selectionLineHeight);
 	}
 	
@@ -455,20 +439,20 @@ public class SourceEditor implements DComponent {
 		
 		if (line < 0)
 			line = 0;
-		if (line >= lines.size())
-			line = lines.size() - 1;
+		if (line >= tokens.getLineCount())
+			line = tokens.getLineCount() - 1;
 		
 		return new CursorPosition(line, offset);
 	}
 	
 	private int xToOffset(int lineIndex, int x) {
-		if (lineIndex < 0 || lineIndex >= lines.size())
+		if (lineIndex < 0 || lineIndex >= tokens.getLineCount())
 			return 0;
 		
-		Line line = lines.get(lineIndex);
+		TokenLine line = tokens.getLine(lineIndex);
 		int lineX = bounds.x + lineBarWidth + 10;
 		int offset = 0;
-		for (ZSToken token : line.tokens) {
+		for (ZSToken token : line.getTokens()) {
 			String content = getDisplayContent(token);
 			int tokenWidth = fontMetrics.getWidth(content);
 			if (lineX + tokenWidth > x) {
@@ -490,7 +474,7 @@ public class SourceEditor implements DComponent {
 	
 	private int getStringIndexForPixels(String str, int pixels) {
 		int previousX = 0;
-		for (int i = 1; i < str.length(); i++) {
+		for (int i = 1; i <= str.length(); i++) {
 			int currentX = fontMetrics.getWidth(str, 0, i);
 			if (currentX >= pixels)
 				return (pixels - previousX < currentX - pixels) ? i - 1 : i;
@@ -510,13 +494,13 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private int offsetToX(int line, int offset) {
-		if (line >= lines.size())
+		if (line >= tokens.getLineCount())
 			return 0;
 		
 		int tokensOffset = 0;
 		int x = bounds.x + lineBarWidth + 10;
-		Line lineData = lines.get(line);
-		for (ZSToken token : lineData.tokens) {
+		TokenLine lineData = tokens.getLine(line);
+		for (ZSToken token : lineData.getTokens()) {
 			String content = getDisplayContent(token);
 			if (tokensOffset + token.content.length() >= offset) {
 				if (token.type == ZSTokenType.T_WHITESPACE_TAB)
@@ -535,190 +519,28 @@ public class SourceEditor implements DComponent {
 		return token.type == ZSTokenType.T_WHITESPACE_TAB ? tab : token.content;
 	}
 	
-	private void parse() throws IOException {
-		lines.clear();
-		lines.add(new Line());
-		
-		TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(sourceFile.getName(), new ReaderCharReader(sourceFile.read()), tab.length());
-		insertTokens(0, 0, parser);
-	}
-	
 	private void onLinesUpdated() {
-		dimensionPreferences.setValue(new DDimensionPreferences(0, fullLineHeight * lines.size()));
+		dimensionPreferences.setValue(new DDimensionPreferences(0, fullLineHeight * tokens.getLineCount()));
 		
 		if (bounds != null)
 			context.repaint(bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 	
-	public class Line {
-		public final List<ZSToken> tokens = new ArrayList<>();
-		private int length;
-		
-		private void calculateLength() {
-			length = 0;
-			for (ZSToken token : tokens)
-				length += token.content.length();
-		}
-		
-		public void merge(int lineIndex, Line other) {
-			if (tokens.isEmpty()) {
-				tokens.addAll(other.tokens);
-				length = other.length;
-				return;
-			}
-			
-			int fromToken = tokens.size() - 1;
-			int toToken = other.tokens.size() > 0 ? fromToken + 2 : fromToken + 1;
-			tokens.addAll(other.tokens);
-			length += other.length;
-			reparse(lineIndex, fromToken, lineIndex, toToken);
-		}
-		
-		public Line split(int lineIndex, int offset) {
-			if (offset < 0)
-				throw new IllegalArgumentException("offset must be >= 0");
-			
-			int tokenOffset = 0;
-			for (int i = 0; i < tokens.size(); i++) {
-				ZSToken token = tokens.get(i);
-				if (tokenOffset + token.content.length() > offset) {
-					ZSToken broken = token;
-					Line newLine = new Line();
-					if (offset - tokenOffset != token.content.length() && offset - tokenOffset != 0) {
-						ZSToken.Pair split = token.split(offset - tokenOffset);
-						broken = split.first;
-						newLine.tokens.add(split.second);
-					}
-					
-					tokens.set(i, broken);
-					for (int j = i + 1; j < tokens.size(); j++)
-						newLine.tokens.add(tokens.get(j));
-					for (int j = tokens.size() - 1; j > i; j--)
-						tokens.remove(j);
-					
-					lines.add(lineIndex + 1, newLine);
-					reparse(lineIndex, i, lineIndex + 1, 1);
-					return newLine;
-				}
-				tokenOffset += token.content.length();
-			}
-			
-			Line result = new Line();
-			lines.add(result);
-			return result;
-		}
-		
-		public void delete(int lineIndex, int offset) {
-			int tokenOffset = 0;
-			for (int i = 0; i < tokens.size(); i++) {
-				ZSToken token = tokens.get(i);
-				if (tokenOffset + token.content.length() > offset) {
-					if (token.content.length() == 1) {
-						tokens.remove(i);
-					} else {
-						token = token.delete(offset - tokenOffset, 1);
-						tokens.set(i, token);
-					}
-					length--;
-					
-					reparse(lineIndex, i, lineIndex, i + 1);
-					return;
-				}
-				tokenOffset += token.content.length();
-			}
-		}
-		
-		public void insert(int lineIndex, int offset, String value) {
-			int tokenOffset = 0;
-			if (tokens.isEmpty()) {
-				tokens.add(new ZSToken(ZSTokenType.INVALID, value));
-				reparse(lineIndex, 0, lineIndex, 1);
-				return;
-			}
-			
-			for (int i = 0; i < tokens.size(); i++) {
-				ZSToken token = tokens.get(i);
-				if (tokenOffset + token.content.length() > offset) {
-					token = token.insert(offset - tokenOffset, value);
-					tokens.set(i, token);
-					length += value.length();
-					reparse(lineIndex, i, lineIndex, i + 1);
-					return;
-				}
-				tokenOffset += token.content.length();
-			}
-			
-			ZSToken token = tokens.get(tokens.size() - 1);
-			token = new ZSToken(token.type, token.content + value);
-			tokens.set(tokens.size() - 1, token);
-			length += value.length();
-			reparse(lineIndex, tokens.size() - 1, lineIndex, tokens.size());
-		}
-	}
-	
-	private void reparse(int fromLine, int fromToken, int toLine, int toToken) {
-		TokenReparser reparser = new TokenReparser(sourceFile.getName(), lines, fromLine, fromToken, toLine, toToken, tab.length());
-		List<ZSToken> tokens = reparser.reparse();
-		replaceTokens(fromLine, fromToken, reparser.getLine(), reparser.getToken(), tokens);
-	}
-	
-	private void replaceTokens(int fromLine, int fromToken, int toLine, int toToken, List<ZSToken> tokens) {
-		removeTokens(fromLine, fromToken, toLine, toToken);
-		insertTokens(fromLine, fromToken, tokens.iterator());
-	}
-	
-	private void removeTokens(int fromLine, int fromToken, int toLine, int toToken) {
-		if (toLine > fromLine) {
-			Line fromLineObject = lines.get(fromLine);
-			for (int i = fromLineObject.tokens.size() - 1; i >= fromToken; i--)
-				fromLineObject.tokens.remove(i);
-			
-			Line toLineObject = lines.get(fromLine);
-			for (int i = toToken - 1; i >= 0; i--)
-				toLineObject.tokens.remove(i);
-			
-			fromLineObject.merge(fromLine, lines.remove(toLine));
-			for (int i = toLine - 1; i > fromLine; i--)
-				lines.remove(i);
-			
+	private class TokenListener implements TokenModel.Listener {
+
+		@Override
+		public void onLineInserted(int index) {
 			onLinesUpdated();
-		} else {
-			Line line = lines.get(fromLine);
-			for (int i = toToken - 1; i >= fromToken; i--)
-				line.tokens.remove(i);
 		}
-	}
-	
-	private void insertTokens(int line, int tokenIndex, Iterator<ZSToken> tokens) {
-		boolean linesUpdated = false;
-		Line currentLine = lines.get(line);
-		while (tokens.hasNext()) {
-			ZSToken token = tokens.next();
-			if (token.type == ZSTokenType.T_WHITESPACE_NEWLINE) {
-				currentLine.calculateLength();
-				
-				Line newLine = new Line();
-				if (tokenIndex < currentLine.tokens.size()) {
-					for (int i = tokenIndex; i < currentLine.tokens.size(); i++) {
-						newLine.tokens.add(currentLine.tokens.remove(tokenIndex));
-					}
-				}
-				currentLine = newLine;
-				tokenIndex = 0;
-				lines.add(++line, currentLine);
-				linesUpdated = true;
-			} else if (token.type != ZSTokenType.T_WHITESPACE_CARRIAGE_RETURN) {
-				currentLine.tokens.add(tokenIndex++, token);
-			}
+
+		@Override
+		public void onLineChanged(int index) {
+			repaintLine(index);
 		}
-		
-		currentLine.calculateLength();
-		
-		if (linesUpdated) {
+
+		@Override
+		public void onLineDeleted(int index) {
 			onLinesUpdated();
-		} else {
-			// Could be further optimized to only repaint the modified characters
-			repaintLine(line);
 		}
 	}
 	
@@ -740,6 +562,9 @@ public class SourceEditor implements DComponent {
 		
 		public static TokenClass get(ZSTokenType type) {
 			switch (type) {
+				case T_COMMENT_SCRIPT:
+				case T_COMMENT_SINGLELINE:
+				case T_COMMENT_MULTILINE:
 				case T_WHITESPACE_CARRIAGE_RETURN:
 				case T_WHITESPACE_NEWLINE:
 				case T_WHITESPACE_SPACE:

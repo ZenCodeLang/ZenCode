@@ -43,6 +43,7 @@ public class ZSToken implements Token<ZSTokenType> {
 		return content;
 	}
 	
+	@Override
 	public String toString() {
 		return type + ":" + content;
 	}
@@ -50,7 +51,7 @@ public class ZSToken implements Token<ZSTokenType> {
 	public ZSToken delete(int offset, int characters) {
 		return new ZSToken(
 				ZSTokenType.INVALID,
-				content.substring(0, offset) + content.substring(offset));
+				content.substring(0, offset) + content.substring(offset + 1));
 	}
 	
 	public Pair deleteAndSplit(int offset, int characters) {

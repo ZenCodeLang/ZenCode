@@ -12,10 +12,10 @@ package org.openzen.zenscript.lexer;
 public enum ZSTokenType implements TokenType {
 	T_COMMENT_SCRIPT("#[^\n]*[\n\\e]", true),
 	T_COMMENT_SINGLELINE("//[^\n]*[\n\\e]", true),
-	T_COMMENT_MULTILINE("/\\*([^\\*]|(\\*+([^\\*/])))*\\*+/", true),
+	T_COMMENT_MULTILINE("/\\*([^\\*]|(\\*+([^\\*/])))*\\*+/", true, true),
 	T_WHITESPACE_SPACE(true, " ", " "),
 	T_WHITESPACE_TAB(true, "\t", "\t"),
-	T_WHITESPACE_NEWLINE(true, "\n", "\n"),
+	T_WHITESPACE_NEWLINE(true, "\n", "\n", true),
 	T_WHITESPACE_CARRIAGE_RETURN(true, "\r", "\r"),
 	T_IDENTIFIER("[a-zA-Z_][a-zA-Z_0-9]*"),
 	T_FLOAT("\\-?(0|[1-9][0-9]*)\\.[0-9]+([eE][\\+\\-]?[0-9]+)?"),
@@ -161,12 +161,14 @@ public enum ZSTokenType implements TokenType {
 	
 	public final ZSToken flyweight;
 	public final boolean isKeyword;
+	public final boolean multiline;
 	
 	private ZSTokenType() {
 		this.regexp = null;
 		this.whitespace = false;
 		this.isKeyword = false;
 		this.flyweight = null;
+		this.multiline = false;
 	}
 	
 	private ZSTokenType(String regexp) {
@@ -174,6 +176,7 @@ public enum ZSTokenType implements TokenType {
 		this.whitespace = false;
 		this.isKeyword = false;
 		this.flyweight = null;
+		this.multiline = false;
 	}
 	
 	private ZSTokenType(String regexp, boolean whitespace) {
@@ -181,6 +184,15 @@ public enum ZSTokenType implements TokenType {
 		this.whitespace = whitespace;
 		this.isKeyword = false;
 		this.flyweight = null;
+		this.multiline = false;
+	}
+	
+	private ZSTokenType(String regexp, boolean whitespace, boolean multiline) {
+		this.regexp = regexp;
+		this.whitespace = whitespace;
+		this.isKeyword = false;
+		this.flyweight = null;
+		this.multiline = multiline;
 	}
 	
 	private ZSTokenType(String regexp, String content) {
@@ -188,6 +200,7 @@ public enum ZSTokenType implements TokenType {
 		this.whitespace = false;
 		this.isKeyword = false;
 		this.flyweight = new ZSToken(this, content, content);
+		this.multiline = false;
 	}
 	
 	private ZSTokenType(boolean isWhitespace, String regexp, String content) {
@@ -195,6 +208,15 @@ public enum ZSTokenType implements TokenType {
 		this.whitespace = isWhitespace;
 		this.isKeyword = false;
 		this.flyweight = new ZSToken(this, content, content);
+		this.multiline = false;
+	}
+	
+	private ZSTokenType(boolean isWhitespace, String regexp, String content, boolean multiline) {
+		this.regexp = regexp;
+		this.whitespace = isWhitespace;
+		this.isKeyword = false;
+		this.flyweight = new ZSToken(this, content, content);
+		this.multiline = multiline;
 	}
 	
 	private ZSTokenType(boolean isKeyword, String content) {
@@ -202,6 +224,7 @@ public enum ZSTokenType implements TokenType {
 		this.whitespace = false;
 		this.isKeyword = isKeyword;
 		this.flyweight = new ZSToken(this, content, content);
+		this.multiline = false;
 	}
 
 	@Override
