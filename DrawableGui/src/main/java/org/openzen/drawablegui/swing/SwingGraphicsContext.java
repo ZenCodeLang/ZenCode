@@ -9,12 +9,14 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.geom.GeneralPath;
 import java.util.WeakHashMap;
+import javax.swing.Timer;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DDrawingContext;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DPathTracer;
+import org.openzen.drawablegui.DTimerHandle;
 
 /**
  *
@@ -100,6 +102,13 @@ public class SwingGraphicsContext implements DDrawingContext {
 	@Override
 	public void scrollInView(int x, int y, int width, int height) {
 		// not in a scrollable context
+	}
+
+	@Override
+	public DTimerHandle setTimer(int millis, Runnable target) {
+		Timer timer = new Timer(millis, e -> target.run());
+		timer.start();
+		return () -> timer.stop();
 	}
 	
 	private class PathTracer implements DPathTracer {

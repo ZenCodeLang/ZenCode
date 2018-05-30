@@ -20,6 +20,8 @@ public interface DDrawingContext {
 	
 	void scrollInView(int x, int y, int width, int height);
 	
+	DTimerHandle setTimer(int millis, Runnable target);
+	
 	DFontMetrics getFontMetrics(DFont font);
 	
 	enum Cursor {

@@ -6,8 +6,6 @@
 package org.openzen.zenscript.ide.ui.view.editor;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
@@ -52,10 +50,9 @@ public class SourceEditor implements DComponent {
 	private int selectionLineHeight;
 	
 	private int lineBarWidth;
-	private CursorPosition cursorStart = null;
-	private CursorPosition cursorEnd = null;
+	private SourcePosition cursorStart = null;
+	private SourcePosition cursorEnd = null;
 	
-	private Timer blink = new Timer();
 	private boolean cursorBlink = true;
 	
 	private int mouseDownX = -1;
@@ -66,13 +63,6 @@ public class SourceEditor implements DComponent {
 		this.sourceFile = sourceFile;
 		tokens = new TokenModel(sourceFile.getName(), tab.length());
 		tokenListener = tokens.addListener(new TokenListener());
-		
-		blink.scheduleAtFixedRate(new TimerTask() {
-			@Override
-			public void run() {
-				blink();
-			}
-		}, 300, 300);
 		
 		try {
 			TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(sourceFile.getName(), new ReaderCharReader(sourceFile.read()), tab.length());
@@ -91,6 +81,7 @@ public class SourceEditor implements DComponent {
 		selectionLineHeight = textLineHeight + style.selectionPaddingTop + style.selectionPaddingBottom;
 		
 		dimensionPreferences.setValue(new DDimensionPreferences(0, fullLineHeight * tokens.getLineCount()));
+		context.setTimer(300, this::blink);
 	}
 
 	@Override
@@ -126,25 +117,25 @@ public class SourceEditor implements DComponent {
 		
 		if (cursorStart != null && !cursorStart.equals(cursorEnd)) {
 			if (cursorStart.line == cursorEnd.line) {
-				int y = cursorStart.getY();
-				int x1 = cursorStart.getX();
-				int x2 = cursorEnd.getX();
+				int y = getY(cursorStart);
+				int x1 = getX(cursorStart);
+				int x2 = getX(cursorEnd);
 				int fromX = Math.min(x1, x2);
 				int toX = Math.max(x1, x2);
 				canvas.fillRectangle(fromX, y, toX - fromX, selectionLineHeight, style.selectionColor);
 			} else {
-				CursorPosition from = cursorStart.line < cursorEnd.line ? cursorStart : cursorEnd;
-				CursorPosition to = cursorStart.line < cursorEnd.line ? cursorEnd : cursorStart;
+				SourcePosition from = SourcePosition.min(cursorStart, cursorEnd);
+				SourcePosition to = SourcePosition.max(cursorStart, cursorEnd);
 				
-				int fromX = from.getX();
-				canvas.fillRectangle(fromX, from.getY(), bounds.width - fromX, selectionLineHeight, style.selectionColor);
+				int fromX = getX(from);
+				canvas.fillRectangle(fromX, getY(from), bounds.width - fromX, selectionLineHeight, style.selectionColor);
 				
 				for (int i = from.line + 1; i < to.line; i++) {
 					canvas.fillRectangle(x, lineToY(i), bounds.width - x, selectionLineHeight, style.selectionColor);
 				}
 				
-				int toX = to.getX();
-				canvas.fillRectangle(x, to.getY(), toX - x, selectionLineHeight, style.selectionColor);
+				int toX = getX(to);
+				canvas.fillRectangle(x, getY(to), toX - x, selectionLineHeight, style.selectionColor);
 			}
 		}
 		
@@ -169,8 +160,8 @@ public class SourceEditor implements DComponent {
 		}
 		
 		if (cursorEnd != null && cursorBlink) {
-			int cursorX = cursorEnd.getX();
-			int cursorY = cursorEnd.getY();
+			int cursorX = getX(cursorEnd);
+			int cursorY = getY(cursorEnd);
 			canvas.fillRectangle(cursorX, cursorY, 2, selectionLineHeight, 0xFF000000);
 		}
 	}
@@ -189,23 +180,23 @@ public class SourceEditor implements DComponent {
 	public void onMouseClick(DMouseEvent e) {
 		context.focus(this);
 		
-		CursorPosition position = getPositionAt(e.x, e.y);
+		SourcePosition position = getPositionAt(e.x, e.y);
 		if (e.isDoubleClick()) {
 			// select entire word
-			TokenPosition token = getTokenAt(position);
+			TokenModel.Position tokenPosition = tokens.getPosition(position.line, position.offset);
 			setCursor(
-					new CursorPosition(position.line, position.offset - token.offset),
-					new CursorPosition(position.line, position.offset + token.token.content.length() - token.offset));
+					new SourcePosition(tokens, position.line, position.offset - tokenPosition.offset),
+					new SourcePosition(tokens, position.line, position.offset - tokenPosition.offset + tokens.getTokenAt(tokenPosition).content.length()));
 		} else if (e.isTripleClick()) {
 			setCursor(
-					new CursorPosition(position.line, 0),
-					new CursorPosition(position.line + 1, 0));
+					new SourcePosition(tokens, position.line, 0),
+					new SourcePosition(tokens, position.line + 1, 0));
 		} else {
 			setCursor(position, position);
 		}
 	}
 	
-	private void setCursor(CursorPosition start, CursorPosition end) {
+	private void setCursor(SourcePosition start, SourcePosition end) {
 		if (cursorStart != null)
 			repaint(cursorStart, cursorEnd);
 		
@@ -231,7 +222,7 @@ public class SourceEditor implements DComponent {
 	
 	@Override
 	public void onMouseDrag(DMouseEvent e) {
-		CursorPosition start = cursorStart;
+		SourcePosition start = cursorStart;
 		if (!dragging)
 			start = getPositionAt(mouseDownX, mouseDownY);
 		
@@ -248,7 +239,8 @@ public class SourceEditor implements DComponent {
 				
 				{
 					int line = cursorEnd.line - 1;
-					CursorPosition position = new CursorPosition(
+					SourcePosition position = new SourcePosition(
+							tokens,
 							line,
 							Math.min(tokens.getLineLength(line), cursorEnd.offset));
 					setCursor(shift ? cursorStart : position, position);
@@ -260,7 +252,8 @@ public class SourceEditor implements DComponent {
 				
 				{
 					int line = cursorEnd.line + 1;
-					CursorPosition position = new CursorPosition(
+					SourcePosition position = new SourcePosition(
+							tokens,
 							line,
 							Math.min(tokens.getLineLength(line), cursorEnd.offset));
 					setCursor(shift ? cursorStart : position, position);
@@ -271,12 +264,12 @@ public class SourceEditor implements DComponent {
 					return;
 				
 				{
-					CursorPosition position;
+					SourcePosition position;
 					if (cursorEnd.offset == 0) {
 						int line = cursorEnd.line - 1;
-						position = new CursorPosition(line, tokens.getLineLength(line));
+						position = new SourcePosition(tokens, line, tokens.getLineLength(line));
 					} else {
-						position = new CursorPosition(cursorEnd.line, cursorEnd.offset - 1);
+						position = new SourcePosition(tokens, cursorEnd.line, cursorEnd.offset - 1);
 					}
 					setCursor(shift ? cursorStart : position, position);
 				}
@@ -286,11 +279,11 @@ public class SourceEditor implements DComponent {
 					return;
 				
 				{
-					CursorPosition position;
+					SourcePosition position;
 					if (cursorEnd.offset == tokens.getLineLength(cursorEnd.line)) {
-						position = new CursorPosition(cursorEnd.line + 1, 0);
+						position = new SourcePosition(tokens, cursorEnd.line + 1, 0);
 					} else {
-						position = new CursorPosition(cursorEnd.line, cursorEnd.offset + 1);
+						position = new SourcePosition(tokens, cursorEnd.line, cursorEnd.offset + 1);
 					}
 					setCursor(shift ? cursorStart : position, position);
 				}
@@ -344,10 +337,17 @@ public class SourceEditor implements DComponent {
 		}
 		
 		tokens.deleteCharacter(cursorEnd.line, cursorEnd.offset);
-		repaintLine(cursorEnd.line);
 	}
 	
 	private void backspace() {
+		if (!cursorEnd.equals(cursorStart)) {
+			SourcePosition min = SourcePosition.min(cursorStart, cursorEnd);
+			SourcePosition max = SourcePosition.max(cursorStart, cursorEnd);
+			tokens.delete(min.line, min.offset, max.line, max.offset);
+			setCursor(min, min);
+			return;
+		}
+		
 		if (cursorEnd.offset == 0) {
 			if (cursorEnd.line == 0)
 				return;
@@ -355,56 +355,40 @@ public class SourceEditor implements DComponent {
 			int length = tokens.getLineLength(cursorEnd.line - 1);
 			tokens.deleteNewline(cursorEnd.line - 1);
 			
-			CursorPosition position = new CursorPosition(cursorEnd.line - 1, length);
+			SourcePosition position = new SourcePosition(tokens, cursorEnd.line - 1, length);
 			setCursor(position, position);
 			return;
 		}
 		
-		tokens.deleteCharacter(cursorEnd.line, cursorEnd.offset - 1);
-		CursorPosition position = new CursorPosition(cursorEnd.line, cursorEnd.offset - 1);
-		setCursor(position, position);
+		try {
+			tokens.deleteCharacter(cursorEnd.line, cursorEnd.offset - 1);
+			SourcePosition position = new SourcePosition(tokens, cursorEnd.line, cursorEnd.offset - 1);
+			setCursor(position, position);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
 	private void type(String value) {
 		tokens.insert(cursorEnd.line, cursorEnd.offset, value);
-		CursorPosition position = new CursorPosition(cursorEnd.line, cursorEnd.offset + value.length());
+		SourcePosition position = new SourcePosition(tokens, cursorEnd.line, cursorEnd.offset + value.length());
 		setCursor(position, position);
 	}
 	
 	private void newline() {
 		String indent = tokens.getLine(cursorEnd.line).getIndent();
 		tokens.insert(cursorEnd.line, cursorEnd.offset, "\n" + indent);
-		CursorPosition position = new CursorPosition(cursorEnd.line + 1, indent.length());
+		SourcePosition position = new SourcePosition(tokens, cursorEnd.line + 1, indent.length());
 		setCursor(position, position);
 	}
 	
-	private TokenPosition getTokenAt(CursorPosition position) {
-		TokenLine line = tokens.getLine(position.line);
-		int offset = 0;
-		for (ZSToken token : line.getTokens()) {
-			if (offset + token.content.length() > position.offset)
-				return new TokenPosition(token, position.offset - offset);
-			offset += token.content.length();
-		}
-		
-		return new TokenPosition(line.getLastToken(), position.offset - offset);
-	}
-	
-	private class TokenPosition {
-		public final ZSToken token;
-		public final int offset;
-		
-		public TokenPosition(ZSToken token, int offset) {
-			this.token = token;
-			this.offset = offset;
-		}
-	}
-	
-	private void repaint(CursorPosition from, CursorPosition to) {
+	private void repaint(SourcePosition from, SourcePosition to) {
 		if (from.line == to.line) {
 			int y = lineToY(from.line);
-			int fromX = offsetToX(from.line, Math.min(from.offset, to.offset));
-			int toX = offsetToX(from.line, Math.max(from.offset, to.offset)) + 2;
+			int x1 = getX(from);
+			int x2 = getX(to);
+			int fromX = Math.min(x1, x2);
+			int toX = Math.max(x1, x2) + 2;
 			context.repaint(fromX, y, toX - fromX, selectionLineHeight);
 		} else {
 			int fromY = lineToY(Math.min(from.line, to.line));
@@ -420,10 +404,8 @@ public class SourceEditor implements DComponent {
 		context.repaint(bounds.x, lineToY(line), bounds.width, selectionLineHeight);
 	}
 	
-	private void scrollTo(CursorPosition position) {
-		int y = lineToY(position.line);
-		int x = offsetToX(position.line, position.offset);
-		context.scrollInView(x, y, 2, selectionLineHeight);
+	public void scrollTo(SourcePosition position) {
+		context.scrollInView(getX(position), getY(position), 2, selectionLineHeight);
 	}
 	
 	private void blink() {
@@ -433,7 +415,7 @@ public class SourceEditor implements DComponent {
 		}
 	}
 	
-	private CursorPosition getPositionAt(int x, int y) {
+	public SourcePosition getPositionAt(int x, int y) {
 		int line = yToLine(y);
 		int offset = xToOffset(line, x);
 		
@@ -442,7 +424,7 @@ public class SourceEditor implements DComponent {
 		if (line >= tokens.getLineCount())
 			line = tokens.getLineCount() - 1;
 		
-		return new CursorPosition(line, offset);
+		return new SourcePosition(tokens, line, offset);
 	}
 	
 	private int xToOffset(int lineIndex, int x) {
@@ -493,26 +475,21 @@ public class SourceEditor implements DComponent {
 		return startY + line * fullLineHeight;
 	}
 	
-	private int offsetToX(int line, int offset) {
-		if (line >= tokens.getLineCount())
-			return 0;
-		
-		int tokensOffset = 0;
+	public int getX(SourcePosition position) {
 		int x = bounds.x + lineBarWidth + 10;
-		TokenLine lineData = tokens.getLine(line);
-		for (ZSToken token : lineData.getTokens()) {
-			String content = getDisplayContent(token);
-			if (tokensOffset + token.content.length() >= offset) {
-				if (token.type == ZSTokenType.T_WHITESPACE_TAB)
-					return offset == tokensOffset ? x : x + fontMetrics.getWidth(tab);
-				
-				return x + fontMetrics.getWidth(token.content, 0, offset - tokensOffset);
-			}
-			
-			x += fontMetrics.getWidth(content);
-			tokensOffset += token.content.length();
-		}
+		TokenLine lineData = tokens.getLine(position.line);
+		
+		TokenModel.Position tokenPosition = position.asTokenPosition();
+		for (int i = 0; i < tokenPosition.token; i++)
+			x += fontMetrics.getWidth(getDisplayContent(lineData.getToken(i)));
+		if (tokenPosition.offset > 0)
+			x += fontMetrics.getWidth(getDisplayContent(lineData.getToken(tokenPosition.token)), 0, tokenPosition.offset);
+		
 		return x;
+	}
+	
+	public int getY(SourcePosition position) {
+		return lineToY(position.line);
 	}
 	
 	private String getDisplayContent(ZSToken token) {
@@ -656,28 +633,6 @@ public class SourceEditor implements DComponent {
 				default:
 					return OPERATOR;
 			}
-		}
-	}
-	
-	public class CursorPosition {
-		public final int line;
-		public final int offset;
-		
-		public CursorPosition(int line, int offset) {
-			this.line = line;
-			this.offset = offset;
-		}
-		
-		public int getX() {
-			return offsetToX(line, offset);
-		}
-		
-		public int getY() {
-			return lineToY(line);
-		}
-		
-		public boolean equals(CursorPosition other) {
-			return line == other.line && offset == other.offset;
 		}
 	}
 }

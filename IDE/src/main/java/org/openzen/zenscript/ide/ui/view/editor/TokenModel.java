@@ -26,6 +26,7 @@ public class TokenModel {
 	private final String filename;
 	private final int spacesPerTab;
 	private final List<TokenLine> lines = new ArrayList<>();
+	private long version = 0;
 	
 	public TokenModel(String filename, int spacesPerTab) {
 		this.filename = filename;
@@ -52,6 +53,42 @@ public class TokenModel {
 		return lines.get(line).length();
 	}
 	
+	public ZSToken getTokenAt(Position position) {
+		TokenLine line = lines.get(position.line);
+		return position.token >= line.getTokenCount() ? null : line.getToken(position.token);
+	}
+	
+	/**
+	 * Version can be used to check if the token model has been updated. If the
+	 * version is unchanged, the contents of the token model will be unchanged
+	 * too.
+	 * 
+	 * @return version number
+	 */
+	public long getVersion() {
+		return version;
+	}
+	
+	public Position getPosition(int line, int offset) {
+		if (line < 0)
+			line = 0;
+		if (line >= lines.size())
+			return new Position(lines.size(), lines.get(lines.size() - 1).getTokenCount(), 0);
+		
+		int token = 0;
+		int tokenOffset = 0;
+		TokenLine tokenLine = getLine(line);
+		while (token < tokenLine.getTokenCount()) {
+			ZSToken t = tokenLine.getToken(token);
+			if (tokenOffset + t.content.length() > offset)
+				return new Position(line, token, offset - tokenOffset);
+			
+			tokenOffset += t.content.length();
+			token++;
+		}
+		return new Position(line, tokenLine.getTokenCount(), 0);
+	}
+	
 	public void set(Iterator<ZSToken> tokens) {
 		lines.clear();
 		lines.add(new TokenLine());
@@ -64,6 +101,7 @@ public class TokenModel {
 		merge(line, lineIndex, getLine(lineIndex + 1));
 		lines.remove(lineIndex + 1);
 		
+		version++;
 		listeners.accept(listener -> listener.onLineDeleted(lineIndex + 1));
 	}
 	
@@ -75,48 +113,67 @@ public class TokenModel {
 			if (tokenOffset + token.content.length() > offset) {
 				if (token.content.length() == 1) {
 					line.remove(i);
-					i--; // make sure previous token is reparsed too
+					if (i > 0)
+						i--; // make sure previous token is reparsed too
 				} else {
 					token = token.delete(offset - tokenOffset, 1);
 					line.replace(i, token);
 				}
 
-				reparse(lineIndex, i, lineIndex, i + 1);
+				relex(lineIndex, i, lineIndex, i + 1);
 				return;
 			}
 			tokenOffset += token.content.length();
+		}
+	}
+	
+	public void delete(int fromLineIndex, int fromOffset, int toLineIndex, int toOffset) {
+		Position from = getPosition(fromLineIndex, fromOffset);
+		Position to = getPosition(toLineIndex, toOffset);
+		
+		ZSToken fromToken = getTokenAt(from);
+		ZSToken toToken = getTokenAt(to);
+		
+		String remainder = "";
+		if (fromToken != null)
+			remainder = fromToken.content.substring(0, from.offset);
+		if (toToken != null && to.offset > 0)
+			remainder += toToken.content.substring(to.offset);
+		
+		removeTokens(from.line, from.token, to.line, to.offset > 0 ? to.token + 1 : to.token);
+		if (!remainder.isEmpty()) {
+			getLine(from.line).insert(from.token, new ZSToken(ZSTokenType.INVALID, remainder));
+			relex(from.line, Math.max(0, from.token - 1), from.line, from.token + 1);
 		}
 	}
 	
 	public void insert(int lineIndex, int offset, String value) {
 		TokenLine line = lines.get(lineIndex);
 		int tokenOffset = 0;
-		if (line.isEmpty()) {
-			line.add(new ZSToken(ZSTokenType.INVALID, value));
-			reparse(lineIndex, 0, lineIndex, 1);
-			return;
-		}
-
 		for (int i = 0; i < line.getTokenCount(); i++) {
 			ZSToken token = line.getToken(i);
 			if (tokenOffset + token.content.length() > offset) {
 				token = token.insert(offset - tokenOffset, value);
 				line.replace(i, token);
-				reparse(lineIndex, i, lineIndex, i + 1);
+				relex(lineIndex, i, lineIndex, i + 1);
 				return;
 			}
 			tokenOffset += token.content.length();
 		}
 
 		ZSToken token = line.getLastToken();
-		token = new ZSToken(token.type, token.content + value);
-		line.replace(line.getTokenCount() - 1, token);
-		reparse(lineIndex, line.getTokenCount() - 1, lineIndex, line.getTokenCount());
+		if (token == null) {
+			line.add(new ZSToken(ZSTokenType.INVALID, value));
+		} else {
+			token = new ZSToken(token.type, token.content + value);
+			line.replace(line.getTokenCount() - 1, token);
+		}
+		relex(lineIndex, line.getTokenCount() - 1, lineIndex, line.getTokenCount());
 	}
 	
-	private void reparse(int fromLine, int fromToken, int toLine, int toToken) {
-		TokenReparser reparser = new TokenReparser(filename, lines, fromLine, fromToken, toLine, toToken, spacesPerTab);
-		List<ZSToken> tokens = reparser.reparse();
+	private void relex(int fromLine, int fromToken, int toLine, int toToken) {
+		TokenRelexer reparser = new TokenRelexer(filename, lines, fromLine, fromToken, toLine, toToken, spacesPerTab);
+		List<ZSToken> tokens = reparser.relex();
 		replaceTokens(fromLine, fromToken, reparser.getLine(), reparser.getToken(), tokens);
 	}
 	
@@ -130,19 +187,22 @@ public class TokenModel {
 			TokenLine fromLineObject = lines.get(fromLine);
 			fromLineObject.removeRange(fromToken, fromLineObject.getTokenCount());
 			
-			listeners.accept(listener -> listener.onLineChanged(fromLine));
-			
 			TokenLine toLineObject = lines.get(toLine);
 			for (int i = toToken - 1; i >= 0; i--)
 				toLineObject.remove(i);
 			
-			listeners.accept(listener -> listener.onLineChanged(toLine));
-			
 			merge(lines.get(fromLine), fromLine, lines.remove(toLine));
+			
+			version++;
+			listeners.accept(listener -> listener.onLineChanged(fromLine));
+			listeners.accept(listener -> listener.onLineDeleted(toLine));
+			
 			for (int i = toLine - 1; i > fromLine; i--) {
 				lines.remove(i);
 				
 				int ix = i;
+				
+				version++;
 				listeners.accept(listener -> listener.onLineDeleted(ix));
 			}
 		} else {
@@ -150,6 +210,7 @@ public class TokenModel {
 			for (int i = toToken - 1; i >= fromToken; i--)
 				line.remove(i);
 			
+			version++;
 			listeners.accept(listener -> listener.onLineChanged(fromLine));
 		}
 	}
@@ -195,6 +256,7 @@ public class TokenModel {
 			}
 		}
 		
+		version++;
 		listeners.accept(listener -> {
 			for (Integer inserted : insertedLines)
 				listener.onLineInserted(inserted);
@@ -228,7 +290,19 @@ public class TokenModel {
 		int fromToken = line.getTokenCount() - 1;
 		int toToken = !other.isEmpty() ? fromToken + 2 : fromToken + 1;
 		line.addAll(other.getTokens());
-		reparse(lineIndex, fromToken, lineIndex, toToken);
+		relex(lineIndex, fromToken, lineIndex, toToken);
+	}
+	
+	public static class Position {
+		public final int line;
+		public final int token;
+		public final int offset;
+		
+		public Position(int line, int token, int offset) {
+			this.line = line;
+			this.token = token;
+			this.offset = offset;
+		}
 	}
 	
 	public interface Listener {

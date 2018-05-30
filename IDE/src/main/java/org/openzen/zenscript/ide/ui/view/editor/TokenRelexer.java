@@ -18,7 +18,7 @@ import org.openzen.zenscript.lexer.ZSTokenType;
  *
  * @author Hoofdgebruiker
  */
-public class TokenReparser {
+public class TokenRelexer {
 	private final List<TokenLine> lines;
 	private final String filename;
 	private final int toLine;
@@ -28,7 +28,7 @@ public class TokenReparser {
 	private int lineIndex;
 	private int token;
 	
-	public TokenReparser(String filename, List<TokenLine> lines, int fromLine, int fromToken, int toLine, int toToken, int spacesPerTab) {
+	public TokenRelexer(String filename, List<TokenLine> lines, int fromLine, int fromToken, int toLine, int toToken, int spacesPerTab) {
 		if (fromToken < 0 || toToken < 0)
 			throw new IllegalArgumentException("fromToken or toToken cannot be < 0");
 		
@@ -42,8 +42,8 @@ public class TokenReparser {
 		this.spacesPerTab = spacesPerTab;
 	}
 	
-	public List<ZSToken> reparse() {
-		ReparseCharReader reader = new ReparseCharReader();
+	public List<ZSToken> relex() {
+		RelexCharReader reader = new RelexCharReader();
 		TokenParser<ZSToken, ZSTokenType> reparser = ZSTokenParser.createRaw(filename, reader, spacesPerTab);
 		List<ZSToken> result = new ArrayList<>();
 		while ((lineIndex < toLine || token < toToken || !reader.isAtTokenBoundary()) && reparser.hasNext())
@@ -79,11 +79,11 @@ public class TokenReparser {
 		return token;
 	}
 	
-	private class ReparseCharReader implements CharReader {
+	private class RelexCharReader implements CharReader {
 		private String token;
 		private int tokenOffset;
 		
-		public ReparseCharReader() {
+		public RelexCharReader() {
 			token = get();
 		}
 		

@@ -14,6 +14,7 @@ import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
+import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
@@ -247,6 +248,11 @@ public class DScrollPane implements DComponent {
 				offsetY.setValue(y);
 			if (y + height > offsetY.getValue() + bounds.height)
 				offsetY.setValue(y + height - bounds.height);
+		}
+
+		@Override
+		public DTimerHandle setTimer(int millis, Runnable target) {
+			return context.setTimer(millis, target);
 		}
 	}
 	

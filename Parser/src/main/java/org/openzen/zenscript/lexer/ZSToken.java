@@ -5,10 +5,6 @@
  */
 package org.openzen.zenscript.lexer;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.openzen.zenscript.shared.StringUtils;
-
 /**
  *
  * @author Hoofdgebruiker

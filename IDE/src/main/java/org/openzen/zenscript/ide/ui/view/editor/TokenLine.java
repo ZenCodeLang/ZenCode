@@ -40,7 +40,7 @@ public final class TokenLine {
 	}
 	
 	public ZSToken getLastToken() {
-		return tokens.get(tokens.size() - 1);
+		return tokens.isEmpty() ? null : tokens.get(tokens.size() - 1);
 	}
 	
 	public String getIndent() {
