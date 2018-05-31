@@ -7,6 +7,7 @@ package org.openzen.drawablegui.scroll;
 
 import org.openzen.drawablegui.DRectangle;
 import org.openzen.drawablegui.DCanvas;
+import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
 import org.openzen.drawablegui.DDrawingContext;
@@ -253,6 +254,11 @@ public class DScrollPane implements DComponent {
 		@Override
 		public DTimerHandle setTimer(int millis, Runnable target) {
 			return context.setTimer(millis, target);
+		}
+
+		@Override
+		public DClipboard getClipboard() {
+			return context.getClipboard();
 		}
 	}
 	

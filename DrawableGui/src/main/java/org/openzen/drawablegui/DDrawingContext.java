@@ -22,6 +22,8 @@ public interface DDrawingContext {
 	
 	DTimerHandle setTimer(int millis, Runnable target);
 	
+	DClipboard getClipboard();
+	
 	DFontMetrics getFontMetrics(DFont font);
 	
 	enum Cursor {

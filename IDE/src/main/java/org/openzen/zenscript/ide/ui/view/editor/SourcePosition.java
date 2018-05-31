@@ -23,6 +23,26 @@ public class SourcePosition {
 		this.offset = offset;
 	}
 	
+	public SourcePosition advance(int characters) {
+		if (characters <= 0) {
+			throw new IllegalArgumentException("Characters must be >= 0");
+		} else if (characters == 0) {
+			return this;
+		} else {
+			int line = this.line;
+			int offset = this.offset;
+			while (offset + characters > tokens.getLineLength(line) && line < tokens.getLineCount() - 1) {
+				characters -= tokens.getLineLength(line) - offset + 1; // make sure to include the newline
+				offset = 0;
+				line++;
+			}
+			if (line >= tokens.getLineCount() -1)
+				return new SourcePosition(tokens, tokens.getLineCount() - 1, tokens.getLineLength(tokens.getLineCount() - 1));
+			
+			return new SourcePosition(tokens, line, offset + characters);
+		}
+	}
+	
 	public static SourcePosition min(SourcePosition a, SourcePosition b) {
 		if (a.line < b.line)
 			return a;

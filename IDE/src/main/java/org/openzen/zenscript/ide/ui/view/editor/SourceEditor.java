@@ -314,10 +314,48 @@ public class SourceEditor implements DComponent {
 	
 	private void handleShortcut(DKeyEvent e) {
 		if (e.has(DKeyEvent.CTRL)) {
-			if (e.keyCode == KeyCode.S) {
-				save();
+			switch (e.keyCode) {
+				case S:
+					save();
+					break;
+				case C:
+					copy();
+					break;
+				case X:
+					cut();
+					break;
+				case V:
+					paste();
+					break;
 			}
 		}
+	}
+	
+	private void copy() {
+		String extract = tokens.extract(
+				SourcePosition.min(cursorStart, cursorEnd),
+				SourcePosition.max(cursorStart, cursorEnd));
+		context.getClipboard().copyAsString(extract);
+	}
+	
+	private void cut() {
+		copy();
+		tokens.delete(cursorStart, cursorEnd);
+		
+		SourcePosition cursor = SourcePosition.min(cursorStart, cursorEnd);
+		setCursor(cursor, cursor);
+	}
+	
+	private void paste() {
+		String text = context.getClipboard().getAsString();
+		if (text == null)
+			return;
+		
+		deleteSelection();
+		tokens.insert(cursorEnd, text);
+		
+		SourcePosition cursor = cursorEnd.advance(text.length());
+		setCursor(cursor, cursor);
 	}
 	
 	private void save() {
@@ -339,14 +377,25 @@ public class SourceEditor implements DComponent {
 		tokens.deleteCharacter(cursorEnd.line, cursorEnd.offset);
 	}
 	
-	private void backspace() {
-		if (!cursorEnd.equals(cursorStart)) {
+	private boolean hasSelection() {
+		return !cursorEnd.equals(cursorStart);
+	}
+	
+	private boolean deleteSelection() {
+		if (hasSelection()) {
 			SourcePosition min = SourcePosition.min(cursorStart, cursorEnd);
 			SourcePosition max = SourcePosition.max(cursorStart, cursorEnd);
-			tokens.delete(min.line, min.offset, max.line, max.offset);
+			tokens.delete(min, max);
 			setCursor(min, min);
-			return;
+			return true;
 		}
+		
+		return false;
+	}
+	
+	private void backspace() {
+		if (deleteSelection())
+			return;
 		
 		if (cursorEnd.offset == 0) {
 			if (cursorEnd.line == 0)
@@ -370,14 +419,18 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private void type(String value) {
-		tokens.insert(cursorEnd.line, cursorEnd.offset, value);
+		deleteSelection();
+		
+		tokens.insert(cursorEnd, value);
 		SourcePosition position = new SourcePosition(tokens, cursorEnd.line, cursorEnd.offset + value.length());
 		setCursor(position, position);
 	}
 	
 	private void newline() {
+		deleteSelection();
+		
 		String indent = tokens.getLine(cursorEnd.line).getIndent();
-		tokens.insert(cursorEnd.line, cursorEnd.offset, "\n" + indent);
+		tokens.insert(cursorEnd, "\n" + indent);
 		SourcePosition position = new SourcePosition(tokens, cursorEnd.line + 1, indent.length());
 		setCursor(position, position);
 	}

@@ -10,6 +10,7 @@ import java.awt.Graphics;
 import java.awt.geom.GeneralPath;
 import java.util.WeakHashMap;
 import javax.swing.Timer;
+import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DDrawingContext;
@@ -26,6 +27,7 @@ public class SwingGraphicsContext implements DDrawingContext {
 	public final float scale;
 	private final WeakHashMap<DPath, GeneralPath> preparedPaths = new WeakHashMap<>();
 	private final SwingRoot root;
+	private final JavaClipboard clipboard = new JavaClipboard();
 	private Graphics graphics;
 	
 	public SwingGraphicsContext(float scale, SwingRoot root) {
@@ -109,6 +111,11 @@ public class SwingGraphicsContext implements DDrawingContext {
 		Timer timer = new Timer(millis, e -> target.run());
 		timer.start();
 		return () -> timer.stop();
+	}
+
+	@Override
+	public DClipboard getClipboard() {
+		return clipboard;
 	}
 	
 	private class PathTracer implements DPathTracer {

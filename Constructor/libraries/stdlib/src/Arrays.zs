@@ -19,6 +19,7 @@ export expand <T> T[] {
 	
 	public get first as T?;
 	public get last as T?;
+	public get reversed as T[];
 	
 	public map<U>(projection as function(value as T) as U) as U[] {
 		val result as U[] = new U[](this.length);
@@ -77,6 +78,38 @@ export expand <T> T[] {
 				return false;
 		
 		return true;
+	}
+	
+	public first(predicate as function(value as T) as bool) as T? {
+		for value in this
+			if predicate(value)
+				return value;
+		
+		return null;
+	}
+	
+	public first(predicate as function(i as int, value as T) as bool) as T? {
+		for i, value in this
+			if predicate(i, value)
+				return value;
+		
+		return null;
+	}
+	
+	public last(predicate as function(value as T) as bool) as T? {
+		for i, value in this.reversed
+			if predicate(value)
+				return value;
+		
+		return null;
+	}
+	
+	public last(predicate as function(value as T) as bool) as T? {
+		for i, value in this.reversed
+			if predicate(value)
+				return value
+		
+		return null;
 	}
 	
 	public count(predicate as function(value as T) as bool) as int {

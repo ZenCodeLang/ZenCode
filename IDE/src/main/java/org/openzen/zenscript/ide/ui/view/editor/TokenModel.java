@@ -89,6 +89,55 @@ public class TokenModel {
 		return new Position(line, tokenLine.getTokenCount(), 0);
 	}
 	
+	public String extract(SourcePosition from, SourcePosition to) {
+		Position fromT = from.asTokenPosition();
+		Position toT = to.asTokenPosition();
+		if (from.line == to.line) {
+			StringBuilder result = new StringBuilder();
+			ZSToken fromToken = getTokenAt(fromT);
+			if (fromToken != null)
+				result.append(fromToken.getContent().substring(fromT.offset));
+			
+			TokenLine line = getLine(from.line);
+			for (int i = fromT.token + 1; i < toT.token; i++)
+				result.append(line.getToken(i).content);
+			
+			ZSToken toToken = getTokenAt(toT);
+			if (toToken != null)
+				result.append(toToken.content.substring(0, toT.offset));
+			
+			return result.toString();
+		} else {
+			StringBuilder result = new StringBuilder();
+			ZSToken fromToken = getTokenAt(fromT);
+			if (fromToken != null)
+				result.append(fromToken.getContent().substring(fromT.offset));
+			
+			TokenLine fromLine = getLine(from.line);
+			for (int i = fromT.token + 1; i < fromLine.getTokenCount(); i++)
+				result.append(fromLine.getToken(i).content);
+			
+			for (int i = fromT.line + 1; i < toT.line; i++) {
+				result.append("\n");
+				for (ZSToken t : fromLine.getTokens()) {
+					result.append(t.content);
+				}
+			}
+			
+			result.append("\n");
+			
+			TokenLine toLine = getLine(to.line);
+			for (int i = 0; i < toT.token; i++)
+				result.append(toLine.getToken(i).content);
+			
+			ZSToken toToken = getTokenAt(toT);
+			if (toToken != null)
+				result.append(toToken.content.substring(0, toT.offset));
+			
+			return result.toString();
+		}
+	}
+	
 	public void set(Iterator<ZSToken> tokens) {
 		lines.clear();
 		lines.add(new TokenLine());
@@ -127,48 +176,37 @@ public class TokenModel {
 		}
 	}
 	
-	public void delete(int fromLineIndex, int fromOffset, int toLineIndex, int toOffset) {
-		Position from = getPosition(fromLineIndex, fromOffset);
-		Position to = getPosition(toLineIndex, toOffset);
+	public void delete(SourcePosition from, SourcePosition to) {
+		Position fromT = from.asTokenPosition();
+		Position toT = to.asTokenPosition();
 		
-		ZSToken fromToken = getTokenAt(from);
-		ZSToken toToken = getTokenAt(to);
+		ZSToken fromToken = getTokenAt(fromT);
+		ZSToken toToken = getTokenAt(toT);
 		
 		String remainder = "";
 		if (fromToken != null)
-			remainder = fromToken.content.substring(0, from.offset);
-		if (toToken != null && to.offset > 0)
-			remainder += toToken.content.substring(to.offset);
+			remainder = fromToken.content.substring(0, fromT.offset);
+		if (toToken != null && toT.offset > 0)
+			remainder += toToken.content.substring(toT.offset);
 		
-		removeTokens(from.line, from.token, to.line, to.offset > 0 ? to.token + 1 : to.token);
-		if (!remainder.isEmpty()) {
-			getLine(from.line).insert(from.token, new ZSToken(ZSTokenType.INVALID, remainder));
-			relex(from.line, Math.max(0, from.token - 1), from.line, from.token + 1);
-		}
+		removeTokens(fromT.line, fromT.token, toT.line, toT.offset > 0 ? toT.token + 1 : toT.token);
+		if (!remainder.isEmpty())
+			getLine(fromT.line).insert(fromT.token, new ZSToken(ZSTokenType.INVALID, remainder));
+		
+		relex(fromT.line, Math.max(0, fromT.token - 1), fromT.line, fromT.token + 1);
 	}
 	
-	public void insert(int lineIndex, int offset, String value) {
-		TokenLine line = lines.get(lineIndex);
-		int tokenOffset = 0;
-		for (int i = 0; i < line.getTokenCount(); i++) {
-			ZSToken token = line.getToken(i);
-			if (tokenOffset + token.content.length() > offset) {
-				token = token.insert(offset - tokenOffset, value);
-				line.replace(i, token);
-				relex(lineIndex, i, lineIndex, i + 1);
-				return;
-			}
-			tokenOffset += token.content.length();
-		}
-
-		ZSToken token = line.getLastToken();
+	public void insert(SourcePosition position, String value) {
+		TokenLine line = lines.get(position.line);
+		Position tokenPosition = position.asTokenPosition();
+		ZSToken token = getTokenAt(tokenPosition);
 		if (token == null) {
 			line.add(new ZSToken(ZSTokenType.INVALID, value));
 		} else {
-			token = new ZSToken(token.type, token.content + value);
-			line.replace(line.getTokenCount() - 1, token);
+			token = token.insert(tokenPosition.offset, value);
+			line.replace(tokenPosition.token, token);
 		}
-		relex(lineIndex, line.getTokenCount() - 1, lineIndex, line.getTokenCount());
+		relex(tokenPosition.line, Math.max(0, tokenPosition.token - 1), tokenPosition.line, tokenPosition.token + 1);
 	}
 	
 	private void relex(int fromLine, int fromToken, int toLine, int toToken) {
