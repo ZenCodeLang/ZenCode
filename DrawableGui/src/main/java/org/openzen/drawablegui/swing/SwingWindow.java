@@ -8,7 +8,7 @@ package org.openzen.drawablegui.swing;
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDrawingContext;
+import org.openzen.drawablegui.DUIContext;
 
 /**
  *
@@ -24,7 +24,7 @@ public final class SwingWindow extends JFrame {
 		swingComponent.requestFocusInWindow();
 	}
 	
-	public DDrawingContext getContext() {
+	public DUIContext getContext() {
 		return swingComponent.context;
 	}
 }

@@ -5,33 +5,36 @@
  */
 package org.openzen.drawablegui.scroll;
 
-import org.openzen.drawablegui.DRectangle;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
-import org.openzen.drawablegui.DDrawingContext;
 import org.openzen.drawablegui.DMouseEvent;
+import org.openzen.drawablegui.listeners.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.ImmutableLiveObject;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.style.DStyleClass;
+import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class DScrollBar implements DComponent {
-	private final DScrollBarStyle style;
 	private final LiveObject<DDimensionPreferences> preferences;
 	
+	private final DStyleClass styleClass;
 	private final LiveInt targetHeight;
 	private final LiveInt offset;
 	
 	private final ListenerHandle<LiveInt.Listener> targetHeightListener;
 	private final ListenerHandle<LiveInt.Listener> offsetListener;
 	
-	private DDrawingContext context;
-	private DRectangle bounds;
+	private DUIContext context;
+	private DScrollBarStyle style;
+	private DIRectangle bounds;
 	
 	private int fromY = 0;
 	private int toY = 0;
@@ -40,19 +43,21 @@ public class DScrollBar implements DComponent {
 	private int dragStartOffset;
 	private int dragStartY;
 	
-	public DScrollBar(DScrollBarStyle style, LiveInt targetHeight, LiveInt offset) {
-		this.style = style;
+	public DScrollBar(DStyleClass styleClass, LiveInt targetHeight, LiveInt offset) {
+		this.styleClass = styleClass;
 		this.targetHeight = targetHeight;
 		this.offset = offset;
-		this.preferences = new ImmutableLiveObject<>(new DDimensionPreferences(style.width, 0));
+		this.preferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
 		
 		targetHeightListener = targetHeight.addListener(new ScrollListener());
 		offsetListener = offset.addListener(new ScrollListener());
 	}
 
 	@Override
-	public void setContext(DDrawingContext context) {
+	public void setContext(DStylePath parent, DUIContext context) {
 		this.context = context;
+		this.style = new DScrollBarStyle(context.getStylesheets().get(context, parent.getChild("scrollbar", styleClass)));
+		preferences.setValue(new DDimensionPreferences(style.width, 0));
 	}
 
 	@Override
@@ -61,12 +66,12 @@ public class DScrollBar implements DComponent {
 	}
 
 	@Override
-	public DRectangle getBounds() {
+	public DIRectangle getBounds() {
 		return bounds;
 	}
 
 	@Override
-	public void setBounds(DRectangle bounds) {
+	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
 		recalculate();
 	}
@@ -84,7 +89,7 @@ public class DScrollBar implements DComponent {
 		if (dragging)
 			color = style.scrollBarPressColor;
 		
-		canvas.fillRectangle(bounds.x, bounds.y + fromY, this.bounds.width, toY - fromY, color);
+		canvas.fillRectangle(bounds.x, fromY, this.bounds.width, toY - fromY, color);
 	}
 	
 	@Override
@@ -125,6 +130,11 @@ public class DScrollBar implements DComponent {
 	public void onMouseRelease(DMouseEvent e) {
 		setDragging(false);
 	}
+
+	@Override
+	public void close() {
+		// nothing to clean up
+	}
 	
 	private void checkHover(DMouseEvent e) {
 		setHovering(e.y >= fromY && e.y < toY);
@@ -147,11 +157,11 @@ public class DScrollBar implements DComponent {
 	}
 	
 	private void recalculate() {
-		if (targetHeight.getValue() == 0)
+		if (targetHeight.getValue() == 0 || bounds == null)
 			return;
 		
-		fromY = this.bounds.height * offset.getValue() / targetHeight.getValue();
-		toY = this.bounds.height * (offset.getValue() + this.bounds.height) / targetHeight.getValue();
+		fromY = bounds.y + this.bounds.height * offset.getValue() / targetHeight.getValue();
+		toY = bounds.y + this.bounds.height * (offset.getValue() + this.bounds.height) / targetHeight.getValue();
 	}
 	
 	private class ScrollListener implements LiveInt.Listener {

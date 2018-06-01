@@ -3,16 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.ide.ui;
+package org.openzen.drawablegui.style;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class IDEStyle {
-	public final int primaryColor;
-	
-	public IDEStyle(int primaryColor) {
-		this.primaryColor = primaryColor;
-	}
+public interface DStylePath {
+	public DStylePath getChild(String element, DStyleClass styleClass);
 }

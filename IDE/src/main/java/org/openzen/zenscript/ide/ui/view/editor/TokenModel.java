@@ -73,7 +73,7 @@ public class TokenModel {
 		if (line < 0)
 			line = 0;
 		if (line >= lines.size())
-			return new Position(lines.size(), lines.get(lines.size() - 1).getTokenCount(), 0);
+			return new Position(lines.size() - 1, lines.get(lines.size() - 1).getTokenCount(), 0);
 		
 		int token = 0;
 		int tokenOffset = 0;

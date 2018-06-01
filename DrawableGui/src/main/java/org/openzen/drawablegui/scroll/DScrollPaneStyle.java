@@ -7,21 +7,17 @@ package org.openzen.drawablegui.scroll;
 
 import org.openzen.drawablegui.border.DBorder;
 import org.openzen.drawablegui.border.DLineBorder;
+import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class DScrollPaneStyle {
-	public static final DScrollPaneStyle DEFAULT = new DScrollPaneStyle(new DLineBorder(0xFF888888, 1), DScrollBarStyle.DEFAULT);
-	
 	public final DBorder border;
-	public final DScrollBarStyle scrollBarStyle;
 	
-	public DScrollPaneStyle(
-			DBorder border,
-			DScrollBarStyle scrollBarStyle) {
-		this.border = border;
-		this.scrollBarStyle = scrollBarStyle;
+	public DScrollPaneStyle(DStyleDefinition style) {
+		this.border = style.getBorder("border", context -> new DLineBorder(0xFF888888, 1));
 	}
 }

@@ -5,17 +5,18 @@
  */
 package org.openzen.zenscript.ide.ui;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Closeable;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.listeners.ListenerList;
+import org.openzen.drawablegui.live.LiveArrayList;
+import org.openzen.drawablegui.live.LiveList;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class IDEAspectBar {
-	private final List<IDEAspectToolbar> aspectToolbars = new ArrayList<>();
+	public final LiveList<IDEAspectToolbar> aspectToolbars = new LiveArrayList<>(); // TODO: only expose read-only variant
 	private final ListenerList<Listener> listeners = new ListenerList<>();
 	
 	public ListenerHandle<Listener> addListener(Listener listener) {
@@ -37,6 +38,11 @@ public class IDEAspectBar {
 		return true;
 	}
 	
+	public BarHandle openContentBar(IDEAspectToolbar toolbar) {
+		listeners.accept(listener -> listener.onOpenContextBar(toolbar));
+		return new BarHandle(toolbar);
+	}
+	
 	private int insertToolbar(IDEAspectToolbar toolbar) {
 		for (int i = 0; i < aspectToolbars.size(); i++) {
 			if (toolbar.order < aspectToolbars.get(i).order) {
@@ -49,8 +55,23 @@ public class IDEAspectBar {
 		return index;
 	}
 	
+	public class BarHandle implements Closeable {
+		private final IDEAspectToolbar toolbar;
+		
+		public BarHandle(IDEAspectToolbar toolbar) {
+			this.toolbar = toolbar;
+		}
+		
+		@Override
+		public void close() {
+			listeners.accept(listener -> listener.onCloseContextBar(toolbar));
+		}
+	}
+	
 	public interface Listener {
 		void onAspectBarAdded(int index, IDEAspectToolbar toolbar);
 		void onAspectBarRemoved(int index, IDEAspectToolbar toolbar);
+		void onOpenContextBar(IDEAspectToolbar toolbar);
+		void onCloseContextBar(IDEAspectToolbar toolbar);
 	}
 }

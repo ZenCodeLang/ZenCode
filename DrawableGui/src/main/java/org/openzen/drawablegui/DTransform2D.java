@@ -16,6 +16,10 @@ public final class DTransform2D {
 		return new DTransform2D(1, 0, 0, 1, x, y);
 	}
 	
+	public static DTransform2D scaleAndTranslate(float x, float y, float scale) {
+		return new DTransform2D(scale, 0, 0, scale, x, y);
+	}
+	
 	public static DTransform2D scale(float scale) {
 		return new DTransform2D(scale, 0, 0, scale, 0, 0);
 	}
@@ -34,5 +38,17 @@ public final class DTransform2D {
 		this.yy = yy;
 		this.dx = dx;
 		this.dy = dy;
+	}
+	
+	public DTransform2D offset(float x, float y) {
+		return new DTransform2D(xx, xy, yx, yy, dx + x, dy + y);
+	}
+	
+	public float getX(float x, float y) {
+		return x * xx + y * xy + dx;
+	}
+	
+	public float getY(float x, float y) {
+		return x * yx + y * yy + dy;
 	}
 }

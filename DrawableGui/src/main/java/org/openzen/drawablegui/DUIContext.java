@@ -5,14 +5,23 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.style.DStyleSheets;
+
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface DDrawingContext {
+public interface DUIContext {
+	DStyleSheets getStylesheets();
+	
 	float getScale();
 	
 	void repaint(int x, int y, int width, int height);
+	
+	default void repaint(DIRectangle rectangle) {
+		repaint(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+	}
 	
 	void setCursor(Cursor cursor);
 	

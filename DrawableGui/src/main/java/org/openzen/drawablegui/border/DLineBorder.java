@@ -5,9 +5,10 @@
  */
 package org.openzen.drawablegui.border;
 
-import org.openzen.drawablegui.DRectangle;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DTransform2D;
+import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DUIContext;
 
 /**
  *
@@ -23,7 +24,7 @@ public class DLineBorder implements DBorder {
 	}
 
 	@Override
-	public void paint(DCanvas canvas, DRectangle bounds) {
+	public void paint(DCanvas canvas, DIRectangle bounds) {
 		canvas.strokePath(tracer -> {
 				tracer.moveTo(bounds.x, bounds.y);
 				tracer.lineTo(bounds.x + bounds.width - borderWidth, bounds.y);

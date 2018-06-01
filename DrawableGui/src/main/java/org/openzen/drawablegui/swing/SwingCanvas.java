@@ -13,15 +13,18 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.util.Stack;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DDrawingContext;
-import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.listeners.DIRectangle;
 import org.openzen.drawablegui.DPath;
+import org.openzen.drawablegui.DPathBoundsCalculator;
+import org.openzen.drawablegui.DUIContext;
 
 /**
  *
@@ -82,15 +85,7 @@ public class SwingCanvas implements DCanvas {
 	}
 
 	@Override
-	public float measureTextLength(DFont font, String text, int offset, int length) {
-		prepare(font);
-		g.setFont((Font) font.cached);
-		Rectangle2D rect = g.getFontMetrics().getStringBounds(text, offset, length, g);
-		return (float) rect.getWidth();
-	}
-
-	@Override
-	public DDrawingContext getContext() {
+	public DUIContext getContext() {
 		return context;
 	}
 
@@ -117,7 +112,22 @@ public class SwingCanvas implements DCanvas {
 
 	@Override
 	public void shadowPath(DPath path, DTransform2D transform, int color, float dx, float dy, float radius) {
-		// TODO
+		DIRectangle bounds = DPathBoundsCalculator.getBounds(path, transform.offset(dx, dy));
+		int offset = 2 * (int)Math.ceil(radius);
+		
+		GeneralPath jPath = context.getPath(path);
+		
+		BufferedImage image = new BufferedImage(bounds.width + 2 * offset, bounds.height + 2 * offset, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D imageG = (Graphics2D) image.getGraphics();
+		
+		imageG.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		imageG.setColor(new Color(color, true));
+		imageG.setTransform(getTransform(transform.offset(offset + dx - bounds.x, offset + dy - bounds.y)));
+		imageG.fill(jPath);
+		
+		image = getGaussianBlurFilter((int)Math.ceil(radius), true).filter(image, null);
+		image = getGaussianBlurFilter((int)Math.ceil(radius), false).filter(image, null);
+		g.drawImage(image, bounds.x - offset, bounds.y - offset, null);
 	}
 
 	@Override
@@ -143,4 +153,39 @@ public class SwingCanvas implements DCanvas {
 	private AffineTransform getTransform(DTransform2D transform) {
 		return new AffineTransform(transform.xx, transform.xy, transform.yx, transform.yy, transform.dx, transform.dy);
 	}
+    
+	
+	// taken from http://www.java2s.com/Code/Java/Advanced-Graphics/GaussianBlurDemo.htm
+    public static ConvolveOp getGaussianBlurFilter(int radius, boolean horizontal) {
+        if (radius < 1) {
+            throw new IllegalArgumentException("Radius must be >= 1");
+        }
+        
+        int size = radius * 2 + 1;
+        float[] data = new float[size];
+        
+        float sigma = radius / 3.0f;
+        float twoSigmaSquare = 2.0f * sigma * sigma;
+        float sigmaRoot = (float) Math.sqrt(twoSigmaSquare * Math.PI);
+        float total = 0.0f;
+        
+        for (int i = -radius; i <= radius; i++) {
+            float distance = i * i;
+            int index = i + radius;
+            data[index] = (float) Math.exp(-distance / twoSigmaSquare) / sigmaRoot;
+            total += data[index];
+        }
+        
+        for (int i = 0; i < data.length; i++) {
+            data[i] /= total;
+        }        
+        
+        Kernel kernel = null;
+        if (horizontal) {
+            kernel = new Kernel(size, 1, data);
+        } else {
+            kernel = new Kernel(1, size, data);
+        }
+        return new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+    }
 }

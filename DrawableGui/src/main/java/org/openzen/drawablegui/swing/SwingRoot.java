@@ -20,11 +20,12 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.listeners.DIRectangle;
 import org.openzen.drawablegui.DKeyEvent;
 import static org.openzen.drawablegui.DKeyEvent.KeyCode.*;
 import org.openzen.drawablegui.DMouseEvent;
-import org.openzen.drawablegui.DRectangle;
+import org.openzen.drawablegui.style.DEmptyStylesheets;
+import org.openzen.drawablegui.style.DStylePathRoot;
 
 /**
  *
@@ -34,15 +35,18 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 	public final SwingGraphicsContext context;
 	public final DComponent component;
 	private DComponent focus = null;
+	private boolean firstPaint = true;
 
 	public SwingRoot(DComponent root) {
 		this.component = root;
 		setFocusable(true);
 		setFocusTraversalKeysEnabled(false); // prevent tab from being handled by focus traversal
 		
-		context = new SwingGraphicsContext(Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f, this);
-		component.setContext(context);
-		component.setBounds(new DRectangle(0, 0, getWidth(), getHeight()));
+		context = new SwingGraphicsContext(
+				DEmptyStylesheets.INSTANCE,
+				Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f,
+				this);
+		component.setBounds(new DIRectangle(0, 0, getWidth(), getHeight()));
 		addComponentListener(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
@@ -63,6 +67,11 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 
 	@Override
 	public void paint(Graphics g) {
+		if (firstPaint) {
+			firstPaint = false;
+			component.setContext(DStylePathRoot.INSTANCE, context);
+		}
+		
 		Rectangle clipBounds = g.getClipBounds();
 		DIRectangle clipBounds2 = clipBounds == null ? null : new DIRectangle(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 		SwingCanvas canvas = new SwingCanvas((Graphics2D) g, context, clipBounds2);
@@ -71,7 +80,7 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 
 	@Override
 	public void componentResized(ComponentEvent e) {
-		component.setBounds(new DRectangle(0, 0,
+		component.setBounds(new DIRectangle(0, 0,
 				e.getComponent().getWidth(),
 				e.getComponent().getHeight()));
 

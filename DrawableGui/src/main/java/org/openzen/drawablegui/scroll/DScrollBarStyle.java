@@ -5,29 +5,27 @@
  */
 package org.openzen.drawablegui.scroll;
 
+import org.openzen.drawablegui.dimension.DDimension;
+import org.openzen.drawablegui.dimension.DDpDimension;
+import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.style.DStyleDefinition;
+
 /**
  *
  * @author Hoofdgebruiker
  */
 public class DScrollBarStyle {
-	public static final DScrollBarStyle DEFAULT = new DScrollBarStyle(0xFFF0F0F0, 0xFFCDCDCD, 0xFF888888, 0xFF666666, 20);
-	
 	public final int scrollBarBackgroundColor;
 	public final int scrollBarNormalColor;
 	public final int scrollBarHoverColor;
 	public final int scrollBarPressColor;
 	public final int width;
 	
-	public DScrollBarStyle(
-			int scrollBarBackgroundColor,
-			int scrollBarNormalColor,
-			int scrollBarHoverColor,
-			int scrollBarPressColor,
-			int width) {
-		this.scrollBarBackgroundColor = scrollBarBackgroundColor;
-		this.scrollBarNormalColor = scrollBarNormalColor;
-		this.scrollBarHoverColor = scrollBarHoverColor;
-		this.scrollBarPressColor = scrollBarPressColor;
-		this.width = width;
+	public DScrollBarStyle(DStyleDefinition style) {
+		this.scrollBarBackgroundColor = style.getColor("scrollbar.background.color", 0xFFF0F0F0);
+		this.scrollBarNormalColor = style.getColor("scrollbar.color.normal", 0xFFCDCDCD);
+		this.scrollBarHoverColor = style.getColor("scrollbar.color.hover", 0xFF888888);
+		this.scrollBarPressColor = style.getColor("scrollbar.color.press", 0xFF666666);
+		this.width = style.getDimension("width", new DDpDimension(12));
 	}
 }

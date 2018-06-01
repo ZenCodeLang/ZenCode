@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.ide.ui;
+package org.openzen.drawablegui.style;
 
-import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DUIContext;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface IDEAspectBarControl {
-	DComponent instantiate();
+public interface DStyleSheets {
+	public DStyleDefinition get(DUIContext context, DStylePath path);
 }

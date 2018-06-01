@@ -9,32 +9,37 @@ import java.io.IOException;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
-import org.openzen.drawablegui.DDrawingContext;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
 import org.openzen.drawablegui.DFontMetrics;
-import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.listeners.DIRectangle;
 import org.openzen.drawablegui.DKeyEvent;
-import org.openzen.drawablegui.DKeyEvent.KeyCode;
 import org.openzen.drawablegui.DMouseEvent;
-import org.openzen.drawablegui.DRectangle;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.zenscript.ide.host.IDESourceFile;
+import org.openzen.zenscript.ide.ui.IDEAspectToolbar;
+import org.openzen.zenscript.ide.ui.IDEWindow;
+import org.openzen.zenscript.ide.ui.icons.ColorableCodeIcon;
 import org.openzen.zenscript.lexer.ReaderCharReader;
 import org.openzen.zenscript.lexer.TokenParser;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
+import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.style.DStyleClass;
+import org.openzen.drawablegui.style.DStylePath;
+import org.openzen.zenscript.ide.ui.icons.SaveIcon;
+import org.openzen.zenscript.ide.ui.view.IconButtonControl;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class SourceEditor implements DComponent {
-	private final SourceEditorStyle style = SourceEditorStyle.DEFAULT;
+	private final DStyleClass styleClass;
 	private final DFont font = new DFont(DFontFamily.CODE, false, false, false, 24);
 	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(new DDimensionPreferences(0, 0));
 	private final String tab = "    ";
@@ -42,8 +47,10 @@ public class SourceEditor implements DComponent {
 	private final TokenModel tokens;
 	private final ListenerHandle<TokenModel.Listener> tokenListener;
 	
-	private DRectangle bounds;
-	private DDrawingContext context;
+	private DIRectangle bounds;
+	private DUIContext context;
+	private SourceEditorStyle style;
+	
 	private DFontMetrics fontMetrics;
 	private int textLineHeight;
 	private int fullLineHeight;
@@ -59,22 +66,41 @@ public class SourceEditor implements DComponent {
 	private int mouseDownY = -1;
 	private boolean dragging = false;
 	
-	public SourceEditor(IDESourceFile sourceFile) {
+	private final IDEWindow window;
+	private final IDEAspectToolbar editToolbar = new IDEAspectToolbar(0, ColorableCodeIcon.INSTANCE, "Edit", "Source code editor");
+	
+	public SourceEditor(DStyleClass styleClass, IDEWindow window, IDESourceFile sourceFile) {
+		this.styleClass = styleClass;
+		this.window = window;
 		this.sourceFile = sourceFile;
+		
 		tokens = new TokenModel(sourceFile.getName(), tab.length());
 		tokenListener = tokens.addListener(new TokenListener());
 		
+		editToolbar.controls.add(() -> new IconButtonControl(SaveIcon.INSTANCE, e -> save()));
+		window.aspectBar.addToolbar(editToolbar);
+		
 		try {
-			TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(sourceFile.getName(), new ReaderCharReader(sourceFile.read()), tab.length());
+			TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(
+					sourceFile.getName(),
+					new ReaderCharReader(sourceFile.read()),
+					tab.length());
 			tokens.set(parser);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 	}
+	
+	@Override
+	public void close() {
+		window.aspectBar.removeToolbar(editToolbar);
+	}
 
 	@Override
-	public void setContext(DDrawingContext context) {
+	public void setContext(DStylePath parent, DUIContext context) {
 		this.context = context;
+		this.style = new SourceEditorStyle(context.getStylesheets().get(context, parent.getChild("sourceeditor", styleClass)));
+		
 		fontMetrics = context.getFontMetrics(font);
 		textLineHeight = fontMetrics.getAscent() + fontMetrics.getDescent();
 		fullLineHeight = textLineHeight + fontMetrics.getLeading() + style.extraLineSpacing;
@@ -90,28 +116,32 @@ public class SourceEditor implements DComponent {
 	}
 
 	@Override
-	public DRectangle getBounds() {
+	public DIRectangle getBounds() {
 		return bounds;
 	}
 
 	@Override
-	public void setBounds(DRectangle bounds) {
+	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
 	}
 
 	@Override
 	public void paint(DCanvas canvas) {
 		DIRectangle canvasBounds = canvas.getBounds();
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 0xFFFFFFFF);
+		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
 		
-		lineBarWidth = Math.max(50, fontMetrics.getWidth(Integer.toString(tokens.getLineCount()))) + 5;
-		canvas.fillRectangle(bounds.x, bounds.y, lineBarWidth, bounds.height, 0xFFE9E8E2);
-		canvas.strokePath(tracer -> {
-			tracer.moveTo(bounds.x + lineBarWidth, bounds.y);
-			tracer.lineTo(bounds.x + lineBarWidth, bounds.y + bounds.height);
-		}, DTransform2D.IDENTITY, 0xFFA0A0A0, 1);
+		lineBarWidth = Math.max(style.lineBarMinWidth, fontMetrics.getWidth(Integer.toString(tokens.getLineCount())))
+				+ style.lineBarSpacingLeft
+				+ style.lineBarSpacingRight;
+		canvas.fillRectangle(bounds.x, bounds.y, lineBarWidth, bounds.height, style.lineBarBackgroundColor);
+		if (style.lineBarStrokeWidth > 0) {
+			canvas.strokePath(tracer -> {
+				tracer.moveTo(bounds.x + lineBarWidth, bounds.y);
+				tracer.lineTo(bounds.x + lineBarWidth, bounds.y + bounds.height);
+			}, DTransform2D.IDENTITY, style.lineBarStrokeColor, style.lineBarStrokeWidth);
+		}
 		
-		int x = bounds.x + lineBarWidth + 10;
+		int x = bounds.x + lineBarWidth + style.lineBarMargin;
 		if (cursorEnd != null)
 			canvas.fillRectangle(x, lineToY(cursorEnd.line), bounds.width - x, selectionLineHeight, style.currentLineHighlight);
 		
@@ -144,14 +174,14 @@ public class SourceEditor implements DComponent {
 		for (TokenLine line : tokens.getLines()) {
 			if (y + textLineHeight  >= canvasBounds.y && y < canvasBounds.y + canvasBounds.height) {
 				String lineNumber = Integer.toString(lineIndex);
-				int lineNumberX = x - 15 - (int)canvas.measureTextLength(font, lineNumber);
-				canvas.drawText(font, 0xFFA0A0A0, lineNumberX, y + fontMetrics.getAscent(), lineNumber);
+				int lineNumberX = x - style.lineBarSpacingRight - style.lineBarMargin - fontMetrics.getWidth(lineNumber);
+				canvas.drawText(font, style.lineBarTextColor, lineNumberX, y + fontMetrics.getAscent(), lineNumber);
 
 				int lineX = x;
 				for (ZSToken token : line.getTokens()) {
 					String content = getDisplayContent(token);
 					canvas.drawText(font, TokenClass.get(token.type).color, lineX, y + fontMetrics.getAscent(), content);
-					lineX += canvas.measureTextLength(font, content);
+					lineX += fontMetrics.getWidth(content);
 				}
 			}
 			
@@ -162,18 +192,18 @@ public class SourceEditor implements DComponent {
 		if (cursorEnd != null && cursorBlink) {
 			int cursorX = getX(cursorEnd);
 			int cursorY = getY(cursorEnd);
-			canvas.fillRectangle(cursorX, cursorY, 2, selectionLineHeight, 0xFF000000);
+			canvas.fillRectangle(cursorX, cursorY, style.cursorWidth, selectionLineHeight, style.cursorColor);
 		}
 	}
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
-		context.setCursor(DDrawingContext.Cursor.TEXT);
+		context.setCursor(DUIContext.Cursor.TEXT);
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
-		context.setCursor(DDrawingContext.Cursor.NORMAL);
+		context.setCursor(DUIContext.Cursor.NORMAL);
 	}
 	
 	@Override
@@ -530,9 +560,9 @@ public class SourceEditor implements DComponent {
 	
 	public int getX(SourcePosition position) {
 		int x = bounds.x + lineBarWidth + 10;
-		TokenLine lineData = tokens.getLine(position.line);
-		
 		TokenModel.Position tokenPosition = position.asTokenPosition();
+		TokenLine lineData = tokens.getLine(tokenPosition.line);
+		
 		for (int i = 0; i < tokenPosition.token; i++)
 			x += fontMetrics.getWidth(getDisplayContent(lineData.getToken(i)));
 		if (tokenPosition.offset > 0)
@@ -553,7 +583,7 @@ public class SourceEditor implements DComponent {
 		dimensionPreferences.setValue(new DDimensionPreferences(0, fullLineHeight * tokens.getLineCount()));
 		
 		if (bounds != null)
-			context.repaint(bounds.x, bounds.y, bounds.width, bounds.height);
+			context.repaint(bounds);
 	}
 	
 	private class TokenListener implements TokenModel.Listener {

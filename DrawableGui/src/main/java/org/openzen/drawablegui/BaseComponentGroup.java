@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import java.awt.event.MouseWheelEvent;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 

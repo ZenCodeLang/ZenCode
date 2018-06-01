@@ -21,9 +21,9 @@ import org.w3c.dom.NodeList;
  */
 public class Main {
 	public static void main(String[] args) throws Exception {
-		String filename = "baseline-folder-24px.svg"; //args[0];
+		String filename = "baseline-settings-20px.svg"; //args[0];
 		//String filename = "baseline-dashboard-24px.svg";
-		String className = "ColorableFolderIcon";
+		String className = "ColorableSettingsIcon";
 		File file = new File(filename);
 		if (!file.exists()) {
 			System.out.println("No such file: " + filename);
@@ -94,6 +94,8 @@ public class Main {
 		CharStream stream = new CharStream(path);
 		float x = 0;
 		float y = 0;
+		float guideX = 0;
+		float guideY = 0;
 		char instruction = stream.next();
 		while (stream.hasMore()) {
 			if (!stream.nextIsNumber())
@@ -187,6 +189,8 @@ public class Main {
 							.append(y3).append("f);\n");
 					x = x3;
 					y = y3;
+					guideX = x2;
+					guideY = y2;
 					break;
 				}
 				case 'c': {
@@ -198,6 +202,50 @@ public class Main {
 					float y3 = y + stream.parseFloat();
 					x = x3;
 					y = y3;
+					guideX = x2;
+					guideY = y2;
+					output.append(indent)
+							.append("tracer.bezierCubic(")
+							.append(x1).append("f, ")
+							.append(y1).append("f, ")
+							.append(x2).append("f, ")
+							.append(y2).append("f, ")
+							.append(x3).append("f, ")
+							.append(y3).append("f);\n");
+					break;
+				}
+				case 'S': {
+					float x1 = x + (x - guideX);
+					float y1 = y + (y - guideY);
+					float x2 = stream.parseFloat();
+					float y2 = stream.parseFloat();
+					float x3 = stream.parseFloat();
+					float y3 = stream.parseFloat();
+					output.append(indent)
+							.append("tracer.bezierCubic(")
+							.append(x1).append("f, ")
+							.append(y1).append("f, ")
+							.append(x2).append("f, ")
+							.append(y2).append("f, ")
+							.append(x3).append("f, ")
+							.append(y3).append("f);\n");
+					x = x3;
+					y = y3;
+					guideX = x2;
+					guideY = y2;
+					break;
+				}
+				case 's': {
+					float x1 = x + (x - guideX);
+					float y1 = y + (y - guideY);
+					float x2 = x + stream.parseFloat();
+					float y2 = y + stream.parseFloat();
+					float x3 = x + stream.parseFloat();
+					float y3 = y + stream.parseFloat();
+					x = x3;
+					y = y3;
+					guideX = x2;
+					guideY = y2;
 					output.append(indent)
 							.append("tracer.bezierCubic(")
 							.append(x1).append("f, ")

@@ -3,19 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui;
+package org.openzen.drawablegui.listeners;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public final class DRectangle {
+public class DIRectangle {
 	public final int x;
 	public final int y;
 	public final int width;
 	public final int height;
 	
-	public DRectangle(int x, int y, int width, int height) {
+	public DIRectangle(int x, int y, int width, int height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;

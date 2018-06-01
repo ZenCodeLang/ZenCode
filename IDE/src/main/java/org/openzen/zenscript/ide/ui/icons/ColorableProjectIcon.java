@@ -8,11 +8,11 @@ package org.openzen.zenscript.ide.ui.icons;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.zenscript.ide.ui.IDEStyle;
 import org.openzen.drawablegui.DColorableIcon;
 
 public class ColorableProjectIcon implements DColorableIcon {
 	public static final ColorableProjectIcon INSTANCE = new ColorableProjectIcon();
+	public static final ColoredIcon GREY = new ColoredIcon(INSTANCE, 0xFF888888);
 	
 	private ColorableProjectIcon() {}
 	

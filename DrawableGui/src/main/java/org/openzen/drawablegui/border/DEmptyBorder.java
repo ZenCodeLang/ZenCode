@@ -5,8 +5,9 @@
  */
 package org.openzen.drawablegui.border;
 
-import org.openzen.drawablegui.DRectangle;
 import org.openzen.drawablegui.DCanvas;
+import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DUIContext;
 
 /**
  *
@@ -14,9 +15,9 @@ import org.openzen.drawablegui.DCanvas;
  */
 public class DEmptyBorder implements DBorder {
 	public static final DEmptyBorder INSTANCE = new DEmptyBorder();
-
+	
 	@Override
-	public void paint(DCanvas canvas, DRectangle bounds) {
+	public void paint(DCanvas canvas, DIRectangle bounds) {
 		
 	}
 

@@ -5,6 +5,8 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.listeners.DIRectangle;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -20,15 +22,9 @@ public interface DCanvas {
 	
 	DIRectangle getBounds();
 	
-	DDrawingContext getContext();
+	DUIContext getContext();
 	
 	void drawText(DFont font, int color, float x, float y, String text);
-	
-	default float measureTextLength(DFont font, String text) {
-		return measureTextLength(font, text, 0, text.length());
-	}
-	
-	float measureTextLength(DFont font, String text, int offset, int length);
 	
 	/**
 	 * Strokes a given path.

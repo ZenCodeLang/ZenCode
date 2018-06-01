@@ -5,13 +5,14 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
-import org.openzen.drawablegui.DRectangle;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
-import org.openzen.drawablegui.DDrawingContext;
+import org.openzen.drawablegui.listeners.DIRectangle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -22,11 +23,11 @@ public class StatusBarView implements DComponent {
 	//private static final int COLOR = 0xFFFFFFFF;
 	
 	private final SimpleLiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(new DDimensionPreferences(0, 40));
-	private DRectangle bounds;
-	private DDrawingContext context;
+	private DIRectangle bounds;
+	private DUIContext context;
 
 	@Override
-	public void setContext(DDrawingContext context) {
+	public void setContext(DStylePath parent, DUIContext context) {
 		this.context = context;
 	}
 	
@@ -36,17 +37,22 @@ public class StatusBarView implements DComponent {
 	}
 	
 	@Override
-	public DRectangle getBounds() {
+	public DIRectangle getBounds() {
 		return bounds;
 	}
 
 	@Override
-	public void setBounds(DRectangle bounds) {
+	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
 	}
 
 	@Override
 	public void paint(DCanvas canvas) {
 		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, COLOR);
+	}
+
+	@Override
+	public void close() {
+		// nothing to clean up
 	}
 }

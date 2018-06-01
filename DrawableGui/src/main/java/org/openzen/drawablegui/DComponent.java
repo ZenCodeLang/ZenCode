@@ -5,20 +5,23 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.listeners.DIRectangle;
+import java.io.Closeable;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface DComponent {
-	void setContext(DDrawingContext context);
+public interface DComponent extends Closeable {
+	void setContext(DStylePath parent, DUIContext context);
 	
 	LiveObject<DDimensionPreferences> getDimensionPreferences();
 	
-	DRectangle getBounds();
+	DIRectangle getBounds();
 	
-	void setBounds(DRectangle bounds);
+	void setBounds(DIRectangle bounds);
 	
 	void paint(DCanvas canvas);
 	
@@ -47,4 +50,7 @@ public interface DComponent {
 	default void onKeyPressed(DKeyEvent e) {}
 	
 	default void onKeyReleased(DKeyEvent e) {}
+	
+	@Override
+	void close();
 }

@@ -13,24 +13,27 @@ import javax.swing.Timer;
 import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DPath;
-import org.openzen.drawablegui.DDrawingContext;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DPathTracer;
 import org.openzen.drawablegui.DTimerHandle;
+import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.style.DStyleSheets;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class SwingGraphicsContext implements DDrawingContext {
-	public final float scale;
+public class SwingGraphicsContext implements DUIContext {
+	private final DStyleSheets stylesheets;
+	private final float scale;
 	private final WeakHashMap<DPath, GeneralPath> preparedPaths = new WeakHashMap<>();
 	private final SwingRoot root;
 	private final JavaClipboard clipboard = new JavaClipboard();
 	private Graphics graphics;
 	
-	public SwingGraphicsContext(float scale, SwingRoot root) {
+	public SwingGraphicsContext(DStyleSheets stylesheets, float scale, SwingRoot root) {
+		this.stylesheets = stylesheets;
 		this.scale = scale;
 		this.root = root;
 	}
@@ -43,6 +46,11 @@ public class SwingGraphicsContext implements DDrawingContext {
 			preparedPaths.put(path, generalPath);
 		}
 		return generalPath;
+	}
+	
+	@Override
+	public DStyleSheets getStylesheets() {
+		return stylesheets;
 	}
 	
 	@Override

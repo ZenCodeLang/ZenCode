@@ -5,6 +5,7 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.listeners.DIRectangle;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,47 +14,58 @@ import java.util.function.Predicate;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.style.DStyleClass;
+import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class DSideLayout extends BaseComponentGroup {
+	private final DStyleClass styleClass;
+	
 	private DComponent main;
 	private final List<SideComponent> sides = new ArrayList<>();
 	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
 	
-	private DDrawingContext context;
-	private DRectangle bounds;
+	private DStylePath path;
+	private DUIContext context;
+	private DIRectangle bounds;
 	
-	public DSideLayout(DComponent main) {
+	public DSideLayout(DStyleClass styleClass, DComponent main) {
+		this.styleClass = styleClass;
 		this.main = main;
 	}
 	
 	public void add(Side side, DComponent component) {
 		if (context != null)
-			component.setContext(context);
+			component.setContext(path, context);
 		
 		sides.add(new SideComponent(side, component));
 	}
 	
 	public void setMain(DComponent component) {
+		if (this.main != null)
+			this.main.close();
+		
 		this.main = component;
-		main.setContext(context);
+		main.setContext(path, context);
 		setBounds(bounds);
-		context.repaint(bounds.x, bounds.y, bounds.width, bounds.height);
+		context.repaint(bounds);
 	}
 
 	@Override
-	public void setContext(DDrawingContext context) {
+	public void setContext(DStylePath parent, DUIContext context) {
 		this.context = context;
-		main.setContext(context);
+		this.path = parent.getChild("sidelayout", styleClass);
+		
+		main.setContext(path, context);
 		for (SideComponent side : sides)
-			side.component.setContext(context);
+			side.component.setContext(path, context);
 	}
 	
 	@Override
-	public DRectangle getBounds() {
+	public DIRectangle getBounds() {
 		return bounds;
 	}
 
@@ -63,7 +75,7 @@ public class DSideLayout extends BaseComponentGroup {
 	}
 
 	@Override
-	public void setBounds(DRectangle bounds) {
+	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
 		
 		int left = bounds.x;
@@ -86,7 +98,7 @@ public class DSideLayout extends BaseComponentGroup {
 						componentWidth = preferences.maximumWidth;
 					}
 					
-					side.component.setBounds(new DRectangle(componentX, componentY, componentWidth, componentHeight));
+					side.component.setBounds(new DIRectangle(componentX, componentY, componentWidth, componentHeight));
 					top += componentHeight;
 					break;
 				}
@@ -102,7 +114,7 @@ public class DSideLayout extends BaseComponentGroup {
 						componentWidth = preferences.maximumWidth;
 					}
 					
-					side.component.setBounds(new DRectangle(componentX, componentY, componentWidth, componentHeight));
+					side.component.setBounds(new DIRectangle(componentX, componentY, componentWidth, componentHeight));
 					break;
 				}
 				case LEFT: {
@@ -116,7 +128,7 @@ public class DSideLayout extends BaseComponentGroup {
 						componentHeight = preferences.maximumHeight;
 					}
 					
-					side.component.setBounds(new DRectangle(componentX, componentY, componentWidth, componentHeight));
+					side.component.setBounds(new DIRectangle(componentX, componentY, componentWidth, componentHeight));
 					left += componentWidth;
 					break;
 				}
@@ -132,13 +144,13 @@ public class DSideLayout extends BaseComponentGroup {
 						componentHeight = preferences.maximumHeight;
 					}
 					
-					side.component.setBounds(new DRectangle(componentX, componentY, componentWidth, componentHeight));
+					side.component.setBounds(new DIRectangle(componentX, componentY, componentWidth, componentHeight));
 					break;
 				}
 			}
 		}
 		
-		main.setBounds(new DRectangle(left, top, right - left, bottom - top));
+		main.setBounds(new DIRectangle(left, top, right - left, bottom - top));
 	}
 
 	@Override
@@ -207,6 +219,13 @@ public class DSideLayout extends BaseComponentGroup {
 				return side.component;
 		
 		return null;
+	}
+
+	@Override
+	public void close() {
+		main.close();
+		for (SideComponent side : sides)
+			side.close();
 	}
 	
 	public class SideComponent implements Closeable, LiveObject.Listener<DDimensionPreferences> {

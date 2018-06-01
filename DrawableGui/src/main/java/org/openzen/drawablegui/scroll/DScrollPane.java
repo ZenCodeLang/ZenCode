@@ -5,33 +5,36 @@
  */
 package org.openzen.drawablegui.scroll;
 
-import org.openzen.drawablegui.DRectangle;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
-import org.openzen.drawablegui.DDrawingContext;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
-import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.listeners.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveInt;
+import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.style.DStyleClass;
+import org.openzen.drawablegui.style.DStylePath;
+import org.openzen.drawablegui.style.DStyleSheets;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class DScrollPane implements DComponent {
-	private final DScrollPaneStyle style;
+	private final DStyleClass styleClass;
 	private final DComponent contents;
 	private final DScrollBar scrollBar;
-	private DDrawingContext context;
-	private DRectangle bounds;
+	private DUIContext context;
+	private DIRectangle bounds;
 	
+	private DScrollPaneStyle style;
 	private final LiveInt contentsHeight;
 	private final LiveInt offsetX;
 	private final LiveInt offsetY;
@@ -42,15 +45,15 @@ public class DScrollPane implements DComponent {
 	
 	private DComponent hovering = null;
 	
-	public DScrollPane(DScrollPaneStyle style, DComponent contents) {
-		this.style = style;
+	public DScrollPane(DStyleClass styleClass, DComponent contents) {
+		this.styleClass = styleClass;
 		this.contents = contents;
 		
 		contentsHeight = new SimpleLiveInt();
 		offsetX = new SimpleLiveInt();
 		offsetY = new SimpleLiveInt();
 		
-		scrollBar = new DScrollBar(style.scrollBarStyle, contentsHeight, offsetY);
+		scrollBar = new DScrollBar(DStyleClass.EMPTY, contentsHeight, offsetY);
 		
 		contentsHeightListener = contentsHeight.addListener(new ScrollListener());
 		offsetXListener = offsetX.addListener(new ScrollListener());
@@ -60,16 +63,22 @@ public class DScrollPane implements DComponent {
 			if (bounds == null)
 				return;
 			
-			contents.setBounds(new DRectangle(0, 0, bounds.width, Math.max(bounds.height, newPreferences.preferredHeight)));
+			contents.setBounds(new DIRectangle(0, 0, bounds.width, Math.max(bounds.height, newPreferences.preferredHeight)));
 			contentsHeight.setValue(newPreferences.preferredHeight);
 		});
 	}
 
 	@Override
-	public void setContext(DDrawingContext context) {
+	public void setContext(DStylePath parent, DUIContext context) {
 		this.context = context;
-		contents.setContext(new TranslatedContext());
-		scrollBar.setContext(context);
+		
+		DStylePath path = parent.getChild("scrollpane", styleClass);
+		contents.setContext(path, new TranslatedContext());
+		scrollBar.setContext(path, context);
+		style = new DScrollPaneStyle(context.getStylesheets().get(context, path));
+		
+		if (bounds != null)
+			setBounds(bounds);
 	}
 
 	@Override
@@ -78,23 +87,27 @@ public class DScrollPane implements DComponent {
 	}
 
 	@Override
-	public DRectangle getBounds() {
+	public DIRectangle getBounds() {
 		return bounds;
 	}
 
 	@Override
-	public void setBounds(DRectangle bounds) {
+	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		
+		if (this.context == null)
+			return;
+		
 		int height = Math.max(
 				bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom(),
 				contents.getDimensionPreferences().getValue().preferredHeight);
 		int scrollBarWidth = scrollBar.getDimensionPreferences().getValue().preferredWidth;
-		scrollBar.setBounds(new DRectangle(
+		scrollBar.setBounds(new DIRectangle(
 				bounds.x + bounds.width - scrollBarWidth - style.border.getPaddingRight(),
 				bounds.y + style.border.getPaddingTop(),
 				scrollBarWidth,
 				bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom()));
-		contents.setBounds(new DRectangle(0, 0, bounds.width - scrollBar.getBounds().width, height));
+		contents.setBounds(new DIRectangle(0, 0, bounds.width - scrollBar.getBounds().width, height));
 		contentsHeight.setValue(height);
 	}
 
@@ -178,6 +191,11 @@ public class DScrollPane implements DComponent {
 		
 		onMouseMove(e);
 	}
+
+	@Override
+	public void close() {
+		contents.close();
+	}
 	
 	private DMouseEvent forward(DComponent target, DMouseEvent e) {
 		return target == contents ? translateMouseEvent(e) : e;
@@ -203,7 +221,12 @@ public class DScrollPane implements DComponent {
 				e.clickCount);
 	}
 	
-	private class TranslatedContext implements DDrawingContext {
+	private class TranslatedContext implements DUIContext {
+		
+		@Override
+		public DStyleSheets getStylesheets(){
+			return context.getStylesheets();
+		}
 
 		@Override
 		public float getScale() {
@@ -275,7 +298,7 @@ public class DScrollPane implements DComponent {
 			if (value != offsetY.getValue())
 				offsetY.setValue(value);
 			if (context != null && bounds != null)
-				context.repaint(bounds.x, bounds.y, bounds.width, bounds.height);
+				context.repaint(bounds);
 		}
 	}
 }
