@@ -24,6 +24,7 @@ import org.openzen.drawablegui.listeners.DIRectangle;
 import org.openzen.drawablegui.DKeyEvent;
 import static org.openzen.drawablegui.DKeyEvent.KeyCode.*;
 import org.openzen.drawablegui.DMouseEvent;
+import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.style.DEmptyStylesheets;
 import org.openzen.drawablegui.style.DStylePathRoot;
 
@@ -52,6 +53,10 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 		addMouseMotionListener(this);
 		addMouseWheelListener(this);
 		addKeyListener(this);
+	}
+	
+	public void setWindow(DUIWindow window) {
+		context.setWindow(window);
 	}
 	
 	public void focus(DComponent component) {

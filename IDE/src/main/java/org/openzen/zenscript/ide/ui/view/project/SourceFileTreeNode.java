@@ -11,7 +11,7 @@ import org.openzen.drawablegui.live.LiveEmptyList;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.IDEWindow;
-import org.openzen.zenscript.ide.ui.icons.ColorableCodeIcon;
+import org.openzen.zenscript.ide.ui.icons.CodeIcon;
 
 /**
  *
@@ -33,7 +33,7 @@ public class SourceFileTreeNode extends ProjectOverviewNode {
 
 	@Override
 	public DColorableIcon getIcon() {
-		return ColorableCodeIcon.INSTANCE;
+		return CodeIcon.INSTANCE;
 	}
 
 	@Override

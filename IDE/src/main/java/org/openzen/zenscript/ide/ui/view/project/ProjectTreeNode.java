@@ -10,7 +10,7 @@ import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.ui.IDEWindow;
-import org.openzen.zenscript.ide.ui.icons.ColorableProjectIcon;
+import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
 
 /**
  *
@@ -28,7 +28,7 @@ public class ProjectTreeNode extends ProjectOverviewNode {
 	
 	@Override
 	public DColorableIcon getIcon() {
-		return ColorableProjectIcon.INSTANCE;
+		return ProjectIcon.INSTANCE;
 	}
 
 	@Override

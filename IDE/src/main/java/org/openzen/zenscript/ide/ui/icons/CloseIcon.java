@@ -10,23 +10,24 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
 
-public class ColorableFolderIcon implements DColorableIcon {
-	public static final ColorableFolderIcon INSTANCE = new ColorableFolderIcon();
+public class CloseIcon implements DColorableIcon {
+	public static final CloseIcon INSTANCE = new CloseIcon();
 	
-	private ColorableFolderIcon() {}
+	private CloseIcon() {}
 	
 	private static final DPath PATH = tracer -> {
-		tracer.moveTo(10f, 4f);
-		tracer.lineTo(4.0f, 4.0f);
-		tracer.bezierCubic(2.9f, 4.0f, 2.01f, 4.9f, 2.01f, 6.0f);
-		tracer.lineTo(2f, 18f);
-		tracer.bezierCubic(2.0f, 19.1f, 2.9f, 20.0f, 4.0f, 20.0f);
-		tracer.lineTo(20.0f, 20.0f);
-		tracer.bezierCubic(21.1f, 20.0f, 22.0f, 19.1f, 22.0f, 18.0f);
-		tracer.lineTo(22.0f, 8.0f);
-		tracer.bezierCubic(22.0f, 6.9f, 21.1f, 6.0f, 20.0f, 6.0f);
-		tracer.lineTo(12.0f, 6.0f);
-		tracer.lineTo(10.0f, 4.0f);
+		tracer.moveTo(19f, 6.41f);
+		tracer.lineTo(17.59f, 5f);
+		tracer.lineTo(12f, 10.59f);
+		tracer.lineTo(6.41f, 5f);
+		tracer.lineTo(5f, 6.41f);
+		tracer.lineTo(10.59f, 12f);
+		tracer.lineTo(5f, 17.59f);
+		tracer.lineTo(6.41f, 19f);
+		tracer.lineTo(12f, 13.41f);
+		tracer.lineTo(17.59f, 19f);
+		tracer.lineTo(19f, 17.59f);
+		tracer.lineTo(13.41f, 12f);
 		tracer.close();
 	};
 	

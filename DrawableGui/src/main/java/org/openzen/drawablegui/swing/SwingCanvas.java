@@ -25,6 +25,7 @@ import org.openzen.drawablegui.listeners.DIRectangle;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DPathBoundsCalculator;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.style.DShadow;
 
 /**
  *
@@ -91,6 +92,9 @@ public class SwingCanvas implements DCanvas {
 
 	@Override
 	public void strokePath(DPath path, DTransform2D transform, int color, float lineWidth) {
+		if (color == 0)
+			return;
+		
 		AffineTransform old = g.getTransform();
 		GeneralPath jPath = context.getPath(path);
 		g.setColor(new Color(color, true));
@@ -102,6 +106,9 @@ public class SwingCanvas implements DCanvas {
 
 	@Override
 	public void fillPath(DPath path, DTransform2D transform, int color) {
+		if (color == 0)
+			return;
+		
 		AffineTransform old = g.getTransform();
 		GeneralPath jPath = context.getPath(path);
 		g.setColor(new Color(color, true));
@@ -111,9 +118,17 @@ public class SwingCanvas implements DCanvas {
 	}
 
 	@Override
-	public void shadowPath(DPath path, DTransform2D transform, int color, float dx, float dy, float radius) {
-		DIRectangle bounds = DPathBoundsCalculator.getBounds(path, transform.offset(dx, dy));
-		int offset = 2 * (int)Math.ceil(radius);
+	public void shadowPath(DPath path, DTransform2D transform, DShadow shadow) {
+		if (shadow.color == 0)
+			return;
+		
+		if (shadow.radius == 0) {
+			fillPath(path, transform, shadow.color);
+			return;
+		}
+		
+		DIRectangle bounds = DPathBoundsCalculator.getBounds(path, transform.offset(shadow.offsetX, shadow.offsetY));
+		int offset = 2 * (int)Math.ceil(shadow.radius);
 		
 		GeneralPath jPath = context.getPath(path);
 		
@@ -121,17 +136,20 @@ public class SwingCanvas implements DCanvas {
 		Graphics2D imageG = (Graphics2D) image.getGraphics();
 		
 		imageG.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		imageG.setColor(new Color(color, true));
-		imageG.setTransform(getTransform(transform.offset(offset + dx - bounds.x, offset + dy - bounds.y)));
+		imageG.setColor(new Color(shadow.color, true));
+		imageG.setTransform(getTransform(transform.offset(offset + shadow.offsetX - bounds.x, offset + shadow.offsetY - bounds.y)));
 		imageG.fill(jPath);
 		
-		image = getGaussianBlurFilter((int)Math.ceil(radius), true).filter(image, null);
-		image = getGaussianBlurFilter((int)Math.ceil(radius), false).filter(image, null);
+		image = getGaussianBlurFilter((int)Math.ceil(shadow.radius), true).filter(image, null);
+		image = getGaussianBlurFilter((int)Math.ceil(shadow.radius), false).filter(image, null);
 		g.drawImage(image, bounds.x - offset, bounds.y - offset, null);
 	}
 
 	@Override
 	public void fillRectangle(int x, int y, int width, int height, int color) {
+		if (color == 0)
+			return;
+		
 		g.setColor(new Color(color, true));
 		g.fillRect(x, y, width, height);
 	}

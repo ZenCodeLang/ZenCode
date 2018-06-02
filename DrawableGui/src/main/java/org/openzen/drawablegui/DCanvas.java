@@ -6,6 +6,7 @@
 package org.openzen.drawablegui;
 
 import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.style.DShadow;
 
 /**
  *
@@ -50,12 +51,9 @@ public interface DCanvas {
 	 * 
 	 * @param path
 	 * @param transform
-	 * @param color
-	 * @param dx
-	 * @param dy
-	 * @param radius 
+	 * @param shadow
 	 */
-	void shadowPath(DPath path, DTransform2D transform, int color, float dx, float dy, float radius);
+	void shadowPath(DPath path, DTransform2D transform, DShadow shadow);
 	
 	/**
 	 * Fills a rectangle.

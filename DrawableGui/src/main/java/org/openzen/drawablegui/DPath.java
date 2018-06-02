@@ -34,6 +34,16 @@ public interface DPath {
 		};
 	}
 	
+	public static DPath rectangle(float x, float y, float width, float height) {
+		return tracer -> {
+			tracer.moveTo(x, y);
+			tracer.lineTo(x + width, y);
+			tracer.lineTo(x + width, y + height);
+			tracer.lineTo(x, y + height);
+			tracer.close();
+		};
+	}
+	
 	public static DPath roundedRectangle(float x, float y, float width, float height, float radius) {
 		return tracer -> {
 			float c = radius - radius * 0.551915024494f;

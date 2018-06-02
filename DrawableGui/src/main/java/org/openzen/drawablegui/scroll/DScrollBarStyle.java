@@ -5,8 +5,8 @@
  */
 package org.openzen.drawablegui.scroll;
 
-import org.openzen.drawablegui.dimension.DDimension;
-import org.openzen.drawablegui.dimension.DDpDimension;
+import org.openzen.drawablegui.style.DDimension;
+import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.style.DStyleDefinition;
 

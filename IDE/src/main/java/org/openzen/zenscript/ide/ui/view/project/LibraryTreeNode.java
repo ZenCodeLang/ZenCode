@@ -10,7 +10,7 @@ import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.zenscript.ide.host.IDELibrary;
 import org.openzen.zenscript.ide.ui.IDEWindow;
-import org.openzen.zenscript.ide.ui.icons.ColorableLibraryIcon;
+import org.openzen.zenscript.ide.ui.icons.LibraryIcon;
 
 /**
  *
@@ -28,7 +28,7 @@ public class LibraryTreeNode extends ProjectOverviewNode {
 	
 	@Override
 	public DColorableIcon getIcon() {
-		return ColorableLibraryIcon.INSTANCE;
+		return LibraryIcon.INSTANCE;
 	}
 
 	@Override

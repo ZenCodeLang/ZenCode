@@ -101,9 +101,12 @@ public class TokenRelexer {
 			int result = peek();
 			tokenOffset++;
 			if (tokenOffset == token.length()) {
-				advance();
-				token = get();
-				tokenOffset = 0;
+				if (advance()) {
+					token = get();
+					tokenOffset = 0;
+				} else {
+					token = null;
+				}
 			}
 			return result;
 		}

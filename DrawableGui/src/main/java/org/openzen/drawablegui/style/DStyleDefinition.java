@@ -9,7 +9,6 @@ import java.util.function.Function;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.border.DBorder;
-import org.openzen.drawablegui.dimension.DDimension;
 
 /**
  *
@@ -21,6 +20,8 @@ public interface DStyleDefinition {
 	public float getFloatDimension(String name, DDimension defaultValue);
 	
 	public int getColor(String name, int defaultValue);
+	
+	public DShadow getShadow(String name, Function<DUIContext, DShadow> defaultValue);
 	
 	public DFont getFont(String name, Function<DUIContext, DFont> defaultValue);
 	

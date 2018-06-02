@@ -6,6 +6,7 @@
 package org.openzen.drawablegui;
 
 import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.style.DStyleSheets;
 
 /**
@@ -35,6 +36,8 @@ public interface DUIContext {
 	
 	DFontMetrics getFontMetrics(DFont font);
 	
+	DUIWindow getWindow();
+		
 	enum Cursor {
 		NORMAL,
 		HAND,

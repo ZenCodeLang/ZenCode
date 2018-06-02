@@ -5,10 +5,12 @@
  */
 package org.openzen.zenscript.ide.ui;
 
+import org.openzen.drawablegui.live.SimpleLiveBool;
+import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.IDESourceFile;
-import org.openzen.zenscript.ide.ui.icons.ColorableAddBoxIcon;
-import org.openzen.zenscript.ide.ui.icons.ColorableProjectIcon;
-import org.openzen.zenscript.ide.ui.icons.ColorableSettingsIcon;
+import org.openzen.zenscript.ide.ui.icons.AddBoxIcon;
+import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
+import org.openzen.zenscript.ide.ui.icons.SettingsIcon;
 import org.openzen.zenscript.ide.ui.view.IconButtonControl;
 
 /**
@@ -39,9 +41,9 @@ public class IDEWindow {
 	}
 	
 	private void init() {
-		IDEAspectToolbar projectToolbar = new IDEAspectToolbar(0, ColorableProjectIcon.INSTANCE, "Project", "Project management");
-		projectToolbar.controls.add(() -> new IconButtonControl(ColorableAddBoxIcon.BLACK, e -> {}));
-		projectToolbar.controls.add(() -> new IconButtonControl(ColorableSettingsIcon.BLACK, e -> {}));
+		IDEAspectToolbar projectToolbar = new IDEAspectToolbar(0, ProjectIcon.GREY, "Project", "Project management");
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.BLACK, e -> {}));
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.BLACK, e -> {}));
 		aspectBar.addToolbar(projectToolbar);
 	}
 }

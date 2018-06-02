@@ -9,7 +9,6 @@ import java.util.function.Function;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.border.DBorder;
-import org.openzen.drawablegui.dimension.DDimension;
 
 /**
  *
@@ -35,6 +34,11 @@ public class DEmptyStyleDefinition implements DStyleDefinition {
 	@Override
 	public int getColor(String name, int defaultValue) {
 		return defaultValue;
+	}
+
+	@Override
+	public DShadow getShadow(String name, Function<DUIContext, DShadow> defaultValue) {
+		return defaultValue.apply(context);
 	}
 
 	@Override

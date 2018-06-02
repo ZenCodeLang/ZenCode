@@ -27,7 +27,7 @@ public class Main {
 		IDEWindow window = new IDEWindow();
 		WindowView root = new WindowView(window, host);
 		
-		SwingWindow swingWindow = new SwingWindow("ZenCode IDE - " + host.getName(), root);
+		SwingWindow swingWindow = new SwingWindow("ZenCode IDE - " + host.getName(), root, false);
 		swingWindow.setSize(800 * pixelPerInch / 96, 600 * pixelPerInch / 96);
 		swingWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		swingWindow.setVisible(true);

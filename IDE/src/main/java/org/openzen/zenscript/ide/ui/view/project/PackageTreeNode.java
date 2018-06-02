@@ -11,7 +11,7 @@ import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.zenscript.ide.host.IDEPackage;
 import org.openzen.zenscript.ide.ui.IDEWindow;
-import org.openzen.zenscript.ide.ui.icons.ColorableFolderIcon;
+import org.openzen.zenscript.ide.ui.icons.FolderIcon;
 
 /**
  *
@@ -42,7 +42,7 @@ public class PackageTreeNode extends ProjectOverviewNode {
 
 	@Override
 	public DColorableIcon getIcon() {
-		return ColorableFolderIcon.INSTANCE;
+		return FolderIcon.INSTANCE;
 	}
 
 	@Override

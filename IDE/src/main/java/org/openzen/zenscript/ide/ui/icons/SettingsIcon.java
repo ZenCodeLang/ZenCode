@@ -8,12 +8,13 @@ import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.style.DShadow;
 
-public class ColorableSettingsIcon implements DColorableIcon {
-	public static final ColorableSettingsIcon INSTANCE = new ColorableSettingsIcon();
+public class SettingsIcon implements DColorableIcon {
+	public static final SettingsIcon INSTANCE = new SettingsIcon();
 	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
 	
-	private ColorableSettingsIcon() {}
+	private SettingsIcon() {}
 	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(15.95f, 10.78f);
@@ -66,6 +67,7 @@ public class ColorableSettingsIcon implements DColorableIcon {
 	
 	@Override
 	public void draw(DCanvas canvas, DTransform2D transform, int color) {
+		//canvas.shadowPath(PATH, transform, new DShadow(0xFF888888, 0, 1, 3.5f));
 		canvas.fillPath(PATH, transform, color);
 	}
 

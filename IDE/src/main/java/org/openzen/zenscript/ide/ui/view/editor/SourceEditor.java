@@ -22,13 +22,14 @@ import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.IDEAspectToolbar;
 import org.openzen.zenscript.ide.ui.IDEWindow;
-import org.openzen.zenscript.ide.ui.icons.ColorableCodeIcon;
+import org.openzen.zenscript.ide.ui.icons.CodeIcon;
 import org.openzen.zenscript.lexer.ReaderCharReader;
 import org.openzen.zenscript.lexer.TokenParser;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 import org.openzen.zenscript.ide.ui.icons.SaveIcon;
@@ -46,6 +47,7 @@ public class SourceEditor implements DComponent {
 	private final IDESourceFile sourceFile;
 	private final TokenModel tokens;
 	private final ListenerHandle<TokenModel.Listener> tokenListener;
+	private final SimpleLiveBool unchanged = new SimpleLiveBool(true);
 	
 	private DIRectangle bounds;
 	private DUIContext context;
@@ -67,7 +69,7 @@ public class SourceEditor implements DComponent {
 	private boolean dragging = false;
 	
 	private final IDEWindow window;
-	private final IDEAspectToolbar editToolbar = new IDEAspectToolbar(0, ColorableCodeIcon.INSTANCE, "Edit", "Source code editor");
+	private final IDEAspectToolbar editToolbar = new IDEAspectToolbar(0, CodeIcon.GREY, "Edit", "Source code editor");
 	
 	public SourceEditor(DStyleClass styleClass, IDEWindow window, IDESourceFile sourceFile) {
 		this.styleClass = styleClass;
@@ -77,7 +79,7 @@ public class SourceEditor implements DComponent {
 		tokens = new TokenModel(sourceFile.getName(), tab.length());
 		tokenListener = tokens.addListener(new TokenListener());
 		
-		editToolbar.controls.add(() -> new IconButtonControl(SaveIcon.INSTANCE, e -> save()));
+		editToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SaveIcon.BLACK, SaveIcon.GREY, unchanged, e -> save()));
 		window.aspectBar.addToolbar(editToolbar);
 		
 		try {
@@ -94,6 +96,7 @@ public class SourceEditor implements DComponent {
 	@Override
 	public void close() {
 		window.aspectBar.removeToolbar(editToolbar);
+		tokenListener.close();
 	}
 
 	@Override
@@ -374,6 +377,7 @@ public class SourceEditor implements DComponent {
 		
 		SourcePosition cursor = SourcePosition.min(cursorStart, cursorEnd);
 		setCursor(cursor, cursor);
+		unchanged.setValue(false);
 	}
 	
 	private void paste() {
@@ -386,11 +390,13 @@ public class SourceEditor implements DComponent {
 		
 		SourcePosition cursor = cursorEnd.advance(text.length());
 		setCursor(cursor, cursor);
+		unchanged.setValue(false);
 	}
 	
 	private void save() {
 		String content = tokens.toString();
 		sourceFile.update(content);
+		unchanged.setValue(true);
 	}
 	
 	private void delete() {
@@ -405,6 +411,7 @@ public class SourceEditor implements DComponent {
 		}
 		
 		tokens.deleteCharacter(cursorEnd.line, cursorEnd.offset);
+		unchanged.setValue(false);
 	}
 	
 	private boolean hasSelection() {
@@ -417,6 +424,7 @@ public class SourceEditor implements DComponent {
 			SourcePosition max = SourcePosition.max(cursorStart, cursorEnd);
 			tokens.delete(min, max);
 			setCursor(min, min);
+			unchanged.setValue(false);
 			return true;
 		}
 		
@@ -433,6 +441,7 @@ public class SourceEditor implements DComponent {
 			
 			int length = tokens.getLineLength(cursorEnd.line - 1);
 			tokens.deleteNewline(cursorEnd.line - 1);
+			unchanged.setValue(false);
 			
 			SourcePosition position = new SourcePosition(tokens, cursorEnd.line - 1, length);
 			setCursor(position, position);
@@ -454,6 +463,7 @@ public class SourceEditor implements DComponent {
 		tokens.insert(cursorEnd, value);
 		SourcePosition position = new SourcePosition(tokens, cursorEnd.line, cursorEnd.offset + value.length());
 		setCursor(position, position);
+		unchanged.setValue(false);
 	}
 	
 	private void newline() {
@@ -463,6 +473,7 @@ public class SourceEditor implements DComponent {
 		tokens.insert(cursorEnd, "\n" + indent);
 		SourcePosition position = new SourcePosition(tokens, cursorEnd.line + 1, indent.length());
 		setCursor(position, position);
+		unchanged.setValue(false);
 	}
 	
 	private void repaint(SourcePosition from, SourcePosition to) {

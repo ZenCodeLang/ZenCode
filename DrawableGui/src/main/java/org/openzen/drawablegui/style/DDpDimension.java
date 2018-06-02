@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui.dimension;
+package org.openzen.drawablegui.style;
 
 import org.openzen.drawablegui.DUIContext;
 
@@ -11,15 +11,15 @@ import org.openzen.drawablegui.DUIContext;
  *
  * @author Hoofdgebruiker
  */
-public class DPxDimension implements DDimension {
-	private final float pixels;
+public class DDpDimension implements DDimension {
+	private final float value;
 	
-	public DPxDimension(float pixels) {
-		this.pixels = pixels;
+	public DDpDimension(float value) {
+		this.value = value;
 	}
 
 	@Override
 	public float eval(DUIContext context) {
-		return pixels;
+		return value * context.getScale();
 	}
 }

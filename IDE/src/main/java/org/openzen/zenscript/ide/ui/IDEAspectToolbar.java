@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.ide.ui;
 
-import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveList;
 
@@ -15,12 +15,12 @@ import org.openzen.drawablegui.live.LiveList;
  */
 public class IDEAspectToolbar {
 	public final int order;
-	public final DColorableIcon icon;
+	public final DDrawable icon;
 	public final String title;
 	public final String description;
 	public final LiveList<IDEAspectBarControl> controls = new LiveArrayList<>();
 	
-	public IDEAspectToolbar(int order, DColorableIcon icon, String title, String description) {
+	public IDEAspectToolbar(int order, DDrawable icon, String title, String description) {
 		this.order = order;
 		this.icon = icon;
 		this.title = title;

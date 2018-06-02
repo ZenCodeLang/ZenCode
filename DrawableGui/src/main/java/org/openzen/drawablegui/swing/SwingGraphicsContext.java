@@ -18,6 +18,7 @@ import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DPathTracer;
 import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.style.DStyleSheets;
 
 /**
@@ -31,6 +32,7 @@ public class SwingGraphicsContext implements DUIContext {
 	private final SwingRoot root;
 	private final JavaClipboard clipboard = new JavaClipboard();
 	private Graphics graphics;
+	private DUIWindow window;
 	
 	public SwingGraphicsContext(DStyleSheets stylesheets, float scale, SwingRoot root) {
 		this.stylesheets = stylesheets;
@@ -46,6 +48,10 @@ public class SwingGraphicsContext implements DUIContext {
 			preparedPaths.put(path, generalPath);
 		}
 		return generalPath;
+	}
+	
+	public void setWindow(DUIWindow window) {
+		this.window = window;
 	}
 	
 	@Override
@@ -124,6 +130,11 @@ public class SwingGraphicsContext implements DUIContext {
 	@Override
 	public DClipboard getClipboard() {
 		return clipboard;
+	}
+
+	@Override
+	public DUIWindow getWindow() {
+		return window;
 	}
 	
 	private class PathTracer implements DPathTracer {

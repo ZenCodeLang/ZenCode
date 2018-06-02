@@ -19,6 +19,7 @@ import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveInt;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 import org.openzen.drawablegui.style.DStyleSheets;
@@ -282,6 +283,11 @@ public class DScrollPane implements DComponent {
 		@Override
 		public DClipboard getClipboard() {
 			return context.getClipboard();
+		}
+
+		@Override
+		public DUIWindow getWindow() {
+			return context.getWindow();
 		}
 	}
 	

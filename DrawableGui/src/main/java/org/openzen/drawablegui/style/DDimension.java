@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui.dimension;
+package org.openzen.drawablegui.style;
 
 import org.openzen.drawablegui.DUIContext;
 

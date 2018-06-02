@@ -6,17 +6,39 @@
 package org.openzen.zenscript.ide.ui.icons;
 
 import org.openzen.drawablegui.DCanvas;
-import org.openzen.drawablegui.DDrawable;
+import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
+import org.openzen.drawablegui.DColorableIcon;
 
-public class CodeIcon implements DDrawable {
+public class CodeIcon implements DColorableIcon {
 	public static final CodeIcon INSTANCE = new CodeIcon();
+	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
+	public static final ColoredIcon GREY = new ColoredIcon(INSTANCE, 0xFF888888);
 	
 	private CodeIcon() {}
 	
+	private static final DPath PATH = tracer -> {
+		tracer.moveTo(9.4f, 16.6f);
+		tracer.lineTo(4.8f, 12f);
+		tracer.lineTo(9.4f, 7.4f);
+		tracer.lineTo(8f, 6f);
+		tracer.lineTo(2.0f, 12.0f);
+		tracer.lineTo(8.0f, 18.0f);
+		tracer.lineTo(9.4f, 16.6f);
+		tracer.close();
+		tracer.moveTo(14.599999f, 16.6f);
+		tracer.lineTo(19.199999f, 12.0f);
+		tracer.lineTo(14.599998f, 7.4f);
+		tracer.lineTo(16f, 6f);
+		tracer.lineTo(22.0f, 12.0f);
+		tracer.lineTo(16.0f, 18.0f);
+		tracer.lineTo(14.6f, 16.6f);
+		tracer.close();
+	};
+	
 	@Override
-	public void draw(DCanvas canvas, DTransform2D transform) {
-		ColorableCodeIcon.INSTANCE.draw(canvas, transform, 0xFF000000);
+	public void draw(DCanvas canvas, DTransform2D transform, int color) {
+		canvas.fillPath(PATH, transform, color);
 	}
 
 	@Override

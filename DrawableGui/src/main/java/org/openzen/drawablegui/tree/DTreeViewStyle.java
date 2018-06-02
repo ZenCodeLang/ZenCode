@@ -8,8 +8,8 @@ package org.openzen.drawablegui.tree;
 import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
-import org.openzen.drawablegui.dimension.DDimension;
-import org.openzen.drawablegui.dimension.DDpDimension;
+import org.openzen.drawablegui.style.DDimension;
+import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.DUIContext;
 
 /**

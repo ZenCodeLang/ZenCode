@@ -8,7 +8,7 @@ package org.openzen.zenscript.ide.ui.view.project;
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.ui.IDEWindow;
-import org.openzen.zenscript.ide.ui.icons.ColorableModuleIcon;
+import org.openzen.zenscript.ide.ui.icons.ModuleIcon;
 
 /**
  *
@@ -29,7 +29,7 @@ public class ModuleTreeNode extends PackageTreeNode {
 
 	@Override
 	public DColorableIcon getIcon() {
-		return ColorableModuleIcon.INSTANCE;
+		return ModuleIcon.INSTANCE;
 	}
 
 	@Override

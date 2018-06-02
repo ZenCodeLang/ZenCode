@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.ide.ui.view.editor;
 
-import org.openzen.drawablegui.dimension.DDpDimension;
-import org.openzen.drawablegui.dimension.DPxDimension;
+import org.openzen.drawablegui.style.DDpDimension;
+import org.openzen.drawablegui.style.DPxDimension;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
