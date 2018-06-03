@@ -51,4 +51,20 @@ public final class DTransform2D {
 	public float getY(float x, float y) {
 		return x * yx + y * yy + dy;
 	}
+	
+	public DTransform2D mul(DTransform2D other) {
+		// [xx xy dx]   [xx xy dx]   [xx*xx+xy*yx xx*xy+xy*yy xx*dx+xy*dy+dx]
+		// [yx yy dy] x [yx yy dy] = [yx*xx+yy*yx yx*xy+yy*yy yx*dx+yy*dy+dy]
+		// [0  0  1 ]   [0  0  1 ]   [0           0           1             ]
+		DTransform2D a = this;
+		DTransform2D b = other;
+		return new DTransform2D(
+				a.xx * b.xx + a.xy * b.yx,
+				a.xx * b.xy + a.xy * b.yy,
+				a.yx * b.xx + a.yy * b.yx,
+				a.yx * b.xy + a.yx + b.xy,
+				a.xx * b.dx + a.xy * b.dy + dx,
+				a.yx * b.dx + a.yy * b.dy + dy
+		);
+	}
 }

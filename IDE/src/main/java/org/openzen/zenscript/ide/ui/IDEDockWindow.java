@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.ide.ui;
 
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.listeners.ListenerHandle;
+import org.openzen.drawablegui.listeners.ListenerList;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 
 /**
@@ -14,5 +14,17 @@ import org.openzen.zenscript.ide.host.IDESourceFile;
  * @author Hoofdgebruiker
  */
 public class IDEDockWindow {
-	public final LiveObject<IDESourceFile> currentSourceFile = new SimpleLiveObject<>(null);
+	private final ListenerList<Listener> listeners = new ListenerList<>();
+	
+	public ListenerHandle<Listener> addListener(Listener listener) {
+		return listeners.add(listener);
+	}
+	
+	public void open(IDESourceFile sourceFile) {
+		listeners.accept(listener -> listener.onOpen(sourceFile));
+	}
+	
+	public interface Listener {
+		void onOpen(IDESourceFile sourceFile);
+	}
 }

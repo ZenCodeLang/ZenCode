@@ -13,7 +13,7 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveObject;
 import org.openzen.drawablegui.live.LiveBool;

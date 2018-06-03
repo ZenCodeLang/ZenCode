@@ -9,7 +9,7 @@ import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
 import org.openzen.drawablegui.DMouseEvent;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;

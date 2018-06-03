@@ -14,7 +14,7 @@ import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
@@ -37,7 +37,7 @@ public class AspectBarSelectorButton implements DComponent {
 	private final Consumer<DMouseEvent> onClick;
 	private DUIContext context;
 	private AspectBarSelectorButtonStyle style;
-	private DIRectangle bounds;
+	private DIRectangle bounds = DIRectangle.EMPTY;
 	private DPath shape;
 	private boolean hovering;
 	private boolean pressing;
@@ -141,11 +141,11 @@ public class AspectBarSelectorButton implements DComponent {
 
 	@Override
 	public void close() {
-		// nothing
+		activeListener.close();
 	}
 	
 	private void repaint() {
-		if (context != null)
+		if (context != null && bounds != null)
 			context.repaint(bounds);
 	}
 }

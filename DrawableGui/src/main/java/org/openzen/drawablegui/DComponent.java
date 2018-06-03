@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.listeners.DIRectangle;
 import java.io.Closeable;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.style.DStylePath;
@@ -24,6 +23,10 @@ public interface DComponent extends Closeable {
 	void setBounds(DIRectangle bounds);
 	
 	void paint(DCanvas canvas);
+	
+	default void onMounted() {}
+	
+	default void onUnmounted() {}
 	
 	default void onMouseEnter(DMouseEvent e) {}
 	

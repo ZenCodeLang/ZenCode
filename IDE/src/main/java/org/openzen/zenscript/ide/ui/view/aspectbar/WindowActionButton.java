@@ -14,7 +14,7 @@ import org.openzen.drawablegui.DDimensionPreferences;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;

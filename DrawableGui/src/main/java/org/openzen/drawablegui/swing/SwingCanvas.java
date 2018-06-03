@@ -21,7 +21,7 @@ import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DPathBoundsCalculator;
 import org.openzen.drawablegui.DUIContext;
@@ -132,7 +132,7 @@ public class SwingCanvas implements DCanvas {
 		
 		GeneralPath jPath = context.getPath(path);
 		
-		BufferedImage image = new BufferedImage(bounds.width + 2 * offset, bounds.height + 2 * offset, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage image = new BufferedImage(bounds.width + 2 * offset, bounds.height + 2 * offset, BufferedImage.TYPE_INT_ARGB_PRE);
 		Graphics2D imageG = (Graphics2D) image.getGraphics();
 		
 		imageG.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

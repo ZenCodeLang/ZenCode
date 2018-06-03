@@ -5,8 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.listeners.DIRectangle;
-
 /**
  *
  * @author Hoofdgebruiker

@@ -8,7 +8,7 @@ package org.openzen.zenscript.ide.ui.view;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.DUIContext;

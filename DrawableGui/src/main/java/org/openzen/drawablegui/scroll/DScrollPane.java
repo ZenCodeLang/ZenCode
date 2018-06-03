@@ -11,7 +11,7 @@ import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
@@ -67,6 +67,16 @@ public class DScrollPane implements DComponent {
 			contents.setBounds(new DIRectangle(0, 0, bounds.width, Math.max(bounds.height, newPreferences.preferredHeight)));
 			contentsHeight.setValue(newPreferences.preferredHeight);
 		});
+	}
+	
+	@Override
+	public void onMounted() {
+		contents.onMounted();
+	}
+	
+	@Override
+	public void onUnmounted() {
+		contents.onUnmounted();
 	}
 
 	@Override

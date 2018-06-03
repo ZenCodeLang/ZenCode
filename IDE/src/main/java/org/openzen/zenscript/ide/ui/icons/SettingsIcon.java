@@ -13,6 +13,7 @@ import org.openzen.drawablegui.style.DShadow;
 public class SettingsIcon implements DColorableIcon {
 	public static final SettingsIcon INSTANCE = new SettingsIcon();
 	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
+	public static final ColoredIcon PURPLE = new ColoredIcon(INSTANCE, 0xFF5758BB);
 	
 	private SettingsIcon() {}
 	
@@ -67,7 +68,7 @@ public class SettingsIcon implements DColorableIcon {
 	
 	@Override
 	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		//canvas.shadowPath(PATH, transform, new DShadow(0xFF888888, 0, 1, 3.5f));
+		canvas.shadowPath(PATH, transform, new DShadow(0xFF888888, 0, 1, 4));
 		canvas.fillPath(PATH, transform, color);
 	}
 

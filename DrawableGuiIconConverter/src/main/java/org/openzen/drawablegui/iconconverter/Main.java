@@ -21,9 +21,9 @@ import org.w3c.dom.NodeList;
  */
 public class Main {
 	public static void main(String[] args) throws Exception {
-		String filename = "baseline-close-24px.svg"; //args[0];
+		String filename = "baseline-build-24px.svg"; //args[0];
 		//String filename = "baseline-dashboard-24px.svg";
-		String className = "ColorableCloseIcon";
+		String className = "BuildIcon";
 		File file = new File(filename);
 		if (!file.exists()) {
 			System.out.println("No such file: " + filename);

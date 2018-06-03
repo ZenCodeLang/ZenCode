@@ -9,8 +9,11 @@ import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.icons.AddBoxIcon;
+import org.openzen.zenscript.ide.ui.icons.BuildIcon;
+import org.openzen.zenscript.ide.ui.icons.PlayIcon;
 import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
 import org.openzen.zenscript.ide.ui.icons.SettingsIcon;
+import org.openzen.zenscript.ide.ui.icons.ShadedProjectIcon;
 import org.openzen.zenscript.ide.ui.view.IconButtonControl;
 
 /**
@@ -21,6 +24,8 @@ public class IDEWindow {
 	public final IDEAspectBar aspectBar;
 	public final IDEDockWindow dockWindow;
 	public final IDEStatusBar statusBar;
+	
+	public IDEAspectToolbar projectToolbar;
 	
 	public IDEWindow() {
 		aspectBar = new IDEAspectBar();
@@ -37,13 +42,15 @@ public class IDEWindow {
 	}
 	
 	public void open(IDESourceFile sourceFile) {
-		dockWindow.currentSourceFile.setValue(sourceFile);
+		dockWindow.open(sourceFile);
 	}
 	
 	private void init() {
-		IDEAspectToolbar projectToolbar = new IDEAspectToolbar(0, ProjectIcon.GREY, "Project", "Project management");
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.BLACK, e -> {}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.BLACK, e -> {}));
-		aspectBar.addToolbar(projectToolbar);
+		projectToolbar = new IDEAspectToolbar(0, ShadedProjectIcon.PURPLE, "Project", "Project management");
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.ORANGE, e -> {}));
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.PURPLE, e -> {}));
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, e -> {}));
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, PlayIcon.GREEN, e -> {}));
+		aspectBar.toolbars.add(projectToolbar);
 	}
 }

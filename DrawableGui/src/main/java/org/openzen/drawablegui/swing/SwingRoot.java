@@ -20,7 +20,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DKeyEvent;
 import static org.openzen.drawablegui.DKeyEvent.KeyCode.*;
 import org.openzen.drawablegui.DMouseEvent;

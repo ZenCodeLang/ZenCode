@@ -56,8 +56,7 @@ public final class TokenLine {
 	}
 
 	public void add(ZSToken token) {
-		tokens.add(token);
-		length += token.content.length();
+		insert(tokens.size(), token);
 	}
 
 	public void addAll(Iterable<ZSToken> tokens) {
@@ -66,9 +65,33 @@ public final class TokenLine {
 		}
 	}
 
-	public void insert(int index, ZSToken token) {
+	public int insert(int index, ZSToken token) {
+		if (token.type != ZSTokenType.T_WHITESPACE_TAB && token.content.indexOf('\t') >= 0) {
+			int start = 0;
+			int tokens = 0;
+			for (int i = 0; i < token.content.length(); i++) {
+				if (token.content.charAt(i) == '\t') {
+					if (i > start) {
+						insert(index++, new ZSToken(token.type, token.content.substring(start, i)));
+						tokens++;
+					}
+					insert(index++, ZSTokenType.T_WHITESPACE_TAB.flyweight);
+					tokens++;
+					start = i + 1;
+				}
+			}
+			
+			if (start < token.content.length()) {
+				insert(index++, new ZSToken(token.type, token.content.substring(start)));
+				tokens++;
+			}
+			
+			return tokens;
+		}
+		
 		tokens.add(index, token);
 		length += token.content.length();
+		return 1;
 	}
 
 	public void replace(int index, ZSToken token) {

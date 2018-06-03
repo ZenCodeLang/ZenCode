@@ -273,8 +273,7 @@ public class TokenModel {
 					if (!parts[0].isEmpty())
 						currentLine.add(new ZSToken(token.type, parts[0]));
 					if (!parts[parts.length - 1].isEmpty()) {
-						newLine.insert(0, new ZSToken(token.type, parts[parts.length - 1]));
-						tokenIndex++;
+						tokenIndex += newLine.insert(0, new ZSToken(token.type, parts[parts.length - 1]));
 					}
 					
 					for (int i = 1; i < parts.length - 1; i++) {

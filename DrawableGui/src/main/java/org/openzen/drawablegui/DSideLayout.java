@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.listeners.DIRectangle;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +48,12 @@ public class DSideLayout extends BaseComponentGroup {
 			this.main.close();
 		
 		this.main = component;
-		main.setContext(path, context);
-		setBounds(bounds);
-		context.repaint(bounds);
+		
+		if (context != null && bounds != null) {
+			main.setContext(path, context);
+			setBounds(bounds);
+			context.repaint(bounds);
+		}
 	}
 
 	@Override

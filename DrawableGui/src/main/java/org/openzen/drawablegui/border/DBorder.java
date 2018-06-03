@@ -6,7 +6,7 @@
 package org.openzen.drawablegui.border;
 
 import org.openzen.drawablegui.DCanvas;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 
 /**
  *

@@ -12,9 +12,10 @@ import org.openzen.drawablegui.DDimensionPreferences;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
 import org.openzen.drawablegui.DFontMetrics;
-import org.openzen.drawablegui.listeners.DIRectangle;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DKeyEvent;
 import org.openzen.drawablegui.DMouseEvent;
+import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
@@ -22,7 +23,6 @@ import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.IDEAspectToolbar;
 import org.openzen.zenscript.ide.ui.IDEWindow;
-import org.openzen.zenscript.ide.ui.icons.CodeIcon;
 import org.openzen.zenscript.lexer.ReaderCharReader;
 import org.openzen.zenscript.lexer.TokenParser;
 import org.openzen.zenscript.lexer.ZSToken;
@@ -33,6 +33,8 @@ import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 import org.openzen.zenscript.ide.ui.icons.SaveIcon;
+import org.openzen.zenscript.ide.ui.icons.ShadedCodeIcon;
+import org.openzen.zenscript.ide.ui.icons.ShadedSaveIcon;
 import org.openzen.zenscript.ide.ui.view.IconButtonControl;
 
 /**
@@ -52,6 +54,7 @@ public class SourceEditor implements DComponent {
 	private DIRectangle bounds;
 	private DUIContext context;
 	private SourceEditorStyle style;
+	private DTimerHandle blinkTimer;
 	
 	private DFontMetrics fontMetrics;
 	private int textLineHeight;
@@ -69,7 +72,7 @@ public class SourceEditor implements DComponent {
 	private boolean dragging = false;
 	
 	private final IDEWindow window;
-	private final IDEAspectToolbar editToolbar = new IDEAspectToolbar(0, CodeIcon.GREY, "Edit", "Source code editor");
+	private final IDEAspectToolbar editToolbar = new IDEAspectToolbar(0, ShadedCodeIcon.BLUE, "Edit", "Source code editor");
 	
 	public SourceEditor(DStyleClass styleClass, IDEWindow window, IDESourceFile sourceFile) {
 		this.styleClass = styleClass;
@@ -79,8 +82,7 @@ public class SourceEditor implements DComponent {
 		tokens = new TokenModel(sourceFile.getName(), tab.length());
 		tokenListener = tokens.addListener(new TokenListener());
 		
-		editToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SaveIcon.BLACK, SaveIcon.GREY, unchanged, e -> save()));
-		window.aspectBar.addToolbar(editToolbar);
+		editToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, ShadedSaveIcon.PURPLE, SaveIcon.GREY, unchanged, e -> save()));
 		
 		try {
 			TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(
@@ -94,8 +96,21 @@ public class SourceEditor implements DComponent {
 	}
 	
 	@Override
+	public void onMounted() {
+		window.aspectBar.toolbars.add(editToolbar);
+		window.aspectBar.active.setValue(editToolbar);
+	}
+	
+	@Override
+	public void onUnmounted() {
+		window.aspectBar.toolbars.remove(editToolbar);
+	}
+	
+	@Override
 	public void close() {
-		window.aspectBar.removeToolbar(editToolbar);
+		if (blinkTimer != null)
+			blinkTimer.close();
+		
 		tokenListener.close();
 	}
 
@@ -110,7 +125,10 @@ public class SourceEditor implements DComponent {
 		selectionLineHeight = textLineHeight + style.selectionPaddingTop + style.selectionPaddingBottom;
 		
 		dimensionPreferences.setValue(new DDimensionPreferences(0, fullLineHeight * tokens.getLineCount()));
-		context.setTimer(300, this::blink);
+		
+		if (blinkTimer != null)
+			blinkTimer.close();
+		blinkTimer = context.setTimer(300, this::blink);
 	}
 
 	@Override
@@ -217,9 +235,12 @@ public class SourceEditor implements DComponent {
 		if (e.isDoubleClick()) {
 			// select entire word
 			TokenModel.Position tokenPosition = tokens.getPosition(position.line, position.offset);
-			setCursor(
-					new SourcePosition(tokens, position.line, position.offset - tokenPosition.offset),
-					new SourcePosition(tokens, position.line, position.offset - tokenPosition.offset + tokens.getTokenAt(tokenPosition).content.length()));
+			ZSToken token = tokens.getTokenAt(tokenPosition);
+			if (token != null) {
+				setCursor(
+						new SourcePosition(tokens, position.line, position.offset - tokenPosition.offset),
+						new SourcePosition(tokens, position.line, position.offset - tokenPosition.offset + token.content.length()));
+			}
 		} else if (e.isTripleClick()) {
 			setCursor(
 					new SourcePosition(tokens, position.line, 0),
@@ -400,6 +421,9 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private void delete() {
+		if (deleteSelection())
+			return;
+		
 		TokenLine line = tokens.getLine(cursorEnd.line);
 		if (cursorEnd.offset == line.length()) {
 			// merge 2 lines

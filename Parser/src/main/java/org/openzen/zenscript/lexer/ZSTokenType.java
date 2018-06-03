@@ -11,7 +11,7 @@ package org.openzen.zenscript.lexer;
  */
 public enum ZSTokenType implements TokenType {
 	T_COMMENT_SCRIPT("#[^\n]*[\n\\e]", true),
-	T_COMMENT_SINGLELINE("//[^\n]*[\n\\e]", true),
+	T_COMMENT_SINGLELINE("//[^\n]*", true),
 	T_COMMENT_MULTILINE("/\\*([^\\*]|(\\*+([^\\*/])))*\\*+/", true, true),
 	T_WHITESPACE_SPACE(true, " ", " "),
 	T_WHITESPACE_TAB(true, "\t", "\t"),

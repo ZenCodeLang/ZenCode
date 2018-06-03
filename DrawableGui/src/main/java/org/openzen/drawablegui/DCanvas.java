@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.listeners.DIRectangle;
 import org.openzen.drawablegui.style.DShadow;
 
 /**

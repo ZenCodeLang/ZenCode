@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui.listeners;
+package org.openzen.drawablegui;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class DIRectangle {
+	public static final DIRectangle EMPTY = new DIRectangle(0, 0, 0, 0);
+	
 	public final int x;
 	public final int y;
 	public final int width;
