@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.lexer.ZSToken;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.ExpressionScope;
 import org.openzen.zenscript.parser.expression.ParsedCallArguments;
@@ -25,7 +25,8 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedEnumConstant {
-	public static ParsedEnumConstant parse(ZSTokenStream tokens, EnumDefinition definition, int value) {
+	public static ParsedEnumConstant parse(ZSTokenParser tokens, EnumDefinition definition, int value) {
+		CodePosition position = tokens.getPosition();
 		ZSToken name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
 		List<ParsedExpression> arguments = new ArrayList<>();
 		if (tokens.optional(ZSTokenType.T_BROPEN) != null) {
@@ -35,7 +36,7 @@ public class ParsedEnumConstant {
 			tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
 		}
 		
-		return new ParsedEnumConstant(name.position, definition, name.content, value, arguments);
+		return new ParsedEnumConstant(position, definition, name.content, value, arguments);
 	}
 	
 	public final CodePosition position;

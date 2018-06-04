@@ -6,7 +6,7 @@ import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.lexer.ZSToken;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.linker.StatementScope;
@@ -18,14 +18,15 @@ import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 
 public abstract class ParsedStatement {
-	public static ParsedFunctionBody parseLambdaBody(ZSTokenStream tokens, boolean inExpression) {
+	public static ParsedFunctionBody parseLambdaBody(ZSTokenParser tokens, boolean inExpression) {
+		CodePosition position = tokens.getPosition();
 		ZSToken start = tokens.peek();
 		if (tokens.optional(T_AOPEN) != null) {
 			List<ParsedStatement> statements = new ArrayList<>();
 			while (tokens.optional(T_ACLOSE) == null)
 				statements.add(ParsedStatement.parse(tokens));
 			
-			return new ParsedStatementsFunctionBody(new ParsedStatementBlock(start.position, null, null, statements));
+			return new ParsedStatementsFunctionBody(new ParsedStatementBlock(position, null, null, statements));
 		} else {
 			ParsedFunctionBody result = new ParsedLambdaFunctionBody(ParsedExpression.parse(tokens));
 			if (!inExpression)
@@ -34,7 +35,7 @@ public abstract class ParsedStatement {
 		}
 	}
 	
-	public static ParsedFunctionBody parseFunctionBody(ZSTokenStream tokens) {
+	public static ParsedFunctionBody parseFunctionBody(ZSTokenParser tokens) {
 		if (tokens.optional(T_LAMBDA) != null)
 			return parseLambdaBody(tokens, false);
 		else if (tokens.optional(T_SEMICOLON) != null)
@@ -43,11 +44,10 @@ public abstract class ParsedStatement {
 			return new ParsedStatementsFunctionBody(parseBlock(tokens, true));
 	}
 	
-	public static ParsedStatementBlock parseBlock(ZSTokenStream parser, boolean isFirst) {
-		String ws = parser.grabWhitespace();
-		ZSToken t = parser.required(T_AOPEN, "{ expected");
-
-		parser.reloadWhitespace();
+	public static ParsedStatementBlock parseBlock(ZSTokenParser parser, boolean isFirst) {
+		String ws = parser.getLastWhitespace();
+		CodePosition position = parser.getPosition();
+		parser.required(T_AOPEN, "{ expected");
 		parser.skipWhitespaceNewline();
 
 		ArrayList<ParsedStatement> statements = new ArrayList<>();
@@ -59,16 +59,17 @@ public abstract class ParsedStatement {
 		}
 
 		WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-		WhitespacePostComment postComment = WhitespacePostComment.fromWhitespace(last.whitespaceBefore);
-		return new ParsedStatementBlock(t.getPosition(), whitespace, postComment, statements);
+		WhitespacePostComment postComment = WhitespacePostComment.fromWhitespace(parser.getLastWhitespace());
+		return new ParsedStatementBlock(position, whitespace, postComment, statements);
 	}
 	
-	public static ParsedStatement parse(ZSTokenStream parser) {
+	public static ParsedStatement parse(ZSTokenParser parser) {
 		return parse(parser, false);
 	}
 	
-	public static ParsedStatement parse(ZSTokenStream parser, boolean isFirst) {
-		String ws = parser.grabWhitespace();
+	public static ParsedStatement parse(ZSTokenParser parser, boolean isFirst) {
+		String ws = parser.getLastWhitespace();
+		CodePosition position = parser.getPosition();
 		ZSToken next = parser.peek();
 		switch (next.getType()) {
 			case T_AOPEN:
@@ -83,7 +84,7 @@ public abstract class ParsedStatement {
 				parser.required(T_SEMICOLON, "; expected");
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementReturn(next.getPosition(), whitespace, expression);
+				return new ParsedStatementReturn(position, whitespace, expression);
 			}
 			case K_VAR:
 			case K_VAL: {
@@ -101,25 +102,24 @@ public abstract class ParsedStatement {
 				parser.required(T_SEMICOLON, "; expected");
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementVar(start.getPosition(), whitespace, name, type, initializer, start.getType() == K_VAL);
+				return new ParsedStatementVar(position, whitespace, name, type, initializer, start.getType() == K_VAL);
 			}
 			case K_IF: {
-				ZSToken t = parser.next();
+				parser.next();
 				ParsedExpression expression = ParsedExpression.parse(parser);
 				parser.skipWhitespaceNewline();
 				ParsedStatement onIf = parse(parser);
 				ParsedStatement onElse = null;
 				if (parser.optional(K_ELSE) != null) {
-					parser.reloadWhitespace();
 					parser.skipWhitespaceNewline();
 					onElse = parse(parser);
 				}
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementIf(t.getPosition(), whitespace, expression, onIf, onElse);
+				return new ParsedStatementIf(position, whitespace, expression, onIf, onElse);
 			}
 			case K_FOR: {
-				ZSToken t = parser.next();
+				parser.next();
 				String name = parser.required(T_IDENTIFIER, "identifier expected").content;
 				List<String> names = new ArrayList<>();
 				names.add(name);
@@ -134,7 +134,7 @@ public abstract class ParsedStatement {
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
 				return new ParsedStatementForeach(
-						t.getPosition(),
+						position,
 						whitespace,
 						names.toArray(new String[names.size()]),
 						source,
@@ -152,7 +152,7 @@ public abstract class ParsedStatement {
 				parser.required(T_SEMICOLON, "; expected");
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementDoWhile(t.position, whitespace, label, content, condition);
+				return new ParsedStatementDoWhile(position, whitespace, label, content, condition);
 			}
 			case K_WHILE: {
 				ZSToken t = parser.next();
@@ -164,7 +164,7 @@ public abstract class ParsedStatement {
 				ParsedStatement content = parse(parser);
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementWhile(t.position, whitespace, label, condition, content);
+				return new ParsedStatementWhile(position, whitespace, label, condition, content);
 			}
 			case K_LOCK: {
 				ZSToken t = parser.next();
@@ -172,7 +172,7 @@ public abstract class ParsedStatement {
 				ParsedStatement content = parse(parser);
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementLock(t.position, whitespace, object, content);
+				return new ParsedStatementLock(position, whitespace, object, content);
 			}
 			case K_THROW: {
 				ZSToken t = parser.next();
@@ -180,7 +180,7 @@ public abstract class ParsedStatement {
 				parser.required(T_SEMICOLON, "; expected");
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementThrow(t.position, whitespace, value);
+				return new ParsedStatementThrow(position, whitespace, value);
 			}
 			case K_TRY: {
 				parser.pushMark();
@@ -206,7 +206,7 @@ public abstract class ParsedStatement {
 				ParsedStatement content = parse(parser);
 				List<ParsedCatchClause> catchClauses = new ArrayList<>();
 				while (parser.optional(K_CATCH) != null) {
-					CodePosition position = parser.getPosition();
+					CodePosition catchPosition = parser.getPosition();
 					
 					String catchName = null;
 					if (parser.isNext(ZSTokenType.T_IDENTIFIER))
@@ -217,7 +217,7 @@ public abstract class ParsedStatement {
 						catchType = IParsedType.parse(parser);
 					
 					ParsedStatement catchContent = ParsedStatement.parse(parser);
-					catchClauses.add(new ParsedCatchClause(position, catchName, catchType, catchContent));
+					catchClauses.add(new ParsedCatchClause(catchPosition, catchName, catchType, catchContent));
 				}
 				
 				ParsedStatement finallyClause = null;
@@ -225,7 +225,7 @@ public abstract class ParsedStatement {
 					finallyClause = ParsedStatement.parse(parser);
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementTryCatch(t.position, whitespace, name, initializer, content, catchClauses, finallyClause);
+				return new ParsedStatementTryCatch(position, whitespace, name, initializer, content, catchClauses, finallyClause);
 			}
 			case K_CONTINUE: {
 				ZSToken t = parser.next();
@@ -236,7 +236,7 @@ public abstract class ParsedStatement {
 				parser.required(T_SEMICOLON, "; expected");
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementContinue(t.position, whitespace, name);
+				return new ParsedStatementContinue(position, whitespace, name);
 			}
 			case K_BREAK: {
 				ZSToken t = parser.next();
@@ -247,7 +247,7 @@ public abstract class ParsedStatement {
 				parser.required(T_SEMICOLON, "; expected");
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementBreak(t.position, whitespace, name);
+				return new ParsedStatementBreak(position, whitespace, name);
 			}
 			case K_SWITCH: {
 				ZSToken t = parser.next();
@@ -277,11 +277,10 @@ public abstract class ParsedStatement {
 				}
 				
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
-				return new ParsedStatementSwitch(t.position, whitespace, name, value, cases);
+				return new ParsedStatementSwitch(position, whitespace, name, value, cases);
 			}
 		}
-
-		CodePosition position = parser.peek().getPosition();
+		
 		ParsedExpression expression = ParsedExpression.parse(parser);
 		parser.required(T_SEMICOLON, "; expected");
 		WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);

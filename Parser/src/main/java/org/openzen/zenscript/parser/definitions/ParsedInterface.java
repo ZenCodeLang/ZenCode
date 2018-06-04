@@ -11,7 +11,7 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
@@ -23,7 +23,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedInterface extends BaseParsedDefinition {
-	public static ParsedInterface parseInterface(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedInterface parseInterface(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedGenericParameter> genericParameters = ParsedGenericParameter.parseAll(tokens);
 		List<IParsedType> superInterfaces = Collections.emptyList();

@@ -10,7 +10,7 @@ import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.linker.FunctionScope;
 import org.openzen.zenscript.parser.ParsedDefinition;
@@ -23,7 +23,7 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Stanneke
  */
 public class ParsedFunction extends ParsedDefinition {
-	public static ParsedFunction parseFunction(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenStream parser, HighLevelDefinition outerDefinition) {
+	public static ParsedFunction parseFunction(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenParser parser, HighLevelDefinition outerDefinition) {
 		String name = parser.required(T_IDENTIFIER, "identifier expected").content;
 		ParsedFunctionHeader header = ParsedFunctionHeader.parse(parser);
 		ParsedFunctionBody body = ParsedStatement.parseFunctionBody(parser);

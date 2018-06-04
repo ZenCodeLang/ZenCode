@@ -13,4 +13,6 @@ public interface ModuleReference {
 	public String getName();
 	
 	public SemanticModule load();
+	
+	public SourcePackage getRootPackage();
 }

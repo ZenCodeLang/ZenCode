@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.lexer.ZSToken;
-import org.openzen.zenscript.lexer.ZSTokenStream;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 
 /**
@@ -17,7 +17,7 @@ import static org.openzen.zenscript.lexer.ZSTokenType.*;
  * @author Hoofdgebruiker
  */
 public class ParsedImport {
-	public static ParsedImport parse(CodePosition position, ZSTokenStream tokens) {
+	public static ParsedImport parse(CodePosition position, ZSTokenParser tokens) {
 		boolean relative = tokens.optional(T_DOT) != null;
 		
 		List<String> importName = new ArrayList<>();

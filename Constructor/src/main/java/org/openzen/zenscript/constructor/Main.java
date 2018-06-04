@@ -22,6 +22,10 @@ public class Main {
 		moduleLoader.register("stdlib", new DirectoryModuleLoader(moduleLoader, "stdlib", new File("libraries/stdlib"), true));
 		
 		Project project = new Project(moduleLoader, currentDirectory);
+		for (Library library : project.libraries) {
+			for (ModuleReference module : library.modules)
+				moduleLoader.register(module.getName(), module);
+		}
 		for (ModuleReference module : project.modules) {
 			moduleLoader.register(module.getName(), module);
 		}
