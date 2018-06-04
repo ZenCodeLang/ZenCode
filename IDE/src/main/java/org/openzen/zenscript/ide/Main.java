@@ -24,7 +24,7 @@ public class Main {
 		
 		int pixelPerInch = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
 		
-		IDEWindow window = new IDEWindow();
+		IDEWindow window = new IDEWindow(host);
 		WindowView root = new WindowView(window, host);
 		
 		SwingWindow swingWindow = new SwingWindow("ZenCode IDE - " + host.getName(), root, false);

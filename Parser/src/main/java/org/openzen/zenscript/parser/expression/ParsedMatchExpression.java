@@ -43,7 +43,7 @@ public class ParsedMatchExpression extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		Expression cValue = value.compileKey(scope);
+		Expression cValue = value.compile(scope).eval();
 		MatchExpression.Case[] cCases = new MatchExpression.Case[cases.size()];
 		for (int i = 0; i < cases.size(); i++) {
 			Case matchCase = cases.get(i);

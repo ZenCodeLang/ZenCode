@@ -17,4 +17,6 @@ public interface DevelopmentHost {
 	public LiveList<IDEModule> getModules();
 	
 	public LiveList<IDELibrary> getLibraries();
+	
+	public LiveList<IDETarget> getTargets();
 }

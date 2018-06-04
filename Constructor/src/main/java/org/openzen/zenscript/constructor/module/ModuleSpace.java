@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.constructor.module;
 
+import org.openzen.zenscript.compiler.SemanticModule;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,10 +21,10 @@ import org.openzen.zenscript.linker.symbol.ISymbol;
  * @author Hoofdgebruiker
  */
 public class ModuleSpace {
-	private final ZSPackage rootPackage = new ZSPackage("");
-	private final ZSPackage stdlib = new ZSPackage("");
+	private final ZSPackage rootPackage = new ZSPackage(null, "");
+	private final ZSPackage stdlib = new ZSPackage(null, "stdlib");
 	public final GlobalTypeRegistry typeRegistry = new GlobalTypeRegistry(stdlib);
-	public final ZSPackage globalsPackage = new ZSPackage("");
+	public final ZSPackage globalsPackage = new ZSPackage(null, "");
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
 	private final Map<String, ISymbol> globals = new HashMap<>();
 	

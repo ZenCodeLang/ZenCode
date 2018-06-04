@@ -17,6 +17,9 @@ dependencies {
 	compile 'org.json:json:20180130'
 	compile project(':CodeModel')
 	compile project(':Parser')
+	compile project(':Linker')
 	compile project(':Validator')
+	compile project(':CompilerShared')
 	compile project(':JavaBytecodeCompiler')
+	compile project(':JavaSourceCompiler')
 }

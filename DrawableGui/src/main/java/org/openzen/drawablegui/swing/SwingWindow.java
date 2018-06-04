@@ -12,6 +12,7 @@ import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import javax.swing.JFrame;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DDimensionPreferences;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.border.DCustomWindowBorder;
@@ -86,6 +87,19 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 	@Override
 	public LiveBool getActive() {
 		return active;
+	}
+	
+	@Override
+	public DUIWindow openModal(String title, DComponent component) {
+		SwingWindow result = new SwingWindow(title, component, false);
+		result.setResizable(false);
+		
+		DDimensionPreferences size = component.getDimensionPreferences().getValue();
+		result.setLocation(
+				getX() + (getWidth() - size.preferredWidth) / 2,
+				getY() + (getHeight() - size.preferredHeight) / 2);
+		result.setSize(size.preferredWidth, size.preferredHeight);
+		return result;
 	}
 
 	@Override

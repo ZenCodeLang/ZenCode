@@ -265,7 +265,7 @@ public class FunctionHeader {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		if (typeParameters.length > 0) {
+		if (typeParameters != null && typeParameters.length > 0) {
 			result.append("<");
 			for (int i = 0; i < typeParameters.length; i++) {
 				if (i > 0)

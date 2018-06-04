@@ -20,11 +20,6 @@ public class TabbedViewStyle {
 	public final DFont tabFont;
 	public final int tabFontColor;
 	
-	public final int tabColorNormal;
-	public final int tabColorHover;
-	public final int tabColorPress;
-	public final int tabColorActive;
-	
 	public final int paddingTop;
 	public final int paddingBottom;
 	public final int paddingLeft;
@@ -38,13 +33,8 @@ public class TabbedViewStyle {
 	
 	public TabbedViewStyle(DStyleDefinition style) {
 		backgroundColor = style.getColor("backgroundColor", 0xFFEEEEEE);
-		tabFont = style.getFont("tabFont", context -> new DFont(DFontFamily.CODE, false, false, false, (int)(12 * context.getScale())));
+		tabFont = style.getFont("tabFont", context -> new DFont(DFontFamily.UI, false, false, false, (int)(12 * context.getScale())));
 		tabFontColor = style.getColor("tabFontColor", 0xFF000000);
-		
-		tabColorNormal = style.getColor("tabColorNormal", 0xFFEEEEEE);
-		tabColorHover = style.getColor("tabColorHover", 0xFFFFFFFF);
-		tabColorPress = style.getColor("tabColorPress", 0xFFF0F0F0);
-		tabColorActive = style.getColor("tabColorActive", 0xFFFFFFFF);
 		
 		paddingTop = style.getDimension("paddingTop", new DDpDimension(4));
 		paddingBottom = style.getDimension("paddingTop", new DDpDimension(4));

@@ -7,21 +7,28 @@ package org.openzen.zenscript.constructor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zenscript.constructor.module.DirectoryModuleLoader;
 import org.openzen.zenscript.constructor.module.ModuleReference;
+import org.openzen.zenscript.compiler.Target;
+import org.openzen.zenscript.compiler.TargetType;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class Project {
+	public final File directory;
 	public final String name;
 	public final ModuleReference[] modules;
 	public final Library[] libraries;
+	public final Target[] targets;
 	
 	public Project(ModuleLoader loader, File directory) throws IOException {
+		this.directory = directory;
 		name = directory.getName();
 		
 		if (!directory.exists())
@@ -61,5 +68,19 @@ public class Project {
 				}
 			}
 		}
+		
+		JSONArray jsonTargets = json.getJSONArray("targets");
+		List<Target> targetList = new ArrayList<>();
+		for (int i = 0; i < jsonTargets.length(); i++) {
+			JSONObject jsonTarget = jsonTargets.getJSONObject(i);
+			TargetType targetType = ConstructorRegistry.getTargetType(jsonTarget.getString("type"));
+			if (targetType == null) {
+				System.out.println("Unknown target type: " + jsonTarget.getString("type"));
+				continue;
+			}
+			
+			targetList.add(targetType.create(directory, jsonTarget));
+		}
+		targets = targetList.toArray(new Target[targetList.size()]);
 	}
 }

@@ -13,19 +13,21 @@ import org.openzen.drawablegui.live.LiveObject;
  * @author Hoofdgebruiker
  */
 public interface DUIWindow {
-	public boolean hasTitleBar();
+	boolean hasTitleBar();
 	
-	public void close();
+	void close();
 	
-	public void maximize();
+	void maximize();
 	
-	public void restore();
+	void restore();
 	
-	public void minimize();
+	void minimize();
 	
 	LiveObject<State> getWindowState();
 	
 	LiveBool getActive();
+	
+	DUIWindow openModal(String title, DComponent root);
 	
 	enum State {
 		NORMAL,

@@ -25,10 +25,14 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
  * @author Hoofdgebruiker
  */
 public class ZSPackage {
+	public final String name;
 	public final String fullName;
+	public final ZSPackage parent;
 	
-	public ZSPackage(String fullName) {
-		this.fullName = fullName;
+	public ZSPackage(ZSPackage parent, String name) {
+		this.parent = parent;
+		this.name = name;
+		this.fullName = parent == null ? name : parent.fullName + "." + name;
 	}
 	
 	private final Map<String, ZSPackage> subPackages = new HashMap<>();
@@ -116,7 +120,7 @@ public class ZSPackage {
 		if (subPackages.containsKey(name))
 			return subPackages.get(name);
 		
-		ZSPackage result = new ZSPackage(fullName.isEmpty() ? name : fullName + '.' + name);
+		ZSPackage result = new ZSPackage(this, name);
 		subPackages.put(name, result);
 		return result;
 	}

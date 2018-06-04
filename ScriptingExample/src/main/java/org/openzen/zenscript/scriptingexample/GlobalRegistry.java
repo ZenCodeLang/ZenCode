@@ -40,8 +40,8 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class GlobalRegistry {
-	public final ZSPackage globals = new ZSPackage("");
-	private final ZSPackage rootPackage = new ZSPackage("");
+	public final ZSPackage globals = new ZSPackage(null, "");
+	private final ZSPackage rootPackage = new ZSPackage(null, "");
 	private final ZSPackage javaIo = rootPackage.getOrCreatePackage("java").getOrCreatePackage("io");
 	private final ZSPackage javaLang = rootPackage.getOrCreatePackage("java").getOrCreatePackage("lang");
 	

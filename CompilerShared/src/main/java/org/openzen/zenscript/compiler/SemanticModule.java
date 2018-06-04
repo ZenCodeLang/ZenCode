@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.constructor.module;
+package org.openzen.zenscript.compiler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,8 +12,6 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.javabytecode.JavaCompiler;
-import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 
 /**
@@ -34,14 +32,13 @@ public class SemanticModule {
 		this.scripts = scripts;
 	}
 	
-	public JavaModule compileToJava() {
-		JavaCompiler compiler = new JavaCompiler(false);
+	public void compile(ZenCodeCompiler compiler) {
 		for (HighLevelDefinition definition : definitions.getAll()) {
 			compiler.addDefinition(definition);
 		}
 		for (ScriptBlock script : scripts) {
 			compiler.addScriptBlock(script);
 		}
-		return compiler.finish();
+		compiler.finish();
 	}
 }

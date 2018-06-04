@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Stack;
 import org.openzen.zenscript.constructor.module.ModuleReference;
-import org.openzen.zenscript.constructor.module.SemanticModule;
+import org.openzen.zenscript.compiler.SemanticModule;
 
 /**
  *
