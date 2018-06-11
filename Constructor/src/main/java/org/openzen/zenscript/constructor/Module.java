@@ -21,7 +21,7 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.constructor.module.ModuleSpace;
-import org.openzen.zenscript.constructor.module.SemanticModule;
+import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
 import org.openzen.zenscript.shared.CompileException;

@@ -22,12 +22,13 @@ import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVis
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.shared.SourceFile;
+import org.openzen.zenscript.compiler.ZenCodeCompiler;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaCompiler {
+public class JavaCompiler implements ZenCodeCompiler {
 	static {
 		JavaClassInfo jInteger = new JavaClassInfo("java/lang/Integer");
 		JavaClassInfo jLong = new JavaClassInfo("java/lang/Long");
@@ -136,6 +137,7 @@ public class JavaCompiler {
 	private final JavaClassWriter scriptsClassWriter;
 	private int generatedScriptBlockCounter = 0;
 	private boolean finished = false;
+	private JavaModule compiled = null;
 	
 	public JavaCompiler() {
 		this(false);
@@ -148,12 +150,14 @@ public class JavaCompiler {
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
 	}
 	
+	@Override
 	public void addDefinition(HighLevelDefinition definition) {
 		String className = getClassName(definition.position.filename);
 		JavaScriptFile scriptFile = getScriptFile(className);
 		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(scriptFile.classWriter)));
 	}
 	
+	@Override
 	public void addScriptBlock(ScriptBlock script) {
 		final SourceFile sourceFile = script.getTag(SourceFile.class);
 		final String className = getClassName(sourceFile == null ? null : sourceFile.filename);
@@ -196,7 +200,20 @@ public class JavaCompiler {
 		return scriptBlocks.get(className);
 	}
 	
-	public JavaModule finish() {
+	@Override
+	public void finish() {
+		finishAndGetModule();
+	}
+	
+	@Override
+	public void run() {
+		if (compiled == null)
+			throw new IllegalStateException("Not yet built!");
+		
+		
+	}
+	
+	public JavaModule finishAndGetModule() {
 		if (finished)
 			throw new IllegalStateException("Already finished!");
 		finished = true;

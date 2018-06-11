@@ -5,13 +5,13 @@
  */
 package org.openzen.zenscript.ide.ui;
 
-import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.style.DStyleClass;
+import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.IDESourceFile;
+import org.openzen.zenscript.ide.host.IDETarget;
 import org.openzen.zenscript.ide.ui.icons.AddBoxIcon;
 import org.openzen.zenscript.ide.ui.icons.BuildIcon;
 import org.openzen.zenscript.ide.ui.icons.PlayIcon;
-import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
 import org.openzen.zenscript.ide.ui.icons.SettingsIcon;
 import org.openzen.zenscript.ide.ui.icons.ShadedProjectIcon;
 import org.openzen.zenscript.ide.ui.view.IconButtonControl;
@@ -21,20 +21,26 @@ import org.openzen.zenscript.ide.ui.view.IconButtonControl;
  * @author Hoofdgebruiker
  */
 public class IDEWindow {
+	private final DevelopmentHost host;
+	
 	public final IDEAspectBar aspectBar;
 	public final IDEDockWindow dockWindow;
 	public final IDEStatusBar statusBar;
 	
 	public IDEAspectToolbar projectToolbar;
 	
-	public IDEWindow() {
+	public IDEWindow(DevelopmentHost host) {
+		this.host = host;
+		
 		aspectBar = new IDEAspectBar();
 		dockWindow = new IDEDockWindow();
 		statusBar = new IDEStatusBar();
 		init();
 	}
 	
-	public IDEWindow(IDEAspectBar aspectBar, IDEDockWindow dockWindow, IDEStatusBar statusBar) {
+	public IDEWindow(DevelopmentHost host, IDEAspectBar aspectBar, IDEDockWindow dockWindow, IDEStatusBar statusBar) {
+		this.host = host;
+		
 		this.aspectBar = aspectBar;
 		this.dockWindow = dockWindow;
 		this.statusBar = statusBar;
@@ -49,8 +55,18 @@ public class IDEWindow {
 		projectToolbar = new IDEAspectToolbar(0, ShadedProjectIcon.PURPLE, "Project", "Project management");
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.ORANGE, e -> {}));
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.PURPLE, e -> {}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, e -> {}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, PlayIcon.GREEN, e -> {}));
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, e -> {
+			for (IDETarget target : host.getTargets()) {
+				if (target.canBuild())
+					target.build();
+			}
+		}));
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, PlayIcon.GREEN, e -> {
+			for (IDETarget target : host.getTargets()) {
+				if (target.canRun())
+					target.run();
+			}
+		}));
 		aspectBar.toolbars.add(projectToolbar);
 	}
 }

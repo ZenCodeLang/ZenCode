@@ -13,8 +13,6 @@ import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DPath;
-import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.live.ImmutableLiveObject;
 import org.openzen.drawablegui.live.LiveArrayList;
@@ -65,6 +63,8 @@ public class TabbedView extends BaseComponentGroup {
 					bounds.width, bounds.height - totalTabHeight);
 				newValue.content.setBounds(contentBounds);
 			}
+			if (newValue == null && context != null && bounds != null)
+				context.repaint(bounds);
 		});
 	}
 	

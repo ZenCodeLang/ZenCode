@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.constructor.module;
 
+import org.openzen.zenscript.compiler.SemanticModule;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class DirectoryModuleLoader implements ModuleReference {
 				space.addModule(dependencyName, loader.getModule(dependencyName));
 
 			Module module = new Module(moduleName, directory, jsonFile);
-			ZSPackage pkg = new ZSPackage(module.packageName);
+			ZSPackage pkg = new ZSPackage(null, module.packageName);
 
 			ParsedFile[] parsedFiles = module.parse(pkg);
 			SemanticModule result = Module.compileSyntaxToSemantic(pkg, parsedFiles, space);

@@ -34,10 +34,10 @@ public class Main {
 		File inputDirectory = new File("scripts");
 		File[] inputFiles = Optional.ofNullable(inputDirectory.listFiles((dir, name) -> name.endsWith(".zs"))).orElseGet(() -> new File[0]);
 		
-		ZSPackage pkg = new ZSPackage("");
+		ZSPackage pkg = new ZSPackage(null, "");
 		ParsedFile[] parsedFiles = parse(pkg, inputFiles);
 		
-		ZSPackage global = new ZSPackage("");
+		ZSPackage global = new ZSPackage(null, "");
 		GlobalRegistry registry = new GlobalRegistry(global);
 		SemanticModule module = compileSyntaxToSemantic(parsedFiles, registry);
 		
@@ -95,7 +95,7 @@ public class Main {
 	}
 	
 	private static SemanticModule compileSyntaxToSemantic(ParsedFile[] files, GlobalRegistry registry) {
-		ZSPackage modulePackage = new ZSPackage(null);
+		ZSPackage modulePackage = new ZSPackage(null, "");
 		
 		// We are considering all these files to be in the same package, so make
 		// a single PackageDefinition instance. If these files were in multiple
@@ -156,6 +156,6 @@ public class Main {
 		for (ScriptBlock script : module.scripts) {
 			compiler.addScriptBlock(script);
 		}
-		return compiler.finish();
+		return compiler.finishAndGetModule();
 	}
 }

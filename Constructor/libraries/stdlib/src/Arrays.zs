@@ -104,10 +104,10 @@ export expand <T> T[] {
 		return null;
 	}
 	
-	public last(predicate as function(value as T) as bool) as T? {
+	public last(predicate as function(index as int, value as T) as bool) as T? {
 		for i, value in this.reversed
-			if predicate(value)
-				return value
+			if predicate(i, value)
+				return value;
 		
 		return null;
 	}

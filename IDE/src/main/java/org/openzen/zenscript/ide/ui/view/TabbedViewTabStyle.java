@@ -36,7 +36,7 @@ public class TabbedViewTabStyle {
 	public final int closeIconPadding;
 	
 	public TabbedViewTabStyle(DStyleDefinition style) {
-		tabFont = style.getFont("tabFont", context -> new DFont(DFontFamily.CODE, false, false, false, (int)(12 * context.getScale())));
+		tabFont = style.getFont("tabFont", context -> new DFont(DFontFamily.UI, false, false, false, (int)(12 * context.getScale())));
 		tabFontColor = style.getColor("tabFontColor", 0xFF000000);
 		
 		tabColorNormal = style.getColor("tabColorNormal", 0xFFEEEEEE);

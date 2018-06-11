@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.constructor.module;
 
+import org.openzen.zenscript.compiler.SemanticModule;
+
 /**
  *
  * @author Hoofdgebruiker
