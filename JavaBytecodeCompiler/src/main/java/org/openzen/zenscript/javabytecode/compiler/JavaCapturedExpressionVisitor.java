@@ -29,12 +29,11 @@ public class JavaCapturedExpressionVisitor implements CapturedExpressionVisitor<
 
     @Override
     public Void visitCapturedDirect(CapturedDirectExpression expression) {
-        return null;
+        return expression.value.accept(expressionVisitor);
     }
 
     @Override
     public Void visitRecaptured(CapturedClosureExpression expression) {
-        expression.value.accept(this);
-        return null;
+        return expression.value.accept(this);
     }
 }

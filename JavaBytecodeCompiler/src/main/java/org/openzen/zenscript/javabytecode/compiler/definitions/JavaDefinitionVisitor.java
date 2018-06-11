@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
+import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 
@@ -172,7 +173,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
     @Override
     public byte[] visitAlias(AliasDefinition definition) {
-        return null;
+        //TODO would that work?
+        return JavaModule.classes.get(definition.name);
     }
 
 	@Override

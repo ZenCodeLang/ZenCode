@@ -6,6 +6,7 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
+import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -16,6 +17,7 @@ import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -23,6 +25,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     private static final JavaMethodInfo MAP_PUT = JavaMethodInfo.get(Opcodes.ACC_PUBLIC, Map.class, "put", Object.class, Object.class, Object.class);
 
     private final JavaWriter javaWriter;
+    private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
 
     public JavaExpressionVisitor(JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
@@ -119,30 +122,27 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitCapturedClosure(CapturedClosureExpression expression) {
-        expression.value.accept(this);
-        return null;
+        return expression.accept(capturedExpressionVisitor);
     }
 
     @Override
     public Void visitCapturedDirect(CapturedDirectExpression expression) {
-        return null;
+        return expression.accept(capturedExpressionVisitor);
     }
 
     @Override
     public Void visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
-        new GetLocalVariableExpression(expression.position, expression.variable).accept(this);
-        return null;
+        return expression.accept(capturedExpressionVisitor);
     }
 
     @Override
     public Void visitCapturedParameter(CapturedParameterExpression expression) {
-
-        return null;
+        return expression.accept(capturedExpressionVisitor);
     }
 
     @Override
     public Void visitCapturedThis(CapturedThisExpression expression) {
-        return null;
+        return expression.accept(capturedExpressionVisitor);
     }
 
     @Override
@@ -282,12 +282,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
         Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
 
+        javaWriter.loadObject(0);
         if (javaWriter.method.javaClass.isEnum) {
-            javaWriter.loadObject(0);
             javaWriter.loadObject(1);
             javaWriter.loadInt(2);
-        } else {
-            javaWriter.loadObject(0);
         }
 
         for (Expression argument : expression.arguments.arguments) {
@@ -417,6 +415,19 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitGetter(GetterExpression expression) {
+        expression.target.accept(this);
+        final GetterMember getter = expression.getter;
+        //TODO check, since I don't know how to declare getters...
+        javaWriter.invokeVirtual(
+                new JavaMethodInfo(
+                        new JavaClassInfo(
+                                expression.target.type.accept(JavaTypeVisitor.INSTANCE).getInternalName(),
+                                false),
+                        getter.name,
+                        CompilerUtils.calcDesc(getter.header, false),
+                        CompilerUtils.calcAccess(getter.modifiers)
+                )
+        );
         return null;
     }
 
@@ -491,7 +502,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         }
 
         JavaSwitchLabel[] sortedSwitchLabels = Arrays.copyOf(switchLabels, switchLabels.length);
-        Arrays.sort(sortedSwitchLabels, (a, b) -> a.key - b.key);
+        Arrays.sort(sortedSwitchLabels, Comparator.comparingInt(a -> a.key));
 
         javaWriter.lookupSwitch(defaultLabel, sortedSwitchLabels);
 
@@ -518,7 +529,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         return null;
     }
 
-    private boolean hasNoDefault(MatchExpression switchStatement) {
+    private static boolean hasNoDefault(MatchExpression switchStatement) {
         for (MatchExpression.Case switchCase : switchStatement.cases)
             if (switchCase.key == null) return false;
         return true;
