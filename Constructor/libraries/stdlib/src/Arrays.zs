@@ -22,17 +22,11 @@ export expand <T> T[] {
 	public get reversed as T[];
 	
 	public map<U>(projection as function(value as T) as U) as U[] {
-		val result as U[] = new U[](this.length);
-		for i, value in this
-			result[i] = projection(value);
-		return result;
+		return new U[]<T>(this, projection);
 	}
 	
 	public map<U>(projection as function(index as int, value as T) as U) as U[] {
-		val result as U[] = new U[](this.length);
-		for i, value in this
-			result[i] = projection(i, value);
-		return result;
+		return new U[]<T>(this, projection);
 	}
 	
 	public extern filter(predicate as function(value as T) as bool) as T[];

@@ -25,4 +25,9 @@ public class ConstantUIntExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitConstantUInt(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		return this;
+	}
 }

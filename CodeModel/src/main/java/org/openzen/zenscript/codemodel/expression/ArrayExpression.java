@@ -27,4 +27,10 @@ public class ArrayExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitArray(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression[] tExpressions = Expression.transform(expressions, transformer);
+		return tExpressions == expressions ? this : new ArrayExpression(position, tExpressions, (ArrayTypeID)type);
+	}
 }

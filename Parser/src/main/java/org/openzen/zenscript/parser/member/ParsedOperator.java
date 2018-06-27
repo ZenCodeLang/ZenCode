@@ -30,6 +30,6 @@ public class ParsedOperator extends ParsedFunctionalMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new OperatorMember(position, definition, modifiers, operator, header.compile(scope));
+		compiled = new OperatorMember(position, definition, modifiers, operator, header.compile(scope), null);
 	}
 }

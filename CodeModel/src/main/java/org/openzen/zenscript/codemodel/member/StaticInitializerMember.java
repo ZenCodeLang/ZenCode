@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
@@ -30,6 +31,11 @@ public class StaticInitializerMember extends Taggable implements IDefinitionMemb
 	@Override
 	public CodePosition getPosition() {
 		return position;
+	}
+	
+	@Override
+	public BuiltinID getBuiltin() {
+		return null;
 	}
 
 	@Override

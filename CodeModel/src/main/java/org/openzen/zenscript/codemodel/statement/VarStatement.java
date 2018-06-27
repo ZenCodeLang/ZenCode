@@ -6,8 +6,10 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
@@ -31,5 +33,11 @@ public class VarStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitVar(this);
+	}
+
+	@Override
+	public VarStatement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Expression tInitializer = initializer == null ? null : initializer.transform(transformer);
+		return tInitializer == initializer ? this : new VarStatement(position, name, type, tInitializer, isFinal);
 	}
 }

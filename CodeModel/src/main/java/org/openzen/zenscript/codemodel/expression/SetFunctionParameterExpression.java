@@ -27,4 +27,10 @@ public class SetFunctionParameterExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitSetFunctionParameter(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = value.transform(transformer);
+		return tValue == value ? this : new SetFunctionParameterExpression(position, parameter, tValue);
+	}
 }

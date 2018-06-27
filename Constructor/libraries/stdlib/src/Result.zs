@@ -2,9 +2,9 @@ export variant Result<T, E> {
 	Ok(T),
 	Error(E);
 	
-	public then<R>(fn as function(result as T) as R) as Result<R, E> {
+	public then<R>(fn as function(result as T) as Result<R, E>) as Result<R, E> {
 		return match this {
-			Ok(result) => Ok(fn(result)),
+			Ok(result) => fn(result),
 			Error(error) => Error(error)
 		};
 	}
@@ -42,7 +42,7 @@ export expand <T, E : Exception> Result<T, E> {
 	public unwrap() as T {
 		return match this {
 			Ok(result) => result,
-			Error(error) => { throw error; }
+			Error(error) => throw error
 		};
 	}
 }

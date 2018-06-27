@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -26,8 +27,14 @@ public class GetterMember extends FunctionalMember implements IGettableMember {
 	public final String name;
 	public final ITypeID type;
 	
-	public GetterMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, ITypeID type) {
-		super(position, definition, modifiers, name, new FunctionHeader(type));
+	public GetterMember(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			String name,
+			ITypeID type,
+			BuiltinID builtin) {
+		super(position, definition, modifiers, name, new FunctionHeader(type), builtin);
 		
 		this.name = name;
 		this.type = type;
@@ -64,8 +71,14 @@ public class GetterMember extends FunctionalMember implements IGettableMember {
 	}
 
 	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new GetterMember(position, definition, modifiers, name, type.withGenericArguments(registry, mapping));
+	public GetterMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
+		return new GetterMember(
+				position,
+				definition,
+				modifiers,
+				name,
+				type.withGenericArguments(registry, mapping),
+				builtin);
 	}
 
 	@Override

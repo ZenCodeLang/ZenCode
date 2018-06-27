@@ -29,4 +29,14 @@ public class CapturedClosureExpression extends CapturedExpression {
 	public <T> T accept(CapturedExpressionVisitor<T> visitor) {
 		return visitor.visitRecaptured(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = transformer.transform(value);
+		if (!(tValue instanceof CapturedExpression)) {
+			throw new IllegalStateException("Transformed CapturedExpression must also be a CapturedExpression!");
+		} else {
+			return tValue == value ? this : new CapturedClosureExpression(position, (CapturedExpression)tValue, closure);
+		}
+	}
 }

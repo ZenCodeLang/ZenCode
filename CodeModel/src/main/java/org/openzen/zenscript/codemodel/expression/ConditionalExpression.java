@@ -37,4 +37,14 @@ public class ConditionalExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitConditional(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tCondition = transformer.transform(condition);
+		Expression tIfThen = transformer.transform(ifThen);
+		Expression tIfElse = transformer.transform(ifElse);
+		return tCondition == condition && tIfThen == ifThen && tIfElse == ifElse
+				? this
+				: new ConditionalExpression(position, tCondition, tIfThen, tIfElse, type);
+	}
 }

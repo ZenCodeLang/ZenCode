@@ -6,8 +6,10 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
@@ -30,5 +32,13 @@ public class ForeachStatement extends LoopStatement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitForeach(this);
+	}
+
+	@Override
+	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Expression tList = list.transform(transformer);
+		ForeachStatement result = new ForeachStatement(position, loopVariables, iterator, tList);
+		result.content = content.transform(transformer, modified.concat(this, result));
+		return result;
 	}
 }

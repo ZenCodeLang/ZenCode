@@ -29,4 +29,11 @@ public class SameObjectExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitSameObject(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tLeft = left.transform(transformer);
+		Expression tRight = right.transform(transformer);
+		return tLeft == left && tRight == right ? this : new SameObjectExpression(position, tLeft, tRight, inverted);
+	}
 }

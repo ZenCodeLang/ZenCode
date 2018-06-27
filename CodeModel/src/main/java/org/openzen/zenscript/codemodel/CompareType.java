@@ -11,9 +11,7 @@ public enum CompareType {
 	EQ("=="),
 	NE("!="),
 	LE("<="),
-	GE(">="),
-	SAME("==="),
-	NOTSAME("!==");
+	GE(">=");
 	
 	public final String str;
 	

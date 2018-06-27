@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.formatter;
 
+import org.openzen.zenscript.formattershared.Importer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,9 +22,9 @@ import org.openzen.zenscript.codemodel.statement.Statement;
  * @author Hoofdgebruiker
  */
 public class FileFormatter {
-	private final FormattingSettings settings;
+	private final ScriptFormattingSettings settings;
 	
-	public FileFormatter(FormattingSettings settings) {
+	public FileFormatter(ScriptFormattingSettings settings) {
 		this.settings = settings;
 	}
 	

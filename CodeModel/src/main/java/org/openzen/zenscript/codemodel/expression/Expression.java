@@ -7,8 +7,10 @@ package org.openzen.zenscript.codemodel.expression;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.GenericName;
@@ -35,6 +37,8 @@ public abstract class Expression implements IPartialExpression {
 	}
 	
 	public abstract <T> T accept(ExpressionVisitor<T> visitor);
+	
+	public abstract Expression transform(ExpressionTransformer transformer);
 	
 	@Override
 	public List<ITypeID> getAssignHints() {
@@ -101,5 +105,16 @@ public abstract class Expression implements IPartialExpression {
 		for (Expression expression : expressions)
 			result = binaryThrow(position, result, expression.thrownType);
 		return result;
+	}
+	
+	public static Expression[] transform(Expression[] expressions, ExpressionTransformer transformer) {
+		Expression[] tExpressions = new Expression[expressions.length];
+		boolean changed = false;
+		for (int i = 0; i < tExpressions.length; i++) {
+			Expression tExpression = expressions[i].transform(transformer);
+			changed |= tExpression != expressions[i];
+			tExpressions[i] = tExpression;
+		}
+		return changed ? tExpressions : expressions;
 	}
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 import static org.objectweb.asm.Opcodes.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
+import org.openzen.zenscript.javabytecode.JavaFieldInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 
@@ -30,7 +31,7 @@ public class JavaWriter {
 	
     private final LocalVariablesSorter visitor;
     private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
-    private boolean debug = false;
+    private boolean debug = true;
     private boolean nameVariables = true;
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();
@@ -148,6 +149,9 @@ public class JavaWriter {
     }
 
     public void constant(Object value) {
+		if (value == null)
+			throw new NullPointerException("Value cannot be null");
+		
         if (debug)
             System.out.println("ldc " + value);
 
@@ -376,6 +380,13 @@ public class JavaWriter {
         visitor.visitTypeInsn(CHECKCAST, newClass);
     }
 
+    public void checkCast(Type type) {
+        if (debug)
+            System.out.println("checkCast " + type.getDescriptor());
+
+        visitor.visitTypeInsn(CHECKCAST, type.getDescriptor());
+    }
+
     public void iNeg() {
         if (debug)
             System.out.println("iNeg");
@@ -462,6 +473,13 @@ public class JavaWriter {
         visitor.visitInsn(ISHR);
     }
 
+    public void iUShr() {
+        if (debug)
+            System.out.println("iUShr");
+
+        visitor.visitInsn(IUSHR);
+    }
+
     public void iShl() {
         if (debug)
             System.out.println("iShl");
@@ -545,6 +563,13 @@ public class JavaWriter {
             System.out.println("lShr");
 
         visitor.visitInsn(LSHR);
+    }
+
+    public void lUShr() {
+        if (debug)
+            System.out.println("lUShr");
+
+        visitor.visitInsn(LUSHR);
     }
 
     public void lShl() {
@@ -777,6 +802,13 @@ public class JavaWriter {
             System.out.println("instanceOf " + clsName);
 
         visitor.visitTypeInsn(INSTANCEOF, clsName);
+    }
+
+    public void instanceOf(Type type) {
+        if (debug)
+            System.out.println("instanceOf " + type.getDescriptor());
+
+        visitor.visitTypeInsn(INSTANCEOF, type.getDescriptor());
     }
 	
 	public void invokeStatic(JavaMethodInfo method) {
@@ -1020,6 +1052,13 @@ public class JavaWriter {
 
         visitor.visitFieldInsn(GETFIELD, internal(owner), name, signature(descriptor));
     }
+	
+	public void getField(JavaFieldInfo field) {
+        if (debug)
+            System.out.println("getField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
+		
+		visitor.visitFieldInsn(GETFIELD, field.javaClass.internalClassName, field.name, field.signature);
+	}
 
     public void putField(String owner, String name, String descriptor) {
         if (debug)
@@ -1034,6 +1073,13 @@ public class JavaWriter {
 
         visitor.visitFieldInsn(PUTFIELD, internal(owner), name, signature(descriptor));
     }
+	
+	public void putField(JavaFieldInfo field) {
+        if (debug)
+            System.out.println("putField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
+		
+		visitor.visitFieldInsn(PUTFIELD, field.javaClass.internalClassName, field.name, field.signature);
+	}
 
     public void getStaticField(String owner, String name, String descriptor) {
         if (debug)
@@ -1041,13 +1087,13 @@ public class JavaWriter {
 
         visitor.visitFieldInsn(GETSTATIC, owner, name, descriptor);
     }
-
-    public void getStaticField(Class owner, Field field) {
+	
+	public void getStaticField(JavaFieldInfo field) {
         if (debug)
-            System.out.println("getField " + owner.getName() + '.' + field.getName() + ":" + signature(field.getType()));
-
-        visitor.visitFieldInsn(GETSTATIC, internal(owner), field.getName(), signature(field.getType()));
-    }
+            System.out.println("getStaticField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
+		
+		visitor.visitFieldInsn(GETSTATIC, field.javaClass.internalClassName, field.name, field.signature);
+	}
 
     public void putStaticField(String owner, String name, String descriptor) {
         if (debug)
@@ -1062,6 +1108,13 @@ public class JavaWriter {
 
         visitor.visitFieldInsn(PUTSTATIC, internal(owner), field.getName(), signature(field.getType()));
     }
+	
+	public void putStaticField(JavaFieldInfo field) {
+        if (debug)
+            System.out.println("putStaticField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
+		
+		visitor.visitFieldInsn(PUTSTATIC, field.javaClass.internalClassName, field.name, field.signature);
+	}
 
     public void aThrow() {
         visitor.visitInsn(ATHROW);

@@ -67,7 +67,11 @@ public class ParsedField extends ParsedDefinitionMember {
 				definition,
 				modifiers | (isFinal ? Modifiers.FINAL : 0),
 				name,
-				type.compile(scope));
+				type.compile(scope),
+				scope.getTypeRegistry(),
+				autoGetter,
+				autoSetter,
+				null);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package org.openzen.zenscript.constructor;
 
+import org.openzen.zenscript.compiler.CompilationUnit;
 import java.io.File;
 import java.io.IOException;
 import org.openzen.zenscript.constructor.module.DirectoryModuleLoader;
@@ -18,7 +19,8 @@ public class Main {
 		}
 		
 		File currentDirectory = new File(arguments.directory);
-		ModuleLoader moduleLoader = new ModuleLoader();
+		CompilationUnit compilationUnit = new CompilationUnit();
+		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit);
 		moduleLoader.register("stdlib", new DirectoryModuleLoader(moduleLoader, "stdlib", new File("libraries/stdlib"), true));
 		
 		Project project = new Project(moduleLoader, currentDirectory);

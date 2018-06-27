@@ -185,7 +185,7 @@ public abstract class ParsedExpression {
 			case T_EQUAL3: {
 				parser.next();
 				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
-				return new ParsedExpressionCompare(position, left, right, CompareType.SAME);
+				return new ParsedExpressionSame(position, left, right, false);
 			}
 			case T_NOTEQUAL: {
 				parser.next();
@@ -195,7 +195,7 @@ public abstract class ParsedExpression {
 			case T_NOTEQUAL2: {
 				parser.next();
 				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
-				return new ParsedExpressionCompare(position, left, right, CompareType.NOTSAME);
+				return new ParsedExpressionSame(position, left, right, true);
 			}
 			case T_LESS: {
 				parser.next();
@@ -502,10 +502,15 @@ public abstract class ParsedExpression {
 				parser.next();
 				IParsedType type = IParsedType.parse(parser);
 				ParsedCallArguments newArguments = ParsedCallArguments.NONE;
-				if (parser.isNext(ZSTokenType.T_BROPEN))
+				if (parser.isNext(ZSTokenType.T_BROPEN) || parser.isNext(ZSTokenType.T_LESS))
 					newArguments = ParsedCallArguments.parse(parser);
 				
 				return new ParsedNewExpression(position, type, newArguments);
+			}
+			case K_THROW: {
+				parser.next();
+				ParsedExpression value = parse(parser);
+				return new ParsedThrowExpression(position, value);
 			}
 			case K_MATCH: {
 				parser.next();
@@ -519,8 +524,8 @@ public abstract class ParsedExpression {
 						key = parse(parser, new ParsingOptions(false));
 					
 					parser.required(T_LAMBDA, "=> expected");
-					ParsedFunctionBody body = ParsedStatement.parseLambdaBody(parser, true);
-					cases.add(new ParsedMatchExpression.Case(key, body));
+					ParsedExpression value = parse(parser);
+					cases.add(new ParsedMatchExpression.Case(key, value));
 					
 					if (parser.optional(T_COMMA) == null)
 						break;

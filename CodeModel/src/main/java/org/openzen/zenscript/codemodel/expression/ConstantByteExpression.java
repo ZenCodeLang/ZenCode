@@ -25,4 +25,9 @@ public class ConstantByteExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitConstantByte(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		return this;
+	}
 }

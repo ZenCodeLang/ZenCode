@@ -28,4 +28,11 @@ public class GlobalCallExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitGlobalCall(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		CallArguments tArguments = arguments.transform(transformer);
+		Expression tResolution = resolution.transform(transformer);
+		return tArguments == arguments && tResolution == resolution ? this : new GlobalCallExpression(position, name, tArguments, tResolution);
+	}
 }

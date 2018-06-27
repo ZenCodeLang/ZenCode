@@ -25,11 +25,17 @@ public class ConstructorSuperCallExpression extends Expression {
 		
 		this.objectType = type;
 		this.constructor = constructor;
-		this.arguments = arguments.normalize(position, scope, constructor.header);
+		this.arguments = scope == null ? arguments : arguments.normalize(position, scope, constructor.header);
 	}
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitConstructorSuperCall(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		CallArguments tArguments = arguments.transform(transformer);
+		return tArguments == arguments ? this : new ConstructorSuperCallExpression(position, type, constructor, tArguments, null);
 	}
 }

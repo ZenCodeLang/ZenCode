@@ -13,7 +13,6 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
@@ -215,6 +214,10 @@ public final class TypeMembers {
 		addOperator(member, TypeMemberPriority.SPECIFIED);
 	}
 	
+	public boolean hasOperator(OperatorType operator) {
+		return operators.containsKey(operator) && operators.get(operator).hasMethods();
+	}
+	
 	public void addOperator(OperatorMember member, TypeMemberPriority priority) {
 		DefinitionMemberGroup group = getOrCreateGroup(member.operator);
 		group.addMethod(member, priority);
@@ -285,28 +288,17 @@ public final class TypeMembers {
 	}
 	
 	public Expression compare(CodePosition position, TypeScope scope, CompareType operator, Expression left, Expression right) {
-		if (operator == CompareType.SAME) {
-			if (left.type.isObjectType() && right.type.isObjectType())
-				return new SameObjectExpression(position, left, right, false);
-			else
-				return compare(position, scope, CompareType.EQ, left, right);
-		} else if (operator == CompareType.NOTSAME) {
-			if (left.type.isObjectType() && right.type.isObjectType())
-				return new SameObjectExpression(position, left, right, true);
-			else
-				return compare(position, scope, CompareType.NE, left, right);
-		} else if (operator == CompareType.EQ) {
+		if (operator == CompareType.EQ) {
 			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.EQUALS);
 			for (TypeMember<ICallableMember> member : equal.getMethodMembers()) {
 				if (member.member.getHeader().accepts(scope, right))
 					return equal.call(position, scope, left, new CallArguments(right), false);
 			}
 		} else if (operator == CompareType.NE) {
-			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.EQUALS);
+			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.NOTEQUALS);
 			for (TypeMember<ICallableMember> member : equal.getMethodMembers()) {
 				if (member.member.getHeader().accepts(scope, right)) {
-					Expression equalExpression = equal.call(position, scope, left, new CallArguments(right), false);
-					return new CallExpression(position, equalExpression, BuiltinTypeMembers.BOOL_NOT, BuiltinTypeMembers.BOOL_NOT.header, CallArguments.EMPTY, scope);
+					return equal.call(position, scope, left, new CallArguments(right), false);
 				}
 			}
 		}

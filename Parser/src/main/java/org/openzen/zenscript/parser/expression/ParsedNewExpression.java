@@ -57,9 +57,12 @@ public class ParsedNewExpression extends ParsedExpression{
 		if (!(member instanceof ConstructorMember))
 			throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "COMPILER BUG: constructor is not a constructor");
 		
-		for (int i = 0; i < compiledArguments.arguments.length; i++) {
-			compiledArguments.arguments[i] = compiledArguments.arguments[i].castImplicit(position, scope, member.getHeader().parameters[i].type);
-		}
-		return new NewExpression(position, type, (ConstructorMember) member, compiledArguments);
+		return new NewExpression(
+				position,
+				type,
+				(ConstructorMember) member,
+				compiledArguments,
+				compiledArguments.getNumberOfTypeArguments() == 0 ? member.getHeader() : member.getHeader().withGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments),
+				scope);
 	}
 }

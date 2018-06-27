@@ -29,6 +29,6 @@ public class ParsedMethod extends ParsedFunctionalMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new MethodMember(position, definition, modifiers, name, header.compile(scope));
+		compiled = new MethodMember(position, definition, modifiers, name, header.compile(scope), null);
 	}
 }

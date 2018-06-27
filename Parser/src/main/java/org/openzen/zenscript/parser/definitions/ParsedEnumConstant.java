@@ -58,7 +58,7 @@ public class ParsedEnumConstant {
 	}
 	
 	public void compileCode(DefinitionTypeID type, ExpressionScope scope) {
-		ParsedCallArguments arguments = new ParsedCallArguments(this.arguments);
+		ParsedCallArguments arguments = new ParsedCallArguments(null, this.arguments);
 		compiled.constructor = ParsedNewExpression.compile(position, type, arguments, scope);
 	}
 }

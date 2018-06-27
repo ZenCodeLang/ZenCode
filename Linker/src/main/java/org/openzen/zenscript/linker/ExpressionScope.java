@@ -12,9 +12,11 @@ import java.util.Map;
 import java.util.function.Function;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -30,6 +32,7 @@ public class ExpressionScope extends BaseScope {
 	
 	public final List<ITypeID> hints;
 	public final Map<TypeParameter, ITypeID> genericInferenceMap;
+	public final Map<String, VarStatement> innerVariables = new HashMap<>();
 	
 	public ExpressionScope(BaseScope outer) {
 		this.outer = outer;
@@ -57,6 +60,10 @@ public class ExpressionScope extends BaseScope {
 		this.hints = hints;
 		this.dollar = dollar;
 		this.genericInferenceMap = genericInferenceMap;
+	}
+	
+	public void addInnerVariable(VarStatement variable) {
+		innerVariables.put(variable.name, variable);
 	}
 	
 	public List<ITypeID> getResultTypeHints() {
@@ -97,6 +104,9 @@ public class ExpressionScope extends BaseScope {
 	
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
+		if (name.hasNoArguments() && innerVariables.containsKey(name.name))
+			return new GetLocalVariableExpression(position, innerVariables.get(name.name));
+		
 		return outer.get(position, name);
 	}
 	

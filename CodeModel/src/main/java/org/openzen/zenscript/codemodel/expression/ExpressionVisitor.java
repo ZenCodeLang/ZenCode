@@ -14,7 +14,7 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitArray(ArrayExpression expression);
 	
-	public T visitCompare(BasicCompareExpression expression);
+	public T visitCompare(CompareExpression expression);
 	
 	public T visitCall(CallExpression expression);
 	
@@ -72,8 +72,6 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitFunction(FunctionExpression expression);
 	
-	public T visitGenericCompare(GenericCompareExpression expression);
-	
 	public T visitGetField(GetFieldExpression expression);
 	
 	public T visitGetFunctionParameter(GetFunctionParameterExpression expression);
@@ -127,6 +125,8 @@ public interface ExpressionVisitor<T> {
 	public T visitSupertypeCast(SupertypeCastExpression expression);
 	
 	public T visitThis(ThisExpression expression);
+	
+	public T visitThrow(ThrowExpression expression);
 	
 	public T visitTryConvert(TryConvertExpression expression);
 	

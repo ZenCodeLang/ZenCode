@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -54,6 +55,11 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public String describe() {
 		return "implementation " + type.toString();
+	}
+	
+	@Override
+	public BuiltinID getBuiltin() {
+		return null;
 	}
 
 	@Override

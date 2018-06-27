@@ -6,6 +6,7 @@
 package org.openzen.zenscript.constructor.module;
 
 import org.openzen.zenscript.compiler.SemanticModule;
+import org.openzen.zenscript.compiler.CompilationUnit;
 
 /**
  *
@@ -14,7 +15,7 @@ import org.openzen.zenscript.compiler.SemanticModule;
 public interface ModuleReference {
 	public String getName();
 	
-	public SemanticModule load();
+	public SemanticModule load(CompilationUnit unit);
 	
 	public SourcePackage getRootPackage();
 }

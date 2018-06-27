@@ -27,4 +27,11 @@ public class OrOrExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitOrOr(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tLeft = left.transform(transformer);
+		Expression tRight = right.transform(transformer);
+		return tLeft == left && tRight == right ? this : new OrOrExpression(position, tLeft, tRight);
+	}
 }

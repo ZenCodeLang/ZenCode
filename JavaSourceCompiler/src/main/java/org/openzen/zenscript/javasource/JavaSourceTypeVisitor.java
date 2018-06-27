@@ -5,6 +5,9 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
+import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
+import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -17,16 +20,19 @@ import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceTypeVisitor implements ITypeVisitor<String> {
-	private final JavaSourceFile file;
+public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParameterBoundVisitor<String> {
+	public final JavaSourceImporter importer;
+	public final JavaSourceSyntheticTypeGenerator typeGenerator;
 	
-	public JavaSourceTypeVisitor(JavaSourceFile file) {
-		this.file = file;
+	public JavaSourceTypeVisitor(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator) {
+		this.importer = importer;
+		this.typeGenerator = typeGenerator;
 	}
 
 	@Override
@@ -64,17 +70,14 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String> {
 
 	@Override
 	public String visitAssoc(AssocTypeID assoc) {
-		String map = file.importType("java.util.Map");
-		return map + "<" + assoc.keyType.accept(new JavaSourceObjectTypeVisitor(file)) + ", " + assoc.valueType.accept(new JavaSourceObjectTypeVisitor(file)) + ">";
+		String map = importer.importType("java.util.Map");
+		return map + "<" + assoc.keyType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator)) + ", " + assoc.valueType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator)) + ">";
 	}
 
 	@Override
 	public String visitGenericMap(GenericMapTypeID map) {
-		String javaMap = file.importType("java.util.Map");
-		if (map.keys.length > 1)
-			throw new UnsupportedOperationException("Not yet supported");
-		
-		return javaMap + "<Class<?>, " + map.value.accept(this) + ">";
+		String javaMap = importer.importType("java.util.Map");
+		return javaMap + "<Class<?>, Object>";
 	}
 
 	@Override
@@ -84,12 +87,13 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String> {
 
 	@Override
 	public String visitFunction(FunctionTypeID function) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		JavaSourceClass synthetic = typeGenerator.createFunction(function);
+		return importer.importType(synthetic.fullName);
 	}
 
 	@Override
 	public String visitDefinition(DefinitionTypeID definition) {
-		String javaType = file.importType(definition.definition);
+		String javaType = importer.importType(definition.definition);
 		StringBuilder result = new StringBuilder(javaType);
 		if (definition.typeParameters != null && definition.typeParameters.length > 0) {
 			result.append("<");
@@ -105,7 +109,7 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String> {
 
 	@Override
 	public String visitGeneric(GenericTypeID generic) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return generic.parameter.name;
 	}
 
 	@Override
@@ -120,6 +124,16 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String> {
 
 	@Override
 	public String visitOptional(OptionalTypeID optional) {
-		return optional.baseType.accept(new JavaSourceObjectTypeVisitor(file));
+		return optional.baseType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator));
+	}
+
+	@Override
+	public String visitSuper(ParameterSuperBound bound) {
+		return " super " + bound.type.accept(this);
+	}
+
+	@Override
+	public String visitType(ParameterTypeBound bound) {
+		return " extends " + bound.type.accept(this);
 	}
 }

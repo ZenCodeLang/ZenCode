@@ -38,4 +38,9 @@ public class GetFunctionParameterExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitGetFunctionParameter(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		return this;
+	}
 }

@@ -3,19 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.formatter;
+package org.openzen.zenscript.javasource;
 
-import org.openzen.zenscript.shared.StringUtils;
+import org.openzen.zenscript.formattershared.FormattingSettings;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class FormattingSettings {
+public class JavaSourceFormattingSettings extends FormattingSettings {
 	public final boolean showAnyInFunctionHeaders;
-	public final boolean useSingleQuotesForStrings;
-	public final boolean useTabs; // use tabs instead of spaces
-	public final int spacesPerTab; // number of spaces per tab
 	public final boolean spaceBeforeLabelColon;
 	public final boolean spaceAfterLabelColon;
 	public final boolean bracketsAroundConditions;
@@ -35,15 +32,11 @@ public class FormattingSettings {
 	public final boolean tryCatchBracketOnSameLine;
 	public final boolean classBracketOnSameLine;
 	public final boolean functionBracketOnSameLine;
-	public final boolean lambdaMethodOnSameLine;
 	
-	public final String indent;
-	
-	private FormattingSettings(Builder builder) {
+	private JavaSourceFormattingSettings(Builder builder) {
+		super(builder);
+		
 		showAnyInFunctionHeaders = builder.showAnyInFunctionHeaders;
-		useSingleQuotesForStrings = builder.useSingleQuotesForStrings;
-		useTabs = builder.useTabs;
-		spacesPerTab = builder.spacesPerTab;
 		spaceBeforeLabelColon = builder.spaceBeforeLabelColon;
 		spaceAfterLabelColon = builder.spaceAfterLabelColon;
 		bracketsAroundConditions = builder.bracketsAroundConditions;
@@ -63,13 +56,6 @@ public class FormattingSettings {
 		tryCatchBracketOnSameLine = builder.tryCatchBracketOnSameLine;
 		classBracketOnSameLine = builder.classBracketOnSameLine;
 		functionBracketOnSameLine = builder.functionBracketOnSameLine;
-		lambdaMethodOnSameLine = builder.lambdaMethodOnSameLine;
-		
-		if (useTabs) {
-			indent = "\t";
-		} else {
-			indent = StringUtils.times(' ', spacesPerTab);
-		}
 	}
 	
 	public String getSingleLineSeparator(String indent, ParentStatementType position) {
@@ -143,7 +129,7 @@ public class FormattingSettings {
 		}
 	}
 	
-	public static class Builder {
+	public static class Builder extends FormattingSettings.Builder<Builder> {
 		private boolean showAnyInFunctionHeaders = false;
 		private boolean useSingleQuotesForStrings = true;
 		private boolean useTabs = false;
@@ -168,6 +154,10 @@ public class FormattingSettings {
 		private boolean classBracketOnSameLine = false;
 		private boolean functionBracketOnSameLine = false;
 		private boolean lambdaMethodOnSameLine = false;
+		
+		public Builder() {
+			super(JavaSourceCommentFormatter::format);
+		}
 		
 		public Builder showAnyInFunctionHeaders(boolean show) {
 			showAnyInFunctionHeaders = show;
@@ -289,8 +279,8 @@ public class FormattingSettings {
 			return this;
 		}
 		
-		public FormattingSettings build() {
-			return new FormattingSettings(this);
+		public JavaSourceFormattingSettings build() {
+			return new JavaSourceFormattingSettings(this);
 		}
 	}
 }

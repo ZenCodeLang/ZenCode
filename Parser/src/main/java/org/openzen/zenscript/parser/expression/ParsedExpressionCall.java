@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitc
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.ICallableMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
@@ -102,11 +103,11 @@ public class ParsedExpressionCall extends ParsedExpression {
 			if (option == null)
 				throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Variant option does not exist: " + name);
 			
-			String[] values = new String[arguments.arguments.size()];
+			VarStatement[] values = new VarStatement[arguments.arguments.size()];
 			for (int i = 0; i < values.length; i++) {
 				ParsedExpression argument = arguments.arguments.get(i);
 				ParsedFunctionParameter lambdaHeader = argument.toLambdaParameter();
-				values[i] = lambdaHeader.name;
+				values[i] = new VarStatement(argument.position, lambdaHeader.name, lambdaHeader.type.compile(scope), null, true);
 			}
 			
 			return new VariantOptionSwitchValue(option, values);

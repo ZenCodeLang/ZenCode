@@ -27,6 +27,6 @@ public class ParsedCaster extends ParsedFunctionalMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new CasterMember(position, definition, modifiers, type.compile(scope));
+		compiled = new CasterMember(position, definition, modifiers, type.compile(scope), null);
 	}
 }

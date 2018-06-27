@@ -144,8 +144,10 @@ public interface IParsedType {
 					if (tokens.optional(ZSTokenType.T_SQCLOSE) != null) {
 						result = new ParsedTypeArray(result, dimension);
 					} else if (tokens.isNext(T_LESS)) {
-						List<ParsedGenericParameter> parameters = ParsedGenericParameter.parseAll(tokens);
-						result = new ParsedTypeGenericMap(parameters, result, modifiers);
+						tokens.next();
+						ParsedGenericParameter parameter = ParsedGenericParameter.parse(tokens);
+						tokens.required(T_GREATER, "> expected");
+						result = new ParsedTypeGenericMap(parameter, result, modifiers);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
 					} else {
 						IParsedType keyType = parse(tokens);

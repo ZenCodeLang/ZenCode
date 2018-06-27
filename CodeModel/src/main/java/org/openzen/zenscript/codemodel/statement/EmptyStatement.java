@@ -5,7 +5,9 @@
  */
 package org.openzen.zenscript.codemodel.statement;
 
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
@@ -19,5 +21,10 @@ public class EmptyStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitEmpty(this);
+	}
+
+	@Override
+	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		return this;
 	}
 }

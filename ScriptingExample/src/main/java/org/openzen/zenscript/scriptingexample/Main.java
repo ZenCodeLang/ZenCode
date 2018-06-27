@@ -14,9 +14,10 @@ import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.compiler.CompilationUnit;
+import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.formatter.FileFormatter;
-import org.openzen.zenscript.formatter.FormattingSettings;
+import org.openzen.zenscript.formatter.ScriptFormattingSettings;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.linker.symbol.ISymbol;
@@ -85,7 +86,7 @@ public class Main {
 		List<String> filenames = new ArrayList<>(files.keySet());
 		Collections.sort(filenames);
 		
-		FormattingSettings settings = new FormattingSettings.Builder().build();
+		ScriptFormattingSettings settings = new ScriptFormattingSettings.Builder().build();
 		for (String filename : filenames) {
 			FileContents contents = files.get(filename);
 			FileFormatter formatter = new FileFormatter(settings);
@@ -108,16 +109,17 @@ public class Main {
 			file.listDefinitions(definitions);
 		}
 		
+		CompilationUnit compilationUnit = new CompilationUnit();
 		ZSPackage rootPackage = registry.collectPackages();
 		List<ExpansionDefinition> expansions = registry.collectExpansions();
 		Map<String, ISymbol> globals = registry.collectGlobals();
+		// TODO: load stdlib
 		
-		GlobalTypeRegistry globalRegistry = new GlobalTypeRegistry(null); // TODO: load stdlib
 		for (ParsedFile file : files) {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
-			file.compileMembers(rootPackage, modulePackage, definitions, globalRegistry, expansions, globals);
+			file.compileMembers(rootPackage, modulePackage, definitions, compilationUnit.globalTypeRegistry, expansions, globals);
 		}
 		
 		// scripts will store all the script blocks encountered in the files
@@ -126,7 +128,7 @@ public class Main {
 			// compileCode will convert the parsed statements and expressions
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
-			file.compileCode(rootPackage, modulePackage, definitions, globalRegistry, expansions, scripts, globals);
+			file.compileCode(rootPackage, modulePackage, definitions, compilationUnit.globalTypeRegistry, expansions, scripts, globals);
 		}
 		
 		Validator validator = new Validator();
@@ -145,13 +147,21 @@ public class Main {
 		if (validator.getLog().isEmpty() && !isValid)
 			System.out.println("Module incorrect but no errors logged!");
 		
-		return new SemanticModule(isValid || validator.getLog().isEmpty(), definitions, scripts);
+		return new SemanticModule(
+				"scripts",
+				new String[0],
+				isValid || validator.getLog().isEmpty(),
+				modulePackage,
+				definitions,
+				scripts,
+				compilationUnit,
+				expansions);
 	}
 	
 	private static JavaModule compileSemanticToJava(SemanticModule module) {
 		JavaCompiler compiler = new JavaCompiler(false);
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			compiler.addDefinition(definition);
+			compiler.addDefinition(definition, module);
 		}
 		for (ScriptBlock script : module.scripts) {
 			compiler.addScriptBlock(script);

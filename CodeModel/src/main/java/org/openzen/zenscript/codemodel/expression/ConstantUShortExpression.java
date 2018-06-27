@@ -25,4 +25,9 @@ public class ConstantUShortExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitConstantUShort(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		return this;
+	}
 }

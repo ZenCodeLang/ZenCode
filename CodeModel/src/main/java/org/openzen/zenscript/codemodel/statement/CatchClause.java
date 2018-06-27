@@ -5,18 +5,27 @@
  */
 package org.openzen.zenscript.codemodel.statement;
 
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class CatchClause {
+	public final CodePosition position;
 	public final Statement content;
 	public final VarStatement exceptionVariable;
 	
 	public CatchClause(CodePosition position, VarStatement exceptionVariable, Statement content) {
+		this.position = position;
 		this.exceptionVariable = exceptionVariable;
 		this.content = content;
+	}
+	
+	public CatchClause transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Statement tContent = content.transform(transformer, modified);
+		return content == tContent ? this : new CatchClause(position, exceptionVariable, tContent);
 	}
 }

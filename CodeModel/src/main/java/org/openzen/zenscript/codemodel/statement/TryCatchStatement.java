@@ -5,8 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.statement;
 
+import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
@@ -35,5 +38,16 @@ public class TryCatchStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitTryCatch(this);
+	}
+
+	@Override
+	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		VarStatement tResource = resource == null ? null : resource.transform(transformer, modified);
+		Statement tContent = content.transform(transformer, modified);
+		List<CatchClause> tCatchClauses = new ArrayList<>();
+		for (CatchClause clause : catchClauses)
+			tCatchClauses.add(clause.transform(transformer, modified));
+		Statement tFinallyClause = finallyClause == null ? null : finallyClause.transform(transformer, modified);
+		return new TryCatchStatement(position, tResource, tContent, tCatchClauses, tFinallyClause);
 	}
 }

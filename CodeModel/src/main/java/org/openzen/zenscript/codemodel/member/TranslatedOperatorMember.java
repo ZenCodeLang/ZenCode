@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallTranslator;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -21,8 +22,16 @@ import org.openzen.zenscript.shared.CodePosition;
 public class TranslatedOperatorMember extends OperatorMember {
 	private final CallTranslator translator;
 	
-	public TranslatedOperatorMember(CodePosition position, HighLevelDefinition definition, int modifiers, OperatorType operator, FunctionHeader header, CallTranslator translator) {
-		super(position, definition, modifiers, operator, header);
+	public TranslatedOperatorMember(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			OperatorType operator,
+			FunctionHeader header,
+			CallTranslator translator,
+			BuiltinID builtin)
+	{
+		super(position, definition, modifiers, operator, header, builtin);
 		
 		this.translator = translator;
 	}

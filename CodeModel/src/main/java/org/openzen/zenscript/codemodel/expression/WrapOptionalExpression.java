@@ -28,4 +28,10 @@ public class WrapOptionalExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitWrapOptional(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = value.transform(transformer);
+		return tValue == value ? this : new WrapOptionalExpression(position, tValue, type);
+	}
 }

@@ -27,4 +27,10 @@ public class StaticSetterExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitStaticSetter(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = value.transform(transformer);
+		return tValue == value ? this : new StaticSetterExpression(position, setter, tValue);
+	}
 }

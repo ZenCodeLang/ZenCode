@@ -29,4 +29,11 @@ public class SetterExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitSetter(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tTarget = target.transform(transformer);
+		Expression tValue = value.transform(transformer);
+		return tTarget == target && tValue == value ? this : new SetterExpression(position, tTarget, setter, tValue);
+	}
 }

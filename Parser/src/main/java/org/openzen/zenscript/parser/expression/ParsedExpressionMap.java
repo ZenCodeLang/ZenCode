@@ -83,7 +83,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 				if (keys.get(i) != null)
 					throw new CompileException(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
 			}
-			ParsedCallArguments arguments = new ParsedCallArguments(values);
+			ParsedCallArguments arguments = new ParsedCallArguments(null, values);
 			return ParsedNewExpression.compile(position, hint, arguments, scope);
 		}
 		

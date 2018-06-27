@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
@@ -25,8 +26,20 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ConstructorMember extends FunctionalMember {
-	public ConstructorMember(CodePosition position, HighLevelDefinition definition, int modifiers, FunctionHeader header) {
-		super(position, definition, modifiers, "this", new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters));
+	public ConstructorMember(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			FunctionHeader header,
+			BuiltinID builtin)
+	{
+		super(
+				position,
+				definition,
+				modifiers,
+				"this",
+				new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters),
+				builtin);
 	}
 	
 	public boolean isConstructorForwarded() {
@@ -57,7 +70,12 @@ public class ConstructorMember extends FunctionalMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		ConstructorMember result = new ConstructorMember(position, definition, modifiers, header.instance(registry, mapping));
+		ConstructorMember result = new ConstructorMember(
+				position,
+				definition,
+				modifiers,
+				header.instance(registry, mapping),
+				builtin);
 		if (definition.name.equals("NFAState"))
 			System.out.println("X");
 		return result;

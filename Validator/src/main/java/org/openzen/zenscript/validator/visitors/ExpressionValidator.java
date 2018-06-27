@@ -9,7 +9,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.AndAndExpression;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
-import org.openzen.zenscript.codemodel.expression.BasicCompareExpression;
+import org.openzen.zenscript.codemodel.expression.CompareExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
@@ -41,7 +41,6 @@ import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
 import org.openzen.zenscript.codemodel.expression.FunctionExpression;
-import org.openzen.zenscript.codemodel.expression.GenericCompareExpression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
@@ -69,6 +68,7 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
+import org.openzen.zenscript.codemodel.expression.ThrowExpression;
 import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
@@ -137,10 +137,10 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitCompare(BasicCompareExpression expression) {
+	public Boolean visitCompare(CompareExpression expression) {
 		boolean isValid = true;
-		if (expression.left.type != expression.right.type) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison must be between the same types");
+		if (expression.right.type != expression.operator.header.parameters[0].type) {
+			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison has invalid right type!");
 			isValid = false;
 		}
 		isValid &= expression.left.accept(this);
@@ -343,19 +343,6 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitGenericCompare(GenericCompareExpression expression) {
-		boolean isValid = expression.value.accept(this);
-		if (expression.value.type != BasicTypeID.INT) {
-			validator.logError(
-					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
-					expression.position,
-					"Generic compare expression must be an int");
-			isValid = false;
-		}
-		return isValid;
-	}
-
-	@Override
 	public Boolean visitGetField(GetFieldExpression expression) {
 		boolean isValid = true;
 		isValid &= expression.target.accept(this);
@@ -458,7 +445,7 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 		boolean isValid = checkCallArguments(
 				expression.position,
 				expression.constructor.header,
-				expression.constructor.header,
+				expression.instancedHeader,
 				expression.arguments);
 		return isValid;
 	}
@@ -642,6 +629,11 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 		}
 		
 		return true;
+	}
+	
+	@Override
+	public Boolean visitThrow(ThrowExpression expression) {
+		return expression.value.accept(this);
 	}
 
 	@Override

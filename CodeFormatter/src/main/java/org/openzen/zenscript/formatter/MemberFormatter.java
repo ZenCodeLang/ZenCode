@@ -29,14 +29,14 @@ import org.openzen.zenscript.codemodel.statement.Statement;
  * @author Hoofdgebruiker
  */
 public class MemberFormatter implements MemberVisitor<Void> {
-	private final FormattingSettings settings;
+	private final ScriptFormattingSettings settings;
 	private final StringBuilder output;
 	private final String indent;
 	private final TypeFormatter typeFormatter;
 	private boolean isFirst = true;
 	private boolean wasField = false;
 	
-	public MemberFormatter(FormattingSettings settings, StringBuilder output, String indent, TypeFormatter typeFormatter) {
+	public MemberFormatter(ScriptFormattingSettings settings, StringBuilder output, String indent, TypeFormatter typeFormatter) {
 		this.settings = settings;
 		this.output = output;
 		this.indent = indent;

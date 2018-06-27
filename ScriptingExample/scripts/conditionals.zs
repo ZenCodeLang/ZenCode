@@ -17,7 +17,7 @@ println(coalesce);
 //	println("true");
 //}
 
-if(1 == 1) {
+if 1 == 1 {
 	println("intCompareTrue");
 }
 
@@ -26,7 +26,7 @@ if(1 == 1) {
 //}
 
 
-if("1" == 1) {
+if "1" == 1 {
 	println("...");
 }
 

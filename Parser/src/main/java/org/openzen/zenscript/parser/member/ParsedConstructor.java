@@ -27,6 +27,6 @@ public class ParsedConstructor extends ParsedFunctionalMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new ConstructorMember(position, definition, modifiers, header.compile(scope));
+		compiled = new ConstructorMember(position, definition, modifiers, header.compile(scope), null);
 	}
 }

@@ -5,7 +5,12 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import java.util.Collections;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
+import org.openzen.zenscript.codemodel.statement.SwitchCase;
+import org.openzen.zenscript.codemodel.statement.SwitchStatement;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -28,14 +33,52 @@ public class MatchExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitMatch(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = value.transform(transformer);
+		Case[] tCases = new Case[cases.length];
+		boolean unmodified = true;
+		for (int i = 0; i < tCases.length; i++) {
+			tCases[i] = cases[i].transform(transformer);
+			unmodified &= tCases[i] == cases[i];
+		}
+		return unmodified && tValue == value ? this : new MatchExpression(position, tValue, type, tCases);
+	}
+	
+	public SwitchedMatch convertToSwitch(String tempVariable) {
+		VarStatement result = new VarStatement(position, tempVariable, type, null, false);
+		SwitchStatement switchStatement = new SwitchStatement(position, null, value);
+		for (MatchExpression.Case matchCase : cases) {
+			Expression caseExpression = new SetLocalVariableExpression(matchCase.value.position, result, matchCase.value);
+			SwitchCase switchCase = new SwitchCase(matchCase.key, Collections.singletonList(new ExpressionStatement(matchCase.value.position, caseExpression)));
+			switchStatement.cases.add(switchCase);
+		}
+		return new SwitchedMatch(result, switchStatement);
+	}
+	
+	public static class SwitchedMatch {
+		public final VarStatement result;
+		public final SwitchStatement switchStatement;
+		
+		public SwitchedMatch(VarStatement temp, SwitchStatement switchStatement) {
+			this.result = temp;
+			this.switchStatement = switchStatement;
+		}
+	}
 	
 	public static class Case {
 		public final SwitchValue key;
-		public final FunctionExpression value;
+		public final Expression value;
 		
-		public Case(SwitchValue key, FunctionExpression value) {
+		public Case(SwitchValue key, Expression value) {
 			this.key = key;
 			this.value = value;
+		}
+		
+		public Case transform(ExpressionTransformer transformer) {
+			Expression tValue = value.transform(transformer);
+			return tValue == value ? this : new Case(key, tValue);
 		}
 	}
 	

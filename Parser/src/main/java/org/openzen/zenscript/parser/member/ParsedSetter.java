@@ -29,6 +29,6 @@ public class ParsedSetter extends ParsedFunctionalMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new SetterMember(position, definition, modifiers, name, type.compile(scope));
+		compiled = new SetterMember(position, definition, modifiers, name, type.compile(scope), null);
 	}
 }

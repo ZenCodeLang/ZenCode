@@ -27,4 +27,10 @@ public class SetLocalVariableExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitSetLocalVariable(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = value.transform(transformer);
+		return tValue == value ? this : new SetLocalVariableExpression(position, variable, tValue);
+	}
 }

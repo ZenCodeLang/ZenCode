@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.linker.BaseScope;
 import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
@@ -28,9 +29,19 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
  * @author Hoofdgebruiker
  */
 public class ParsedCallArguments {
-	public static final ParsedCallArguments NONE = new ParsedCallArguments(Collections.emptyList());
+	public static final ParsedCallArguments NONE = new ParsedCallArguments(null, Collections.emptyList());
 	
 	public static ParsedCallArguments parse(ZSTokenParser tokens) {
+		List<IParsedType> typeArguments = null;
+		if (tokens.optional(ZSTokenType.T_LESS) != null) {
+			typeArguments = new ArrayList<>();
+			do {
+				IParsedType type = IParsedType.parse(tokens);
+				typeArguments.add(type);
+			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+			tokens.required(ZSTokenType.T_GREATER, "> expected");
+		}
+		
 		tokens.required(ZSTokenType.T_BROPEN, "( expected");
 		
 		List<ParsedExpression> arguments = new ArrayList<>();
@@ -41,12 +52,14 @@ public class ParsedCallArguments {
 			tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
 		}
 		
-		return new ParsedCallArguments(arguments);
+		return new ParsedCallArguments(typeArguments, arguments);
 	}
 	
+	private final List<IParsedType> typeArguments;
 	public final List<ParsedExpression> arguments;
 	
-	public ParsedCallArguments(List<ParsedExpression> arguments) {
+	public ParsedCallArguments(List<IParsedType> typeArguments, List<ParsedExpression> arguments) {
+		this.typeArguments = typeArguments;
 		this.arguments = arguments;
 	}
 	
@@ -68,6 +81,12 @@ public class ParsedCallArguments {
 			ITypeID[] genericParameters,
 			List<FunctionHeader> candidateFunctions)
 	{
+		if (this.typeArguments != null) {
+			genericParameters = new ITypeID[typeArguments.size()];
+			for (int i = 0; i < typeArguments.size(); i++)
+				genericParameters[i] = typeArguments.get(i).compile(scope);
+		}
+		
 		List<FunctionHeader> candidates = new ArrayList<>();
 		for (FunctionHeader header : candidateFunctions) {
 			if (isCompatibleWith(scope, header, genericParameters))

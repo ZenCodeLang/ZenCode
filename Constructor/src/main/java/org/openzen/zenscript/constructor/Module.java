@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -34,6 +35,7 @@ import org.openzen.zenscript.validator.Validator;
  */
 public class Module {
 	public final String name;
+	public final String[] dependencies;
 	public final File sourceDirectory;
 	public final String packageName;
 	public final String host;
@@ -46,6 +48,14 @@ public class Module {
 		JSONObject json = new JSONObject(new JSONTokener(input));
 		packageName = json.getString("package");
 		host = json.getString("host");
+		JSONArray dependencies = json.optJSONArray("dependencies");
+		if (dependencies == null) {
+			this.dependencies = new String[0];
+		} else {
+			this.dependencies = new String[dependencies.length()];
+			for (int i = 0; i < dependencies.length(); i++)
+				this.dependencies[i] = dependencies.getString(i);
+		}
 	}
 	
 	public ParsedFile[] parse(ZSPackage pkg) throws IOException {
@@ -68,7 +78,12 @@ public class Module {
 		}
 	}
 	
-	public static SemanticModule compileSyntaxToSemantic(ZSPackage pkg, ParsedFile[] files, ModuleSpace registry) {
+	public static SemanticModule compileSyntaxToSemantic(
+			String name,
+			String[] dependencies,
+			ZSPackage pkg,
+			ParsedFile[] files,
+			ModuleSpace registry) {
 		// We are considering all these files to be in the same package, so make
 		// a single PackageDefinition instance. If these files were in multiple
 		// packages, we'd need an instance for every package.
@@ -92,7 +107,7 @@ public class Module {
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
 			try {
-				file.compileTypes(rootPackage, pkg, definitions, registry.typeRegistry, expansions, globals);
+				file.compileTypes(rootPackage, pkg, definitions, registry.compilationUnit.globalTypeRegistry, expansions, globals);
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
@@ -100,14 +115,14 @@ public class Module {
 		}
 		
 		if (failed)
-			return new SemanticModule(false, pkg, definitions, Collections.emptyList());
+			return new SemanticModule(name, dependencies, false, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions);
 		
 		for (ParsedFile file : files) {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
 			try {
-				file.compileMembers(rootPackage, pkg, definitions, registry.typeRegistry, expansions, globals);
+				file.compileMembers(rootPackage, pkg, definitions, registry.compilationUnit.globalTypeRegistry, expansions, globals);
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
@@ -115,7 +130,7 @@ public class Module {
 		}
 		
 		if (failed)
-			return new SemanticModule(false, pkg, definitions, Collections.emptyList());
+			return new SemanticModule(name, dependencies, false, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions);
 		
 		// scripts will store all the script blocks encountered in the files
 		List<ScriptBlock> scripts = new ArrayList<>();
@@ -124,7 +139,7 @@ public class Module {
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
 			try {
-				file.compileCode(rootPackage, pkg, definitions, registry.typeRegistry, expansions, scripts, globals);
+				file.compileCode(rootPackage, pkg, definitions, registry.compilationUnit.globalTypeRegistry, expansions, scripts, globals);
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
@@ -132,7 +147,7 @@ public class Module {
 		}
 		
 		if (failed)
-			return new SemanticModule(false, pkg, definitions, Collections.emptyList());
+			return new SemanticModule(name, dependencies, false, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions);
 		
 		Validator validator = new Validator();
 		boolean isValid = true;
@@ -147,6 +162,6 @@ public class Module {
 			System.out.println(entry.kind + " " + entry.position.toString() + ": " + entry.message);
 		}
 		
-		return new SemanticModule(isValid, pkg, definitions, scripts);
+		return new SemanticModule(name, dependencies, isValid, pkg, definitions, scripts, registry.compilationUnit, expansions);
 	}
 }

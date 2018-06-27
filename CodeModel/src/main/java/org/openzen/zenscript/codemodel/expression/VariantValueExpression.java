@@ -46,4 +46,10 @@ public class VariantValueExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitVariantValue(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression[] tArguments = Expression.transform(arguments, transformer);
+		return tArguments == arguments ? this : new VariantValueExpression(position, type, option, tArguments);
+	}
 }

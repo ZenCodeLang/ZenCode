@@ -29,33 +29,33 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedTypeGenericMap implements IParsedType {
-	private final List<ParsedGenericParameter> keys;
+	private final ParsedGenericParameter key;
 	private final IParsedType value;
 	private final int modifiers;
 	
-	public ParsedTypeGenericMap(List<ParsedGenericParameter> keys, IParsedType value, int modifiers) {
-		this.keys = keys;
+	public ParsedTypeGenericMap(ParsedGenericParameter key, IParsedType value, int modifiers) {
+		this.key = key;
 		this.value = value;
 		this.modifiers = modifiers;
 	}
 
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedTypeGenericMap(keys, value, modifiers | TypeMembers.MODIFIER_OPTIONAL);
+		return new ParsedTypeGenericMap(key, value, modifiers | TypeMembers.MODIFIER_OPTIONAL);
 	}
 
 	@Override
 	public IParsedType withModifiers(int modifiers) {
-		return new ParsedTypeGenericMap(keys, value, modifiers | this.modifiers);
+		return new ParsedTypeGenericMap(key, value, modifiers | this.modifiers);
 	}
 
 	@Override
 	public ITypeID compile(BaseScope scope) {
-		TypeParameter[] cKeys = ParsedGenericParameter.getCompiled(keys);
-		ITypeID valueType = this.value.compile(new GenericMapScope(scope, cKeys));
+		TypeParameter cKey = key.compiled;
+		ITypeID valueType = this.value.compile(new GenericMapScope(scope, cKey));
 		
 		GlobalTypeRegistry registry = scope.getTypeRegistry();
-		return registry.getModified(modifiers, registry.getGenericMap(valueType, cKeys));
+		return registry.getModified(modifiers, registry.getGenericMap(valueType, cKey));
 	}
 	
 	private class GenericMapScope extends BaseScope {
@@ -66,6 +66,11 @@ public class ParsedTypeGenericMap implements IParsedType {
 			this.outer = outer;
 			for (TypeParameter parameter : parameters)
 				typeParameters.put(parameter.name, parameter);
+		}
+		
+		public GenericMapScope(BaseScope outer, TypeParameter parameter) {
+			this.outer = outer;
+			typeParameters.put(parameter.name, parameter);
 		}
 
 		@Override

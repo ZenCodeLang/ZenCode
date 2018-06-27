@@ -5,10 +5,13 @@
  */
 package org.openzen.zenscript.codemodel.statement;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
@@ -26,6 +29,18 @@ public class BlockStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitBlock(this);
+	}
+
+	@Override
+	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		List<Statement> tStatements = new ArrayList<>();
+		boolean unchanged = true;
+		for (Statement statement : statements) {
+			Statement tStatement = statement.transform(transformer, modified);
+			unchanged &= statement == tStatement;
+			tStatements.add(statement);
+		}
+		return unchanged ? this : new BlockStatement(position, tStatements);
 	}
 	
 	private static ITypeID getThrownType(List<Statement> statements) {

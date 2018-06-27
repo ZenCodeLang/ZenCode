@@ -28,6 +28,7 @@ public abstract class HighLevelDefinition extends Taggable {
 	public final String name;
 	public final int modifiers;
 	public final List<IDefinitionMember> members = new ArrayList<>();
+	public final AccessScope access = new AccessScope();
 	public TypeParameter[] genericParameters = null;
 	
 	public HighLevelDefinition outerDefinition;

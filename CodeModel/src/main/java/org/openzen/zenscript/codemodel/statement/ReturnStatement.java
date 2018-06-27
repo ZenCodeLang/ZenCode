@@ -6,9 +6,11 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
@@ -36,5 +38,11 @@ public class ReturnStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitReturn(this);
+	}
+
+	@Override
+	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Expression tValue = value.transform(transformer);
+		return tValue == value ? this : new ReturnStatement(position, tValue);
 	}
 }

@@ -24,7 +24,7 @@ public class DestructorMember extends FunctionalMember {
 	private static final FunctionHeader HEADER = new FunctionHeader(BasicTypeID.VOID);
 	
 	public DestructorMember(CodePosition position, HighLevelDefinition definition, int modifiers) {
-		super(position, definition, modifiers, "~this", HEADER);
+		super(position, definition, modifiers, "~this", HEADER, null);
 	}
 	
 	@Override

@@ -29,6 +29,6 @@ public class ParsedGetter extends ParsedFunctionalMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new GetterMember(position, definition, modifiers, name, type.compile(scope));
+		compiled = new GetterMember(position, definition, modifiers, name, type.compile(scope), null);
 	}
 }

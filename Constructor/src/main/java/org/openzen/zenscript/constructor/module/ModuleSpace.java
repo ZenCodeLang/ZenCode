@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.linker.symbol.ISymbol;
 
@@ -22,14 +22,13 @@ import org.openzen.zenscript.linker.symbol.ISymbol;
  */
 public class ModuleSpace {
 	private final ZSPackage rootPackage = new ZSPackage(null, "");
-	private final ZSPackage stdlib = new ZSPackage(null, "stdlib");
-	public final GlobalTypeRegistry typeRegistry = new GlobalTypeRegistry(stdlib);
+	public final CompilationUnit compilationUnit;
 	public final ZSPackage globalsPackage = new ZSPackage(null, "");
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
 	private final Map<String, ISymbol> globals = new HashMap<>();
 	
-	public ModuleSpace() {
-		
+	public ModuleSpace(CompilationUnit compilationUnit) {
+		this.compilationUnit = compilationUnit;
 	}
 	
 	public void addModule(String name, SemanticModule dependency) {

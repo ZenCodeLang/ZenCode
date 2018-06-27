@@ -3,14 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.formatter;
-
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
+package org.openzen.zenscript.javasource;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface Importer {
-	String importDefinition(HighLevelDefinition definition);
+public enum ParentStatementType {
+	NONE,
+	IF,
+	IF_WITH_ELSE,
+	ELSE,
+	LOOP,
+	TRY,
+	CATCH,
+	FINALLY;
 }

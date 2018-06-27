@@ -27,6 +27,6 @@ public class ParsedCaller extends ParsedFunctionalMember {
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new CallerMember(position, definition, modifiers, header.compile(scope));
+		compiled = new CallerMember(position, definition, modifiers, header.compile(scope), null);
 	}
 }

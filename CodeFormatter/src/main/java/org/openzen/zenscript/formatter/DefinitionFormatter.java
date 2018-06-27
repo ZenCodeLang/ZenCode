@@ -24,12 +24,12 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
  * @author Hoofdgebruiker
  */
 public class DefinitionFormatter implements DefinitionVisitor<Void> {
-	private final FormattingSettings settings;
+	private final ScriptFormattingSettings settings;
 	private final TypeFormatter typeFormatter;
 	private final StringBuilder output = new StringBuilder();
 	private final String indent;
 	
-	public DefinitionFormatter(FormattingSettings settings, TypeFormatter typeFormatter, String indent) {
+	public DefinitionFormatter(ScriptFormattingSettings settings, TypeFormatter typeFormatter, String indent) {
 		this.settings = settings;
 		this.typeFormatter = typeFormatter;
 		this.indent = indent;

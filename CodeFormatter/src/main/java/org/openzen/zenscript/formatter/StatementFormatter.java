@@ -33,14 +33,14 @@ import org.openzen.zenscript.codemodel.statement.WhileStatement;
  * @author Hoofdgebruiker
  */
 public class StatementFormatter implements StatementVisitor<Void> {
-	private final FormattingSettings settings;
+	private final ScriptFormattingSettings settings;
 	private final StringBuilder output;
 	private final ExpressionFormatter expressionFormatter;
 	
 	private String indent;
 	private ParentStatementType position = ParentStatementType.NONE;
 	
-	public StatementFormatter(StringBuilder output, String indent, FormattingSettings settings, ExpressionFormatter expressionFormatter) {
+	public StatementFormatter(StringBuilder output, String indent, ScriptFormattingSettings settings, ExpressionFormatter expressionFormatter) {
 		this.output = output;
 		this.indent = indent;
 		this.settings = settings;

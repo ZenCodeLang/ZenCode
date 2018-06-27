@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -27,8 +28,14 @@ import org.openzen.zenscript.shared.CodePosition;
 public class CasterMember extends FunctionalMember implements ICasterMember {
 	public final ITypeID toType;
 	
-	public CasterMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID toType) {
-		super(position, definition, modifiers, "as", new FunctionHeader(toType));
+	public CasterMember(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			ITypeID toType,
+			BuiltinID builtin)
+	{
+		super(position, definition, modifiers, "as", new FunctionHeader(toType), builtin);
 		
 		this.toType = toType;
 	}
@@ -50,7 +57,12 @@ public class CasterMember extends FunctionalMember implements ICasterMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new CasterMember(position, definition, modifiers, toType.withGenericArguments(registry, mapping));
+		return new CasterMember(
+				position,
+				definition,
+				modifiers,
+				toType.withGenericArguments(registry, mapping),
+				builtin);
 	}
 	
 	@Override

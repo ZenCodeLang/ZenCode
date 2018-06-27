@@ -25,7 +25,7 @@ public class CallExpression extends Expression {
 		
 		this.target = target;
 		this.member = member;
-		this.arguments = arguments.normalize(position, scope, instancedHeader);
+		this.arguments = scope == null ? arguments : arguments.normalize(position, scope, instancedHeader);
 		this.instancedHeader = instancedHeader;
 	}
 	
@@ -36,5 +36,14 @@ public class CallExpression extends Expression {
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitCall(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tTarget = target.transform(transformer);
+		CallArguments tArguments = arguments.transform(transformer);
+		return tTarget == target && tArguments == arguments
+				? this
+				: new CallExpression(position, tTarget, member, instancedHeader, tArguments, null);
 	}
 }

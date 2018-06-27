@@ -29,6 +29,4 @@ public interface ICallableMember extends IDefinitionMember {
 	public Expression callWithComparator(CodePosition position, CompareType operator, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope);
 	
 	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope);
-	
-	public Expression callStaticWithComparator(CodePosition position, ITypeID target, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope);
 }

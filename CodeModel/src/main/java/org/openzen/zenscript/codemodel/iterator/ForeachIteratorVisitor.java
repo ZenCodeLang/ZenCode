@@ -16,5 +16,7 @@ public interface ForeachIteratorVisitor<T> {
 	
 	T visitArrayKeyValueIterator();
 	
+	T visitStringCharacterIterator();
+	
 	T visitCustomIterator();
 }

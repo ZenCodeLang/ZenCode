@@ -7,9 +7,11 @@ package org.openzen.zenscript.codemodel.statement;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.shared.ConcatMap;
 import org.openzen.zenscript.shared.Taggable;
 
 /**
@@ -34,6 +36,8 @@ public abstract class Statement extends Taggable {
 	}
 	
 	public abstract <T> T accept(StatementVisitor<T> visitor);
+	
+	public abstract Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified);
 	
 	public static List<Statement> withReturnType(TypeScope scope, List<Statement> statements, ITypeID returnType) {
 		return statements.stream()

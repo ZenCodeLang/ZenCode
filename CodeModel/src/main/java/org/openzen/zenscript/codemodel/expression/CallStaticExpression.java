@@ -26,12 +26,18 @@ public class CallStaticExpression extends Expression {
 		
 		this.member = member;
 		this.target = target;
-		this.arguments = arguments.normalize(position, scope, instancedHeader);
+		this.arguments = scope == null ? arguments : arguments.normalize(position, scope, instancedHeader);
 		this.instancedHeader = instancedHeader;
 	}
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitCallStatic(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		CallArguments tArguments = arguments.transform(transformer);
+		return arguments == tArguments ? this : new CallStaticExpression(position, target, member, tArguments, instancedHeader, null);
 	}
 }

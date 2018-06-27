@@ -36,7 +36,7 @@ public class FunctionDefinition extends HighLevelDefinition {
 	
 	public void setHeader(FunctionHeader header) {
 		this.header = header;
-		addMember(caller = new CallerMember(position, this, modifiers | Modifiers.STATIC, header));
+		addMember(caller = new CallerMember(position, this, modifiers | Modifiers.STATIC, header, null));
 		callerGroup.addMethod(caller, TypeMemberPriority.SPECIFIED);
 	}
 	

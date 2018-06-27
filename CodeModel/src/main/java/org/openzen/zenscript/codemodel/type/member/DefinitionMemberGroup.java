@@ -83,6 +83,15 @@ public class DefinitionMemberGroup {
 		return !methods.isEmpty();
 	}
 	
+	public boolean hasMethod(FunctionHeader header) {
+		for (TypeMember<ICallableMember> method : methods) {
+			if (method.member.getHeader().isEquivalentTo(header))
+				return true;
+		}
+		
+		return false;
+	}
+	
 	public List<TypeMember<ICallableMember>> getMethodMembers() {
 		return this.methods;
 	}
@@ -273,17 +282,6 @@ public class DefinitionMemberGroup {
 		ICallableMember method = selectMethod(position, scope, arguments, false, true);
 		FunctionHeader instancedHeader = method.getHeader().withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
 		return method.callStatic(position, target, instancedHeader, arguments, scope);
-	}
-	
-	public Expression callStaticWithComparator(
-			CodePosition position,
-			ITypeID target, 
-			TypeScope scope,
-			CallArguments arguments,
-			CompareType compareType) {
-		ICallableMember method = selectMethod(position, scope, arguments, false, true);
-		FunctionHeader instancedHeader = method.getHeader().withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
-		return method.callStaticWithComparator(position, target, compareType, instancedHeader, arguments, scope);
 	}
 	
 	public ICallableMember selectMethod(CodePosition position, TypeScope scope, CallArguments arguments, boolean allowNonStatic, boolean allowStatic) {

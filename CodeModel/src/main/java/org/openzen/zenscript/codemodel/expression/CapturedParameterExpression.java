@@ -30,4 +30,9 @@ public class CapturedParameterExpression extends CapturedExpression {
 	public <T> T accept(CapturedExpressionVisitor<T> visitor) {
 		return visitor.visitCapturedParameter(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		return this;
+	}
 }

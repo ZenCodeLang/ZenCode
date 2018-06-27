@@ -1,7 +1,5 @@
 export expand string {
-	public get empty as bool => length == 0;
-	
-	public const in(c as char)as bool
+	public const in(c as char) as bool
 		=> indexOf(c) >= 0;
 	
 	public const indexOf(c as char) as int {
@@ -45,7 +43,7 @@ export expand string {
 	}
 	
 	public const split(delimiter as char) as string[] {
-		val result = [] as string[];
+		val result = new List<string>();
 		var start = 0;
 		for i in 0 .. this.length {
 			if this[i] == delimiter {
@@ -54,10 +52,19 @@ export expand string {
 			}
 		}
 		result.add(this[start .. $]);
-		return result;
+		return result as string[];
 	}
 	
-	public const extern trim() as string;
+	public const trim() as string {
+		var from = 0;
+		while from < this.length && this[from] in [' ', '\t', '\r', '\n']
+			from++;
+		var to = this.length;
+		while to > 0 && this[to - 1] in [' ', '\t', '\r', '\n']
+			to--;
+		
+		return to < from ? "" : this[from .. to];
+	}
 	
 	public const lpad(length as int, c as char) as string
 		=> this.length >= length ? this : c.times(length - this.length) + this;
