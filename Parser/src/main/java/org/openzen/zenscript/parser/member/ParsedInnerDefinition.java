@@ -7,7 +7,8 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
 
 /**
@@ -19,7 +20,7 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 	private final InnerDefinitionMember member;
 	
 	public ParsedInnerDefinition(HighLevelDefinition outer, ParsedDefinition definition) {
-		super(outer);
+		super(outer, ParsedAnnotation.NONE);
 		
 		this.innerDefinition = definition;
 		

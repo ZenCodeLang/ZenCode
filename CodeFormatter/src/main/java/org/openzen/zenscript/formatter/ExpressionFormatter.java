@@ -21,6 +21,7 @@ import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
 import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
+import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
@@ -323,6 +324,15 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append(expression.ifElse.accept(this));
 		return new ExpressionString(result.toString(), ZenScriptOperator.TERNARY);
 	}
+	
+	@Override
+	public ExpressionString visitConst(ConstExpression expression) {
+		StringBuilder result = new StringBuilder();
+		result.append(expression.type.accept(typeFormatter));
+		result.append('.');
+		result.append(expression.constant.name);
+		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
+	}
 
 	@Override
 	public ExpressionString visitConstantBool(ConstantBoolExpression expression) {
@@ -331,7 +341,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitConstantByte(ConstantByteExpression expression) {
-		return new ExpressionString(Byte.toString(expression.value) + " as byte", ZenScriptOperator.CAST);
+		return new ExpressionString(Integer.toString(expression.value) + " as byte", ZenScriptOperator.CAST);
 	}
 
 	@Override

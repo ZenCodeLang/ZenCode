@@ -18,7 +18,7 @@ import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.constructor.JSONUtils;
 import org.openzen.zenscript.constructor.Module;
 import org.openzen.zenscript.constructor.ModuleLoader;
-import org.openzen.zenscript.linker.symbol.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.TypeSymbol;
 import org.openzen.zenscript.parser.ParsedFile;
 
 /**
@@ -72,7 +72,7 @@ public class DirectoryModuleLoader implements ModuleReference {
 				space.addModule(dependencyName, loader.getModule(dependencyName));
 
 			Module module = new Module(moduleName, directory, jsonFile);
-			ZSPackage pkg = new ZSPackage(null, module.packageName);
+			ZSPackage pkg = isStdlib ? unit.globalTypeRegistry.stdlib : new ZSPackage(null, module.packageName);
 
 			ParsedFile[] parsedFiles = module.parse(pkg);
 			SemanticModule result = Module.compileSyntaxToSemantic(module.name, module.dependencies, pkg, parsedFiles, space);

@@ -31,14 +31,17 @@ public class ConcatMap<K, V> {
 	}
 	
 	public ConcatMap<K, V> concat(K key, V value) {
-		return new ConcatMap(key, value, remaining);
+		return new ConcatMap(key, value, this);
 	}
 	
 	public boolean containsKey(K key) {
-		if (key == null)
+		if (this.key == null)
 			return false;
 		if (key.equals(this.key))
 			return true;
+		
+		if (remaining == null)
+			return false;
 		
 		return remaining.containsKey(key);
 	}

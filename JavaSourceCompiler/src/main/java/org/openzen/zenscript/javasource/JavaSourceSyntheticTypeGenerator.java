@@ -77,7 +77,7 @@ public class JavaSourceSyntheticTypeGenerator {
 		if (!directory.exists())
 			directory.mkdirs();
 		
-		File file = new File(directory, className);
+		File file = new File(directory, className + ".java");
 		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
 			writer.write("package zsynthetic;\n");
 			
@@ -95,6 +95,7 @@ public class JavaSourceSyntheticTypeGenerator {
 				writer.write("\n");
 			}
 			
+			writer.write('\n');
 			writer.write(contents.toString());
 		} catch (IOException ex) {
 			ex.printStackTrace();

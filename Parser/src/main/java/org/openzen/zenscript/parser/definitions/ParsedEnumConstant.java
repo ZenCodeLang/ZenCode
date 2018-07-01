@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.expression.ParsedCallArguments;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.expression.ParsedNewExpression;

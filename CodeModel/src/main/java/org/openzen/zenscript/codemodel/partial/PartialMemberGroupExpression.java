@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
-import org.openzen.zenscript.codemodel.member.ICallableMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -38,7 +38,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 		this.allowStaticUsage = allowStaticMembers;
 	}
 	
-	public PartialMemberGroupExpression(CodePosition position, Expression target, ICallableMember member, ITypeID[] typeArguments, boolean allowStaticMembers) {
+	public PartialMemberGroupExpression(CodePosition position, Expression target, FunctionalMember member, ITypeID[] typeArguments, boolean allowStaticMembers) {
 		this.position = position;
 		this.target = target;
 		this.group = DefinitionMemberGroup.forMethod(member);
@@ -69,8 +69,8 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	@Override
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<ITypeID> hints, int arguments) {
 		List<FunctionHeader> results = group.getMethodMembers().stream()
-				.filter(method -> method.member.getHeader().parameters.length == arguments && !method.member.isStatic())
-				.map(method -> method.member.getHeader())
+				.filter(method -> method.member.header.parameters.length == arguments && !method.member.isStatic())
+				.map(method -> method.member.header)
 				.collect(Collectors.toList());
 		if (results.isEmpty())
 			System.out.println("!");

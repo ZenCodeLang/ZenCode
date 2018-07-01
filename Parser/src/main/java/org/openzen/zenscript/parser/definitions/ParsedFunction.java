@@ -11,8 +11,9 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.FunctionScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.FunctionScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
@@ -23,11 +24,11 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Stanneke
  */
 public class ParsedFunction extends ParsedDefinition {
-	public static ParsedFunction parseFunction(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenParser parser, HighLevelDefinition outerDefinition) {
+	public static ParsedFunction parseFunction(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser parser, HighLevelDefinition outerDefinition) {
 		String name = parser.required(T_IDENTIFIER, "identifier expected").content;
 		ParsedFunctionHeader header = ParsedFunctionHeader.parse(parser);
 		ParsedFunctionBody body = ParsedStatement.parseFunctionBody(parser);
-		return new ParsedFunction(pkg, position, modifiers, name, header, body, outerDefinition);
+		return new ParsedFunction(pkg, position, modifiers, annotations, name, header, body, outerDefinition);
 	}
 	
 	private final ParsedFunctionHeader header;
@@ -35,8 +36,8 @@ public class ParsedFunction extends ParsedDefinition {
 
 	private final FunctionDefinition compiled;
 	
-	private ParsedFunction(ZSPackage pkg, CodePosition position, int modifiers, String name, ParsedFunctionHeader header, ParsedFunctionBody body, HighLevelDefinition outerDefinition) {
-		super(position, modifiers);
+	private ParsedFunction(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, ParsedFunctionHeader header, ParsedFunctionBody body, HighLevelDefinition outerDefinition) {
+		super(position, modifiers, annotations);
 		
 		this.header = header;
 		this.body = body;

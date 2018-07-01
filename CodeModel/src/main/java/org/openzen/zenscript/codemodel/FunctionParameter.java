@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel;
 
+import org.openzen.zenscript.codemodel.annotations.Annotation;
 import java.util.Map;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -20,12 +21,14 @@ import org.openzen.zenscript.shared.Taggable;
 public class FunctionParameter extends Taggable {
 	public static final FunctionParameter[] NONE = new FunctionParameter[0];
 	
+	public Annotation[] annotations;
 	public final ITypeID type;
 	public final String name;
 	public final Expression defaultValue;
 	public final boolean variadic;
 	
 	public FunctionParameter(ITypeID type) {
+		this.annotations = Annotation.NONE;
 		this.type = type;
 		this.name = "";
 		this.defaultValue = null;
@@ -33,6 +36,7 @@ public class FunctionParameter extends Taggable {
 	}
 	
 	public FunctionParameter(ITypeID type, String name) {
+		this.annotations = Annotation.NONE;
 		this.type = type;
 		this.name = name;
 		this.defaultValue = null;
@@ -40,6 +44,7 @@ public class FunctionParameter extends Taggable {
 	}
 	
 	public FunctionParameter(ITypeID type, String name, Expression defaultValue, boolean variadic) {
+		this.annotations = Annotation.NONE;
 		this.type = type;
 		this.name = name;
 		this.defaultValue = defaultValue;
@@ -47,7 +52,9 @@ public class FunctionParameter extends Taggable {
 	}
 	
 	public FunctionParameter withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		return new FunctionParameter(type.withGenericArguments(registry, arguments), name, defaultValue, variadic);
+		FunctionParameter result = new FunctionParameter(type.withGenericArguments(registry, arguments), name, defaultValue, variadic);
+		result.annotations = annotations;
+		return result;
 	}
 	
 	@Override

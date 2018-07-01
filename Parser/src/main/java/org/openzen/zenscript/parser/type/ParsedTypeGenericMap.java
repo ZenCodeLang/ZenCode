@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -20,7 +21,7 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedGenericParameter;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -117,6 +118,11 @@ public class ParsedTypeGenericMap implements IParsedType {
 		@Override
 		public IPartialExpression getOuterInstance(CodePosition position) {
 			return outer.getOuterInstance(position);
+		}
+
+		@Override
+		public AnnotationDefinition getAnnotation(String name) {
+			return outer.getAnnotation(name);
 		}
 	}
 }

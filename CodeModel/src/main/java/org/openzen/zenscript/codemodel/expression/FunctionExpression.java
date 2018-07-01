@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
@@ -46,6 +47,11 @@ public class FunctionExpression extends Expression {
 	public FunctionExpression transform(ExpressionTransformer transformer) {
 		Statement tBody = body.transform(transformer, ConcatMap.empty());
 		return tBody == body ? this : new FunctionExpression(position, (FunctionTypeID)type, closure, tBody);
+	}
+	
+	@Override
+	public void forEachStatement(Consumer<Statement> consumer) {
+		body.forEachStatement(consumer);
 	}
 	
 	/**

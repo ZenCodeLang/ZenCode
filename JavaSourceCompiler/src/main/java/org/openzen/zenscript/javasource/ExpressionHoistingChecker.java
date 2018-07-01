@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
 import org.openzen.zenscript.codemodel.expression.CompareExpression;
 import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
+import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
@@ -148,6 +149,11 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	@Override
 	public Boolean visitConditional(ConditionalExpression expression) {
 		return true;
+	}
+	
+	@Override
+	public Boolean visitConst(ConstExpression expression) {
+		return false;
 	}
 
 	@Override

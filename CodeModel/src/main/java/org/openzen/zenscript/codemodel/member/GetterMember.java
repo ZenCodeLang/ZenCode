@@ -23,7 +23,7 @@ import org.openzen.zenscript.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public class GetterMember extends FunctionalMember implements IGettableMember {
+public class GetterMember extends FunctionalMember {
 	public final String name;
 	public final ITypeID type;
 	
@@ -44,27 +44,15 @@ public class GetterMember extends FunctionalMember implements IGettableMember {
 	public String getInformalName() {
 		return "getter " + name;
 	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
 	
-	@Override
-	public ITypeID getType() {
-		return type;
-	}
-	
-	@Override
 	public Expression get(CodePosition position, Expression target) {
 		return new GetterExpression(position, target, this);
 	}
 	
-	@Override
 	public Expression getStatic(CodePosition position) {
 		return new StaticGetterExpression(position, this);
 	}
-
+	
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
 		type.addGetter(this, priority);

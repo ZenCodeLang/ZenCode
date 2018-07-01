@@ -6,6 +6,7 @@
 package org.openzen.zenscript.javasource.prepare;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
@@ -32,9 +33,7 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Voi
 	
 	@Override
 	public Void visitClass(ClassDefinition definition) {
-		JavaSourceClass cls = new JavaSourceClass(definition.name, definition.pkg.fullName + "." + definition.name);
-		definition.setTag(JavaSourceClass.class, cls);
-		visitClassMembers(definition, cls);
+		visitClassCompiled(definition);
 		return null;
 	}
 
@@ -88,6 +87,19 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Voi
 		// TODO
 		variant.setTag(JavaSourceClass.class, new JavaSourceClass(variant.name, variant.pkg.fullName + "." + variant.name));
 		return null;
+	}
+	
+	private void visitClassCompiled(HighLevelDefinition definition) {
+		NativeTag nativeTag = definition.getTag(NativeTag.class);
+		if (nativeTag == null) {
+			JavaSourceClass cls = new JavaSourceClass(definition.name, definition.pkg.fullName + "." + definition.name);
+			definition.setTag(JavaSourceClass.class, cls);
+			visitClassMembers(definition, cls);
+		} else {
+			JavaSourceClass cls = new JavaSourceClass(nativeTag.value.substring(nativeTag.value.lastIndexOf('.') + 1), nativeTag.value);
+			definition.setTag(JavaSourceClass.class, cls);
+			visitClassMembers(definition, cls);
+		}
 	}
 	
 	private void visitClassMembers(HighLevelDefinition definition, JavaSourceClass cls) {

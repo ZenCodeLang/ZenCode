@@ -17,8 +17,8 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
@@ -55,6 +55,31 @@ public class ParsedCallArguments {
 		return new ParsedCallArguments(typeArguments, arguments);
 	}
 	
+	public static ParsedCallArguments parseForAnnotation(ZSTokenParser tokens) {
+		List<IParsedType> typeArguments = null;
+		if (tokens.optional(ZSTokenType.T_LESS) != null) {
+			typeArguments = new ArrayList<>();
+			do {
+				IParsedType type = IParsedType.parse(tokens);
+				typeArguments.add(type);
+			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+			tokens.required(ZSTokenType.T_GREATER, "> expected");
+		}
+		
+		List<ParsedExpression> arguments = new ArrayList<>();
+		if (tokens.isNext(ZSTokenType.T_BROPEN)) {
+			tokens.required(ZSTokenType.T_BROPEN, "( expected");
+			if (tokens.optional(ZSTokenType.T_BRCLOSE) == null) {
+				do {
+					arguments.add(ParsedExpression.parse(tokens));
+				} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+				tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
+			}
+		}
+		
+		return new ParsedCallArguments(typeArguments, arguments);
+	}
+	
 	private final List<IParsedType> typeArguments;
 	public final List<ParsedExpression> arguments;
 	
@@ -70,7 +95,7 @@ public class ParsedCallArguments {
 			DefinitionMemberGroup member)
 	{
 		List<FunctionHeader> possibleHeaders = member.getMethodMembers().stream()
-				.map(method -> method.member.getHeader())
+				.map(method -> method.member.header)
 				.collect(Collectors.toList());
 		return compileCall(position, scope, genericParameters, possibleHeaders);
 	}

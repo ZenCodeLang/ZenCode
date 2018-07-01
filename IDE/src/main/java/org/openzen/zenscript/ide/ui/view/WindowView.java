@@ -5,13 +5,10 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
-import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
-import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DEmptyView;
 import org.openzen.drawablegui.scroll.DScrollPane;
 import org.openzen.drawablegui.DSideLayout;
-import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.tree.DTreeView;
 import org.openzen.drawablegui.tree.DTreeViewStyle;

@@ -10,7 +10,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;

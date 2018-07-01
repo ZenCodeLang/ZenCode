@@ -76,8 +76,6 @@ public class ConstructorMember extends FunctionalMember {
 				modifiers,
 				header.instance(registry, mapping),
 				builtin);
-		if (definition.name.equals("NFAState"))
-			System.out.println("X");
 		return result;
 	}
 

@@ -20,11 +20,9 @@ import org.openzen.zenscript.formatter.FileFormatter;
 import org.openzen.zenscript.formatter.ScriptFormattingSettings;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
-import org.openzen.zenscript.linker.symbol.ISymbol;
+import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
 import org.openzen.zenscript.shared.SourceFile;
-import org.openzen.zenscript.validator.ValidationLogEntry;
-import org.openzen.zenscript.validator.Validator;
 
 public class Main {
     /**
@@ -44,7 +42,7 @@ public class Main {
 		
 		formatFiles(pkg, module);
 		
-		if (module.isValid) {
+		if (module.isValid()) {
 			JavaModule javaModule = compileSemanticToJava(module);
 			javaModule.execute();
 		} else {
@@ -119,7 +117,7 @@ public class Main {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
-			file.compileMembers(rootPackage, modulePackage, definitions, compilationUnit.globalTypeRegistry, expansions, globals);
+			file.compileMembers(rootPackage, modulePackage, definitions, compilationUnit.globalTypeRegistry, expansions, globals, Collections.emptyList());
 		}
 		
 		// scripts will store all the script blocks encountered in the files
@@ -128,34 +126,24 @@ public class Main {
 			// compileCode will convert the parsed statements and expressions
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
-			file.compileCode(rootPackage, modulePackage, definitions, compilationUnit.globalTypeRegistry, expansions, scripts, globals);
+			file.compileCode(rootPackage, modulePackage, definitions, compilationUnit.globalTypeRegistry, expansions, scripts, globals, Collections.emptyList());
 		}
 		
-		Validator validator = new Validator();
-		boolean isValid = true;
-		for (ScriptBlock script : scripts) {
-			isValid &= validator.validate(script);
-		}
-		for (HighLevelDefinition definition : definitions.getAll()) {
-			isValid &= validator.validate(definition);
-		}
-		
-		for (ValidationLogEntry entry : validator.getLog()) {
-			System.out.println(entry.kind + " " + entry.position.toString() + ": " + entry.message);
-		}
-		
-		if (validator.getLog().isEmpty() && !isValid)
-			System.out.println("Module incorrect but no errors logged!");
-		
-		return new SemanticModule(
+		SemanticModule result = new SemanticModule(
 				"scripts",
 				new String[0],
-				isValid || validator.getLog().isEmpty(),
+				SemanticModule.State.SEMANTIC,
+				rootPackage,
 				modulePackage,
 				definitions,
 				scripts,
 				compilationUnit,
-				expansions);
+				expansions,
+				Collections.emptyList());
+		
+		result = result.normalize();
+		result.validate();
+		return result;
 	}
 	
 	private static JavaModule compileSemanticToJava(SemanticModule module) {

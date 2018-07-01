@@ -12,8 +12,9 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.linker.ExpressionScope;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
@@ -28,8 +29,8 @@ public class ParsedStatementVar extends ParsedStatement {
 	private final ParsedExpression initializer;
 	private final boolean isFinal;
 
-	public ParsedStatementVar(CodePosition position, WhitespaceInfo whitespace, String name, IParsedType type, ParsedExpression initializer, boolean isFinal) {
-		super(position, whitespace);
+	public ParsedStatementVar(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, String name, IParsedType type, ParsedExpression initializer, boolean isFinal) {
+		super(position, annotations, whitespace);
 
 		this.name = name;
 		this.type = type;
@@ -50,6 +51,6 @@ public class ParsedStatementVar extends ParsedStatement {
 		}
 		VarStatement result = new VarStatement(position, name, type, initializer, isFinal);
 		scope.defineVariable(result);
-		return result(result);
+		return result(result, scope);
 	}
 }

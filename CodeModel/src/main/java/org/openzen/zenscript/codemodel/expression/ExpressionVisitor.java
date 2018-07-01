@@ -38,6 +38,8 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitConditional(ConditionalExpression expression);
 	
+	public T visitConst(ConstExpression expression);
+	
 	public T visitConstantBool(ConstantBoolExpression expression);
 	
 	public T visitConstantByte(ConstantByteExpression expression);

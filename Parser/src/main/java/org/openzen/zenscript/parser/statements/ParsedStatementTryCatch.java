@@ -13,8 +13,9 @@ import org.openzen.zenscript.codemodel.statement.CatchClause;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.linker.ExpressionScope;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -31,13 +32,14 @@ public class ParsedStatementTryCatch extends ParsedStatement {
 	
 	public ParsedStatementTryCatch(
 			CodePosition position,
+			ParsedAnnotation[] annotations,
 			WhitespaceInfo whitespace,
 			String resourceName,
 			ParsedExpression resourceInitializer,
 			ParsedStatement statement,
 			List<ParsedCatchClause> catchClauses,
 			ParsedStatement finallyClause) {
-		super(position, whitespace);
+		super(position, annotations, whitespace);
 		
 		this.resourceName = resourceName;
 		this.resourceInitializer = resourceInitializer;
@@ -60,6 +62,6 @@ public class ParsedStatementTryCatch extends ParsedStatement {
 		if (resourceName != null) {
 			resource = new VarStatement(position, resourceName, resourceInitializer.type, resourceInitializer, true);
 		}
-		return result(new TryCatchStatement(position, resource, statement, catches, finallyClause));
+		return result(new TryCatchStatement(position, resource, statement, catches, finallyClause), scope);
 	}
 }

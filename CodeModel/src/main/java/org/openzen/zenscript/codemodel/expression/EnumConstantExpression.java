@@ -39,4 +39,9 @@ public class EnumConstantExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}
+	
+	@Override
+	public EnumConstantMember evaluateEnumConstant() {
+		return value;
+	}
 }

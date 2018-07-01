@@ -24,6 +24,14 @@ public class SwitchCase {
 		this.statements = statements;
 	}
 	
+	public SwitchCase transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		List<Statement> tStatements = new ArrayList<>();
+		for (Statement statement : statements) {
+			tStatements.add(statement.transform(transformer, modified));
+		}
+		return new SwitchCase(value, tStatements);
+	}
+	
 	public SwitchCase transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		List<Statement> tStatements = new ArrayList<>();
 		for (Statement statement : statements) {

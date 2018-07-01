@@ -46,4 +46,17 @@ public class CallExpression extends Expression {
 				? this
 				: new CallExpression(position, tTarget, member, instancedHeader, tArguments, null);
 	}
+	
+	@Override
+	public String evaluateStringConstant() {
+		if (member.builtin == null)
+			throw new UnsupportedOperationException("Cannot evaluate to a string constant!");
+		
+		switch (member.builtin) {
+			case STRING_ADD_STRING:
+				return target.evaluateStringConstant() + arguments.arguments[0].evaluateStringConstant();
+			default:
+				throw new UnsupportedOperationException("Cannot evaluate to a string constant!");
+		}
+	}
 }

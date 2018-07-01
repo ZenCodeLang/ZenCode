@@ -7,8 +7,9 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.FunctionScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.FunctionScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -23,8 +24,8 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	
 	protected FunctionalMember compiled;
 	
-	public ParsedFunctionalMember(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedFunctionBody body) {
-		super(definition);
+	public ParsedFunctionalMember(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedAnnotation[] annotations, ParsedFunctionBody body) {
+		super(definition, annotations);
 		
 		this.position = position;
 		this.modifiers = modifiers;
@@ -44,6 +45,7 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	@Override
 	public void compile(BaseScope scope) {
 		FunctionScope innerScope = new FunctionScope(scope, compiled.header);
+		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		compiled.setBody(body.compile(innerScope, compiled.header));
 	}
 }

@@ -7,7 +7,8 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
@@ -19,8 +20,8 @@ import org.openzen.zenscript.shared.CodePosition;
 public class ParsedCaster extends ParsedFunctionalMember {
 	private final IParsedType type;
 	
-	public ParsedCaster(CodePosition position, HighLevelDefinition definition, int modifiers, IParsedType type, ParsedFunctionBody body) {
-		super(position, definition, modifiers, body);
+	public ParsedCaster(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedAnnotation[] annotations, IParsedType type, ParsedFunctionBody body) {
+		super(position, definition, modifiers, annotations, body);
 		
 		this.type = type;
 	}

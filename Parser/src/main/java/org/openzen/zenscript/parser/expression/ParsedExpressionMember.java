@@ -10,7 +10,7 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;

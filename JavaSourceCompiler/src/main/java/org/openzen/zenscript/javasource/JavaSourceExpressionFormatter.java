@@ -5,9 +5,9 @@
  */
 package org.openzen.zenscript.javasource;
 
-import java.util.Collections;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.expression.AndAndExpression;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -23,6 +23,7 @@ import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
 import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
+import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
@@ -75,9 +76,6 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpressio
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
-import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
-import org.openzen.zenscript.codemodel.statement.SwitchCase;
-import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
@@ -260,6 +258,16 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		result.append(expression.ifElse.accept(this));
 		return new ExpressionString(result.toString(), JavaOperator.TERNARY);
 	}
+	
+	@Override
+	public ExpressionString visitConst(ConstExpression expression) {
+		if (expression.constant.builtin != null)
+			return visitBuiltinConstant(expression, expression.constant.builtin);
+		
+		return new ExpressionString(
+				scope.type(expression.type) + "." + expression.constant.name, 
+				JavaOperator.MEMBER);
+	}
 
 	@Override
 	public ExpressionString visitConstantBool(ConstantBoolExpression expression) {
@@ -268,7 +276,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitConstantByte(ConstantByteExpression expression) {
-		return new ExpressionString("(byte)" + Byte.toString(expression.value), JavaOperator.CAST);
+		return new ExpressionString(Integer.toString(expression.value), JavaOperator.PRIMARY);
 	}
 
 	@Override
@@ -542,11 +550,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitStaticGetter(StaticGetterExpression expression) {
-		if (expression.getter.builtin != null)
-			return visitBuiltinStaticGetter(expression, expression.getter.builtin);
+		//if (expression.getter.builtin != null)
+		//	return visitBuiltinStaticGetter(expression, expression.getter.builtin);
 		
 		return new ExpressionString(
-				scope.type(expression.type) + "." + expression.getter.name, 
+				scope.type(expression.type) + ".get" + StringUtils.capitalize(expression.getter.name) + "()", 
 				JavaOperator.MEMBER);
 	}
 
@@ -1126,7 +1134,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		throw new UnsupportedOperationException("Unknown builtin getter: " + builtin);
 	}
 	
-	private ExpressionString visitBuiltinStaticGetter(StaticGetterExpression call, BuiltinID builtin) {
+	private ExpressionString visitBuiltinConstant(ConstExpression call, BuiltinID builtin) {
 		switch (builtin) {
 			case BYTE_GET_MIN_VALUE: return new ExpressionString("0", JavaOperator.PRIMARY);
 			case BYTE_GET_MAX_VALUE: return new ExpressionString("255", JavaOperator.PRIMARY);
@@ -1151,7 +1159,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case CHAR_GET_MIN_VALUE: return new ExpressionString("Character.MIN_VALUE", JavaOperator.MEMBER);
 			case CHAR_GET_MAX_VALUE: return new ExpressionString("Character.MAX_VALUE", JavaOperator.MEMBER);
 			case ENUM_VALUES:
-				return new ExpressionString(scope.fileScope.importer.importType(call.getter.definition) + ".values()", JavaOperator.CALL);
+				return new ExpressionString(scope.fileScope.importer.importType(call.constant.definition) + ".values()", JavaOperator.CALL);
 		}
 		
 		throw new UnsupportedOperationException("Unknown builtin static getter: " + builtin);

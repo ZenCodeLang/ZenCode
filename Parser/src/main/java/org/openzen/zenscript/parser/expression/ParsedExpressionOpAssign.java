@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**

@@ -77,10 +77,24 @@ public class LocalTarget implements IDETarget {
 			}
 			
 			SemanticModule module = moduleLoader.getModule(target.getModule());
-			ZenCodeCompiler compiler = target.createCompiler(module);
-			moduleLoader.getModule("stdlib").compile(compiler);
+			module = module.normalize();
+			module.validate();
 			
-			compileDependencies(moduleLoader, compiler, compiledModules, module);
+			ZenCodeCompiler compiler = target.createCompiler(module);
+			if (!module.isValid())
+				return compiler;
+			
+			SemanticModule stdlib = moduleLoader.getModule("stdlib");
+			stdlib = stdlib.normalize();
+			stdlib.validate();
+			if (!stdlib.isValid())
+				return compiler;
+			stdlib.compile(compiler);
+			
+			boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, module);
+			if (!isValid)
+				return compiler;
+			
 			module.compile(compiler);
 			return compiler;
 		} catch (IOException ex) {
@@ -89,15 +103,24 @@ public class LocalTarget implements IDETarget {
 		}
 	}
 	
-	private void compileDependencies(ModuleLoader loader, ZenCodeCompiler compiler, Set<String> compiledModules, SemanticModule module) {
+	private boolean compileDependencies(ModuleLoader loader, ZenCodeCompiler compiler, Set<String> compiledModules, SemanticModule module) {
 		for (String dependency : module.dependencies) {
 			if (compiledModules.contains(module.name))
 				continue;
 			
 			SemanticModule dependencyModule = loader.getModule(dependency);
-			compileDependencies(loader, compiler, compiledModules, dependencyModule);
+			module = module.normalize();
+			module.validate();
+			if (!module.isValid())
+				return false;
+			
+			if (!compileDependencies(loader, compiler, compiledModules, dependencyModule))
+				return false;
+			
 			module.compile(compiler);
 			compiledModules.add(module.name);
 		}
+		
+		return true;
 	}
 }

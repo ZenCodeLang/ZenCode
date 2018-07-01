@@ -7,10 +7,11 @@ package org.openzen.zenscript.parser.type;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
@@ -71,6 +72,20 @@ public class ParsedNamedType implements IParsedType {
 			nameTotal.append(name.get(i).toString());
 		}
 		return nameTotal.toString();
+	}
+	
+	@Override
+	public AnnotationDefinition compileAnnotation(BaseScope scope) {
+		if (name.size() != 1)
+			return null;
+		
+		return scope.getAnnotation(name.get(0).name);
+	}
+	
+	@Override
+	public ITypeID[] compileTypeArguments(BaseScope scope) {
+		ParsedNamePart last = name.get(name.size() - 1);
+		return IParsedType.compileList(last.typeArguments, scope);
 	}
 	
 	private ITypeID toIterator(BaseScope scope) {

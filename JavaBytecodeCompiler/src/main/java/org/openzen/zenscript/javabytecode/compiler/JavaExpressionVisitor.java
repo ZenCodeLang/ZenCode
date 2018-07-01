@@ -1342,6 +1342,96 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         javaWriter.label(end);
         return null;
     }
+	
+	@Override
+	public Void visitConst(ConstExpression expression) {
+		BuiltinID builtin = expression.constant.builtin;
+		if (builtin == null) {
+			if (!checkAndGetFieldInfo(expression.constant, true))
+	            throw new IllegalStateException("Call target has no field info!");
+			
+			return null;
+		}
+		
+		switch (builtin) {
+			case BYTE_GET_MIN_VALUE:
+				javaWriter.iConst0();
+				break;
+			case BYTE_GET_MAX_VALUE:
+				javaWriter.constant(0xFF);
+				break;
+			case SBYTE_GET_MIN_VALUE:
+				javaWriter.getStaticField(BYTE_MIN_VALUE);
+				break;
+			case SBYTE_GET_MAX_VALUE:
+				javaWriter.getStaticField(BYTE_MAX_VALUE);
+				break;
+			case SHORT_GET_MIN_VALUE:
+				javaWriter.getStaticField(SHORT_MIN_VALUE);
+				break;
+			case SHORT_GET_MAX_VALUE:
+				javaWriter.getStaticField(SHORT_MAX_VALUE);
+				break;
+			case USHORT_GET_MIN_VALUE:
+				javaWriter.iConst0();
+				break;
+			case USHORT_GET_MAX_VALUE:
+				javaWriter.constant(0xFFFF);
+				break;
+			case INT_GET_MIN_VALUE:
+				javaWriter.getStaticField(INTEGER_MIN_VALUE);
+				break;
+			case INT_GET_MAX_VALUE:
+				javaWriter.getStaticField(INTEGER_MAX_VALUE);
+				break;
+			case UINT_GET_MIN_VALUE:
+				javaWriter.iConst0();
+				break;
+			case UINT_GET_MAX_VALUE:
+				javaWriter.constant(-1);
+				break;
+			case LONG_GET_MIN_VALUE:
+				javaWriter.getStaticField(LONG_MIN_VALUE);
+				break;
+			case LONG_GET_MAX_VALUE:
+				javaWriter.getStaticField(LONG_MAX_VALUE);
+				break;
+			case ULONG_GET_MIN_VALUE:
+				javaWriter.iConst0();
+				break;
+			case ULONG_GET_MAX_VALUE:
+				javaWriter.constant(-1L);
+				break;
+			case FLOAT_GET_MIN_VALUE:
+				javaWriter.getStaticField(FLOAT_MIN_VALUE);
+				break;
+			case FLOAT_GET_MAX_VALUE:
+				javaWriter.getStaticField(FLOAT_MAX_VALUE);
+				break;
+			case DOUBLE_GET_MIN_VALUE:
+				javaWriter.getStaticField(DOUBLE_MIN_VALUE);
+				break;
+			case DOUBLE_GET_MAX_VALUE:
+				javaWriter.getStaticField(DOUBLE_MAX_VALUE);
+				break;
+			case CHAR_GET_MIN_VALUE:
+				javaWriter.getStaticField(CHARACTER_MIN_VALUE);
+				break;
+			case CHAR_GET_MAX_VALUE:
+				javaWriter.getStaticField(CHARACTER_MAX_VALUE);
+				break;
+			case ENUM_VALUES: {
+				DefinitionTypeID type = (DefinitionTypeID) expression.type;
+				JavaClassInfo cls = type.definition.getTag(JavaClassInfo.class);
+				javaWriter.invokeStatic(new JavaMethodInfo(cls, "values", "()[L" + cls.internalClassName + ";", PUBLIC_STATIC));
+				break;
+			}
+			default:
+				throw new UnsupportedOperationException("Unknown builtin: " + builtin);
+		}
+		
+		return null;
+	}
 
     @Override
     public Void visitConstantBool(ConstantBoolExpression expression) {
@@ -1354,7 +1444,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitConstantByte(ConstantByteExpression expression) {
-        getJavaWriter().biPush(expression.value);
+        getJavaWriter().constant(expression.value);
         return null;
     }
 
@@ -1973,7 +2063,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				throw new UnsupportedOperationException("Unknown builtin: " + builtin);
 		}
 		
-        return null;
+		throw new UnsupportedOperationException("Unknown builtin: " + builtin);
     }
 
     @Override

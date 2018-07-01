@@ -11,7 +11,8 @@ import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -20,13 +21,13 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedStruct extends BaseParsedDefinition {
-	public static ParsedStruct parseStruct(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedStruct parseStruct(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedGenericParameter> parameters = ParsedGenericParameter.parseAll(tokens);
 		
 		tokens.required(ZSTokenType.T_AOPEN, "{");
 		
-		ParsedStruct result = new ParsedStruct(pkg, position, modifiers, name, parameters, outerDefinition);
+		ParsedStruct result = new ParsedStruct(pkg, position, modifiers, annotations, name, parameters, outerDefinition);
 		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
 			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
 		}
@@ -37,8 +38,8 @@ public class ParsedStruct extends BaseParsedDefinition {
 	
 	private final StructDefinition compiled;
 	
-	public ParsedStruct(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedGenericParameter> genericParameters, HighLevelDefinition outerDefinition) {
-		super(position, modifiers);
+	public ParsedStruct(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedGenericParameter> genericParameters, HighLevelDefinition outerDefinition) {
+		super(position, modifiers, annotations);
 		
 		this.parameters = genericParameters;
 		

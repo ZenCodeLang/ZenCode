@@ -8,7 +8,7 @@ package org.openzen.zenscript.parser.expression;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;

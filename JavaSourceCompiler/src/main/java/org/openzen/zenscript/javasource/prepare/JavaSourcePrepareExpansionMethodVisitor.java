@@ -8,6 +8,7 @@ package org.openzen.zenscript.javasource.prepare;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
@@ -39,6 +40,12 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 	}
 	
 	@Override
+	public Void visitConst(ConstMember member) {
+		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
+		return null;
+	}
+	
+	@Override
 	public Void visitField(FieldMember member) {
 		// TODO: expansion fields
 		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
@@ -57,53 +64,43 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 
 	@Override
 	public Void visitMethod(MethodMember member) {
-		member.setTag(
-				JavaSourceMethod.class,
-				new JavaSourceMethod(cls, getKind(member), member.name));
+		visitFunctional(member, member.name);
 		return null;
 	}
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		member.setTag(
-				JavaSourceMethod.class,
-				new JavaSourceMethod(cls, getKind(member), "get" + StringUtils.capitalize(member.name)));
+		visitFunctional(member, "get" + StringUtils.capitalize(member.name));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		member.setTag(
-				JavaSourceMethod.class,
-				new JavaSourceMethod(cls, getKind(member), "set" + StringUtils.capitalize(member.name)));
+		visitFunctional(member, "set" + StringUtils.capitalize(member.name));
 		return null;
 	}
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		member.setTag(
-				JavaSourceMethod.class,
-				new JavaSourceMethod(cls, getKind(member), getOperatorName(member.operator)));
+		visitFunctional(member, getOperatorName(member.operator));
 		return null;
 	}
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		member.setTag(JavaSourceMethod.class, new JavaSourceMethod(
-				cls,
-				JavaSourceMethod.Kind.INSTANCE,
-				"to" + member.toType.accept(new JavaSourceTypeNameVisitor())));
+		visitFunctional(member, "to" + member.toType.accept(new JavaSourceTypeNameVisitor()));
 		return null;
 	}
 
 	@Override
 	public Void visitCustomIterator(CustomIteratorMember member) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		visitFunctional(member, member.getLoopVariableCount() == 1 ? "iterator" : "iterator" + member.getLoopVariableCount());
+		return null;
 	}
 
 	@Override
 	public Void visitCaller(CallerMember member) {
-		member.setTag(JavaSourceMethod.class, new JavaSourceMethod(cls, getKind(member), "call"));
+		visitFunctional(member, "call");
 		return null;
 	}
 
@@ -122,6 +119,12 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
 		return null;
+	}
+	
+	private void visitFunctional(DefinitionMember member, String name) {
+		member.setTag(
+				JavaSourceMethod.class,
+				new JavaSourceMethod(cls, getKind(member), name));
 	}
 	
 	private JavaSourceMethod.Kind getKind(DefinitionMember member) {

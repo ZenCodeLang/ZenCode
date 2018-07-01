@@ -6,23 +6,14 @@
 package org.openzen.zenscript.parser.expression;
 
 import java.util.List;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.FunctionExpression;
-import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.expression.MatchExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.linker.ExpressionScope;
-import org.openzen.zenscript.linker.LambdaScope;
-import org.openzen.zenscript.linker.StatementScope;
-import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**

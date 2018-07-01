@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
 import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
+import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
@@ -154,6 +155,11 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitConditional(ConditionalExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+	
+	@Override
+	public Void visitConst(ConstExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
 

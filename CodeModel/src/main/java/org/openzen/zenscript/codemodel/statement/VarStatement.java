@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.statement;
 
+import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -33,6 +34,17 @@ public class VarStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitVar(this);
+	}
+	
+	@Override
+	public void forEachStatement(Consumer<Statement> consumer) {
+		consumer.accept(this);
+	}
+
+	@Override
+	public VarStatement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Expression tInitializer = initializer == null ? null : initializer.transform(transformer);
+		return tInitializer == initializer ? this : new VarStatement(position, name, type, tInitializer, isFinal);
 	}
 
 	@Override

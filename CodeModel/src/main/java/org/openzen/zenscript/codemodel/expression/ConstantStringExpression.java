@@ -30,4 +30,9 @@ public class ConstantStringExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}
+	
+	@Override
+	public String evaluateStringConstant() {
+		return value;
+	}
 }

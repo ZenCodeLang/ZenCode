@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.statement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.ConcatMap;
@@ -38,6 +39,27 @@ public class TryCatchStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitTryCatch(this);
+	}
+	
+	@Override
+	public void forEachStatement(Consumer<Statement> consumer) {
+		consumer.accept(this);
+		for (CatchClause catchClause : catchClauses) {
+			catchClause.content.forEachStatement(consumer);
+		}
+		if (finallyClause != null)
+			finallyClause.forEachStatement(consumer);
+	}
+
+	@Override
+	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		VarStatement tResource = resource == null ? null : resource.transform(transformer, modified);
+		Statement tContent = content.transform(transformer, modified);
+		List<CatchClause> tCatchClauses = new ArrayList<>();
+		for (CatchClause clause : catchClauses)
+			tCatchClauses.add(clause.transform(transformer, modified));
+		Statement tFinallyClause = finallyClause == null ? null : finallyClause.transform(transformer, modified);
+		return new TryCatchStatement(position, tResource, tContent, tCatchClauses, tFinallyClause);
 	}
 
 	@Override

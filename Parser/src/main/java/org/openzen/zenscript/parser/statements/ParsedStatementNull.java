@@ -9,7 +9,8 @@ package org.openzen.zenscript.parser.statements;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -17,12 +18,12 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Stanneke
  */
 public class ParsedStatementNull extends ParsedStatement {
-	public ParsedStatementNull(CodePosition position, WhitespaceInfo whitespace) {
-		super(position, whitespace);
+	public ParsedStatementNull(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace) {
+		super(position, annotations, whitespace);
 	}
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		return result(new EmptyStatement(position));
+		return result(new EmptyStatement(position), scope);
 	}
 }

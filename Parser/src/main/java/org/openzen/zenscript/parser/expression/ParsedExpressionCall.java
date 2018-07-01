@@ -16,14 +16,14 @@ import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.ICallableMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
@@ -67,7 +67,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			
 			DefinitionMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
-			ICallableMember member = memberGroup.selectMethod(position, scope, callArguments, true, true);
+			FunctionalMember member = memberGroup.selectMethod(position, scope, callArguments, true, true);
 			if (!(member instanceof ConstructorMember))
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
@@ -78,7 +78,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			
 			DefinitionMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
-			ICallableMember member = memberGroup.selectMethod(position, scope, callArguments, true, true);
+			FunctionalMember member = memberGroup.selectMethod(position, scope, callArguments, true, true);
 			if (!(member instanceof ConstructorMember))
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
@@ -107,7 +107,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			for (int i = 0; i < values.length; i++) {
 				ParsedExpression argument = arguments.arguments.get(i);
 				ParsedFunctionParameter lambdaHeader = argument.toLambdaParameter();
-				values[i] = new VarStatement(argument.position, lambdaHeader.name, lambdaHeader.type.compile(scope), null, true);
+				values[i] = new VarStatement(argument.position, lambdaHeader.name, option.types[i], null, true);
 			}
 			
 			return new VariantOptionSwitchValue(option, values);

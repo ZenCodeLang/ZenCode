@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
@@ -71,6 +72,18 @@ public class JavaExpansionMemberCompiler implements MemberVisitor<Void> {
 			first = false;
 		else
 			output.append(indent).append("\n");
+	}
+	
+	@Override
+	public Void visitConst(ConstMember member) {
+		modifiers(member.modifiers | Modifiers.STATIC | Modifiers.FINAL);
+		output.append(scope.type(member.type));
+		output.append(" ");
+		output.append(member.name);
+		output.append(" = ");
+		output.append(fieldInitializerScope.expression(null, member.value));
+		output.append(";\n");
+		return null;
 	}
 
 	@Override

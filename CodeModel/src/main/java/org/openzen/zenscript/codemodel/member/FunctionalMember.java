@@ -23,11 +23,12 @@ import org.openzen.zenscript.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public abstract class FunctionalMember extends DefinitionMember implements ICallableMember {
+public abstract class FunctionalMember extends DefinitionMember {
 	public final FunctionHeader header;
 	public final String name;
 	public final BuiltinID builtin;
-	public Statement body;
+	public Statement body = null;
+	public FunctionalMember overrides = null;
 	
 	public FunctionalMember(
 			CodePosition position,
@@ -47,17 +48,13 @@ public abstract class FunctionalMember extends DefinitionMember implements ICall
 		this.body = body;
 	}
 	
-	@Override
-	public FunctionHeader getHeader() {
-		return header;
-	}
+	public abstract String getInformalName();
 	
 	@Override
 	public BuiltinID getBuiltin() {
 		return builtin;
 	}
-
-	@Override
+	
 	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		return new CallExpression(position, target, this, instancedHeader, arguments, scope);
 	}
@@ -66,12 +63,10 @@ public abstract class FunctionalMember extends DefinitionMember implements ICall
 		return call(position, target, header, arguments, scope);
 	}
 	
-	@Override
 	public Expression callWithComparator(CodePosition position, CompareType comparison, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		return new CompareExpression(position, target, arguments.arguments[0], this, comparison, scope);
 	}
 	
-	@Override
 	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		return new CallStaticExpression(position, target, this, arguments, instancedHeader, scope);
 	}

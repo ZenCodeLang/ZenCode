@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.statement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.shared.CodePosition;
@@ -29,6 +30,26 @@ public class SwitchStatement extends LoopStatement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitSwitch(this);
+	}
+	
+	@Override
+	public void forEachStatement(Consumer<Statement> consumer) {
+		consumer.accept(this);
+		for (SwitchCase switchCase : cases) {
+			for (Statement statement : switchCase.statements)
+				statement.forEachStatement(consumer);
+		}
+	}
+
+	@Override
+	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Expression tValue = value.transform(transformer);
+		SwitchStatement result = new SwitchStatement(position, label, tValue);
+		ConcatMap<LoopStatement, LoopStatement> tModified = modified.concat(this, result);
+		for (SwitchCase case_ : cases) {
+			result.cases.add(case_.transform(transformer, tModified));
+		}
+		return result;
 	}
 
 	@Override

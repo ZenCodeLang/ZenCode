@@ -11,8 +11,8 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.GenericFunctionScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.GenericFunctionScope;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
 

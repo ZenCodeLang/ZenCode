@@ -46,7 +46,7 @@ public class JavaSourceFile {
 		JavaSourcePrepareDefinitionVisitor prepare = new JavaSourcePrepareDefinitionVisitor(this);
 		definition.accept(prepare);
 		
-		CompileScope scope = new CompileScope(definition.access, module.compilationUnit.globalTypeRegistry, module.expansions);
+		CompileScope scope = new CompileScope(definition.access, module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
 		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
 				compiler.settings,
 				new JavaSourceFileScope(importer, compiler.typeGenerator, getName(), scope),
@@ -55,6 +55,9 @@ public class JavaSourceFile {
 	}
 	
 	public void write() {
+		if (!file.getParentFile().exists())
+			file.getParentFile().mkdirs();
+		
 		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
 			writer.write("package ");
 			writer.write(pkg.fullName);

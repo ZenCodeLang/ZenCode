@@ -12,8 +12,9 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.DefinitionScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.DefinitionScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
@@ -23,12 +24,12 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedVariant extends BaseParsedDefinition {
-	public static ParsedVariant parseVariant(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedVariant parseVariant(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedGenericParameter> typeParameters = ParsedGenericParameter.parseAll(tokens);
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
-		ParsedVariant result = new ParsedVariant(pkg, position, modifiers, name, typeParameters, outerDefinition);
+		ParsedVariant result = new ParsedVariant(pkg, position, modifiers, annotations, name, typeParameters, outerDefinition);
 		
 		while (!tokens.isNext(ZSTokenType.T_ACLOSE) && !tokens.isNext(ZSTokenType.T_SEMICOLON)) {
 			String optionName = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
@@ -60,8 +61,8 @@ public class ParsedVariant extends BaseParsedDefinition {
 	
 	private final VariantDefinition compiled;
 	
-	public ParsedVariant(ZSPackage pkg, CodePosition position, int modifiers, String name, List<ParsedGenericParameter> typeParameters, HighLevelDefinition outerDefinition) {
-		super(position, modifiers);
+	public ParsedVariant(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedGenericParameter> typeParameters, HighLevelDefinition outerDefinition) {
+		super(position, modifiers, annotations);
 		
 		this.typeParameters = typeParameters;
 		compiled = new VariantDefinition(position, pkg, name, modifiers, outerDefinition);

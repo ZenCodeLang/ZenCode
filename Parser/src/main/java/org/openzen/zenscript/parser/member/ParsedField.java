@@ -9,8 +9,9 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
@@ -36,6 +37,7 @@ public class ParsedField extends ParsedDefinitionMember {
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
+			ParsedAnnotation[] annotations,
 			String name,
 			IParsedType type,
 			ParsedExpression expression,
@@ -43,7 +45,7 @@ public class ParsedField extends ParsedDefinitionMember {
 			int autoGetter,
 			int autoSetter)
 	{
-		super(definition);
+		super(definition, annotations);
 		
 		this.position = position;
 		this.modifiers = modifiers;
@@ -81,6 +83,8 @@ public class ParsedField extends ParsedDefinitionMember {
 
 	@Override
 	public void compile(BaseScope scope) {
+		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
+		
 		if (expression != null) {
 			Expression initializer = expression
 					.compile(new ExpressionScope(scope, compiled.type))

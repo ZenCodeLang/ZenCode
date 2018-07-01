@@ -8,6 +8,7 @@
 		"IllegalArgumentException": {"type": "Definition", "definition": "IllegalArgumentException"},
 		"StringBuilder": {"type": "Definition", "definition": "StringBuilder"},
 		"StringBuildable": {"type": "Definition", "definition": "StringBuildable"},
-		"panic": {"type": "Definition", "definition": "panic"}
+		"panic": {"type": "Definition", "definition": "panic"},
+		"Result": {"type": "Definition", "definition": "Result"}
 	}
 }

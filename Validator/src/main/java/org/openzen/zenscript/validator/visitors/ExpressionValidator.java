@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
 import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
+import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
@@ -159,6 +160,11 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 	@Override
 	public Boolean visitCallStatic(CallStaticExpression expression) {
 		return checkCallArguments(expression.position, expression.member.header, expression.instancedHeader, expression.arguments);
+	}
+	
+	@Override
+	public Boolean visitConst(ConstExpression expression) {
+		return true;
 	}
 
 	@Override

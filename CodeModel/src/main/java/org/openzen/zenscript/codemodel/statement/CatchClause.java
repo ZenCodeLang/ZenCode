@@ -24,6 +24,11 @@ public class CatchClause {
 		this.content = content;
 	}
 	
+	public CatchClause transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Statement tContent = content.transform(transformer, modified);
+		return content == tContent ? this : new CatchClause(position, exceptionVariable, tContent);
+	}
+	
 	public CatchClause transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Statement tContent = content.transform(transformer, modified);
 		return content == tContent ? this : new CatchClause(position, exceptionVariable, tContent);

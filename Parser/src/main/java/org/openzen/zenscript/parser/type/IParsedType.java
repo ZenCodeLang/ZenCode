@@ -8,12 +8,13 @@ package org.openzen.zenscript.parser.type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedGenericParameter;
@@ -220,4 +221,12 @@ public interface IParsedType {
 	public IParsedType withModifiers(int modifiers);
 	
 	public ITypeID compile(BaseScope scope);
+	
+	public default AnnotationDefinition compileAnnotation(BaseScope scope) {
+		return null;
+	}
+	
+	public default ITypeID[] compileTypeArguments(BaseScope scope) {
+		return ITypeID.NONE;
+	}
 }

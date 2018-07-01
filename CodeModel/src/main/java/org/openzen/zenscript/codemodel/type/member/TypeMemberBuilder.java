@@ -20,17 +20,30 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.CallTranslator;
+import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantLongExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantSByteExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantShortExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
+import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.ICallableMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
@@ -96,9 +109,9 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		if (members.hasOperator(OperatorType.EQUALS)) {
 			DefinitionMemberGroup group = members.getOrCreateGroup(OperatorType.EQUALS);
 			DefinitionMemberGroup inverse = members.getOrCreateGroup(OperatorType.NOTEQUALS);
-			for (TypeMember<ICallableMember> method : group.getMethodMembers()) {
-				if (!inverse.hasMethod(method.member.getHeader())) {
-					inverse.addMethod(notequals(definition, BuiltinID.AUTOOP_NOTEQUALS, method.member.getHeader().parameters[0].type), TypeMemberPriority.SPECIFIED);
+			for (TypeMember<FunctionalMember> method : group.getMethodMembers()) {
+				if (!inverse.hasMethod(method.member.header)) {
+					inverse.addMethod(notequals(definition, BuiltinID.AUTOOP_NOTEQUALS, method.member.header.parameters[0].type), TypeMemberPriority.SPECIFIED);
 				}
 			}
 		}
@@ -481,7 +494,13 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		if (definition instanceof EnumDefinition) {
 			members.addGetter(getter(definition, ENUM_NAME, "name", STRING));
 			members.addGetter(getter(definition, ENUM_ORDINAL, "ordinal", INT));
-			members.addGetter(staticGetter(definition, ENUM_VALUES, "values", registry.getArray(type, 1)));
+			
+			List<EnumConstantMember> enumConstants = ((EnumDefinition) definition).enumConstants;
+			Expression[] constValues = new Expression[enumConstants.size()];
+			for (int i = 0; i < constValues.length; i++)
+				constValues[i] = new EnumConstantExpression(BUILTIN, type, enumConstants.get(i));
+			
+			members.addConst(constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(type, 1))));
 			members.addOperator(compare(definition, ENUM_COMPARE, type));
 			
 			if (!members.canCast(BasicTypeID.STRING)) {
@@ -599,8 +618,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addMethod(staticMethod(builtin, BYTE_PARSE, "parse", BYTE, STRING));
 		members.addMethod(staticMethod(builtin, BYTE_PARSE_WITH_BASE, "parse", BYTE, STRING, INT));
 		
-		members.addGetter(staticGetter(builtin, BYTE_GET_MIN_VALUE, "MIN_VALUE", BYTE));
-		members.addGetter(staticGetter(builtin, BYTE_GET_MAX_VALUE, "MAX_VALUE", BYTE));
+		members.addConst(constant(builtin, BYTE_GET_MIN_VALUE, "MIN_VALUE", new ConstantByteExpression(BUILTIN, 0)));
+		members.addConst(constant(builtin, BYTE_GET_MAX_VALUE, "MAX_VALUE", new ConstantByteExpression(BUILTIN, 255)));
 		
 		processType(builtin, BYTE);
 	}
@@ -637,8 +656,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addMethod(staticMethod(builtin, SBYTE_PARSE, "parse", SBYTE, STRING));
 		members.addMethod(staticMethod(builtin, SBYTE_PARSE_WITH_BASE, "parse", SBYTE, STRING, INT));
 		
-		members.addGetter(staticGetter(builtin, SBYTE_GET_MIN_VALUE, "MIN_VALUE", SBYTE));
-		members.addGetter(staticGetter(builtin, SBYTE_GET_MAX_VALUE, "MAX_VALUE", SBYTE));
+		members.addConst(constant(builtin, SBYTE_GET_MIN_VALUE, "MIN_VALUE", new ConstantSByteExpression(BUILTIN, Byte.MIN_VALUE)));
+		members.addConst(constant(builtin, SBYTE_GET_MAX_VALUE, "MAX_VALUE", new ConstantSByteExpression(BUILTIN, Byte.MAX_VALUE)));
 		
 		processType(builtin, SBYTE);
 	}
@@ -675,8 +694,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addMethod(staticMethod(builtin, SHORT_PARSE, "parse", SHORT, STRING));
 		members.addMethod(staticMethod(builtin, SHORT_PARSE_WITH_BASE, "parse", SHORT, STRING, INT));
 		
-		members.addGetter(staticGetter(builtin, SHORT_GET_MIN_VALUE, "MIN_VALUE", SHORT));
-		members.addGetter(staticGetter(builtin, SHORT_GET_MAX_VALUE, "MAX_VALUE", SHORT));
+		members.addConst(constant(builtin, SHORT_GET_MIN_VALUE, "MIN_VALUE", new ConstantShortExpression(BUILTIN, Short.MIN_VALUE)));
+		members.addConst(constant(builtin, SHORT_GET_MAX_VALUE, "MAX_VALUE", new ConstantShortExpression(BUILTIN, Short.MAX_VALUE)));
 		
 		processType(builtin, SHORT);
 	}
@@ -712,8 +731,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addMethod(staticMethod(builtin, USHORT_PARSE, "parse", USHORT, STRING));
 		members.addMethod(staticMethod(builtin, USHORT_PARSE_WITH_BASE, "parse", USHORT, STRING, INT));
 		
-		members.addGetter(staticGetter(builtin, USHORT_GET_MIN_VALUE, "MIN_VALUE", USHORT));
-		members.addGetter(staticGetter(builtin, USHORT_GET_MAX_VALUE, "MAX_VALUE", USHORT));
+		members.addConst(constant(builtin, USHORT_GET_MIN_VALUE, "MIN_VALUE", new ConstantUShortExpression(BUILTIN, 0)));
+		members.addConst(constant(builtin, USHORT_GET_MAX_VALUE, "MAX_VALUE", new ConstantUShortExpression(BUILTIN, 65535)));
 		
 		processType(builtin, USHORT);
 	}
@@ -765,8 +784,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(compare(builtin, FLOAT_COMPARE, FLOAT, INT_TO_FLOAT));
 		members.addOperator(compare(builtin, DOUBLE_COMPARE, DOUBLE, INT_TO_DOUBLE));
 		
-		members.addGetter(staticGetter(builtin, INT_GET_MIN_VALUE, "MIN_VALUE", INT));
-		members.addGetter(staticGetter(builtin, INT_GET_MAX_VALUE, "MAX_VALUE", INT));
+		members.addConst(constant(builtin, INT_GET_MIN_VALUE, "MIN_VALUE", new ConstantIntExpression(BUILTIN, Integer.MIN_VALUE)));
+		members.addConst(constant(builtin, INT_GET_MAX_VALUE, "MAX_VALUE", new ConstantIntExpression(BUILTIN, Integer.MAX_VALUE)));
 		
 		members.addCaster(castExplicit(builtin, INT_TO_BYTE, BYTE));
 		members.addCaster(castExplicit(builtin, INT_TO_SBYTE, SBYTE));
@@ -843,8 +862,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(compare(builtin, FLOAT_COMPARE, FLOAT, UINT_TO_FLOAT));
 		members.addOperator(compare(builtin, DOUBLE_COMPARE, DOUBLE, UINT_TO_DOUBLE));
 		
-		members.addGetter(staticGetter(builtin, UINT_GET_MIN_VALUE, "MIN_VALUE", UINT));
-		members.addGetter(staticGetter(builtin, UINT_GET_MAX_VALUE, "MAX_VALUE", UINT));
+		members.addConst(constant(builtin, UINT_GET_MIN_VALUE, "MIN_VALUE", new ConstantUIntExpression(BUILTIN, 0)));
+		members.addConst(constant(builtin, UINT_GET_MAX_VALUE, "MAX_VALUE", new ConstantUIntExpression(BUILTIN, -1)));
 		
 		members.addCaster(castExplicit(builtin, UINT_TO_BYTE, BYTE));
 		members.addCaster(castExplicit(builtin, UINT_TO_SBYTE, SBYTE));
@@ -914,8 +933,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(compare(builtin, FLOAT_COMPARE, FLOAT, LONG_TO_FLOAT));
 		members.addOperator(compare(builtin, DOUBLE_COMPARE, DOUBLE, LONG_TO_DOUBLE));
 		
-		members.addGetter(staticGetter(builtin, LONG_GET_MIN_VALUE, "MIN_VALUE", LONG));
-		members.addGetter(staticGetter(builtin, LONG_GET_MAX_VALUE, "MAX_VALUE", LONG));
+		members.addConst(constant(builtin, LONG_GET_MIN_VALUE, "MIN_VALUE", new ConstantLongExpression(BUILTIN, Long.MIN_VALUE)));
+		members.addConst(constant(builtin, LONG_GET_MAX_VALUE, "MAX_VALUE", new ConstantLongExpression(BUILTIN, Long.MAX_VALUE)));
 		
 		members.addCaster(castExplicit(builtin, LONG_TO_BYTE, BYTE));
 		members.addCaster(castExplicit(builtin, LONG_TO_SBYTE, SBYTE));
@@ -983,8 +1002,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(compare(builtin, FLOAT_COMPARE, FLOAT, ULONG_TO_FLOAT));
 		members.addOperator(compare(builtin, DOUBLE_COMPARE, DOUBLE, ULONG_TO_DOUBLE));
 		
-		members.addGetter(staticGetter(builtin, ULONG_GET_MIN_VALUE, "MIN_VALUE", ULONG));
-		members.addGetter(staticGetter(builtin, ULONG_GET_MAX_VALUE, "MAX_VALUE", ULONG));
+		members.addConst(constant(builtin, ULONG_GET_MIN_VALUE, "MIN_VALUE", new ConstantULongExpression(BUILTIN, 0)));
+		members.addConst(constant(builtin, ULONG_GET_MAX_VALUE, "MAX_VALUE", new ConstantULongExpression(BUILTIN, -1L)));
 		
 		members.addCaster(castExplicit(builtin, ULONG_TO_BYTE, BYTE));
 		members.addCaster(castExplicit(builtin, ULONG_TO_SBYTE, SBYTE));
@@ -1038,8 +1057,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(compare(builtin, FLOAT_COMPARE, FLOAT));
 		members.addOperator(compare(builtin, DOUBLE_COMPARE, DOUBLE, LONG_TO_DOUBLE));
 		
-		members.addGetter(staticGetter(builtin, FLOAT_GET_MIN_VALUE, "MIN_VALUE", FLOAT));
-		members.addGetter(staticGetter(builtin, FLOAT_GET_MAX_VALUE, "MAX_VALUE", FLOAT));
+		members.addConst(constant(builtin, FLOAT_GET_MIN_VALUE, "MIN_VALUE", new ConstantFloatExpression(BUILTIN, Float.MIN_VALUE)));
+		members.addConst(constant(builtin, FLOAT_GET_MAX_VALUE, "MAX_VALUE", new ConstantFloatExpression(BUILTIN, Float.MAX_VALUE)));
 		
 		members.addCaster(castExplicit(builtin, FLOAT_TO_BYTE, BYTE));
 		members.addCaster(castExplicit(builtin, FLOAT_TO_SBYTE, SBYTE));
@@ -1073,8 +1092,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		members.addOperator(div(builtin, DOUBLE_DIV_DOUBLE, DOUBLE, DOUBLE));
 		members.addOperator(compare(builtin, DOUBLE_COMPARE, DOUBLE));
 		
-		members.addGetter(staticGetter(builtin, DOUBLE_GET_MIN_VALUE, "MIN_VALUE", DOUBLE));
-		members.addGetter(staticGetter(builtin, DOUBLE_GET_MAX_VALUE, "MAX_VALUE", DOUBLE));
+		members.addConst(constant(builtin, DOUBLE_GET_MIN_VALUE, "MIN_VALUE", new ConstantDoubleExpression(BUILTIN, Double.MIN_VALUE)));
+		members.addConst(constant(builtin, DOUBLE_GET_MAX_VALUE, "MAX_VALUE", new ConstantDoubleExpression(BUILTIN, Double.MAX_VALUE)));
 		
 		members.addCaster(castExplicit(builtin, DOUBLE_TO_BYTE, BYTE));
 		members.addCaster(castExplicit(builtin, DOUBLE_TO_SBYTE, SBYTE));
@@ -1148,7 +1167,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private static CallTranslator castedTargetCall(HighLevelDefinition definition, FunctionalMember member, BuiltinID casterBuiltin) {
-		CasterMember caster = castImplicit(definition, casterBuiltin, member.getHeader().parameters[0].type);
+		CasterMember caster = castImplicit(definition, casterBuiltin, member.header.parameters[0].type);
 		return call -> member.call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope);
 	}
 	
@@ -1484,14 +1503,16 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				id);
 	}
 	
-	private static GetterMember staticGetter(HighLevelDefinition cls, BuiltinID id, String name, ITypeID type) {
-		return new GetterMember(
+	private static ConstMember constant(HighLevelDefinition cls, BuiltinID id, String name, Expression value) {
+		ConstMember result = new ConstMember(
 				BUILTIN,
 				cls,
 				Modifiers.STATIC | Modifiers.PUBLIC,
 				name,
-				type,
+				value.type,
 				id);
+		result.value = value;
+		return result;
 	}
 	
 	private static ConstructorMember constructor(

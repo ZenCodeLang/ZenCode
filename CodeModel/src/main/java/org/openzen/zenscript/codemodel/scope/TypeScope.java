@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.scope;
 
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -20,4 +21,6 @@ public interface TypeScope {
 	public LocalMemberCache getMemberCache();
 	
 	public TypeMembers getTypeMembers(ITypeID type);
+	
+	public AnnotationDefinition getAnnotation(String name);
 }

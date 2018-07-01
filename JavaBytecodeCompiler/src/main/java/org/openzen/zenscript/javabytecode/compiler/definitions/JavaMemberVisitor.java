@@ -19,7 +19,6 @@ import org.openzen.zenscript.javabytecode.compiler.*;
 import java.util.List;
 
 public class JavaMemberVisitor implements MemberVisitor<Void> {
-
     private final ClassWriter writer;
     private final JavaClassInfo toClass;
     private final HighLevelDefinition definition;
@@ -36,6 +35,16 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         this.clinitStatementVisitor.start();
         CompilerUtils.writeDefaultFieldInitializers(javaWriter, definition, true);
     }
+	
+	@Override
+	public Void visitConst(ConstMember member) {
+        //TODO calc signature
+        String signature = null;
+        final String descriptor = Type.getDescriptor(member.type.accept(JavaTypeClassVisitor.INSTANCE));
+        writer.visitField(CompilerUtils.calcAccess(member.modifiers), member.name, descriptor, signature, null).visitEnd();
+        member.setTag(JavaFieldInfo.class, new JavaFieldInfo(toClass, member.name, descriptor));
+        return null;
+	}
 
     @Override
     public Void visitField(FieldMember member) {

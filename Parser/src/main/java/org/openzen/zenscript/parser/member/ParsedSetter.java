@@ -7,7 +7,8 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
@@ -20,8 +21,8 @@ public class ParsedSetter extends ParsedFunctionalMember {
 	private final String name;
 	private final IParsedType type;
 	
-	public ParsedSetter(CodePosition position, HighLevelDefinition definition, int modifiers, String name, IParsedType type, ParsedFunctionBody body) {
-		super(position, definition, modifiers, body);
+	public ParsedSetter(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedAnnotation[] annotations, String name, IParsedType type, ParsedFunctionBody body) {
+		super(position, definition, modifiers, annotations, body);
 		
 		this.name = name;
 		this.type = type;

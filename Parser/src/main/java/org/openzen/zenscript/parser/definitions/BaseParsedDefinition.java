@@ -8,8 +8,9 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.DefinitionScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.DefinitionScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 
@@ -20,8 +21,8 @@ import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 public abstract class BaseParsedDefinition extends ParsedDefinition {
 	protected final List<ParsedDefinitionMember> members = new ArrayList<>();
 	
-	public BaseParsedDefinition(CodePosition position, int modifiers) {
-		super(position, modifiers);
+	public BaseParsedDefinition(CodePosition position, int modifiers, ParsedAnnotation[] annotations) {
+		super(position, modifiers, annotations);
 	}
 	
 	public void addMember(ParsedDefinitionMember member) {
@@ -36,6 +37,8 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 
 	@Override
 	public void compileMembers(BaseScope scope) {
+		getCompiled().annotations = ParsedAnnotation.compileForDefinition(annotations, getCompiled(), scope);
+		
 		DefinitionScope innerScope = new DefinitionScope(scope, getCompiled());
 		for (ParsedDefinitionMember member : members) {
 			member.linkTypes(innerScope);

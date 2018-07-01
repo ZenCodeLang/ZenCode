@@ -32,7 +32,7 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaFieldInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
-import org.openzen.zenscript.linker.symbol.ISymbol;
+import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
