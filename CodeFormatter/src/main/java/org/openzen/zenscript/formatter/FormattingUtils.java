@@ -66,7 +66,7 @@ public class FormattingUtils {
 			output.append("const? ");
 	}
 	
-	public static void formatHeader(StringBuilder result, FormattingSettings settings, FunctionHeader header, TypeFormatter typeFormatter) {
+	public static void formatHeader(StringBuilder result, ScriptFormattingSettings settings, FunctionHeader header, TypeFormatter typeFormatter) {
 		FormattingUtils.formatTypeParameters(result, header.typeParameters, typeFormatter);
 		result.append("(");
 		int parameterIndex = 0;
@@ -115,7 +115,7 @@ public class FormattingUtils {
 		}
 	}
 	
-	public static void formatBody(StringBuilder output, FormattingSettings settings, String indent, TypeFormatter typeFormatter, Statement body) {
+	public static void formatBody(StringBuilder output, ScriptFormattingSettings settings, String indent, TypeFormatter typeFormatter, Statement body) {
 		body.accept(new BodyFormatter(output, settings, indent, typeFormatter));
 		output.append("\n");
 	}
@@ -149,12 +149,12 @@ public class FormattingUtils {
 	
 	private static class BodyFormatter implements StatementVisitor<Void> {
 		private final StringBuilder output;
-		private final FormattingSettings settings;
+		private final ScriptFormattingSettings settings;
 		private final StatementFormatter statementFormatter;
 		private final String indent;
 		private final TypeFormatter typeFormatter;
 		
-		public BodyFormatter(StringBuilder output, FormattingSettings settings, String indent, TypeFormatter typeFormatter) {
+		public BodyFormatter(StringBuilder output, ScriptFormattingSettings settings, String indent, TypeFormatter typeFormatter) {
 			this.output = output;
 			this.settings = settings;
 			this.indent = indent;

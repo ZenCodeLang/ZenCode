@@ -15,6 +15,8 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  * @author Hoofdgebruiker
  */
 public interface ITypeID {
+	public static final ITypeID[] NONE = new ITypeID[0];
+	
 	public ITypeID getUnmodified();
 	
 	public <T> T accept(ITypeVisitor<T> visitor);

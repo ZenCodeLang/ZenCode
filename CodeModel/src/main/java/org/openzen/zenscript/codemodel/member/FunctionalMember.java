@@ -11,39 +11,50 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
+import org.openzen.zenscript.codemodel.expression.CompareExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.GenericCompareExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public abstract class FunctionalMember extends DefinitionMember implements ICallableMember {
+public abstract class FunctionalMember extends DefinitionMember {
 	public final FunctionHeader header;
 	public final String name;
-	public Statement body;
+	public final BuiltinID builtin;
+	public Statement body = null;
+	public FunctionalMember overrides = null;
 	
-	public FunctionalMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header) {
+	public FunctionalMember(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			String name,
+			FunctionHeader header,
+			BuiltinID builtin) {
 		super(position, definition, modifiers);
 		
 		this.name = name;
 		this.header = header;
+		this.builtin = builtin;
 	}
 	
 	public void setBody(Statement body) {
 		this.body = body;
 	}
 	
+	public abstract String getInformalName();
+	
 	@Override
-	public FunctionHeader getHeader() {
-		return header;
+	public BuiltinID getBuiltin() {
+		return builtin;
 	}
-
-	@Override
+	
 	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		return new CallExpression(position, target, this, instancedHeader, arguments, scope);
 	}
@@ -52,18 +63,11 @@ public abstract class FunctionalMember extends DefinitionMember implements ICall
 		return call(position, target, header, arguments, scope);
 	}
 	
-	@Override
-	public Expression callWithComparator(CodePosition position, CompareType operator, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return new GenericCompareExpression(position, call(position, target, instancedHeader, arguments, scope), operator);
+	public Expression callWithComparator(CodePosition position, CompareType comparison, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+		return new CompareExpression(position, target, arguments.arguments[0], this, comparison, scope);
 	}
 	
-	@Override
 	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		return new CallStaticExpression(position, target, this, arguments, instancedHeader, scope);
-	}
-	
-	@Override
-	public Expression callStaticWithComparator(CodePosition position, ITypeID target, CompareType operator, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return new GenericCompareExpression(position, callStatic(position, target, instancedHeader, arguments, scope), operator);
 	}
 }

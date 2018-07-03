@@ -9,6 +9,7 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
@@ -21,6 +22,8 @@ public interface IDefinitionMember {
 	public CodePosition getPosition();
 	
 	public String describe();
+	
+	public BuiltinID getBuiltin();
 	
 	public void registerTo(TypeMembers type, TypeMemberPriority priority);
 	

@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.Taggable;
 
@@ -18,6 +19,7 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 	public final CodePosition position;
 	public final HighLevelDefinition definition;
 	public final int modifiers;
+	public MemberAnnotation[] annotations = MemberAnnotation.NONE;
 	
 	public DefinitionMember(CodePosition position, HighLevelDefinition definition, int modifiers) {
 		this.position = position;

@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -22,9 +23,23 @@ public class RangeExpression extends Expression {
 		this.from = from;
 		this.to = to;
 	}
+	
+	private RangeExpression(CodePosition position, ITypeID type, Expression from, Expression to, ITypeID thrownType) {
+		super(position, type, thrownType);
+		
+		this.from = from;
+		this.to = to;
+	}
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitRange(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tFrom = from.transform(transformer);
+		Expression tTo = to.transform(transformer);
+		return tFrom == from && tTo == to ? this : new RangeExpression(position, type, tFrom, tTo, thrownType);
 	}
 }

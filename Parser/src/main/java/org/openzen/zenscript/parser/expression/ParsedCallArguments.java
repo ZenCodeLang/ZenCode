@@ -17,8 +17,9 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
@@ -28,9 +29,19 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
  * @author Hoofdgebruiker
  */
 public class ParsedCallArguments {
-	public static final ParsedCallArguments NONE = new ParsedCallArguments(Collections.emptyList());
+	public static final ParsedCallArguments NONE = new ParsedCallArguments(null, Collections.emptyList());
 	
 	public static ParsedCallArguments parse(ZSTokenParser tokens) {
+		List<IParsedType> typeArguments = null;
+		if (tokens.optional(ZSTokenType.T_LESS) != null) {
+			typeArguments = new ArrayList<>();
+			do {
+				IParsedType type = IParsedType.parse(tokens);
+				typeArguments.add(type);
+			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+			tokens.required(ZSTokenType.T_GREATER, "> expected");
+		}
+		
 		tokens.required(ZSTokenType.T_BROPEN, "( expected");
 		
 		List<ParsedExpression> arguments = new ArrayList<>();
@@ -41,12 +52,39 @@ public class ParsedCallArguments {
 			tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
 		}
 		
-		return new ParsedCallArguments(arguments);
+		return new ParsedCallArguments(typeArguments, arguments);
 	}
 	
+	public static ParsedCallArguments parseForAnnotation(ZSTokenParser tokens) {
+		List<IParsedType> typeArguments = null;
+		if (tokens.optional(ZSTokenType.T_LESS) != null) {
+			typeArguments = new ArrayList<>();
+			do {
+				IParsedType type = IParsedType.parse(tokens);
+				typeArguments.add(type);
+			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+			tokens.required(ZSTokenType.T_GREATER, "> expected");
+		}
+		
+		List<ParsedExpression> arguments = new ArrayList<>();
+		if (tokens.isNext(ZSTokenType.T_BROPEN)) {
+			tokens.required(ZSTokenType.T_BROPEN, "( expected");
+			if (tokens.optional(ZSTokenType.T_BRCLOSE) == null) {
+				do {
+					arguments.add(ParsedExpression.parse(tokens));
+				} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+				tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
+			}
+		}
+		
+		return new ParsedCallArguments(typeArguments, arguments);
+	}
+	
+	private final List<IParsedType> typeArguments;
 	public final List<ParsedExpression> arguments;
 	
-	public ParsedCallArguments(List<ParsedExpression> arguments) {
+	public ParsedCallArguments(List<IParsedType> typeArguments, List<ParsedExpression> arguments) {
+		this.typeArguments = typeArguments;
 		this.arguments = arguments;
 	}
 	
@@ -57,7 +95,7 @@ public class ParsedCallArguments {
 			DefinitionMemberGroup member)
 	{
 		List<FunctionHeader> possibleHeaders = member.getMethodMembers().stream()
-				.map(method -> method.member.getHeader())
+				.map(method -> method.member.header)
 				.collect(Collectors.toList());
 		return compileCall(position, scope, genericParameters, possibleHeaders);
 	}
@@ -68,6 +106,12 @@ public class ParsedCallArguments {
 			ITypeID[] genericParameters,
 			List<FunctionHeader> candidateFunctions)
 	{
+		if (this.typeArguments != null) {
+			genericParameters = new ITypeID[typeArguments.size()];
+			for (int i = 0; i < typeArguments.size(); i++)
+				genericParameters[i] = typeArguments.get(i).compile(scope);
+		}
+		
 		List<FunctionHeader> candidates = new ArrayList<>();
 		for (FunctionHeader header : candidateFunctions) {
 			if (isCompatibleWith(scope, header, genericParameters))

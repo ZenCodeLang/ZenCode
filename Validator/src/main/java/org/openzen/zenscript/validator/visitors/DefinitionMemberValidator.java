@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Set;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
@@ -53,6 +55,24 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 	public DefinitionMemberValidator(Validator validator, HighLevelDefinition definition) {
 		this.validator = validator;
 		this.definition = definition;
+	}
+	
+	@Override
+	public Boolean visitConst(ConstMember member) {
+		boolean isValid = ValidationUtils.validateModifiers(
+				validator,
+				member.modifiers,
+				Modifiers.PUBLIC | Modifiers.PROTECTED | Modifiers.PRIVATE,
+				member.position,
+				"Invalid modifier");
+		if (member.type != member.value.type) {
+			validator.logError(
+					ValidationLogEntry.Code.INVALID_TYPE,
+					member.position,
+					"Expression type doesn't match const type");
+			isValid = false;
+		}
+		return isValid;
 	}
 	
 	@Override

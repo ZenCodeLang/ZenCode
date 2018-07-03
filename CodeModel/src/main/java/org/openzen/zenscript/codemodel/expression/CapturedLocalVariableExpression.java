@@ -30,4 +30,9 @@ public class CapturedLocalVariableExpression extends CapturedExpression {
 	public <T> T accept(CapturedExpressionVisitor<T> visitor) {
 		return visitor.visitCapturedLocal(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		return this;
+	}
 }

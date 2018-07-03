@@ -13,11 +13,12 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.constructor.JSONUtils;
 import org.openzen.zenscript.constructor.Module;
 import org.openzen.zenscript.constructor.ModuleLoader;
-import org.openzen.zenscript.linker.symbol.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.TypeSymbol;
 import org.openzen.zenscript.parser.ParsedFile;
 
 /**
@@ -44,7 +45,7 @@ public class DirectoryModuleLoader implements ModuleReference {
 	}
 
 	@Override
-	public SemanticModule load() {
+	public SemanticModule load(CompilationUnit unit) {
 		if (!directory.exists())
 			throw new ConstructorException("Error: module directory not found: " + directory);
 		
@@ -66,15 +67,15 @@ public class DirectoryModuleLoader implements ModuleReference {
 				}
 			}
 
-			ModuleSpace space = new ModuleSpace();
+			ModuleSpace space = new ModuleSpace(unit);
 			for (String dependencyName : dependencyNames)
 				space.addModule(dependencyName, loader.getModule(dependencyName));
 
 			Module module = new Module(moduleName, directory, jsonFile);
-			ZSPackage pkg = new ZSPackage(null, module.packageName);
+			ZSPackage pkg = isStdlib ? unit.globalTypeRegistry.stdlib : new ZSPackage(null, module.packageName);
 
 			ParsedFile[] parsedFiles = module.parse(pkg);
-			SemanticModule result = Module.compileSyntaxToSemantic(pkg, parsedFiles, space);
+			SemanticModule result = Module.compileSyntaxToSemantic(module.name, module.dependencies, pkg, parsedFiles, space);
 			
 			JSONObject globals = json.optJSONObject("globals");
 			if (globals != null) {

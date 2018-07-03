@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.AccessScope;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
@@ -29,10 +30,10 @@ import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
-import org.openzen.zenscript.linker.FileScope;
-import org.openzen.zenscript.linker.GlobalScriptScope;
-import org.openzen.zenscript.linker.symbol.ISymbol;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.FileScope;
+import org.openzen.zenscript.codemodel.scope.GlobalScriptScope;
+import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 import org.openzen.zenscript.shared.SourceFile;
 
@@ -67,6 +68,7 @@ public class ParsedFile {
 
 		while (true) {
 			CodePosition position = tokens.getPosition();
+			ParsedAnnotation[] annotations = ParsedAnnotation.parseAnnotations(tokens);
 			int modifiers = 0;
 			outer: while (true) {
 				switch (tokens.peek().type) {
@@ -108,9 +110,9 @@ public class ParsedFile {
 			} else if ((eof = tokens.optional(EOF)) != null) {
 				break;
 			} else {
-				ParsedDefinition definition = ParsedDefinition.parse(pkg, position, modifiers, tokens, null);
+				ParsedDefinition definition = ParsedDefinition.parse(pkg, position, modifiers, annotations, tokens, null);
 				if (definition == null) {
-					result.statements.add(ParsedStatement.parse(tokens));
+					result.statements.add(ParsedStatement.parse(tokens, annotations));
 				} else {
 					result.definitions.add(definition);
 				}
@@ -157,8 +159,9 @@ public class ParsedFile {
 			PackageDefinitions packageDefinitions,
 			GlobalTypeRegistry globalRegistry,
 			List<ExpansionDefinition> expansions,
-			Map<String, ISymbol> globalSymbols) {
-		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols);
+			Map<String, ISymbol> globalSymbols,
+			List<AnnotationDefinition> annotations) {
+		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
 		loadImports(scope, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileTypes(scope);
@@ -171,8 +174,9 @@ public class ParsedFile {
 			PackageDefinitions packageDefinitions,
 			GlobalTypeRegistry globalRegistry,
 			List<ExpansionDefinition> expansions,
-			Map<String, ISymbol> globalSymbols) {
-		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols);
+			Map<String, ISymbol> globalSymbols,
+			List<AnnotationDefinition> annotations) {
+		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
 		loadImports(scope, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileMembers(scope);
@@ -186,8 +190,9 @@ public class ParsedFile {
 			GlobalTypeRegistry globalRegistry,
 			List<ExpansionDefinition> expansions,
 			List<ScriptBlock> scripts,
-			Map<String, ISymbol> globalSymbols) {
-		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols);
+			Map<String, ISymbol> globalSymbols,
+			List<AnnotationDefinition> annotations) {
+		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
 		loadImports(scope, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileCode(scope);
@@ -200,7 +205,7 @@ public class ParsedFile {
 				statements.add(statement.compile(statementScope));
 			}
 			
-			ScriptBlock block = new ScriptBlock(statements);
+			ScriptBlock block = new ScriptBlock(access, statements);
 			block.setTag(SourceFile.class, new SourceFile(filename));
 			block.setTag(WhitespacePostComment.class, postComment);
 			scripts.add(block);

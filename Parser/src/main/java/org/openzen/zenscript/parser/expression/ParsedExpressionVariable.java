@@ -18,10 +18,12 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -95,7 +97,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 			if (option.types.length > 0)
 				throw new CompileException(position, CompileExceptionCode.MISSING_VARIANT_CASEPARAMETERS, "Variant case is missing parameters");
 			
-			return new VariantOptionSwitchValue(option, new String[0]);
+			return new VariantOptionSwitchValue(option, new VarStatement[0]);
 		} else {
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
 		}
@@ -108,7 +110,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 	
 	@Override
 	public ParsedFunctionParameter toLambdaParameter() {
-		return new ParsedFunctionParameter(name, ParsedTypeBasic.ANY, null, false);
+		return new ParsedFunctionParameter(ParsedAnnotation.NONE, name, ParsedTypeBasic.ANY, null, false);
 	}
 
 	@Override

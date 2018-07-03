@@ -12,14 +12,14 @@ package org.openzen.zenscript.formatter;
 public class CommentFormatter {
 	private CommentFormatter() {}
 	
-	public static String[] format(String[] comments) {
-		if (comments.length == 0)
-			return comments;
+	public static String[] format(String[] commentLines) {
+		if (commentLines.length == 0)
+			return commentLines;
 		
 		boolean isInMultilineComment = false;
-		String[] result = new String[comments.length];
-		for (int i = 0; i < comments.length; i++) {
-			String comment = comments[i];
+		String[] result = new String[commentLines.length];
+		for (int i = 0; i < commentLines.length; i++) {
+			String comment = commentLines[i];
 			if (isInMultilineComment) {
 				if (!comment.startsWith("*"))
 					comment = "* " + comment;

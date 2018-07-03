@@ -38,4 +38,14 @@ public class TagDictionary {
     public boolean hasTag(Class<?> cls) {
         return tags.containsKey(cls);
     }
+	
+	public void addAllFrom(TagDictionary other) {
+		if (tags == Collections.EMPTY_MAP) {
+			tags = new HashMap<>();
+		} else if (tags.size() == 1) {
+			tags = new HashMap<>(tags);
+		}
+		
+		tags.putAll(other.tags);
+	}
 }

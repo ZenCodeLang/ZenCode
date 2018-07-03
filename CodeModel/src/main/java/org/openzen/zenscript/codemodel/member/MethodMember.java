@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
@@ -20,8 +21,8 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class MethodMember extends FunctionalMember {
-	public MethodMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header) {
-		super(position, definition, modifiers, name, header);
+	public MethodMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header, BuiltinID builtin) {
+		super(position, definition, modifiers, name, header, builtin);
 	}
 	
 	@Override
@@ -36,7 +37,13 @@ public class MethodMember extends FunctionalMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new MethodMember(position, definition, modifiers, name, header.instance(registry, mapping));
+		return new MethodMember(
+				position,
+				definition,
+				modifiers,
+				name,
+				header.instance(registry, mapping),
+				builtin);
 	}
 
 	@Override

@@ -7,7 +7,8 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.CallerMember;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.shared.CodePosition;
@@ -19,14 +20,14 @@ import org.openzen.zenscript.shared.CodePosition;
 public class ParsedCaller extends ParsedFunctionalMember {
 	private final ParsedFunctionHeader header;
 	
-	public ParsedCaller(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedFunctionHeader header, ParsedFunctionBody body) {
-		super(position, definition, modifiers, body);
+	public ParsedCaller(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedAnnotation[] annotations, ParsedFunctionHeader header, ParsedFunctionBody body) {
+		super(position, definition, modifiers, annotations, body);
 		
 		this.header = header;
 	}
 
 	@Override
 	public void linkTypes(BaseScope scope) {
-		compiled = new CallerMember(position, definition, modifiers, header.compile(scope));
+		compiled = new CallerMember(position, definition, modifiers, header.compile(scope), null);
 	}
 }

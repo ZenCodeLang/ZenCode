@@ -8,12 +8,13 @@ package org.openzen.zenscript.parser.type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedGenericParameter;
@@ -144,8 +145,10 @@ public interface IParsedType {
 					if (tokens.optional(ZSTokenType.T_SQCLOSE) != null) {
 						result = new ParsedTypeArray(result, dimension);
 					} else if (tokens.isNext(T_LESS)) {
-						List<ParsedGenericParameter> parameters = ParsedGenericParameter.parseAll(tokens);
-						result = new ParsedTypeGenericMap(parameters, result, modifiers);
+						tokens.next();
+						ParsedGenericParameter parameter = ParsedGenericParameter.parse(tokens);
+						tokens.required(T_GREATER, "> expected");
+						result = new ParsedTypeGenericMap(parameter, result, modifiers);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
 					} else {
 						IParsedType keyType = parse(tokens);
@@ -218,4 +221,12 @@ public interface IParsedType {
 	public IParsedType withModifiers(int modifiers);
 	
 	public ITypeID compile(BaseScope scope);
+	
+	public default AnnotationDefinition compileAnnotation(BaseScope scope) {
+		return null;
+	}
+	
+	public default ITypeID[] compileTypeArguments(BaseScope scope) {
+		return ITypeID.NONE;
+	}
 }

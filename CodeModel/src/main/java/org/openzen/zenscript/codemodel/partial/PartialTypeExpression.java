@@ -49,8 +49,8 @@ public class PartialTypeExpression implements IPartialExpression {
 		return scope.getTypeMembers(type)
 				.getOrCreateGroup(OperatorType.CALL)
 				.getMethodMembers().stream()
-				.filter(method -> method.member.getHeader().parameters.length == arguments && method.member.isStatic())
-				.map(method -> method.member.getHeader())
+				.filter(method -> method.member.header.parameters.length == arguments && method.member.isStatic())
+				.map(method -> method.member.header)
 				.collect(Collectors.toList());
 	}
 

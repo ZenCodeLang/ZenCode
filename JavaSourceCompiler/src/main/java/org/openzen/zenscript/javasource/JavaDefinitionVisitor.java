@@ -7,6 +7,7 @@ package org.openzen.zenscript.javasource;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
@@ -17,19 +18,23 @@ import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
-	private final JavaSourceFile file;
+	private final JavaSourceFileScope scope;
+	private final JavaSourceFormattingSettings settings;
 	private final StringBuilder output;
 	
-	public JavaDefinitionVisitor(JavaSourceFile file, StringBuilder output) {
-		this.file = file;
+	public JavaDefinitionVisitor(JavaSourceFormattingSettings settings, JavaSourceFileScope scope, StringBuilder output) {
+		this.settings = settings;
+		this.scope = scope;
 		this.output = output;
 	}
 
@@ -39,7 +44,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		output.append("class ").append(definition.name);
 		if (definition.superType != null) {
 			output.append(" extends ");
-			output.append(definition.superType.accept(new JavaSourceTypeVisitor(file)));
+			output.append(scope.type(definition.superType));
 		}
 		List<ImplementationMember> mergedImplementations = new ArrayList<>();
 		for (IDefinitionMember member : definition.members) {
@@ -56,14 +61,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 					output.append(", ");
 				
 				ImplementationMember implementation = mergedImplementations.get(i);
-				output.append(implementation.type.accept(new JavaSourceTypeVisitor(file)));
+				output.append(scope.type(implementation.type));
 			}
 		}
 		
 		output.append(" {\n");
-		
-		
-		
+		compileMembers(definition);
 		output.append("}\n");
 		return null;
 	}
@@ -73,21 +76,36 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		convertModifiers(definition.modifiers);
 		output.append("interface ").append(definition.name);
 		output.append(" {\n");
-		
-		
-		
+		compileMembers(definition);
 		output.append("}\n");
 		return null;
 	}
 
 	@Override
 	public Void visitEnum(EnumDefinition definition) {
-		convertModifiers(definition.modifiers);
+		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
 		output.append("enum ").append(definition.name);
 		
 		output.append(" {\n");
+		boolean firstMember = true;
+		for (EnumConstantMember constant : definition.enumConstants) {
+			if (firstMember) {
+				firstMember = false;
+			} else {
+				output.append(",\n");
+			}
+			output.append("\t").append(constant.name);
+			if (constant.constructor != null) {
+				// TODO: constructor
+			}
+		}
 		
-		
+		if (definition.members.size() > 0) {
+			output.append(";\n");
+			compileMembers(definition);
+		} else {
+			output.append("\n");
+		}
 		
 		output.append("}\n");
 		return null;
@@ -98,9 +116,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		convertModifiers(definition.modifiers | Modifiers.FINAL);
 		output.append("class ").append(definition.name);
 		output.append(" {\n");
-		
-		
-		
+		compileMembers(definition);
 		output.append("}\n");
 		return null;
 	}
@@ -114,6 +130,16 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	@Override
 	public Void visitExpansion(ExpansionDefinition definition) {
 		convertModifiers(definition.modifiers);
+		output.append("class ");
+		output.append(scope.className);
+		output.append(" {\n");
+		
+		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, "\t", output, scope);
+		for (IDefinitionMember member : definition.members)
+			member.accept(memberCompiler);
+		memberCompiler.finish();
+		
+		output.append("}");
 		return null;
 	}
 
@@ -144,5 +170,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	
 	private boolean isImplementationMergable(ImplementationMember implementation) {
 		return true; // TODO: check merging conflicts
+	}
+	
+	private void compileMembers(HighLevelDefinition definition) {
+		JavaMemberCompiler memberCompiler = new JavaMemberCompiler(settings, "\t", output, scope, false);
+		for (IDefinitionMember member : definition.members)
+			member.accept(memberCompiler);
+		memberCompiler.finish();
 	}
 }

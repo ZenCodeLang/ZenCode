@@ -18,9 +18,9 @@ import org.openzen.zenscript.shared.StringUtils;
  * @author Hoofdgebruiker
  */
 public class SwitchValueFormatter implements SwitchValueVisitor<String> {
-	private final FormattingSettings settings;
+	private final ScriptFormattingSettings settings;
 	
-	public SwitchValueFormatter(FormattingSettings settings) {
+	public SwitchValueFormatter(ScriptFormattingSettings settings) {
 		this.settings = settings;
 	}
 

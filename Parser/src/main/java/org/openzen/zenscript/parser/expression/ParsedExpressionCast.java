@@ -8,7 +8,8 @@ package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -63,7 +64,7 @@ public class ParsedExpressionCast extends ParsedExpression {
 		if (parameter.type != ParsedTypeBasic.ANY)
 			throw new CompileException(position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Lambda parameter already has a type");
 		
-		return new ParsedFunctionParameter(parameter.name, type, null, false);
+		return new ParsedFunctionParameter(ParsedAnnotation.NONE, parameter.name, type, null, false);
 	}
 
 	@Override

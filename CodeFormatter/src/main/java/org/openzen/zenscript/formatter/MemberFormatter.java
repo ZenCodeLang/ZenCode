@@ -8,10 +8,10 @@ package org.openzen.zenscript.formatter;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
@@ -29,14 +29,14 @@ import org.openzen.zenscript.codemodel.statement.Statement;
  * @author Hoofdgebruiker
  */
 public class MemberFormatter implements MemberVisitor<Void> {
-	private final FormattingSettings settings;
+	private final ScriptFormattingSettings settings;
 	private final StringBuilder output;
 	private final String indent;
 	private final TypeFormatter typeFormatter;
 	private boolean isFirst = true;
 	private boolean wasField = false;
 	
-	public MemberFormatter(FormattingSettings settings, StringBuilder output, String indent, TypeFormatter typeFormatter) {
+	public MemberFormatter(ScriptFormattingSettings settings, StringBuilder output, String indent, TypeFormatter typeFormatter) {
 		this.settings = settings;
 		this.output = output;
 		this.indent = indent;
@@ -54,6 +54,20 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		
 		wasField = field;
 	}
+	
+	@Override
+	public Void visitConst(ConstMember member) {
+		visit(true);
+		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		output.append("const")
+				.append(member.name)
+				.append(" as ")
+				.append(member.type.accept(typeFormatter))
+				.append(" = ")
+				.append(member.value.accept(new ExpressionFormatter(settings, typeFormatter)))
+				.append(";\n");
+		return null;
+	}
 
 	@Override
 	public Void visitField(FieldMember member) {
@@ -68,7 +82,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 			output.append(" = ")
 					.append(member.initializer.accept(new ExpressionFormatter(settings, typeFormatter)));
 		}
-		output.append(";").append("\n");
+		output.append(";\n");
 		return null;
 	}
 

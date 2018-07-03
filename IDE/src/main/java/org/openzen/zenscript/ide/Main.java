@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.local.LocalProjectDevelopmentHost;
 import org.openzen.drawablegui.swing.SwingWindow;
+import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.Project;
 import org.openzen.zenscript.ide.ui.IDEWindow;
@@ -17,7 +18,8 @@ public class Main {
      */
     public static void main(String[] args) throws IOException {
 		File directory = new File("../../ZenCode");
-		ModuleLoader loader = new ModuleLoader();
+		CompilationUnit compilationUnit = new CompilationUnit();
+		ModuleLoader loader = new ModuleLoader(compilationUnit);
 		Project project = new Project(loader, directory);
 		
 		DevelopmentHost host = new LocalProjectDevelopmentHost(project);

@@ -27,4 +27,10 @@ public class SetStaticFieldExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitSetStaticField(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = value.transform(transformer);
+		return value == tValue ? this : new SetStaticFieldExpression(position, field, tValue);
+	}
 }

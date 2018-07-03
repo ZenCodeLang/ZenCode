@@ -7,8 +7,8 @@ package org.openzen.zenscript.ide.host.local;
 
 import java.io.File;
 import java.io.IOException;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.ScriptBlock;
+import java.util.HashSet;
+import java.util.Set;
 import org.openzen.zenscript.compiler.Target;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.constructor.Library;
@@ -17,6 +17,7 @@ import org.openzen.zenscript.constructor.Project;
 import org.openzen.zenscript.constructor.module.DirectoryModuleLoader;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.compiler.SemanticModule;
+import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.ide.host.IDETarget;
 
 /**
@@ -60,8 +61,10 @@ public class LocalTarget implements IDETarget {
 	}
 	
 	private ZenCodeCompiler buildInternal() {
-		ModuleLoader moduleLoader = new ModuleLoader();
+		CompilationUnit compilationUnit = new CompilationUnit();
+		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit);
 		moduleLoader.register("stdlib", new DirectoryModuleLoader(moduleLoader, "stdlib", new File("../Constructor/libraries/stdlib"), true));
+		Set<String> compiledModules = new HashSet<>();
 		
 		try {
 			Project project = new Project(moduleLoader, this.project.directory);
@@ -72,19 +75,52 @@ public class LocalTarget implements IDETarget {
 			for (ModuleReference module : project.modules) {
 				moduleLoader.register(module.getName(), module);
 			}
-
-			SemanticModule module = moduleLoader.getModule(target.getModule());
-			ZenCodeCompiler compiler = target.createCompiler(module);
-			for (HighLevelDefinition definition : module.definitions.getAll())
-				compiler.addDefinition(definition);
-			for (ScriptBlock script : module.scripts)
-				compiler.addScriptBlock(script);
 			
-			compiler.finish();
+			SemanticModule module = moduleLoader.getModule(target.getModule());
+			module = module.normalize();
+			module.validate();
+			
+			ZenCodeCompiler compiler = target.createCompiler(module);
+			if (!module.isValid())
+				return compiler;
+			
+			SemanticModule stdlib = moduleLoader.getModule("stdlib");
+			stdlib = stdlib.normalize();
+			stdlib.validate();
+			if (!stdlib.isValid())
+				return compiler;
+			stdlib.compile(compiler);
+			
+			boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, module);
+			if (!isValid)
+				return compiler;
+			
+			module.compile(compiler);
 			return compiler;
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			return null;
 		}
+	}
+	
+	private boolean compileDependencies(ModuleLoader loader, ZenCodeCompiler compiler, Set<String> compiledModules, SemanticModule module) {
+		for (String dependency : module.dependencies) {
+			if (compiledModules.contains(module.name))
+				continue;
+			
+			SemanticModule dependencyModule = loader.getModule(dependency);
+			module = module.normalize();
+			module.validate();
+			if (!module.isValid())
+				return false;
+			
+			if (!compileDependencies(loader, compiler, compiledModules, dependencyModule))
+				return false;
+			
+			module.compile(compiler);
+			compiledModules.add(module.name);
+		}
+		
+		return true;
 	}
 }

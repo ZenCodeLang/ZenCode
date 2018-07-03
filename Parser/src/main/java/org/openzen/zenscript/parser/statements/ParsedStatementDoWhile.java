@@ -10,9 +10,10 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.DoWhileStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.linker.ExpressionScope;
-import org.openzen.zenscript.linker.LoopScope;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.LoopScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -25,8 +26,8 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 	public final ParsedStatement content;
 	public final ParsedExpression condition;
 	
-	public ParsedStatementDoWhile(CodePosition position, WhitespaceInfo whitespace, String label, ParsedStatement content, ParsedExpression condition) {
-		super(position, whitespace);
+	public ParsedStatementDoWhile(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, String label, ParsedStatement content, ParsedExpression condition) {
+		super(position, annotations, whitespace);
 		
 		this.label = label;
 		this.content = content;
@@ -35,7 +36,6 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		//Statement content = this.content.compile(scope);
 		Expression condition = this.condition
 				.compile(new ExpressionScope(scope, BasicTypeID.HINT_BOOL))
 				.eval()
@@ -44,6 +44,6 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 		DoWhileStatement result = new DoWhileStatement(position, label, condition);
 		LoopScope innerScope = new LoopScope(result, scope);
 		result.content = this.content.compile(innerScope);
-		return result(result);
+		return result(result, scope);
 	}
 }

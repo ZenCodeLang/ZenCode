@@ -47,6 +47,10 @@ public class StringUtils {
 			NAMED_CHARACTER_ENTITIES.put(entity.stringValue, entity);
 		}
 	}
+	
+	public static String capitalize(String value) {
+		return value.substring(0, 1).toUpperCase() + value.substring(1);
+	}
 
 	/**
 	 * Splits a string in parts, given a specified delimiter.
@@ -224,11 +228,18 @@ public class StringUtils {
 		output.append(quote);
 		for (char c : value.toCharArray()) {
 			switch (c) {
-				case '"': if (quote == '"') output.append("\\\""); break;
-				case '\'': if (quote == '\'') output.append("\\\'"); break;
+				case '"':
+					if (quote == '"')
+						output.append("\\\"");
+					break;
+				case '\'':
+					if (quote == '\'')
+						output.append("\\\'");
+					break;
 				case '\n': output.append("\\n"); break;
 				case '\r': output.append("\\r"); break;
 				case '\t': output.append("\\t"); break;
+				case '\\': output.append("\\\\"); break;
 				default:
 					if (escapeUnicode && c > 127) {
 						output.append("\\u");

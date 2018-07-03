@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import java.util.Map;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -27,5 +29,11 @@ public class CapturedDirectExpression extends CapturedExpression {
 	@Override
 	public <T> T accept(CapturedExpressionVisitor<T> visitor) {
 		return visitor.visitCapturedDirect(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = transformer.transform(value);
+		return tValue == value ? this : new CapturedDirectExpression(position, closure, tValue);
 	}
 }

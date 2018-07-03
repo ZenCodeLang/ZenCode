@@ -11,8 +11,6 @@ import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *
@@ -47,5 +45,11 @@ public class GetFieldExpression extends Expression {
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitGetField(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tTarget = target.transform(transformer);
+		return tTarget == target ? this : new GetFieldExpression(position, tTarget, field);
 	}
 }

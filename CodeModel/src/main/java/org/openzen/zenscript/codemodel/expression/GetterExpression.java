@@ -27,4 +27,10 @@ public class GetterExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitGetter(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tTarget = target.transform(transformer);
+		return target == tTarget ? this : new GetterExpression(position, tTarget, getter);
+	}
 }

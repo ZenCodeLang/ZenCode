@@ -31,4 +31,11 @@ public class MapExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitMap(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression[] tKeys = Expression.transform(keys, transformer);
+		Expression[] tValues = Expression.transform(values, transformer);
+		return tKeys == keys && tValues == values ? this : new MapExpression(position, tKeys, tValues, type);
+	}
 }

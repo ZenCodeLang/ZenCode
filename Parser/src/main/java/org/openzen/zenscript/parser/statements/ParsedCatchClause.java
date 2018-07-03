@@ -7,6 +7,7 @@ package org.openzen.zenscript.parser.statements;
 
 import java.util.List;
 import java.util.function.Function;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
@@ -17,7 +18,7 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -94,6 +95,11 @@ public class ParsedCatchClause {
 		@Override
 		public IPartialExpression getOuterInstance(CodePosition position) {
 			return outer.getOuterInstance(position);
+		}
+
+		@Override
+		public AnnotationDefinition getAnnotation(String name) {
+			return outer.getAnnotation(name);
 		}
 	}
 }

@@ -12,9 +12,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
-import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import static org.openzen.zenscript.codemodel.type.member.BuiltinTypeMembers.*;
+import org.openzen.zenscript.compiler.SemanticModule;
 
 import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
 import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
@@ -29,17 +28,11 @@ import org.openzen.zenscript.compiler.ZenCodeCompiler;
  * @author Hoofdgebruiker
  */
 public class JavaCompiler implements ZenCodeCompiler {
-	static {
+	/*static {
 		JavaClassInfo jInteger = new JavaClassInfo("java/lang/Integer");
 		JavaClassInfo jLong = new JavaClassInfo("java/lang/Long");
 		JavaClassInfo jFloat = new JavaClassInfo("java/lang/Float");
 		JavaClassInfo jDouble = new JavaClassInfo("java/lang/Double");
-		
-		INT_GET_MIN_VALUE.setTag(JavaFieldInfo.class, new JavaFieldInfo(jInteger, "MIN_VALUE", "I"));
-		INT_GET_MAX_VALUE.setTag(JavaFieldInfo.class, new JavaFieldInfo(jInteger, "MAX_VALUE", "I"));
-		
-		LONG_GET_MIN_VALUE.setTag(JavaFieldInfo.class, new JavaFieldInfo(jLong, "MIN_VALUE", "J"));
-		LONG_GET_MAX_VALUE.setTag(JavaFieldInfo.class, new JavaFieldInfo(jLong, "MAX_VALUE", "J"));
 		
 		implement(BOOL_NOT, JavaWriter::iNot);
 		
@@ -58,8 +51,6 @@ public class JavaCompiler implements ZenCodeCompiler {
 		implement(LONG_NEG, JavaWriter::lNeg);
 		implement(FLOAT_NEG, JavaWriter::fNeg);
 		implement(DOUBLE_NEG, JavaWriter::dNeg);
-		
-		
 		
 		implement(BYTE_ADD_BYTE, JavaWriter::iAdd);
 		implement(SBYTE_ADD_SBYTE, JavaWriter::iAdd);
@@ -130,7 +121,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 	
 	private static void implement(DefinitionMember member, JavaBytecodeImplementation implementation) {
 		member.setTag(JavaBytecodeImplementation.class, implementation);
-	}
+	}*/
 	
 	private final JavaModule target;
 	private final Map<String, JavaScriptFile> scriptBlocks = new HashMap<>();
@@ -151,7 +142,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 	}
 	
 	@Override
-	public void addDefinition(HighLevelDefinition definition) {
+	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
 		String className = getClassName(definition.position.filename);
 		JavaScriptFile scriptFile = getScriptFile(className);
 		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(scriptFile.classWriter)));

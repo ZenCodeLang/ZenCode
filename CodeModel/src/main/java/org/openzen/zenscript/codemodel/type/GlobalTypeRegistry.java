@@ -64,8 +64,8 @@ public class GlobalTypeRegistry {
 		}
 	}
 	
-	public GenericMapTypeID getGenericMap(ITypeID valueType, TypeParameter[] keys) {
-		GenericMapTypeID id = new GenericMapTypeID(valueType, keys);
+	public GenericMapTypeID getGenericMap(ITypeID valueType, TypeParameter key) {
+		GenericMapTypeID id = new GenericMapTypeID(valueType, key);
 		if (genericMapTypes.containsKey(id)) {
 			return genericMapTypes.get(id);
 		} else {

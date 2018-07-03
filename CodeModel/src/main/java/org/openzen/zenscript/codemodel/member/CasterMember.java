@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -24,11 +25,17 @@ import org.openzen.zenscript.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public class CasterMember extends FunctionalMember implements ICasterMember {
+public class CasterMember extends FunctionalMember {
 	public final ITypeID toType;
 	
-	public CasterMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID toType) {
-		super(position, definition, modifiers, "as", new FunctionHeader(toType));
+	public CasterMember(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			ITypeID toType,
+			BuiltinID builtin)
+	{
+		super(position, definition, modifiers, "as", new FunctionHeader(toType), builtin);
 		
 		this.toType = toType;
 	}
@@ -50,10 +57,14 @@ public class CasterMember extends FunctionalMember implements ICasterMember {
 
 	@Override
 	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new CasterMember(position, definition, modifiers, toType.withGenericArguments(registry, mapping));
+		return new CasterMember(
+				position,
+				definition,
+				modifiers,
+				toType.withGenericArguments(registry, mapping),
+				builtin);
 	}
 	
-	@Override
 	public ITypeID getTargetType() {
 		return toType;
 	}
@@ -62,13 +73,11 @@ public class CasterMember extends FunctionalMember implements ICasterMember {
 	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		throw new UnsupportedOperationException("Cannot call a caster!");
 	}
-
-	@Override
+	
 	public Expression cast(CodePosition position, Expression value, boolean implicit) {
 		return new CastExpression(position, value, this, implicit);
 	}
 	
-	@Override
 	public boolean isImplicit() {
 		return Modifiers.isImplicit(modifiers);
 	}

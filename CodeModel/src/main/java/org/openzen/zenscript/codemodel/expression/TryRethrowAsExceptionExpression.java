@@ -25,4 +25,10 @@ public class TryRethrowAsExceptionExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitTryRethrowAsException(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = value.transform(transformer);
+		return tValue == value ? this : new TryRethrowAsExceptionExpression(position, type, tValue, thrownType);
+	}
 }

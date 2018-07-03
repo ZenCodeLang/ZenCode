@@ -25,4 +25,10 @@ public class CheckNullExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitCheckNull(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = transformer.transform(value);
+		return value == tValue ? this : new CheckNullExpression(position, tValue);
+	}
 }

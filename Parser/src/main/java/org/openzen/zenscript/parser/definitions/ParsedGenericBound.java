@@ -6,7 +6,7 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 
 /**
  *

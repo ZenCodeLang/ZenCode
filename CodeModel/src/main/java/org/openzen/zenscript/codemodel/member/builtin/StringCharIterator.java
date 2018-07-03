@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.member.MemberVisitor;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
@@ -30,6 +31,11 @@ public class StringCharIterator extends Taggable implements IIteratorMember {
 	public int getLoopVariableCount() {
 		return 1;
 	}
+	
+	@Override
+	public BuiltinID getBuiltin() {
+		return null;
+	}
 
 	@Override
 	public ITypeID[] getLoopVariableTypes() {
@@ -38,7 +44,7 @@ public class StringCharIterator extends Taggable implements IIteratorMember {
 
 	@Override
 	public <T> T acceptForIterator(ForeachIteratorVisitor<T> visitor) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return visitor.visitStringCharacterIterator();
 	}
 
 	@Override

@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -16,11 +15,11 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  */
 public class GenericMapTypeID implements ITypeID {
 	public final ITypeID value;
-	public final TypeParameter[] keys;
+	public final TypeParameter key;
 	
-	public GenericMapTypeID(ITypeID value, TypeParameter[] keys) {
+	public GenericMapTypeID(ITypeID value, TypeParameter key) {
 		this.value = value;
-		this.keys = keys;
+		this.key = key;
 	}
 
 	@Override
@@ -45,7 +44,7 @@ public class GenericMapTypeID implements ITypeID {
 
 	@Override
 	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		return registry.getGenericMap(value.withGenericArguments(registry, arguments), keys);
+		return registry.getGenericMap(value.withGenericArguments(registry, arguments), key);
 	}
 
 	@Override
@@ -68,11 +67,7 @@ public class GenericMapTypeID implements ITypeID {
 		StringBuilder result = new StringBuilder();
 		result.append(value.toString());
 		result.append("[<");
-		for (int i = 0; i < keys.length; i++) {
-			if (i > 0)
-				result.append(", ");
-			result.append(keys[i].toString());
-		}
+		result.append(key.toString());
 		result.append(">]");
 		return result.toString();
 	}
@@ -80,8 +75,8 @@ public class GenericMapTypeID implements ITypeID {
 	@Override
 	public int hashCode() {
 		int hash = 5;
-		hash = 97 * hash + Objects.hashCode(this.value);
-		hash = 97 * hash + Arrays.deepHashCode(this.keys);
+		hash = 97 * hash + this.value.hashCode();
+		hash = 97 * hash + this.key.hashCode();
 		return hash;
 	}
 
@@ -100,7 +95,7 @@ public class GenericMapTypeID implements ITypeID {
 		if (!Objects.equals(this.value, other.value)) {
 			return false;
 		}
-		if (!Arrays.deepEquals(this.keys, other.keys)) {
+		if (!Objects.equals(this.key, other.key)) {
 			return false;
 		}
 		return true;

@@ -57,6 +57,12 @@ public class JavaForeachVisitor implements ForeachIteratorVisitor<Void> {
         return null;
     }
 
+	@Override
+	public Void visitStringCharacterIterator() {
+		// TODO: implement this one
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
     private void handleArray(final int z, final JavaLocalVariableInfo arrayTypeInfo) {
         javaWriter.iConst0();
         javaWriter.storeInt(z);

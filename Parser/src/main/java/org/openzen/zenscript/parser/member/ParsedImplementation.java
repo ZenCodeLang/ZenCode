@@ -8,8 +8,9 @@ package org.openzen.zenscript.parser.member;
 import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.ImplementationScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.ImplementationScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -20,6 +21,7 @@ import org.openzen.zenscript.shared.CodePosition;
 public class ParsedImplementation extends ParsedDefinitionMember {
 	private final CodePosition position;
 	private final int modifiers;
+	private final ParsedAnnotation[] annotations;
 	private final IParsedType type;
 	private final List<ParsedDefinitionMember> members;
 	
@@ -29,13 +31,15 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
+			ParsedAnnotation[] annotations,
 			IParsedType type,
 			List<ParsedDefinitionMember> members)
 	{
-		super(definition);
+		super(definition, annotations);
 		
 		this.position = position;
 		this.modifiers = modifiers;
+		this.annotations = annotations;
 		this.type = type;
 		this.members = members;
 	}
@@ -62,6 +66,8 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 
 	@Override
 	public void compile(BaseScope scope) {
+		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
+		
 		ImplementationScope innerScope = new ImplementationScope(scope, compiled);
 		for (ParsedDefinitionMember member : members) {
 			member.compile(innerScope);

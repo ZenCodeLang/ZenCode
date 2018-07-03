@@ -29,4 +29,13 @@ public class SetFieldExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitSetField(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tTarget = target.transform(transformer);
+		Expression tValue = value.transform(transformer);
+		return tTarget == target && tValue == value
+				? this
+				: new SetFieldExpression(position, tTarget, field, tValue);
+	}
 }

@@ -7,7 +7,8 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -16,8 +17,8 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ParsedDestructor extends ParsedFunctionalMember {
-	public ParsedDestructor(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedFunctionBody body) {
-		super(position, definition, modifiers, body);
+	public ParsedDestructor(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedAnnotation[] annotations, ParsedFunctionBody body) {
+		super(position, definition, modifiers, annotations, body);
 	}
 
 	@Override

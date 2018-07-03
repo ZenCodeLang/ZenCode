@@ -14,13 +14,13 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.MapExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.ICallableMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
@@ -60,7 +60,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 				
 				hasAssocHint = true;
 			} else if (hint instanceof GenericMapTypeID) {
-				ICallableMember constructor = scope
+				FunctionalMember constructor = scope
 						.getTypeMembers(hint)
 						.getOrCreateGroup(OperatorType.CONSTRUCTOR)
 						.selectMethod(position, scope, CallArguments.EMPTY, true, true);
@@ -69,7 +69,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 		}
 		
 		if (keys.isEmpty() && keyHints.size() == 1) {
-			ICallableMember constructor = scope
+			FunctionalMember constructor = scope
 						.getTypeMembers(assocHint)
 						.getOrCreateGroup(OperatorType.CONSTRUCTOR)
 						.selectMethod(position, scope, CallArguments.EMPTY, true, true);
@@ -83,7 +83,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 				if (keys.get(i) != null)
 					throw new CompileException(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
 			}
-			ParsedCallArguments arguments = new ParsedCallArguments(values);
+			ParsedCallArguments arguments = new ParsedCallArguments(null, values);
 			return ParsedNewExpression.compile(position, hint, arguments, scope);
 		}
 		

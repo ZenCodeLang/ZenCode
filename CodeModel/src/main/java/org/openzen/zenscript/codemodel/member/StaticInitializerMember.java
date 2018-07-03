@@ -6,10 +6,12 @@
 package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
@@ -22,6 +24,7 @@ import org.openzen.zenscript.shared.Taggable;
 public class StaticInitializerMember extends Taggable implements IDefinitionMember {
 	private final CodePosition position;
 	public Statement body;
+	public MemberAnnotation[] annotations = MemberAnnotation.NONE;
 	
 	public StaticInitializerMember(CodePosition position) {
 		this.position = position;
@@ -30,6 +33,11 @@ public class StaticInitializerMember extends Taggable implements IDefinitionMemb
 	@Override
 	public CodePosition getPosition() {
 		return position;
+	}
+	
+	@Override
+	public BuiltinID getBuiltin() {
+		return null;
 	}
 
 	@Override

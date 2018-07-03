@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.constructor;
 
+import org.openzen.zenscript.compiler.CompilationUnit;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,6 +23,12 @@ public class ModuleLoader {
 	
 	private final HashSet<String> compilingModulesSet = new HashSet<>();
 	private final Stack<String> compilingModulesStack = new Stack<>();
+	
+	private final CompilationUnit compilationUnit;
+	
+	public ModuleLoader(CompilationUnit compilationUnit) {
+		this.compilationUnit = compilationUnit;
+	}
 	
 	public SemanticModule getModule(String name) {
 		if (moduleCache.containsKey(name))
@@ -42,7 +49,7 @@ public class ModuleLoader {
 		compilingModulesSet.add(name);
 		compilingModulesStack.add(name);
 		
-		SemanticModule module = modules.get(name).load();
+		SemanticModule module = modules.get(name).load(compilationUnit);
 		moduleCache.put(name, module);
 		
 		compilingModulesSet.remove(name);

@@ -5,7 +5,9 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -16,16 +18,44 @@ import org.openzen.zenscript.shared.CodePosition;
 public class NewExpression extends Expression {
 	public final ConstructorMember constructor;
 	public final CallArguments arguments;
+	public final FunctionHeader instancedHeader;
 	
-	public NewExpression(CodePosition position, ITypeID type, ConstructorMember constructor, CallArguments arguments) {
+	public NewExpression(
+			CodePosition position,
+			ITypeID type,
+			ConstructorMember constructor,
+			CallArguments arguments)
+	{
 		super(position, type, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
 		
 		this.constructor = constructor;
 		this.arguments = arguments;
+		this.instancedHeader = constructor.header;
+	}
+	
+	public NewExpression(
+			CodePosition position,
+			ITypeID type,
+			ConstructorMember constructor,
+			CallArguments arguments,
+			FunctionHeader instancedHeader,
+			TypeScope scope)
+	{
+		super(position, type, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
+		
+		this.constructor = constructor;
+		this.arguments = scope == null ? arguments : arguments.normalize(position, scope, instancedHeader);
+		this.instancedHeader = instancedHeader;
 	}
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitNew(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		CallArguments tArguments = arguments.transform(transformer);
+		return tArguments == arguments ? this : new NewExpression(position, type, constructor, tArguments, instancedHeader, null);
 	}
 }

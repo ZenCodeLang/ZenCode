@@ -7,11 +7,11 @@ package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -28,7 +28,9 @@ public abstract class HighLevelDefinition extends Taggable {
 	public final String name;
 	public final int modifiers;
 	public final List<IDefinitionMember> members = new ArrayList<>();
+	public final AccessScope access = new AccessScope();
 	public TypeParameter[] genericParameters = null;
+	public DefinitionAnnotation[] annotations = DefinitionAnnotation.NONE;
 	
 	public HighLevelDefinition outerDefinition;
 	public ITypeID superType;

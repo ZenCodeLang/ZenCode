@@ -12,6 +12,8 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.compiler.CompilationUnit;
+import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.shared.SourceFile;
 
@@ -20,20 +22,26 @@ import org.openzen.zenscript.shared.SourceFile;
  * @author Hoofdgebruiker
  */
 public class JavaSourceCompiler implements ZenCodeCompiler {
-	private final File directory;
-	private final ZSPackage pkg;
-	private final Map<File, JavaSourceFile> sourceFiles = new HashMap<>();
+	public final JavaSourceFormattingSettings settings;
+	public final JavaSourceSyntheticTypeGenerator typeGenerator;
 	
-	public JavaSourceCompiler(File directory, ZSPackage pkg) {
+	private final File directory;
+	private final Map<File, JavaSourceFile> sourceFiles = new HashMap<>();
+	private final CompilationUnit compilationUnit;
+	
+	public JavaSourceCompiler(File directory, CompilationUnit compilationUnit) {
 		if (!directory.exists())
 			directory.mkdirs();
 		
+		settings = new JavaSourceFormattingSettings.Builder().build();
+		typeGenerator = new JavaSourceSyntheticTypeGenerator(directory);
+		
 		this.directory = directory;
-		this.pkg = pkg;
+		this.compilationUnit = compilationUnit;
 	}
 	
 	@Override
-	public void addDefinition(HighLevelDefinition definition) {
+	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
 		File file = new File(getDirectory(definition.pkg), definition.name + ".java");
 		if (definition.name == null || definition instanceof FunctionDefinition) {
 			SourceFile source = definition.getTag(SourceFile.class);
@@ -47,9 +55,9 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 		
 		JavaSourceFile sourceFile = sourceFiles.get(file);
 		if (sourceFile == null)
-			sourceFiles.put(file, sourceFile = new JavaSourceFile(this, file, definition.pkg.fullName));
+			sourceFiles.put(file, sourceFile = new JavaSourceFile(this, file, definition.pkg));
 		
-		sourceFile.add(definition);
+		sourceFile.add(definition, module);
 	}
 	
 	@Override
@@ -74,8 +82,6 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	
 	private File getDirectory(ZSPackage pkg) {
 		if (pkg == null)
-			throw new RuntimeException("Package not in the package directory");
-		if (pkg == this.pkg)
 			return directory;
 		
 		File base = getDirectory(pkg.parent);

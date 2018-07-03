@@ -7,6 +7,7 @@ package org.openzen.zenscript.parser.statements;
 
 import java.util.List;
 import java.util.function.Function;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -17,8 +18,9 @@ import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.linker.ExpressionScope;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -31,8 +33,8 @@ public class ParsedStatementSwitch extends ParsedStatement {
 	private final ParsedExpression value;
 	private final List<ParsedSwitchCase> cases;
 	
-	public ParsedStatementSwitch(CodePosition position, WhitespaceInfo whitespace, String name, ParsedExpression value, List<ParsedSwitchCase> cases) {
-		super(position, whitespace);
+	public ParsedStatementSwitch(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, String name, ParsedExpression value, List<ParsedSwitchCase> cases) {
+		super(position, annotations, whitespace);
 		
 		this.name = name;
 		this.value = value;
@@ -103,6 +105,11 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		@Override
 		public IPartialExpression getOuterInstance(CodePosition position) {
 			return outer.getOuterInstance(position);
+		}
+
+		@Override
+		public AnnotationDefinition getAnnotation(String name) {
+			return outer.getAnnotation(name);
 		}
 	}
 }

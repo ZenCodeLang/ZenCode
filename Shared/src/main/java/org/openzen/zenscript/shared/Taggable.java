@@ -23,4 +23,8 @@ public abstract class Taggable {
 	public final boolean hasTag(Class<?> cls) {
 		return tags.hasTag(cls);
 	}
+	
+	public final void addAllTagsFrom(Taggable other) {
+		tags.addAllFrom(other.tags);
+	}
 }

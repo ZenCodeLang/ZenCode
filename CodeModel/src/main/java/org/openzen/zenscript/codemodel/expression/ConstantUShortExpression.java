@@ -13,9 +13,9 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ConstantUShortExpression extends Expression {
-	public final short value;
+	public final int value;
 	
-	public ConstantUShortExpression(CodePosition position, short value) {
+	public ConstantUShortExpression(CodePosition position, int value) {
 		super(position, BasicTypeID.USHORT, null);
 		
 		this.value = value;
@@ -24,5 +24,10 @@ public class ConstantUShortExpression extends Expression {
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitConstantUShort(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		return this;
 	}
 }

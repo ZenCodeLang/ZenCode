@@ -27,4 +27,13 @@ public class AndAndExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitAndAnd(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tLeft = left.transform(transformer);
+		Expression tRight = right.transform(transformer);
+		return tLeft == left && tRight == right
+				? this
+				: new AndAndExpression(position, tLeft, tRight);
+	}
 }

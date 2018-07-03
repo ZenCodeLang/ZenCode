@@ -13,24 +13,22 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
 import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
-import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.ICallableMember;
-import org.openzen.zenscript.codemodel.member.ICasterMember;
-import org.openzen.zenscript.codemodel.member.IGettableMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinition;
@@ -62,7 +60,7 @@ public final class TypeMembers {
 	private final LocalMemberCache cache;
 	public final ITypeID type;
 	
-	private final List<TypeMember<ICasterMember>> casters = new ArrayList<>();
+	private final List<TypeMember<CasterMember>> casters = new ArrayList<>();
 	private final List<TypeMember<ImplementationMember>> implementations = new ArrayList<>();
 	private final List<TypeMember<IIteratorMember>> iterators = new ArrayList<>();
 	
@@ -73,6 +71,9 @@ public final class TypeMembers {
 	private final Map<OperatorType, DefinitionMemberGroup> operators = new HashMap<>();
 	
 	public TypeMembers(LocalMemberCache cache, ITypeID type) {
+		if (type == null)
+			throw new NullPointerException("Type must not be null!");
+		
 		this.cache = cache;
 		this.type = type;
 	}
@@ -175,6 +176,11 @@ public final class TypeMembers {
 		casters.add(new TypeMember<>(priority, caster));
 	}
 	
+	public void addConst(ConstMember member) {
+		DefinitionMemberGroup group = getOrCreateGroup(member.name, true);
+		group.setConst(member, TypeMemberPriority.SPECIFIED);
+	}
+	
 	public void addField(FieldMember member) {
 		addField(member, TypeMemberPriority.SPECIFIED);
 	}
@@ -184,12 +190,12 @@ public final class TypeMembers {
 		group.setField(member, priority);
 	}
 	
-	public void addGetter(IGettableMember member) {
+	public void addGetter(GetterMember member) {
 		addGetter(member, TypeMemberPriority.SPECIFIED);
 	}
 	
-	public void addGetter(IGettableMember member, TypeMemberPriority priority) {
-		DefinitionMemberGroup group = getOrCreateGroup(member.getName(), member.isStatic());
+	public void addGetter(GetterMember member, TypeMemberPriority priority) {
+		DefinitionMemberGroup group = getOrCreateGroup(member.name, member.isStatic());
 		group.setGetter(member, priority);
 	}
 	
@@ -215,12 +221,16 @@ public final class TypeMembers {
 		addOperator(member, TypeMemberPriority.SPECIFIED);
 	}
 	
+	public boolean hasOperator(OperatorType operator) {
+		return operators.containsKey(operator) && operators.get(operator).hasMethods();
+	}
+	
 	public void addOperator(OperatorMember member, TypeMemberPriority priority) {
 		DefinitionMemberGroup group = getOrCreateGroup(member.operator);
 		group.addMethod(member, priority);
 	}
 	
-	public void addOperator(OperatorType operator, ICallableMember member, TypeMemberPriority priority) {
+	public void addOperator(OperatorType operator, FunctionalMember member, TypeMemberPriority priority) {
 		DefinitionMemberGroup group = getOrCreateGroup(operator);
 		group.addMethod(member, priority);
 	}
@@ -285,28 +295,17 @@ public final class TypeMembers {
 	}
 	
 	public Expression compare(CodePosition position, TypeScope scope, CompareType operator, Expression left, Expression right) {
-		if (operator == CompareType.SAME) {
-			if (left.type.isObjectType() && right.type.isObjectType())
-				return new SameObjectExpression(position, left, right, false);
-			else
-				return compare(position, scope, CompareType.EQ, left, right);
-		} else if (operator == CompareType.NOTSAME) {
-			if (left.type.isObjectType() && right.type.isObjectType())
-				return new SameObjectExpression(position, left, right, true);
-			else
-				return compare(position, scope, CompareType.NE, left, right);
-		} else if (operator == CompareType.EQ) {
+		if (operator == CompareType.EQ) {
 			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.EQUALS);
-			for (TypeMember<ICallableMember> member : equal.getMethodMembers()) {
-				if (member.member.getHeader().accepts(scope, right))
+			for (TypeMember<FunctionalMember> member : equal.getMethodMembers()) {
+				if (member.member.header.accepts(scope, right))
 					return equal.call(position, scope, left, new CallArguments(right), false);
 			}
 		} else if (operator == CompareType.NE) {
-			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.EQUALS);
-			for (TypeMember<ICallableMember> member : equal.getMethodMembers()) {
-				if (member.member.getHeader().accepts(scope, right)) {
-					Expression equalExpression = equal.call(position, scope, left, new CallArguments(right), false);
-					return new CallExpression(position, equalExpression, BuiltinTypeMembers.BOOL_NOT, BuiltinTypeMembers.BOOL_NOT.header, CallArguments.EMPTY, scope);
+			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.NOTEQUALS);
+			for (TypeMember<FunctionalMember> member : equal.getMethodMembers()) {
+				if (member.member.header.accepts(scope, right)) {
+					return equal.call(position, scope, left, new CallArguments(right), false);
 				}
 			}
 		}
@@ -358,7 +357,7 @@ public final class TypeMembers {
 		if (type.isOptional() && type.unwrap() == toType)
 			return true;
 		
-		for (TypeMember<ICasterMember> caster : casters) {
+		for (TypeMember<CasterMember> caster : casters) {
 			if (caster.member.isImplicit() && toType == caster.member.getTargetType())
 				return true;
 		}
@@ -370,7 +369,7 @@ public final class TypeMembers {
 		if (canCastImplicit(toType))
 			return true;
 		
-		for (TypeMember<ICasterMember> caster : casters) {
+		for (TypeMember<CasterMember> caster : casters) {
 			if (toType == caster.member.getTargetType())
 				return true;
 		}
@@ -393,7 +392,7 @@ public final class TypeMembers {
 		if (type.isOptional() && type.unwrap() == toType)
 			return new CheckNullExpression(position, value);
 		
-		for (TypeMember<ICasterMember> caster : casters) {
+		for (TypeMember<CasterMember> caster : casters) {
 			if (caster.member.isImplicit() && toType == caster.member.getTargetType())
 				return caster.member.cast(position, value, implicit);
 		}
@@ -411,7 +410,7 @@ public final class TypeMembers {
 		if (this.canCastImplicit(toType))
 			return castImplicit(position, value, toType, false);
 		
-		for (TypeMember<ICasterMember> caster : casters)
+		for (TypeMember<CasterMember> caster : casters)
 			if (toType == caster.member.getTargetType())
 				return caster.member.cast(position, value, false);
 		

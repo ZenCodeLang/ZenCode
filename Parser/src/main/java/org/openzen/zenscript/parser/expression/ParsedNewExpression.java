@@ -8,14 +8,13 @@ package org.openzen.zenscript.parser.expression;
 import java.util.List;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.ICallableMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
-import org.openzen.zenscript.linker.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
@@ -51,15 +50,18 @@ public class ParsedNewExpression extends ParsedExpression{
 		DefinitionMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 		List<ITypeID>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.arguments.size());
 		CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
-		ICallableMember member = constructors.selectMethod(position, scope, compiledArguments, true, true);
+		FunctionalMember member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 		if (member == null)
 			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching constructor found");
 		if (!(member instanceof ConstructorMember))
 			throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "COMPILER BUG: constructor is not a constructor");
 		
-		for (int i = 0; i < compiledArguments.arguments.length; i++) {
-			compiledArguments.arguments[i] = compiledArguments.arguments[i].castImplicit(position, scope, member.getHeader().parameters[i].type);
-		}
-		return new NewExpression(position, type, (ConstructorMember) member, compiledArguments);
+		return new NewExpression(
+				position,
+				type,
+				(ConstructorMember) member,
+				compiledArguments,
+				compiledArguments.getNumberOfTypeArguments() == 0 ? member.header : member.header.withGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments),
+				scope);
 	}
 }

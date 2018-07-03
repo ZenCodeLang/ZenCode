@@ -10,7 +10,7 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.shared.CodePosition;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
-import org.openzen.zenscript.linker.BaseScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedAlias;
 import org.openzen.zenscript.parser.definitions.ParsedClass;
 import org.openzen.zenscript.parser.definitions.ParsedEnum;
@@ -25,23 +25,23 @@ import org.openzen.zenscript.parser.definitions.ParsedVariant;
  * @author Hoofdgebruiker
  */
 public abstract class ParsedDefinition {
-	public static ParsedDefinition parse(ZSPackage pkg, CodePosition position, int modifiers, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedDefinition parse(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		if (tokens.optional(K_CLASS) != null) {
-			return ParsedClass.parseClass(pkg, position, modifiers, tokens, outerDefinition);
+			return ParsedClass.parseClass(pkg, position, modifiers, annotations, tokens, outerDefinition);
 		} else if (tokens.optional(K_INTERFACE) != null) {
-			return ParsedInterface.parseInterface(pkg, position, modifiers, tokens, outerDefinition);
+			return ParsedInterface.parseInterface(pkg, position, modifiers, annotations, tokens, outerDefinition);
 		} else if (tokens.optional(K_ENUM) != null) {
-			return ParsedEnum.parseEnum(pkg, position, modifiers, tokens, outerDefinition);
+			return ParsedEnum.parseEnum(pkg, position, modifiers, annotations, tokens, outerDefinition);
 		} else if (tokens.optional(K_STRUCT) != null) {
-			return ParsedStruct.parseStruct(pkg, position, modifiers, tokens, outerDefinition);
+			return ParsedStruct.parseStruct(pkg, position, modifiers, annotations, tokens, outerDefinition);
 		} else if (tokens.optional(K_ALIAS) != null) {
-			return ParsedAlias.parseAlias(pkg, position, modifiers, tokens, outerDefinition);
+			return ParsedAlias.parseAlias(pkg, position, modifiers, annotations, tokens, outerDefinition);
 		} else if (tokens.optional(K_FUNCTION) != null) {
-			return ParsedFunction.parseFunction(pkg, position, modifiers, tokens, outerDefinition);
+			return ParsedFunction.parseFunction(pkg, position, modifiers, annotations, tokens, outerDefinition);
 		} else if (tokens.optional(K_EXPAND) != null) {
-			return ParsedExpansion.parseExpansion(pkg, position, modifiers, tokens, outerDefinition);
+			return ParsedExpansion.parseExpansion(pkg, position, modifiers, annotations, tokens, outerDefinition);
 		} else if (tokens.optional(K_VARIANT) != null) {
-			return ParsedVariant.parseVariant(pkg, position, modifiers, tokens, outerDefinition);
+			return ParsedVariant.parseVariant(pkg, position, modifiers, annotations, tokens, outerDefinition);
 		} else {
 			//tokens.required(EOF, "An import, class, interface, enum, struct, function or alias expected.");
 			return null;
@@ -50,10 +50,12 @@ public abstract class ParsedDefinition {
 	
 	public final CodePosition position;
 	public final int modifiers;
+	public final ParsedAnnotation[] annotations;
 	
-	public ParsedDefinition(CodePosition position, int modifiers) {
+	public ParsedDefinition(CodePosition position, int modifiers, ParsedAnnotation[] annotations) {
 		this.position = position;
 		this.modifiers = modifiers;
+		this.annotations = annotations;
 	}
 	
 	public final CodePosition getPosition() {

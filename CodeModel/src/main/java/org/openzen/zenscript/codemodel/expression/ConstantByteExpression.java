@@ -13,9 +13,9 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ConstantByteExpression extends Expression {
-	public final byte value;
+	public final int value;
 	
-	public ConstantByteExpression(CodePosition position, byte value) {
+	public ConstantByteExpression(CodePosition position, int value) {
 		super(position, BasicTypeID.BYTE, null);
 		
 		this.value = value;
@@ -24,5 +24,10 @@ public class ConstantByteExpression extends Expression {
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitConstantByte(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		return this;
 	}
 }

@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
@@ -22,20 +23,30 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class SetterMember extends FunctionalMember {
-	public final String name;
 	public final ITypeID type;
 	
-	public SetterMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, ITypeID type) {
-		super(position, definition, modifiers, name, new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(type, "$")));
+	public SetterMember(
+			CodePosition position,
+			HighLevelDefinition definition,
+			int modifiers,
+			String name,
+			ITypeID type,
+			BuiltinID builtin)
+	{
+		super(position,
+				definition,
+				modifiers,
+				name,
+				new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(type, "$")),
+				builtin);
 		
-		this.name = name;
 		this.type = type;
 	}
 	
 	@Override
 	public String getInformalName() {
 		return "setter " + name;
-	}
+	}																																							
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
@@ -43,8 +54,14 @@ public class SetterMember extends FunctionalMember {
 	}
 
 	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new SetterMember(position, definition, modifiers, name, type.withGenericArguments(registry, mapping));
+	public SetterMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
+		return new SetterMember(
+				position,
+				definition,
+				modifiers,
+				name,
+				type.withGenericArguments(registry, mapping),
+				builtin);
 	}
 
 	@Override

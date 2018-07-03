@@ -25,4 +25,10 @@ public class InterfaceCastExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitInterfaceCast(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression tValue = value.transform(transformer);
+		return value == tValue ? this : new InterfaceCastExpression(position, tValue, type);
+	}
 }

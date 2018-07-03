@@ -8,7 +8,7 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.expression.AndAndExpression;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
-import org.openzen.zenscript.codemodel.expression.BasicCompareExpression;
+import org.openzen.zenscript.codemodel.expression.CompareExpression;
 import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.CapturedClosureExpression;
@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
 import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
+import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
@@ -38,7 +39,6 @@ import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
 import org.openzen.zenscript.codemodel.expression.FunctionExpression;
-import org.openzen.zenscript.codemodel.expression.GenericCompareExpression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
@@ -66,6 +66,7 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
+import org.openzen.zenscript.codemodel.expression.ThrowExpression;
 import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
@@ -98,7 +99,7 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 	}
 
 	@Override
-	public Void visitCompare(BasicCompareExpression expression) {
+	public Void visitCompare(CompareExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
 
@@ -154,6 +155,11 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitConditional(ConditionalExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+	
+	@Override
+	public Void visitConst(ConstExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
 
@@ -239,11 +245,6 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionExpression expression) {
-		throw new UnsupportedOperationException("Invalid increment target");
-	}
-
-	@Override
-	public Void visitGenericCompare(GenericCompareExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
 
@@ -407,6 +408,11 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitThis(ThisExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+
+	@Override
+	public Void visitThrow(ThrowExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
 

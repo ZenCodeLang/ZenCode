@@ -10,9 +10,10 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.linker.ExpressionScope;
-import org.openzen.zenscript.linker.LoopScope;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.LoopScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -25,8 +26,8 @@ public class ParsedStatementWhile extends ParsedStatement {
 	public final ParsedStatement content;
 	public final String label;
 	
-	public ParsedStatementWhile(CodePosition position, WhitespaceInfo whitespace, String label, ParsedExpression condition, ParsedStatement content) {
-		super(position, whitespace);
+	public ParsedStatementWhile(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, String label, ParsedExpression condition, ParsedStatement content) {
+		super(position, annotations, whitespace);
 		
 		this.condition = condition;
 		this.content = content;
@@ -43,6 +44,6 @@ public class ParsedStatementWhile extends ParsedStatement {
 		WhileStatement result = new WhileStatement(position, label, condition);
 		LoopScope innerScope = new LoopScope(result, scope);
 		result.content = this.content.compile(innerScope);
-		return result(result);
+		return result(result, scope);
 	}
 }

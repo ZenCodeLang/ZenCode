@@ -8,9 +8,10 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.linker.ExpressionScope;
-import org.openzen.zenscript.linker.ForeachScope;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.ForeachScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
@@ -21,8 +22,8 @@ public class ParsedStatementForeach extends ParsedStatement {
 	private final ParsedExpression list;
 	private final ParsedStatement body;
 
-	public ParsedStatementForeach(CodePosition position, WhitespaceInfo whitespace, String[] varnames, ParsedExpression list, ParsedStatement body) {
-		super(position, whitespace);
+	public ParsedStatementForeach(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, String[] varnames, ParsedExpression list, ParsedStatement body) {
+		super(position, annotations, whitespace);
 
 		this.varnames = varnames;
 		this.list = list;
@@ -46,6 +47,6 @@ public class ParsedStatementForeach extends ParsedStatement {
 		ForeachStatement statement = new ForeachStatement(position, variables, iterator, list);
 		ForeachScope innerScope = new ForeachScope(statement, scope);
 		statement.content = this.body.compile(innerScope);
-		return result(statement);
+		return result(statement, scope);
 	}
 }

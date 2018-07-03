@@ -5,9 +5,7 @@
  */
 package org.openzen.zenscript.formatter;
 
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
+import org.openzen.zenscript.formattershared.Importer;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
@@ -32,10 +30,10 @@ import org.openzen.zenscript.shared.StringUtils;
  * @author Hoofdgebruiker
  */
 public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoundVisitor<String> {
-	private final FormattingSettings settings;
+	private final ScriptFormattingSettings settings;
 	private final Importer importer;
 	
-	public TypeFormatter(FormattingSettings settings, Importer importer) {
+	public TypeFormatter(ScriptFormattingSettings settings, Importer importer) {
 		this.settings = settings;
 		this.importer = importer;
 	}
@@ -127,9 +125,9 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 	public String visitGenericMap(GenericMapTypeID map) {
 		StringBuilder result = new StringBuilder();
 		result.append(map.value.accept(this));
-		result.append("[");
-		FormattingUtils.formatTypeParameters(result, map.keys, this);
-		result.append("]");
+		result.append("[<");
+		FormattingUtils.formatTypeParameters(result, new TypeParameter[] { map.key }, this);
+		result.append("]>");
 		return result.toString();
 	}
 }

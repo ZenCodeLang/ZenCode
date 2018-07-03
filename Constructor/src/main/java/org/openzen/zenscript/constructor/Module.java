@@ -13,20 +13,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.constructor.module.ModuleSpace;
 import org.openzen.zenscript.compiler.SemanticModule;
-import org.openzen.zenscript.linker.symbol.ISymbol;
+import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
 import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.validator.ValidationLogEntry;
-import org.openzen.zenscript.validator.Validator;
 
 /**
  *
@@ -34,6 +32,7 @@ import org.openzen.zenscript.validator.Validator;
  */
 public class Module {
 	public final String name;
+	public final String[] dependencies;
 	public final File sourceDirectory;
 	public final String packageName;
 	public final String host;
@@ -46,6 +45,14 @@ public class Module {
 		JSONObject json = new JSONObject(new JSONTokener(input));
 		packageName = json.getString("package");
 		host = json.getString("host");
+		JSONArray dependencies = json.optJSONArray("dependencies");
+		if (dependencies == null) {
+			this.dependencies = new String[0];
+		} else {
+			this.dependencies = new String[dependencies.length()];
+			for (int i = 0; i < dependencies.length(); i++)
+				this.dependencies[i] = dependencies.getString(i);
+		}
 	}
 	
 	public ParsedFile[] parse(ZSPackage pkg) throws IOException {
@@ -68,7 +75,12 @@ public class Module {
 		}
 	}
 	
-	public static SemanticModule compileSyntaxToSemantic(ZSPackage pkg, ParsedFile[] files, ModuleSpace registry) {
+	public static SemanticModule compileSyntaxToSemantic(
+			String name,
+			String[] dependencies,
+			ZSPackage pkg,
+			ParsedFile[] files,
+			ModuleSpace registry) {
 		// We are considering all these files to be in the same package, so make
 		// a single PackageDefinition instance. If these files were in multiple
 		// packages, we'd need an instance for every package.
@@ -92,7 +104,7 @@ public class Module {
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
 			try {
-				file.compileTypes(rootPackage, pkg, definitions, registry.typeRegistry, expansions, globals);
+				file.compileTypes(rootPackage, pkg, definitions, registry.compilationUnit.globalTypeRegistry, expansions, globals, registry.getAnnotations());
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
@@ -100,14 +112,14 @@ public class Module {
 		}
 		
 		if (failed)
-			return new SemanticModule(false, pkg, definitions, Collections.emptyList());
+			return new SemanticModule(name, dependencies, SemanticModule.State.INVALID, rootPackage, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
 		
 		for (ParsedFile file : files) {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
 			try {
-				file.compileMembers(rootPackage, pkg, definitions, registry.typeRegistry, expansions, globals);
+				file.compileMembers(rootPackage, pkg, definitions, registry.compilationUnit.globalTypeRegistry, expansions, globals, registry.getAnnotations());
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
@@ -115,7 +127,7 @@ public class Module {
 		}
 		
 		if (failed)
-			return new SemanticModule(false, pkg, definitions, Collections.emptyList());
+			return new SemanticModule(name, dependencies, SemanticModule.State.INVALID, rootPackage, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
 		
 		// scripts will store all the script blocks encountered in the files
 		List<ScriptBlock> scripts = new ArrayList<>();
@@ -124,29 +136,13 @@ public class Module {
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
 			try {
-				file.compileCode(rootPackage, pkg, definitions, registry.typeRegistry, expansions, scripts, globals);
+				file.compileCode(rootPackage, pkg, definitions, registry.compilationUnit.globalTypeRegistry, expansions, scripts, globals, registry.getAnnotations());
 			} catch (CompileException ex) {
 				System.out.println(ex.getMessage());
 				failed = true;
 			}
 		}
 		
-		if (failed)
-			return new SemanticModule(false, pkg, definitions, Collections.emptyList());
-		
-		Validator validator = new Validator();
-		boolean isValid = true;
-		for (ScriptBlock script : scripts) {
-			isValid &= validator.validate(script);
-		}
-		for (HighLevelDefinition definition : definitions.getAll()) {
-			isValid &= validator.validate(definition);
-		}
-		
-		for (ValidationLogEntry entry : validator.getLog()) {
-			System.out.println(entry.kind + " " + entry.position.toString() + ": " + entry.message);
-		}
-		
-		return new SemanticModule(isValid, pkg, definitions, scripts);
+		return new SemanticModule(name, dependencies, SemanticModule.State.SEMANTIC, rootPackage, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
 	}
 }

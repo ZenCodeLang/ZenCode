@@ -23,15 +23,19 @@ public class ConstructorThisCallExpression extends Expression {
 	public ConstructorThisCallExpression(CodePosition position, ITypeID type, ConstructorMember constructor, CallArguments arguments, TypeScope scope) {
 		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
 		
-		arguments = arguments.normalize(position, scope, constructor.header);
-		
 		this.objectType = type;
 		this.constructor = constructor;
-		this.arguments = arguments;
+		this.arguments = scope == null ? arguments : arguments.normalize(position, scope, constructor.header);
 	}
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitConstructorThisCall(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		CallArguments tArguments = arguments.transform(transformer);
+		return tArguments == arguments ? this : new ConstructorThisCallExpression(position, type, constructor, tArguments, null);
 	}
 }

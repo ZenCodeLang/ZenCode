@@ -34,4 +34,14 @@ public class EnumConstantExpression extends Expression {
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitEnumConstant(this);
 	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		return this;
+	}
+	
+	@Override
+	public EnumConstantMember evaluateEnumConstant() {
+		return value;
+	}
 }

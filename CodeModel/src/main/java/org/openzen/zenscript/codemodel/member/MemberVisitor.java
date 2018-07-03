@@ -10,6 +10,8 @@ package org.openzen.zenscript.codemodel.member;
  * @author Hoofdgebruiker
  */
 public interface MemberVisitor<T> {
+	public T visitConst(ConstMember member);
+	
 	public T visitField(FieldMember member);
 	
 	public T visitConstructor(ConstructorMember member);

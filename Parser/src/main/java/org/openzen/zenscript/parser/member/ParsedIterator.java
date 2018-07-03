@@ -9,9 +9,10 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.FunctionScope;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.FunctionScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.shared.CodePosition;
@@ -32,10 +33,11 @@ public class ParsedIterator extends ParsedDefinitionMember {
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
+			ParsedAnnotation[] annotations,
 			ParsedFunctionHeader header,
 			ParsedFunctionBody body)
 	{
-		super(definition);
+		super(definition, annotations);
 		
 		this.position = position;
 		this.modifiers = modifiers;
@@ -66,6 +68,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 	public void compile(BaseScope scope) {
 		FunctionHeader header = new FunctionHeader(scope.getTypeRegistry().getIterator(compiled.getLoopVariableTypes()));
 		StatementScope innerScope = new FunctionScope(scope, header);
+		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		compiled.setContent(body.compile(innerScope, header));
 	}
 }

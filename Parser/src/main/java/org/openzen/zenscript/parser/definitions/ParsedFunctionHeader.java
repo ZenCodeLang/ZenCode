@@ -16,8 +16,9 @@ import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
-import org.openzen.zenscript.linker.BaseScope;
-import org.openzen.zenscript.linker.GenericFunctionScope;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.GenericFunctionScope;
+import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
@@ -42,6 +43,7 @@ public class ParsedFunctionHeader {
 		List<ParsedFunctionParameter> parameters = new ArrayList<>();
 		if (tokens.optional(T_BRCLOSE) == null) {
 			do {
+				ParsedAnnotation[] annotations = ParsedAnnotation.parseAnnotations(tokens);
 				ZSToken argName = tokens.required(T_IDENTIFIER, "identifier expected");
 				boolean variadic = tokens.optional(T_DOT3) != null;
 				
@@ -53,7 +55,7 @@ public class ParsedFunctionHeader {
 				if (tokens.optional(T_ASSIGN) != null) {
 					defaultValue = ParsedExpression.parse(tokens);
 				}
-				parameters.add(new ParsedFunctionParameter(argName.content, type, defaultValue, variadic));
+				parameters.add(new ParsedFunctionParameter(annotations, argName.content, type, defaultValue, variadic));
 			} while (tokens.optional(T_COMMA) != null);
 			tokens.required(T_BRCLOSE, ") expected");
 		}

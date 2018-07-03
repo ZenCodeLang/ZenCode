@@ -7,7 +7,7 @@ package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.linker.StatementScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
 
 /**
  *

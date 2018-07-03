@@ -5,9 +5,12 @@
  */
 package org.openzen.zenscript.codemodel.statement;
 
+import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
@@ -29,6 +32,34 @@ public class IfStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitIf(this);
+	}
+	
+	@Override
+	public void forEachStatement(Consumer<Statement> consumer) {
+		consumer.accept(this);
+		onThen.forEachStatement(consumer);
+		if (onElse != null)
+			onElse.forEachStatement(consumer);
+	}
+
+	@Override
+	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Expression tCondition = condition.transform(transformer);
+		Statement tOnThen = onThen.transform(transformer, modified);
+		Statement tOnElse = onElse == null ? null : onElse.transform(transformer, modified);
+		return tCondition == condition && onThen == tOnThen && onElse == tOnElse
+				? this
+				: new IfStatement(position, tCondition, tOnThen, tOnElse);
+	}
+
+	@Override
+	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Expression tCondition = condition.transform(transformer);
+		Statement tOnThen = onThen.transform(transformer, modified);
+		Statement tOnElse = onElse == null ? null : onElse.transform(transformer, modified);
+		return tCondition == condition && onThen == tOnThen && onElse == tOnElse
+				? this
+				: new IfStatement(position, tCondition, tOnThen, tOnElse);
 	}
 	
 	private static ITypeID getThrownType(Expression condition, Statement onThen, Statement onElse) {

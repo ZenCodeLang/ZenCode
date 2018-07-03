@@ -14,9 +14,17 @@ import org.openzen.zenscript.shared.Taggable;
  * @author Hoofdgebruiker
  */
 public class ScriptBlock extends Taggable {
+	public final AccessScope access;
 	public final List<Statement> statements;
 	
-	public ScriptBlock(List<Statement> statements) {
+	public ScriptBlock(AccessScope access, List<Statement> statements) {
+		this.access = access;
 		this.statements = statements;
+	}
+	
+	public ScriptBlock withStatements(List<Statement> newStatements) {
+		ScriptBlock result = new ScriptBlock(access, newStatements);
+		result.addAllTagsFrom(this);
+		return result;
 	}
 }

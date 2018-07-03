@@ -12,63 +12,69 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.compiler.CompileScope;
+import org.openzen.zenscript.compiler.SemanticModule;
+import org.openzen.zenscript.javasource.prepare.JavaSourcePrepareDefinitionVisitor;
+import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSourceFile {
+	private final JavaSourceImporter importer;
 	private final JavaSourceCompiler compiler;
 	private final File file;
-	private final String packageName;
-	private final Map<String, String> imports = new HashMap<>();
 	private final StringBuilder contents = new StringBuilder();
+	private final ZSPackage pkg;
 	
-	public JavaSourceFile(JavaSourceCompiler compiler, File file, String packageName) {
+	public JavaSourceFile(JavaSourceCompiler compiler, File file, ZSPackage pkg) {
 		this.compiler = compiler;
-		this.packageName = packageName;
+		this.pkg = pkg;
 		this.file = file;
-	}
-	
-	public String importType(HighLevelDefinition definition) {
-		return importType(compiler.getFullName(definition));
-	}
-	
-	public String importType(String fullName) {
-		String name = fullName.substring(fullName.lastIndexOf('.') + 1);
-		if (imports.containsKey(name))
-			return fullName;
 		
-		imports.put(name, fullName);
-		return name;
+		importer = new JavaSourceImporter(pkg);
 	}
 	
-	public void add(HighLevelDefinition definition) {
-		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(this, contents);
+	public String getName() {
+		return file.getName().substring(0, file.getName().lastIndexOf('.'));
+	}
+	
+	public void add(HighLevelDefinition definition, SemanticModule module) {
+		JavaSourcePrepareDefinitionVisitor prepare = new JavaSourcePrepareDefinitionVisitor(this);
+		definition.accept(prepare);
+		
+		CompileScope scope = new CompileScope(definition.access, module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
+		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
+				compiler.settings,
+				new JavaSourceFileScope(importer, compiler.typeGenerator, getName(), scope),
+				contents);
 		definition.accept(visitor);
 	}
 	
 	public void write() {
+		if (!file.getParentFile().exists())
+			file.getParentFile().mkdirs();
+		
 		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
 			writer.write("package ");
-			writer.write(packageName);
+			writer.write(pkg.fullName);
 			writer.write(";\n\n");
 			
-			if (this.imports.size() > 0) {
-				String[] imports = this.imports.values().toArray(new String[this.imports.size()]);
-				Arrays.sort(imports);
-
-				for (String importName : imports) {
+			JavaSourceImporter.Import[] imports = importer.getUsedImports();
+			if (imports.length > 0) {
+				for (JavaSourceImporter.Import import_ : imports) {
+					if (import_.actualName.startsWith("java.lang."))
+						continue;
+					
 					writer.write("import ");
-					writer.write(importName);
-					writer.write(";");
+					writer.write(import_.actualName);
+					writer.write(";\n");
 				}
 
-				writer.write("\n\n");
+				writer.write("\n");
 			}
 			
 			writer.write(contents.toString());

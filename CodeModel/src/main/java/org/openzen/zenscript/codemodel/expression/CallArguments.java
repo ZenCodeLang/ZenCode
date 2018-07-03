@@ -43,6 +43,11 @@ public class CallArguments {
 		return typeArguments.length;
 	}
 	
+	public CallArguments transform(ExpressionTransformer transformer) {
+		Expression[] tArguments = Expression.transform(arguments, transformer);
+		return tArguments == arguments ? this : new CallArguments(typeArguments, tArguments);
+	}
+	
 	public CallArguments normalize(CodePosition position, TypeScope scope, FunctionHeader header) {
 		CallArguments result = this;
 		

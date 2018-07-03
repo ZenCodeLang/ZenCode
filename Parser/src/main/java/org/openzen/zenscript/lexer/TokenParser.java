@@ -110,7 +110,7 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements I
 				if (reader.peek() < 0 && value.length() == 0)
 					return factory.create(eof, ""); // happens on comments at the end of files
 				
-				value.append((char) reader.next());
+				//value.append((char) reader.next());
 				return factory.create(invalid, value.toString());
             }
         } catch (IOException ex) {

@@ -14,16 +14,15 @@ import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.compiler.CompilationUnit;
+import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.formatter.FileFormatter;
-import org.openzen.zenscript.formatter.FormattingSettings;
+import org.openzen.zenscript.formatter.ScriptFormattingSettings;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
-import org.openzen.zenscript.linker.symbol.ISymbol;
+import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
 import org.openzen.zenscript.shared.SourceFile;
-import org.openzen.zenscript.validator.ValidationLogEntry;
-import org.openzen.zenscript.validator.Validator;
 
 public class Main {
     /**
@@ -43,7 +42,7 @@ public class Main {
 		
 		formatFiles(pkg, module);
 		
-		if (module.isValid) {
+		if (module.isValid()) {
 			JavaModule javaModule = compileSemanticToJava(module);
 			javaModule.execute();
 		} else {
@@ -85,7 +84,7 @@ public class Main {
 		List<String> filenames = new ArrayList<>(files.keySet());
 		Collections.sort(filenames);
 		
-		FormattingSettings settings = new FormattingSettings.Builder().build();
+		ScriptFormattingSettings settings = new ScriptFormattingSettings.Builder().build();
 		for (String filename : filenames) {
 			FileContents contents = files.get(filename);
 			FileFormatter formatter = new FileFormatter(settings);
@@ -108,16 +107,17 @@ public class Main {
 			file.listDefinitions(definitions);
 		}
 		
+		CompilationUnit compilationUnit = new CompilationUnit();
 		ZSPackage rootPackage = registry.collectPackages();
 		List<ExpansionDefinition> expansions = registry.collectExpansions();
 		Map<String, ISymbol> globals = registry.collectGlobals();
+		// TODO: load stdlib
 		
-		GlobalTypeRegistry globalRegistry = new GlobalTypeRegistry(null); // TODO: load stdlib
 		for (ParsedFile file : files) {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
-			file.compileMembers(rootPackage, modulePackage, definitions, globalRegistry, expansions, globals);
+			file.compileMembers(rootPackage, modulePackage, definitions, compilationUnit.globalTypeRegistry, expansions, globals, Collections.emptyList());
 		}
 		
 		// scripts will store all the script blocks encountered in the files
@@ -126,32 +126,30 @@ public class Main {
 			// compileCode will convert the parsed statements and expressions
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
-			file.compileCode(rootPackage, modulePackage, definitions, globalRegistry, expansions, scripts, globals);
+			file.compileCode(rootPackage, modulePackage, definitions, compilationUnit.globalTypeRegistry, expansions, scripts, globals, Collections.emptyList());
 		}
 		
-		Validator validator = new Validator();
-		boolean isValid = true;
-		for (ScriptBlock script : scripts) {
-			isValid &= validator.validate(script);
-		}
-		for (HighLevelDefinition definition : definitions.getAll()) {
-			isValid &= validator.validate(definition);
-		}
+		SemanticModule result = new SemanticModule(
+				"scripts",
+				new String[0],
+				SemanticModule.State.SEMANTIC,
+				rootPackage,
+				modulePackage,
+				definitions,
+				scripts,
+				compilationUnit,
+				expansions,
+				Collections.emptyList());
 		
-		for (ValidationLogEntry entry : validator.getLog()) {
-			System.out.println(entry.kind + " " + entry.position.toString() + ": " + entry.message);
-		}
-		
-		if (validator.getLog().isEmpty() && !isValid)
-			System.out.println("Module incorrect but no errors logged!");
-		
-		return new SemanticModule(isValid || validator.getLog().isEmpty(), definitions, scripts);
+		result = result.normalize();
+		result.validate();
+		return result;
 	}
 	
 	private static JavaModule compileSemanticToJava(SemanticModule module) {
 		JavaCompiler compiler = new JavaCompiler(false);
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			compiler.addDefinition(definition);
+			compiler.addDefinition(definition, module);
 		}
 		for (ScriptBlock script : module.scripts) {
 			compiler.addScriptBlock(script);

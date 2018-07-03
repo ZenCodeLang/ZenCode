@@ -20,14 +20,14 @@ public class VariantValueExpression extends Expression {
 	public final Expression[] arguments;
 	
 	public VariantValueExpression(CodePosition position, ITypeID variantType, VariantDefinition.Option option) {
-		this(position, variantType, option, null);
+		this(position, variantType, option, Expression.NONE);
 	}
 	
 	public VariantValueExpression(CodePosition position, ITypeID variantType, VariantDefinition.Option option, Expression[] arguments) {
-		super(position, variantType, arguments == null ? null : multiThrow(position, arguments));
+		super(position, variantType, multiThrow(position, arguments));
 		
 		this.option = option;
-		this.arguments = null;
+		this.arguments = arguments;
 	}
 	
 	public int getNumberOfArguments() {
@@ -45,5 +45,11 @@ public class VariantValueExpression extends Expression {
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitVariantValue(this);
+	}
+
+	@Override
+	public Expression transform(ExpressionTransformer transformer) {
+		Expression[] tArguments = Expression.transform(arguments, transformer);
+		return tArguments == arguments ? this : new VariantValueExpression(position, type, option, tArguments);
 	}
 }
