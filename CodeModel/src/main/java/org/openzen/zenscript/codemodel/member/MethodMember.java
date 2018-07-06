@@ -5,12 +5,9 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -26,24 +23,18 @@ public class MethodMember extends FunctionalMember {
 	}
 	
 	@Override
-	public String getInformalName() {
-		return name + " method";
+	public String getCanonicalName() {
+		return definition.getFullName() + ":" + name + header.getCanonical();
+	}
+	
+	@Override
+	public FunctionalKind getKind() {
+		return FunctionalKind.METHOD;
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addMethod(this, priority);
-	}
-
-	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new MethodMember(
-				position,
-				definition,
-				modifiers,
-				name,
-				header.instance(registry, mapping),
-				builtin);
+	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
+		type.addMethod(name, ref(mapper), priority);
 	}
 
 	@Override

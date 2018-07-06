@@ -97,7 +97,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 
 	@Override
 	public void formatForeach(StatementFormattingTarget target, ForeachStatement statement) {
-		statement.iterator.acceptForIterator(new ForeachFormatter(scope, target, statement));
+		statement.iterator.target.acceptForIterator(new ForeachFormatter(scope, target, statement));
 	}
 
 	@Override
@@ -129,11 +129,11 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			String variantType = scope.type(statement.value.type);
 			for (SwitchCase switchCase : statement.cases) {
 				VariantOptionSwitchValue switchValue = (VariantOptionSwitchValue)switchCase.value;
-				String header = switchValue == null ? "default:" : "case " + switchValue.option.name + ":";
+				String header = switchValue == null ? "default:" : "case " + switchValue.option.getName() + ":";
 				List<String> statements = new ArrayList<>();
 				if (switchValue != null) {
 					for (VarStatement var : switchValue.parameters)
-						statements.add(scope.type(var.type) + " " + var.name + " = (" + variantType + "." + switchValue.option.name + ")" + valueString.value + ";");
+						statements.add(scope.type(var.type) + " " + var.name + " = (" + variantType + "." + switchValue.option.getName() + ")" + valueString.value + ";");
 				}
 				blocks.add(new StatementFormattingSubBlock(header, statements, switchCase.statements));
 			}
@@ -206,7 +206,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 
 	@Override
 	public String acceptVariantOption(VariantOptionSwitchValue value) {
-		return value.option.name;
+		return value.option.getName();
 	}
 	
 	private static class ForeachFormatter implements ForeachIteratorVisitor<Void> {

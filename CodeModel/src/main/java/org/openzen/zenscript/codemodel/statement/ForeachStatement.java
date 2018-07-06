@@ -8,7 +8,7 @@ package org.openzen.zenscript.codemodel.statement;
 import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.member.IIteratorMember;
+import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.ConcatMap;
 
@@ -19,10 +19,10 @@ import org.openzen.zenscript.shared.ConcatMap;
 public class ForeachStatement extends LoopStatement {
 	public final VarStatement[] loopVariables;
 	public final Expression list;
-	public final IIteratorMember iterator;
+	public final IteratorMemberRef iterator;
 	public Statement content;
 	
-	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IIteratorMember iterator, Expression list) {
+	public ForeachStatement(CodePosition position, VarStatement[] loopVariables, IteratorMemberRef iterator, Expression list) {
 		super(position, loopVariables[0].name, null); // TODO: thrown type
 		
 		this.loopVariables = loopVariables;

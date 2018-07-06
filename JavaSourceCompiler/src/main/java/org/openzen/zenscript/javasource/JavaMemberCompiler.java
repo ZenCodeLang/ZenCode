@@ -28,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
+import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
@@ -75,6 +76,7 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 	
 	@Override
 	public Void visitConst(ConstMember member) {
+		output.append(indent);
 		modifiers(member.modifiers | Modifiers.STATIC | Modifiers.FINAL);
 		output.append(scope.type(member.type));
 		output.append(" ");
@@ -102,7 +104,7 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 		
 		this.modifiers(modifiers);
 		
-		output.append(member.type.accept(scope.typeVisitor));
+		output.append(scope.type(member.type));
 		output.append(" ");
 		output.append(member.name);
 		if (member.initializer != null) {
@@ -270,7 +272,7 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 	}
 	
 	private void compileBody(Statement body, FunctionHeader header) {
-		if (body == null) {
+		if (body == null || body instanceof EmptyStatement) {
 			output.append(";\n");
 		} else {
 			if (!(body instanceof BlockStatement))

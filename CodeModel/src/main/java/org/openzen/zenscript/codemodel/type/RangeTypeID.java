@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
@@ -24,10 +24,10 @@ public class RangeTypeID implements ITypeID {
 	}
 	
 	@Override
-	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		return registry.getRange(
-				from.withGenericArguments(registry, arguments),
-				to.withGenericArguments(registry, arguments));
+	public ITypeID instance(GenericMapper mapper) {
+		return mapper.registry.getRange(
+				from.instance(mapper),
+				to.instance(mapper));
 	}
 
 	@Override

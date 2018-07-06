@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -38,10 +38,10 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 		this.allowStaticUsage = allowStaticMembers;
 	}
 	
-	public PartialMemberGroupExpression(CodePosition position, Expression target, FunctionalMember member, ITypeID[] typeArguments, boolean allowStaticMembers) {
+	public PartialMemberGroupExpression(CodePosition position, Expression target, String name, FunctionalMemberRef member, ITypeID[] typeArguments, boolean allowStaticMembers) {
 		this.position = position;
 		this.target = target;
-		this.group = DefinitionMemberGroup.forMethod(member);
+		this.group = DefinitionMemberGroup.forMethod(name, member);
 		this.typeArguments = typeArguments;
 		this.allowStaticUsage = allowStaticMembers;
 	}

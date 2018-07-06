@@ -18,17 +18,17 @@ import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
-import org.openzen.zenscript.codemodel.member.ConstMember;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
-import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
+import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
@@ -39,17 +39,17 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
  * @author Hoofdgebruiker
  */
 public class DefinitionMemberGroup {
-	public static DefinitionMemberGroup forMethod(FunctionalMember member) {
-		DefinitionMemberGroup instance = new DefinitionMemberGroup(member.isStatic(), member.getInformalName());
+	public static DefinitionMemberGroup forMethod(String name, FunctionalMemberRef member) {
+		DefinitionMemberGroup instance = new DefinitionMemberGroup(member.isStatic(), name);
 		instance.addMethod(member, TypeMemberPriority.SPECIFIED);
 		return instance;
 	}
 	
-	private TypeMember<ConstMember> constant;
-	private TypeMember<FieldMember> field;
-	private TypeMember<GetterMember> getter;
-	private TypeMember<SetterMember> setter;
-	private final List<TypeMember<FunctionalMember>> methods = new ArrayList<>();
+	private TypeMember<ConstMemberRef> constant;
+	private TypeMember<FieldMemberRef> field;
+	private TypeMember<GetterMemberRef> getter;
+	private TypeMember<SetterMemberRef> setter;
+	private final List<TypeMember<FunctionalMemberRef>> methods = new ArrayList<>();
 	public final boolean isStatic;
 	public final String name;
 	
@@ -68,19 +68,19 @@ public class DefinitionMemberGroup {
 		if (other.setter != null)
 			setSetter(other.setter.member, priority);
 		
-		for (TypeMember<FunctionalMember> method : other.methods)
+		for (TypeMember<FunctionalMemberRef> method : other.methods)
 			addMethod(method.member, priority);
 	}
 	
-	public FieldMember getField() {
+	public FieldMemberRef getField() {
 		return this.field == null ? null : this.field.member;
 	}
 	
-	public GetterMember getGetter() {
+	public GetterMemberRef getGetter() {
 		return this.getter == null ? null : this.getter.member;
 	}
 	
-	public SetterMember getSetter() {
+	public SetterMemberRef getSetter() {
 		return this.setter == null ? null : this.setter.member;
 	}
 	
@@ -89,7 +89,7 @@ public class DefinitionMemberGroup {
 	}
 	
 	public boolean hasMethod(FunctionHeader header) {
-		for (TypeMember<FunctionalMember> method : methods) {
+		for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (method.member.header.isEquivalentTo(header))
 				return true;
 		}
@@ -97,11 +97,11 @@ public class DefinitionMemberGroup {
 		return false;
 	}
 	
-	public List<TypeMember<FunctionalMember>> getMethodMembers() {
+	public List<TypeMember<FunctionalMemberRef>> getMethodMembers() {
 		return this.methods;
 	}
 	
-	public void setConst(ConstMember constant, TypeMemberPriority priority) {
+	public void setConst(ConstMemberRef constant, TypeMemberPriority priority) {
 		if (this.constant != null) {
 			this.constant = this.constant.resolve(new TypeMember<>(priority, constant));
 		} else {
@@ -109,7 +109,7 @@ public class DefinitionMemberGroup {
 		}
 	}
 	
-	public void setField(FieldMember field, TypeMemberPriority priority) {
+	public void setField(FieldMemberRef field, TypeMemberPriority priority) {
 		if (this.field != null) {
 			this.field = this.field.resolve(new TypeMember<>(priority, field));
 		} else {
@@ -117,7 +117,7 @@ public class DefinitionMemberGroup {
 		}
 	}
 	
-	public void setGetter(GetterMember getter, TypeMemberPriority priority) {
+	public void setGetter(GetterMemberRef getter, TypeMemberPriority priority) {
 		if (this.getter != null) {
 			this.getter = this.getter.resolve(new TypeMember<>(priority, getter));
 		} else {
@@ -125,7 +125,7 @@ public class DefinitionMemberGroup {
 		}
 	}
 	
-	public void setSetter(SetterMember setter, TypeMemberPriority priority) {
+	public void setSetter(SetterMemberRef setter, TypeMemberPriority priority) {
 		if (this.setter != null) {
 			this.setter = this.setter.resolve(new TypeMember<>(priority, setter));
 		} else {
@@ -133,7 +133,7 @@ public class DefinitionMemberGroup {
 		}
 	}
 	
-	public void addMethod(FunctionalMember method, TypeMemberPriority priority) {
+	public void addMethod(FunctionalMemberRef method, TypeMemberPriority priority) {
 		for (int i = 0; i < methods.size(); i++) {
 			if (methods.get(i).member.header.isEquivalentTo(method.header)) {
 				methods.set(i, methods.get(i).resolve(new TypeMember<>(priority, method)));
@@ -236,7 +236,7 @@ public class DefinitionMemberGroup {
 		for (int i = 0; i < result.length; i++)
 			result[i] = new ArrayList<>();
 		
-		for (TypeMember<FunctionalMember> method : methods) {
+		for (TypeMember<FunctionalMemberRef> method : methods) {
 			FunctionHeader header = method.member.header;
 			if (header.parameters.length != arguments)
 				continue;
@@ -245,7 +245,7 @@ public class DefinitionMemberGroup {
 				for (ITypeID resultHint : typeHints) {
 					Map<TypeParameter, ITypeID> mapping = new HashMap<>();
 					if (header.returnType.inferTypeParameters(scope.getMemberCache(), resultHint, mapping)) {
-						header = header.withGenericArguments(scope.getTypeRegistry(), mapping);
+						header = header.withGenericArguments(new GenericMapper(scope.getTypeRegistry(), mapping));
 						break;
 					}
 				}
@@ -261,8 +261,8 @@ public class DefinitionMemberGroup {
 	}
 	
 	public Expression call(CodePosition position, TypeScope scope, Expression target, CallArguments arguments, boolean allowStaticUsage) {
-		FunctionalMember method = selectMethod(position, scope, arguments, true, allowStaticUsage);
-		FunctionHeader instancedHeader = method.header.withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, allowStaticUsage);
+		FunctionHeader instancedHeader = method.header.fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			arguments.arguments[i] = arguments.arguments[i].castImplicit(position, scope, instancedHeader.parameters[i].type);
 		}
@@ -274,12 +274,11 @@ public class DefinitionMemberGroup {
 		if (methods.isEmpty())
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "There is no such operator");
 		
-		FunctionalMember method = methods.get(0).member;
-		if (!(method instanceof OperatorMember)) {
+		FunctionalMemberRef method = methods.get(0).member;
+		if (!method.isOperator()) {
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Member is not an operator");
 		}
-		OperatorMember operator = (OperatorMember) method;
-		return new PostCallExpression(position, target, operator, operator.header);
+		return new PostCallExpression(position, target, method, method.header);
 	}
 	
 	public Expression callWithComparator(
@@ -288,20 +287,20 @@ public class DefinitionMemberGroup {
 			Expression target,
 			CallArguments arguments,
 			CompareType compareType) {
-		FunctionalMember method = selectMethod(position, scope, arguments, true, false);
-		FunctionHeader instancedHeader = method.header.withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, false);
+		FunctionHeader instancedHeader = method.header.fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
 		return method.callWithComparator(position, compareType, target, instancedHeader, arguments, scope);
 	}
 	
 	public Expression callStatic(CodePosition position, ITypeID target, TypeScope scope, CallArguments arguments) {
-		FunctionalMember method = selectMethod(position, scope, arguments, false, true);
-		FunctionHeader instancedHeader = method.header.withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		FunctionalMemberRef method = selectMethod(position, scope, arguments, false, true);
+		FunctionHeader instancedHeader = method.header.fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
 		return method.callStatic(position, target, instancedHeader, arguments, scope);
 	}
 	
-	public FunctionalMember selectMethod(CodePosition position, TypeScope scope, CallArguments arguments, boolean allowNonStatic, boolean allowStatic) {
+	public FunctionalMemberRef selectMethod(CodePosition position, TypeScope scope, CallArguments arguments, boolean allowNonStatic, boolean allowStatic) {
 		// try to match with exact types
-		outer: for (TypeMember<FunctionalMember> method : methods) {
+		outer: for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
 			
@@ -312,7 +311,7 @@ public class DefinitionMemberGroup {
 				continue;
 			
 			if (arguments.typeArguments.length > 0) {
-				header = header.withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+				header = header.fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
 			}
 			
 			for (int i = 0; i < header.parameters.length; i++) {
@@ -324,8 +323,8 @@ public class DefinitionMemberGroup {
 		}
 		
 		// try to match with approximate types
-		FunctionalMember selected = null;
-		outer: for (TypeMember<FunctionalMember> method : methods) {
+		FunctionalMemberRef selected = null;
+		outer: for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
 			
@@ -336,7 +335,7 @@ public class DefinitionMemberGroup {
 				continue;
 			
 			if (arguments.typeArguments.length > 0) {
-				header = header.withGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+				header = header.fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
 			}
 			
 			for (int i = 0; i < header.parameters.length; i++) {
@@ -361,7 +360,7 @@ public class DefinitionMemberGroup {
 				throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "This type has no " + name);
 			}
 			
-			outer: for (TypeMember<FunctionalMember> method : methods) {
+			outer: for (TypeMember<FunctionalMemberRef> method : methods) {
 				if (!(method.member.isStatic() ? allowStatic : allowNonStatic)) {
 					message.append(method.member.isStatic() ? "Method must not be static" : "Method must be static").append('\n');
 					continue;

@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type.member;
 
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 
@@ -13,7 +13,7 @@ import org.openzen.zenscript.shared.CompileExceptionCode;
  *
  * @author Hoofdgebruiker
  */
-public class TypeMember<T extends IDefinitionMember> {
+public class TypeMember<T extends DefinitionMemberRef> {
 	public final TypeMemberPriority priority;
 	public final T member;
 	

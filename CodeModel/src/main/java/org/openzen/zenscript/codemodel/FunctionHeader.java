@@ -30,6 +30,9 @@ public class FunctionHeader {
 	public final ITypeID thrownType;
 	
 	public FunctionHeader(ITypeID returnType) {
+		if (returnType == null)
+			throw new NullPointerException();
+		
 		this.typeParameters = null;
 		this.returnType = returnType;
 		this.parameters = NO_PARAMETERS;
@@ -37,6 +40,9 @@ public class FunctionHeader {
 	}
 	
 	public FunctionHeader(ITypeID returnType, ITypeID... parameterTypes) {
+		if (returnType == null)
+			throw new NullPointerException();
+		
 		this.typeParameters = null;
 		this.returnType = returnType;
 		this.parameters = new FunctionParameter[parameterTypes.length];
@@ -47,6 +53,9 @@ public class FunctionHeader {
 	}
 	
 	public FunctionHeader(ITypeID returnType, FunctionParameter... parameters) {
+		if (returnType == null)
+			throw new NullPointerException();
+		
 		this.typeParameters = null;
 		this.returnType = returnType;
 		this.parameters = parameters;
@@ -54,6 +63,9 @@ public class FunctionHeader {
 	}
 	
 	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, ITypeID thrownType, FunctionParameter... parameters) {
+		if (returnType == null)
+			throw new NullPointerException();
+		
 		this.typeParameters = genericParameters;
 		this.returnType = returnType;
 		this.parameters = parameters;
@@ -64,18 +76,25 @@ public class FunctionHeader {
 		return typeParameters == null ? 0 : typeParameters.length;
 	}
 	
-	public FunctionHeader instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		TypeParameter[] genericParameters = this.typeParameters == null ? null : new TypeParameter[this.typeParameters.length];
-		if (genericParameters != null)
-			for (int i = 0; i < genericParameters.length; i++)
-				genericParameters[i] = this.typeParameters[i].withGenericArguments(registry, mapping);
-		
-		ITypeID returnType = this.returnType.withGenericArguments(registry, mapping);
-		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
-		for (int i = 0; i < parameters.length; i++)
-			parameters[i] = this.parameters[i].withGenericArguments(registry, mapping);
-		
-		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.withGenericArguments(registry, mapping), parameters);
+	public String getCanonical() {
+		StringBuilder result = new StringBuilder();
+		if (getNumberOfTypeParameters() > 0) {
+			result.append('<');
+			for (int i = 0; i < typeParameters.length; i++) {
+				if (i > 0)
+					result.append(',');
+				result.append(typeParameters[i].getCanonical());
+			}
+			result.append('>');
+		}
+		result.append('(');
+		for (int i = 0; i < parameters.length; i++) {
+			if (i > 0)
+				result.append(',');
+			result.append(parameters[i].type.toString());
+		}
+		result.append(')');
+		return result.toString();
 	}
 	
 	public ITypeID[] inferTypes(LocalMemberCache cache, CallArguments arguments, List<ITypeID> resultHint) {
@@ -200,29 +219,31 @@ public class FunctionHeader {
 		return true;
 	}
 	
-	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		ITypeID returnType = this.returnType.withGenericArguments(registry, arguments);
+	public FunctionHeader withGenericArguments(GenericMapper mapper) {
+		ITypeID returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
-			ITypeID modified = this.parameters[i].type.withGenericArguments(registry, arguments);
-			parameters[i] = modified == this.parameters[i].type ? this.parameters[i] : new FunctionParameter(modified, this.parameters[i].name);
+			parameters[i] = this.parameters[i].withGenericArguments(mapper);
 		}
-		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.withGenericArguments(registry, arguments), parameters);
+		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
 	}
 	
-	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, ITypeID[] arguments) {
+	public FunctionHeader fillGenericArguments(GlobalTypeRegistry registry, ITypeID[] arguments) {
+		if (arguments == null || arguments.length == 0)
+			return this;
+		
 		Map<TypeParameter, ITypeID> typeArguments = new HashMap<>();
 		if (typeParameters != null)
 			for (int i = 0; i < typeParameters.length; i++)
 				typeArguments.put(typeParameters[i], arguments[i]);
+		GenericMapper mapper = new GenericMapper(registry, typeArguments);
 		
-		ITypeID returnType = this.returnType.withGenericArguments(registry, typeArguments);
+		ITypeID returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
-			ITypeID modified = this.parameters[i].type.withGenericArguments(registry, typeArguments);
-			parameters[i] = modified == this.parameters[i].type ? this.parameters[i] : new FunctionParameter(modified, this.parameters[i].name);
+			parameters[i] = this.parameters[i].withGenericArguments(mapper);
 		}
-		return new FunctionHeader(returnType, parameters);
+		return new FunctionHeader(null, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
 	}
 	
 	public FunctionHeader forTypeParameterInference() {

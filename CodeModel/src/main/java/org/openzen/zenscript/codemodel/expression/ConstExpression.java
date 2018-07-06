@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -14,9 +14,9 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class ConstExpression extends Expression {
-	public final ConstMember constant;
+	public final ConstMemberRef constant;
 	
-	public ConstExpression(CodePosition position, ConstMember constant) {
+	public ConstExpression(CodePosition position, ConstMemberRef constant) {
 		super(position, constant.type, null);
 		
 		this.constant = constant;
@@ -34,11 +34,11 @@ public class ConstExpression extends Expression {
 	
 	@Override
 	public String evaluateStringConstant() {
-		return constant.value.evaluateStringConstant();
+		return constant.member.value.evaluateStringConstant();
 	}
 	
 	@Override
 	public EnumConstantMember evaluateEnumConstant() {
-		return constant.value.evaluateEnumConstant();
+		return constant.member.value.evaluateEnumConstant();
 	}
 }

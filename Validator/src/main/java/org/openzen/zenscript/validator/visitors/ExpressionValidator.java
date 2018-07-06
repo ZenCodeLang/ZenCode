@@ -89,7 +89,7 @@ import org.openzen.zenscript.validator.analysis.ExpressionScope;
  *
  * @author Hoofdgebruiker
  */
-public class ExpressionValidator implements ExpressionVisitor<Boolean> {
+public class ExpressionValidator implements ExpressionVisitor<Void> {
 	private final Validator validator;
 	private final ExpressionScope scope;
 	
@@ -99,576 +99,518 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitAndAnd(AndAndExpression expression) {
-		boolean isValid =
-				expression.left.accept(this)
-				& expression.right.accept(this);
+	public Void visitAndAnd(AndAndExpression expression) {
+		expression.left.accept(this);
+		expression.right.accept(this);
 		
 		if (expression.left.type != BasicTypeID.BOOL) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
 					"left hand side operand of && must be a bool");
-			isValid = false;
 		}
 		if (expression.right.type != BasicTypeID.BOOL) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
 					"right hand side operand of && must be a bool");
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitArray(ArrayExpression expression) {
-		boolean isValid = true;
+	public Void visitArray(ArrayExpression expression) {
 		for (Expression element : expression.expressions) {
 			if (element.type != expression.arrayType.elementType) {
 				validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
 					"array element expression type doesn't match array type");
-				isValid = false;
 			}
-			isValid &= element.accept(this);
+			element.accept(this);
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitCompare(CompareExpression expression) {
-		boolean isValid = true;
+	public Void visitCompare(CompareExpression expression) {
 		if (expression.right.type != expression.operator.header.parameters[0].type) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison has invalid right type!");
-			isValid = false;
 		}
-		isValid &= expression.left.accept(this);
-		isValid &= expression.right.accept(this);
-		return isValid;
+		expression.left.accept(this);
+		expression.right.accept(this);
+		return null;
 	}
 
 	@Override
-	public Boolean visitCall(CallExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.target.accept(this);
-		isValid &= checkCallArguments(expression.position, expression.member.header, expression.instancedHeader, expression.arguments);
-		return isValid;
+	public Void visitCall(CallExpression expression) {
+		expression.target.accept(this);
+		checkCallArguments(expression.position, expression.member.header, expression.instancedHeader, expression.arguments);
+		return null;
 	}
 
 	@Override
-	public Boolean visitCallStatic(CallStaticExpression expression) {
-		return checkCallArguments(expression.position, expression.member.header, expression.instancedHeader, expression.arguments);
+	public Void visitCallStatic(CallStaticExpression expression) {
+		checkCallArguments(expression.position, expression.member.header, expression.instancedHeader, expression.arguments);
+		return null;
 	}
 	
 	@Override
-	public Boolean visitConst(ConstExpression expression) {
-		return true;
+	public Void visitConst(ConstExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitCapturedClosure(CapturedClosureExpression expression) {
-		return true;
+	public Void visitCapturedClosure(CapturedClosureExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitCapturedDirect(CapturedDirectExpression expression) {
-		return true;
+	public Void visitCapturedDirect(CapturedDirectExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
-		return true;
+	public Void visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitCapturedParameter(CapturedParameterExpression expression) {
-		return true;
+	public Void visitCapturedParameter(CapturedParameterExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitCapturedThis(CapturedThisExpression expression) {
-		return true;
+	public Void visitCapturedThis(CapturedThisExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitCast(CastExpression expression) {
+	public Void visitCast(CastExpression expression) {
 		return expression.target.accept(this);
 	}
 
 	@Override
-	public Boolean visitCheckNull(CheckNullExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
+	public Void visitCheckNull(CheckNullExpression expression) {
+		expression.value.accept(this);
 		if (!expression.value.type.isOptional()) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "target of a null check is not optional");
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitCoalesce(CoalesceExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.left.accept(this);
-		isValid &= expression.right.accept(this);
+	public Void visitCoalesce(CoalesceExpression expression) {
+		expression.left.accept(this);
+		expression.right.accept(this);
 		if (!expression.left.type.isOptional()) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "target of a null coalesce is not optional");
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitConditional(ConditionalExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.condition.accept(this);
-		isValid &= expression.ifThen.accept(this);
-		isValid &= expression.ifElse.accept(this);
+	public Void visitConditional(ConditionalExpression expression) {
+		expression.condition.accept(this);
+		expression.ifThen.accept(this);
+		expression.ifElse.accept(this);
 		if (expression.condition.type != BasicTypeID.BOOL) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "conditional expression condition must be a bool");
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantBool(ConstantBoolExpression expression) {
-		return true;
+	public Void visitConstantBool(ConstantBoolExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantByte(ConstantByteExpression expression) {
-		return true;
+	public Void visitConstantByte(ConstantByteExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantChar(ConstantCharExpression expression) {
-		return true;
+	public Void visitConstantChar(ConstantCharExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantDouble(ConstantDoubleExpression expression) {
-		return true;
+	public Void visitConstantDouble(ConstantDoubleExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantFloat(ConstantFloatExpression expression) {
-		return true;
+	public Void visitConstantFloat(ConstantFloatExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantInt(ConstantIntExpression expression) {
-		return true;
+	public Void visitConstantInt(ConstantIntExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantLong(ConstantLongExpression expression) {
-		return true;
+	public Void visitConstantLong(ConstantLongExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantSByte(ConstantSByteExpression expression) {
-		return true;
+	public Void visitConstantSByte(ConstantSByteExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantShort(ConstantShortExpression expression) {
-		return true;
+	public Void visitConstantShort(ConstantShortExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantString(ConstantStringExpression expression) {
-		return true;
+	public Void visitConstantString(ConstantStringExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantUInt(ConstantUIntExpression expression) {
-		return true;
+	public Void visitConstantUInt(ConstantUIntExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantULong(ConstantULongExpression expression) {
-		return true;
+	public Void visitConstantULong(ConstantULongExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstantUShort(ConstantUShortExpression expression) {
-		return true;
+	public Void visitConstantUShort(ConstantUShortExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstructorThisCall(ConstructorThisCallExpression expression) {
-		boolean isValid = true;
+	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
 		if (!scope.isConstructor()) {
 			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_OUTSIDE_CONSTRUCTOR, expression.position, "Can only forward constructors inside constructors");
-			isValid = false;
 		}
 		if (!scope.isFirstStatement()) {
 			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_NOT_FIRST_STATEMENT, expression.position, "Constructor forwarder must be first expression");
-			isValid = false;
 		}
 		scope.markConstructorForwarded();
-		isValid &= checkCallArguments(expression.position, expression.constructor.header, expression.constructor.header, expression.arguments);
-		return isValid;
+		checkCallArguments(expression.position, expression.constructor.header, expression.constructor.header, expression.arguments);
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
-		boolean isValid = true;
+	public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
 		if (!scope.isConstructor()) {
 			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_OUTSIDE_CONSTRUCTOR, expression.position, "Can only forward constructors inside constructors");
-			isValid = false;
 		}
 		if (!scope.isFirstStatement()) {
 			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_NOT_FIRST_STATEMENT, expression.position, "Constructor forwarder must be first expression");
-			isValid = false;
 		}
 		scope.markConstructorForwarded();
-		isValid &= checkCallArguments(expression.position, expression.constructor.header, expression.constructor.header, expression.arguments);
-		return isValid;
+		checkCallArguments(expression.position, expression.constructor.header, expression.constructor.header, expression.arguments);
+		return null;
 	}
 
 	@Override
-	public Boolean visitEnumConstant(EnumConstantExpression expression) {
+	public Void visitEnumConstant(EnumConstantExpression expression) {
 		if (!scope.isEnumConstantInitialized(expression.value)) {
 			validator.logError(
 					ValidationLogEntry.Code.ENUM_CONSTANT_NOT_YET_INITIALIZED,
 					expression.position,
 					"Using an enum constant that is not yet initialized: " + expression.value.name);
-			return false;
 		}
-		return true;
+		return null;
 	}
 
 	@Override
-	public Boolean visitFunction(FunctionExpression expression) {
+	public Void visitFunction(FunctionExpression expression) {
 		// TODO
-		return true;
+		return null;
 	}
 
 	@Override
-	public Boolean visitGetField(GetFieldExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.target.accept(this);
-		if (expression.target instanceof ThisExpression && !scope.isFieldInitialized(expression.field)) {
+	public Void visitGetField(GetFieldExpression expression) {
+		expression.target.accept(this);
+		if (expression.target instanceof ThisExpression && !scope.isFieldInitialized(expression.field.member)) {
 			validator.logError(
 					ValidationLogEntry.Code.FIELD_NOT_YET_INITIALIZED,
 					expression.position,
 					"Using a field that was not yet initialized");
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitGetFunctionParameter(GetFunctionParameterExpression expression) {
-		return true;
+	public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitGetLocalVariable(GetLocalVariableExpression expression) {
-		boolean isValid = true;
+	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
 		if (!scope.isLocalVariableInitialized(expression.variable)) {
 			validator.logError(ValidationLogEntry.Code.LOCAL_VARIABLE_NOT_YET_INITIALIZED, expression.position, "Local variable not yet initialized");
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitGetStaticField(GetStaticFieldExpression expression) {
-		return true;
+	public Void visitGetStaticField(GetStaticFieldExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitGetter(GetterExpression expression) {
+	public Void visitGetter(GetterExpression expression) {
 		return expression.target.accept(this);
 	}
 	
 	@Override
-	public Boolean visitGlobal(GlobalExpression expression) {
+	public Void visitGlobal(GlobalExpression expression) {
 		return expression.resolution.accept(this);
 	}
 	
 	@Override
-	public Boolean visitGlobalCall(GlobalCallExpression expression) {
+	public Void visitGlobalCall(GlobalCallExpression expression) {
 		return expression.resolution.accept(this);
 	}
 
 	@Override
-	public Boolean visitInterfaceCast(InterfaceCastExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
-		isValid &= expression.type.accept(new TypeValidator(validator, expression.position));
-		return isValid;
+	public Void visitInterfaceCast(InterfaceCastExpression expression) {
+		expression.value.accept(this);
+		expression.type.accept(new TypeValidator(validator, expression.position));
+		return null;
 	}
 
 	@Override
-	public Boolean visitIs(IsExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
-		isValid &= expression.isType.accept(new TypeValidator(validator, expression.position));
-		return isValid;
+	public Void visitIs(IsExpression expression) {
+		expression.value.accept(this);
+		expression.isType.accept(new TypeValidator(validator, expression.position));
+		return null;
 	}
 
 	@Override
-	public Boolean visitMakeConst(MakeConstExpression expression) {
+	public Void visitMakeConst(MakeConstExpression expression) {
 		return expression.value.accept(this);
 	}
 
 	@Override
-	public Boolean visitMap(MapExpression expression) {
-		boolean isValid = true;
+	public Void visitMap(MapExpression expression) {
 		AssocTypeID type = (AssocTypeID) expression.type;
 		for (int i = 0; i < expression.keys.length; i++) {
 			Expression key = expression.keys[i];
 			Expression value = expression.values[i];
 			
-			isValid &= key.accept(this);
-			isValid &= value.accept(this);
+			key.accept(this);
+			value.accept(this);
 			if (key.type != type.keyType) {
 				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Key type must match the associative array key type");
-				isValid = false;
 			}
 			if (value.type != type.valueType) {
 				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Value type must match the associative array value type");
-				isValid = false;
 			}
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitMatch(MatchExpression expression) {
+	public Void visitMatch(MatchExpression expression) {
 		// TODO
-		return true;
+		return null;
 	}
 
 	@Override
-	public Boolean visitNew(NewExpression expression) {
-		boolean isValid = checkCallArguments(
+	public Void visitNew(NewExpression expression) {
+		checkCallArguments(
 				expression.position,
 				expression.constructor.header,
 				expression.instancedHeader,
 				expression.arguments);
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitNull(NullExpression expression) {
-		return true;
+	public Void visitNull(NullExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitOrOr(OrOrExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.left.accept(this);
-		isValid &= expression.right.accept(this);
+	public Void visitOrOr(OrOrExpression expression) {
+		expression.left.accept(this);
+		expression.right.accept(this);
 		if (expression.left.type != BasicTypeID.BOOL) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Left hand side of || expression is not a bool");
-			isValid = false;
 		}
 		if (expression.right.type != BasicTypeID.BOOL) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Right hand side of || expression is not a bool");
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 	
 	@Override
-	public Boolean visitPostCall(PostCallExpression expression) {
-		boolean isValid = true;
+	public Void visitPostCall(PostCallExpression expression) {
 		expression.target.accept(this);
 		// TODO: is target a valid increment target?
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitRange(RangeExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.from.accept(this);
-		isValid &= expression.to.accept(this);
+	public Void visitRange(RangeExpression expression) {
+		expression.from.accept(this);
+		expression.to.accept(this);
 		
 		RangeTypeID rangeType = (RangeTypeID) expression.type;
 		if (expression.from.type != rangeType.from) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "From operand is not a " + rangeType.from.toString());
-			isValid = false;
 		}
 		if (expression.to.type != rangeType.to) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "To operand is not a " + rangeType.to.toString());
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 	
 	@Override
-	public Boolean visitSameObject(SameObjectExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.left.accept(this);
-		isValid &= expression.right.accept(this);
-		return isValid;
+	public Void visitSameObject(SameObjectExpression expression) {
+		expression.left.accept(this);
+		expression.right.accept(this);
+		return null;
 	}
 
 	@Override
-	public Boolean visitSetField(SetFieldExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.target.accept(this);
-		isValid &= expression.value.accept(this);
+	public Void visitSetField(SetFieldExpression expression) {
+		expression.target.accept(this);
+		expression.value.accept(this);
 		if (expression.value.type != expression.field.type) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
 					expression.position,
 					"Trying to set a field of type " + expression.field.type + " to a value of type " + expression.value.type);
-			isValid = false;
 		}
 		if (expression.field.isFinal()) {
 			if (!(expression.target instanceof ThisExpression && scope.isConstructor())) {
 				validator.logError(ValidationLogEntry.Code.SETTING_FINAL_FIELD, expression.position, "Cannot set a final field");
-				isValid = false;
 			}
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitSetFunctionParameter(SetFunctionParameterExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
+	public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
+		expression.value.accept(this);
 		if (expression.value.type != expression.parameter.type) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
 					expression.position,
 					"Trying to set a parameter of type " + expression.parameter.type + " to a value of type " + expression.value.type);
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitSetLocalVariable(SetLocalVariableExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
+	public Void visitSetLocalVariable(SetLocalVariableExpression expression) {
+		expression.value.accept(this);
 		if (expression.value.type != expression.variable.type) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
 					expression.position,
 					"Trying to set a variable of type " + expression.variable.type + " to a value of type " + expression.value.type);
-			isValid = false;
 		}
 		if (expression.variable.isFinal) {
 			validator.logError(ValidationLogEntry.Code.SETTING_FINAL_VARIABLE, expression.position, "Trying to set final variable " + expression.variable.name);
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitSetStaticField(SetStaticFieldExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
+	public Void visitSetStaticField(SetStaticFieldExpression expression) {
+		expression.value.accept(this);
 		if (expression.value.type != expression.field.type) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
 					"Trying to set a static field of type " + expression.field.type + " to a value of type " + expression.value.type);
-			isValid = false;
 		}
 		if (expression.field.isFinal()) {
-			if (!scope.isStaticInitializer() || expression.field.definition != scope.getDefinition()) {
+			if (!scope.isStaticInitializer() || expression.field.member.definition != scope.getDefinition()) {
 				validator.logError(
 						ValidationLogEntry.Code.SETTING_FINAL_FIELD,
 						expression.position,
-						"Trying to set final field " + expression.field.name);
-				isValid = false;
+						"Trying to set final field " + expression.field.member.name);
 			}
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitSetter(SetterExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.target.accept(this);
-		isValid &= expression.value.accept(this);
+	public Void visitSetter(SetterExpression expression) {
+		expression.target.accept(this);
+		expression.value.accept(this);
 		if (expression.value.type != expression.setter.type) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
 					"Trying to set a property of type " + expression.setter.type + " to a value of type " + expression.value.type);
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitStaticGetter(StaticGetterExpression expression) {
-		return true;
+	public Void visitStaticGetter(StaticGetterExpression expression) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitStaticSetter(StaticSetterExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
+	public Void visitStaticSetter(StaticSetterExpression expression) {
+		expression.value.accept(this);
 		if (expression.value.type != expression.setter.type) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
 					"Trying to set a static property of type " + expression.setter.type + " to a value of type " + expression.value.type);
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitSupertypeCast(SupertypeCastExpression expression) {
-		boolean isValid = expression.value.accept(this);
-		return isValid;
+	public Void visitSupertypeCast(SupertypeCastExpression expression) {
+		expression.value.accept(this);
+		return null;
 	}
 
 	@Override
-	public Boolean visitThis(ThisExpression expression) {
+	public Void visitThis(ThisExpression expression) {
 		if (!scope.hasThis()) {
 			validator.logError(ValidationLogEntry.Code.THIS_IN_STATIC_SCOPE, expression.position, "Cannot use this in a static scope");
-			return false;
 		}
 		
-		return true;
+		return null;
 	}
 	
 	@Override
-	public Boolean visitThrow(ThrowExpression expression) {
+	public Void visitThrow(ThrowExpression expression) {
 		return expression.value.accept(this);
 	}
 
 	@Override
-	public Boolean visitTryConvert(TryConvertExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
-		return isValid;
+	public Void visitTryConvert(TryConvertExpression expression) {
+		expression.value.accept(this);
+		return null;
 	}
 
 	@Override
-	public Boolean visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
-		return isValid;
+	public Void visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
+		expression.value.accept(this);
+		return null;
 	}
 	
 	@Override
-	public Boolean visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
-		boolean isValid = true;
-		isValid &= expression.value.accept(this);
-		return isValid;
+	public Void visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
+		expression.value.accept(this);
+		return null;
 	}
 
 	@Override
-	public Boolean visitVariantValue(VariantValueExpression expression) {
-		boolean isValid = true;
+	public Void visitVariantValue(VariantValueExpression expression) {
 		if (expression.getNumberOfArguments() != expression.option.types.length) {
-			validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, expression.position, "Invalid number of variant arguments for variant element " + expression.option.name);
-			isValid = false;
+			validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, expression.position, "Invalid number of variant arguments for variant element " + expression.option.getName());
 		}
 		for (int i = 0; i < expression.getNumberOfArguments(); i++) {
 			if (expression.arguments[i].type != expression.option.types[i]) {
@@ -676,41 +618,36 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						expression.position,
 						"Invalid variant argument for argument " + i + ": " + expression.arguments[i].type + " given but " + expression.option.types[i] + " expected");
-				isValid = false;
 			}
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitWrapOptional(WrapOptionalExpression expression) {
-		boolean isValid = expression.value.accept(this);
+	public Void visitWrapOptional(WrapOptionalExpression expression) {
+		expression.value.accept(this);
 		if (expression.value.type.isOptional()) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "expression value is already optional");
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 	
-	private boolean checkCallArguments(CodePosition position, FunctionHeader originalHeader, FunctionHeader instancedHeader, CallArguments arguments) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateTypeArguments(validator, position, originalHeader.typeParameters, arguments.typeArguments);
+	private void checkCallArguments(CodePosition position, FunctionHeader originalHeader, FunctionHeader instancedHeader, CallArguments arguments) {
+		ValidationUtils.validateTypeArguments(validator, position, originalHeader.typeParameters, arguments.typeArguments);
 		
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			Expression argument = arguments.arguments[i];
-			isValid &= argument.accept(this);
+			argument.accept(this);
 			
 			if (i >= instancedHeader.parameters.length) {
 				FunctionParameter variadic = instancedHeader.getVariadicParameter();
 				if (variadic == null) {
 					validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "too many call arguments");
-					isValid = false;
 					break;
 				} else if (variadic.type instanceof ArrayTypeID) {
 					ITypeID elementType = ((ArrayTypeID)variadic.type).elementType;
 					if (elementType != argument.type) {
 						validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "invalid type for variadic call argument");
-						isValid = false;
 						break;
 					}
 				}
@@ -722,7 +659,6 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						position,
 						"invalid value for parameter " + parameter.name + ": " + parameter.type.toString() + " expected but " + arguments.arguments[i].type + " given");
-				isValid = false;
 			}
 		}
 		
@@ -730,10 +666,7 @@ public class ExpressionValidator implements ExpressionVisitor<Boolean> {
 			FunctionParameter parameter = instancedHeader.parameters[i];
 			if (parameter.defaultValue == null && !parameter.variadic) {
 				validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "missing call argument for " + parameter.name);
-				isValid = false;
 			}
 		}
-		
-		return isValid;
 	}
 }

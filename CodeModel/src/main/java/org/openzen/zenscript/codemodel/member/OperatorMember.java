@@ -5,13 +5,10 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -38,24 +35,18 @@ public class OperatorMember extends FunctionalMember {
 	}
 	
 	@Override
-	public String getInformalName() {
-		return operator.operator + " operator";
+	public String getCanonicalName() {
+		return definition.getFullName() + ":" + operator.operator + header.getCanonical();
+	}
+	
+	@Override
+	public FunctionalKind getKind() {
+		return FunctionalKind.OPERATOR;
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addOperator(this, priority);
-	}
-
-	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new OperatorMember(
-				position,
-				definition,
-				modifiers,
-				operator,
-				header.instance(registry, mapping),
-				builtin);
+	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
+		type.addOperator(operator, ref(mapper), priority);
 	}
 
 	@Override

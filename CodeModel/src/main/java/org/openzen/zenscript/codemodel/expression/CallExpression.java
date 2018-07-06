@@ -6,7 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -16,11 +16,11 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class CallExpression extends Expression {
 	public final Expression target;
-	public final FunctionalMember member;
+	public final FunctionalMemberRef member;
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
 	
-	public CallExpression(CodePosition position, Expression target, FunctionalMember member, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+	public CallExpression(CodePosition position, Expression target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		super(position, instancedHeader.returnType, multiThrow(position, arguments.arguments));
 		
 		this.target = target;
@@ -49,10 +49,10 @@ public class CallExpression extends Expression {
 	
 	@Override
 	public String evaluateStringConstant() {
-		if (member.builtin == null)
+		if (member.getBuiltin() == null)
 			throw new UnsupportedOperationException("Cannot evaluate to a string constant!");
 		
-		switch (member.builtin) {
+		switch (member.getBuiltin()) {
 			case STRING_ADD_STRING:
 				return target.evaluateStringConstant() + arguments.arguments[0].evaluateStringConstant();
 			default:

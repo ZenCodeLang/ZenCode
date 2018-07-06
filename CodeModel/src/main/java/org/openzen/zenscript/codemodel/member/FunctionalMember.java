@@ -5,17 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
-import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
-import org.openzen.zenscript.codemodel.expression.CompareExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -48,26 +42,16 @@ public abstract class FunctionalMember extends DefinitionMember {
 		this.body = body;
 	}
 	
-	public abstract String getInformalName();
+	public abstract String getCanonicalName();
+	
+	public abstract FunctionalKind getKind();
+	
+	public FunctionalMemberRef ref(GenericMapper mapper) {
+		return new FunctionalMemberRef(this, mapper.map(header));
+	}
 	
 	@Override
 	public BuiltinID getBuiltin() {
 		return builtin;
-	}
-	
-	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return new CallExpression(position, target, this, instancedHeader, arguments, scope);
-	}
-	
-	public final Expression call(CodePosition position, Expression target, CallArguments arguments, TypeScope scope) {
-		return call(position, target, header, arguments, scope);
-	}
-	
-	public Expression callWithComparator(CodePosition position, CompareType comparison, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return new CompareExpression(position, target, arguments.arguments[0], this, comparison, scope);
-	}
-	
-	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return new CallStaticExpression(position, target, this, arguments, instancedHeader, scope);
 	}
 }

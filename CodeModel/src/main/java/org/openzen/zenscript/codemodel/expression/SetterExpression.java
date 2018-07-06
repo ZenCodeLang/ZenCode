@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import org.openzen.zenscript.codemodel.member.SetterMember;
+import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -14,11 +14,11 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class SetterExpression extends Expression {
 	public final Expression target;
-	public final SetterMember setter;
+	public final SetterMemberRef setter;
 	public final Expression value;
 	
-	public SetterExpression(CodePosition position, Expression target, SetterMember setter, Expression value) {
-		super(position, setter.type, binaryThrow(position, value.thrownType, setter.header.thrownType));
+	public SetterExpression(CodePosition position, Expression target, SetterMemberRef setter, Expression value) {
+		super(position, setter.type, value.thrownType);
 		
 		this.target = target;
 		this.setter = setter;

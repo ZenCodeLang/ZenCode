@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
@@ -13,6 +14,7 @@ import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression
 import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
@@ -67,7 +69,7 @@ public class FieldMember extends DefinitionMember {
 		if (autoGetterAccess != 0) {
 			ITypeID myType = registry.getForDefinition(definition, parameters);
 			this.autoGetter = new GetterMember(position, definition, autoGetterAccess, name, type, null);
-			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(position, new ThisExpression(position, myType), this)));
+			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(position, new ThisExpression(position, myType), new FieldMemberRef(this, myType))));
 		} else {
 			this.autoGetter = null;
 		}
@@ -77,7 +79,7 @@ public class FieldMember extends DefinitionMember {
 			this.autoSetter.setBody(new ExpressionStatement(position, new SetFieldExpression(
 					position,
 					new ThisExpression(position, myType),
-					this,
+					new FieldMemberRef(this, myType),
 					new GetFunctionParameterExpression(position, this.autoSetter.header.parameters[0]))));
 		} else {
 			this.autoSetter = null;
@@ -120,28 +122,13 @@ public class FieldMember extends DefinitionMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addField(this, priority);
+	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
+		members.addField(new FieldMemberRef(this, mapper.map(type)), priority);
 	}
 	
 	@Override
 	public BuiltinID getBuiltin() {
 		return builtin;
-	}
-
-	@Override
-	public FieldMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new FieldMember(
-				position,
-				definition,
-				modifiers,
-				name,
-				type.withGenericArguments(registry, mapping),
-				autoGetterAccess,
-				autoSetterAccess,
-				autoGetter == null ? null : autoGetter.instance(registry, mapping),
-				autoSetter == null ? null : autoSetter.instance(registry, mapping),
-				builtin);
 	}
 
 	@Override

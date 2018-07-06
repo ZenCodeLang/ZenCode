@@ -5,9 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import java.util.Map;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -16,11 +14,11 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class CastExpression extends Expression {
 	public final Expression target;
-	public final CasterMember member;
+	public final CasterMemberRef member;
 	public final boolean isImplicit;
 	
-	public CastExpression(CodePosition position, Expression target, CasterMember member, boolean isImplicit) {
-		super(position, member.getTargetType(), binaryThrow(position, target.thrownType, member.header.thrownType));
+	public CastExpression(CodePosition position, Expression target, CasterMemberRef member, boolean isImplicit) {
+		super(position, member.toType, binaryThrow(position, target.thrownType, member.member.header.thrownType));
 		
 		this.target = target;
 		this.member = member;

@@ -74,7 +74,6 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpressio
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.shared.StringUtils;
 
 /**
@@ -121,9 +120,8 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitCall(CallExpression expression) {
-		if (expression.member instanceof OperatorMember) {
-			OperatorMember operator = (OperatorMember) expression.member;
-			switch (operator.operator) {
+		if (expression.member.isOperator()) {
+			switch (expression.member.getOperator()) {
 				case NOT:
 					return unaryPrefix(expression.target, ZenScriptOperator.NOT, "!");
 				case NEG:
@@ -236,13 +234,13 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 					return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
 				}
 				default:
-					throw new UnsupportedOperationException("Unknown operator: " + operator.operator);
+					throw new UnsupportedOperationException("Unknown operator: " + expression.member.getOperator());
 			}
 		} else {
 			StringBuilder result = new StringBuilder();
 			result.append(expression.target.accept(this).value);
 			result.append(".");
-			result.append(expression.member.name);
+			result.append(expression.member.getMethodName());
 			FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 			return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
 		}
@@ -252,17 +250,17 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitCallStatic(CallStaticExpression expression) {
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(typeFormatter));
-		if (expression.member instanceof OperatorMember) {
-			OperatorMember operator = (OperatorMember) expression.member;
-			if (operator.operator == OperatorType.CALL) {
+		if (expression.member.isOperator()) {
+			OperatorType operator = expression.member.getOperator();
+			if (operator == OperatorType.CALL) {
 				// nothing
 			} else {
 				result.append(".");
-				result.append(expression.member.name);
+				result.append(operator.operator);
 			}
 		} else {
 			result.append(".");
-			result.append(expression.member.name);
+			result.append(expression.member.getMethodName());
 		}
 		FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
 		return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
@@ -330,7 +328,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(expression.type.accept(typeFormatter));
 		result.append('.');
-		result.append(expression.constant.name);
+		result.append(expression.constant.member.name);
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 
@@ -435,7 +433,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(this));
 		result.append('.');
-		result.append(expression.field.name);
+		result.append(expression.field.member.name);
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 
@@ -454,7 +452,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(expression.type.accept(typeFormatter));
 		result.append('.');
-		result.append(expression.field.name);
+		result.append(expression.field.member.name);
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 
@@ -463,7 +461,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(this));
 		result.append('.');
-		result.append(expression.getter.name);
+		result.append(expression.getter.member.name);
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 	
@@ -549,7 +547,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	
 	@Override
 	public ExpressionString visitPostCall(PostCallExpression expression) {
-		return unaryPostfix(expression.target, ZenScriptOperator.INCREMENT, expression.member.operator == OperatorType.INCREMENT ? "++" : "--");
+		return unaryPostfix(expression.target, ZenScriptOperator.INCREMENT, expression.member.getOperator() == OperatorType.INCREMENT ? "++" : "--");
 	}
 
 	@Override
@@ -565,7 +563,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitSetField(SetFieldExpression expression) {
 		return new ExpressionString(
-				expression.target.accept(this) + "." + expression.field.name + " = " + expression.value.accept(this).value, 
+				expression.target.accept(this) + "." + expression.field.member.name + " = " + expression.value.accept(this).value, 
 				ZenScriptOperator.ASSIGN);
 	}
 
@@ -586,28 +584,28 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitSetStaticField(SetStaticFieldExpression expression) {
 		return new ExpressionString(
-				expression.type.accept(typeFormatter) + "." + expression.field.name + " = " + expression.value.accept(this).value,
+				expression.type.accept(typeFormatter) + "." + expression.field.member.name + " = " + expression.value.accept(this).value,
 				ZenScriptOperator.ASSIGN);
 	}
 
 	@Override
 	public ExpressionString visitSetter(SetterExpression expression) {
 		return new ExpressionString(
-				expression.target.accept(this) + "." + expression.setter.name + " = " + expression.value.accept(this),
+				expression.target.accept(this) + "." + expression.setter.member.name + " = " + expression.value.accept(this),
 				ZenScriptOperator.ASSIGN);
 	}
 
 	@Override
 	public ExpressionString visitStaticGetter(StaticGetterExpression expression) {
 		return new ExpressionString(
-				expression.type.accept(typeFormatter) + "." + expression.getter.name, 
+				expression.type.accept(typeFormatter) + "." + expression.getter.member.name, 
 				ZenScriptOperator.MEMBER);
 	}
 
 	@Override
 	public ExpressionString visitStaticSetter(StaticSetterExpression expression) {
 		return new ExpressionString(
-				expression.type.accept(typeFormatter) + "." + expression.setter.name + " = " + expression.setter.name,
+				expression.type.accept(typeFormatter) + "." + expression.setter.member.name + " = " + expression.setter.member.name,
 				ZenScriptOperator.ASSIGN);
 	}
 	
@@ -628,19 +626,19 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitTryConvert(TryConvertExpression expression) {
-		ExpressionString value = expression.accept(this);
+		ExpressionString value = expression.value.accept(this);
 		return new ExpressionString("try?" + value.value, value.priority);
 	}
 
 	@Override
 	public ExpressionString visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
-		ExpressionString value = expression.accept(this);
+		ExpressionString value = expression.value.accept(this);
 		return new ExpressionString("try!" + value.value, value.priority);
 	}
 
 	@Override
 	public ExpressionString visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
-		ExpressionString value = expression.accept(this);
+		ExpressionString value = expression.value.accept(this);
 		return new ExpressionString("try!" + value.value, value.priority);
 	}
 	

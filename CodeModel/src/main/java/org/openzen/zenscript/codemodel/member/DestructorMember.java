@@ -5,13 +5,10 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.shared.CodePosition;
@@ -28,19 +25,19 @@ public class DestructorMember extends FunctionalMember {
 	}
 	
 	@Override
-	public String getInformalName() {
-		return "destructor";
+	public String getCanonicalName() {
+		return definition.getFullName() + ":destructor";
+	}
+	
+	@Override
+	public FunctionalKind getKind() {
+		return FunctionalKind.DESTRUCTOR;
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
+	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
 		if (priority == TypeMemberPriority.SPECIFIED)
-			type.addDestructor(this, priority);
-	}
-
-	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return this;
+			type.addDestructor(ref(mapper), priority);
 	}
 
 	@Override

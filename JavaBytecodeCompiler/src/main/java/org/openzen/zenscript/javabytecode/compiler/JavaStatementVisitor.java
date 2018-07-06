@@ -106,7 +106,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         }
 
         //javaWriter.label(min);
-        statement.iterator.acceptForIterator(new JavaForeachVisitor(this, statement.loopVariables, statement.content, start, end));
+        statement.iterator.target.acceptForIterator(new JavaForeachVisitor(this, statement.loopVariables, statement.content, start, end));
         javaWriter.goTo(start);
         javaWriter.label(end);
         return false;

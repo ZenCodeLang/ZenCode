@@ -41,7 +41,7 @@ public class PartialTypeExpression implements IPartialExpression {
 
 	@Override
 	public List<ITypeID>[] predictCallTypes(TypeScope scope, List<ITypeID> hints, int arguments) {
-		return new List[arguments];
+		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).predictCallTypes(scope, hints, arguments);
 	}
 	
 	@Override
@@ -61,6 +61,9 @@ public class PartialTypeExpression implements IPartialExpression {
 
 	@Override
 	public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
+		if (arguments.getNumberOfTypeArguments() == 0 && typeParameters.length > 0)
+			arguments = new CallArguments(typeParameters, arguments.arguments);
+		
 		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).callStatic(position, type, scope, arguments);
 	}
 

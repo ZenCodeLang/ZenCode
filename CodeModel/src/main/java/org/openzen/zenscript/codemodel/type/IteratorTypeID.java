@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
 import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
@@ -46,11 +47,11 @@ public class IteratorTypeID implements ITypeID {
 	}
 
 	@Override
-	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
+	public ITypeID instance(GenericMapper mapper) {
 		ITypeID[] instanced = new ITypeID[iteratorTypes.length];
 		for (int i = 0; i < iteratorTypes.length; i++)
-			instanced[i] = iteratorTypes[i].withGenericArguments(registry, arguments);
-		return registry.getIterator(instanced);
+			instanced[i] = iteratorTypes[i].instance(mapper);
+		return mapper.registry.getIterator(instanced);
 	}
 
 	@Override

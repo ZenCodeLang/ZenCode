@@ -5,12 +5,9 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -46,13 +43,8 @@ public class StaticInitializerMember extends Taggable implements IDefinitionMemb
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
+	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
 		
-	}
-
-	@Override
-	public IDefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return this;
 	}
 
 	@Override

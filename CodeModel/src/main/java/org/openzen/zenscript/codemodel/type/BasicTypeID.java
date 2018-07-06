@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
@@ -43,7 +43,7 @@ public enum BasicTypeID implements ITypeID {
 	}
 	
 	@Override
-	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
+	public ITypeID instance(GenericMapper mapper) {
 		return this;
 	}
 	

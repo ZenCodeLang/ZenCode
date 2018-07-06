@@ -6,7 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import java.util.List;
-import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
@@ -16,14 +16,14 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class VariantValueExpression extends Expression {
-	public final VariantDefinition.Option option;
+	public final VariantOptionRef option;
 	public final Expression[] arguments;
 	
-	public VariantValueExpression(CodePosition position, ITypeID variantType, VariantDefinition.Option option) {
+	public VariantValueExpression(CodePosition position, ITypeID variantType, VariantOptionRef option) {
 		this(position, variantType, option, Expression.NONE);
 	}
 	
-	public VariantValueExpression(CodePosition position, ITypeID variantType, VariantDefinition.Option option, Expression[] arguments) {
+	public VariantValueExpression(CodePosition position, ITypeID variantType, VariantOptionRef option, Expression[] arguments) {
 		super(position, variantType, multiThrow(position, arguments));
 		
 		this.option = option;

@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.Map;
 import java.util.Objects;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -23,8 +23,8 @@ public class ConstTypeID implements ITypeID {
 	}
 	
 	@Override
-	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		return registry.getModified(TypeMembers.MODIFIER_CONST, baseType.withGenericArguments(registry, arguments));
+	public ITypeID instance(GenericMapper mapper) {
+		return mapper.registry.getModified(TypeMembers.MODIFIER_CONST, baseType.instance(mapper));
 	}
 	
 	@Override

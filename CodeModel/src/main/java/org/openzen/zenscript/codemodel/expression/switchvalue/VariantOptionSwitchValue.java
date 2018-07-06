@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression.switchvalue;
 
-import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 
 /**
@@ -13,10 +13,10 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
  * @author Hoofdgebruiker
  */
 public class VariantOptionSwitchValue implements SwitchValue {
-	public final VariantDefinition.Option option;
+	public final VariantOptionRef option;
 	public final VarStatement[] parameters;
 	
-	public VariantOptionSwitchValue(VariantDefinition.Option option, VarStatement[] parameters) {
+	public VariantOptionSwitchValue(VariantOptionRef option, VarStatement[] parameters) {
 		this.option = option;
 		this.parameters = parameters;
 	}

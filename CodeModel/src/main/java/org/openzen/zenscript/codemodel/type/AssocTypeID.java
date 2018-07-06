@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
@@ -22,10 +22,10 @@ public class AssocTypeID implements ITypeID {
 	}
 	
 	@Override
-	public AssocTypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		return registry.getAssociative(
-				keyType.withGenericArguments(registry, arguments),
-				valueType.withGenericArguments(registry, arguments));
+	public AssocTypeID instance(GenericMapper mapper) {
+		return mapper.registry.getAssociative(
+				keyType.instance(mapper),
+				valueType.instance(mapper));
 	}
 	
 	@Override

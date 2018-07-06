@@ -5,10 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -25,9 +22,7 @@ public interface IDefinitionMember {
 	
 	public BuiltinID getBuiltin();
 	
-	public void registerTo(TypeMembers type, TypeMemberPriority priority);
-	
-	public IDefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping);
+	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper);
 	
 	public <T> T accept(MemberVisitor<T> visitor);
 	

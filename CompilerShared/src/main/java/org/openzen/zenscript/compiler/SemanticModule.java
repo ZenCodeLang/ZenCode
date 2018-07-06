@@ -98,21 +98,18 @@ public class SemanticModule {
 			throw new IllegalStateException("Module is not yet normalized");
 		
 		Validator validator = new Validator();
-		boolean isValid = true;
 		for (ScriptBlock script : scripts) {
-			isValid &= validator.validate(script);
+			validator.validate(script);
 		}
 		for (HighLevelDefinition definition : definitions.getAll()) {
-			isValid &= validator.validate(definition);
+			validator.validate(definition);
 		}
 		
 		for (ValidationLogEntry entry : validator.getLog()) {
 			System.out.println(entry.kind + " " + entry.position.toString() + ": " + entry.message);
 		}
-		state = isValid ? State.VALIDATED : State.INVALID;
-		if (!isValid && validator.getLog().isEmpty())
-			System.out.println("ERROR: module is invalid but no errors have been generated");
-		return isValid;
+		state = validator.hasErrors() ? State.INVALID : State.VALIDATED;
+		return !validator.hasErrors();
 	}
 	
 	public void compile(ZenCodeCompiler compiler) {

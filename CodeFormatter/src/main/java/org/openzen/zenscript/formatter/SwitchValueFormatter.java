@@ -47,7 +47,7 @@ public class SwitchValueFormatter implements SwitchValueVisitor<String> {
 	@Override
 	public String acceptVariantOption(VariantOptionSwitchValue value) {
 		StringBuilder result = new StringBuilder();
-		result.append(value.option.name);
+		result.append(value.option.getName());
 		result.append("(");
 		for (int i = 0; i < value.parameters.length; i++) {
 			if (i > 0)

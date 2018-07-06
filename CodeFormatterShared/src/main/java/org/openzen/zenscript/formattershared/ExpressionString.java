@@ -38,18 +38,18 @@ public class ExpressionString {
 	}
 	
 	public ExpressionString unaryPrefix(FormattableOperator operator) {
-		return new ExpressionString(operator.getOperatorString() + value, operator);
+		return new ExpressionString(operator.getOperatorString() + wrapRight(operator), operator);
 	}
 	
 	public ExpressionString unaryPostfix(FormattableOperator operator) {
-		return new ExpressionString(value + operator.getOperatorString(), operator);
+		return new ExpressionString(wrapLeft(operator) + operator.getOperatorString(), operator);
 	}
 	
 	public ExpressionString unaryPrefix(FormattableOperator operator, String operatorString) {
-		return new ExpressionString(operatorString + value, operator);
+		return new ExpressionString(operatorString + wrapRight(operator), operator);
 	}
 	
 	public ExpressionString unaryPostfix(FormattableOperator operator, String operatorString) {
-		return new ExpressionString(value + operatorString, operator);
+		return new ExpressionString(wrapLeft(operator) + operatorString, operator);
 	}
 }

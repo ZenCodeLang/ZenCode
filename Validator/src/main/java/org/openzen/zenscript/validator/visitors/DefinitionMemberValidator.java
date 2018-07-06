@@ -41,7 +41,7 @@ import org.openzen.zenscript.validator.analysis.StatementScope;
  *
  * @author Hoofdgebruiker
  */
-public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
+public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	private final Validator validator;
 	private final Set<String> fieldNames = new HashSet<>();
 	private final Set<String> members = new HashSet<>();
@@ -58,8 +58,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 	}
 	
 	@Override
-	public Boolean visitConst(ConstMember member) {
-		boolean isValid = ValidationUtils.validateModifiers(
+	public Void visitConst(ConstMember member) {
+		ValidationUtils.validateModifiers(
 				validator,
 				member.modifiers,
 				Modifiers.PUBLIC | Modifiers.PROTECTED | Modifiers.PRIVATE,
@@ -70,214 +70,192 @@ public class DefinitionMemberValidator implements MemberVisitor<Boolean> {
 					ValidationLogEntry.Code.INVALID_TYPE,
 					member.position,
 					"Expression type doesn't match const type");
-			isValid = false;
 		}
-		return isValid;
+		return null;
 	}
 	
 	@Override
-	public Boolean visitField(FieldMember member) {
-		boolean isValid = true;
+	public Void visitField(FieldMember member) {
 		if (fieldNames.contains(member.name)) {
 			validator.logError(
 					ValidationLogEntry.Code.DUPLICATE_FIELD_NAME,
 					member.position,
 					"Duplicate field name: " + member.name);
-			isValid = false;
 		}
 		fieldNames.add(member.name);
-		
-		isValid &= member.type.accept(new TypeValidator(validator, member.position));
+		member.type.accept(new TypeValidator(validator, member.position));
 		
 		if (member.initializer != null) {
-			isValid &= member.initializer.accept(new ExpressionValidator(validator, new FieldInitializerScope(member)));
+			member.initializer.accept(new ExpressionValidator(validator, new FieldInitializerScope(member)));
 		}
 		
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitConstructor(ConstructorMember member) {
-		boolean isValid = true;
+	public Void visitConstructor(ConstructorMember member) {
 		for (FunctionHeader existing : constructors) {
 			if (existing.isSimilarTo(member.header)) {
 				validator.logError(ValidationLogEntry.Code.DUPLICATE_CONSTRUCTOR, member.position, "Duplicate constructor, conflicts with this" + existing.toString());
-				isValid = false;
 			}
 		}
 		constructors.add(member.header);
-		isValid &= ValidationUtils.validateHeader(validator, member.position, member.header);
+		ValidationUtils.validateHeader(validator, member.position, member.header);
 		
 		if (member.body == null && !member.isExtern()) {
 			validator.logError(ValidationLogEntry.Code.BODY_REQUIRED, member.position, "Constructors must have a body");
 		} else {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			isValid &= member.body.accept(statementValidator);
+			member.body.accept(statementValidator);
 			
 			if (member.definition.superType != null && !statementValidator.constructorForwarded) {
 				validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_MISSING, member.position, "Constructor not forwarded to base type");
-				isValid &= false;
 			}
 		}
 		
-		return isValid;
+		return null;
 	}
 	
 	@Override
-	public Boolean visitDestructor(DestructorMember member) {
-		boolean isValid = true;
+	public Void visitDestructor(DestructorMember member) {
 		if (hasDestructor) {
 			validator.logError(ValidationLogEntry.Code.MULTIPLE_DESTRUCTORS, member.position, "A type have only a single destructor");
-			isValid = false;
 		}
 		hasDestructor = true;
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			isValid &= member.body.accept(statementValidator);
+			member.body.accept(statementValidator);
 		}
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitMethod(MethodMember member) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		isValid &= ValidationUtils.validateHeader(validator, member.position, member.header);
+	public Void visitMethod(MethodMember member) {
+		ValidationUtils.validateIdentifier(validator, member.position, member.name);
+		ValidationUtils.validateHeader(validator, member.position, member.header);
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			isValid &= member.body.accept(statementValidator);
+			member.body.accept(statementValidator);
 		}
-		
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitGetter(GetterMember member) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		isValid &= member.type.accept(new TypeValidator(validator, member.position));
+	public Void visitGetter(GetterMember member) {
+		ValidationUtils.validateIdentifier(validator, member.position, member.name);
+		member.type.accept(new TypeValidator(validator, member.position));
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			isValid &= member.body.accept(statementValidator);
+			member.body.accept(statementValidator);
 		}
 		
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitSetter(SetterMember member) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		isValid &= member.type.accept(new TypeValidator(validator, member.position));
+	public Void visitSetter(SetterMember member) {
+		ValidationUtils.validateIdentifier(validator, member.position, member.name);
+		member.type.accept(new TypeValidator(validator, member.position));
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			isValid &= member.body.accept(statementValidator);
+			member.body.accept(statementValidator);
 		}
 		
-		return isValid;
+		return null;
 	}
 	
-	public boolean visitEnumConstant(EnumConstantMember member) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateIdentifier(validator, member.position, member.name);
+	public void visitEnumConstant(EnumConstantMember member) {
+		ValidationUtils.validateIdentifier(validator, member.position, member.name);
 		if (member.constructor != null) {
-			isValid &= member.constructor.accept(new ExpressionValidator(validator, new EnumConstantInitializerScope()));
+			member.constructor.accept(new ExpressionValidator(validator, new EnumConstantInitializerScope()));
 		}
 		if (members.contains(member.name)) {
 			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, member.position, "Duplicate enum value: " + member.name);
-			isValid = false;
 		}
 		
 		initializedEnumConstants.add(member);
-		return isValid;
 	}
 
 	@Override
-	public Boolean visitOperator(OperatorMember member) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateHeader(validator, member.position, member.header);
+	public Void visitOperator(OperatorMember member) {
+		ValidationUtils.validateHeader(validator, member.position, member.header);
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			isValid &= member.body.accept(statementValidator);
+			member.body.accept(statementValidator);
 		}
 		
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitCaster(CasterMember member) {
-		boolean isValid = true;
-		isValid &= member.toType.accept(new TypeValidator(validator, member.position));
+	public Void visitCaster(CasterMember member) {
+		member.toType.accept(new TypeValidator(validator, member.position));
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			isValid &= member.body.accept(statementValidator);
+			member.body.accept(statementValidator);
 		}
 		
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitCustomIterator(CustomIteratorMember member) {
+	public Void visitCustomIterator(CustomIteratorMember member) {
 		// TODO: validate iterators
-		return true;
+		return null;
 	}
 
 	@Override
-	public Boolean visitCaller(CallerMember member) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateHeader(validator, member.position, member.header);
+	public Void visitCaller(CallerMember member) {
+		ValidationUtils.validateHeader(validator, member.position, member.header);
 		
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
-			isValid &= member.body.accept(statementValidator);
+			member.body.accept(statementValidator);
 		}
 		
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitImplementation(ImplementationMember implementation) {
-		boolean isValid = true;
+	public Void visitImplementation(ImplementationMember implementation) {
 		if (implementedTypes.contains(implementation.type)) {
 			validator.logError(
 					ValidationLogEntry.Code.TYPE_ALREADY_IMPLEMENTED,
 					implementation.position,
 					"Type is already implemented: " + implementation.type);
-			isValid = false;
 		}
 		implementedTypes.add(implementation.type);
 		
 		DefinitionMemberValidator memberValidator = new DefinitionMemberValidator(validator, definition);
 		for (IDefinitionMember member : implementation.members) {
-			isValid &= member.accept(memberValidator);
+			member.accept(memberValidator);
 		}
 		
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitInnerDefinition(InnerDefinitionMember innerDefinition) {
-		boolean isValid = true;
+	public Void visitInnerDefinition(InnerDefinitionMember innerDefinition) {
 		if (members.contains(innerDefinition.innerDefinition.name)) {
 			validator.logError(
 					ValidationLogEntry.Code.DUPLICATE_MEMBER_NAME,
 					innerDefinition.position,
 					"Duplicate member name: " + innerDefinition.innerDefinition.name);
-			isValid = false;
 		}
 		
-		isValid &= innerDefinition.innerDefinition.accept(new DefinitionValidator(validator));
-		return isValid;
+		innerDefinition.innerDefinition.accept(new DefinitionValidator(validator));
+		return null;
 	}
 
 	@Override
-	public Boolean visitStaticInitializer(StaticInitializerMember member) {
-		return member.body.accept(new StatementValidator(validator, new StaticInitializerScope()));
+	public Void visitStaticInitializer(StaticInitializerMember member) {
+		member.body.accept(new StatementValidator(validator, new StaticInitializerScope()));
+		return null;
 	}
 	
 	private class FieldInitializerScope implements ExpressionScope {

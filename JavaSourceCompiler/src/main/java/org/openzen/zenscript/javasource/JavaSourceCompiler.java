@@ -24,20 +24,20 @@ import org.openzen.zenscript.shared.SourceFile;
 public class JavaSourceCompiler implements ZenCodeCompiler {
 	public final JavaSourceFormattingSettings settings;
 	public final JavaSourceSyntheticTypeGenerator typeGenerator;
+	public final JavaSourceSyntheticHelperGenerator helperGenerator;
 	
 	private final File directory;
 	private final Map<File, JavaSourceFile> sourceFiles = new HashMap<>();
-	private final CompilationUnit compilationUnit;
 	
 	public JavaSourceCompiler(File directory, CompilationUnit compilationUnit) {
 		if (!directory.exists())
 			directory.mkdirs();
 		
 		settings = new JavaSourceFormattingSettings.Builder().build();
-		typeGenerator = new JavaSourceSyntheticTypeGenerator(directory);
+		typeGenerator = new JavaSourceSyntheticTypeGenerator(directory, settings);
+		helperGenerator = new JavaSourceSyntheticHelperGenerator(directory, settings);
 		
 		this.directory = directory;
-		this.compilationUnit = compilationUnit;
 	}
 	
 	@Override
@@ -69,6 +69,8 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	public void finish() {
 		for (JavaSourceFile sourceFile : sourceFiles.values())
 			sourceFile.write();
+		
+		helperGenerator.write();
 	}
 	
 	@Override
@@ -85,6 +87,6 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 			return directory;
 		
 		File base = getDirectory(pkg.parent);
-		return new File(base, pkg.name);
+		return new File(base, pkg.name.replace('.', '/'));
 	}
 }

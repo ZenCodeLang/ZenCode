@@ -5,11 +5,6 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
-import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
-import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
-import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -18,7 +13,6 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
@@ -31,7 +25,7 @@ import org.openzen.zenscript.validator.Validator;
  *
  * @author Hoofdgebruiker
  */
-public class TypeValidator implements ITypeVisitor<Boolean> {
+public class TypeValidator implements ITypeVisitor<Void> {
 	private final Validator validator;
 	private final CodePosition position;
 	
@@ -41,83 +35,81 @@ public class TypeValidator implements ITypeVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitBasic(BasicTypeID basic) {
+	public Void visitBasic(BasicTypeID basic) {
 		if (basic == BasicTypeID.UNDETERMINED) {
 			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, position, "type could not be determined");
-			return false;
 		}
 		
-		return true;
+		return null;
 	}
 
 	@Override
-	public Boolean visitArray(ArrayTypeID array) {
-		boolean isValid = true;
+	public Void visitArray(ArrayTypeID array) {
 		if (array.dimension < 1) {
 			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, position, "array dimension must be at least 1");
-			isValid = false;
 		} else if (array.dimension > 16) {
 			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, position, "array dimension must be at most 16");
-			isValid = false;
 		}
 		
-		return isValid & array.elementType.accept(this);
+		array.elementType.accept(this);
+		return null;
 	}
 
 	@Override
-	public Boolean visitAssoc(AssocTypeID assoc) {
-		boolean isValid = true;
-		isValid &= assoc.keyType.accept(this);
-		isValid &= assoc.valueType.accept(this);
+	public Void visitAssoc(AssocTypeID assoc) {
+		assoc.keyType.accept(this);
+		assoc.valueType.accept(this);
 		
 		// TODO: does the keytype have == and hashcode operators?
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitIterator(IteratorTypeID iterator) {
+	public Void visitIterator(IteratorTypeID iterator) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
-	public Boolean visitFunction(FunctionTypeID function) {
-		return ValidationUtils.validateHeader(validator, position, function.header);
+	public Void visitFunction(FunctionTypeID function) {
+		ValidationUtils.validateHeader(validator, position, function.header);
+		return null;
 	}
 
 	@Override
-	public Boolean visitDefinition(DefinitionTypeID definition) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateTypeArguments(validator, position, definition.definition.genericParameters, definition.typeParameters);
-		return isValid;
+	public Void visitDefinition(DefinitionTypeID definition) {
+		ValidationUtils.validateTypeArguments(validator, position, definition.definition.genericParameters, definition.typeParameters);
+		return null;
 	}
 
 	@Override
-	public Boolean visitGeneric(GenericTypeID generic) {
-		return true;
+	public Void visitGeneric(GenericTypeID generic) {
+		return null;
 	}
 
 	@Override
-	public Boolean visitRange(RangeTypeID range) {
-		return range.from.accept(this) & range.to.accept(this);
+	public Void visitRange(RangeTypeID range) {
+		range.from.accept(this);
+		range.to.accept(this);
+		return null;
 	}
 
 	@Override
-	public Boolean visitConst(ConstTypeID type) {
+	public Void visitConst(ConstTypeID type) {
 		// TODO: detect duplicate const
-		return type.baseType.accept(this);
+		type.baseType.accept(this);
+		return null;
 	}
 
 	@Override
-	public Boolean visitOptional(OptionalTypeID optional) {
+	public Void visitOptional(OptionalTypeID optional) {
 		// TODO: detect duplicate optional
-		return optional.baseType.accept(this);
+		optional.baseType.accept(this);
+		return null;
 	}
 
 	@Override
-	public Boolean visitGenericMap(GenericMapTypeID map) {
-		boolean isValid = true;
-		isValid &= map.value.accept(this);
-		
-		return isValid;
+	public Void visitGenericMap(GenericMapTypeID map) {
+		map.value.accept(this);
+		return null;
 	}
 }

@@ -63,6 +63,17 @@ public class TypeParameter {
 		return this;
 	}
 	
+	public String getCanonical() {
+		StringBuilder result = new StringBuilder();
+		result.append(name);
+		for(GenericParameterBound bound : bounds) {
+			result.append(':');
+			result.append(bound.getCanonical());
+		}
+		return result.toString();
+	}
+	
+	@Override
 	public String toString() {
 		return name + "@" + position.toShortString();
 	}

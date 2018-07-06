@@ -13,8 +13,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.MapExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -60,20 +59,20 @@ public class ParsedExpressionMap extends ParsedExpression {
 				
 				hasAssocHint = true;
 			} else if (hint instanceof GenericMapTypeID) {
-				FunctionalMember constructor = scope
+				FunctionalMemberRef constructor = scope
 						.getTypeMembers(hint)
 						.getOrCreateGroup(OperatorType.CONSTRUCTOR)
 						.selectMethod(position, scope, CallArguments.EMPTY, true, true);
-				return new NewExpression(position, hint, (ConstructorMember) constructor, CallArguments.EMPTY);
+				return new NewExpression(position, hint, constructor, CallArguments.EMPTY);
 			}
 		}
 		
 		if (keys.isEmpty() && keyHints.size() == 1) {
-			FunctionalMember constructor = scope
+			FunctionalMemberRef constructor = scope
 						.getTypeMembers(assocHint)
 						.getOrCreateGroup(OperatorType.CONSTRUCTOR)
 						.selectMethod(position, scope, CallArguments.EMPTY, true, true);
-				return new NewExpression(position, assocHint, (ConstructorMember) constructor, CallArguments.EMPTY);
+				return new NewExpression(position, assocHint, constructor, CallArguments.EMPTY);
 		}
 		
 		if (!hasAssocHint && scope.hints.size() == 1 && scope.hints.get(0) != BasicTypeID.ANY) {

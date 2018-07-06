@@ -7,12 +7,14 @@ package org.openzen.zenscript.scriptingexample;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
@@ -21,6 +23,7 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialMemberGroupExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -126,8 +129,9 @@ public class GlobalRegistry {
 			//return new PartialStaticMemberGroupExpression(position, PRINTLN.callerGroup);
 			return new PartialMemberGroupExpression(
 					position,
-					new GetStaticFieldExpression(position, SYSTEM_OUT),
-					PRINTSTREAM_PRINTLN,
+					new GetStaticFieldExpression(position, new FieldMemberRef(SYSTEM_OUT, SYSTEM_OUT.type)),
+					"println",
+					PRINTSTREAM_PRINTLN.ref(new GenericMapper(types, Collections.emptyMap())),
 					null,
 					false);
 		}

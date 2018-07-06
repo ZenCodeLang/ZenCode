@@ -29,10 +29,17 @@ import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParameterBoundVisitor<String> {
 	public final JavaSourceImporter importer;
 	public final JavaSourceSyntheticTypeGenerator typeGenerator;
+	public final JavaSourceObjectTypeVisitor objectTypeVisitor;
 	
 	public JavaSourceTypeVisitor(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator) {
 		this.importer = importer;
 		this.typeGenerator = typeGenerator;
+		
+		if (this instanceof JavaSourceObjectTypeVisitor) {
+			objectTypeVisitor = (JavaSourceObjectTypeVisitor)this;
+		} else {
+			objectTypeVisitor = new JavaSourceObjectTypeVisitor(importer, typeGenerator);
+		}
 	}
 
 	@Override
@@ -100,7 +107,7 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 			for (int i = 0; i < definition.typeParameters.length; i++) {
 				if (i > 0)
 					result.append(", ");
-				result.append(definition.typeParameters[i].accept(this));
+				result.append(definition.typeParameters[i].accept(objectTypeVisitor));
 			}
 			result.append(">");
 		}

@@ -5,10 +5,12 @@
  */
 package org.openzen.zenscript.codemodel.scope;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
@@ -41,7 +43,7 @@ public class ImplementationScope extends BaseScope {
 		interfaceMembers.copyMembersTo(implementation.position, interfaceMembers, TypeMemberPriority.INHERITED);
 		
 		for (IDefinitionMember member : implementation.members) {
-			member.registerTo(members, TypeMemberPriority.SPECIFIED);
+			member.registerTo(members, TypeMemberPriority.SPECIFIED, new GenericMapper(outer.getTypeRegistry(), Collections.emptyMap()));
 		}
 	}
 

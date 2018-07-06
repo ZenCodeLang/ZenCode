@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
@@ -71,7 +72,7 @@ public class DefinitionTypeID implements ITypeID {
 			for (int i = 0; i < typeParameters.length; i++)
 				genericSuperArguments.put(definition.genericParameters[i], typeParameters[i]);
 			
-			superType = definition.superType.withGenericArguments(registry, genericSuperArguments);
+			superType = definition.superType.instance(new GenericMapper(registry, genericSuperArguments));
 		}
 		this.superType = superType;
 	}
@@ -86,7 +87,7 @@ public class DefinitionTypeID implements ITypeID {
 	}
 	
 	@Override
-	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
+	public ITypeID instance(GenericMapper mapper) {
 		if (!hasTypeParameters() && outerTypeParameters.isEmpty())
 			return this;
 		
@@ -96,7 +97,7 @@ public class DefinitionTypeID implements ITypeID {
 			for (int i = 0; i < typeParameters.length; i++) {
 				// TODO: why was this line written like this?
 				//instancedArguments[i] = arguments.containsKey(definition.genericParameters[i]) ? arguments.get(definition.genericParameters[i]) : typeParameters[i].withGenericArguments(registry, arguments);
-				instancedArguments[i] = typeParameters[i].withGenericArguments(registry, arguments);
+				instancedArguments[i] = typeParameters[i].instance(mapper);
 			}
 		}
 		
@@ -106,9 +107,9 @@ public class DefinitionTypeID implements ITypeID {
 		} else {
 			instancedOuter = new HashMap<>();
 			for (Map.Entry<TypeParameter, ITypeID> entry : outerTypeParameters.entrySet())
-				instancedOuter.put(entry.getKey(), entry.getValue().withGenericArguments(registry, arguments));
+				instancedOuter.put(entry.getKey(), entry.getValue().instance(mapper));
 		}
-		return registry.getForDefinition(definition, instancedArguments, instancedOuter);
+		return mapper.registry.getForDefinition(definition, instancedArguments, instancedOuter);
 	}
 	
 	@Override

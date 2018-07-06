@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
@@ -50,8 +50,8 @@ public class ArrayTypeID implements ITypeID {
 	}
 	
 	@Override
-	public ArrayTypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		return registry.getArray(elementType.withGenericArguments(registry, arguments), dimension);
+	public ArrayTypeID instance(GenericMapper mapper) {
+		return mapper.registry.getArray(elementType.instance(mapper), dimension);
 	}
 
 	@Override

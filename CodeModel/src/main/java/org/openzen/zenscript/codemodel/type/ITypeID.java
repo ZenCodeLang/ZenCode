@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -53,7 +54,7 @@ public interface ITypeID {
 		return false;
 	}
 	
-	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments);
+	public ITypeID instance(GenericMapper mapper);
 	
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters);
 	

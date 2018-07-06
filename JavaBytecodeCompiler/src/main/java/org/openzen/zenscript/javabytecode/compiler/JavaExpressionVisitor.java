@@ -1,30 +1,22 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import java.util.*;
-
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.member.DefinitionMember;
-import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.implementations.IntRange;
 import org.openzen.zenscript.javabytecode.*;
 import org.openzen.zenscript.shared.CompileException;
 import org.openzen.zenscript.shared.CompileExceptionCode;
 
-import java.util.Arrays;
-
-import org.objectweb.asm.Opcodes;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.AssocTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import java.util.*;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final int PUBLIC = Opcodes.ACC_PUBLIC;
@@ -214,8 +206,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitCompare(CompareExpression expression) {
-		if (expression.operator.builtin != null) {
-			switch (expression.operator.builtin) {
+		if (expression.operator.getBuiltin() != null) {
+			switch (expression.operator.getBuiltin()) {
 				case BYTE_COMPARE:
 					expression.left.accept(this);
 					javaWriter.constant(0xFF);
@@ -285,7 +277,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					compareGeneric(expression.comparison);
 					break;
 				default:
-					throw new UnsupportedOperationException("Unknown builtin comparator: " + expression.operator.builtin);
+					throw new UnsupportedOperationException("Unknown builtin comparator: " + expression.operator.getBuiltin());
 			}
 		} else {
 			if (!checkAndExecuteMethodInfo(expression.operator))
@@ -339,7 +331,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitCall(CallExpression expression) {
-		BuiltinID builtin = expression.member.builtin;
+		BuiltinID builtin = expression.member.getBuiltin();
         if (builtin == null) {
 			expression.target.accept(this);
 			for (Expression argument : expression.arguments.arguments) {
@@ -855,13 +847,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitCallStatic(CallStaticExpression expression) {
-		if (expression.member.definition.name.equals("test3"))
-			System.out.println("!");
-		
 		for (Expression argument : expression.arguments.arguments)
 			argument.accept(this);
 		
-		BuiltinID builtin = expression.member.builtin;
+		BuiltinID builtin = expression.member.getBuiltin();
 		if (builtin == null) {
 			if (!checkAndExecuteMethodInfo(expression.member))
 	            throw new IllegalStateException("Call target has no method info!");
@@ -968,7 +957,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitCast(CastExpression expression) {
         expression.target.accept(this);
 		
-		BuiltinID builtin = expression.member.builtin;
+		BuiltinID builtin = expression.member.member.builtin;
 		if (builtin == null) {
 			if (!checkAndExecuteByteCodeImplementation(expression.member) && !checkAndExecuteMethodInfo(expression.member))
 				throw new IllegalStateException("Call target has no method info!");
@@ -1351,7 +1340,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	
 	@Override
 	public Void visitConst(ConstExpression expression) {
-		BuiltinID builtin = expression.constant.builtin;
+		BuiltinID builtin = expression.constant.member.builtin;
 		if (builtin == null) {
 			if (!checkAndGetFieldInfo(expression.constant, true))
 	            throw new IllegalStateException("Call target has no field info!");
@@ -1653,7 +1642,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitGetter(GetterExpression expression) {
 		expression.target.accept(this);
 		
-		BuiltinID builtin = expression.getter.builtin;
+		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
 			if (!checkAndExecuteMethodInfo(expression.getter))
 	            throw new IllegalStateException("Call target has no method info!");
@@ -2079,6 +2068,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitSetStaticField(SetStaticFieldExpression expression) {
         if (expression.field.isFinal())
             throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
+		
         expression.value.accept(this);
         if (!checkAndPutFieldInfo(expression.field, true))
             throw new IllegalStateException("Missing field info on a field member!");
@@ -2092,7 +2082,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitStaticGetter(StaticGetterExpression expression) {
-		BuiltinID builtin = expression.getter.builtin;
+		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
 			if (!checkAndExecuteMethodInfo(expression.getter))
 	            throw new IllegalStateException("Call target has no method info!");
@@ -2237,7 +2227,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 
     //Will return true if a JavaBytecodeImplementation.class tag exists, and will compile that tag
-    private boolean checkAndExecuteByteCodeImplementation(DefinitionMember member) {
+    private boolean checkAndExecuteByteCodeImplementation(DefinitionMemberRef member) {
         JavaBytecodeImplementation implementation = member.getTag(JavaBytecodeImplementation.class);
         if (implementation != null) {
             implementation.compile(getJavaWriter());
@@ -2247,7 +2237,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
     //Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
-    private boolean checkAndExecuteMethodInfo(DefinitionMember member) {
+    private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member) {
         JavaMethodInfo methodInfo = member.getTag(JavaMethodInfo.class);
         if (methodInfo == null)
             return false;
@@ -2262,7 +2252,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 
     //Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
-    public boolean checkAndPutFieldInfo(DefinitionMember field, boolean isStatic) {
+    public boolean checkAndPutFieldInfo(FieldMemberRef field, boolean isStatic) {
 		JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
         if (fieldInfo == null)
             return false;
@@ -2275,7 +2265,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         return true;
     }
 
-    public boolean checkAndGetFieldInfo(DefinitionMember field, boolean isStatic) {
+    public boolean checkAndGetFieldInfo(ConstMemberRef field, boolean isStatic) {
+        JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
+        if (fieldInfo == null)
+            return false;
+		
+        getJavaWriter().getStaticField(fieldInfo);
+        return true;
+    }
+
+    public boolean checkAndGetFieldInfo(FieldMemberRef field, boolean isStatic) {
         JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
         if (fieldInfo == null)
             return false;

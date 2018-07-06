@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -24,8 +24,8 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  * @author Hoofdgebruiker
  */
 public class PartialStaticMemberGroupExpression implements IPartialExpression {
-	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, ITypeID target, FunctionalMember method, ITypeID[] typeArguments) {
-		DefinitionMemberGroup group = new DefinitionMemberGroup(true, method.getInformalName());
+	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, String name, ITypeID target, FunctionalMemberRef method, ITypeID[] typeArguments) {
+		DefinitionMemberGroup group = new DefinitionMemberGroup(true, name);
 		group.addMethod(method, TypeMemberPriority.SPECIFIED);
 		return new PartialStaticMemberGroupExpression(position, target, group, typeArguments);
 	}
@@ -49,7 +49,7 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 
 	@Override
 	public List<ITypeID>[] predictCallTypes(TypeScope scope, List<ITypeID> hints, int arguments) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return group.predictCallTypes(scope, hints, arguments);
 	}
 	
 	@Override

@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -14,9 +14,9 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class GetterExpression extends Expression {
 	public final Expression target;
-	public final GetterMember getter;
+	public final GetterMemberRef getter;
 	
-	public GetterExpression(CodePosition position, Expression target, GetterMember getter) {
+	public GetterExpression(CodePosition position, Expression target, GetterMemberRef getter) {
 		super(position, getter.type, target.thrownType);
 		
 		this.target = target;

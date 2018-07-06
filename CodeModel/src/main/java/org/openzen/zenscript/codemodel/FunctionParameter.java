@@ -6,11 +6,8 @@
 package org.openzen.zenscript.codemodel;
 
 import org.openzen.zenscript.codemodel.annotations.Annotation;
-import java.util.Map;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.Taggable;
 
@@ -51,9 +48,14 @@ public class FunctionParameter extends Taggable {
 		this.variadic = variadic;
 	}
 	
-	public FunctionParameter withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		FunctionParameter result = new FunctionParameter(type.withGenericArguments(registry, arguments), name, defaultValue, variadic);
+	public FunctionParameter withGenericArguments(GenericMapper mapper) {
+		ITypeID instanced = type.instance(mapper);
+		if (instanced == type)
+			return this;
+		
+		FunctionParameter result = new FunctionParameter(instanced, name, defaultValue, variadic);
 		result.annotations = annotations;
+		result.addAllTagsFrom(this); // TODO: this will cause trouble -> references?
 		return result;
 	}
 	

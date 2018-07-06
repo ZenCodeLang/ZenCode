@@ -8,7 +8,6 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.Collections;
 import java.util.List;
-import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -17,6 +16,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitch
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
@@ -65,7 +65,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 				if (member != null)
 					return new EnumConstantExpression(position, hint, member);
 				
-				VariantDefinition.Option option = members.getVariantOption(name);
+				VariantOptionRef option = members.getVariantOption(name);
 				if (option != null)
 					return new VariantValueExpression(position, hint, option);
 			}
@@ -91,7 +91,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 				
 			return new EnumConstantSwitchValue(member);
 		} else if (type.isVariant()) {
-			VariantDefinition.Option option = members.getVariantOption(name);
+			VariantOptionRef option = members.getVariantOption(name);
 			if (option == null)
 				throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Variant option does not exist: " + name);
 			if (option.types.length > 0)

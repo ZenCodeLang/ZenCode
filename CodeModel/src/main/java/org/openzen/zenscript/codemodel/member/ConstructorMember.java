@@ -5,17 +5,14 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -58,25 +55,19 @@ public class ConstructorMember extends FunctionalMember {
 	}
 	
 	@Override
-	public String getInformalName() {
-		return "constructor";
+	public String getCanonicalName() {
+		return definition.getFullName() + ":this" + header.getCanonical();
+	}
+	
+	@Override
+	public FunctionalKind getKind() {
+		return FunctionalKind.CONSTRUCTOR;
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
+	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
 		if (priority == TypeMemberPriority.SPECIFIED)
-			type.addConstructor(this, priority);
-	}
-
-	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		ConstructorMember result = new ConstructorMember(
-				position,
-				definition,
-				modifiers,
-				header.instance(registry, mapping),
-				builtin);
-		return result;
+			type.addConstructor(ref(mapper), priority);
 	}
 
 	@Override

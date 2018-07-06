@@ -37,57 +37,46 @@ public class ValidationUtils {
 	
 	private ValidationUtils() {}
 	
-	public static boolean validateIdentifier(Validator target, CodePosition position, String identifier) { 
+	public static void validateIdentifier(Validator target, CodePosition position, String identifier) { 
 		if (identifier == null || !IDENTIFIER_PATTERN.matcher(identifier).matches()) {
 			target.logError(INVALID_IDENTIFIER, position, "Invalid identifier: " + identifier);
-			return false;
 		}
-		
-		return true;
 	}
 	
-	public static boolean validateHeader(Validator target, CodePosition position, FunctionHeader header) {
-		boolean isValid = true;
-		
+	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header) {
 		TypeValidator typeValidator = new TypeValidator(target, position);
-		isValid &= header.returnType.accept(typeValidator);
+		header.returnType.accept(typeValidator);
 		
 		Set<String> parameterNames = new HashSet<>();
 		int i = 0;
 		for (FunctionParameter parameter : header.parameters) {
 			if (parameterNames.contains(parameter.name)) {
 				target.logError(DUPLICATE_PARAMETER_NAME, position, "Duplicate parameter name: " + parameter.name);
-				isValid = false;
 			}
 			
 			parameterNames.add(parameter.name);
 			parameter.type.accept(typeValidator);
 			
 			if (parameter.defaultValue != null) {
-				isValid &= parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope()));
+				parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope()));
 				if (parameter.defaultValue.type != parameter.type) {
 					target.logError(INVALID_TYPE, position, "default value does not match parameter type");
-					isValid = false;
 				}
 			}
 			
 			if (parameter.variadic) {
 				if (i != header.parameters.length - 1) {
 					target.logError(VARIADIC_PARAMETER_MUST_BE_LAST, position, "variadic parameter must be the last parameter");
-					isValid = false;
 				}
 				if (!(parameter.type instanceof ArrayTypeID)) {
 					target.logError(INVALID_TYPE, position, "variadic parameter must be an array");
-					isValid = false;
 				}
 			}
 			i++;
 		}
-		
-		return isValid;
 	}
 	
-	public static boolean validateModifiers(
+	public static void validateModifiers(
 			Validator target,
 			int modifiers,
 			int allowedModifiers,
@@ -116,7 +105,7 @@ public class ValidationUtils {
 		
 		int invalid = modifiers & ~allowedModifiers;
 		if (invalid == 0)
-			return true;
+			return;
 		
 		if (Modifiers.isPublic(invalid))
 			target.logError(INVALID_MODIFIER, position, error + ": public");
@@ -138,11 +127,9 @@ public class ValidationUtils {
 			target.logError(INVALID_MODIFIER, position, error + ": implicit");
 		if (Modifiers.isVirtual(invalid))
 			target.logError(INVALID_MODIFIER, position, error + ": virtual");
-		
-		return false;
 	}
 	
-	public static boolean validateTypeArguments(
+	public static void validateTypeArguments(
 			Validator target,
 			CodePosition position,
 			TypeParameter[] typeParameters,
@@ -150,7 +137,7 @@ public class ValidationUtils {
 	{
 		if (typeParameters == null || typeParameters.length == 0) {
 			if (typeArguments == null || typeArguments.length == 0) {
-				return true;
+				return;
 			} else {
 				target.logError(
 					ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
@@ -158,7 +145,7 @@ public class ValidationUtils {
 					"Invalid number of type arguments: "
 							+ typeArguments.length
 							+ " arguments given but none expected");
-				return false;
+				return;
 			}
 		}
 		if (typeArguments == null || typeArguments.length == 0) {
@@ -168,7 +155,7 @@ public class ValidationUtils {
 					"Invalid number of type arguments: "
 							+ typeParameters.length
 							+ " arguments expected but none given");
-			return false;
+			return;
 		}
 		
 		if (typeParameters.length != typeArguments.length) {
@@ -180,10 +167,9 @@ public class ValidationUtils {
 							+ " arguments given but "
 							+ typeParameters.length
 							+ " expected");
-			return false;
+			return;
 		}
 		
-		boolean isValid = true;
 		for (int i = 0; i < typeParameters.length; i++) {
 			TypeParameter typeParameter = typeParameters[i];
 			for (GenericParameterBound bound : typeParameter.bounds) {
@@ -197,7 +183,6 @@ public class ValidationUtils {
 				}*/
 			}
 		}
-		return isValid;
 	}
 	
 	private static class TypeParameterBoundErrorVisitor implements GenericParameterBoundVisitor<String> {

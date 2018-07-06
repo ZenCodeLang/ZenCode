@@ -6,7 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zenscript.codemodel.CompareType;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.shared.CodePosition;
@@ -20,10 +20,10 @@ import org.openzen.zenscript.shared.CodePosition;
 public class CompareExpression extends Expression {
 	public final Expression left;
 	public final Expression right;
-	public final FunctionalMember operator;
+	public final FunctionalMemberRef operator;
 	public final CompareType comparison;
 	
-	public CompareExpression(CodePosition position, Expression left, Expression right, FunctionalMember operator, CompareType comparison, TypeScope scope) {
+	public CompareExpression(CodePosition position, Expression left, Expression right, FunctionalMemberRef operator, CompareType comparison, TypeScope scope) {
 		super(position, BasicTypeID.BOOL, binaryThrow(position, left.thrownType, right.thrownType));
 		
 		this.left = left;
