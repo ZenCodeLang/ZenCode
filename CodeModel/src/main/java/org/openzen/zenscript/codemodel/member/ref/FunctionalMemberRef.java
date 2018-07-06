@@ -69,6 +69,10 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 		return target.getKind() == FunctionalKind.OPERATOR;
 	}
 	
+	public boolean isCaller() {
+		return target.getKind() == FunctionalKind.CALLER;
+	}
+	
 	public OperatorType getOperator() {
 		return ((OperatorMember) target).operator;
 	}
