@@ -259,6 +259,8 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				result.append(".");
 				result.append(operator.operator);
 			}
+		} else if (expression.member.isCaller()) {
+			// nothing
 		} else {
 			result.append(".");
 			result.append(expression.member.getMethodName());
