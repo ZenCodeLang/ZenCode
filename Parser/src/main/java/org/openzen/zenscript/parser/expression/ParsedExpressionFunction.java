@@ -9,6 +9,7 @@ package org.openzen.zenscript.parser.expression;
 import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -73,12 +74,10 @@ public class ParsedExpressionFunction extends ParsedExpression {
 			if (!genericHeader.returnType.inferTypeParameters(scope.getMemberCache(), returnType, inferredTypes))
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
 			
-			for (Map.Entry<TypeParameter, ITypeID> type : inferredTypes.entrySet()) {
-				scope.genericInferenceMap.put(type.getKey(), type.getValue());
-			}
+			scope.genericInferenceMap.putAll(inferredTypes);
 		}
 		
-		FunctionTypeID functionType = scope.getTypeRegistry().getFunction(genericHeader.withGenericArguments(scope.getTypeRegistry(), scope.genericInferenceMap));
+		FunctionTypeID functionType = scope.getTypeRegistry().getFunction(genericHeader.withGenericArguments(new GenericMapper(scope.getTypeRegistry(), scope.genericInferenceMap)));
 		return new FunctionExpression(position, functionType, closure, statements);
 	}
 	

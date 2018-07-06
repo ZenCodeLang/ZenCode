@@ -5,8 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.generic;
 
-import java.util.Map;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -24,5 +23,7 @@ public abstract class GenericParameterBound {
 	
 	public abstract boolean matches(LocalMemberCache cache, ITypeID type);
 	
-	public abstract GenericParameterBound withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments);
+	public abstract GenericParameterBound instance(GenericMapper mapper);
+	
+	public abstract String getCanonical();
 }

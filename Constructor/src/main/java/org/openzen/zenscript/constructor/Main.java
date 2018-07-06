@@ -21,7 +21,7 @@ public class Main {
 		File currentDirectory = new File(arguments.directory);
 		CompilationUnit compilationUnit = new CompilationUnit();
 		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit);
-		moduleLoader.register("stdlib", new DirectoryModuleLoader(moduleLoader, "stdlib", new File("libraries/stdlib"), true));
+		moduleLoader.register("stdlib", new DirectoryModuleLoader(moduleLoader, "stdlib", new File("../../StdLibs/stdlib"), true));
 		
 		Project project = new Project(moduleLoader, currentDirectory);
 		for (Library library : project.libraries) {

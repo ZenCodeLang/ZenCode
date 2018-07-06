@@ -31,17 +31,15 @@ public class Validator {
 		return Collections.unmodifiableList(log);
 	}
 	
-	public boolean validate(ScriptBlock script) {
+	public void validate(ScriptBlock script) {
 		StatementValidator statementValidator = new StatementValidator(this, new ScriptScope());
-		boolean isValid = true;
 		for (Statement statement : script.statements) {
-			isValid &= statement.accept(statementValidator);
+			statement.accept(statementValidator);
 		}
-		return isValid;
 	}
 	
-	public boolean validate(HighLevelDefinition definition) {
-		return definition.accept(definitionValidator);
+	public void validate(HighLevelDefinition definition) {
+		definition.accept(definitionValidator);
 	}
 	
 	public boolean hasErrors() {

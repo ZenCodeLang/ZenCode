@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.CallerMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -37,7 +38,7 @@ public class FunctionDefinition extends HighLevelDefinition {
 	public void setHeader(FunctionHeader header) {
 		this.header = header;
 		addMember(caller = new CallerMember(position, this, modifiers | Modifiers.STATIC, header, null));
-		callerGroup.addMethod(caller, TypeMemberPriority.SPECIFIED);
+		callerGroup.addMethod(new FunctionalMemberRef(caller, caller.header), TypeMemberPriority.SPECIFIED);
 	}
 	
 	public void setCode(Statement statement) {

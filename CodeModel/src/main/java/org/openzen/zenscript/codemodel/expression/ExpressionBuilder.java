@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -49,18 +49,18 @@ public class ExpressionBuilder {
 		DefinitionMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 		List<ITypeID>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.length);
 		CallArguments compiledArguments = new CallArguments(arguments);
-		FunctionalMember member = constructors.selectMethod(position, scope, compiledArguments, true, true);
+		FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 		if (member == null)
 			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching constructor found");
-		if (!(member instanceof ConstructorMember))
+		if (!member.isConstructor())
 			throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "COMPILER BUG: constructor is not a constructor");
 		
 		return new NewExpression(
 				position,
 				type,
-				(ConstructorMember) member,
+				member,
 				compiledArguments,
-				compiledArguments.getNumberOfTypeArguments() == 0 ? member.header : member.header.withGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments),
+				compiledArguments.getNumberOfTypeArguments() == 0 ? member.header : member.header.fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments),
 				scope);
 	}
 	

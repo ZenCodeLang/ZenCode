@@ -13,80 +13,77 @@ import org.openzen.zenscript.formattershared.FormattableOperator;
  * @author Hoofdgebruiker
  */
 public enum JavaOperator implements FormattableOperator {
-	ADD(6, " + "),
-	SUB(6, " - "),
-	MUL(7, " * "),
-	DIV(7, " / "),
-	MOD(7, " % "),
-	OR(4, " | "),
-	AND(4, " & "),
-	AND_FF(4, " & 0xFF"),
-	AND_FFFF(4, " & 0xFFFF"),
-	AND_FFL(4, " & 0xFFL"),
-	AND_FFFFL(4, " & 0xFFFFL"),
-	AND_8FL(4, " & 0xFFFFFFFFL"),
-	XOR(4, " ^ "),
-	NEG(8, " - "),
-	NOT(8, " ! "),
-	INVERT(8, " ~ "),
-	SHL(7, " << "),
-	SHR(7, " >> "),
-	USHR(7, " >>> "),
-	EQUALS(5, " == "),
-	NOTEQUALS(6, " != "),
-	GREATER(6, " > "),
-	LESS(6, " < "),
-	GREATER_EQUALS(6, " >= "),
-	LESS_EQUALS(6, " <= "),
-	ASSIGN(0, " = "),
-	ADDASSIGN(0, " += "),
-	SUBASSIGN(0, " -= "),
-	MULASSIGN(0, " *= "),
-	DIVASSIGN(0, " /= "),
-	MODASSIGN(0, " %= "),
-	ORASSIGN(0, " |= "),
-	ANDASSIGN(0, " &= "),
-	XORASSIGN(0, " ^= "),
+	INCREMENT(14, "++"),
+	DECREMENT(14, "--"),
 	
-	ANDAND(3, " && "),
-	OROR(2, " || "),
+	NOT(13, "!"),
+	INVERT(13, "~"),
+	NEG(13, "-"),
 	
-	TERNARY(1, null),
+	MUL(12, " * "),
+	DIV(12, " / "),
+	MOD(12, " % "),
 	
-	INCREMENT(8, "++"),
-	DECREMENT(8, "--"),
-	MEMBER(10, null),
-	INDEX(10, null),
-	CALL(10, null),
-	CAST(10, null),
-	INSTANCEOF(10, " instanceof "),
-	NEW(10, null),
+	ADD(11, " + "),
+	SUB(11, " - "),
+	
+	SHL(10, " << "),
+	SHR(10, " >> "),
+	USHR(10, " >>> "),
+	
+	GREATER(9, " > "),
+	LESS(9, " < "),
+	GREATER_EQUALS(9, " >= "),
+	LESS_EQUALS(9, " <= "),
+	INSTANCEOF(9, " instanceof "),
+	
+	EQUALS(8, " == "),
+	NOTEQUALS(8, " != "),
+	
+	AND(7, " & "),
+	AND_FF(7, " & 0xFF"),
+	AND_FFFF(7, " & 0xFFFF"),
+	AND_FFL(7, " & 0xFFL"),
+	AND_FFFFL(7, " & 0xFFFFL"),
+	AND_8FL(7, " & 0xFFFFFFFFL"),
+	
+	XOR(6, " ^ "),
+	OR(5, " | "),
+	ANDAND(4, " && "),
+	OROR(3, " || "),
+	
+	TERNARY(2, null),
+	
+	ASSIGN(1, " = "),
+	ADDASSIGN(1, " += "),
+	SUBASSIGN(1, " -= "),
+	MULASSIGN(1, " *= "),
+	DIVASSIGN(1, " /= "),
+	MODASSIGN(1, " %= "),
+	ORASSIGN(1, " |= "),
+	ANDASSIGN(1, " &= "),
+	XORASSIGN(1, " ^= "),
+	
+	MEMBER(20, null),
+	INDEX(20, null),
+	CALL(20, null),
+	CAST(20, null),
+	NEW(20, null),
 	TOSTRING(CALL.priority, ".toString()"),
 	
-	PRIMARY(10, null);
+	PRIMARY(21, null);
 	
 	private final int priority;
-	private final boolean isCommutative;
 	private final String operatorString;
 	
 	private JavaOperator(int priority, String operatorString) {
-		this(priority, false, operatorString);
-	}
-	
-	private JavaOperator(int priority, boolean isCommutative, String operatorString) {
 		this.priority = priority;
-		this.isCommutative = isCommutative;
 		this.operatorString = operatorString;
 	}
 
 	@Override
 	public int getPriority() {
 		return priority;
-	}
-
-	@Override
-	public boolean isCommutative() {
-		return isCommutative;
 	}
 	
 	@Override

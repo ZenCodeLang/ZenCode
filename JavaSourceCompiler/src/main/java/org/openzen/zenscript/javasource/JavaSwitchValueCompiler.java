@@ -47,6 +47,6 @@ public class JavaSwitchValueCompiler implements SwitchValueVisitor<String> {
 
 	@Override
 	public String acceptVariantOption(VariantOptionSwitchValue value) {
-		return value.option.name;
+		return value.option.getName();
 	}
 }

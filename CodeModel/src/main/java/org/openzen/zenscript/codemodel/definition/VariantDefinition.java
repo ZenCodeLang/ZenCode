@@ -7,12 +7,12 @@ package org.openzen.zenscript.codemodel.definition;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.Taggable;
 
 /**
  *
@@ -30,7 +30,7 @@ public class VariantDefinition extends HighLevelDefinition {
 		return visitor.visitVariant(this);
 	}
 	
-	public static class Option {
+	public static class Option extends Taggable {
 		public final String name;
 		public final ITypeID[] types;
 		
@@ -39,12 +39,8 @@ public class VariantDefinition extends HighLevelDefinition {
 			this.types = types;
 		}
 		
-		public Option instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-			ITypeID[] newTypes = new ITypeID[types.length];
-			for (int i = 0; i < types.length; i++)
-				newTypes[i] = types[i].withGenericArguments(registry, mapping);
-			
-			return new Option(name, newTypes);
+		public VariantOptionRef instance(GenericMapper mapper) {
+			return new VariantOptionRef(this, mapper.map(types));
 		}
 	}
 }

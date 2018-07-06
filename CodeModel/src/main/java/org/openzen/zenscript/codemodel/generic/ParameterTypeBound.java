@@ -5,8 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.generic;
 
-import java.util.Map;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -25,6 +24,11 @@ public class ParameterTypeBound extends GenericParameterBound {
 		this.position = position;
 		this.type = type;
 	}
+	
+	@Override
+	public String getCanonical() {
+		return type.toString();
+	}
 
 	@Override
 	public void registerMembers(LocalMemberCache cache, TypeMembers type) {
@@ -37,8 +41,8 @@ public class ParameterTypeBound extends GenericParameterBound {
 	}
 
 	@Override
-	public GenericParameterBound withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		return new ParameterTypeBound(position, type.withGenericArguments(registry, arguments));
+	public GenericParameterBound instance(GenericMapper mapper) {
+		return new ParameterTypeBound(position, type.instance(mapper));
 	}
 
 	@Override

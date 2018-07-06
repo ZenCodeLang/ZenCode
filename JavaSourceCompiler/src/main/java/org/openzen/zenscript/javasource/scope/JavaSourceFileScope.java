@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javasource.JavaSourceImporter;
 import org.openzen.zenscript.javasource.JavaSourceObjectTypeVisitor;
+import org.openzen.zenscript.javasource.JavaSourceSyntheticHelperGenerator;
 import org.openzen.zenscript.javasource.JavaSourceSyntheticTypeGenerator;
 import org.openzen.zenscript.javasource.JavaSourceTypeVisitor;
 
@@ -19,19 +20,21 @@ import org.openzen.zenscript.javasource.JavaSourceTypeVisitor;
 public class JavaSourceFileScope {
 	public final JavaSourceImporter importer;
 	public final JavaSourceSyntheticTypeGenerator typeGenerator;
+	public final JavaSourceSyntheticHelperGenerator helperGenerator;
 	public final String className;
 	public final JavaSourceTypeVisitor typeVisitor;
 	public final JavaSourceObjectTypeVisitor objectTypeVisitor;
 	public final TypeScope semanticScope;
 	
-	public JavaSourceFileScope(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator, String className, TypeScope semanticScope) {
+	public JavaSourceFileScope(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator, JavaSourceSyntheticHelperGenerator helperGenerator, String className, TypeScope semanticScope) {
 		this.importer = importer;
 		this.typeGenerator = typeGenerator;
+		this.helperGenerator = helperGenerator;
 		this.className = className;
 		this.semanticScope = semanticScope;
 		
-		typeVisitor = new JavaSourceObjectTypeVisitor(importer, typeGenerator);
-		objectTypeVisitor = new JavaSourceObjectTypeVisitor(importer, typeGenerator);
+		typeVisitor = new JavaSourceTypeVisitor(importer, typeGenerator);
+		objectTypeVisitor = typeVisitor.objectTypeVisitor;
 	}
 	
 	public String type(ITypeID type) {

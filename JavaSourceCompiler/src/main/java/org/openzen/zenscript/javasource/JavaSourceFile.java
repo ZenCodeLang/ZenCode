@@ -12,6 +12,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompileScope;
@@ -30,6 +34,9 @@ public class JavaSourceFile {
 	private final StringBuilder contents = new StringBuilder();
 	private final ZSPackage pkg;
 	
+	private final Map<HighLevelDefinition, SemanticModule> definitions = new HashMap<>();
+	private final Set<String> existing = new HashSet<>();
+	
 	public JavaSourceFile(JavaSourceCompiler compiler, File file, ZSPackage pkg) {
 		this.compiler = compiler;
 		this.pkg = pkg;
@@ -43,20 +50,31 @@ public class JavaSourceFile {
 	}
 	
 	public void add(HighLevelDefinition definition, SemanticModule module) {
+		if (existing.contains(definition.name))
+			throw new IllegalStateException("Duplicate " + definition.name);
+		
+		System.out.println("adding " + definition.name + " to " + file.getName());
+		
 		JavaSourcePrepareDefinitionVisitor prepare = new JavaSourcePrepareDefinitionVisitor(this);
 		definition.accept(prepare);
-		
-		CompileScope scope = new CompileScope(definition.access, module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
-		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
-				compiler.settings,
-				new JavaSourceFileScope(importer, compiler.typeGenerator, getName(), scope),
-				contents);
-		definition.accept(visitor);
+		definitions.put(definition, module);
 	}
 	
 	public void write() {
+		for (Map.Entry<HighLevelDefinition, SemanticModule> entry : definitions.entrySet()) {
+			HighLevelDefinition definition = entry.getKey();
+			SemanticModule module = entry.getValue();
+			CompileScope scope = new CompileScope(definition.access, module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
+			JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
+					compiler.settings,
+					new JavaSourceFileScope(importer, compiler.typeGenerator, compiler.helperGenerator, getName(), scope),
+					contents);
+			definition.accept(visitor);
+		}
+		
 		if (!file.getParentFile().exists())
 			file.getParentFile().mkdirs();
+		file.delete();
 		
 		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
 			writer.write("package ");

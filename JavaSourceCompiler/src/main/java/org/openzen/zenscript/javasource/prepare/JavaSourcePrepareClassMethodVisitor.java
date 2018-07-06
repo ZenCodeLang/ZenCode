@@ -7,6 +7,7 @@ package org.openzen.zenscript.javasource.prepare;
 
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
+import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
@@ -23,6 +24,8 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.formattershared.ExpressionString;
+import org.openzen.zenscript.javasource.JavaOperator;
 import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
@@ -54,6 +57,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
+		visitFunctional(member, member.name);
 		return null;
 	}
 
@@ -222,8 +226,32 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 	private JavaSourceMethod getNative(String name) {
 		if (cls.fullName.equals("java.lang.StringBuilder"))
 			return getStringBuilderNative(name);
+		else if (cls.fullName.equals("java.util.List"))
+			return getListNative(name);
 		
 		throw new UnsupportedOperationException("Unknown native class: " + cls.fullName);
+	}
+	
+	private JavaSourceMethod getListNative(String name) {
+		switch (name) {
+			case "constructor":
+				return new JavaSourceMethod((formatter, call) -> new ExpressionString("new ArrayList<>()", JavaOperator.NEW));
+			case "add":
+				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "add");
+			case "getIndex":
+				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "get");
+			case "setIndex":
+				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "set");
+			case "toArray":
+				return new JavaSourceMethod((formatter, calle)
+						-> formatter.listToArray((CastExpression)calle));
+			case "length":
+				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "size");
+			case "isEmpty":
+				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "isEmpty");
+			default:
+				throw new UnsupportedOperationException("Unknown native method: " + name);
+		}
 	}
 	
 	private JavaSourceMethod getStringBuilderNative(String name) {
@@ -239,6 +267,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 			case "appendBool":
 			case "appendByte":
 			case "appendSByte":
+			case "appendShort":
 			case "appendUShort":
 			case "appendInt":
 			case "appendUInt":

@@ -46,6 +46,10 @@ public abstract class HighLevelDefinition extends Taggable {
 			pkg.register(this);
 	}
 	
+	public String getFullName() {
+		return pkg.fullName + '.' + name;
+	}
+	
 	public int getNumberOfGenericParameters() {
 		return genericParameters == null ? 0 : genericParameters.length;
 	}

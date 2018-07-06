@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import java.util.Collections;
 import java.util.List;
-import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -16,9 +16,9 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class GetStaticFieldExpression extends Expression {
-	public final FieldMember field;
+	public final FieldMemberRef field;
 	
-	public GetStaticFieldExpression(CodePosition position, FieldMember field) {
+	public GetStaticFieldExpression(CodePosition position, FieldMemberRef field) {
 		super(position, field.type, null);
 		
 		this.field = field;

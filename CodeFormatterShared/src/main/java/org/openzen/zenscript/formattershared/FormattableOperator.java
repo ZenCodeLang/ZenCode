@@ -10,9 +10,13 @@ package org.openzen.zenscript.formattershared;
  * @author Hoofdgebruiker
  */
 public interface FormattableOperator {
+	/**
+	 * Operator priority: if priority of the inner operation is lower, it should
+	 * be wrapped in parenthesis.
+	 * 
+	 * @return 
+	 */
 	int getPriority();
-	
-	boolean isCommutative();
 	
 	String getOperatorString();
 	
@@ -21,6 +25,6 @@ public interface FormattableOperator {
 	}
 	
 	public static boolean shouldWrapRight(FormattableOperator inner, FormattableOperator outer) {
-		return (inner == outer && inner.isCommutative()) || (inner.getPriority() <= outer.getPriority());
+		return inner.getPriority() <= outer.getPriority();
 	}
 }

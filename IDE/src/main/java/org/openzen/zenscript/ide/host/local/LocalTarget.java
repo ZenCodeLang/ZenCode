@@ -63,7 +63,7 @@ public class LocalTarget implements IDETarget {
 	private ZenCodeCompiler buildInternal() {
 		CompilationUnit compilationUnit = new CompilationUnit();
 		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit);
-		moduleLoader.register("stdlib", new DirectoryModuleLoader(moduleLoader, "stdlib", new File("../Constructor/libraries/stdlib"), true));
+		moduleLoader.register("stdlib", new DirectoryModuleLoader(moduleLoader, "stdlib", new File("../../StdLibs/stdlib"), true));
 		Set<String> compiledModules = new HashSet<>();
 		
 		try {

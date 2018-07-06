@@ -5,14 +5,10 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.GetterExpression;
-import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -41,32 +37,18 @@ public class GetterMember extends FunctionalMember {
 	}
 	
 	@Override
-	public String getInformalName() {
-		return "getter " + name;
-	}
-	
-	public Expression get(CodePosition position, Expression target) {
-		return new GetterExpression(position, target, this);
-	}
-	
-	public Expression getStatic(CodePosition position) {
-		return new StaticGetterExpression(position, this);
+	public String getCanonicalName() {
+		return definition.getFullName() + ":getter:" + name;
 	}
 	
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addGetter(this, priority);
+	public FunctionalKind getKind() {
+		return FunctionalKind.GETTER;
 	}
-
+	
 	@Override
-	public GetterMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new GetterMember(
-				position,
-				definition,
-				modifiers,
-				name,
-				type.withGenericArguments(registry, mapping),
-				builtin);
+	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
+		members.addGetter(new GetterMemberRef(this, mapper.map(type)), priority);
 	}
 
 	@Override

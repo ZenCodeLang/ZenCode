@@ -9,14 +9,13 @@ package org.openzen.zenscript.parser.expression;
 import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -51,7 +50,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			for (ITypeID hint : scope.hints) {
 				TypeMembers members = scope.getTypeMembers(hint);
 				if (members.getVariantOption(variable.name) != null) {
-					VariantDefinition.Option variantOption = members.getVariantOption(variable.name);
+					VariantOptionRef variantOption = members.getVariantOption(variable.name);
 					FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, variantOption.types);
 					CallArguments cArguments = arguments.compileCall(position, scope, null, header);
 					return new VariantValueExpression(position, hint, variantOption, cArguments.arguments);
@@ -67,22 +66,22 @@ public class ParsedExpressionCall extends ParsedExpression {
 			
 			DefinitionMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
-			FunctionalMember member = memberGroup.selectMethod(position, scope, callArguments, true, true);
-			if (!(member instanceof ConstructorMember))
+			FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
+			if (!member.isConstructor())
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
-			return new ConstructorThisCallExpression(position, scope.getThisType().getSuperType(), (ConstructorMember) member, callArguments, scope);
+			return new ConstructorThisCallExpression(position, scope.getThisType().getSuperType(), member, callArguments, scope);
 		} else if (receiver instanceof ParsedExpressionThis) {
 			// this call (intended as first call in constructor)
 			ITypeID targetType = scope.getThisType();
 			
 			DefinitionMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
-			FunctionalMember member = memberGroup.selectMethod(position, scope, callArguments, true, true);
-			if (!(member instanceof ConstructorMember))
+			FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
+			if (!member.isConstructor())
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
-			return new ConstructorThisCallExpression(position, scope.getThisType(), (ConstructorMember) member, callArguments, scope);
+			return new ConstructorThisCallExpression(position, scope.getThisType(), member, callArguments, scope);
 		}
 		
 		IPartialExpression cReceiver = receiver.compile(scope.withoutHints());
@@ -99,7 +98,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 		String name = ((ParsedExpressionVariable)receiver).name;
 		TypeMembers members = scope.getTypeMembers(type);
 		if (type.isVariant()) {
-			VariantDefinition.Option option = members.getVariantOption(name);
+			VariantOptionRef option = members.getVariantOption(name);
 			if (option == null)
 				throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Variant option does not exist: " + name);
 			

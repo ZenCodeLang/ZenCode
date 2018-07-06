@@ -5,13 +5,12 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -44,24 +43,18 @@ public class SetterMember extends FunctionalMember {
 	}
 	
 	@Override
-	public String getInformalName() {
-		return "setter " + name;
-	}																																							
-
-	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addSetter(this, priority);
+	public String getCanonicalName() {
+		return definition.getFullName() + ":setter:" + name;
 	}
 
 	@Override
-	public SetterMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new SetterMember(
-				position,
-				definition,
-				modifiers,
-				name,
-				type.withGenericArguments(registry, mapping),
-				builtin);
+	public FunctionalKind getKind() {
+		return FunctionalKind.SETTER;
+	}
+
+	@Override
+	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
+		members.addSetter(new SetterMemberRef(this, mapper.map(type)), priority);
 	}
 
 	@Override

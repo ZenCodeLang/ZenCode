@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
@@ -25,8 +25,8 @@ public class GenericTypeID implements ITypeID {
 	}
 	
 	@Override
-	public ITypeID withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
-		return arguments.containsKey(parameter) ? arguments.get(parameter) : this;
+	public ITypeID instance(GenericMapper mapper) {
+		return mapper.map(this);
 	}
 
 	@Override

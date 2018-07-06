@@ -5,14 +5,12 @@
  */
 package org.openzen.zenscript.codemodel.member.builtin;
 
-import java.util.Map;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.member.MemberVisitor;
+import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -58,13 +56,8 @@ public class StringCharIterator extends Taggable implements IIteratorMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addIterator(this, priority);
-	}
-
-	@Override
-	public IDefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return this;
+	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
+		type.addIterator(new IteratorMemberRef(this, TYPES), priority);
 	}
 
 	@Override

@@ -5,11 +5,10 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -45,13 +44,8 @@ public class ConstMember extends DefinitionMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addConst(this);
-	}
-
-	@Override
-	public IDefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return this;
+	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
+		members.addConst(new ConstMemberRef(this, mapper.map(type)));
 	}
 
 	@Override

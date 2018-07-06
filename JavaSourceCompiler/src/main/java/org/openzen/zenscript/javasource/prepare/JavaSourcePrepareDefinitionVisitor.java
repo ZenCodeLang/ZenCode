@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.JavaSourceFile;
+import org.openzen.zenscript.javasource.tags.JavaSourceVariantOption;
 
 /**
  *
@@ -39,25 +40,19 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Voi
 
 	@Override
 	public Void visitInterface(InterfaceDefinition definition) {
-		JavaSourceClass cls = new JavaSourceClass(definition.name, definition.pkg.fullName + "." + definition.name);
-		definition.setTag(JavaSourceClass.class, cls);
-		visitClassMembers(definition, cls);
+		visitClassCompiled(definition);
 		return null;
 	}
 
 	@Override
 	public Void visitEnum(EnumDefinition definition) {
-		JavaSourceClass cls = new JavaSourceClass(definition.name, definition.pkg.fullName + "." + definition.name);
-		definition.setTag(JavaSourceClass.class, cls);
-		visitClassMembers(definition, cls);
+		visitClassCompiled(definition);
 		return null;
 	}
 
 	@Override
 	public Void visitStruct(StructDefinition definition) {
-		JavaSourceClass cls = new JavaSourceClass(definition.name, definition.pkg.fullName + "." + definition.name);
-		definition.setTag(JavaSourceClass.class, cls);
-		visitClassMembers(definition, cls);
+		visitClassCompiled(definition);
 		return null;
 	}
 
@@ -84,8 +79,15 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Voi
 
 	@Override
 	public Void visitVariant(VariantDefinition variant) {
-		// TODO
-		variant.setTag(JavaSourceClass.class, new JavaSourceClass(variant.name, variant.pkg.fullName + "." + variant.name));
+		JavaSourceClass cls = new JavaSourceClass(variant.name, variant.pkg.fullName + "." + variant.name);
+		variant.setTag(JavaSourceClass.class, cls);
+		
+		for (VariantDefinition.Option option : variant.options) {
+			JavaSourceClass variantCls = new JavaSourceClass(option.name, cls.fullName + "." + option.name);
+			option.setTag(JavaSourceVariantOption.class, new JavaSourceVariantOption(cls, variantCls));
+		}
+		
+		visitClassMembers(variant, cls);
 		return null;
 	}
 	
@@ -96,10 +98,19 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Voi
 			definition.setTag(JavaSourceClass.class, cls);
 			visitClassMembers(definition, cls);
 		} else {
-			JavaSourceClass cls = new JavaSourceClass(nativeTag.value.substring(nativeTag.value.lastIndexOf('.') + 1), nativeTag.value);
+			JavaSourceClass cls = getNativeClass(nativeTag.value);
 			definition.setTag(JavaSourceClass.class, cls);
 			visitClassMembers(definition, cls);
 		}
+	}
+	
+	private JavaSourceClass getNativeClass(String name) {
+		if (name.equals("stdlib::StringBuilder"))
+			return new JavaSourceClass("StringBuilder", "java.lang.StringBuilder");
+		else if (name.equals("stdlib::List"))
+			return new JavaSourceClass("List", "java.util.List");
+		
+		throw new UnsupportedOperationException("Unknown native class: " + name);
 	}
 	
 	private void visitClassMembers(HighLevelDefinition definition, JavaSourceClass cls) {

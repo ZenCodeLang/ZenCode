@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import java.util.Collections;
 import java.util.List;
-import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
@@ -18,9 +18,9 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class GetFieldExpression extends Expression {
 	public final Expression target;
-	public final FieldMember field;
+	public final FieldMemberRef field;
 	
-	public GetFieldExpression(CodePosition position, Expression target, FieldMember field) {
+	public GetFieldExpression(CodePosition position, Expression target, FieldMemberRef field) {
 		super(position, field.type, target.thrownType);
 		
 		this.target = target;

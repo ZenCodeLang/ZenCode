@@ -7,10 +7,9 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -36,25 +35,17 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addImplementation(this, priority);
+	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
+		ITypeID instancedType = mapper.map(type);
+		members.addImplementation(new ImplementationMemberRef(this, instancedType), priority);
 		
-		TypeMembers interfaceTypeMembers = type.getMemberCache().get(this.type);
-		interfaceTypeMembers.copyMembersTo(position, type, TypeMemberPriority.INTERFACE);
-	}
-
-	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		ITypeID instancedType = type.withGenericArguments(registry, mapping);
-		ImplementationMember result = new ImplementationMember(position, definition, modifiers, instancedType);
-		for (IDefinitionMember member : members)
-			result.addMember(member.instance(registry, mapping));
-		return result;
+		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType);
+		interfaceTypeMembers.copyMembersTo(position, members, TypeMemberPriority.INTERFACE);
 	}
 
 	@Override
 	public String describe() {
-		return "implementation " + type.toString();
+		return "implementation of " + type.toString();
 	}
 	
 	@Override

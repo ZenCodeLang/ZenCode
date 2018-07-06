@@ -5,16 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CastExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -41,41 +36,27 @@ public class CasterMember extends FunctionalMember {
 	}
 	
 	@Override
-	public String getInformalName() {
-		return "caster to " + toType.toString();
+	public String getCanonicalName() {
+		return definition.getFullName() + ":caster:" + toType.toString();
+	}
+	
+	@Override
+	public FunctionalKind getKind() {
+		return FunctionalKind.CASTER;
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addCaster(this, priority);
+	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
+		type.addCaster(new CasterMemberRef(this, mapper.map(toType)), priority);
 	}
 
 	@Override
 	public String describe() {
 		return "caster to " + toType.toString();
 	}
-
-	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		return new CasterMember(
-				position,
-				definition,
-				modifiers,
-				toType.withGenericArguments(registry, mapping),
-				builtin);
-	}
 	
 	public ITypeID getTargetType() {
 		return toType;
-	}
-
-	@Override
-	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		throw new UnsupportedOperationException("Cannot call a caster!");
-	}
-	
-	public Expression cast(CodePosition position, Expression value, boolean implicit) {
-		return new CastExpression(position, value, this, implicit);
 	}
 	
 	public boolean isImplicit() {

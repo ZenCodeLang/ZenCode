@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -13,10 +13,10 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class StaticGetterExpression extends Expression {
-	public final GetterMember getter;
+	public final GetterMemberRef getter;
 	
-	public StaticGetterExpression(CodePosition position, GetterMember getter) {
-		super(position, getter.type, getter.header.thrownType);
+	public StaticGetterExpression(CodePosition position, GetterMemberRef getter) {
+		super(position, getter.type, null);
 		
 		this.getter = getter;
 	}

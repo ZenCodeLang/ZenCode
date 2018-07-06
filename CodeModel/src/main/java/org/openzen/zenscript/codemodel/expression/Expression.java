@@ -36,6 +36,9 @@ public abstract class Expression implements IPartialExpression {
 	public final ITypeID thrownType;
 	
 	public Expression(CodePosition position, ITypeID type, ITypeID thrownType) {
+		if (type == null)
+			throw new NullPointerException();
+		
 		this.position = position;
 		this.type = type;
 		this.thrownType = thrownType;

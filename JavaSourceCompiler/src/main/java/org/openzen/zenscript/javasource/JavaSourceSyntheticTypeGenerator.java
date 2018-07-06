@@ -26,9 +26,11 @@ import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 public class JavaSourceSyntheticTypeGenerator {
 	private final Map<FunctionTypeID, JavaSourceClass> functions = new HashMap<>();
 	private final File directory;
+	private final JavaSourceFormattingSettings settings;
 	
-	public JavaSourceSyntheticTypeGenerator(File directory) {
+	public JavaSourceSyntheticTypeGenerator(File directory, JavaSourceFormattingSettings settings) {
 		this.directory = new File(directory, "zsynthetic");
+		this.settings = settings;
 	}
 	
 	public JavaSourceClass createFunction(FunctionTypeID function) {
@@ -47,7 +49,7 @@ public class JavaSourceSyntheticTypeGenerator {
 		contents.append("public interface ");
 		contents.append(className);
 		contents.append(" {\n");
-		contents.append("\t");
+		contents.append(settings.indent);
 		if (function.header.getNumberOfTypeParameters() > 0) {
 			contents.append('<');
 			for (int i = 0; i < function.header.getNumberOfTypeParameters(); i++) {

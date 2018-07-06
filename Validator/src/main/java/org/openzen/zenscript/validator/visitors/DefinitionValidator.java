@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import static org.openzen.zenscript.codemodel.Modifiers.*;
@@ -21,7 +19,6 @@ import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
@@ -29,7 +26,7 @@ import org.openzen.zenscript.validator.analysis.StatementScope;
  *
  * @author Hoofdgebruiker
  */
-public class DefinitionValidator implements DefinitionVisitor<Boolean> {
+public class DefinitionValidator implements DefinitionVisitor<Void> {
 	private final Validator validator;
 	
 	public DefinitionValidator(Validator validator) {
@@ -37,165 +34,155 @@ public class DefinitionValidator implements DefinitionVisitor<Boolean> {
 	}
 
 	@Override
-	public Boolean visitClass(ClassDefinition definition) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateModifiers(
+	public Void visitClass(ClassDefinition definition) {
+		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
 				PUBLIC | EXPORT | PRIVATE | ABSTRACT | STATIC | PROTECTED | VIRTUAL,
 				definition.position,
 				"Invalid class modifier");
-		isValid &= ValidationUtils.validateIdentifier(
+		ValidationUtils.validateIdentifier(
 				validator,
 				definition.position,
 				definition.name);
 		
 		if (definition.superType != null)
-			isValid &= definition.superType.accept(new SupertypeValidator(validator, definition.position));
+			definition.superType.accept(new SupertypeValidator(validator, definition.position));
 		
-		isValid &= validateMembers(definition);
-		return isValid;
+		validateMembers(definition);
+		return null;
 	}
 
 	@Override
-	public Boolean visitInterface(InterfaceDefinition definition) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateModifiers(
+	public Void visitInterface(InterfaceDefinition definition) {
+		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
 				PUBLIC | EXPORT | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid interface modifier");
-		isValid &= ValidationUtils.validateIdentifier(
+		ValidationUtils.validateIdentifier(
 				validator,
 				definition.position,
 				definition.name);
 		
-		isValid &= validateMembers(definition);
-		return isValid;
+		validateMembers(definition);
+		return null;
 	}
 
 	@Override
-	public Boolean visitEnum(EnumDefinition definition) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateModifiers(
+	public Void visitEnum(EnumDefinition definition) {
+		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
 				PUBLIC | EXPORT | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid enum modifier");
-		isValid &= ValidationUtils.validateIdentifier(
+		ValidationUtils.validateIdentifier(
 				validator,
 				definition.position,
 				definition.name);
 		
-		isValid &= validateMembers(definition);
-		return isValid;
+		validateMembers(definition);
+		return null;
 	}
 
 	@Override
-	public Boolean visitStruct(StructDefinition definition) {
+	public Void visitStruct(StructDefinition definition) {
 		int validModifiers = PUBLIC | EXPORT | PROTECTED | PRIVATE;
 		if (definition.outerDefinition != null)
 			validModifiers |= STATIC;
 		
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateModifiers(
+		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
 				validModifiers,
 				definition.position,
 				"Invalid struct modifier");
-		isValid &= ValidationUtils.validateIdentifier(
+		ValidationUtils.validateIdentifier(
 				validator,
 				definition.position,
 				definition.name);
 		
-		isValid &= validateMembers(definition);
-		return isValid;
+		validateMembers(definition);
+		return null;
 	}
 
 	@Override
-	public Boolean visitFunction(FunctionDefinition definition) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateModifiers(
+	public Void visitFunction(FunctionDefinition definition) {
+		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
 				PUBLIC | EXPORT | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid function modifier");
-		isValid &= ValidationUtils.validateIdentifier(
+		ValidationUtils.validateIdentifier(
 				validator,
 				definition.position,
 				definition.name);
 				
 		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header));
-		isValid &= definition.statement.accept(statementValidator);
-		return isValid;
+		definition.statement.accept(statementValidator);
+		return null;
 	}
 
 	@Override
-	public Boolean visitExpansion(ExpansionDefinition definition) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateModifiers(
+	public Void visitExpansion(ExpansionDefinition definition) {
+		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
 				PUBLIC | EXPORT | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid expansion modifier");
 		
-		isValid &= definition.target.accept(new TypeValidator(validator, definition.position));
-		isValid &= validateMembers(definition);
-		return isValid;
+		definition.target.accept(new TypeValidator(validator, definition.position));
+		validateMembers(definition);
+		return null;
 	}
 
 	@Override
-	public Boolean visitAlias(AliasDefinition definition) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateModifiers(
+	public Void visitAlias(AliasDefinition definition) {
+		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
 				PUBLIC | EXPORT | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid alias modifier");
-		isValid &= ValidationUtils.validateIdentifier(
+		ValidationUtils.validateIdentifier(
 				validator,
 				definition.position,
 				definition.name);
 		
-		return isValid;
+		return null;
 	}
 	
-	private boolean validateMembers(HighLevelDefinition definition) {
+	private void validateMembers(HighLevelDefinition definition) {
 		DefinitionMemberValidator memberValidator = new DefinitionMemberValidator(validator, definition);
-		boolean isValid = true;
 		for (IDefinitionMember member : definition.members) {
-			isValid &= member.accept(memberValidator);
+			member.accept(memberValidator);
 		}
 		if (definition instanceof EnumDefinition) {
 			for (EnumConstantMember constant : ((EnumDefinition) definition).enumConstants) {
-				isValid &= memberValidator.visitEnumConstant(constant);
+				memberValidator.visitEnumConstant(constant);
 			}
 		}
-		return isValid;
 	}
 
 	@Override
-	public Boolean visitVariant(VariantDefinition variant) {
-		boolean isValid = true;
-		isValid &= ValidationUtils.validateModifiers(
+	public Void visitVariant(VariantDefinition variant) {
+		ValidationUtils.validateModifiers(
 				validator,
 				variant.modifiers,
 				PUBLIC | EXPORT | PROTECTED | PRIVATE,
 				variant.position,
 				"Invalid variant modifier");
-		isValid &= ValidationUtils.validateIdentifier(
+		ValidationUtils.validateIdentifier(
 				validator,
 				variant.position,
 				variant.name);
 		
-		isValid &= validateMembers(variant);
-		return isValid;
+		validateMembers(variant);
+		return null;
 	}
 	
 	private class FunctionStatementScope implements StatementScope {

@@ -40,7 +40,7 @@ import org.openzen.zenscript.validator.analysis.StatementScope;
  *
  * @author Hoofdgebruiker
  */
-public class StatementValidator implements StatementVisitor<Boolean> {
+public class StatementValidator implements StatementVisitor<Void> {
 	private final Validator validator;
 	private final StatementScope scope;
 	private final Set<String> variables = new HashSet<>();
@@ -54,219 +54,197 @@ public class StatementValidator implements StatementVisitor<Boolean> {
 	}
 	
 	@Override
-	public Boolean visitBlock(BlockStatement block) {
-		boolean isValid = true;
-		
+	public Void visitBlock(BlockStatement block) {
 		StatementValidator blockValidator = new StatementValidator(validator, scope);
 		for (Statement statement : block.statements)
-			isValid &= statement.accept(blockValidator);
+			statement.accept(blockValidator);
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitBreak(BreakStatement statement) {
+	public Void visitBreak(BreakStatement statement) {
 		firstStatement = false;
-		return true;
+		return null;
 	}
 
 	@Override
-	public Boolean visitContinue(ContinueStatement statement) {
+	public Void visitContinue(ContinueStatement statement) {
 		firstStatement = false;
-		return true;
+		return null;
 	}
 
 	@Override
-	public Boolean visitDoWhile(DoWhileStatement statement) {
-		boolean isValid = true;
-		
+	public Void visitDoWhile(DoWhileStatement statement) {
 		if (statement.condition.type != BasicTypeID.BOOL) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					statement.position,
 					"condition must be a boolean expression");
-			isValid = false;
 		}
 		
-		isValid &= statement.condition.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
-		isValid &= statement.content.accept(this);
+		statement.condition.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
+		statement.content.accept(this);
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitEmpty(EmptyStatement statement) {
+	public Void visitEmpty(EmptyStatement statement) {
 		firstStatement = false;
-		return true;
+		return null;
 	}
 
 	@Override
-	public Boolean visitExpression(ExpressionStatement statement) {
-		boolean isValid = statement.expression.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
+	public Void visitExpression(ExpressionStatement statement) {
+		statement.expression.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitForeach(ForeachStatement statement) {
-		boolean isValid = true;
-		isValid &= statement.list.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
-		isValid &= statement.content.accept(this);
+	public Void visitForeach(ForeachStatement statement) {
+		statement.list.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
+		statement.content.accept(this);
 		
 		for (VarStatement var : statement.loopVariables) {
 			if (variables.contains(var.name)) {
 				validator.logError(ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME, var.position, "Duplicate variable name: " + var.name);
-				isValid = false;
 			}
 		}
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitIf(IfStatement statement) {
-		boolean isValid = true;
-		isValid &= validateCondition(statement.condition);
-		isValid &= statement.onThen.accept(this);
+	public Void visitIf(IfStatement statement) {
+		validateCondition(statement.condition);
+		statement.onThen.accept(this);
 		if (statement.onElse != null)
-			isValid &= statement.onElse.accept(this);
+			statement.onElse.accept(this);
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitLock(LockStatement statement) {
-		boolean isValid = true;
+	public Void visitLock(LockStatement statement) {
 		// TODO: is the object a valid lock target?
-		isValid &= statement.object.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
-		isValid &= statement.content.accept(this);
+		statement.object.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
+		statement.content.accept(this);
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitReturn(ReturnStatement statement) {
+	public Void visitReturn(ReturnStatement statement) {
 		if (scope.getFunctionHeader() == null) {
 			validator.logError(ValidationLogEntry.Code.SCRIPT_CANNOT_RETURN, statement.position, "Cannot return from a script");
-			return false;
+			return null;
 		}
 		
-		boolean isValid = true;
 		if (statement.value != null) {
-			isValid &= statement.value.accept(new ExpressionValidator(
+			statement.value.accept(new ExpressionValidator(
 					validator,
 					new StatementExpressionScope()));
 			
 			if (statement.value.type != scope.getFunctionHeader().returnType) {
 				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type.toString());
-				isValid = false;
 			}
 		} else if (scope.getFunctionHeader().returnType != BasicTypeID.ANY
 				&& scope.getFunctionHeader().returnType != BasicTypeID.VOID) {
 			validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Missing return value");
-			isValid = false;
 		}
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitSwitch(SwitchStatement statement) {
-		boolean isValid = true;
-		isValid &= statement.value.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
+	public Void visitSwitch(SwitchStatement statement) {
+		statement.value.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		
 		for (SwitchCase switchCase : statement.cases) {
 			// TODO: finish this
 		}
 		
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitThrow(ThrowStatement statement) {
-		boolean isValid = statement.value.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
+	public Void visitThrow(ThrowStatement statement) {
+		statement.value.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		// TODO: does the value type extend Exception?
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitTryCatch(TryCatchStatement statement) {
-		boolean isValid = true;
+	public Void visitTryCatch(TryCatchStatement statement) {
 		if (statement.resource != null) {
 			if (variables.contains(statement.resource.name)) {
 				validator.logError(
 						ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
 						statement.position,
 						"Duplicate variable name: " + statement.resource.name);
-				isValid = false;
 			}
 			if (statement.resource.initializer == null) {
 				validator.logError(
 						ValidationLogEntry.Code.TRY_CATCH_RESOURCE_REQUIRES_INITIALIZER,
 						statement.position,
 						"try with resource requires initializer");
-				isValid = false;
 			}
 		}
 		
-		isValid &= statement.content.accept(this);
+		statement.content.accept(this);
 		for (CatchClause catchClause : statement.catchClauses) {
-			isValid &= catchClause.content.accept(this);
+			catchClause.content.accept(this);
 		}
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitVar(VarStatement statement) {
-		boolean isValid = true;
+	public Void visitVar(VarStatement statement) {
 		if (variables.contains(statement.name)) {
 			validator.logError(
 						ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
 						statement.position,
 						"Duplicate variable name: " + statement.name);
-			isValid = false;
 		}
 		variables.add(statement.name);
 		if (statement.initializer != null) {
-			isValid &= statement.initializer.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
+			statement.initializer.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		}
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 
 	@Override
-	public Boolean visitWhile(WhileStatement statement) {
-		boolean isValid = true;
-		isValid &= validateCondition(statement.condition);
-		isValid &= statement.content.accept(this);
+	public Void visitWhile(WhileStatement statement) {
+		validateCondition(statement.condition);
+		statement.content.accept(this);
 		
 		firstStatement = false;
-		return isValid;
+		return null;
 	}
 	
-	private boolean validateCondition(Expression condition) {
-		boolean isValid = condition.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
+	private void validateCondition(Expression condition) {
+		condition.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		
 		if (condition.type != BasicTypeID.BOOL) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					condition.position,
 					"condition must be a boolean expression");
-			isValid = false;
 		}
-		
-		return isValid;
 	}
 	
 	private class StatementExpressionScope implements ExpressionScope {

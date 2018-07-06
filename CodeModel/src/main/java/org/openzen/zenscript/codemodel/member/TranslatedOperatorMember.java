@@ -35,9 +35,4 @@ public class TranslatedOperatorMember extends OperatorMember {
 		
 		this.translator = translator;
 	}
-
-	@Override
-	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return translator.translate(new CallTranslator.Call(position, target, instancedHeader, arguments, scope));
-	}
 }

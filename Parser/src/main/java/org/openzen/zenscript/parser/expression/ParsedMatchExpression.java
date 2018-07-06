@@ -15,6 +15,8 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zenscript.shared.CompileException;
+import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *
@@ -42,7 +44,10 @@ public class ParsedMatchExpression extends ParsedExpression {
 		
 		ITypeID result = cCases[0].value.type;
 		for (int i = 1; i < cCases.length; i++) {
+			ITypeID oldResult = result;
 			result = scope.getTypeMembers(result).union(cCases[i].value.type);
+			if (result == null)
+				throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "Matches have different types: " + oldResult + " and " + cCases[i].value.type);
 		}
 		
 		return new MatchExpression(position, cValue, result, cCases);

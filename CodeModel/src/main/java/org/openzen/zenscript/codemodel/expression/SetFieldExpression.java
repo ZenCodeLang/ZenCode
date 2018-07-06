@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.shared.CodePosition;
 
 /**
@@ -14,10 +14,10 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class SetFieldExpression extends Expression {
 	public final Expression target;
-	public final FieldMember field;
+	public final FieldMemberRef field;
 	public final Expression value;
 	
-	public SetFieldExpression(CodePosition position, Expression target, FieldMember field, Expression value) {
+	public SetFieldExpression(CodePosition position, Expression target, FieldMemberRef field, Expression value) {
 		super(position, field.type, binaryThrow(position, target.thrownType, value.thrownType));
 		
 		this.target = target;

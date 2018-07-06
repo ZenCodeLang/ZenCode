@@ -10,7 +10,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
@@ -50,18 +50,18 @@ public class ParsedNewExpression extends ParsedExpression{
 		DefinitionMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 		List<ITypeID>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.arguments.size());
 		CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
-		FunctionalMember member = constructors.selectMethod(position, scope, compiledArguments, true, true);
+		FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 		if (member == null)
 			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching constructor found");
-		if (!(member instanceof ConstructorMember))
+		if (!member.isConstructor())
 			throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "COMPILER BUG: constructor is not a constructor");
 		
 		return new NewExpression(
 				position,
 				type,
-				(ConstructorMember) member,
+				member,
 				compiledArguments,
-				compiledArguments.getNumberOfTypeArguments() == 0 ? member.header : member.header.withGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments),
+				member.header.fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments),
 				scope);
 	}
 }

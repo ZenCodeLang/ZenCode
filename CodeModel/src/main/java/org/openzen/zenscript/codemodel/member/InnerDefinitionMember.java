@@ -5,11 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.util.Map;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -29,16 +26,11 @@ public class InnerDefinitionMember extends DefinitionMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority) {
-		type.addInnerType(innerDefinition.name, new InnerDefinition(innerDefinition));
-	}
-
-	@Override
-	public DefinitionMember instance(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		if (this.isStatic()) {
-			return this;
+	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
+		if (isStatic() || mapper.getMapping().isEmpty()) {
+			type.addInnerType(innerDefinition.name, new InnerDefinition(innerDefinition));
 		} else {
-			return new InstancedInnerDefinitionMember(position, definition, modifiers, innerDefinition, mapping);
+			type.addInnerType(innerDefinition.name, new InnerDefinition(innerDefinition, mapper.getMapping()));
 		}
 	}
 

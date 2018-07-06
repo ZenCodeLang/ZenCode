@@ -74,6 +74,10 @@ public class JavaSourceStatementScope {
 		return fileScope.type(type);
 	}
 	
+	public String type(JavaSourceClass cls) {
+		return fileScope.importer.importType(cls.fullName);
+	}
+	
 	public String sourceClass(JavaSourceClass cls) {
 		return fileScope.importer.importType(cls.fullName);
 	}

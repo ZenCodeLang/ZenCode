@@ -2,7 +2,7 @@ package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.member.IIteratorMember;
+import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -35,11 +35,11 @@ public class ParsedStatementForeach extends ParsedStatement {
 		Expression list = this.list.compile(new ExpressionScope(scope)).eval();
 		
 		TypeMembers members = scope.getTypeMembers(list.type);
-		IIteratorMember iterator = members.getIterator(varnames.length);
+		IteratorMemberRef iterator = members.getIterator(varnames.length);
 		if (iterator == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_ITERATOR, list.type + " doesn't have an iterator with " + varnames.length + " variables");
 		
-		ITypeID[] loopTypes = iterator.getLoopVariableTypes();
+		ITypeID[] loopTypes = iterator.types;
 		VarStatement[] variables = new VarStatement[varnames.length];
 		for (int i = 0; i < variables.length; i++)
 			variables[i] = new VarStatement(position, varnames[i], loopTypes[i], null, true);

@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
@@ -16,14 +17,14 @@ import org.openzen.zenscript.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public class NewExpression extends Expression {
-	public final ConstructorMember constructor;
+	public final FunctionalMemberRef constructor;
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
 	
 	public NewExpression(
 			CodePosition position,
 			ITypeID type,
-			ConstructorMember constructor,
+			FunctionalMemberRef constructor,
 			CallArguments arguments)
 	{
 		super(position, type, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
@@ -36,7 +37,7 @@ public class NewExpression extends Expression {
 	public NewExpression(
 			CodePosition position,
 			ITypeID type,
-			ConstructorMember constructor,
+			FunctionalMemberRef constructor,
 			CallArguments arguments,
 			FunctionHeader instancedHeader,
 			TypeScope scope)

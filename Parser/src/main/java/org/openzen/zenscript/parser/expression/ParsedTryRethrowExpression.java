@@ -49,8 +49,9 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 			// expression
 			if (cSource.type instanceof DefinitionTypeID) {
 				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type;
-				if (sourceType.definition == result)
-					return new TryRethrowAsExceptionExpression(position, sourceType.typeParameters[0], cSource, sourceType.typeParameters[1]);
+				if (sourceType.definition == result) {
+					return new TryRethrowAsResultExpression(position, sourceType.typeParameters[0], cSource);
+				}
 			}
 			
 			if (scope.getFunctionHeader() == null)

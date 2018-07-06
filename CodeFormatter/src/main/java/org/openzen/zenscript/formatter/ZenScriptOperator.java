@@ -63,27 +63,16 @@ public enum ZenScriptOperator implements FormattableOperator {
 	PRIMARY(10, null);
 	
 	private final int priority;
-	private final boolean isCommutative;
 	private final String operatorString;
 	
 	private ZenScriptOperator(int priority, String operatorString) {
-		this(priority, false, operatorString);
-	}
-	
-	private ZenScriptOperator(int priority, boolean isCommutative, String operatorString) {
 		this.priority = priority;
-		this.isCommutative = isCommutative;
 		this.operatorString = operatorString;
 	}
 
 	@Override
 	public int getPriority() {
 		return priority;
-	}
-
-	@Override
-	public boolean isCommutative() {
-		return isCommutative;
 	}
 	
 	@Override
