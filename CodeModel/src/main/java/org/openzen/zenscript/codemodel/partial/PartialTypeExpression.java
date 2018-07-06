@@ -61,7 +61,7 @@ public class PartialTypeExpression implements IPartialExpression {
 
 	@Override
 	public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
-		if (arguments.getNumberOfTypeArguments() == 0 && typeParameters.length > 0)
+		if (arguments.getNumberOfTypeArguments() == 0 && (typeParameters != null && typeParameters.length > 0))
 			arguments = new CallArguments(typeParameters, arguments.arguments);
 		
 		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).callStatic(position, type, scope, arguments);

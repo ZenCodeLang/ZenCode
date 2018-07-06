@@ -54,6 +54,7 @@ import org.openzen.zenscript.codemodel.expression.MatchExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
+import org.openzen.zenscript.codemodel.expression.PanicExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
@@ -354,6 +355,11 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitOrOr(OrOrExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+	
+	@Override
+	public Void visitPanic(PanicExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
 

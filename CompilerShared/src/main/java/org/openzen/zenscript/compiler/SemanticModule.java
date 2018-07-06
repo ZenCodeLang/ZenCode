@@ -122,7 +122,6 @@ public class SemanticModule {
 		for (ScriptBlock script : scripts) {
 			compiler.addScriptBlock(script);
 		}
-		compiler.finish();
 	}
 	
 	public enum State {

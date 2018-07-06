@@ -29,6 +29,7 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
+import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -141,7 +142,8 @@ public class JavaExpansionMemberCompiler implements MemberVisitor<Void> {
 		addSpacing();
 		
 		output.append(indent);
-		modifiers(member.modifiers);
+		
+		modifiers(member.modifiers | Modifiers.STATIC);
 		JavaSourceUtils.formatTypeParameters(scope, output, member.header.typeParameters);
 		output.append(scope.type(member.header.returnType));
 		output.append(" ");
@@ -156,7 +158,7 @@ public class JavaExpansionMemberCompiler implements MemberVisitor<Void> {
 		addSpacing();
 		
 		output.append(indent);
-		modifiers(member.modifiers);
+		modifiers(member.modifiers | Modifiers.STATIC);
 		output.append(scope.type(member.type));
 		output.append(" ");
 		output.append("get").append(StringUtils.capitalize(member.name));
@@ -170,7 +172,7 @@ public class JavaExpansionMemberCompiler implements MemberVisitor<Void> {
 		addSpacing();
 		
 		output.append(indent);
-		modifiers(member.modifiers);
+		modifiers(member.modifiers | Modifiers.STATIC);
 		output.append("void set").append(StringUtils.capitalize(member.name));
 		output.append("(");
 		output.append(scope.type(member.type));
@@ -186,7 +188,7 @@ public class JavaExpansionMemberCompiler implements MemberVisitor<Void> {
 		addSpacing();
 		
 		output.append(indent);
-		modifiers(member.modifiers);
+		modifiers(member.modifiers | Modifiers.STATIC);
 		output.append(scope.type(member.header.returnType));
 		output.append(' ');
 		output.append(getOperatorName(member.operator));
@@ -200,7 +202,7 @@ public class JavaExpansionMemberCompiler implements MemberVisitor<Void> {
 		addSpacing();
 		
 		output.append(indent);
-		modifiers(member.modifiers);
+		modifiers(member.modifiers | Modifiers.STATIC);
 		output.append(scope.type(member.toType));
 		output.append(" ");
 		output.append("to").append(member.toType.accept(new JavaSourceTypeNameVisitor()));

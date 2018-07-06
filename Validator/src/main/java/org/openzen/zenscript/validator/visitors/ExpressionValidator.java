@@ -57,6 +57,7 @@ import org.openzen.zenscript.codemodel.expression.MatchExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
+import org.openzen.zenscript.codemodel.expression.PanicExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
@@ -442,6 +443,14 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		if (expression.right.type != BasicTypeID.BOOL) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Right hand side of || expression is not a bool");
 		}
+		return null;
+	}
+	
+	@Override
+	public Void visitPanic(PanicExpression expression) {
+		expression.value.accept(this);
+		if (expression.type != BasicTypeID.STRING)
+			validator.logError(ValidationLogEntry.Code.PANIC_ARGUMENT_NO_STRING, expression.position, "Argument to a panic must be a string");
 		return null;
 	}
 	

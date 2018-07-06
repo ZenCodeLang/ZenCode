@@ -1985,11 +1985,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
         return null;
     }
-
-    @Override
-    public Void visitPostCall(PostCallExpression expression) {
-        expression.target.accept(this);
-        javaWriter.dup(expression.type.accept(new JavaTypeVisitor()));
+	
+	@Override
+	public Void visitPanic(PanicExpression expression) {
+		// TODO: compile to: throw new AssertionError(expression.value)
+		throw new UnsupportedOperationException("Not yet supported");
+	}
+	
+	@Override
+	public Void visitPostCall(PostCallExpression expression) {
+		expression.target.accept(this);
+		javaWriter.dup(expression.type.accept(new JavaTypeVisitor()));
         if (!checkAndExecuteByteCodeImplementation(expression.member) && !checkAndExecuteMethodInfo(expression.member))
             throw new IllegalStateException("Call target has no method info!");
 

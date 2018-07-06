@@ -10,6 +10,7 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -70,7 +71,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			if (!member.isConstructor())
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
-			return new ConstructorThisCallExpression(position, scope.getThisType().getSuperType(), member, callArguments, scope);
+			return new ConstructorSuperCallExpression(position, scope.getThisType().getSuperType(), member, callArguments, scope);
 		} else if (receiver instanceof ParsedExpressionThis) {
 			// this call (intended as first call in constructor)
 			ITypeID targetType = scope.getThisType();

@@ -5,12 +5,18 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.statement.BreakStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.SwitchCase;
 import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -49,10 +55,28 @@ public class MatchExpression extends Expression {
 	public SwitchedMatch convertToSwitch(String tempVariable) {
 		VarStatement result = new VarStatement(position, tempVariable, type, null, false);
 		SwitchStatement switchStatement = new SwitchStatement(position, null, value);
+		boolean hasDefault = false;
 		for (MatchExpression.Case matchCase : cases) {
-			Expression caseExpression = new SetLocalVariableExpression(matchCase.value.position, result, matchCase.value);
-			SwitchCase switchCase = new SwitchCase(matchCase.key, Collections.singletonList(new ExpressionStatement(matchCase.value.position, caseExpression)));
+			Expression caseExpression;
+			boolean reachable = true;
+			if (matchCase.value instanceof ThrowExpression || matchCase.value instanceof PanicExpression) {
+				caseExpression = matchCase.value;
+				reachable = false;
+			} else {
+				caseExpression = new SetLocalVariableExpression(matchCase.value.position, result, matchCase.value);
+			}
+			List<Statement> statements = new ArrayList<>();
+			statements.add(new ExpressionStatement(matchCase.value.position, caseExpression));
+			if (reachable)
+				statements.add(new BreakStatement(matchCase.value.position, switchStatement));
+			SwitchCase switchCase = new SwitchCase(matchCase.key, statements);
 			switchStatement.cases.add(switchCase);
+			
+			if (matchCase.key == null)
+				hasDefault = true;
+		}
+		if (!hasDefault) {
+			switchStatement.cases.add(new SwitchCase(null, Collections.singletonList(new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID, new ConstantStringExpression(position, "Missing case"))))));
 		}
 		return new SwitchedMatch(result, switchStatement);
 	}

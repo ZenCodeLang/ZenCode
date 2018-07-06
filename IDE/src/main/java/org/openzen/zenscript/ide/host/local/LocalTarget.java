@@ -90,12 +90,14 @@ public class LocalTarget implements IDETarget {
 			if (!stdlib.isValid())
 				return compiler;
 			stdlib.compile(compiler);
+			compiledModules.add(stdlib.name);
 			
 			boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, module);
 			if (!isValid)
 				return compiler;
 			
 			module.compile(compiler);
+			compiler.finish();
 			return compiler;
 		} catch (IOException ex) {
 			ex.printStackTrace();
