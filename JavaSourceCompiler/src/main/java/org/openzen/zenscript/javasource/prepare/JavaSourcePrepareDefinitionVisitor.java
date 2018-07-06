@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.JavaSourceFile;
+import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 import org.openzen.zenscript.javasource.tags.JavaSourceVariantOption;
 
 /**
@@ -58,6 +59,10 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Voi
 
 	@Override
 	public Void visitFunction(FunctionDefinition definition) {
+		JavaSourceClass cls = new JavaSourceClass(file.getName(), definition.pkg.fullName + "." + file.getName());
+		definition.setTag(JavaSourceClass.class, cls);
+		JavaSourceMethod method = new JavaSourceMethod(cls, JavaSourceMethod.Kind.STATIC, definition.name);
+		definition.caller.setTag(JavaSourceMethod.class, method);
 		return null;
 	}
 

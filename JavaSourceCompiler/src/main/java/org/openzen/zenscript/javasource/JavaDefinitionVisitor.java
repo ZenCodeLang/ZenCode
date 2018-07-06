@@ -42,6 +42,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	public Void visitClass(ClassDefinition definition) {
 		convertModifiers(definition.modifiers);
 		output.append("class ").append(definition.name);
+		JavaSourceUtils.formatTypeParameters(scope, output, definition.genericParameters);
 		if (definition.superType != null) {
 			output.append(" extends ");
 			output.append(scope.type(definition.superType));
@@ -73,8 +74,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitInterface(InterfaceDefinition definition) {
-		convertModifiers(definition.modifiers);
+		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
 		output.append("interface ").append(definition.name);
+		JavaSourceUtils.formatTypeParameters(scope, output, definition.genericParameters);
 		output.append(" {\n");
 		compileMembers(definition);
 		output.append("}\n");
@@ -115,6 +117,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	public Void visitStruct(StructDefinition definition) {
 		convertModifiers(definition.modifiers | Modifiers.FINAL);
 		output.append("class ").append(definition.name);
+		JavaSourceUtils.formatTypeParameters(scope, output, definition.genericParameters);
 		output.append(" {\n");
 		compileMembers(definition);
 		output.append("}\n");
@@ -124,6 +127,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	@Override
 	public Void visitFunction(FunctionDefinition definition) {
 		convertModifiers(definition.modifiers | Modifiers.STATIC);
+		
 		return null;
 	}
 
@@ -133,6 +137,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		output.append("class ");
 		output.append(scope.className);
 		output.append(" {\n");
+		output.append(settings.indent).append("private ").append(scope.className).append("() {}\n");
 		
 		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, "\t", output, scope);
 		for (IDefinitionMember member : definition.members)
@@ -150,6 +155,68 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitVariant(VariantDefinition variant) {
+		convertModifiers(variant.modifiers | Modifiers.VIRTUAL | Modifiers.ABSTRACT);
+		output.append("class ").append(variant.name);
+		JavaSourceUtils.formatTypeParameters(scope, output, variant.genericParameters);
+		output.append("{\n");
+		compileMembers(variant);
+		output.append(settings.indent).append("public abstract Discriminant getDiscriminant();\n");
+		
+		output.append(settings.indent).append("\n");
+		output.append(settings.indent).append("public static enum Discriminant {\n");
+		for (VariantDefinition.Option option : variant.options) {
+			output.append(settings.indent).append(settings.indent).append(option.name).append(",\n");
+		}
+		output.append(settings.indent).append("}\n");
+		
+		for (VariantDefinition.Option option : variant.options) {
+			output.append(settings.indent).append("\n");
+			output.append(settings.indent).append("public static class ").append(option.name);
+			JavaSourceUtils.formatTypeParameters(scope, output, variant.genericParameters);
+			output.append(" extends ");
+			output.append(variant.name);
+			if (variant.genericParameters != null && variant.genericParameters.length > 0) {
+				output.append('<');
+				for (int i = 0; i < variant.genericParameters.length; i++) {
+					if (i > 0)
+						output.append(", ");
+					output.append(variant.genericParameters[i].name);
+				}
+				output.append('>');
+			}
+			output.append(" {\n");
+			
+			for (int i = 0; i < option.types.length; i++) {
+				String name = option.types.length == 1 ? "value" : "value" + (i + 1);
+				output.append(settings.indent).append(settings.indent).append("public final ").append(scope.type(option.types[i])).append(" ").append(name).append(";\n");
+			}
+			output.append(settings.indent).append(settings.indent).append("\n");
+			output.append(settings.indent).append(settings.indent).append("public ").append(option.name).append("(");
+			for (int i = 0; i < option.types.length; i++) {
+				if (i > 0)
+					output.append(", ");
+				String name = option.types.length == 1 ? "value" : "value" + (i + 1);
+				output.append(scope.type(option.types[i])).append(' ').append(name);
+			}
+			output.append("){\n");
+			for (int i = 0; i < option.types.length; i++) {
+				if (i > 0)
+					output.append(settings.indent).append(settings.indent).append(settings.indent).append(";\n");
+				
+				String name = option.types.length == 1 ? "value" : "value" + (i + 1);
+				output.append(settings.indent).append(settings.indent).append(settings.indent).append("this.").append(name).append(" = ").append(name).append(";\n");
+			}
+			output.append(settings.indent).append(settings.indent).append("}\n");
+			
+			output.append(settings.indent).append(settings.indent).append("\n");
+			output.append(settings.indent).append(settings.indent).append("@Override\n");
+			output.append(settings.indent).append(settings.indent).append("public Discriminant getDiscriminant() {\n");
+			output.append(settings.indent).append(settings.indent).append(settings.indent).append("return Discriminant.").append(option.name).append(";\n");
+			output.append(settings.indent).append(settings.indent).append("}\n");
+			output.append(settings.indent).append("}\n");
+		}
+		
+		output.append("}\n");
 		return null;
 	}
 	
@@ -173,7 +240,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	}
 	
 	private void compileMembers(HighLevelDefinition definition) {
-		JavaMemberCompiler memberCompiler = new JavaMemberCompiler(settings, "\t", output, scope, false);
+		JavaMemberCompiler memberCompiler = new JavaMemberCompiler(settings, "\t", output, scope, false, scope.isInterface);
 		for (IDefinitionMember member : definition.members)
 			member.accept(memberCompiler);
 		memberCompiler.finish();

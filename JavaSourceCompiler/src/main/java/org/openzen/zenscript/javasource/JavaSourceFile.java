@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompileScope;
 import org.openzen.zenscript.compiler.SemanticModule;
@@ -61,22 +62,23 @@ public class JavaSourceFile {
 	}
 	
 	public void write() {
+		System.out.println("Calling write on " + file.getName());
+		
 		for (Map.Entry<HighLevelDefinition, SemanticModule> entry : definitions.entrySet()) {
 			HighLevelDefinition definition = entry.getKey();
 			SemanticModule module = entry.getValue();
 			CompileScope scope = new CompileScope(definition.access, module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
 			JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
 					compiler.settings,
-					new JavaSourceFileScope(importer, compiler.typeGenerator, compiler.helperGenerator, getName(), scope),
+					new JavaSourceFileScope(importer, compiler.typeGenerator, compiler.helperGenerator, getName(), scope, definition instanceof InterfaceDefinition),
 					contents);
 			definition.accept(visitor);
 		}
 		
 		if (!file.getParentFile().exists())
 			file.getParentFile().mkdirs();
-		file.delete();
 		
-		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
+		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file, false)), StandardCharsets.UTF_8)) {
 			writer.write("package ");
 			writer.write(pkg.fullName);
 			writer.write(";\n\n");

@@ -8,6 +8,7 @@ package org.openzen.zenscript.javasource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -39,12 +40,14 @@ import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormatter;
 import org.openzen.zenscript.formattershared.StatementFormattingSubBlock;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
+import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.shared.StringUtils;
 
 /**
@@ -126,14 +129,31 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			Expression value = scope.duplicable(target, statement.value);
 			ExpressionString valueString = scope.expression(target, value);
 			List<StatementFormattingSubBlock> blocks = new ArrayList<>();
-			String variantType = scope.type(statement.value.type);
+			
+			DefinitionTypeID variantType = (DefinitionTypeID)statement.value.type;
+			HighLevelDefinition variant = variantType.definition;
+			String variantTypeName = scope.type(variant.getTag(JavaSourceClass.class));
+			JavaSourceStatementScope innerScope = scope.createBlockScope(statement);
 			for (SwitchCase switchCase : statement.cases) {
 				VariantOptionSwitchValue switchValue = (VariantOptionSwitchValue)switchCase.value;
 				String header = switchValue == null ? "default:" : "case " + switchValue.option.getName() + ":";
 				List<String> statements = new ArrayList<>();
 				if (switchValue != null) {
-					for (VarStatement var : switchValue.parameters)
-						statements.add(scope.type(var.type) + " " + var.name + " = (" + variantType + "." + switchValue.option.getName() + ")" + valueString.value + ";");
+					for (VarStatement var : switchValue.parameters) {
+						StringBuilder statementOutput = new StringBuilder();
+						statementOutput.append(scope.type(var.type)).append(" ").append(var.name).append(" = ((").append(variantTypeName).append(".").append(switchValue.option.getName());
+						if (variant.genericParameters != null && variant.genericParameters.length > 0) {
+							statementOutput.append("<");
+							for (int i = 0; i < variantType.typeParameters.length; i++) {
+								if (i > 0)
+									statementOutput.append(", ");
+								statementOutput.append(scope.type(variantType.typeParameters[i]));
+							}
+							statementOutput.append(">");
+						}
+						statementOutput.append(")").append(valueString.value).append(").").append("value").append(";");
+						statements.add(statementOutput.toString());
+					}
 				}
 				blocks.add(new StatementFormattingSubBlock(header, statements, switchCase.statements));
 			}
@@ -225,10 +245,11 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			String name = statement.loopVariables[0].name;
 			
 			if (statement.list instanceof RangeExpression) {
+				String limitName = "limitFor" + StringUtils.capitalize(name);
 				RangeExpression range = (RangeExpression)(statement.list);
-				target.writeLine("int limitFor = " + name + " = " + scope.expression(target, range.to) + ";");
+				target.writeLine("int " + limitName + " = " + scope.expression(target, range.to) + ";");
 				target.writeInner(
-						"for (int " + name + " = " + scope.expression(target, range.from) + "; " + name + " < limitFor" + name + "; " + name + "++)",
+						"for (int " + name + " = " + scope.expression(target, range.from) + "; " + name + " < " + limitName + "; " + name + "++)",
 						statement.content,
 						statement,
 						"");

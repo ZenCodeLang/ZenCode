@@ -56,6 +56,7 @@ import org.openzen.zenscript.codemodel.expression.MatchExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
+import org.openzen.zenscript.codemodel.expression.PanicExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
@@ -543,6 +544,11 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitOrOr(OrOrExpression expression) {
 		return binary(expression.left, expression.right, ZenScriptOperator.OROR);
+	}
+	
+	@Override
+	public ExpressionString visitPanic(PanicExpression expression) {
+		return expression.value.accept(this).unaryPrefix(ZenScriptOperator.PANIC);
 	}
 	
 	@Override

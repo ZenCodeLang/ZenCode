@@ -128,6 +128,7 @@ public enum ZSTokenType implements TokenType {
 	K_WHILE(true, "while"),
 	K_FOR(true, "for"),
 	K_THROW(true, "throw"),
+	K_PANIC(true, "panic"),
 	K_LOCK(true, "lock"),
 	K_TRY(true, "try"),
 	K_CATCH(true, "catch"),

@@ -231,10 +231,14 @@ public class StringUtils {
 				case '"':
 					if (quote == '"')
 						output.append("\\\"");
+					else
+						output.append('"');
 					break;
 				case '\'':
 					if (quote == '\'')
 						output.append("\\\'");
+					else
+						output.append("'");
 					break;
 				case '\n': output.append("\\n"); break;
 				case '\r': output.append("\\r"); break;

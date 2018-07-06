@@ -57,6 +57,7 @@ import org.openzen.zenscript.codemodel.expression.MatchExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
+import org.openzen.zenscript.codemodel.expression.PanicExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
@@ -502,6 +503,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	@Override
 	public ExpressionString visitOrOr(OrOrExpression expression) {
 		return binary(expression.left, expression.right, JavaOperator.OROR);
+	}
+	
+	@Override
+	public ExpressionString visitPanic(PanicExpression expression) {
+		return new ExpressionString("throw new AssertionError(" + expression.value.accept(this).value + ")", JavaOperator.PRIMARY);
 	}
 	
 	@Override
@@ -1371,7 +1377,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case STRING_CONSTRUCTOR_CHARACTERS:
 				return callStatic("new String", expression.arguments.arguments[0]);
 			case ASSOC_CONSTRUCTOR: {
-				String typeName = scope.fileScope.importer.importType("java.util.HashMap");
+				String typeName = scope.type(new JavaSourceClass("HashMap", "java.util.HashMap"));
 				AssocTypeID type = (AssocTypeID) expression.type;
 				
 				StringBuilder result = new StringBuilder();
@@ -1383,7 +1389,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				return new ExpressionString(result.toString(), JavaOperator.NEW);
 			}
 			case GENERICMAP_CONSTRUCTOR: {
-				String typeName = scope.fileScope.importer.importType("java.util.HashMap");
+				String typeName = scope.type(new JavaSourceClass("HashMap", "java.util.HashMap"));
 				StringBuilder result = new StringBuilder();
 				result.append("new ").append(typeName).append("<Class<?>, Object>()");
 				return new ExpressionString(result.toString(), JavaOperator.NEW);
@@ -1438,6 +1444,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							.append(value.value)
 							.append(";")
 							.toString());
+					return new ExpressionString(temp, JavaOperator.PRIMARY);
 				} else {
 					// TODO: implement
 					throw new UnsupportedOperationException("Not yet supported!");

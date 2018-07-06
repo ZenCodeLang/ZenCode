@@ -1884,6 +1884,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 	
 	@Override
+	public Void visitPanic(PanicExpression expression) {
+		// TODO: compile to: throw new AssertionError(expression.value)
+		throw new UnsupportedOperationException("Not yet supported");
+	}
+	
+	@Override
 	public Void visitPostCall(PostCallExpression expression) {
 		expression.target.accept(this);
 		javaWriter.dup(expression.type.accept(new JavaTypeVisitor()));

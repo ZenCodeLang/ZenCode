@@ -104,6 +104,8 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitOrOr(OrOrExpression expression);
 	
+	public T visitPanic(PanicExpression expression);
+	
 	public T visitPostCall(PostCallExpression expression);
 	
 	public T visitRange(RangeExpression expression);

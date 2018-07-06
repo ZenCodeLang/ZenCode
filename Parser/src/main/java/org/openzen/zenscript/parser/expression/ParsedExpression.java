@@ -512,6 +512,11 @@ public abstract class ParsedExpression {
 				ParsedExpression value = parse(parser);
 				return new ParsedThrowExpression(position, value);
 			}
+			case K_PANIC: {
+				parser.next();
+				ParsedExpression value = parse(parser);
+				return new ParsedPanicExpression(position, value);
+			}
 			case K_MATCH: {
 				parser.next();
 				ParsedExpression source = parse(parser);

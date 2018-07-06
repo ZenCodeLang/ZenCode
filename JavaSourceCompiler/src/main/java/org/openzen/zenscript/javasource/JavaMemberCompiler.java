@@ -48,14 +48,16 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 	private final JavaSourceFormattingSettings settings;
 	private final List<FieldMember> fields = new ArrayList<>();
 	private final boolean isExpansion;
+	private final boolean isInterface;
 	private boolean first = true;
 	
-	public JavaMemberCompiler(JavaSourceFormattingSettings settings, String indent, StringBuilder output, JavaSourceFileScope scope, boolean isExpansion) {
+	public JavaMemberCompiler(JavaSourceFormattingSettings settings, String indent, StringBuilder output, JavaSourceFileScope scope, boolean isExpansion, boolean isInterface) {
 		this.indent = indent;
 		this.output = output;
 		this.scope = scope;
 		this.settings = settings;
 		this.isExpansion = isExpansion;
+		this.isInterface = isInterface;
 		
 		fieldInitializerScope = new JavaSourceStatementScope(
 				scope,
@@ -144,7 +146,11 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 	public Void visitMethod(MethodMember member) {
 		addSpacing();
 		
+		
 		output.append(indent);
+		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
+			output.append("default ");
+		
 		modifiers(member.modifiers);
 		JavaSourceUtils.formatTypeParameters(scope, output, member.header.typeParameters);
 		output.append(member.header.returnType.accept(scope.typeVisitor));
@@ -160,6 +166,9 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 		addSpacing();
 		
 		output.append(indent);
+		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
+			output.append("default ");
+		
 		modifiers(member.modifiers);
 		output.append(scope.type(member.type));
 		output.append(" ");
@@ -174,6 +183,9 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 		addSpacing();
 		
 		output.append(indent);
+		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
+			output.append("default ");
+		
 		modifiers(member.modifiers);
 		output.append("void set").append(StringUtils.capitalize(member.name));
 		output.append("(");
@@ -193,6 +205,9 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 			throw new IllegalStateException("Missing method tag!");
 		
 		output.append(indent);
+		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
+			output.append("default ");
+		
 		modifiers(member.modifiers);
 		output.append(scope.type(member.header.returnType));
 		output.append(' ');
@@ -207,6 +222,9 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 		addSpacing();
 		
 		output.append(indent);
+		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
+			output.append("default ");
+		
 		modifiers(member.modifiers);
 		output.append(scope.type(member.toType));
 		output.append(" ");

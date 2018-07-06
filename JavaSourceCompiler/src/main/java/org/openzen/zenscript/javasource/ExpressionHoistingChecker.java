@@ -53,6 +53,7 @@ import org.openzen.zenscript.codemodel.expression.MatchExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.OrOrExpression;
+import org.openzen.zenscript.codemodel.expression.PanicExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
@@ -313,6 +314,11 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 
 	@Override
 	public Boolean visitOrOr(OrOrExpression expression) {
+		return true;
+	}
+	
+	@Override
+	public Boolean visitPanic(PanicExpression expression) {
 		return true;
 	}
 
