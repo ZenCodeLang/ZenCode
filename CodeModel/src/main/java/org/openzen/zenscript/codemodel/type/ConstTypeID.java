@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.List;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -68,6 +69,16 @@ public class ConstTypeID implements ITypeID {
 	}
 
 	@Override
+	public boolean hasDefaultValue() {
+		return baseType.hasDefaultValue();
+	}
+
+	@Override
+	public void extractTypeParameters(List<TypeParameter> typeParameters) {
+		baseType.extractTypeParameters(typeParameters);
+	}
+
+	@Override
 	public int hashCode() {
 		int hash = 3;
 		hash = 79 * hash + Objects.hashCode(this.baseType);
@@ -92,10 +103,5 @@ public class ConstTypeID implements ITypeID {
 	@Override
 	public String toString() {
 		return "const " + baseType.toString();
-	}
-
-	@Override
-	public boolean hasDefaultValue() {
-		return baseType.hasDefaultValue();
 	}
 }

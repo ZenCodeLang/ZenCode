@@ -7,16 +7,18 @@ package org.openzen.zenscript.codemodel.annotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionBuilder;
+import org.openzen.zenscript.codemodel.expression.PanicExpression;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
+import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.IfStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.shared.CodePosition;
 
@@ -55,8 +57,8 @@ public class PreconditionForMethod implements MemberAnnotation {
 		List<Statement> statements = new ArrayList<>();
 		ExpressionBuilder expressionBuilder = new ExpressionBuilder(position, expressionScope);
 		Expression inverseCondition = expressionBuilder.not(condition);
-		Statement throwStatement = new ThrowStatement(CodePosition.BUILTIN, expressionBuilder.constructNew("stdlib.IllegalArgumentException", message));
-		statements.add(new IfStatement(CodePosition.BUILTIN, inverseCondition, throwStatement, null));
+		Statement throwStatement = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID, message));
+		statements.add(new IfStatement(position, inverseCondition, throwStatement, null));
 		if (member.body instanceof BlockStatement) {
 			statements.addAll(((BlockStatement)member.body).statements);
 		} else {

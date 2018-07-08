@@ -15,12 +15,14 @@ public class JavaSourceMethod {
 	public final JavaSourceClass cls;
 	public final Kind kind;
 	public final String name;
+	public final boolean compile;
 	public final JavaCallCompiler compiler;
 	
-	public JavaSourceMethod(JavaSourceClass cls, Kind kind, String name) {
+	public JavaSourceMethod(JavaSourceClass cls, Kind kind, String name, boolean compile) {
 		this.cls = cls;
 		this.kind = kind;
 		this.name = name;
+		this.compile = compile;
 		compiler = null;
 	}
 	
@@ -28,6 +30,7 @@ public class JavaSourceMethod {
 		this.cls = null;
 		this.kind = Kind.COMPILED;
 		this.name = null;
+		this.compile = false;
 		this.compiler = compiler;
 	}
 	
@@ -35,6 +38,7 @@ public class JavaSourceMethod {
 		STATIC,
 		INSTANCE,
 		EXPANSION,
+		CONSTRUCTOR,
 		COMPILED
 	}
 }

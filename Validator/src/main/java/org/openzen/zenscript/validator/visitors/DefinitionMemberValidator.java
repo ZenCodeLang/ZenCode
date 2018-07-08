@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
@@ -107,7 +108,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		} else {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
 			member.body.accept(statementValidator);
-			
+			validateThrow(member);
+				
 			if (member.definition.superType != null && !statementValidator.constructorForwarded) {
 				validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_MISSING, member.position, "Constructor not forwarded to base type");
 			}
@@ -125,6 +127,10 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
 			member.body.accept(statementValidator);
+			validateThrow(member);
+			
+			if (member.header.thrownType != null)
+				validator.logError(ValidationLogEntry.Code.DESTRUCTOR_CANNOT_THROW, member.position, "Destructor cannot throw");
 		}
 		return null;
 	}
@@ -137,6 +143,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
 			member.body.accept(statementValidator);
+			validateThrow(member);
 		}
 		return null;
 	}
@@ -149,6 +156,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
 			member.body.accept(statementValidator);
+			validateThrow(member);
 		}
 		
 		return null;
@@ -162,6 +170,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
 			member.body.accept(statementValidator);
+			validateThrow(member);
 		}
 		
 		return null;
@@ -186,6 +195,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
 			member.body.accept(statementValidator);
+			validateThrow(member);
 		}
 		
 		return null;
@@ -198,6 +208,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
 			member.body.accept(statementValidator);
+			validateThrow(member);
 		}
 		
 		return null;
@@ -216,6 +227,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
 			member.body.accept(statementValidator);
+			validateThrow(member);
 		}
 		
 		return null;
@@ -255,7 +267,14 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
 		member.body.accept(new StatementValidator(validator, new StaticInitializerScope()));
+		if (member.body.thrownType != null)
+			validator.logError(ValidationLogEntry.Code.STATIC_INITIALIZER_CANNOT_THROW, member.position, "Static initializer cannot throw");
 		return null;
+	}
+	
+	private void validateThrow(FunctionalMember member) {
+		if (member.body.thrownType != null && member.header.thrownType == null) // TODO: validate thrown type
+			validator.logError(ValidationLogEntry.Code.THROW_WITHOUT_THROWS, member.position, "Method is throwing but doesn't declare throws type");
 	}
 	
 	private class FieldInitializerScope implements ExpressionScope {

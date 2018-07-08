@@ -19,7 +19,7 @@ import org.openzen.zenscript.shared.Taggable;
  * @author Hoofdgebruiker
  */
 public class StaticInitializerMember extends Taggable implements IDefinitionMember {
-	private final CodePosition position;
+	public final CodePosition position;
 	public Statement body;
 	public MemberAnnotation[] annotations = MemberAnnotation.NONE;
 	

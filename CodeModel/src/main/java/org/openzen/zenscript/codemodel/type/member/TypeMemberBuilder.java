@@ -355,6 +355,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		method(builtin, "getOptional", getOptionalHeader, GENERICMAP_GETOPTIONAL);
 		method(builtin, "put", putHeader, GENERICMAP_PUT);
 		method(builtin, "contains", containsHeader, GENERICMAP_CONTAINS);
+		method(builtin, "addAll", new FunctionHeader(VOID, map), GENERICMAP_ADDALL);
 		
 		getter(builtin, GENERICMAP_SIZE, "size", INT);
 		getter(builtin, GENERICMAP_ISEMPTY, "isEmpty", BOOL);
@@ -535,6 +536,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	public Void visitOptional(OptionalTypeID optional) {
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "optional", Modifiers.EXPORT, null);
 		optional.baseType.accept(this);
+		operator(builtin, OperatorType.EQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NULL);
+		operator(builtin, OperatorType.NOTEQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NOT_NULL);
 		processType(builtin, optional);
 		return null;
 	}

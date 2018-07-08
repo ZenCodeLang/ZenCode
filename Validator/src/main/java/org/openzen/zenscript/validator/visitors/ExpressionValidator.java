@@ -449,7 +449,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitPanic(PanicExpression expression) {
 		expression.value.accept(this);
-		if (expression.type != BasicTypeID.STRING)
+		if (expression.value.type != BasicTypeID.STRING)
 			validator.logError(ValidationLogEntry.Code.PANIC_ARGUMENT_NO_STRING, expression.position, "Argument to a panic must be a string");
 		return null;
 	}

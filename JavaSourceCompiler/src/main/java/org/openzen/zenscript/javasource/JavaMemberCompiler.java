@@ -6,78 +6,88 @@
 package org.openzen.zenscript.javasource;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
-import org.openzen.zenscript.codemodel.member.MemberVisitor;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
-import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
-import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
-import org.openzen.zenscript.shared.StringUtils;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaMemberCompiler implements MemberVisitor<Void> {
-	private final String indent;
-	private final StringBuilder output;
-	private final JavaSourceFileScope scope;
-	private final JavaSourceStatementScope fieldInitializerScope;
-	private final JavaSourceFormattingSettings settings;
+public class JavaMemberCompiler extends BaseMemberCompiler {
 	private final List<FieldMember> fields = new ArrayList<>();
-	private final boolean isExpansion;
 	private final boolean isInterface;
-	private boolean first = true;
 	
-	public JavaMemberCompiler(JavaSourceFormattingSettings settings, String indent, StringBuilder output, JavaSourceFileScope scope, boolean isExpansion, boolean isInterface) {
-		this.indent = indent;
-		this.output = output;
-		this.scope = scope;
-		this.settings = settings;
-		this.isExpansion = isExpansion;
-		this.isInterface = isInterface;
+	public JavaMemberCompiler(
+			JavaSourceFormattingSettings settings,
+			String indent,
+			StringBuilder output,
+			JavaSourceFileScope scope,
+			boolean isInterface,
+			HighLevelDefinition definition)
+	{
+		super(settings, indent, output, scope, null, definition);
 		
-		fieldInitializerScope = new JavaSourceStatementScope(
-				scope,
-				settings,
-				null,
-				indent + settings.indent,
-				null,
-				null,
-				isExpansion);
+		this.isInterface = isInterface;
 	}
 	
-	private void addSpacing() {
-		if (first)
-			first = false;
+	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
+		JavaSourceMethod method = member.getTag(JavaSourceMethod.class);
+		if (method == null)
+			throw new AssertionError();
+		if (!method.compile)
+			return;
+		
+		boolean hasBody = body != null && !(body instanceof EmptyStatement);
+		if (isInterface && method.name.equals("toString") && header.parameters.length == 0) {
+			hasBody = false;
+		}
+			
+		
+		begin(ElementType.METHOD);
+		output.append(indent);
+		if (isInterface && hasBody)
+			output.append("default ");
+		
+		modifiers(member.modifiers);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters);
+		output.append(header.returnType.accept(scope.typeVisitor));
+		output.append(" ");
+		output.append(method.name);
+		formatParameters(member.isStatic(), header);
+		
+		if (hasBody)
+			compileBody(body, header);
 		else
-			output.append(indent).append("\n");
+			output.append(";\n");
 	}
 	
 	@Override
 	public Void visitConst(ConstMember member) {
+		begin(ElementType.FIELD);
+		
 		output.append(indent);
 		modifiers(member.modifiers | Modifiers.STATIC | Modifiers.FINAL);
 		output.append(scope.type(member.type));
@@ -91,7 +101,7 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitField(FieldMember member) {
-		first = false;
+		begin(ElementType.FIELD);
 		
 		output.append(indent);
 		int modifiers = 0;
@@ -121,20 +131,20 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
-		addSpacing();
+		begin(ElementType.CONSTRUCTOR);
 		
 		output.append(indent);
 		modifiers(member.modifiers);
-		JavaSourceUtils.formatTypeParameters(scope, output, member.header.typeParameters);
-		output.append(scope.className);
-		formatParameters(member.header);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, member.header.typeParameters);
+		output.append(scope.cls.name);
+		formatParameters(member.isStatic(), member.header);
 		compileBody(member.body, member.header);
 		return null;
 	}
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
-		addSpacing();
+		begin(ElementType.METHOD);
 		
 		output.append(indent).append("@Override\n");
 		output.append(indent).append("public void close()");
@@ -144,123 +154,61 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitMethod(MethodMember member) {
-		addSpacing();
-		
-		
-		output.append(indent);
-		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
-			output.append("default ");
-		
-		modifiers(member.modifiers);
-		JavaSourceUtils.formatTypeParameters(scope, output, member.header.typeParameters);
-		output.append(member.header.returnType.accept(scope.typeVisitor));
-		output.append(" ");
-		output.append(member.name);
-		formatParameters(member.header);
-		compileBody(member.body, member.header);
+		compileMethod(member, member.header, member.body);
 		return null;
 	}
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		addSpacing();
-		
-		output.append(indent);
-		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
-			output.append("default ");
-		
-		modifiers(member.modifiers);
-		output.append(scope.type(member.type));
-		output.append(" ");
-		output.append("get").append(StringUtils.capitalize(member.name));
-		output.append("()");
-		compileBody(member.body, member.header);
+		compileMethod(member, member.header, member.body);
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		addSpacing();
-		
-		output.append(indent);
-		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
-			output.append("default ");
-		
-		modifiers(member.modifiers);
-		output.append("void set").append(StringUtils.capitalize(member.name));
-		output.append("(");
-		output.append(scope.type(member.type));
-		output.append(" ");
-		output.append("value");
-		output.append(")");
-		compileBody(member.body, member.header);
+		compileMethod(member, new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(member.type, "value")), member.body);
 		return null;
 	}
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		addSpacing();
-		JavaSourceMethod method = member.getTag(JavaSourceMethod.class);
-		if (method == null)
-			throw new IllegalStateException("Missing method tag!");
-		
-		output.append(indent);
-		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
-			output.append("default ");
-		
-		modifiers(member.modifiers);
-		output.append(scope.type(member.header.returnType));
-		output.append(' ');
-		output.append(method.name);
-		formatParameters(member.header);
-		compileBody(member.body, member.header);
+		compileMethod(member, member.header, member.body);
 		return null;
 	}
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		addSpacing();
-		
-		output.append(indent);
-		if (isInterface && member.body != null && !(member.body instanceof EmptyStatement))
-			output.append("default ");
-		
-		modifiers(member.modifiers);
-		output.append(scope.type(member.toType));
-		output.append(" ");
-		output.append("to").append(member.toType.accept(new JavaSourceTypeNameVisitor()));
-		output.append("()");
-		compileBody(member.body, member.header);
+		compileMethod(member, new FunctionHeader(member.toType), member.body);
 		return null;
 	}
 
 	@Override
 	public Void visitCustomIterator(CustomIteratorMember member) {
-		addSpacing();
-		
+		compileMethod(member, new FunctionHeader(scope.semanticScope.getTypeRegistry().getIterator(member.getLoopVariableTypes())), member.body);
 		return null;
 	}
 
 	@Override
 	public Void visitCaller(CallerMember member) {
-		addSpacing();
-		
+		compileMethod(member, member.header, member.body);
 		return null;
 	}
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
+		// TODO
 		return null;
 	}
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
+		// TODO
 		return null;
 	}
 
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
-		addSpacing();
+		begin(ElementType.STATICINIT);
 		output.append(indent).append("static");
 		compileBody(member.body, new FunctionHeader(BasicTypeID.VOID));
 		return null;
@@ -274,65 +222,5 @@ public class JavaMemberCompiler implements MemberVisitor<Void> {
 			if (field.autoSetter != null)
 				visitSetter(field.autoSetter);
 		}
-	}
-	
-	private void modifiers(int modifiers) {
-		if (Modifiers.isPublic(modifiers))
-			output.append("public ");
-		if (Modifiers.isProtected(modifiers))
-			output.append("protected ");
-		if (Modifiers.isPrivate(modifiers))
-			output.append("private ");
-		if (Modifiers.isStatic(modifiers))
-			output.append("static ");
-		if (Modifiers.isFinal(modifiers))
-			output.append("final ");
-	}
-	
-	private void compileBody(Statement body, FunctionHeader header) {
-		if (body == null || body instanceof EmptyStatement) {
-			output.append(";\n");
-		} else {
-			if (!(body instanceof BlockStatement))
-				body = new BlockStatement(body.position, Collections.singletonList(body));
-			
-			JavaSourceStatementScope scope = new JavaSourceStatementScope(this.scope, settings, header, indent + settings.indent, null, null, isExpansion);
-			body.accept(new JavaSourceStatementCompiler(scope, output, true, false));
-			output.append('\n');
-		}
-	}
-	
-	private void formatParameters(FunctionHeader header) {
-		output.append("(");
-		boolean first = true;
-		if (header.typeParameters != null) {
-			for (TypeParameter typeParameter : header.typeParameters) {
-				if (first)
-					first = false;
-				else
-					output.append(", ");
-
-				output.append("Class<")
-						.append(typeParameter.name)
-						.append(">")
-						.append(" ")
-						.append("typeOf")
-						.append(typeParameter.name);
-			}
-		}
-		
-		for (int i = 0; i < header.parameters.length; i++) {
-			if (first)
-				first = false;
-			else
-				output.append(", ");
-			
-			FunctionParameter parameter = header.parameters[i];
-			output.append(scope.type(parameter.type));
-			output.append(" ").append(parameter.name);
-			if (parameter.variadic)
-				output.append("...");
-		}
-		output.append(")");
 	}
 }

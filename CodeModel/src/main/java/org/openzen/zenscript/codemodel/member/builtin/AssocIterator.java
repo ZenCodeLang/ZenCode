@@ -71,6 +71,6 @@ public class AssocIterator extends Taggable implements IIteratorMember {
 
 	@Override
 	public <T> T acceptForIterator(ForeachIteratorVisitor<T> visitor) {
-		return visitor.visitArrayKeyValueIterator();
+		return visitor.visitAssocKeyValueIterator();
 	}
 }

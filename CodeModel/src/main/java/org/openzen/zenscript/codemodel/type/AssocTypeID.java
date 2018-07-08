@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.List;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
@@ -61,6 +62,12 @@ public class AssocTypeID implements ITypeID {
 	@Override
 	public boolean hasDefaultValue() {
 		return true;
+	}
+
+	@Override
+	public void extractTypeParameters(List<TypeParameter> typeParameters) {
+		keyType.extractTypeParameters(typeParameters);
+		valueType.extractTypeParameters(typeParameters);
 	}
 
 	@Override

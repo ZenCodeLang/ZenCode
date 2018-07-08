@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.List;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
@@ -62,6 +63,11 @@ public class ArrayTypeID implements ITypeID {
 	@Override
 	public boolean hasDefaultValue() {
 		return false;
+	}
+
+	@Override
+	public void extractTypeParameters(List<TypeParameter> typeParameters) {
+		elementType.extractTypeParameters(typeParameters);
 	}
 
 	@Override

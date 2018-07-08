@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.List;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
@@ -63,6 +64,12 @@ public class RangeTypeID implements ITypeID {
 	@Override
 	public boolean hasDefaultValue() {
 		return false;
+	}
+
+	@Override
+	public void extractTypeParameters(List<TypeParameter> typeParameters) {
+		from.extractTypeParameters(typeParameters);
+		to.extractTypeParameters(typeParameters);
 	}
 
 	@Override

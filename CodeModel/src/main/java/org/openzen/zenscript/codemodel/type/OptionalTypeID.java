@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.List;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -75,6 +76,11 @@ public class OptionalTypeID implements ITypeID {
 	@Override
 	public boolean hasDefaultValue() {
 		return true;
+	}
+
+	@Override
+	public void extractTypeParameters(List<TypeParameter> typeParameters) {
+		baseType.extractTypeParameters(typeParameters);
 	}
 
 	@Override

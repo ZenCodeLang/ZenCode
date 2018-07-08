@@ -7,6 +7,7 @@ package org.openzen.zenscript.javasource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
@@ -21,28 +22,57 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.compiler.CompileScope;
+import org.openzen.zenscript.compiler.SemanticModule;
+import org.openzen.zenscript.javasource.prepare.JavaNativeClass;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
+import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
-	private final JavaSourceFileScope scope;
+	private final JavaSourceCompiler compiler;
+	private final JavaSourceClass cls;
+	private final JavaSourceFile file;
 	private final JavaSourceFormattingSettings settings;
+	private final List<ExpansionDefinition> expansions;
 	private final StringBuilder output;
+	private final Map<HighLevelDefinition, SemanticModule> modules;
 	
-	public JavaDefinitionVisitor(JavaSourceFormattingSettings settings, JavaSourceFileScope scope, StringBuilder output) {
-		this.settings = settings;
-		this.scope = scope;
+	public JavaDefinitionVisitor(
+			JavaSourceCompiler compiler,
+			JavaSourceClass cls,
+			JavaSourceFile file,
+			StringBuilder output,
+			List<ExpansionDefinition> expansions,
+			Map<HighLevelDefinition, SemanticModule> modules)
+	{
+		this.compiler = compiler;
+		this.cls = cls;
+		this.file = file;
+		this.settings = compiler.settings;
 		this.output = output;
+		this.expansions = expansions;
+		this.modules = modules;
+	}
+	
+	private JavaSourceFileScope createScope(HighLevelDefinition definition) {
+		SemanticModule module = modules.get(definition);
+		CompileScope scope = new CompileScope(definition.access, module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
+		return new JavaSourceFileScope(file.importer, compiler.typeGenerator, compiler.helperGenerator, cls, scope, definition instanceof InterfaceDefinition);
 	}
 
 	@Override
 	public Void visitClass(ClassDefinition definition) {
+		JavaSourceFileScope scope = createScope(definition);
+		
 		convertModifiers(definition.modifiers);
 		output.append("class ").append(definition.name);
-		JavaSourceUtils.formatTypeParameters(scope, output, definition.genericParameters);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.genericParameters);
 		if (definition.superType != null) {
 			output.append(" extends ");
 			output.append(scope.type(definition.superType));
@@ -67,24 +97,30 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		}
 		
 		output.append(" {\n");
-		compileMembers(definition);
+		compileMembers(scope, definition);
+		compileExpansions();
 		output.append("}\n");
 		return null;
 	}
 
 	@Override
 	public Void visitInterface(InterfaceDefinition definition) {
+		JavaSourceFileScope scope = createScope(definition);
+		
 		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
 		output.append("interface ").append(definition.name);
-		JavaSourceUtils.formatTypeParameters(scope, output, definition.genericParameters);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.genericParameters);
 		output.append(" {\n");
-		compileMembers(definition);
+		compileMembers(scope, definition);
+		compileExpansions();
 		output.append("}\n");
 		return null;
 	}
 
 	@Override
 	public Void visitEnum(EnumDefinition definition) {
+		JavaSourceFileScope scope = createScope(definition);
+		
 		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
 		output.append("enum ").append(definition.name);
 		
@@ -104,28 +140,34 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		
 		if (definition.members.size() > 0) {
 			output.append(";\n");
-			compileMembers(definition);
+			compileMembers(scope, definition);
 		} else {
 			output.append("\n");
 		}
 		
+		compileExpansions();
 		output.append("}\n");
 		return null;
 	}
 
 	@Override
 	public Void visitStruct(StructDefinition definition) {
+		JavaSourceFileScope scope = createScope(definition);
+		
 		convertModifiers(definition.modifiers | Modifiers.FINAL);
 		output.append("class ").append(definition.name);
-		JavaSourceUtils.formatTypeParameters(scope, output, definition.genericParameters);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.genericParameters);
 		output.append(" {\n");
-		compileMembers(definition);
+		compileMembers(scope, definition);
+		compileExpansions();
 		output.append("}\n");
 		return null;
 	}
 
 	@Override
 	public Void visitFunction(FunctionDefinition definition) {
+		JavaSourceFileScope scope = createScope(definition);
+		
 		convertModifiers(definition.modifiers | Modifiers.STATIC);
 		
 		return null;
@@ -133,17 +175,20 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitExpansion(ExpansionDefinition definition) {
+		JavaSourceFileScope scope = createScope(definition);
+		
 		convertModifiers(definition.modifiers);
 		output.append("class ");
-		output.append(scope.className);
+		output.append(cls.name);
 		output.append(" {\n");
-		output.append(settings.indent).append("private ").append(scope.className).append("() {}\n");
+		output.append(settings.indent).append("private ").append(cls.name).append("() {}\n");
 		
-		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, "\t", output, scope);
+		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.genericParameters, "\t", output, scope, definition);
 		for (IDefinitionMember member : definition.members)
 			member.accept(memberCompiler);
 		memberCompiler.finish();
 		
+		compileExpansions();
 		output.append("}");
 		return null;
 	}
@@ -155,11 +200,13 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitVariant(VariantDefinition variant) {
+		JavaSourceFileScope scope = createScope(variant);
+		
 		convertModifiers(variant.modifiers | Modifiers.VIRTUAL | Modifiers.ABSTRACT);
 		output.append("class ").append(variant.name);
-		JavaSourceUtils.formatTypeParameters(scope, output, variant.genericParameters);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, variant.genericParameters);
 		output.append("{\n");
-		compileMembers(variant);
+		compileMembers(scope, variant);
 		output.append(settings.indent).append("public abstract Discriminant getDiscriminant();\n");
 		
 		output.append(settings.indent).append("\n");
@@ -172,7 +219,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		for (VariantDefinition.Option option : variant.options) {
 			output.append(settings.indent).append("\n");
 			output.append(settings.indent).append("public static class ").append(option.name);
-			JavaSourceUtils.formatTypeParameters(scope, output, variant.genericParameters);
+			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, variant.genericParameters);
 			output.append(" extends ");
 			output.append(variant.name);
 			if (variant.genericParameters != null && variant.genericParameters.length > 0) {
@@ -216,8 +263,19 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			output.append(settings.indent).append("}\n");
 		}
 		
+		compileExpansions();
 		output.append("}\n");
 		return null;
+	}
+	
+	private void compileExpansions() {
+		for (ExpansionDefinition definition : expansions) {
+			JavaSourceFileScope scope = createScope(definition);
+			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.genericParameters, "\t", output, scope, definition);
+			for (IDefinitionMember member : definition.members)
+				member.accept(memberCompiler);
+			memberCompiler.finish();
+		}
 	}
 	
 	private void convertModifiers(int modifiers) {
@@ -239,10 +297,22 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		return true; // TODO: check merging conflicts
 	}
 	
-	private void compileMembers(HighLevelDefinition definition) {
-		JavaMemberCompiler memberCompiler = new JavaMemberCompiler(settings, "\t", output, scope, false, scope.isInterface);
-		for (IDefinitionMember member : definition.members)
-			member.accept(memberCompiler);
-		memberCompiler.finish();
+	private void compileMembers(JavaSourceFileScope scope, HighLevelDefinition definition) {
+		if (definition.hasTag(JavaNativeClass.class)) {
+			ITypeID[] typeParameters = new ITypeID[definition.getNumberOfGenericParameters()];
+			for (int i = 0; i < typeParameters.length; i++)
+				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.genericParameters[i]);
+			ITypeID targetType = new DefinitionTypeID(definition, typeParameters);
+			
+			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.genericParameters, "\t", output, scope, definition);
+			for (IDefinitionMember member : definition.members)
+				member.accept(memberCompiler);
+			memberCompiler.finish();
+		} else {
+			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(settings, "\t", output, scope, scope.isInterface, definition);
+			for (IDefinitionMember member : definition.members)
+				member.accept(memberCompiler);
+			memberCompiler.finish();
+		}
 	}
 }

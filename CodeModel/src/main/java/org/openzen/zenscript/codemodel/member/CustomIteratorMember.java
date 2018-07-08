@@ -22,7 +22,7 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class CustomIteratorMember extends DefinitionMember implements IIteratorMember {
 	private final ITypeID[] iteratorTypes;
-	private Statement content;
+	public Statement body;
 	
 	public CustomIteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID[] iteratorTypes) {
 		super(position, definition, modifiers);
@@ -30,8 +30,8 @@ public class CustomIteratorMember extends DefinitionMember implements IIteratorM
 		this.iteratorTypes = iteratorTypes;
 	}
 	
-	public void setContent(Statement content) {
-		this.content = content;
+	public void setContent(Statement body) {
+		this.body = body;
 	}
 
 	@Override

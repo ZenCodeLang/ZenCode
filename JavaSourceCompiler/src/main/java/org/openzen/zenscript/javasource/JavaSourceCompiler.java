@@ -10,11 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
-import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
+import org.openzen.zenscript.javasource.prepare.JavaSourcePrepareDefinitionVisitor;
+import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.shared.SourceFile;
 
 /**
@@ -29,6 +30,8 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	private final File directory;
 	private final Map<File, JavaSourceFile> sourceFiles = new HashMap<>();
 	
+	private final Map<String, Integer> classNameCounters = new HashMap<>();
+	
 	public JavaSourceCompiler(File directory, CompilationUnit compilationUnit) {
 		if (!directory.exists())
 			directory.mkdirs();
@@ -42,20 +45,17 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	
 	@Override
 	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
-		File file = new File(getDirectory(definition.pkg), definition.name + ".java");
-		if (definition.name == null || definition instanceof FunctionDefinition) {
-			SourceFile source = definition.getTag(SourceFile.class);
-			if (source != null) {
-				int slash = Math.max(source.filename.lastIndexOf('/'), source.filename.lastIndexOf('\\'));
-				String filename = source.filename.substring(slash < 0 ? 0 : slash);
-				filename = filename.substring(0, filename.lastIndexOf('.'));
-				file = new File(getDirectory(definition.pkg), filename + ".java");
-			}
-		}
+		String filename = getFilename(definition);
+		JavaSourcePrepareDefinitionVisitor prepare = new JavaSourcePrepareDefinitionVisitor(filename);
+		JavaSourceClass cls = definition.accept(prepare);
+		if (cls.empty)
+			return;
 		
+		File file = new File(getDirectory(definition.pkg), cls.name + ".java");
+		System.out.println("Compiling " + definition.name + " as " + cls.fullName);
 		JavaSourceFile sourceFile = sourceFiles.get(file);
 		if (sourceFile == null)
-			sourceFiles.put(file, sourceFile = new JavaSourceFile(this, file, definition.pkg));
+			sourceFiles.put(file, sourceFile = new JavaSourceFile(this, file, cls, definition.pkg));
 		
 		sourceFile.add(definition, module);
 	}
@@ -88,5 +88,17 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 		
 		File base = getDirectory(pkg.parent);
 		return new File(base, pkg.name.replace('.', '/'));
+	}
+	
+	private String getFilename(HighLevelDefinition definition) {
+		SourceFile source = definition.getTag(SourceFile.class);
+		if (source != null) {
+			int slash = Math.max(source.filename.lastIndexOf('/'), source.filename.lastIndexOf('\\'));
+			String filename = source.filename.substring(slash < 0 ? 0 : slash + 1);
+			filename = filename.substring(0, filename.lastIndexOf('.'));
+			return filename;
+		} else {
+			return definition.name == null ? "Expansion" : definition.name;
+		}
 	}
 }

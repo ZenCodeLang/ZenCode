@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.List;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -66,6 +67,12 @@ public class GenericTypeID implements ITypeID {
 	@Override
 	public boolean hasDefaultValue() {
 		return false;
+	}
+
+	@Override
+	public void extractTypeParameters(List<TypeParameter> typeParameters) {
+		if (!typeParameters.contains(parameter))
+			typeParameters.add(parameter);
 	}
 
 	@Override

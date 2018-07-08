@@ -47,7 +47,7 @@ public class ConcatMap<K, V> {
 	}
 	
 	public V get(K key) {
-		if (key == null)
+		if (this.key == null)
 			return null;
 		if (key.equals(this.key))
 			return value;
@@ -56,7 +56,7 @@ public class ConcatMap<K, V> {
 	}
 	
 	public V get(K key, V defaultValue) {
-		if (key == null)
+		if (this.key == null)
 			return defaultValue;
 		if (key.equals(this.key))
 			return value;

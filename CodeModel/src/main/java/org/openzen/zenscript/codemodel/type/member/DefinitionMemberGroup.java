@@ -300,48 +300,24 @@ public class DefinitionMemberGroup {
 	
 	public FunctionalMemberRef selectMethod(CodePosition position, TypeScope scope, CallArguments arguments, boolean allowNonStatic, boolean allowStatic) {
 		// try to match with exact types
-		outer: for (TypeMember<FunctionalMemberRef> method : methods) {
+		for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
 			
 			FunctionHeader header = method.member.header;
-			if (header.parameters.length != arguments.arguments.length)
-				continue;
-			if (header.getNumberOfTypeParameters() != arguments.getNumberOfTypeArguments())
-				continue;
-			
-			if (arguments.typeArguments.length > 0) {
-				header = header.fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
-			}
-			
-			for (int i = 0; i < header.parameters.length; i++) {
-				if (arguments.arguments[i].type != header.parameters[i].type)
-					continue outer;
-			}
-			
-			return method.member;
+			if (header.matchesExactly(arguments, scope))
+				return method.member;
 		}
 		
 		// try to match with approximate types
 		FunctionalMemberRef selected = null;
-		outer: for (TypeMember<FunctionalMemberRef> method : methods) {
+		for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
 			
 			FunctionHeader header = method.member.header;
-			if (header.parameters.length != arguments.arguments.length)
+			if (!header.matchesImplicitly(arguments, scope))
 				continue;
-			if (header.getNumberOfTypeParameters() != arguments.getNumberOfTypeArguments())
-				continue;
-			
-			if (arguments.typeArguments.length > 0) {
-				header = header.fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
-			}
-			
-			for (int i = 0; i < header.parameters.length; i++) {
-				if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
-					continue outer;
-			}
 			
 			if (selected != null) {
 				StringBuilder explanation = new StringBuilder();
