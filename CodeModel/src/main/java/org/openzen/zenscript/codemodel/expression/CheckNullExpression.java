@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zencode.shared.CodePosition;
 
 /**
  * Converts a value from X? to X. Throws a NullPointerException if the value is null.

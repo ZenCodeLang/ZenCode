@@ -7,14 +7,14 @@ package org.openzen.zenscript.parser.type;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *

@@ -2,6 +2,9 @@ package org.openzen.zenscript.parser.statements;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -14,9 +17,6 @@ import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 public abstract class ParsedStatement {
 	public static ParsedFunctionBody parseLambdaBody(ZSTokenParser tokens, boolean inExpression) {

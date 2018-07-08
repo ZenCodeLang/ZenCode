@@ -7,13 +7,13 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

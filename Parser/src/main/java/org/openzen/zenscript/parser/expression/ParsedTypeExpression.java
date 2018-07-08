@@ -5,11 +5,11 @@
  */
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

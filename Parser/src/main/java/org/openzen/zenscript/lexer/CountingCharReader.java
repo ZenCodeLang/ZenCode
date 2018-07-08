@@ -1,7 +1,7 @@
 package org.openzen.zenscript.lexer;
 
 import java.io.IOException;
-import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zencode.shared.CodePosition;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

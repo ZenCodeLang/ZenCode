@@ -7,9 +7,9 @@ package org.openzen.zenscript.lexer;
 
 import java.util.LinkedList;
 import java.util.Stack;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 
 /**
  *

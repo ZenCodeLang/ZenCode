@@ -7,6 +7,7 @@
 package org.openzen.zenscript.parser.expression;
 
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -17,7 +18,6 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

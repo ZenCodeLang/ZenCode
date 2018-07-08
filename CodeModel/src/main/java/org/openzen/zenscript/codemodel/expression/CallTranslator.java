@@ -5,9 +5,9 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

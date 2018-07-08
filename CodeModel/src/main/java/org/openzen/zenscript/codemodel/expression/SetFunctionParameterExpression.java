@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

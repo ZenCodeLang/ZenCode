@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 
 import org.openzen.zenscript.codemodel.PackageDefinitions;
@@ -22,7 +23,6 @@ import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
-import org.openzen.zenscript.shared.SourceFile;
 
 public class Main {
     /**

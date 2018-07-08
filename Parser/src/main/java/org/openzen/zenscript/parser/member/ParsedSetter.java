@@ -5,13 +5,13 @@
  */
 package org.openzen.zenscript.parser.member;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

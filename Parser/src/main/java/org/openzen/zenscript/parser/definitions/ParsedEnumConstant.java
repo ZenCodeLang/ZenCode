@@ -7,6 +7,7 @@ package org.openzen.zenscript.parser.definitions;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
@@ -18,7 +19,6 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.expression.ParsedCallArguments;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.expression.ParsedNewExpression;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

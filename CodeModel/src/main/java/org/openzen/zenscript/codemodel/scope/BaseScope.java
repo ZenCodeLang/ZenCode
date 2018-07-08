@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.scope;
 
 import java.util.List;
 import java.util.function.Function;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
@@ -16,7 +17,6 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

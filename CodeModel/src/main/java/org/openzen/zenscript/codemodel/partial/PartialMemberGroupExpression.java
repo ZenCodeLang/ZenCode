@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.partial;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -16,7 +17,6 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**

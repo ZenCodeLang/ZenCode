@@ -7,14 +7,14 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *

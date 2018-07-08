@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.compiler;
 
-import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zencode.shared.CodePosition;
 
 /**
  *

@@ -9,6 +9,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
@@ -16,13 +19,10 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.StatementTransformer;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *

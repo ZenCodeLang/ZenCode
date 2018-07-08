@@ -5,11 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  * Compare expression for basic types. Left and right MUST be of the same type,

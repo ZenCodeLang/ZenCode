@@ -7,6 +7,9 @@ package org.openzen.zenscript.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.Annotation;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -26,9 +29,6 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.expression.ParsedCallArguments;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *

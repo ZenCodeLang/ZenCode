@@ -7,7 +7,7 @@ package org.openzen.zenscript.parser.definitions;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.DefinitionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;

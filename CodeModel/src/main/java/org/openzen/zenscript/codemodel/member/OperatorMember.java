@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -12,7 +13,6 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

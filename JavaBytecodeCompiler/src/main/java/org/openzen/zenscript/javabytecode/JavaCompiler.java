@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -20,7 +21,6 @@ import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
-import org.openzen.zenscript.shared.SourceFile;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 
 /**
@@ -28,101 +28,6 @@ import org.openzen.zenscript.compiler.ZenCodeCompiler;
  * @author Hoofdgebruiker
  */
 public class JavaCompiler implements ZenCodeCompiler {
-	/*static {
-		JavaClassInfo jInteger = new JavaClassInfo("java/lang/Integer");
-		JavaClassInfo jLong = new JavaClassInfo("java/lang/Long");
-		JavaClassInfo jFloat = new JavaClassInfo("java/lang/Float");
-		JavaClassInfo jDouble = new JavaClassInfo("java/lang/Double");
-		
-		implement(BOOL_NOT, JavaWriter::iNot);
-		
-		implement(BYTE_NOT, JavaWriter::iNot);
-		implement(SBYTE_NOT, JavaWriter::iNot);
-		implement(SHORT_NOT, JavaWriter::iNot);
-		implement(USHORT_NOT, JavaWriter::iNot);
-		implement(INT_NOT, JavaWriter::iNot);
-		implement(UINT_NOT, JavaWriter::iNot);
-		implement(LONG_NOT, JavaWriter::lNot);
-		implement(ULONG_NOT, JavaWriter::lNot);
-		
-		implement(SBYTE_NEG, JavaWriter::iNeg);
-		implement(SHORT_NEG, JavaWriter::iNeg);
-		implement(INT_NEG, JavaWriter::iNeg);
-		implement(LONG_NEG, JavaWriter::lNeg);
-		implement(FLOAT_NEG, JavaWriter::fNeg);
-		implement(DOUBLE_NEG, JavaWriter::dNeg);
-		
-		implement(BYTE_ADD_BYTE, JavaWriter::iAdd);
-		implement(SBYTE_ADD_SBYTE, JavaWriter::iAdd);
-		implement(SHORT_ADD_SHORT, JavaWriter::iAdd);
-		implement(USHORT_ADD_USHORT, JavaWriter::iAdd);
-		implement(INT_ADD_INT, JavaWriter::iAdd);
-		implement(UINT_ADD_UINT, JavaWriter::iAdd);
-		implement(LONG_ADD_LONG, JavaWriter::lAdd);
-		implement(ULONG_ADD_ULONG, JavaWriter::lAdd);
-		implement(FLOAT_ADD_FLOAT, JavaWriter::fAdd);
-		implement(DOUBLE_ADD_DOUBLE, JavaWriter::dAdd);
-		implement(STRING_ADD_STRING, JavaWriter::stringAdd);
-		
-		implement(BYTE_SUB_BYTE, JavaWriter::iSub);
-		implement(SBYTE_SUB_SBYTE, JavaWriter::iSub);
-		implement(SHORT_SUB_SHORT, JavaWriter::iSub);
-		implement(USHORT_SUB_USHORT, JavaWriter::iSub);
-		implement(INT_SUB_INT, JavaWriter::iSub);
-		implement(UINT_SUB_UINT, JavaWriter::iSub);
-		implement(LONG_SUB_LONG, JavaWriter::lSub);
-		implement(ULONG_SUB_ULONG, JavaWriter::lSub);
-		implement(FLOAT_SUB_FLOAT, JavaWriter::fSub);
-		implement(DOUBLE_SUB_DOUBLE, JavaWriter::dSub);
-		
-		implement(BYTE_MUL_BYTE, JavaWriter::iMul);
-		implement(SBYTE_MUL_SBYTE, JavaWriter::iMul);
-		implement(SHORT_MUL_SHORT, JavaWriter::iMul);
-		implement(USHORT_MUL_USHORT, JavaWriter::iMul);
-		implement(INT_MUL_INT, JavaWriter::iMul);
-		implement(UINT_MUL_UINT, JavaWriter::iMul);
-		implement(LONG_MUL_LONG, JavaWriter::lMul);
-		implement(ULONG_MUL_ULONG, JavaWriter::lMul);
-		implement(FLOAT_MUL_FLOAT, JavaWriter::fMul);
-		implement(DOUBLE_MUL_DOUBLE, JavaWriter::dMul);
-		
-		implement(INT_DIV_INT, JavaWriter::iDiv);
-		implement(INT_MOD_INT, JavaWriter::iRem);
-		
-		implement(INT_TO_BYTE, JavaWriter::i2b);
-		implement(INT_TO_SBYTE, JavaWriter::i2b);
-		implement(INT_TO_SHORT, JavaWriter::i2s);
-		implement(INT_TO_USHORT, JavaWriter::i2s);
-		implement(INT_TO_UINT, writer -> {});
-		implement(INT_TO_LONG, JavaWriter::i2l);
-		implement(INT_TO_ULONG, JavaWriter::i2l);
-		implement(INT_TO_FLOAT, JavaWriter::i2f);
-		implement(INT_TO_DOUBLE, JavaWriter::i2d);
-		implement(INT_TO_CHAR, JavaWriter::i2s);
-		INT_TO_STRING.setTag(JavaMethodInfo.class, new JavaMethodInfo(jInteger, "toString", "(I)Ljava/lang/String;", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
-		
-		implement(LONG_TO_BYTE, writer -> { writer.l2i(); writer.i2b(); });
-		implement(LONG_TO_SBYTE, writer -> { writer.l2i(); writer.i2b(); });
-		implement(LONG_TO_SHORT, writer -> { writer.l2i(); writer.i2s(); });
-		implement(LONG_TO_USHORT, writer -> { writer.l2i(); writer.i2s(); });
-		implement(LONG_TO_INT, JavaWriter::l2i);
-		implement(LONG_TO_UINT, JavaWriter::l2i);
-		implement(LONG_TO_ULONG, writer -> {});
-		implement(LONG_TO_FLOAT, JavaWriter::l2f);
-		implement(LONG_TO_DOUBLE, JavaWriter::l2d);
-		implement(LONG_TO_CHAR, writer -> { writer.l2i(); writer.i2s(); });
-		LONG_TO_STRING.setTag(JavaMethodInfo.class, new JavaMethodInfo(jLong, "toString", "(J)Ljava/lang/String;", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
-		
-		FLOAT_BITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jFloat, "floatToRawIntBits", "(F)I", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
-		DOUBLE_BITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jDouble, "doubleToRawLongBits", "(D)J", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
-		FLOAT_FROMBITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jFloat, "intBitsToFloat", "(I)F", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
-		DOUBLE_FROMBITS.setTag(JavaMethodInfo.class, new JavaMethodInfo(jDouble, "longBitsToDouble", "(J)D", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
-	}
-	
-	private static void implement(DefinitionMember member, JavaBytecodeImplementation implementation) {
-		member.setTag(JavaBytecodeImplementation.class, implementation);
-	}*/
-	
 	private final JavaModule target;
 	private final Map<String, JavaScriptFile> scriptBlocks = new HashMap<>();
 	private final JavaClassWriter scriptsClassWriter;

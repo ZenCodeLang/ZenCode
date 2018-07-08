@@ -6,12 +6,12 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import java.util.Arrays;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *

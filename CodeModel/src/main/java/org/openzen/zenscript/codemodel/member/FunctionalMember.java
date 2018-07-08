@@ -5,13 +5,13 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

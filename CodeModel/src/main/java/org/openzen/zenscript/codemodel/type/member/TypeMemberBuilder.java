@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
@@ -70,10 +71,9 @@ import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
-import org.openzen.zenscript.shared.CodePosition;
-import static org.openzen.zenscript.shared.CodePosition.BUILTIN;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
+import static org.openzen.zencode.shared.CodePosition.BUILTIN;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 
 /**
  *

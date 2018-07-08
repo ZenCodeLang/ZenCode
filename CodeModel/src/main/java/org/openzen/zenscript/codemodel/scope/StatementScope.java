@@ -7,11 +7,11 @@ package org.openzen.zenscript.codemodel.scope;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

@@ -7,9 +7,9 @@ package org.openzen.zenscript.codemodel.definition;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

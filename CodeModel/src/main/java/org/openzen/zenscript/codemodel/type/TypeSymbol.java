@@ -5,12 +5,10 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

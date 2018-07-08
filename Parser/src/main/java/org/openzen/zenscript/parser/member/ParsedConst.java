@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.member;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ConstMember;
@@ -13,7 +14,6 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

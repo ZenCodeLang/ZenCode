@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.AndAndExpression;
@@ -81,7 +82,6 @@ import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;

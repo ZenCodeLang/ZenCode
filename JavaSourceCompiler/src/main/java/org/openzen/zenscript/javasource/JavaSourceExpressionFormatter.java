@@ -5,6 +5,9 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.AndAndExpression;
@@ -92,9 +95,6 @@ import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 import org.openzen.zenscript.javasource.tags.JavaSourceVariantOption;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
-import org.openzen.zenscript.shared.StringUtils;
 
 /**
  *
@@ -302,7 +302,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	@Override
 	public ExpressionString visitConstantChar(ConstantCharExpression expression) {
 		return new ExpressionString(
-				StringUtils.escape(Character.toString(expression.value), '\'', true),
+				StringExpansion.escape(Character.toString(expression.value), '\'', true),
 				JavaOperator.PRIMARY);
 	}
 
@@ -339,7 +339,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	@Override
 	public ExpressionString visitConstantString(ConstantStringExpression expression) {
 		return new ExpressionString(
-				StringUtils.escape(expression.value, '"', true),
+				StringExpansion.escape(expression.value, '"', true),
 				JavaOperator.CAST);
 	}
 
@@ -603,7 +603,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		//	return visitBuiltinStaticGetter(expression, expression.getter.builtin);
 		
 		return new ExpressionString(
-				scope.type(expression.type) + ".get" + StringUtils.capitalize(expression.getter.member.name) + "()", 
+				scope.type(expression.type) + ".get" + StringExpansion.capitalize(expression.getter.member.name) + "()", 
 				JavaOperator.MEMBER);
 	}
 

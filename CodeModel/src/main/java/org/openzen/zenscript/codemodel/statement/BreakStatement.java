@@ -6,9 +6,9 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import java.util.function.Consumer;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
@@ -35,11 +35,11 @@ public class BreakStatement extends Statement {
 
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return modified.containsKey(target) ? new BreakStatement(position, modified.get(target)) : this;
+		return modified.contains(target) ? new BreakStatement(position, modified.getAt(target)) : this;
 	}
 
 	@Override
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return modified.containsKey(target) ? new BreakStatement(position, modified.get(target)) :  this;
+		return modified.contains(target) ? new BreakStatement(position, modified.getAt(target)) :  this;
 	}
 }

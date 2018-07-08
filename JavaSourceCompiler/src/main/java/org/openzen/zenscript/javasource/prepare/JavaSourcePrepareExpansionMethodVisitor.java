@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource.prepare;
 
+import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.member.CallerMember;
@@ -27,7 +28,6 @@ import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
-import org.openzen.zenscript.shared.StringUtils;
 
 /**
  *
@@ -77,13 +77,13 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		visitFunctional(member, "get" + StringUtils.capitalize(member.name));
+		visitFunctional(member, "get" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		visitFunctional(member, "set" + StringUtils.capitalize(member.name));
+		visitFunctional(member, "set" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 

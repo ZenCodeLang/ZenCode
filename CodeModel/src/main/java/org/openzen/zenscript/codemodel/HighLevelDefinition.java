@@ -7,6 +7,8 @@ package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -15,8 +17,6 @@ import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.Taggable;
 
 /**
  *

@@ -3,9 +3,9 @@ package org.openzen.zenscript.lexer;
 
 import java.io.IOException;
 import java.util.Iterator;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 
 /**
  * Represents a token stream. A token stream reads characters from a reader and

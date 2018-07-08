@@ -2,6 +2,7 @@ package org.openzen.zenscript.parser.statements;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
@@ -9,7 +10,6 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.BlockScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.shared.CodePosition;
 
 public class ParsedStatementBlock extends ParsedStatement {
 	private final List<ParsedStatement> statements;

@@ -8,6 +8,9 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.Collections;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -28,9 +31,6 @@ import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *

@@ -5,12 +5,12 @@
  */
 package org.openzen.zenscript.codemodel.member.ref;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

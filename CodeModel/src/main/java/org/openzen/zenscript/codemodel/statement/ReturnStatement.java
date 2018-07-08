@@ -6,12 +6,12 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import java.util.function.Consumer;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *

@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
@@ -29,9 +32,6 @@ import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**

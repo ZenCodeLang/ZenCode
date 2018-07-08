@@ -8,14 +8,15 @@ package org.openzen.zenscript.codemodel.expression;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *
@@ -45,7 +46,7 @@ public class FunctionExpression extends Expression {
 
 	@Override
 	public FunctionExpression transform(ExpressionTransformer transformer) {
-		Statement tBody = body.transform(transformer, ConcatMap.empty());
+		Statement tBody = body.transform(transformer, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 		return tBody == body ? this : new FunctionExpression(position, (FunctionTypeID)type, closure, tBody);
 	}
 	

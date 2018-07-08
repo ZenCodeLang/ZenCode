@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
@@ -14,7 +15,6 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

@@ -5,10 +5,10 @@
  */
 package org.openzen.zenscript.parser;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.shared.CodePosition;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedAlias;

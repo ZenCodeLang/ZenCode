@@ -7,18 +7,17 @@ package org.openzen.zenscript.codemodel.expression;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
-import org.openzen.zenscript.shared.StringUtils;
+import stdlib.Strings;
 
 /**
  *
@@ -34,7 +33,7 @@ public class ExpressionBuilder {
 	}
 	
 	public Expression constructNew(String typename, Expression... arguments) {
-		List<String> nameParts = StringUtils.split(typename, '.');
+		String[] nameParts = Strings.split(typename, '.');
 		List<GenericName> name = new ArrayList<>();
 		for (String namePart : nameParts)
 			name.add(new GenericName(namePart));

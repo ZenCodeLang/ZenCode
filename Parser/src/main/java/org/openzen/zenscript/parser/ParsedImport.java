@@ -7,7 +7,7 @@ package org.openzen.zenscript.parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;

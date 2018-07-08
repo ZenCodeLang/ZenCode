@@ -8,6 +8,7 @@ package org.openzen.zenscript.javasource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
@@ -43,7 +44,6 @@ import org.openzen.zenscript.formattershared.StatementFormattingSubBlock;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
-import org.openzen.zenscript.shared.StringUtils;
 
 /**
  *
@@ -210,12 +210,12 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 
 	@Override
 	public String acceptChar(CharSwitchValue value) {
-		return StringUtils.escape(Character.toString(value.value), '\'', true);
+		return StringExpansion.escape(Character.toString(value.value), '\'', true);
 	}
 
 	@Override
 	public String acceptString(StringSwitchValue value) {
-		return StringUtils.escape(value.value, '"', true);
+		return StringExpansion.escape(value.value, '"', true);
 	}
 
 	@Override
@@ -244,7 +244,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			String name = statement.loopVariables[0].name;
 			
 			if (statement.list instanceof RangeExpression) {
-				String limitName = "limitFor" + StringUtils.capitalize(name);
+				String limitName = "limitFor" + StringExpansion.capitalize(name);
 				RangeExpression range = (RangeExpression)(statement.list);
 				target.writeLine("int " + limitName + " = " + scope.expression(target, range.to) + ";");
 				target.writeInner(

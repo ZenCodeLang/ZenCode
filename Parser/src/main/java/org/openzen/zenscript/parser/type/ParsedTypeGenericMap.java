@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -23,7 +24,6 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedGenericParameter;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

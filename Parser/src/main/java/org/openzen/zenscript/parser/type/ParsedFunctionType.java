@@ -5,11 +5,11 @@
  */
 package org.openzen.zenscript.parser.type;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

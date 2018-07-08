@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.annotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.expression.PanicExpression;
@@ -20,7 +20,6 @@ import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.IfStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

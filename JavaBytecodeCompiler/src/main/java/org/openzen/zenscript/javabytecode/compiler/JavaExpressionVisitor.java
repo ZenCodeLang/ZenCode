@@ -10,11 +10,11 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.implementations.IntRange;
 import org.openzen.zenscript.javabytecode.*;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 import java.util.Map;
 import org.objectweb.asm.Opcodes;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;

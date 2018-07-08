@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.zenscript.shared.StringUtils;
+import stdlib.Strings;
 
 /**
  *
@@ -20,7 +20,7 @@ public class WhitespaceInfo {
 			if (c == '\n')
 				numNewLines++;
 		
-		List<String> split = StringUtils.split(whitespaceBefore, '\n');
+		String[] split = Strings.split(whitespaceBefore, '\n');
 		List<String> commentsBefore = new ArrayList<>();
 		for (String splitLine : split) {
 			String trimmed = splitLine.trim();

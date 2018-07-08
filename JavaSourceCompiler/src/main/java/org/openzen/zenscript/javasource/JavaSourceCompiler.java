@@ -8,6 +8,7 @@ package org.openzen.zenscript.javasource;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -16,7 +17,6 @@ import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.javasource.prepare.JavaSourcePrepareDefinitionVisitor;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
-import org.openzen.zenscript.shared.SourceFile;
 
 /**
  *

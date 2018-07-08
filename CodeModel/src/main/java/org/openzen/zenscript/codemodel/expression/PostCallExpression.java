@@ -5,10 +5,10 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  * Used for post-increment and post-decrement.
