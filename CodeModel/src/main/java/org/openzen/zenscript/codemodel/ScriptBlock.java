@@ -6,8 +6,8 @@
 package org.openzen.zenscript.codemodel;
 
 import java.util.List;
+import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.shared.Taggable;
 
 /**
  *

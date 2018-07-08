@@ -6,6 +6,7 @@
 package org.openzen.zenscript.parser.definitions;
 
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -17,7 +18,6 @@ import org.openzen.zenscript.codemodel.scope.DefinitionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

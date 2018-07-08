@@ -5,9 +5,9 @@
  */
 package org.openzen.zenscript.javasource.prepare;
 
+import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
-import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
@@ -24,13 +24,10 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
-import org.openzen.zenscript.formattershared.ExpressionString;
-import org.openzen.zenscript.javasource.JavaOperator;
 import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
-import org.openzen.zenscript.shared.StringUtils;
 
 /**
  *
@@ -38,20 +35,30 @@ import org.openzen.zenscript.shared.StringUtils;
  */
 public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private final JavaSourceClass cls;
+	private final JavaNativeClass nativeClass;
 	
-	public JavaSourcePrepareClassMethodVisitor(JavaSourceClass cls) {
+	public JavaSourcePrepareClassMethodVisitor(JavaSourceClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
 		this.cls = cls;
+		this.nativeClass = nativeClass;
+		cls.empty = startsEmpty;
 	}
 	
 	@Override
 	public Void visitConst(ConstMember member) {
+		cls.empty = false;
 		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
 		return null;
 	}
 	
 	@Override
 	public Void visitField(FieldMember member) {
+		cls.empty = false;
 		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
+		if (member.hasAutoGetter())
+			visitGetter(member.autoGetter);
+		if (member.hasAutoSetter())
+			visitSetter(member.autoSetter);
+		
 		return null;
 	}
 
@@ -63,6 +70,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
+		cls.empty = false;
 		return null;
 	}
 
@@ -74,13 +82,13 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		visitFunctional(member, "get" + StringUtils.capitalize(member.name));
+		visitFunctional(member, "get" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		visitFunctional(member, "set" + StringUtils.capitalize(member.name));
+		visitFunctional(member, "set" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
@@ -111,21 +119,27 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
 		// TODO: implementation merge check
+		cls.empty = false;
 		return null;
 	}
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
 		// TODO
+		cls.empty = false;
 		return null;
 	}
 
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
+		cls.empty = false;
 		return null;
 	}
 	
 	private JavaSourceMethod.Kind getKind(DefinitionMember member) {
+		if (member instanceof ConstructorMember)
+			return JavaSourceMethod.Kind.CONSTRUCTOR;
+		
 		return member.isStatic() ? JavaSourceMethod.Kind.STATIC : JavaSourceMethod.Kind.INSTANCE;
 	}
 	
@@ -194,7 +208,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 			case CONTAINS:
 				return "contains";
 			case EQUALS:
-				return "equals";
+				return "equals_";
 			case COMPARE:
 				return "compareTo";
 			case RANGE:
@@ -214,74 +228,15 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 	
 	private void visitFunctional(DefinitionMember member, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
-		if (nativeTag == null) {
-			member.setTag(
-					JavaSourceMethod.class,
-					new JavaSourceMethod(cls, getKind(member), name));
-		} else {
-			member.setTag(JavaSourceMethod.class, getNative(nativeTag.value));
-		}
-	}
-	
-	private JavaSourceMethod getNative(String name) {
-		if (cls.fullName.equals("java.lang.StringBuilder"))
-			return getStringBuilderNative(name);
-		else if (cls.fullName.equals("java.util.List"))
-			return getListNative(name);
+		JavaSourceMethod method = null;
+		if (nativeTag != null && nativeClass != null)
+			method = nativeClass.getMethod(nativeTag.value);
+		if (method == null)
+			method = new JavaSourceMethod(cls, getKind(member), name, true);
 		
-		throw new UnsupportedOperationException("Unknown native class: " + cls.fullName);
-	}
-	
-	private JavaSourceMethod getListNative(String name) {
-		switch (name) {
-			case "constructor":
-				return new JavaSourceMethod((formatter, call) -> new ExpressionString("new ArrayList<>()", JavaOperator.NEW));
-			case "add":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "add");
-			case "getIndex":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "get");
-			case "setIndex":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "set");
-			case "toArray":
-				return new JavaSourceMethod((formatter, calle)
-						-> formatter.listToArray((CastExpression)calle));
-			case "length":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "size");
-			case "isEmpty":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "isEmpty");
-			default:
-				throw new UnsupportedOperationException("Unknown native method: " + name);
-		}
-	}
-	
-	private JavaSourceMethod getStringBuilderNative(String name) {
-		switch (name) {
-			case "constructor":
-			case "constructorWithCapacity":
-			case "constructorWithValue":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "");
-			case "isEmpty":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "isEmpty");
-			case "length":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "length");
-			case "appendBool":
-			case "appendByte":
-			case "appendSByte":
-			case "appendShort":
-			case "appendUShort":
-			case "appendInt":
-			case "appendUInt":
-			case "appendLong":
-			case "appendULong":
-			case "appendFloat":
-			case "appendDouble":
-			case "appendChar":
-			case "appendString":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "append");
-			case "asString":
-				return new JavaSourceMethod(cls, JavaSourceMethod.Kind.INSTANCE, "toString");
-			default:
-				throw new UnsupportedOperationException("Unknown native method: " + name);
-		}
+		if (method.compile)
+			cls.empty = false;
+		
+		member.setTag(JavaSourceMethod.class, method);
 	}
 }

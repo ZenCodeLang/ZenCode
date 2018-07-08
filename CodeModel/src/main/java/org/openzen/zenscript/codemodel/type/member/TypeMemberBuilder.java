@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
@@ -70,10 +71,9 @@ import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
-import org.openzen.zenscript.shared.CodePosition;
-import static org.openzen.zenscript.shared.CodePosition.BUILTIN;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
+import static org.openzen.zencode.shared.CodePosition.BUILTIN;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 
 /**
  *
@@ -355,6 +355,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		method(builtin, "getOptional", getOptionalHeader, GENERICMAP_GETOPTIONAL);
 		method(builtin, "put", putHeader, GENERICMAP_PUT);
 		method(builtin, "contains", containsHeader, GENERICMAP_CONTAINS);
+		method(builtin, "addAll", new FunctionHeader(VOID, map), GENERICMAP_ADDALL);
 		
 		getter(builtin, GENERICMAP_SIZE, "size", INT);
 		getter(builtin, GENERICMAP_ISEMPTY, "isEmpty", BOOL);
@@ -535,6 +536,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	public Void visitOptional(OptionalTypeID optional) {
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "optional", Modifiers.EXPORT, null);
 		optional.baseType.accept(this);
+		operator(builtin, OperatorType.EQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NULL);
+		operator(builtin, OperatorType.NOTEQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NOT_NULL);
 		processType(builtin, optional);
 		return null;
 	}

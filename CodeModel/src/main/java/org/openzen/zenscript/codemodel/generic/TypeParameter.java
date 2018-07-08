@@ -8,10 +8,10 @@ package org.openzen.zenscript.codemodel.generic;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

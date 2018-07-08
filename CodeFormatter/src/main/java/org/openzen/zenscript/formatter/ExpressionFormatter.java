@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.formatter;
 
+import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.AndAndExpression;
@@ -75,7 +76,6 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpressio
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
-import org.openzen.zenscript.shared.StringUtils;
 
 /**
  *
@@ -348,7 +348,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitConstantChar(ConstantCharExpression expression) {
 		return new ExpressionString(
-				StringUtils.escape(Character.toString(expression.value), '\'', true),
+				StringExpansion.escape(Character.toString(expression.value), '\'', true),
 				ZenScriptOperator.PRIMARY);
 	}
 
@@ -384,7 +384,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitConstantString(ConstantStringExpression expression) {
-		return new ExpressionString(StringUtils.escape(
+		return new ExpressionString(StringExpansion.escape(
 				expression.value,
 				settings.useSingleQuotesForStrings ? '\'' : '"',
 				true), ZenScriptOperator.CAST);

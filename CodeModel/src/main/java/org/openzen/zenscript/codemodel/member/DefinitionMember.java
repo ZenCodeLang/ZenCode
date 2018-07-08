@@ -5,11 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.Taggable;
 
 /**
  *

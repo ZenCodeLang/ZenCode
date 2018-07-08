@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.List;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -60,6 +61,12 @@ public class GenericMapTypeID implements ITypeID {
 	@Override
 	public boolean isObjectType() {
 		return true;
+	}
+
+	@Override
+	public void extractTypeParameters(List<TypeParameter> typeParameters) {
+		value.extractTypeParameters(typeParameters);
+		typeParameters.remove(key);
 	}
 	
 	@Override

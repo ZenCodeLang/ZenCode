@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.member.ref;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
@@ -20,7 +21,6 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
@@ -69,6 +69,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 		return target.getKind() == FunctionalKind.OPERATOR;
 	}
 	
+	// TODO: shouldn't this be a call operator?
 	public boolean isCaller() {
 		return target.getKind() == FunctionalKind.CALLER;
 	}

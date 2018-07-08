@@ -13,6 +13,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -25,9 +29,6 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.lexer.ZSToken;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.FileScope;
@@ -35,7 +36,6 @@ import org.openzen.zenscript.codemodel.scope.GlobalScriptScope;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
-import org.openzen.zenscript.shared.SourceFile;
 
 /**
  *

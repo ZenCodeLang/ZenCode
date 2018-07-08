@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.zenscript.shared.StringUtils;
+import stdlib.Strings;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.openzen.zenscript.shared.StringUtils;
 public class WhitespacePostComment {
 	public static WhitespacePostComment fromWhitespace(String whitespace) {
 		List<String> comments = new ArrayList<>();
-		for (String line : StringUtils.split(whitespace, '\n')) {
+		for (String line : Strings.split(whitespace, '\n')) {
 			line = line.trim();
 			if (line.isEmpty())
 				continue;

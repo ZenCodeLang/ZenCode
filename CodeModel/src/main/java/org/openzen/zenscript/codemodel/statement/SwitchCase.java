@@ -7,9 +7,9 @@ package org.openzen.zenscript.codemodel.statement;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
-import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *

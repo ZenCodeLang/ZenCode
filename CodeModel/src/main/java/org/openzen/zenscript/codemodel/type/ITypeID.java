@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -63,6 +64,8 @@ public interface ITypeID {
 	public default boolean inferTypeParameters(LocalMemberCache cache, ITypeID targetType, Map<TypeParameter, ITypeID> mapping) {
 		return accept(new MatchingTypeVisitor(cache, targetType, mapping));
 	}
+	
+	public void extractTypeParameters(List<TypeParameter> typeParameters);
 	
 	public static class MatchingTypeVisitor implements ITypeVisitor<Boolean> {
 		private final ITypeID type;

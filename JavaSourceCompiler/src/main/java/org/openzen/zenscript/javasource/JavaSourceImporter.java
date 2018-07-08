@@ -11,64 +11,46 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSourceImporter {
-	private final ZSPackage pkg;
-	private final Map<String, Import> imports = new HashMap<>();
-	private final Set<Import> usedImports = new HashSet<>();
+	private final JavaSourceClass cls;
+	private final Map<String, JavaSourceClass> imports = new HashMap<>();
+	private final Set<JavaSourceClass> usedImports = new HashSet<>();
 	
-	public JavaSourceImporter(ZSPackage pkg) {
-		this.pkg = pkg;
-		
-		imports.put("IllegalArgumentException", new Import("IllegalArgumentException", "stdlib.IllegalArgumentException", "java.lang.IllegalArgumentException"));
-		imports.put("StringBuilder", new Import("StringBuilder", "stdlib.StringBuilder", "java.lang.StringBuilder"));
+	public JavaSourceImporter(JavaSourceClass cls) {
+		this.cls = cls;
 	}
 	
 	public String importType(HighLevelDefinition definition) {
-		if (definition.pkg == pkg)
-			return definition.name;
+		JavaSourceClass cls = definition.getTag(JavaSourceClass.class);
+		if (cls == null)
+			throw new IllegalStateException("Missing source class tag on " + definition.name);
+		if (cls.pkg.equals(this.cls.pkg))
+			return cls.name;
 		
-		return importType(definition.pkg.fullName + "." + definition.name);
+		return importType(cls);
 	}
 	
-	public String importType(String fullName) {
-		String name = fullName.substring(fullName.lastIndexOf('.') + 1);
-		if (imports.containsKey(name)) {
-			Import imported = imports.get(name);
+	public String importType(JavaSourceClass cls) {
+		if (imports.containsKey(cls.name)) {
+			JavaSourceClass imported = imports.get(cls.name);
 			usedImports.add(imported);
-			return imported.originalName.equals(fullName) ? name : fullName;
+			return imported.fullName.equals(cls.fullName) ? cls.name : cls.fullName;
 		}
 		
-		Import imported = new Import(name, fullName, fullName);
-		imports.put(name, imported);
-		return name;
+		imports.put(cls.name, cls);
+		usedImports.add(cls);
+		return cls.name;
 	}
 	
-	public Import[] getUsedImports() {
-		Import[] imports = usedImports.toArray(new Import[usedImports.size()]);
+	public JavaSourceClass[] getUsedImports() {
+		JavaSourceClass[] imports = usedImports.toArray(new JavaSourceClass[usedImports.size()]);
 		Arrays.sort(imports);
 		return imports;
-	}
-	
-	public static class Import implements Comparable<Import> {
-		public final String name;
-		public final String originalName;
-		public final String actualName;
-		
-		public Import(String name, String originalName, String actualName) {
-			this.name = name;
-			this.originalName = originalName;
-			this.actualName = actualName;
-		}
-
-		@Override
-		public int compareTo(Import o) {
-			return actualName.compareTo(o.actualName);
-		}
 	}
 }

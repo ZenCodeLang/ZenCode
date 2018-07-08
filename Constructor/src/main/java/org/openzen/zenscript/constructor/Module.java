@@ -16,6 +16,7 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
@@ -24,7 +25,6 @@ import org.openzen.zenscript.constructor.module.ModuleSpace;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.parser.ParsedFile;
-import org.openzen.zenscript.shared.CompileException;
 
 /**
  *

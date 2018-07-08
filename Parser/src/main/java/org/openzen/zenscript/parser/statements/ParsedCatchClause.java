@@ -7,6 +7,7 @@ package org.openzen.zenscript.parser.statements;
 
 import java.util.List;
 import java.util.function.Function;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -20,7 +21,6 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

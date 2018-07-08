@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.validator;
 
-import org.openzen.zenscript.shared.CodePosition;
+import org.openzen.zencode.shared.CodePosition;
 
 /**
  *
@@ -63,6 +63,9 @@ public class ValidationLogEntry {
 		SETTING_FINAL_VARIABLE,
 		INVALID_SUPERTYPE,
 		MULTIPLE_DESTRUCTORS,
-		PANIC_ARGUMENT_NO_STRING
+		PANIC_ARGUMENT_NO_STRING,
+		THROW_WITHOUT_THROWS,
+		DESTRUCTOR_CANNOT_THROW,
+		STATIC_INITIALIZER_CANNOT_THROW
 	}
 }

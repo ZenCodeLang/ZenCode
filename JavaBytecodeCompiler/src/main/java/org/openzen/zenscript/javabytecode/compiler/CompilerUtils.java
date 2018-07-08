@@ -2,11 +2,11 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
@@ -19,7 +19,6 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javabytecode.JavaParameterInfo;
-import org.openzen.zenscript.shared.CodePosition;
 
 public class CompilerUtils {
     public static String calcDesc(FunctionHeader header, boolean isEnum) {

@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
@@ -12,7 +13,6 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValueVisitor;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
-import org.openzen.zenscript.shared.StringUtils;
 
 /**
  *
@@ -32,12 +32,12 @@ public class JavaSwitchValueCompiler implements SwitchValueVisitor<String> {
 
 	@Override
 	public String acceptChar(CharSwitchValue value) {
-		return StringUtils.escape(Character.toString(value.value), '\'', true);
+		return StringExpansion.escape(Character.toString(value.value), '\'', true);
 	}
 
 	@Override
 	public String acceptString(StringSwitchValue value) {
-		return StringUtils.escape(value.value, '"', true);
+		return StringExpansion.escape(value.value, '"', true);
 	}
 
 	@Override

@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.definition;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
@@ -14,7 +15,6 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
@@ -22,7 +22,7 @@ import org.openzen.zenscript.shared.CodePosition;
  */
 public class CustomIteratorMember extends DefinitionMember implements IIteratorMember {
 	private final ITypeID[] iteratorTypes;
-	private Statement content;
+	public Statement body;
 	
 	public CustomIteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID[] iteratorTypes) {
 		super(position, definition, modifiers);
@@ -30,8 +30,8 @@ public class CustomIteratorMember extends DefinitionMember implements IIteratorM
 		this.iteratorTypes = iteratorTypes;
 	}
 	
-	public void setContent(Statement content) {
-		this.content = content;
+	public void setContent(Statement body) {
+		this.body = body;
 	}
 
 	@Override

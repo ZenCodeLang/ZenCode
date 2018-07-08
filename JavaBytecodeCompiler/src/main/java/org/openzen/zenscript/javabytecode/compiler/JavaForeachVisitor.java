@@ -87,4 +87,14 @@ public class JavaForeachVisitor implements ForeachIteratorVisitor<Void> {
     public Void visitCustomIterator() {
         return null;
     }
+
+	@Override
+	public Void visitAssocKeyIterator() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Void visitAssocKeyValueIterator() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 }

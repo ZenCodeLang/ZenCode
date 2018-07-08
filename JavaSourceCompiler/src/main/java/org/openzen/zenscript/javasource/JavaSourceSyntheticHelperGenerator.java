@@ -39,7 +39,7 @@ public class JavaSourceSyntheticHelperGenerator {
 	private final File directory;
 	private final JavaSourceFormattingSettings settings;
 	private final Map<String, List<String>> members = new HashMap<>();
-	private final JavaSourceClass arrayHelpers = new JavaSourceClass("ArrayHelpers", "zsynthetic.ArrayHelpers");
+	private final JavaSourceClass arrayHelpers = new JavaSourceClass("zsynthetic", "ArrayHelpers");
 	private final Map<ArrayKind, JavaSourceMethod> existingContains = new HashMap<>();
 	private final Map<ArrayKind, JavaSourceMethod> existingIndexOf = new HashMap<>();
 	
@@ -56,7 +56,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		String method = generateContains(kind);
 		addMember(arrayHelpers, method);
 		
-		JavaSourceMethod sourceMethod = new JavaSourceMethod(arrayHelpers, JavaSourceMethod.Kind.EXPANSION, kind.containsName);
+		JavaSourceMethod sourceMethod = new JavaSourceMethod(arrayHelpers, JavaSourceMethod.Kind.EXPANSION, kind.containsName, false);
 		existingContains.put(kind, sourceMethod);
 		return sourceMethod;
 	}
@@ -69,7 +69,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		String method = generateContains(kind);
 		addMember(arrayHelpers, method);
 		
-		JavaSourceMethod sourceMethod = new JavaSourceMethod(arrayHelpers, JavaSourceMethod.Kind.EXPANSION, kind.containsName);
+		JavaSourceMethod sourceMethod = new JavaSourceMethod(arrayHelpers, JavaSourceMethod.Kind.EXPANSION, kind.containsName, false);
 		existingContains.put(kind, sourceMethod);
 		return sourceMethod;
 	}

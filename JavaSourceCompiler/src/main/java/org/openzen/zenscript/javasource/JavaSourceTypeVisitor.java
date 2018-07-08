@@ -21,19 +21,30 @@ import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParameterBoundVisitor<String> {
+	private static final JavaSourceClass MAP = new JavaSourceClass("java.util", "Map");
+	private static final JavaSourceClass HASHMAP = new JavaSourceClass("java.util", "HashMap");
+	private static final JavaSourceClass ITERATOR = new JavaSourceClass("java.util", "Iterator");
+	
 	public final JavaSourceImporter importer;
 	public final JavaSourceSyntheticTypeGenerator typeGenerator;
 	public final JavaSourceObjectTypeVisitor objectTypeVisitor;
+	public final JavaSourceClass cls;
 	
 	public JavaSourceTypeVisitor(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator) {
+		this(importer, typeGenerator, null);
+	}
+	
+	public JavaSourceTypeVisitor(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator, JavaSourceClass cls) {
 		this.importer = importer;
 		this.typeGenerator = typeGenerator;
+		this.cls = cls;
 		
 		if (this instanceof JavaSourceObjectTypeVisitor) {
 			objectTypeVisitor = (JavaSourceObjectTypeVisitor)this;
@@ -77,30 +88,45 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 
 	@Override
 	public String visitAssoc(AssocTypeID assoc) {
-		String map = importer.importType("java.util.Map");
+		String map = importer.importType(MAP);
 		return map + "<" + assoc.keyType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator)) + ", " + assoc.valueType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator)) + ">";
 	}
 
 	@Override
 	public String visitGenericMap(GenericMapTypeID map) {
-		String javaMap = importer.importType("java.util.Map");
-		return javaMap + "<Class<?>, Object>";
+		return importer.importType(MAP) + "<Class<?>, Object>";
 	}
 
 	@Override
 	public String visitIterator(IteratorTypeID iterator) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		if (iterator.iteratorTypes.length == 1) {
+			return importer.importType(ITERATOR) + "<" + iterator.iteratorTypes[0].accept(objectTypeVisitor) + '>';
+		} else {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
 	}
 
 	@Override
 	public String visitFunction(FunctionTypeID function) {
-		JavaSourceClass synthetic = typeGenerator.createFunction(function);
-		return importer.importType(synthetic.fullName);
+		JavaSynthesizedClass synthetic = typeGenerator.createFunction(this, function);
+		StringBuilder result = new StringBuilder();
+		result.append(importer.importType(synthetic.cls));
+		if (synthetic.typeParameters.length > 0) {
+			result.append('<');
+			for (int i = 0; i < synthetic.typeParameters.length; i++) {
+				if (i > 0)
+					result.append(", ");
+				
+				result.append(synthetic.typeParameters[i].name);
+			}
+			result.append('>');
+		}
+		return result.toString();
 	}
 
 	@Override
 	public String visitDefinition(DefinitionTypeID definition) {
-		String javaType = importer.importType(definition.definition);
+		String javaType = cls == null ? importer.importType(definition.definition) : importer.importType(cls);
 		StringBuilder result = new StringBuilder(javaType);
 		if (definition.typeParameters != null && definition.typeParameters.length > 0) {
 			result.append("<");

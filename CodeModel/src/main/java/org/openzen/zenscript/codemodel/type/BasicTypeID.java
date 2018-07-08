@@ -86,4 +86,9 @@ public enum BasicTypeID implements ITypeID {
 	public boolean hasDefaultValue() {
 		return true;
 	}
+
+	@Override
+	public void extractTypeParameters(List<TypeParameter> typeParameters) {
+		
+	}
 }

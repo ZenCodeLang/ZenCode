@@ -6,6 +6,7 @@
 
 package org.openzen.zenscript.parser.definitions;
 
+import org.openzen.zencode.shared.CodePosition;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
@@ -17,7 +18,6 @@ import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

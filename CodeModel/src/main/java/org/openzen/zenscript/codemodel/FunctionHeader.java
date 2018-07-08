@@ -29,6 +29,9 @@ public class FunctionHeader {
 	public final FunctionParameter[] parameters;
 	public final ITypeID thrownType;
 	
+	public final int minParameters;
+	public final int maxParameters;
+	
 	public FunctionHeader(ITypeID returnType) {
 		if (returnType == null)
 			throw new NullPointerException();
@@ -37,6 +40,9 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = NO_PARAMETERS;
 		this.thrownType = null;
+		
+		minParameters = 0;
+		maxParameters = 0;
 	}
 	
 	public FunctionHeader(ITypeID returnType, ITypeID... parameterTypes) {
@@ -50,6 +56,9 @@ public class FunctionHeader {
 		
 		for (int i = 0; i < parameterTypes.length; i++)
 			parameters[i] = new FunctionParameter(parameterTypes[i], null);
+		
+		minParameters = parameterTypes.length;
+		maxParameters = parameterTypes.length;
 	}
 	
 	public FunctionHeader(ITypeID returnType, FunctionParameter... parameters) {
@@ -60,6 +69,9 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.thrownType = null;
+		
+		minParameters = getMinParameters(parameters);
+		maxParameters = getMaxParameters(parameters);
 	}
 	
 	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, ITypeID thrownType, FunctionParameter... parameters) {
@@ -70,10 +82,39 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.thrownType = thrownType;
+		
+		minParameters = getMinParameters(parameters);
+		maxParameters = getMaxParameters(parameters);
 	}
 	
 	public int getNumberOfTypeParameters() {
 		return typeParameters == null ? 0 : typeParameters.length;
+	}
+	
+	public boolean matchesExactly(CallArguments arguments, TypeScope scope) {
+		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
+			return false;
+		
+		FunctionHeader header = fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		for (int i = 0; i < header.parameters.length; i++) {
+			if (arguments.arguments[i].type != header.parameters[i].type)
+				return false;
+		}
+		
+		return true;
+	}
+	
+	public boolean matchesImplicitly(CallArguments arguments, TypeScope scope) {
+		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
+			return false;
+		
+		FunctionHeader header = fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		for (int i = 0; i < header.parameters.length; i++) {
+			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
+				return false;
+		}
+		
+		return true;
 	}
 	
 	public String getCanonical() {
@@ -303,5 +344,20 @@ public class FunctionHeader {
 		}
 		result.append(")");
 		return result.toString();
+	}
+
+	private static int getMinParameters(FunctionParameter[] parameters) {
+		for (int i = 0; i < parameters.length; i++)
+			if (parameters[i].defaultValue != null || parameters[i].variadic)
+				return i;
+		
+		return parameters.length;
+	}
+	
+	private static int getMaxParameters(FunctionParameter[] parameters) {
+		if (parameters.length == 0)
+			return 0;
+		
+		return parameters[parameters.length - 1].variadic ? Integer.MAX_VALUE : parameters.length;
 	}
 }

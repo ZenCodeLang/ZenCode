@@ -5,11 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *
@@ -30,5 +30,5 @@ public interface IDefinitionMember {
 	
 	public <T> void setTag(Class<T> tag, T value);
 
-	boolean hasTag(Class<?> tag);
+	<T> boolean hasTag(Class<T> tag);
 }

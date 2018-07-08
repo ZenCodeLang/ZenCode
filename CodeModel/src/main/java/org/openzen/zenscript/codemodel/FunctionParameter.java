@@ -7,9 +7,9 @@ package org.openzen.zenscript.codemodel;
 
 import org.openzen.zenscript.codemodel.annotations.Annotation;
 import java.util.Objects;
+import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.shared.Taggable;
 
 /**
  *

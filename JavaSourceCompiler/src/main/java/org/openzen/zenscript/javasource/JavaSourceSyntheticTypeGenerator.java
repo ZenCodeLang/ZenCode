@@ -12,11 +12,14 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 
 /**
@@ -24,7 +27,7 @@ import org.openzen.zenscript.javasource.tags.JavaSourceClass;
  * @author Hoofdgebruiker
  */
 public class JavaSourceSyntheticTypeGenerator {
-	private final Map<FunctionTypeID, JavaSourceClass> functions = new HashMap<>();
+	private final Map<FunctionTypeID, JavaSynthesizedClass> functions = new HashMap<>();
 	private final File directory;
 	private final JavaSourceFormattingSettings settings;
 	
@@ -33,21 +36,23 @@ public class JavaSourceSyntheticTypeGenerator {
 		this.settings = settings;
 	}
 	
-	public JavaSourceClass createFunction(FunctionTypeID function) {
+	public JavaSynthesizedClass createFunction(JavaSourceTypeVisitor typeFormatter, FunctionTypeID function) {
 		if (functions.containsKey(function))
 			return functions.get(function);
 		
 		String className = createFunctionClassName(function);
-		JavaSourceClass result = new JavaSourceClass(className, "zsynthetic." + className);
+		JavaSourceClass cls = new JavaSourceClass("zsynthetic", className);
+		JavaSynthesizedClass result = new JavaSynthesizedClass(cls, extractTypeParameters(function));
 		functions.put(function, result);
 		
-		JavaSourceImporter importer = new JavaSourceImporter(new ZSPackage(null, "zsynthetic"));
+		JavaSourceImporter importer = new JavaSourceImporter(cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, this);
 		
 		StringBuilder contents = new StringBuilder();
 		contents.append("@FunctionalInterface\n");
 		contents.append("public interface ");
 		contents.append(className);
+		JavaSourceUtils.formatTypeParameters(typeFormatter, contents, result.typeParameters);
 		contents.append(" {\n");
 		contents.append(settings.indent);
 		if (function.header.getNumberOfTypeParameters() > 0) {
@@ -83,14 +88,14 @@ public class JavaSourceSyntheticTypeGenerator {
 		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
 			writer.write("package zsynthetic;\n");
 			
-			JavaSourceImporter.Import[] imports = importer.getUsedImports();
+			JavaSourceClass[] imports = importer.getUsedImports();
 			if (imports.length > 0) {
-				for (JavaSourceImporter.Import import_ : imports) {
-					if (import_.actualName.startsWith("java.lang."))
+				for (JavaSourceClass import_ : imports) {
+					if (import_.pkg.equals("java.lang"))
 						continue;
 					
 					writer.write("import ");
-					writer.write(import_.actualName);
+					writer.write(import_.fullName);
 					writer.write(";\n");
 				}
 
@@ -110,5 +115,11 @@ public class JavaSourceSyntheticTypeGenerator {
 		className.append("Function");
 		className.append(functions.size() + 1); // TODO: create more meaningful names
 		return className.toString();
+	}
+	
+	private TypeParameter[] extractTypeParameters(ITypeID type) {
+		List<TypeParameter> result = new ArrayList<>();
+		type.extractTypeParameters(result);
+		return result.toArray(new TypeParameter[result.size()]);
 	}
 }

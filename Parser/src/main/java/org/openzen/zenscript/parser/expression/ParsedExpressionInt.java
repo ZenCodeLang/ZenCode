@@ -5,6 +5,9 @@
  */
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
@@ -15,16 +18,11 @@ import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *

@@ -8,10 +8,10 @@ package org.openzen.zenscript.codemodel.statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.ConcatMap;
 
 /**
  *

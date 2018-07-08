@@ -10,6 +10,11 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zencode.shared.StringExpansion;
+import static org.openzen.zencode.shared.StringExpansion.unescape;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.CompareType;
@@ -27,10 +32,6 @@ import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
-import static org.openzen.zenscript.shared.StringUtils.unescape;
 
 /**
  *
@@ -378,7 +379,8 @@ public abstract class ParsedExpression {
 						indexString2 = parser.optional(T_STRING_DQ);
 					
 					if (indexString2 != null) {
-						base = new ParsedExpressionMember(position, base, unescape(indexString2.content), Collections.emptyList());
+						// TODO: handle this properly
+						base = new ParsedExpressionMember(position, base, unescape(indexString2.content).orElse("INVALID STRING"), Collections.emptyList());
 					} else {
 						ZSToken last = parser.next();
 						throw new ParseException(parser.getPosition(), "Invalid expression, last token: " + last.content);
@@ -427,7 +429,10 @@ public abstract class ParsedExpression {
 			case T_STRING_DQ:
 				return new ParsedExpressionString(
 						position,
-						unescape(parser.next().content));
+						StringExpansion.unescape(parser.next().content).orElse(error -> {
+							
+							return "INVALID_STRING";
+						}));
 			case T_IDENTIFIER: {
 				String name = parser.next().content;
 				List<IParsedType> genericParameters = IParsedType.parseGenericParameters(parser);

@@ -9,12 +9,20 @@ package org.openzen.zenscript.javasource.tags;
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceClass {
+public class JavaSourceClass implements Comparable<JavaSourceClass> {
+	public final String pkg;
 	public final String name;
 	public final String fullName;
+	public boolean empty = false;
 	
-	public JavaSourceClass(String name, String fullName) {
+	public JavaSourceClass(String pkg, String name) {
+		this.pkg = pkg;
 		this.name = name;
-		this.fullName = fullName;
+		this.fullName = pkg + '.' + name;
+	}
+
+	@Override
+	public int compareTo(JavaSourceClass o) {
+		return fullName.compareTo(o.fullName);
 	}
 }

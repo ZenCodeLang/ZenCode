@@ -205,13 +205,30 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 		if (!lineAfter.isEmpty())
 			output.append('\n').append(indent).append(lineAfter);
 	}
+	
+	@Override
+	public void writeInner(String lineBefore, String[] inlineContents, Statement contents, LoopStatement loop, String lineAfter) {
+		output.append('\n').append(indent).append(lineBefore);
+		StatementFormatter innerFormatter = new StatementFormatter(output, settings, formatter.forLoop(loop), indent + settings.indent, loop == null ? innerLoop : loop);
+		for (String inline : inlineContents)
+			output.append('\n').append(indent).append(settings.indent).append(inline);
+		if (contents instanceof BlockStatement) {
+			for (Statement statement : ((BlockStatement) contents).statements)
+				statement.accept(innerFormatter);
+		} else {
+			contents.accept(innerFormatter);
+		}
+		
+		if (!lineAfter.isEmpty())
+			output.append('\n').append(indent).append(lineAfter);
+	}
 
 	@Override
 	public void writeInnerMulti(String lineBefore, List<StatementFormattingSubBlock> contents, LoopStatement loop, String lineAfter) {
 		output.append('\n').append(indent).append(lineBefore);
 		
 		String newIndent = indent + settings.indent + settings.indent;
-		StatementFormatter inner = new StatementFormatter(output, settings, formatter, newIndent, innerLoop);
+		StatementFormatter inner = new StatementFormatter(output, settings, formatter.forLoop(loop), newIndent, innerLoop);
 		
 		for (StatementFormattingSubBlock subBlock : contents) {
 			output.append('\n').append(indent).append(settings.indent).append(subBlock.header);
@@ -278,6 +295,8 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 	}
 	
 	public interface Formatter {
+		public Formatter forLoop(LoopStatement statement);
+		
 		public void formatBlock(StatementFormattingTarget target, BlockStatement statement);
 	
 		public void formatBreak(StatementFormattingTarget target, BreakStatement statement);

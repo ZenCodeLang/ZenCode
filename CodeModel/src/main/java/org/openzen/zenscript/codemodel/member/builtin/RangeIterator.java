@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.member.builtin;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
 import org.openzen.zenscript.codemodel.member.IIteratorMember;
@@ -16,8 +18,6 @@ import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.shared.CodePosition;
-import org.openzen.zenscript.shared.Taggable;
 
 /**
  *

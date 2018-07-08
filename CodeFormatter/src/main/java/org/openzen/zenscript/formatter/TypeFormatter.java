@@ -23,7 +23,7 @@ import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.shared.StringUtils;
+import stdlib.Chars;
 
 /**
  *
@@ -49,7 +49,7 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 		if (array.dimension == 1) {
 			return element + "[]";
 		} else {
-			return element + "[" + StringUtils.times(',', array.dimension - 1) + "]";
+			return element + "[" + Chars.times(',', array.dimension - 1) + "]";
 		}
 	}
 

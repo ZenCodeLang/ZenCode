@@ -5,9 +5,9 @@
  */
 package org.openzen.zenscript.codemodel.type.member;
 
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 /**
  *

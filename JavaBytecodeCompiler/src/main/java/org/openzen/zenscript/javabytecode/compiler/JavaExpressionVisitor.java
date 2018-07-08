@@ -13,10 +13,19 @@ import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.implementations.IntRange;
 import org.openzen.zenscript.javabytecode.*;
-import org.openzen.zenscript.shared.CompileException;
-import org.openzen.zenscript.shared.CompileExceptionCode;
 
 import java.util.*;
+import java.util.Map;
+import org.objectweb.asm.Opcodes;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.AssocTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final int PUBLIC = Opcodes.ACC_PUBLIC;

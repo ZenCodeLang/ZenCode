@@ -74,12 +74,12 @@ public class JavaSourceStatementScope {
 		return fileScope.type(type);
 	}
 	
-	public String type(JavaSourceClass cls) {
-		return fileScope.importer.importType(cls.fullName);
+	public String type(ITypeID type, JavaSourceClass renamed) {
+		return fileScope.type(type, renamed);
 	}
 	
-	public String sourceClass(JavaSourceClass cls) {
-		return fileScope.importer.importType(cls.fullName);
+	public String type(JavaSourceClass cls) {
+		return fileScope.importer.importType(cls);
 	}
 	
 	public void addLocalVariable(String localVariable) {

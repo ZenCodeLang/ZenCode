@@ -5,9 +5,9 @@
  */
 package org.openzen.zenscript.codemodel.member.ref;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.shared.CodePosition;
 
 /**
  *

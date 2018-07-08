@@ -10,7 +10,7 @@ import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
  *
@@ -19,11 +19,11 @@ import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 public class JavaSourceUtils {
 	private JavaSourceUtils() {}
 	
-	public static void formatTypeParameters(JavaSourceFileScope scope, StringBuilder output, TypeParameter[] parameters) {
+	public static void formatTypeParameters(JavaSourceTypeVisitor typeFormatter, StringBuilder output, TypeParameter[] parameters) {
 		if (parameters == null || parameters.length == 0)
 			return;
 		
-		TypeParameterBoundVisitor boundVisitor = new TypeParameterBoundVisitor(scope, output);
+		TypeParameterBoundVisitor boundVisitor = new TypeParameterBoundVisitor(typeFormatter, output);
 		output.append("<");
 		for (int i = 0; i < parameters.length; i++) {
 			if (i > 0)
@@ -40,24 +40,66 @@ public class JavaSourceUtils {
 		output.append("> ");
 	}
 	
+	public static void formatTypeParameters(JavaSourceTypeVisitor typeFormatter, StringBuilder output, TypeParameter[] expansion, TypeParameter[] parameters) {
+		if (((parameters == null ? 0 : parameters.length) + (expansion == null ? 0 : expansion.length)) == 0)
+			return;
+		
+		TypeParameterBoundVisitor boundVisitor = new TypeParameterBoundVisitor(typeFormatter, output);
+		output.append("<");
+		boolean first = true;
+		if (parameters != null) {
+			for (int i = 0; i < parameters.length; i++) {
+				if (first)
+					first = false;
+				else
+					output.append(", ");
+
+				TypeParameter typeParameter = parameters[i];
+				output.append(typeParameter.name);
+
+				if (typeParameter.bounds.size() > 0) {
+					for (GenericParameterBound bound : typeParameter.bounds)
+						bound.accept(boundVisitor);
+				}
+			}
+		}
+		if (expansion != null) {
+			for (int i = 0; i < expansion.length; i++) {
+				if (first)
+					first = false;
+				else
+					output.append(", ");
+
+				TypeParameter typeParameter = expansion[i];
+				output.append(typeParameter.name);
+
+				if (typeParameter.bounds.size() > 0) {
+					for (GenericParameterBound bound : typeParameter.bounds)
+						bound.accept(boundVisitor);
+				}
+			}
+		}
+		output.append("> ");
+	}
+	
 	private static class TypeParameterBoundVisitor implements GenericParameterBoundVisitor<Void> {
-		private final JavaSourceFileScope scope;
+		private final JavaSourceTypeVisitor typeFormatter;
 		private final StringBuilder output;
 		
-		public TypeParameterBoundVisitor(JavaSourceFileScope scope, StringBuilder output) {
-			this.scope = scope;
+		public TypeParameterBoundVisitor(JavaSourceTypeVisitor typeFormatter, StringBuilder output) {
+			this.typeFormatter = typeFormatter;
 			this.output = output;
 		}
 
 		@Override
 		public Void visitSuper(ParameterSuperBound bound) {
-			output.append(" super ").append(scope.type(bound.type));
+			output.append(" super ").append(bound.type.accept(typeFormatter));
 			return null;
 		}
 
 		@Override
 		public Void visitType(ParameterTypeBound bound) {
-			output.append(" extends ").append(scope.type(bound.type));
+			output.append(" extends ").append(bound.type.accept(typeFormatter));
 			return null;
 		}
 	}

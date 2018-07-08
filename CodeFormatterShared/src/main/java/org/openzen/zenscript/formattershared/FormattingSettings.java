@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.formattershared;
 
-import org.openzen.zenscript.shared.StringUtils;
+import stdlib.Chars;
 
 /**
  *
@@ -25,7 +25,7 @@ public class FormattingSettings {
 		if (useTabs) {
 			indent = "\t";
 		} else {
-			indent = StringUtils.times(' ', spacesPerTab);
+			indent = Chars.times(' ', spacesPerTab);
 		}
 	}
 	
