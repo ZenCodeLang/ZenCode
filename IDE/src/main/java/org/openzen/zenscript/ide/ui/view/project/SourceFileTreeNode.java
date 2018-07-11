@@ -53,6 +53,7 @@ public class SourceFileTreeNode extends ProjectOverviewNode {
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
+		window.setContextFile(sourceFile);
 		if (e.isDoubleClick()) {
 			window.open(sourceFile);
 		}

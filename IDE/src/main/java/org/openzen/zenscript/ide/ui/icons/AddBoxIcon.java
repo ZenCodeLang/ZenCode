@@ -16,6 +16,7 @@ public class AddBoxIcon implements DColorableIcon {
 	public static final ColoredIcon BLUE = new ColoredIcon(INSTANCE, 0xFF1B1464);
 	public static final ColoredIcon GREEN = new ColoredIcon(INSTANCE, 0xFF006266);
 	public static final ColoredIcon ORANGE = new ColoredIcon(INSTANCE, 0xFFEE5A24);
+	public static final ColoredIcon GRAY = new ColoredIcon(INSTANCE, 0xFF888888);
 	
 	private AddBoxIcon() {}
 	

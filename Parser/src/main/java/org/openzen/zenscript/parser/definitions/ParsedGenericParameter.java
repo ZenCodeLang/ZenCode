@@ -58,10 +58,9 @@ public class ParsedGenericParameter {
 		}
 	}
 	
-	private static TypeParameter[] NO_TYPE_PARAMETERS = new TypeParameter[0];
 	public static TypeParameter[] getCompiled(List<ParsedGenericParameter> parameters) {
 		if (parameters == null)
-			return null;
+			return TypeParameter.NONE;
 		
 		TypeParameter[] result = new TypeParameter[parameters.size()];
 		for (int i = 0; i < result.length; i++)

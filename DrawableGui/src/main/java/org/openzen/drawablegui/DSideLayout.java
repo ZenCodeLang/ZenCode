@@ -70,6 +70,17 @@ public class DSideLayout extends BaseComponentGroup {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
+	
+	@Override
+	public int getBaselineY() {
+		for (int i = sides.size() - 1; i >= 0; i--) {
+			SideComponent side = sides.get(i);
+			if (side.side == Side.TOP)
+				return side.component.getBaselineY();
+		}
+		
+		return main.getBaselineY();
+	}
 
 	@Override
 	public LiveObject<DDimensionPreferences> getDimensionPreferences() {

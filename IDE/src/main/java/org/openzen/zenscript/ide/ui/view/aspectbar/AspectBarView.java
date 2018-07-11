@@ -137,6 +137,11 @@ public class AspectBarView extends BaseComponentGroup {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
+	
+	@Override
+	public int getBaselineY() {
+		return -1;
+	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
@@ -326,12 +331,20 @@ public class AspectBarView extends BaseComponentGroup {
 		
 		aspectBarShape = tracer -> {
 			int baseY = bounds.y + bounds.height - style.aspectSelectorBottomSize;
+			int barBaseX = toX + style.aspectSelectorToToolbarSpacing;
+			int barBaseY = bounds.y + style.aspectBarPaddingTop;
+			
 			tracer.moveTo(bounds.x, baseY);
-			tracer.lineTo(toX, baseY);
+			tracer.lineTo(toX - 3 * context.getScale(), baseY);
 			tracer.bezierCubic(
-					toX + 6 * context.getScale(), baseY,
-					toX + style.aspectSelectorToToolbarSpacing - 6 * context.getScale(), bounds.y + style.aspectBarPaddingTop,
-					toX + style.aspectSelectorToToolbarSpacing, bounds.y + style.aspectBarPaddingTop);
+					toX + 0 * context.getScale(), baseY,
+					toX + 2 * context.getScale(), baseY,
+					toX + 3.5f * context.getScale(), baseY - 4 * context.getScale());
+			tracer.lineTo(barBaseX - 3.5f * context.getScale(), barBaseY + 4 * context.getScale());
+			tracer.bezierCubic(
+					barBaseX - 2 * context.getScale(), barBaseY,
+					barBaseX - 0 * context.getScale(), barBaseY,
+					barBaseX + 3 * context.getScale(), barBaseY);
 			
 			if (showWindowControls) {
 				int spacingLeft = style.windowControlSpacingLeft;

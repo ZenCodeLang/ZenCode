@@ -64,7 +64,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 				.append(" as ")
 				.append(member.type.accept(typeFormatter))
 				.append(" = ")
-				.append(member.value.accept(new ExpressionFormatter(settings, typeFormatter)))
+				.append(member.value.accept(new ExpressionFormatter(settings, typeFormatter, indent)))
 				.append(";\n");
 		return null;
 	}
@@ -80,7 +80,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		
 		if (member.initializer != null) {
 			output.append(" = ")
-					.append(member.initializer.accept(new ExpressionFormatter(settings, typeFormatter)));
+					.append(member.initializer.accept(new ExpressionFormatter(settings, typeFormatter, indent)));
 		}
 		output.append(";\n");
 		return null;

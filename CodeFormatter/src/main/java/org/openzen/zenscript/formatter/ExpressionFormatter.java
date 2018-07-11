@@ -76,6 +76,8 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpressio
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
+import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
+import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 
 /**
  *
@@ -84,10 +86,12 @@ import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> {
 	private final ScriptFormattingSettings settings;
 	public final TypeFormatter typeFormatter;
+	public final String indent;
 	
-	public ExpressionFormatter(ScriptFormattingSettings settings, TypeFormatter typeFormatter) {
+	public ExpressionFormatter(ScriptFormattingSettings settings, TypeFormatter typeFormatter, String indent) {
 		this.settings = settings;
 		this.typeFormatter = typeFormatter;
+		this.indent = indent;
 	}
 
 	@Override
@@ -237,6 +241,11 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				default:
 					throw new UnsupportedOperationException("Unknown operator: " + expression.member.getOperator());
 			}
+		} else if (expression.member.isCaller()) {
+			StringBuilder result = new StringBuilder();
+			result.append(expression.target.accept(this).value);
+			FormattingUtils.formatCall(result, typeFormatter, this, expression.arguments);
+			return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
 		} else {
 			StringBuilder result = new StringBuilder();
 			result.append(expression.target.accept(this).value);
@@ -428,7 +437,29 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitFunction(FunctionExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		StringBuilder result = new StringBuilder();
+		if (expression.header.parameters.length == 1) {
+			result.append(expression.header.parameters[0].name);
+		} else {
+			result.append('(');
+			for (int i = 0; i < expression.header.parameters.length; i++) {
+				if (i > 0)
+					result.append(", ");
+				result.append(expression.header.parameters[i].name);
+			}
+			result.append(')');
+		}
+		result.append(" => ");
+		
+		if (expression.body instanceof ReturnStatement) {
+			result.append(((ReturnStatement) expression.body).value.accept(this));
+		} else if (expression.body instanceof ExpressionStatement) {
+			result.append(((ExpressionStatement) expression.body).expression.accept(this));
+		} else {
+			StatementFormatter formatter = new StatementFormatter(result, indent + settings.indent + settings.indent, settings, this);
+			expression.body.accept(formatter);
+		}
+		return new ExpressionString(result.toString(), ZenScriptOperator.FUNCTION);
 	}
 
 	@Override

@@ -93,7 +93,7 @@ public class FormattingUtils {
 	}
 	
 	public static void formatTypeParameters(StringBuilder result, TypeParameter[] parameters, TypeFormatter typeFormatter) {
-		if (parameters != null) {
+		if (parameters != null && parameters.length > 0) {
 			result.append("<");
 			int index = 0;
 			for (TypeParameter parameter : parameters) {
@@ -160,7 +160,7 @@ public class FormattingUtils {
 			this.indent = indent;
 			this.typeFormatter = typeFormatter;
 			
-			statementFormatter = new StatementFormatter(output, indent, settings, new ExpressionFormatter(settings, typeFormatter)); 
+			statementFormatter = new StatementFormatter(output, indent, settings, new ExpressionFormatter(settings, typeFormatter, indent)); 
 		}
 
 		@Override
@@ -197,7 +197,7 @@ public class FormattingUtils {
 				output.append("\n").append(indent).append(settings.indent).append("=> ");
 			}
 			
-			output.append(statement.expression.accept(new ExpressionFormatter(settings, typeFormatter)));
+			output.append(statement.expression.accept(new ExpressionFormatter(settings, typeFormatter, indent)));
 			output.append(";");
 			return null;
 		}
@@ -225,7 +225,7 @@ public class FormattingUtils {
 				output.append("\n").append(indent).append(settings.indent).append("=> ");
 			}
 			
-			output.append(statement.value.accept(new ExpressionFormatter(settings, typeFormatter)));
+			output.append(statement.value.accept(new ExpressionFormatter(settings, typeFormatter, indent)));
 			output.append(";");
 			return null;
 		}

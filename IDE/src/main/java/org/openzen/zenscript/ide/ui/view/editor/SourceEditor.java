@@ -140,6 +140,11 @@ public class SourceEditor implements DComponent {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
+	
+	@Override
+	public int getBaselineY() {
+		return -1;
+	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
@@ -229,7 +234,7 @@ public class SourceEditor implements DComponent {
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		context.focus(this);
+		context.getWindow().focus(this);
 		
 		SourcePosition position = getPositionAt(e.x, e.y);
 		if (e.isDoubleClick()) {

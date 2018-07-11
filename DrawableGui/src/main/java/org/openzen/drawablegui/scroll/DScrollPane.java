@@ -5,6 +5,7 @@
  */
 package org.openzen.drawablegui.scroll;
 
+import org.openzen.drawablegui.DAnchor;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
@@ -100,6 +101,11 @@ public class DScrollPane implements DComponent {
 	@Override
 	public DIRectangle getBounds() {
 		return bounds;
+	}
+	
+	@Override
+	public int getBaselineY() {
+		return -1;
 	}
 
 	@Override
@@ -225,6 +231,7 @@ public class DScrollPane implements DComponent {
 	
 	private DMouseEvent translateMouseEvent(DMouseEvent e) {
 		return new DMouseEvent(
+				e.window,
 				e.x - bounds.x + offsetX.getValue(),
 				e.y - bounds.y + offsetY.getValue(),
 				e.modifiers,
@@ -242,6 +249,11 @@ public class DScrollPane implements DComponent {
 		@Override
 		public float getScale() {
 			return context.getScale();
+		}
+		
+		@Override
+		public float getTextScale() {
+			return context.getTextScale();
 		}
 
 		@Override
@@ -273,11 +285,6 @@ public class DScrollPane implements DComponent {
 		}
 
 		@Override
-		public void focus(DComponent component) {
-			context.focus(component);
-		}
-
-		@Override
 		public void scrollInView(int x, int y, int width, int height) {
 			if (y < offsetY.getValue())
 				offsetY.setValue(y);
@@ -298,6 +305,16 @@ public class DScrollPane implements DComponent {
 		@Override
 		public DUIWindow getWindow() {
 			return context.getWindow();
+		}
+
+		@Override
+		public DUIWindow openDialog(int x, int y, DAnchor anchor, String title, DComponent root) {
+			return context.openDialog(x, y, anchor, title, root);
+		}
+
+		@Override
+		public DUIWindow openView(int x, int y, DAnchor anchor, DComponent root) {
+			return context.openView(x, y, anchor, root);
 		}
 	}
 	

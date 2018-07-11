@@ -67,7 +67,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 	
 	@Override
 	public ScriptBlock process(ScriptBlock block) {
-		FileScope fileScope = new FileScope(block.access, rootPackage, packageDefinitions, globalRegistry, expansions, new HashMap<>(), annotations);
+		FileScope fileScope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, new HashMap<>(), annotations);
 		StatementScope scope = new GlobalScriptScope(fileScope);
 		List<Statement> transformed = new ArrayList<>();
 		boolean unchanged = true;
@@ -81,7 +81,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 	
 	@Override
 	public void process(HighLevelDefinition definition) {
-		FileScope fileScope = new FileScope(definition.access, rootPackage, packageDefinitions, globalRegistry, expansions, new HashMap<>(), annotations);
+		FileScope fileScope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, new HashMap<>(), annotations);
 		DefinitionScope scope = new DefinitionScope(fileScope, definition);
 		for (DefinitionAnnotation annotation : definition.annotations) {
 			annotation.apply(definition, scope);

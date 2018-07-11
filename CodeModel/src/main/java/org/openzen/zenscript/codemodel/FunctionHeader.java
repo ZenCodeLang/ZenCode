@@ -36,7 +36,7 @@ public class FunctionHeader {
 		if (returnType == null)
 			throw new NullPointerException();
 		
-		this.typeParameters = null;
+		this.typeParameters = TypeParameter.NONE;
 		this.returnType = returnType;
 		this.parameters = NO_PARAMETERS;
 		this.thrownType = null;
@@ -49,7 +49,7 @@ public class FunctionHeader {
 		if (returnType == null)
 			throw new NullPointerException();
 		
-		this.typeParameters = null;
+		this.typeParameters = TypeParameter.NONE;
 		this.returnType = returnType;
 		this.parameters = new FunctionParameter[parameterTypes.length];
 		this.thrownType = null;
@@ -65,7 +65,7 @@ public class FunctionHeader {
 		if (returnType == null)
 			throw new NullPointerException();
 		
-		this.typeParameters = null;
+		this.typeParameters = TypeParameter.NONE;
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.thrownType = null;
@@ -76,6 +76,8 @@ public class FunctionHeader {
 	
 	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, ITypeID thrownType, FunctionParameter... parameters) {
 		if (returnType == null)
+			throw new NullPointerException();
+		if (genericParameters == null)
 			throw new NullPointerException();
 		
 		this.typeParameters = genericParameters;
@@ -88,7 +90,7 @@ public class FunctionHeader {
 	}
 	
 	public int getNumberOfTypeParameters() {
-		return typeParameters == null ? 0 : typeParameters.length;
+		return typeParameters.length;
 	}
 	
 	public boolean matchesExactly(CallArguments arguments, TypeScope scope) {
@@ -274,9 +276,8 @@ public class FunctionHeader {
 			return this;
 		
 		Map<TypeParameter, ITypeID> typeArguments = new HashMap<>();
-		if (typeParameters != null)
-			for (int i = 0; i < typeParameters.length; i++)
-				typeArguments.put(typeParameters[i], arguments[i]);
+		for (int i = 0; i < typeParameters.length; i++)
+			typeArguments.put(typeParameters[i], arguments[i]);
 		GenericMapper mapper = new GenericMapper(registry, typeArguments);
 		
 		ITypeID returnType = this.returnType.instance(mapper);
@@ -327,7 +328,7 @@ public class FunctionHeader {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		if (typeParameters != null && typeParameters.length > 0) {
+		if (typeParameters.length > 0) {
 			result.append("<");
 			for (int i = 0; i < typeParameters.length; i++) {
 				if (i > 0)

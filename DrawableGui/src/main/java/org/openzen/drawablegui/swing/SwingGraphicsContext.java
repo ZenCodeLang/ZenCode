@@ -5,13 +5,17 @@
  */
 package org.openzen.drawablegui.swing;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.geom.GeneralPath;
 import java.util.WeakHashMap;
+import javax.swing.JFrame;
 import javax.swing.Timer;
+import org.openzen.drawablegui.DAnchor;
 import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DDimensionPreferences;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
@@ -19,6 +23,7 @@ import org.openzen.drawablegui.DPathTracer;
 import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
+import org.openzen.drawablegui.style.DStylePathRoot;
 import org.openzen.drawablegui.style.DStyleSheets;
 
 /**
@@ -28,15 +33,17 @@ import org.openzen.drawablegui.style.DStyleSheets;
 public class SwingGraphicsContext implements DUIContext {
 	private final DStyleSheets stylesheets;
 	private final float scale;
+	private final float textScale;
 	private final WeakHashMap<DPath, GeneralPath> preparedPaths = new WeakHashMap<>();
 	private final SwingRoot root;
 	private final JavaClipboard clipboard = new JavaClipboard();
 	private Graphics graphics;
 	private DUIWindow window;
 	
-	public SwingGraphicsContext(DStyleSheets stylesheets, float scale, SwingRoot root) {
+	public SwingGraphicsContext(DStyleSheets stylesheets, float scale, float textScale, SwingRoot root) {
 		this.stylesheets = stylesheets;
 		this.scale = scale;
+		this.textScale = textScale;
 		this.root = root;
 	}
 	
@@ -62,6 +69,11 @@ public class SwingGraphicsContext implements DUIContext {
 	@Override
 	public float getScale() {
 		return scale;
+	}
+	
+	@Override
+	public float getTextScale() {
+		return textScale;
 	}
 	
 	@Override
@@ -106,13 +118,11 @@ public class SwingGraphicsContext implements DUIContext {
 		if (graphics == null)
 			graphics = root.getGraphics();
 		
+		if (graphics == null)
+			throw new AssertionError("No graphics available!");
+		
 		SwingCanvas.prepare(font);
 		return new SwingFontMetrics(graphics.getFontMetrics((Font) font.cached), graphics);
-	}
-	
-	@Override
-	public void focus(DComponent component) {
-		this.root.focus(component);
 	}
 
 	@Override
@@ -134,6 +144,46 @@ public class SwingGraphicsContext implements DUIContext {
 
 	@Override
 	public DUIWindow getWindow() {
+		return window;
+	}
+
+	@Override
+	public DUIWindow openDialog(int x, int y, DAnchor anchor, String title, DComponent root) {
+		SwingDialog window = new SwingDialog((SwingWindow)this.window, title, root, false);
+		SwingGraphicsContext windowContext = new SwingGraphicsContext(stylesheets, scale, textScale, window.swingComponent);
+		windowContext.setWindow(window);
+		windowContext.graphics = this.graphics; // help a little...
+		
+		root.setContext(DStylePathRoot.INSTANCE, windowContext);
+		DDimensionPreferences dimension = root.getDimensionPreferences().getValue();
+		int tx = (int)(x - anchor.alignX * dimension.preferredWidth);
+		int ty = (int)(y - anchor.alignY * dimension.preferredHeight);
+		
+		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		window.swingComponent.setPreferredSize(new Dimension(dimension.preferredWidth, dimension.preferredHeight));
+		window.setLocation(tx, ty);
+		window.pack();
+		window.setVisible(true);
+		return window;
+	}
+
+	@Override
+	public DUIWindow openView(int x, int y, DAnchor anchor, DComponent root) {
+		SwingDialog window = new SwingDialog((SwingWindow)this.window, "", root, false);
+		SwingGraphicsContext windowContext = new SwingGraphicsContext(stylesheets, scale, textScale, window.swingComponent);
+		windowContext.setWindow(window);
+		windowContext.graphics = this.graphics; // help a little...
+		
+		root.setContext(DStylePathRoot.INSTANCE, windowContext);
+		DDimensionPreferences dimension = root.getDimensionPreferences().getValue();
+		int tx = (int)(x - anchor.alignX * dimension.preferredWidth);
+		int ty = (int)(y - anchor.alignY * dimension.preferredHeight);
+		
+		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		window.swingComponent.setPreferredSize(new Dimension(dimension.preferredWidth, dimension.preferredHeight));
+		window.setLocation(tx, ty);
+		window.pack();
+		window.setVisible(true);
 		return window;
 	}
 	

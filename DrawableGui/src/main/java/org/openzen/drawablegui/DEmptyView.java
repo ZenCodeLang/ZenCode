@@ -37,6 +37,11 @@ public class DEmptyView implements DComponent {
 	}
 
 	@Override
+	public int getBaselineY() {
+		return -1;
+	}
+	
+	@Override
 	public void setBounds(DIRectangle bounds) {
 		
 	}

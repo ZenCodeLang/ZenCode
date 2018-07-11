@@ -20,6 +20,8 @@ public interface DComponent extends Closeable {
 	
 	DIRectangle getBounds();
 	
+	int getBaselineY();
+	
 	void setBounds(DIRectangle bounds);
 	
 	void paint(DCanvas canvas);

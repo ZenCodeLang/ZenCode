@@ -2,6 +2,7 @@ package org.openzen.zenscript.ide;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.swing.JFrame;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.local.LocalProjectDevelopmentHost;
@@ -17,7 +18,9 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
-		File directory = new File("../../ZenCode");
+		Arguments arguments = new Arguments(args);
+		File directory = arguments.projectDirectory;
+		
 		CompilationUnit compilationUnit = new CompilationUnit();
 		ModuleLoader loader = new ModuleLoader(compilationUnit);
 		Project project = new Project(loader, directory);

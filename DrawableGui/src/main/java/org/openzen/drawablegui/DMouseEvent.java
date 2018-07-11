@@ -19,13 +19,15 @@ public class DMouseEvent {
 	public static final int META = 2048;
 	public static final int ALT_GRAPH = 4096;
 	
+	public final DUIWindow window;
 	public final int x;
 	public final int y;
 	public final int modifiers;
 	public final int deltaZ;
 	public final int clickCount;
 	
-	public DMouseEvent(int x, int y, int modifiers, int deltaZ, int clickCount) {
+	public DMouseEvent(DUIWindow window, int x, int y, int modifiers, int deltaZ, int clickCount) {
+		this.window = window;
 		this.x = x;
 		this.y = y;
 		this.modifiers = modifiers;

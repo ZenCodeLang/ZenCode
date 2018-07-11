@@ -33,7 +33,7 @@ public class FileFormatter {
 		FileImporter importer = new FileImporter(pkg);
 		
 		TypeFormatter typeFormatter = new TypeFormatter(settings, importer);
-		ExpressionFormatter expressionFormatter = new ExpressionFormatter(settings, typeFormatter);
+		ExpressionFormatter expressionFormatter = new ExpressionFormatter(settings, typeFormatter, "");
 		
 		List<DefinitionFormatter> definitionFormatters = new ArrayList<>();
 		for (HighLevelDefinition definition : definitions) {

@@ -8,7 +8,6 @@ package org.openzen.zenscript.compiler;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -27,10 +26,10 @@ public class CompileScope implements TypeScope {
 	private final LocalMemberCache cache;
 	private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
 	
-	public CompileScope(AccessScope access, GlobalTypeRegistry globalRegistry, List<ExpansionDefinition> expansions, List<AnnotationDefinition> annotations) {
+	public CompileScope(GlobalTypeRegistry globalRegistry, List<ExpansionDefinition> expansions, List<AnnotationDefinition> annotations) {
 		this.globalRegistry = globalRegistry;
 		this.expansions = expansions;
-		this.cache = new LocalMemberCache(access, globalRegistry, expansions);
+		this.cache = new LocalMemberCache(globalRegistry, expansions);
 		
 		for (AnnotationDefinition annotation : annotations) {
 			this.annotations.put(annotation.getAnnotationName(), annotation);

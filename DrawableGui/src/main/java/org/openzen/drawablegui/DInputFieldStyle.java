@@ -6,6 +6,7 @@
 package org.openzen.drawablegui;
 
 import org.openzen.drawablegui.style.DDpDimension;
+import org.openzen.drawablegui.style.DPxDimension;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
@@ -19,6 +20,9 @@ public class DInputFieldStyle {
 	public final int paddingRight;
 	public final int paddingBottom;
 	
+	public final int borderWidth;
+	public final int borderColor;
+	
 	public final int color;
 	public final DFont font;
 	
@@ -28,11 +32,14 @@ public class DInputFieldStyle {
 	public final int selectionColor;
 	
 	public DInputFieldStyle(DStyleDefinition style) {
-		backgroundColor = style.getColor("backgroundColor", 0);
+		backgroundColor = style.getColor("backgroundColor", 0xFFFFFFFF);
 		paddingTop = style.getDimension("paddingTop", new DDpDimension(2));
 		paddingBottom = style.getDimension("paddingBottom", new DDpDimension(2));
 		paddingLeft = style.getDimension("paddingLeft", new DDpDimension(2));
 		paddingRight = style.getDimension("paddingRight", new DDpDimension(2));
+		
+		borderWidth = style.getDimension("borderWidth", new DPxDimension(1));
+		borderColor = style.getColor("borderColor", 0xFFABADB3);
 		
 		color = style.getColor("color", 0xFF000000);
 		font = style.getFont("font", context -> new DFont(DFontFamily.UI, false, false, false, (int)(14 * context.getScale())));

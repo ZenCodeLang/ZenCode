@@ -9,6 +9,7 @@ import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.style.DDimension;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -23,6 +24,7 @@ public class DInputField implements DComponent {
 	private final DStyleClass styleClass;
 	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
 	private DIRectangle bounds = DIRectangle.EMPTY;
+	private final DDimension preferredWidth;
 	
 	private DUIContext context;
 	private DInputFieldStyle style;
@@ -30,10 +32,23 @@ public class DInputField implements DComponent {
 	private int cursorFrom = -1;
 	private int cursorTo = -1;
 	
-	public DInputField(DStyleClass styleClass, LiveString value) {
+	private boolean cursorBlink = true;
+	private DTimerHandle blinkTimer;
+	
+	public DInputField(DStyleClass styleClass, LiveString value, DDimension preferredWidth) {
 		this.styleClass = styleClass;
 		this.value = value;
+		this.preferredWidth = preferredWidth;
+		
 		valueListener = value.addListener((oldValue, newValue) -> handleValueUpdated(newValue));
+		cursorFrom = 0;
+		cursorTo = value.getValue().length();
+	}
+	
+	@Override
+	public void close() {
+		valueListener.close();
+		blinkTimer.close();
 	}
 
 	@Override
@@ -43,6 +58,18 @@ public class DInputField implements DComponent {
 		DStylePath path = parent.getChild("input", styleClass);
 		style = new DInputFieldStyle(context.getStylesheets().get(context, path));
 		fontMetrics = context.getFontMetrics(style.font);
+		dimensionPreferences.setValue(new DDimensionPreferences(
+				preferredWidth.evalInt(context) + style.paddingLeft + style.paddingRight + 2 * style.borderWidth,
+				fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingTop + style.paddingBottom + 2 * style.borderWidth));
+		
+		if (blinkTimer != null)
+			blinkTimer.close();
+		blinkTimer = context.setTimer(300, this::blink);
+	}
+	
+	private void blink() {
+		cursorBlink = !cursorBlink;
+		context.repaint(bounds);
 	}
 
 	@Override
@@ -54,6 +81,11 @@ public class DInputField implements DComponent {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
+	
+	@Override
+	public int getBaselineY() {
+		return style.borderWidth + style.paddingTop + fontMetrics.getAscent();
+	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
@@ -63,20 +95,129 @@ public class DInputField implements DComponent {
 	@Override
 	public void paint(DCanvas canvas) {
 		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
-		canvas.drawText(style.font, style.color, bounds.x + style.paddingLeft, bounds.y + style.paddingBottom, value.getValue());
-	}
-
-	@Override
-	public void close() {
-		valueListener.close();
+		if (style.borderWidth > 0) {
+			canvas.strokePath(
+					DPath.rectangle(bounds.x, bounds.y, bounds.width - style.borderWidth, bounds.height - style.borderWidth),
+					DTransform2D.IDENTITY,
+					style.borderColor,
+					style.borderWidth);
+		}
+		
+		int cursorXFrom = fontMetrics.getWidth(value.getValue(), 0, Math.min(cursorFrom, cursorTo));
+		int cursorXTo = fontMetrics.getWidth(value.getValue(), 0, Math.max(cursorFrom, cursorTo));
+		if (cursorFrom != cursorTo) {
+			canvas.fillRectangle(
+					bounds.x + style.paddingLeft + cursorXFrom,
+					bounds.y + style.paddingTop,
+					cursorXTo - cursorXFrom,
+					fontMetrics.getAscent() + fontMetrics.getDescent(),
+					style.selectionColor);
+		}
+		
+		canvas.drawText(style.font, style.color, bounds.x + style.paddingLeft + style.borderWidth, bounds.y + style.paddingBottom + style.borderWidth + fontMetrics.getAscent(), value.getValue());
+		
+		if (cursorBlink) {
+			canvas.fillRectangle(
+					bounds.x + style.paddingLeft + cursorXTo,
+					bounds.y + style.paddingTop,
+					style.cursorWidth,
+					fontMetrics.getAscent() + fontMetrics.getDescent(),
+					style.cursorColor);
+		}
 	}
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		context.focus(this);
+		context.getWindow().focus(this);
+	}
+	
+	@Override
+	public void onKeyPressed(DKeyEvent e) {
+		boolean shift = e.has(DKeyEvent.SHIFT);
+		switch (e.keyCode) {
+			case UP:
+				setCursor(0, 0);
+				break;
+			case DOWN:
+				setCursor(value.getValue().length(), value.getValue().length());
+				break;
+			case LEFT: {
+				int to = Math.max(0, cursorTo - 1);
+				setCursor(shift ? cursorFrom : to, to);
+				break;
+			}
+			case RIGHT: {
+				int to = Math.min(value.getValue().length(), cursorTo + 1);
+				setCursor(shift ? cursorFrom : to, to);
+				break;
+			}
+			case DELETE:
+				delete();
+				break;
+			case BACKSPACE:
+				backspace();
+				break;
+			case ENTER:
+				enter();
+				break;
+			default:
+				if (e.character == DKeyEvent.CHAR_UNDEFINED)
+					return;
+				
+				insert(Character.toString(e.character));
+				break;
+		}
+	}
+	
+	private void setCursor(int from, int to) {
+		cursorFrom = from;
+		cursorTo = to;
+		context.repaint(bounds);
 	}
 	
 	private void handleValueUpdated(String newValue) {
+		context.repaint(bounds);
+	}
+	
+	private void backspace() {
+		if (cursorFrom == 0 && cursorTo == 0)
+			return;
+		
+		if (cursorFrom == cursorTo) {
+			value.setValue(value.getValue().substring(0, cursorFrom - 1) + value.getValue().substring(cursorFrom));
+			setCursor(cursorFrom - 1, cursorTo - 1);
+		} else {
+			int from = Math.min(cursorFrom, cursorTo);
+			int to = Math.max(cursorFrom, cursorTo);
+			setCursor(from, from);
+			value.setValue(value.getValue().substring(0, from) + value.getValue().substring(to));
+		}
+	}
+	
+	private void delete() {
+		if (cursorFrom == 0 && cursorTo == 0)
+			return;
+		
+		if (cursorFrom == cursorTo) {
+			if (cursorFrom < value.getValue().length()) {
+				value.setValue(value.getValue().substring(0, cursorFrom) + value.getValue().substring(cursorFrom + 1));
+			}
+		} else {
+			int from = Math.min(cursorFrom, cursorTo);
+			int to = Math.max(cursorFrom, cursorTo);
+			setCursor(from, from);
+			value.setValue(value.getValue().substring(0, from) + value.getValue().substring(to));
+		}
+	}
+	
+	private void insert(String value) {
+		int from = Math.min(cursorFrom, cursorTo);
+		int to = Math.max(cursorFrom, cursorTo);
+		this.value.setValue(this.value.getValue().substring(0, from) + value + this.value.getValue().substring(to));
+		setCursor(from + value.length(), from + value.length());
+	}
+	
+	private void enter() {
 		
 	}
 }

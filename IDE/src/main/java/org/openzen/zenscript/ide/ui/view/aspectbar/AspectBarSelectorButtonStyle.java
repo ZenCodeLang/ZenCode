@@ -36,7 +36,7 @@ public class AspectBarSelectorButtonStyle {
 		colorNormal = style.getColor("colorNormal", 0xFFFFFFFF);
 		colorHover = style.getColor("colorHover", 0xFFE0E0E0);
 		colorPress = style.getColor("colorPress", 0xFFCCCCCC);
-		colorActive = style.getColor("colorActive", 0xFFCCCCCC);
+		colorActive = style.getColor("colorActive", 0xFFF0F0F0);
 		
 		shadowNormal = style.getShadow("shadowNormal", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()));
 		shadowHover = style.getShadow("shadowNormal", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()));
