@@ -72,6 +72,12 @@ public class DCustomWindowBorder implements DComponent {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
+	
+	@Override
+	public int getBaselineY() {
+		int contentBaseline = content.getBaselineY();
+		return contentBaseline == -1 ? -1 : style.padding + style.borderWidth + contentBaseline;
+	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {

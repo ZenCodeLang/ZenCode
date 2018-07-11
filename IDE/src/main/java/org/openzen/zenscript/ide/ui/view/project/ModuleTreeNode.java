@@ -6,6 +6,7 @@
 package org.openzen.zenscript.ide.ui.view.project;
 
 import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.ui.IDEWindow;
 import org.openzen.zenscript.ide.ui.icons.ModuleIcon;
@@ -16,10 +17,13 @@ import org.openzen.zenscript.ide.ui.icons.ModuleIcon;
  */
 public class ModuleTreeNode extends PackageTreeNode {
 	private final IDEModule module;
+	private final IDEWindow window;
 	
 	public ModuleTreeNode(IDEWindow window, IDEModule module) {
 		super(window, module.getRootPackage());
+		
 		this.module = module;
+		this.window = window;
 	}
 
 	@Override
@@ -35,6 +39,11 @@ public class ModuleTreeNode extends PackageTreeNode {
 	@Override
 	public String getTitle() {
 		return module.getName();
+	}
+	
+	@Override
+	public void onMouseClick(DMouseEvent e) {
+		window.setContextModule(module);
 	}
 
 	@Override

@@ -107,7 +107,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		
 		List<EnumConstantMember> enumConstants = definition.enumConstants;
 		boolean first = true;
-		ExpressionFormatter expressionFormatter = new ExpressionFormatter(settings, typeFormatter);
+		ExpressionFormatter expressionFormatter = new ExpressionFormatter(settings, typeFormatter, indent);
 		for (EnumConstantMember enumConstant : enumConstants) {
 			if (first)
 				first = false;

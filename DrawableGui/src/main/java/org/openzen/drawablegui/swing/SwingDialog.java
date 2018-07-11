@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
@@ -27,14 +28,32 @@ import org.openzen.drawablegui.style.DStyleClass;
  *
  * @author Hoofdgebruiker
  */
-public final class SwingWindow extends JFrame implements WindowListener, WindowStateListener, DUIWindow {
-	private final SwingRoot swingComponent;
+public final class SwingDialog extends JDialog implements WindowListener, WindowStateListener, DUIWindow {
+	public final SwingRoot swingComponent;
 	private final boolean noTitleBar;
 	private final SimpleLiveObject<State> state = new SimpleLiveObject<>(State.NORMAL);
 	private final SimpleLiveBool active = new SimpleLiveBool(true);
 	
-	public SwingWindow(String title, DComponent root, boolean noTitleBar) {
-		super(title);
+	public SwingDialog(SwingWindow owner, String title, DComponent root, boolean noTitleBar) {
+		super(owner, title);
+		this.noTitleBar = noTitleBar;
+		
+		if (noTitleBar) {
+		    setUndecorated(true);
+			root = new DCustomWindowBorder(DStyleClass.EMPTY, root);
+			setBackground(new Color(0, 0, 0, 0));
+		}
+		
+		addWindowListener(this);
+		addWindowStateListener(this);
+		
+		getContentPane().add(swingComponent = new SwingRoot(root), BorderLayout.CENTER);
+		swingComponent.setWindow(this);
+		swingComponent.requestFocusInWindow();
+	}
+	
+	public SwingDialog(SwingDialog owner, String title, DComponent root, boolean noTitleBar) {
+		super(owner, title);
 		this.noTitleBar = noTitleBar;
 		
 		if (noTitleBar) {
@@ -73,17 +92,17 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 
 	@Override
 	public void maximize() {
-		setExtendedState(JFrame.MAXIMIZED_BOTH);
+		// cannot maximize
 	}
 
 	@Override
 	public void restore() {
-		setExtendedState(JFrame.NORMAL);
+		// cannot restore
 	}
 
 	@Override
 	public void minimize() {
-		setExtendedState(JFrame.ICONIFIED);
+		// TODO
 	}
 
 	@Override
@@ -103,7 +122,7 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 	
 	@Override
 	public DUIWindow openModal(String title, DComponent component) {
-		SwingWindow result = new SwingWindow(title, component, false);
+		SwingDialog result = new SwingDialog(this, title, component, false);
 		result.setResizable(false);
 		
 		DDimensionPreferences size = component.getDimensionPreferences().getValue();
@@ -155,7 +174,7 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 	}
 	
 	private State getStateFromWindowState() {
-		switch (getExtendedState()) {
+		/*switch (ge()) {
 			case NORMAL:
 				return State.NORMAL;
 			case ICONIFIED:
@@ -166,6 +185,7 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 				return State.MAXIMIZED;
 			default:
 				return State.NORMAL;
-		}
+		}*/
+		return State.NORMAL;
 	}
 }

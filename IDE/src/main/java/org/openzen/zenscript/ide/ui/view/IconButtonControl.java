@@ -81,6 +81,11 @@ public class IconButtonControl implements DComponent {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
+	
+	@Override
+	public int getBaselineY() {
+		return -1;
+	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
@@ -154,6 +159,9 @@ public class IconButtonControl implements DComponent {
 	}
 	
 	private void repaint() {
+		if (context == null || bounds == null)
+			return;
+		
 		context.repaint(bounds);
 	}
 }

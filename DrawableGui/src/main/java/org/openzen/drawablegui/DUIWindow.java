@@ -13,6 +13,10 @@ import org.openzen.drawablegui.live.LiveObject;
  * @author Hoofdgebruiker
  */
 public interface DUIWindow {
+	DIRectangle getWindowBounds();
+	
+	DUIContext getContext();
+	
 	boolean hasTitleBar();
 	
 	void close();
@@ -26,6 +30,8 @@ public interface DUIWindow {
 	LiveObject<State> getWindowState();
 	
 	LiveBool getActive();
+	
+	void focus(DComponent component);
 	
 	DUIWindow openModal(String title, DComponent root);
 	

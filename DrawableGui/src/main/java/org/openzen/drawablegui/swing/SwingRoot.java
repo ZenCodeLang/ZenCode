@@ -46,8 +46,9 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 		context = new SwingGraphicsContext(
 				DEmptyStylesheets.INSTANCE,
 				Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f,
+				Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f,
 				this);
-		component.setBounds(new DIRectangle(0, 0, getWidth(), getHeight()));
+		
 		addComponentListener(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
@@ -75,6 +76,7 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 		if (firstPaint) {
 			firstPaint = false;
 			component.setContext(DStylePathRoot.INSTANCE, context);
+			component.setBounds(new DIRectangle(0, 0, getWidth(), getHeight()));
 		}
 		
 		Rectangle clipBounds = g.getClipBounds();
@@ -172,11 +174,11 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 	}
 
 	private DMouseEvent translateMouseEvent(MouseEvent e) {
-		return new DMouseEvent(e.getX(), e.getY(), getModifiers(e.getModifiersEx()), 0, e.getClickCount());
+		return new DMouseEvent(context.getWindow(), e.getX(), e.getY(), getModifiers(e.getModifiersEx()), 0, e.getClickCount());
 	}
 
 	private DMouseEvent translateScrollEvent(MouseWheelEvent e) {
-		return new DMouseEvent(e.getX(), e.getY(), getModifiers(e.getModifiersEx()), e.getUnitsToScroll(), e.getClickCount());
+		return new DMouseEvent(context.getWindow(), e.getX(), e.getY(), getModifiers(e.getModifiersEx()), e.getUnitsToScroll(), e.getClickCount());
 	}
 	
 	private DKeyEvent translateKeyEvent(KeyEvent e) {

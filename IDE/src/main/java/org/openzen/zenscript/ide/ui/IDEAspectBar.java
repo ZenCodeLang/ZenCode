@@ -15,6 +15,6 @@ import org.openzen.drawablegui.live.SimpleLiveObject;
  * @author Hoofdgebruiker
  */
 public class IDEAspectBar {
-	public final LiveList<IDEAspectToolbar> toolbars = new LiveArrayList<>(); // TODO: only expose read-only variant
+	public final LiveList<IDEAspectToolbar> toolbars = new LiveArrayList<>();
 	public final LiveObject<IDEAspectToolbar> active = new SimpleLiveObject<>(null);
 }

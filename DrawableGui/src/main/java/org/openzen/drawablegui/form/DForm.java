@@ -5,6 +5,9 @@
  */
 package org.openzen.drawablegui.form;
 
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDimensionPreferences;
@@ -20,7 +23,7 @@ import org.openzen.drawablegui.style.DStylePath;
  *
  * @author Hoofdgebruiker
  */
-public class DForm implements DComponent {
+public class DForm extends BaseComponentGroup {
 	private final DFormComponent[] components;
 	private final DStyleClass styleClass;
 	private final LiveObject<DDimensionPreferences> preferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
@@ -29,6 +32,8 @@ public class DForm implements DComponent {
 	private DUIContext context;
 	private DFormStyle style;
 	private DFontMetrics fontMetrics;
+	private int maxFieldWidth;
+	private int maxLabelWidth;
 	
 	public DForm(DStyleClass styleClass, DFormComponent... components) {
 		this.styleClass = styleClass;
@@ -46,13 +51,13 @@ public class DForm implements DComponent {
 			component.component.setContext(path, context);
 		
 		int height = style.paddingBottom + style.paddingTop;
-		int maxTextWidth = style.minimumLabelSize;
-		int maxComponentWidth = style.minimumFieldSize;
+		int maxLabelWidth = style.minimumLabelSize;
+		int maxFieldWidth = style.minimumFieldSize;
 		
 		for (DFormComponent component : components) {
-			maxTextWidth = Math.max(maxTextWidth, fontMetrics.getWidth(component.label));
+			maxLabelWidth = Math.max(maxLabelWidth, fontMetrics.getWidth(component.label));
 			int componentWidth = component.component.getDimensionPreferences().getValue().preferredWidth;
-			maxComponentWidth = Math.max(maxComponentWidth, componentWidth);
+			maxFieldWidth = Math.max(maxFieldWidth, componentWidth);
 		}
 		
 		for (DFormComponent component : components) {
@@ -60,7 +65,12 @@ public class DForm implements DComponent {
 			height += style.spacing;
 		}
 		
-		preferences.setValue(new DDimensionPreferences(maxTextWidth + maxComponentWidth, height));
+		this.maxFieldWidth = maxFieldWidth;
+		this.maxLabelWidth = maxLabelWidth;
+		preferences.setValue(new DDimensionPreferences(maxLabelWidth + maxFieldWidth + style.paddingLeft + style.paddingRight + style.spacing, height));
+		
+		if (bounds != null)
+			layout();
 	}
 
 	@Override
@@ -72,17 +82,33 @@ public class DForm implements DComponent {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
+	
+	@Override
+	public int getBaselineY() {
+		int contentBaseline = components[0].component.getBaselineY();
+		return contentBaseline == -1 ? -1 : contentBaseline + style.paddingTop;
+	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-		layout();
+		
+		if (context != null)
+			layout();
 	}
 
 	@Override
 	public void paint(DCanvas canvas) {
+		int x = style.paddingLeft;
+		int y = style.paddingTop;
 		for (DFormComponent component : components) {
+			int baseline = component.component.getBaselineY();
+			if (baseline == -1)
+				baseline = fontMetrics.getAscent();
+			canvas.drawText(style.labelFont, style.labelColor, x, y + baseline, component.label);
+			component.component.paint(canvas);
 			
+			y += component.component.getDimensionPreferences().getValue().preferredHeight + style.spacing;
 		}
 	}
 
@@ -94,17 +120,28 @@ public class DForm implements DComponent {
 	private void layout() {
 		int x = bounds.x + style.paddingLeft;
 		int y = bounds.y + style.paddingBottom;
-		int maxTextWidth = style.minimumLabelSize;
-		
-		for (DFormComponent component : components)
-			maxTextWidth = Math.max(maxTextWidth, fontMetrics.getWidth(component.label));
 		
 		for (DFormComponent component : components) {
 			int preferredHeight = component.component.getDimensionPreferences().getValue().preferredHeight;
-			DIRectangle componentBounds = new DIRectangle(x + maxTextWidth, y, bounds.width - maxTextWidth, preferredHeight);
+			DIRectangle componentBounds = new DIRectangle(x + maxLabelWidth, y, bounds.width - maxLabelWidth - style.paddingLeft - style.paddingRight - style.spacing, preferredHeight);
 			component.component.setBounds(componentBounds);
 			
 			y += preferredHeight + style.spacing;
 		}
+	}
+
+	@Override
+	protected void forEachChild(Consumer<DComponent> children) {
+		for (DFormComponent component : components)
+			children.accept(component.component);
+	}
+
+	@Override
+	protected DComponent findChild(Predicate<DComponent> predicate) {
+		for (DFormComponent component : components)
+			if (predicate.test(component.component))
+				return component.component;
+		
+		return null;
 	}
 }

@@ -45,13 +45,13 @@ public class AspectBarStyle {
 		aspectSelectorToToolbarSpacing = style.getDimension("aspectSelectorToToolbarSpacing", new DDpDimension(16));
 		toolbarTitleToControlsSpacing = style.getDimension("toolbarTitleToControlsSpacing", new DDpDimension(8));
 		aspectSelectorBottomSize = style.getDimension("aspectSelectorBottomSize", new DDpDimension(4));
-		backgroundColor = style.getColor("backgroundColor", 0xFFF0F0F0);
+		backgroundColor = style.getColor("backgroundColor", 0xFFCCCCCC); // 0xFFF0F0F0
 		foregroundColor = style.getColor("foregroundColor", 0xFFFFFFFF);
 		
 		aspectSelectorButtonSpacing = style.getDimension("aspectSelectorButtonSpacing", new DDpDimension(4));
 		
 		aspectBarShadow = style.getShadow("aspectBarShadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 2 * context.getScale()));
-		aspectBarPaddingTop = style.getDimension("aspectBarPaddingTop", new DDpDimension(2));
+		aspectBarPaddingTop = style.getDimension("aspectBarPaddingTop", new DDpDimension(4));
 		
 		controlPaddingTop = style.getDimension("controlPaddingTop", new DDpDimension(2));
 		controlPaddingBottom = style.getDimension("controlPaddingBottom", new DDpDimension(2));

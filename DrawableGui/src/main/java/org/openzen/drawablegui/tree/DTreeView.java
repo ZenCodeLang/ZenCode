@@ -67,6 +67,11 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
+	
+	@Override
+	public int getBaselineY() {
+		return -1;
+	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {

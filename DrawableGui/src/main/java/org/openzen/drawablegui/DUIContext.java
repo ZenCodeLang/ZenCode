@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.style.DStyleSheets;
 
 /**
@@ -17,6 +16,8 @@ public interface DUIContext {
 	
 	float getScale();
 	
+	float getTextScale();
+	
 	void repaint(int x, int y, int width, int height);
 	
 	default void repaint(DIRectangle rectangle) {
@@ -24,8 +25,6 @@ public interface DUIContext {
 	}
 	
 	void setCursor(Cursor cursor);
-	
-	void focus(DComponent component);
 	
 	void scrollInView(int x, int y, int width, int height);
 	
@@ -36,7 +35,11 @@ public interface DUIContext {
 	DFontMetrics getFontMetrics(DFont font);
 	
 	DUIWindow getWindow();
-		
+	
+	DUIWindow openDialog(int x, int y, DAnchor anchor, String title, DComponent root);
+	
+	DUIWindow openView(int x, int y, DAnchor anchor, DComponent root);
+	
 	enum Cursor {
 		NORMAL,
 		HAND,

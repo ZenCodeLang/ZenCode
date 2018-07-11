@@ -62,7 +62,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	
 	private JavaSourceFileScope createScope(HighLevelDefinition definition) {
 		SemanticModule module = modules.get(definition);
-		CompileScope scope = new CompileScope(definition.access, module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
+		CompileScope scope = new CompileScope(module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
 		return new JavaSourceFileScope(file.importer, compiler.typeGenerator, compiler.helperGenerator, cls, scope, definition instanceof InterfaceDefinition);
 	}
 

@@ -12,7 +12,6 @@ import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -45,7 +44,6 @@ public class FileScope extends BaseScope {
 	private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
 	
 	public FileScope(
-			AccessScope access,
 			ZSPackage rootPackage,
 			PackageDefinitions packageDefinitions,
 			GlobalTypeRegistry globalRegistry,
@@ -57,7 +55,7 @@ public class FileScope extends BaseScope {
 		this.globalRegistry = globalRegistry;
 		this.globalSymbols = globalSymbols;
 		
-		memberCache = new LocalMemberCache(access, globalRegistry, expansions);
+		memberCache = new LocalMemberCache(globalRegistry, expansions);
 		
 		for (AnnotationDefinition annotation : annotations) {
 			this.annotations.put(annotation.getAnnotationName(), annotation);

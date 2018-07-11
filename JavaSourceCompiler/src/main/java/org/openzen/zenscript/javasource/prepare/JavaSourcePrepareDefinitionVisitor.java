@@ -67,8 +67,11 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 			list.addMethod("constructor", new JavaSourceMethod(arrayList, JavaSourceMethod.Kind.CONSTRUCTOR, "", false));
 			list.addInstanceMethod("add", "add");
 			list.addInstanceMethod("insert", "add");
+			list.addInstanceMethod("remove", "remove");
+			list.addInstanceMethod("indexOf", "indexOf");
 			list.addInstanceMethod("getAtIndex", "get");
 			list.addInstanceMethod("setAtIndex", "set");
+			list.addInstanceMethod("contains", "contains");
 			list.addMethod("toArray", new JavaSourceMethod((formatter, call) -> formatter.listToArray((CastExpression)call)));
 			list.addInstanceMethod("length", "length");
 			list.addInstanceMethod("isEmpty", "isEmpty");

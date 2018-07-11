@@ -17,7 +17,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.SourceFile;
-import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -130,7 +129,6 @@ public class ParsedFile {
 	private final List<ParsedImport> imports = new ArrayList<>();
 	private final List<ParsedDefinition> definitions = new ArrayList<>();
 	private final List<ParsedStatement> statements = new ArrayList<>();
-	private final AccessScope access = new AccessScope();
 	private WhitespacePostComment postComment = null;
 	
 	public ParsedFile(String filename) {
@@ -161,7 +159,7 @@ public class ParsedFile {
 			List<ExpansionDefinition> expansions,
 			Map<String, ISymbol> globalSymbols,
 			List<AnnotationDefinition> annotations) {
-		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
+		FileScope scope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
 		loadImports(scope, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileTypes(scope);
@@ -176,7 +174,7 @@ public class ParsedFile {
 			List<ExpansionDefinition> expansions,
 			Map<String, ISymbol> globalSymbols,
 			List<AnnotationDefinition> annotations) {
-		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
+		FileScope scope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
 		loadImports(scope, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileMembers(scope);
@@ -192,7 +190,7 @@ public class ParsedFile {
 			List<ScriptBlock> scripts,
 			Map<String, ISymbol> globalSymbols,
 			List<AnnotationDefinition> annotations) {
-		FileScope scope = new FileScope(access, rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
+		FileScope scope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
 		loadImports(scope, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileCode(scope);
@@ -205,7 +203,7 @@ public class ParsedFile {
 				statements.add(statement.compile(statementScope));
 			}
 			
-			ScriptBlock block = new ScriptBlock(access, statements);
+			ScriptBlock block = new ScriptBlock(statements);
 			block.setTag(SourceFile.class, new SourceFile(filename));
 			block.setTag(WhitespacePostComment.class, postComment);
 			scripts.add(block);

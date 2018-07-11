@@ -18,6 +18,8 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  * @author Hoofdgebruiker
  */
 public class TypeParameter {
+	public static final TypeParameter[] NONE = new TypeParameter[0];
+	
 	public final CodePosition position;
 	public final String name;
 	public final List<GenericParameterBound> bounds = new ArrayList<>();

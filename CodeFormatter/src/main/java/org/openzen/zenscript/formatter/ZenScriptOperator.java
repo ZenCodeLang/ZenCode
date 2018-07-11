@@ -61,7 +61,8 @@ public enum ZenScriptOperator implements FormattableOperator {
 	CAST(9, null),
 	
 	PANIC(10, "panic "),
-	PRIMARY(10, null);
+	PRIMARY(10, null),
+	FUNCTION(10, null);
 	
 	private final int priority;
 	private final String operatorString;
