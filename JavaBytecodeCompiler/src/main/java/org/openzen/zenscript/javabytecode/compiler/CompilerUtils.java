@@ -1,5 +1,6 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
@@ -18,7 +19,14 @@ import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.javabytecode.JavaParameterInfo;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CompilerUtils {
     public static String calcDesc(FunctionHeader header, boolean isEnum) {
@@ -26,10 +34,11 @@ public class CompilerUtils {
         if (isEnum)
             descBuilder.append("Ljava/lang/String;I");
         for (FunctionParameter parameter : header.parameters) {
-            descBuilder.append(Type.getDescriptor(parameter.type.accept(JavaTypeClassVisitor.INSTANCE)));
+            //descBuilder.append(Type.getDescriptor(parameter.type.accept(JavaTypeClassVisitor.INSTANCE)));
+            descBuilder.append(parameter.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
         }
         descBuilder.append(")");
-        descBuilder.append(Type.getDescriptor(header.returnType.accept(JavaTypeClassVisitor.INSTANCE)));
+        descBuilder.append(header.returnType.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
         return descBuilder.toString();
     }
 
@@ -120,6 +129,48 @@ public class CompilerUtils {
             }
         }
     }
+
+    private static final Map<String, String> lambdas = new HashMap<>();
+    private static int lambdaCounter = 0;
+    private static int lambdaICounter = 0;
+    public static String getLambdaInterface(final FunctionHeader header) {
+        StringBuilder builder = new StringBuilder("(");
+        for (FunctionParameter parameter : header.parameters) {
+            builder.append(parameter.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
+        }
+
+        //final String identifier = header.toString();
+        final String identifier = builder.append(")").append(header.returnType.accept(JavaTypeVisitor.INSTANCE).getDescriptor()).toString();
+        if(!lambdas.containsKey(identifier)) {
+            final String name = "lambdaInterface" + ++lambdaICounter;
+            lambdas.put(identifier, name);
+            createLambdaInterface(header, name);
+        }
+        return lambdas.get(identifier);
+    }
+
+    private static void createLambdaInterface(FunctionHeader header, String name) {
+        ClassWriter ifaceWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        ifaceWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, name, null, "java/lang/Object", null);
+
+        ifaceWriter.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "accept", calcDesc(header, false), calcSign(header, false), null).visitEnd();
+
+        ifaceWriter.visitEnd();
+
+        JavaModule.classes.putIfAbsent(name, ifaceWriter.toByteArray());
+
+        try (FileOutputStream out = new FileOutputStream(name + ".class")){
+            out.write(ifaceWriter.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static String getLambdaCounter() {
+        return "lambda" + ++lambdaCounter;
+    }
+
 
 
     public static int getKeyForSwitch(SwitchValue expression) {

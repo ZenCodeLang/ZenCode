@@ -28,7 +28,8 @@ public class JavaTypeVisitor implements ITypeVisitor<Type> {
 
     @Override
     public Type visitFunction(FunctionTypeID function) {
-        return Type.getType(function.accept(JavaTypeClassVisitor.INSTANCE));
+        Class clazz = function.accept(JavaTypeClassVisitor.INSTANCE);
+        return clazz != null ? Type.getType(clazz) : Type.getType("L" + CompilerUtils.getLambdaInterface(function.header) + ";");
     }
 
     @Override

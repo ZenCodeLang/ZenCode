@@ -79,7 +79,8 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	public String getMethodName() {
-		return ((MethodMember) target).name;
+		//FIXME
+		return (target).name;
 	}
 	
 	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {

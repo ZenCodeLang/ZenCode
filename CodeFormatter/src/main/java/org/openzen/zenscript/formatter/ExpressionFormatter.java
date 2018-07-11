@@ -76,6 +76,7 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpressio
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
+import org.openzen.zenscript.formattershared.FormattableOperator;
 
 /**
  *
@@ -428,7 +429,9 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitFunction(FunctionExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		//FIXME
+		return new ExpressionString("asdfghj", ZenScriptOperator.PRIMARY);
+		//throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override

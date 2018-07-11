@@ -3,6 +3,7 @@ package org.openzen.zenscript.javabytecode.compiler.definitions;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -10,6 +11,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javabytecode.JavaModule;
+import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 

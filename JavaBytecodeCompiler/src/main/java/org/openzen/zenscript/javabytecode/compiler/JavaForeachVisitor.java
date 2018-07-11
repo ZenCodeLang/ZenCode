@@ -27,9 +27,9 @@ public class JavaForeachVisitor implements ForeachIteratorVisitor<Void> {
     @Override
     public Void visitIntRange() {
         javaWriter.dup();
-        javaWriter.getField("org/openzen/zenscript/implementations/IntRange", "max", "I");
+        javaWriter.getField("org/openzen/zenscript/implementations/IntRange", "to", "I");
         javaWriter.swap();
-        javaWriter.getField("org/openzen/zenscript/implementations/IntRange", "min", "I");
+        javaWriter.getField("org/openzen/zenscript/implementations/IntRange", "from", "I");
 
         final int z = variables[0].getTag(JavaLocalVariableInfo.class).local;
         javaWriter.storeInt(z);

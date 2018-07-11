@@ -1,6 +1,7 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.javabytecode.JavaModule;
 
 import java.lang.reflect.Array;
 import java.util.Iterator;
@@ -63,7 +64,12 @@ public class JavaTypeClassVisitor implements ITypeVisitor<Class> {
 
     @Override
     public Class visitFunction(FunctionTypeID function) {
-        return null;
+        try {
+            return new JavaModule().new ScriptClassLoader().loadClass(CompilerUtils.getLambdaInterface(function.header));
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+        //return function.header.returnType.accept(this);
     }
 
     @Override

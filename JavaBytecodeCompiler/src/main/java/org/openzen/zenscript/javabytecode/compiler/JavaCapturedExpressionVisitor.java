@@ -22,9 +22,8 @@ public class JavaCapturedExpressionVisitor implements CapturedExpressionVisitor<
 
     @Override
     public Void visitCapturedLocal(CapturedLocalVariableExpression expression) {
-        new GetLocalVariableExpression(expression.position, expression.variable)
+        return new GetLocalVariableExpression(expression.position, expression.variable)
                 .accept(expressionVisitor);
-        return null;
     }
 
     @Override
