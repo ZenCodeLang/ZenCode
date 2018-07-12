@@ -90,7 +90,7 @@ public class AspectBarView extends BaseComponentGroup {
 				aspectBar.toolbars,
 				bar -> {
 					LiveBool buttonActive = new LivePredicateBool<>(aspectBar.active, activeBar -> activeBar == bar);
-					AspectBarSelectorButton button = new AspectBarSelectorButton(DStyleClass.EMPTY, bar.icon, buttonActive, e -> aspectBar.active.setValue(bar));
+					AspectBarSelectorButton button = new AspectBarSelectorButton(DStyleClass.EMPTY, bar.icon, buttonActive, bar.description, e -> aspectBar.active.setValue(bar));
 					if (context != null)
 						button.setContext(path, context);
 					

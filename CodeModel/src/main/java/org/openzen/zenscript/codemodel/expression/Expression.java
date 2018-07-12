@@ -56,7 +56,7 @@ public abstract class Expression implements IPartialExpression {
 				if (body == function.body)
 					return function;
 				
-				return new FunctionExpression(function.position, (FunctionTypeID)function.type, function.closure, body);
+				return new FunctionExpression(function.position, (FunctionTypeID)function.type, function.closure, function.header, body);
 			} else {
 				return expression;
 			}

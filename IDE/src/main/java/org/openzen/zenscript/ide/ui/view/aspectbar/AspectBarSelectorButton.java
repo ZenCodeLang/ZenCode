@@ -15,7 +15,9 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.DSimpleTooltip;
 import org.openzen.drawablegui.listeners.ListenerHandle;
+import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
@@ -40,14 +42,16 @@ public class AspectBarSelectorButton implements DComponent {
 	private DPath shape;
 	private boolean hovering;
 	private boolean pressing;
+	private DSimpleTooltip tooltip;
 	
 	private final ListenerHandle<LiveBool.Listener> activeListener;
 	
-	public AspectBarSelectorButton(DStyleClass styleClass, DDrawable icon, LiveBool active, Consumer<DMouseEvent> onClick) {
+	public AspectBarSelectorButton(DStyleClass styleClass, DDrawable icon, LiveBool active, String tooltip, Consumer<DMouseEvent> onClick) {
 		this.active = active;
 		this.styleClass = styleClass;
 		this.icon = icon;
 		this.onClick = onClick;
+		this.tooltip = new DSimpleTooltip(DStyleClass.EMPTY, new ImmutableLiveString(tooltip));
 		
 		activeListener = active.addListener((oldValue, newValue) -> repaint());
 	}
@@ -64,6 +68,8 @@ public class AspectBarSelectorButton implements DComponent {
 				style.width,
 				style.height,
 				style.roundingRadius);
+		
+		tooltip.setContext(parent, context);
 	}
 
 	@Override
@@ -113,11 +119,13 @@ public class AspectBarSelectorButton implements DComponent {
 				bounds.x + (style.width - icon.getNominalWidth() * context.getScale()) / 2,
 				bounds.y + (style.height - icon.getNominalHeight() * context.getScale()) / 2,
 				context.getScale()));
+		tooltip.paint(canvas);
 	}
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		hovering = true;
+		tooltip.onTargetMouseEnter(e);
 		repaint();
 	}
 	
@@ -125,6 +133,7 @@ public class AspectBarSelectorButton implements DComponent {
 	public void onMouseExit(DMouseEvent e) {
 		hovering = false;
 		pressing = false;
+		tooltip.onTargetMouseExit(e);
 		repaint();
 	}
 	
@@ -146,6 +155,7 @@ public class AspectBarSelectorButton implements DComponent {
 	@Override
 	public void close() {
 		activeListener.close();
+		tooltip.close();
 	}
 	
 	private void repaint() {

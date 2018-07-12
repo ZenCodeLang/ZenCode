@@ -49,7 +49,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		ITypeID[] genericArguments = null;
+		ITypeID[] genericArguments = ITypeID.NONE;
 		if (genericParameters != null) {
 			genericArguments = new ITypeID[genericParameters.size()];
 			for (int i = 0; i < genericParameters.size(); i++) {

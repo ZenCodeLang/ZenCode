@@ -120,7 +120,7 @@ public class GlobalTypeRegistry {
 	
 	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID[] typeParameters, Map<TypeParameter, ITypeID> outerInstance) {
 		DefinitionTypeID id;
-		if ((definition instanceof FunctionDefinition) || (definition.genericParameters == null && typeParameters == null && outerInstance.isEmpty())) {
+		if ((definition instanceof FunctionDefinition) || (definition.genericParameters == null && typeParameters.length == 0 && outerInstance.isEmpty())) {
 			// make it a static one
 			id = new StaticDefinitionTypeID(definition);
 		} else {

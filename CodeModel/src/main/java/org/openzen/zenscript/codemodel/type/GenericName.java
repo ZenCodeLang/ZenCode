@@ -14,30 +14,33 @@ public class GenericName {
 	public final ITypeID[] arguments;
 	
 	public GenericName(String name) {
-		this(name, null);
+		this(name, ITypeID.NONE);
 	}
 	
 	public GenericName(String name, ITypeID[] arguments) {
+		if (arguments == null)
+			throw new NullPointerException("Arguments cannot be null");
+		
 		this.name = name;
 		this.arguments = arguments;
 	}
 	
 	public int getNumberOfArguments() {
-		return arguments == null ? 0 : arguments.length;
+		return arguments.length;
 	}
 	
 	public boolean hasArguments() {
-		return arguments != null && arguments.length > 0;
+		return arguments.length > 0;
 	}
 	
 	public boolean hasNoArguments() {
-		return arguments == null || arguments.length == 0;
+		return arguments.length == 0;
 	}
 	
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder(name);
-		if (arguments != null) {
+		if (hasArguments()) {
 			result.append("<");
 			for (int i = 0; i < arguments.length; i++) {
 				if (i > 0)

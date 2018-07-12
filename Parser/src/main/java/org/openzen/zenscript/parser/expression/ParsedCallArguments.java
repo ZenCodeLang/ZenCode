@@ -131,7 +131,7 @@ public class ParsedCallArguments {
 			innerScope = scope.forCall(candidates.get(0));
 		} else {
 			candidates = candidates.stream()
-					.filter(candidate -> candidate.typeParameters == null)
+					.filter(candidate -> candidate.getNumberOfTypeParameters() == 0)
 					.collect(Collectors.toList());
 			
 			if (candidates.isEmpty()) {
