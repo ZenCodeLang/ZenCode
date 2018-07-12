@@ -8,7 +8,7 @@ package org.openzen.zenscript.ide.ui.view.aspectbar;
 import java.util.function.Consumer;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
@@ -18,7 +18,7 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -28,12 +28,11 @@ import org.openzen.drawablegui.style.DStylePath;
  * @author Hoofdgebruiker
  */
 public class AspectBarSelectorButton implements DComponent {
-	
 	public final LiveBool active;
 	
 	private final DStyleClass styleClass;
 	private final DDrawable icon;
-	private final LiveObject<DDimensionPreferences> preferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final Consumer<DMouseEvent> onClick;
 	private DUIContext context;
 	private AspectBarSelectorButtonStyle style;
@@ -58,7 +57,7 @@ public class AspectBarSelectorButton implements DComponent {
 		this.context = context;
 		DStylePath path = parent.getChild("selectorbutton", styleClass);
 		style = new AspectBarSelectorButtonStyle(context.getStylesheets().get(context, path));
-		preferences.setValue(new DDimensionPreferences(style.width, style.height));
+		sizing.setValue(new DSizing(style.width, style.height));
 		shape = DPath.roundedRectangle(
 				0,
 				0,
@@ -68,8 +67,8 @@ public class AspectBarSelectorButton implements DComponent {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return preferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override

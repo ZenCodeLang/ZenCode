@@ -10,7 +10,7 @@ import java.util.function.Function;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
@@ -18,7 +18,7 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStylePath;
 import org.openzen.zenscript.ide.ui.icons.ScalableCloseIcon;
 
@@ -27,7 +27,7 @@ import org.openzen.zenscript.ide.ui.icons.ScalableCloseIcon;
  * @author Hoofdgebruiker
  */
 public class WindowActionButton implements DComponent {
-	private final SimpleLiveObject<DDimensionPreferences> preferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private final Function<Float, DColorableIcon> scalableIcon;
 	private final Consumer<DMouseEvent> action;
@@ -54,14 +54,14 @@ public class WindowActionButton implements DComponent {
 		windowFocusedListener = windowFocused.addListener((a, b) -> repaint());
 		
 		icon = scalableIcon == null ? null : scalableIcon.apply(context.getScale());
-		preferences.setValue(new DDimensionPreferences(
+		sizing.setValue(new DSizing(
 				(int)(48 * context.getScale()),
 				(int)(24 * context.getScale())));
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return preferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override

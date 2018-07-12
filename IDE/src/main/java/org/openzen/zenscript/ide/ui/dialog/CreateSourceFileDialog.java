@@ -23,6 +23,7 @@ import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEPackage;
+import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.IDEWindow;
 
 /**
@@ -84,6 +85,7 @@ public class CreateSourceFileDialog {
 	
 	private void ok() {
 		window.close();
-		pkg.createSourceFile(name.getValue() + ".zs");
+		IDESourceFile file = pkg.createSourceFile(name.getValue() + ".zs");
+		ideWindow.open(file);
 	}
 }

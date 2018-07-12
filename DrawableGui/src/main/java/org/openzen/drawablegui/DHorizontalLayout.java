@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -21,8 +22,8 @@ public class DHorizontalLayout extends BaseComponentGroup {
 	private final DStyleClass styleClass;
 	private final Alignment alignment;
 	private final Element[] components;
-	private final ListenerHandle<LiveObject.Listener<DDimensionPreferences>>[] componentSizeListeners;
-	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final ListenerHandle<LiveObject.Listener<DSizing>>[] componentSizeListeners;
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DUIContext context;
 	private DHorizontalLayoutStyle style;
@@ -40,7 +41,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 		totalShrink = 0;
 		
 		for (int i = 0; i < componentSizeListeners.length; i++) {
-			componentSizeListeners[i] = components[i].component.getDimensionPreferences().addListener((oldValue, newValue) -> updateDimensionPreferences());
+			componentSizeListeners[i] = components[i].component.getSizing().addListener((oldValue, newValue) -> updateDimensionPreferences());
 			
 			totalGrow += components[i].grow;
 			totalShrink += components[i].shrink;
@@ -76,8 +77,8 @@ public class DHorizontalLayout extends BaseComponentGroup {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return dimensionPreferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -147,7 +148,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 		if (bounds == null || context == null)
 			return;
 		
-		DDimensionPreferences myPreferences = dimensionPreferences.getValue();
+		DSizing myPreferences = sizing.getValue();
 		if (bounds.width < myPreferences.preferredWidth) {
 			layoutShrinked();
 		} else {
@@ -156,7 +157,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 	}
 	
 	private void layoutShrinked() {
-		DDimensionPreferences myPreferences = dimensionPreferences.getValue();
+		DSizing myPreferences = sizing.getValue();
 		if (totalShrink == 0) {
 			// now what?
 			// shrink proportionally, we have to shrink...
@@ -165,7 +166,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 			
 			for (int i = 0; i < components.length; i++) {
 				Element element = components[i];
-				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+				DSizing preferences = element.component.getSizing().getValue();
 				int newX = x + preferences.preferredWidth;
 				float idealUnspacedX = newX * scale;
 				int idealX = (int)(idealUnspacedX + 0.5f + i * style.spacing);
@@ -177,7 +178,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 			float deltaScaled = delta / totalShrink;
 			int x = 0;
 			for (Element element : components) {
-				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+				DSizing preferences = element.component.getSizing().getValue();
 				float scaledSize = preferences.preferredWidth + deltaScaled * element.shrink;
 				float idealUnspacedX = x + scaledSize;
 				int newX = (int)(idealUnspacedX + 0.5f);
@@ -189,13 +190,13 @@ public class DHorizontalLayout extends BaseComponentGroup {
 	
 	private void layoutGrown() {
 		// resize according to grow values
-		DDimensionPreferences myPreferences = dimensionPreferences.getValue();
+		DSizing myPreferences = sizing.getValue();
 		
 		if (totalGrow == 0) {
 			int deltaX = (int)(myPreferences.preferredWidth - bounds.width);
 			int x = bounds.x + (int)(deltaX * alignment.align);
 			for (Element element : components) {
-				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+				DSizing preferences = element.component.getSizing().getValue();
 				int newX = x + preferences.preferredWidth;
 				layout(element, x, newX - x);
 				x = newX + style.spacing;
@@ -205,7 +206,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 			float deltaScaled = delta / totalGrow;
 			int x = 0;
 			for (Element element : components) {
-				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+				DSizing preferences = element.component.getSizing().getValue();
 				float scaledSize = preferences.preferredWidth + deltaScaled * element.grow;
 				float idealUnspacedX = x + scaledSize;
 				int newX = (int)(idealUnspacedX + 0.5f);
@@ -216,7 +217,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 	}
 	
 	private void layout(Element element, int x, int width) {
-		DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+		DSizing preferences = element.component.getSizing().getValue();
 		int height;
 		int y;
 		switch (element.alignment) {
@@ -249,7 +250,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 		int maximumWidth = -style.spacing;
 		int maximumHeight = Integer.MAX_VALUE;
 		for (Element element : components) {
-			DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+			DSizing preferences = element.component.getSizing().getValue();
 			preferredWidth += preferences.preferredWidth + style.spacing;
 			preferredHeight = Math.max(preferredHeight, preferences.preferredHeight);
 			
@@ -260,13 +261,13 @@ public class DHorizontalLayout extends BaseComponentGroup {
 			maximumHeight = Math.min(maximumHeight, preferences.maximumHeight);
 		}
 		
-		DDimensionPreferences preferences = new DDimensionPreferences(
+		DSizing preferences = new DSizing(
 				minimumWidth + style.paddingLeft + style.paddingRight,
 				minimumHeight + style.paddingTop + style.paddingBottom,
 				preferredWidth + style.paddingLeft + style.paddingRight,
 				preferredHeight + style.paddingTop + style.paddingBottom,
 				maximumWidth + style.paddingLeft + style.paddingRight,
 				maximumHeight + style.paddingTop + style.paddingBottom);
-		dimensionPreferences.setValue(preferences);
+		sizing.setValue(preferences);
 	}
 }

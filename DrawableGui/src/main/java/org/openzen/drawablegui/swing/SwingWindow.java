@@ -12,7 +12,7 @@ import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import javax.swing.JFrame;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
@@ -106,7 +106,7 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 		SwingWindow result = new SwingWindow(title, component, false);
 		result.setResizable(false);
 		
-		DDimensionPreferences size = component.getDimensionPreferences().getValue();
+		DSizing size = component.getSizing().getValue();
 		result.setLocation(
 				getX() + (getWidth() - size.preferredWidth) / 2,
 				getY() + (getHeight() - size.preferredHeight) / 2);

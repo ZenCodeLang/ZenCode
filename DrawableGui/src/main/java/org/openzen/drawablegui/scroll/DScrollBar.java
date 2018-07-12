@@ -7,14 +7,14 @@ package org.openzen.drawablegui.scroll;
 
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -23,7 +23,7 @@ import org.openzen.drawablegui.style.DStylePath;
  * @author Hoofdgebruiker
  */
 public class DScrollBar implements DComponent {
-	private final LiveObject<DDimensionPreferences> preferences;
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private final DStyleClass styleClass;
 	private final LiveInt targetHeight;
@@ -47,7 +47,6 @@ public class DScrollBar implements DComponent {
 		this.styleClass = styleClass;
 		this.targetHeight = targetHeight;
 		this.offset = offset;
-		this.preferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
 		
 		targetHeightListener = targetHeight.addListener(new ScrollListener());
 		offsetListener = offset.addListener(new ScrollListener());
@@ -57,12 +56,12 @@ public class DScrollBar implements DComponent {
 	public void setContext(DStylePath parent, DUIContext context) {
 		this.context = context;
 		this.style = new DScrollBarStyle(context.getStylesheets().get(context, parent.getChild("scrollbar", styleClass)));
-		preferences.setValue(new DDimensionPreferences(style.width, 0));
+		sizing.setValue(new DSizing(style.width, 0));
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return preferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -138,7 +137,8 @@ public class DScrollBar implements DComponent {
 
 	@Override
 	public void close() {
-		// nothing to clean up
+		targetHeightListener.close();
+		offsetListener.close();
 	}
 	
 	private void checkHover(DMouseEvent e) {

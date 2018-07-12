@@ -7,7 +7,7 @@ package org.openzen.zenscript.ide.ui.view;
 
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.live.LiveObject;
@@ -22,7 +22,7 @@ import org.openzen.drawablegui.style.DStylePath;
  * @author Hoofdgebruiker
  */
 public class StatusBarView implements DComponent {
-	private final SimpleLiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(new DDimensionPreferences(0, 0));
+	private final SimpleLiveObject<DSizing> dimensionPreferences = new SimpleLiveObject<>(new DSizing(0, 0));
 	
 	private final DStyleClass styleClass;
 	private final LiveString content;
@@ -44,11 +44,11 @@ public class StatusBarView implements DComponent {
 		style = new StatusBarStyle(context.getStylesheets().get(context, path));
 		fontMetrics = context.getFontMetrics(style.font);
 		
-		dimensionPreferences.setValue(new DDimensionPreferences(0, style.paddingTop + fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingBottom));
+		dimensionPreferences.setValue(new DSizing(0, style.paddingTop + fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingBottom));
 	}
 	
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
+	public LiveObject<DSizing> getSizing() {
 		return dimensionPreferences;
 	}
 	

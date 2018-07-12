@@ -44,6 +44,10 @@ public interface DUIContext {
 		return (int)(dp * getScale());
 	}
 	
+	default int sp(float sp) {
+		return (int)(sp * getTextScale());
+	}
+	
 	enum Cursor {
 		NORMAL,
 		HAND,

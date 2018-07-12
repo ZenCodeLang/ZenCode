@@ -6,8 +6,8 @@
 package org.openzen.zenscript.ide.ui;
 
 import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LivePredicateBool;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
@@ -37,9 +37,9 @@ public class IDEWindow {
 	
 	public IDEAspectToolbar projectToolbar;
 	
-	private final LiveObject<IDEModule> contextModule = new SimpleLiveObject<>(null);
-	private final LiveObject<IDEPackage> contextPackage = new SimpleLiveObject<>(null);
-	private final LiveObject<IDESourceFile> contextFile = new SimpleLiveObject<>(null);
+	private final MutableLiveObject<IDEModule> contextModule = new SimpleLiveObject<>(null);
+	private final MutableLiveObject<IDEPackage> contextPackage = new SimpleLiveObject<>(null);
+	private final MutableLiveObject<IDESourceFile> contextFile = new SimpleLiveObject<>(null);
 	private final LiveBool addContentDisabled = new LivePredicateBool(contextPackage, pkg -> pkg == null);
 	
 	public IDEWindow(DevelopmentHost host) {

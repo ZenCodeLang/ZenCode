@@ -25,11 +25,6 @@ public class ImmutableLiveObject<T> implements LiveObject<T> {
 	}
 
 	@Override
-	public void setValue(T value) {
-		throw new UnsupportedOperationException("Immutable value");
-	}
-
-	@Override
 	public ListenerHandle<Listener<T>> addListener(Listener<T> listener) {
 		return new DummyListenerHandle<>(listener);
 	}

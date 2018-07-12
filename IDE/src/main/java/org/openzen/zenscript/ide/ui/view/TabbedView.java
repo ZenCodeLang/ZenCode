@@ -10,16 +10,16 @@ import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DUIContext;
-import org.openzen.drawablegui.live.ImmutableLiveObject;
 import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveList;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -31,8 +31,8 @@ import org.openzen.drawablegui.style.DStylePath;
 public class TabbedView extends BaseComponentGroup {
 	private final DStyleClass styleClass;
 	public final MutableLiveList<TabbedViewComponent> tabs = new LiveArrayList<>();
-	private final LiveObject<DDimensionPreferences> preferences = new ImmutableLiveObject<>(DDimensionPreferences.EMPTY);
-	public final LiveObject<TabbedViewComponent> currentTab = new SimpleLiveObject<>(null);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
+	public final MutableLiveObject<TabbedViewComponent> currentTab = new SimpleLiveObject<>(null);
 	
 	private DUIContext context;
 	private DStylePath path;
@@ -82,8 +82,8 @@ public class TabbedView extends BaseComponentGroup {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return preferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -141,7 +141,7 @@ public class TabbedView extends BaseComponentGroup {
 		
 		int x = bounds.x + style.tabBarSpacingLeft;
 		for (DComponent tab : tabComponents) {
-			DDimensionPreferences preferences = tab.getDimensionPreferences().getValue();
+			DSizing preferences = tab.getSizing().getValue();
 			tab.setBounds(new DIRectangle(
 					x, bounds.y + totalTabHeight - preferences.preferredHeight, preferences.preferredWidth, preferences.preferredHeight));
 			

@@ -7,7 +7,7 @@ package org.openzen.zenscript.ide.ui.view;
 
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
@@ -15,7 +15,7 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -25,8 +25,8 @@ import org.openzen.drawablegui.style.DStylePath;
  */
 public class TabbedViewTab implements DComponent {
 	private final TabbedViewComponent tab;
-	private final LiveObject<DDimensionPreferences> preferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
-	private final LiveObject<TabbedViewComponent> currentTab;
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
+	private final MutableLiveObject<TabbedViewComponent> currentTab;
 	
 	private final TabbedView parent;
 	public final TabbedViewTabClose closeButton;
@@ -40,7 +40,7 @@ public class TabbedViewTab implements DComponent {
 	private boolean hover;
 	private boolean press;
 	
-	public TabbedViewTab(TabbedView parent, LiveObject<TabbedViewComponent> currentTab, TabbedViewComponent tab) {
+	public TabbedViewTab(TabbedView parent, MutableLiveObject<TabbedViewComponent> currentTab, TabbedViewComponent tab) {
 		this.parent = parent;
 		this.currentTab = currentTab;
 		this.tab = tab;
@@ -60,17 +60,17 @@ public class TabbedViewTab implements DComponent {
 		closeButton.setContext(path, context);
 		
 		textWidth = fontMetrics.getWidth(tab.title);
-		preferences.setValue(new DDimensionPreferences(
+		sizing.setValue(new DSizing(
 				style.paddingLeft + textWidth + style.paddingRight
 						+ style.closeIconPadding
-						+ closeButton.getDimensionPreferences().getValue().preferredWidth,
+						+ closeButton.getSizing().getValue().preferredWidth,
 				style.paddingTop + fontMetrics.getAscent() + fontMetrics.getDescent()
 						+ style.paddingBottom));
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return preferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class TabbedViewTab implements DComponent {
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
 		
-		DDimensionPreferences close = closeButton.getDimensionPreferences().getValue();
+		DSizing close = closeButton.getSizing().getValue();
 		closeButton.setBounds(new DIRectangle(
 				bounds.x + bounds.width - close.preferredWidth - style.paddingRight,
 				bounds.y + (bounds.height - close.preferredHeight) / 2,
@@ -98,7 +98,7 @@ public class TabbedViewTab implements DComponent {
 	@Override
 	public void paint(DCanvas canvas) {
 		int width = style.paddingLeft + textWidth + style.paddingRight
-				+ closeButton.getDimensionPreferences().getValue().preferredWidth + style.closeIconPadding;
+				+ closeButton.getSizing().getValue().preferredWidth + style.closeIconPadding;
 
 		int color = style.tabColorNormal;
 		if (currentTab.getValue() == tab)

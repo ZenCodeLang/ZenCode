@@ -8,7 +8,7 @@ package org.openzen.zenscript.ide.ui.view;
 import java.util.function.Consumer;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
@@ -19,7 +19,7 @@ import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveBool;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -38,7 +38,7 @@ public class IconButtonControl implements DComponent {
 	private DUIContext context;
 	private IconButtonControlStyle style;
 	private DIRectangle bounds;
-	private final LiveObject<DDimensionPreferences> preferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> preferences = DSizing.create();
 	private boolean hover;
 	private boolean press;
 	private DPath shape;
@@ -66,14 +66,14 @@ public class IconButtonControl implements DComponent {
 		int iconHeight = (int)(icon.getNominalWidth() * context.getScale() + 0.5f);
 		int width = iconWidth + 2 * style.padding + 2 * style.margin;
 		int height = iconHeight + 2 * style.padding + 2 * style.margin;
-		preferences.setValue(new DDimensionPreferences(width, height));
+		preferences.setValue(new DSizing(width, height));
 		
 		if (bounds != null)
 			setBounds(bounds);
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
+	public LiveObject<DSizing> getSizing() {
 		return preferences;
 	}
 

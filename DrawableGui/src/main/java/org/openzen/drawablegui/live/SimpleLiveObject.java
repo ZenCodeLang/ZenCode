@@ -12,7 +12,7 @@ import org.openzen.drawablegui.listeners.ListenerList;
  *
  * @author Hoofdgebruiker
  */
-public class SimpleLiveObject<T> implements LiveObject<T> {
+public class SimpleLiveObject<T> implements MutableLiveObject<T> {
 	private final ListenerList<Listener<T>> listeners = new ListenerList<>();
 	private T value;
 	

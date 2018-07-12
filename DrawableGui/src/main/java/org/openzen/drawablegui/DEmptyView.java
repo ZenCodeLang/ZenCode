@@ -16,8 +16,7 @@ import org.openzen.drawablegui.style.DStylePath;
 public class DEmptyView implements DComponent {
 	public static final DEmptyView INSTANCE = new DEmptyView();
 	
-	private static final LiveObject<DDimensionPreferences> DIMENSION = new ImmutableLiveObject(new DDimensionPreferences(0, 0));
-	private static final DIRectangle NO_BOUNDS = new DIRectangle(0, 0, 0, 0);
+	private static final LiveObject<DSizing> DIMENSION = new ImmutableLiveObject(DSizing.EMPTY);
 	
 	private DEmptyView() {}
 
@@ -27,13 +26,13 @@ public class DEmptyView implements DComponent {
 	}
 	
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
+	public LiveObject<DSizing> getSizing() {
 		return DIMENSION;
 	}
 	
 	@Override
 	public DIRectangle getBounds() {
-		return NO_BOUNDS;
+		return DIRectangle.EMPTY;
 	}
 
 	@Override

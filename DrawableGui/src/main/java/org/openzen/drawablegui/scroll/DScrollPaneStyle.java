@@ -7,7 +7,6 @@ package org.openzen.drawablegui.scroll;
 
 import org.openzen.drawablegui.border.DBorder;
 import org.openzen.drawablegui.border.DLineBorder;
-import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**

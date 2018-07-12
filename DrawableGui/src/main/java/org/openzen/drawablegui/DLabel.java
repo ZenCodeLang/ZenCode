@@ -8,7 +8,7 @@ package org.openzen.drawablegui;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -19,7 +19,7 @@ import org.openzen.drawablegui.style.DStylePath;
 public class DLabel implements DComponent {
 	private final LiveString label;
 	private final DStyleClass styleClass;
-	private final LiveObject<DDimensionPreferences> preferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final ListenerHandle<LiveString.Listener> labelListener;
 	
 	private DUIContext context;
@@ -46,8 +46,8 @@ public class DLabel implements DComponent {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return preferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class DLabel implements DComponent {
 	}
 	
 	private void calculateDimension() {
-		preferences.setValue(new DDimensionPreferences(
+		sizing.setValue(new DSizing(
 			style.border.getPaddingLeft() + fontMetrics.getWidth(label.getValue()) + style.border.getPaddingRight(),
 			style.border.getPaddingTop() + fontMetrics.getAscent() + fontMetrics.getDescent() + style.border.getPaddingTop()));
 	}

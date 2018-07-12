@@ -8,8 +8,8 @@ package org.openzen.drawablegui;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.MutableLiveString;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DDimension;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -23,7 +23,7 @@ public class DInputField implements DComponent {
 	private final ListenerHandle<LiveString.Listener> valueListener;
 	
 	private final DStyleClass styleClass;
-	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private DIRectangle bounds = DIRectangle.EMPTY;
 	private final DDimension preferredWidth;
 	
@@ -70,7 +70,7 @@ public class DInputField implements DComponent {
 		DStylePath path = parent.getChild("input", styleClass);
 		style = new DInputFieldStyle(context.getStylesheets().get(context, path));
 		fontMetrics = context.getFontMetrics(style.font);
-		dimensionPreferences.setValue(new DDimensionPreferences(
+		sizing.setValue(new DSizing(
 				preferredWidth.evalInt(context) + style.paddingLeft + style.paddingRight + 2 * style.borderWidth,
 				fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingTop + style.paddingBottom + 2 * style.borderWidth));
 		
@@ -85,8 +85,8 @@ public class DInputField implements DComponent {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return dimensionPreferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override

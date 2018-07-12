@@ -5,12 +5,19 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.live.MutableLiveObject;
+import org.openzen.drawablegui.live.SimpleLiveObject;
+
 /**
  *
  * @author Hoofdgebruiker
  */
-public class DDimensionPreferences {
-	public static final DDimensionPreferences EMPTY = new DDimensionPreferences(0, 0);
+public class DSizing {
+	public static MutableLiveObject<DSizing> create() {
+		return new SimpleLiveObject<>(DSizing.EMPTY);
+	}
+	
+	public static final DSizing EMPTY = new DSizing(0, 0);
 	
 	public final int minimumWidth;
 	public final int minimumHeight;
@@ -19,7 +26,7 @@ public class DDimensionPreferences {
 	public final int maximumWidth;
 	public final int maximumHeight;
 	
-	public DDimensionPreferences(int preferredWidth, int preferredHeight) {
+	public DSizing(int preferredWidth, int preferredHeight) {
 		this.minimumWidth = 0;
 		this.minimumHeight = 0;
 		this.preferredWidth = preferredWidth;
@@ -28,7 +35,7 @@ public class DDimensionPreferences {
 		this.maximumHeight = 1000000;
 	}
 	
-	public DDimensionPreferences(int minimumWidth, int minimumHeight, int preferredWidth, int preferredHeight, int maximumWidth, int maximumHeight) {
+	public DSizing(int minimumWidth, int minimumHeight, int preferredWidth, int preferredHeight, int maximumWidth, int maximumHeight) {
 		this.minimumWidth = minimumWidth;
 		this.minimumHeight = minimumHeight;
 		this.preferredWidth = preferredWidth;

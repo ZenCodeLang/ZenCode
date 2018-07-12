@@ -3,16 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui;
+package org.openzen.drawablegui.live;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface DColorableIcon {
-	void draw(DCanvas canvas, DTransform2D transform, int color);
-	
-	float getNominalWidth();
-	
-	float getNominalHeight();
+public interface MutableLiveObject<T> extends LiveObject<T> {
+	public void setValue(T value);
 }

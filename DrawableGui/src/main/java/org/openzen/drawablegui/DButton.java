@@ -8,7 +8,7 @@ package org.openzen.drawablegui;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -20,7 +20,7 @@ import org.openzen.drawablegui.style.DStylePath;
 public class DButton implements DComponent {
 	private final DStyleClass styleClass;
 	private final LiveString label;
-	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final LiveBool disabled;
 	private final Runnable action;
 	
@@ -48,14 +48,14 @@ public class DButton implements DComponent {
 		this.style = new DButtonStyle(context.getStylesheets().get(context, path));
 		fontMetrics = context.getFontMetrics(style.font);
 		
-		dimensionPreferences.setValue(new DDimensionPreferences(
+		sizing.setValue(new DSizing(
 				style.paddingLeft + style.paddingRight + fontMetrics.getWidth(label.getValue()),
 				style.paddingTop + style.paddingBottom + fontMetrics.getAscent() + fontMetrics.getDescent()));
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return dimensionPreferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override

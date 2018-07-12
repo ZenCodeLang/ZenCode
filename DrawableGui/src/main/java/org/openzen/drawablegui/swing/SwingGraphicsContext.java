@@ -15,7 +15,7 @@ import javax.swing.Timer;
 import org.openzen.drawablegui.DAnchor;
 import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
@@ -155,7 +155,7 @@ public class SwingGraphicsContext implements DUIContext {
 		windowContext.graphics = this.graphics; // help a little...
 		
 		root.setContext(DStylePathRoot.INSTANCE, windowContext);
-		DDimensionPreferences dimension = root.getDimensionPreferences().getValue();
+		DSizing dimension = root.getSizing().getValue();
 		int tx = (int)(x - anchor.alignX * dimension.preferredWidth);
 		int ty = (int)(y - anchor.alignY * dimension.preferredHeight);
 		
@@ -175,7 +175,7 @@ public class SwingGraphicsContext implements DUIContext {
 		windowContext.graphics = this.graphics; // help a little...
 		
 		root.setContext(DStylePathRoot.INSTANCE, windowContext);
-		DDimensionPreferences dimension = root.getDimensionPreferences().getValue();
+		DSizing dimension = root.getSizing().getValue();
 		int tx = (int)(x - anchor.alignX * dimension.preferredWidth);
 		int ty = (int)(y - anchor.alignY * dimension.preferredHeight);
 		

@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -25,7 +26,7 @@ public class DSideLayout extends BaseComponentGroup {
 	
 	private DComponent main;
 	private final List<SideComponent> sides = new ArrayList<>();
-	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DStylePath path;
 	private DUIContext context;
@@ -83,8 +84,8 @@ public class DSideLayout extends BaseComponentGroup {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return dimensionPreferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -97,7 +98,7 @@ public class DSideLayout extends BaseComponentGroup {
 		int bottom = bounds.y + bounds.height;
 		for (int i = sides.size() - 1; i >= 0; i--) {
 			SideComponent side = sides.get(i);
-			DDimensionPreferences preferences = side.component.getDimensionPreferences().getValue();
+			DSizing preferences = side.component.getSizing().getValue();
 			
 			switch (side.side) {
 				case TOP: {
@@ -175,7 +176,7 @@ public class DSideLayout extends BaseComponentGroup {
 	}
 	
 	private void recalculateSize() {
-		DDimensionPreferences mainPreferences = main.getDimensionPreferences().getValue();
+		DSizing mainPreferences = main.getSizing().getValue();
 		int minimumWidth = mainPreferences.minimumWidth;
 		int minimumHeight = mainPreferences.minimumHeight;
 		int preferredWidth = mainPreferences.preferredWidth;
@@ -184,7 +185,7 @@ public class DSideLayout extends BaseComponentGroup {
 		int maximumHeight = mainPreferences.maximumHeight;
 		
 		for (SideComponent side : sides) {
-			DDimensionPreferences sidePreferences = side.component.getDimensionPreferences().getValue();
+			DSizing sidePreferences = side.component.getSizing().getValue();
 			switch (side.side) {
 				case LEFT:
 				case RIGHT:
@@ -207,7 +208,7 @@ public class DSideLayout extends BaseComponentGroup {
 			}
 		}
 		
-		dimensionPreferences.setValue(new DDimensionPreferences(
+		sizing.setValue(new DSizing(
 				minimumWidth,
 				minimumHeight,
 				preferredWidth,
@@ -241,15 +242,15 @@ public class DSideLayout extends BaseComponentGroup {
 			side.close();
 	}
 	
-	public class SideComponent implements Closeable, LiveObject.Listener<DDimensionPreferences> {
+	public class SideComponent implements Closeable, LiveObject.Listener<DSizing> {
 		public final Side side;
 		public final DComponent component;
-		public final ListenerHandle<LiveObject.Listener<DDimensionPreferences>> listenerHandle;
+		public final ListenerHandle<LiveObject.Listener<DSizing>> listenerHandle;
 
 		public SideComponent(Side side, DComponent component) {
 			this.side = side;
 			this.component = component;
-			listenerHandle = component.getDimensionPreferences().addListener(this);
+			listenerHandle = component.getSizing().addListener(this);
 		}
 		
 		@Override
@@ -258,7 +259,7 @@ public class DSideLayout extends BaseComponentGroup {
 		}
 
 		@Override
-		public void onUpdated(DDimensionPreferences oldValue, DDimensionPreferences newValue) {
+		public void onUpdated(DSizing oldValue, DSizing newValue) {
 			recalculateSize();
 		}
 	}

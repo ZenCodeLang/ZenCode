@@ -7,7 +7,7 @@ package org.openzen.drawablegui.border;
 
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
@@ -28,7 +28,7 @@ import org.openzen.drawablegui.style.DStylePath;
 public class DCustomWindowBorder implements DComponent {
 	private final DStyleClass styleClass;
 	private final DComponent content;
-	private final LiveObject<DDimensionPreferences> preferences = new ImmutableLiveObject<>(DDimensionPreferences.EMPTY);
+	private final LiveObject<DSizing> sizing = new ImmutableLiveObject<>(DSizing.EMPTY);
 	
 	private DUIContext context;
 	private DCustomWindowBorderStyle style;
@@ -64,8 +64,8 @@ public class DCustomWindowBorder implements DComponent {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return preferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
