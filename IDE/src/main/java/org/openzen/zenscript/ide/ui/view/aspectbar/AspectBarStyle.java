@@ -40,7 +40,7 @@ public class AspectBarStyle {
 	public final DShadow windowControlShadow;
 	
 	public AspectBarStyle(DStyleDefinition style) {
-		height = style.getDimension("height", new DDpDimension(32));
+		height = style.getDimension("height", new DDpDimension(38));
 		aspectSelectorPaddingLeft = style.getDimension("aspectSelectorPaddingLeft", new DDpDimension(4));
 		aspectSelectorToToolbarSpacing = style.getDimension("aspectSelectorToToolbarSpacing", new DDpDimension(16));
 		toolbarTitleToControlsSpacing = style.getDimension("toolbarTitleToControlsSpacing", new DDpDimension(8));

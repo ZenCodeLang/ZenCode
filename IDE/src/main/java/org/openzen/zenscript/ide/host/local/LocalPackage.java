@@ -5,9 +5,14 @@
  */
 package org.openzen.zenscript.ide.host.local;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveList;
+import org.openzen.drawablegui.live.MutableLiveList;
+import org.openzen.drawablegui.live.SortedLiveList;
+import org.openzen.zenscript.constructor.module.SourceFile;
 import org.openzen.zenscript.constructor.module.SourcePackage;
 import org.openzen.zenscript.ide.host.IDEPackage;
 import org.openzen.zenscript.ide.host.IDESourceFile;
@@ -18,8 +23,11 @@ import org.openzen.zenscript.ide.host.IDESourceFile;
  */
 public class LocalPackage implements IDEPackage {
 	private final SourcePackage pkg;
-	private final LiveList<IDEPackage> subPackages = new LiveArrayList<>();
-	private final LiveList<IDESourceFile> sourceFiles = new LiveArrayList<>();
+	private final MutableLiveList<IDEPackage> subPackages = new LiveArrayList<>();
+	private final MutableLiveList<IDESourceFile> sourceFiles = new LiveArrayList<>();
+	
+	private final LiveList<IDEPackage> subPackagesSorted;
+	private final LiveList<IDESourceFile> sourceFilesSorted;
 	
 	public LocalPackage(SourcePackage pkg) {
 		this.pkg = pkg;
@@ -32,12 +40,15 @@ public class LocalPackage implements IDEPackage {
 				.toArray(new String[pkg.sourceFiles.size()]);
 		Arrays.sort(sourceFileKeys);
 		
-		for (String subKey : subPackageKeys) {
-			subPackages.add(new LocalPackage(pkg.subPackages.get(subKey)));
+		for (SourcePackage subPackage : pkg.subPackages.values()) {
+			subPackages.add(new LocalPackage(subPackage));
 		}
-		for (String sourceFileKey : sourceFileKeys) {
-			sourceFiles.add(new LocalSourceFile(pkg.sourceFiles.get(sourceFileKey)));
+		for (SourceFile sourceFile : pkg.sourceFiles.values()) {
+			sourceFiles.add(new LocalSourceFile(sourceFile));
 		}
+		
+		subPackagesSorted = new SortedLiveList<>(subPackages, (a, b) -> a.getName().compareTo(b.getName()));
+		sourceFilesSorted = new SortedLiveList<>(sourceFiles, (a, b) -> a.getName().compareTo(b.getName()));
 	}
 	
 	@Override
@@ -47,11 +58,39 @@ public class LocalPackage implements IDEPackage {
 
 	@Override
 	public LiveList<IDEPackage> getSubPackages() {
-		return subPackages;
+		return subPackagesSorted;
 	}
 
 	@Override
 	public LiveList<IDESourceFile> getSourceFiles() {
-		return sourceFiles;
+		return sourceFilesSorted;
+	}
+	
+	@Override
+	public IDEPackage createSubPackage(String name) {
+		File file = new File(this.pkg.directory, name);
+		file.mkdir();
+		
+		SourcePackage sourcePackage = new SourcePackage(file, name);
+		IDEPackage pkg = new LocalPackage(sourcePackage);
+		this.pkg.subPackages.put(name, sourcePackage);
+		subPackages.add(pkg);
+		return pkg;
+	}
+	
+	@Override
+	public IDESourceFile createSourceFile(String name) {
+		File file = new File(this.pkg.directory, name);
+		try {
+			file.createNewFile();
+		} catch (IOException ex) {
+			ex.printStackTrace(); // TODO
+		}
+		
+		SourceFile sourceFile = new SourceFile(name, file);
+		IDESourceFile localSourceFile = new LocalSourceFile(sourceFile);
+		this.pkg.sourceFiles.put(name, sourceFile);
+		sourceFiles.add(localSourceFile);
+		return localSourceFile;
 	}
 }

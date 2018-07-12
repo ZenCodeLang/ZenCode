@@ -17,4 +17,8 @@ public interface IDEPackage {
 	public LiveList<IDEPackage> getSubPackages();
 	
 	public LiveList<IDESourceFile> getSourceFiles();
+	
+	public IDEPackage createSubPackage(String name);
+	
+	public IDESourceFile createSourceFile(String name);
 }

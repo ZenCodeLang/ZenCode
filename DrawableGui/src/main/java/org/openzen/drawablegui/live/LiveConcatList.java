@@ -37,31 +37,6 @@ public class LiveConcatList<T> implements Closeable, LiveList<T> {
 	}
 
 	@Override
-	public void add(T value) {
-		throw new UnsupportedOperationException("Cannot modify a concat list");
-	}
-
-	@Override
-	public void add(int index, T value) {
-		throw new UnsupportedOperationException("Cannot modify a concat list");
-	}
-
-	@Override
-	public void set(int index, T value) {
-		throw new UnsupportedOperationException("Cannot modify a concat list");
-	}
-
-	@Override
-	public void remove(int index) {
-		throw new UnsupportedOperationException("Cannot modify a concat list");
-	}
-
-	@Override
-	public void remove(T value) {
-		throw new UnsupportedOperationException("Cannot modify a concat list");
-	}
-
-	@Override
 	public int indexOf(T value) {
 		int result = a.indexOf(value);
 		if (result >= 0)

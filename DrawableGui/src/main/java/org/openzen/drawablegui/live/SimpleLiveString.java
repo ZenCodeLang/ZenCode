@@ -12,7 +12,7 @@ import org.openzen.drawablegui.listeners.ListenerList;
  *
  * @author Hoofdgebruiker
  */
-public class SimpleLiveString implements LiveString {
+public class SimpleLiveString implements MutableLiveString {
 	private final ListenerList<Listener> listeners = new ListenerList<>();
 	
 	private String value;

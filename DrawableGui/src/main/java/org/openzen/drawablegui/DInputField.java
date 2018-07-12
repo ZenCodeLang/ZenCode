@@ -8,7 +8,8 @@ package org.openzen.drawablegui;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
+import org.openzen.drawablegui.live.MutableLiveString;
 import org.openzen.drawablegui.style.DDimension;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -18,11 +19,11 @@ import org.openzen.drawablegui.style.DStylePath;
  * @author Hoofdgebruiker
  */
 public class DInputField implements DComponent {
-	public final LiveString value;
+	public final MutableLiveString value;
 	private final ListenerHandle<LiveString.Listener> valueListener;
 	
 	private final DStyleClass styleClass;
-	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private DIRectangle bounds = DIRectangle.EMPTY;
 	private final DDimension preferredWidth;
 	
@@ -32,10 +33,13 @@ public class DInputField implements DComponent {
 	private int cursorFrom = -1;
 	private int cursorTo = -1;
 	
+	private Runnable onEnter = null;
+	private Runnable onEscape = null;
+	
 	private boolean cursorBlink = true;
 	private DTimerHandle blinkTimer;
 	
-	public DInputField(DStyleClass styleClass, LiveString value, DDimension preferredWidth) {
+	public DInputField(DStyleClass styleClass, MutableLiveString value, DDimension preferredWidth) {
 		this.styleClass = styleClass;
 		this.value = value;
 		this.preferredWidth = preferredWidth;
@@ -43,6 +47,14 @@ public class DInputField implements DComponent {
 		valueListener = value.addListener((oldValue, newValue) -> handleValueUpdated(newValue));
 		cursorFrom = 0;
 		cursorTo = value.getValue().length();
+	}
+	
+	public void setOnEnter(Runnable onEnter) {
+		this.onEnter = onEnter;
+	}
+	
+	public void setOnEscape(Runnable onEscape) {
+		this.onEscape = onEscape;
 	}
 	
 	@Override
@@ -58,7 +70,7 @@ public class DInputField implements DComponent {
 		DStylePath path = parent.getChild("input", styleClass);
 		style = new DInputFieldStyle(context.getStylesheets().get(context, path));
 		fontMetrics = context.getFontMetrics(style.font);
-		dimensionPreferences.setValue(new DDimensionPreferences(
+		sizing.setValue(new DSizing(
 				preferredWidth.evalInt(context) + style.paddingLeft + style.paddingRight + 2 * style.borderWidth,
 				fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingTop + style.paddingBottom + 2 * style.borderWidth));
 		
@@ -73,8 +85,8 @@ public class DInputField implements DComponent {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return dimensionPreferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -127,6 +139,16 @@ public class DInputField implements DComponent {
 	}
 	
 	@Override
+	public void onMouseEnter(DMouseEvent e) {
+		context.setCursor(DUIContext.Cursor.TEXT);
+	}
+	
+	@Override
+	public void onMouseExit(DMouseEvent e) {
+		context.setCursor(DUIContext.Cursor.NORMAL);
+	}
+	
+	@Override
 	public void onMouseClick(DMouseEvent e) {
 		context.getWindow().focus(this);
 	}
@@ -159,6 +181,9 @@ public class DInputField implements DComponent {
 				break;
 			case ENTER:
 				enter();
+				break;
+			case ESCAPE:
+				escape();
 				break;
 			default:
 				if (e.character == DKeyEvent.CHAR_UNDEFINED)
@@ -218,6 +243,12 @@ public class DInputField implements DComponent {
 	}
 	
 	private void enter() {
-		
+		if (onEnter != null)
+			onEnter.run();
+	}
+	
+	private void escape() {
+		if (onEscape != null)
+			onEscape.run();
 	}
 }

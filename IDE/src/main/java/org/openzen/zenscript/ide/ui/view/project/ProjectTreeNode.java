@@ -30,6 +30,11 @@ public class ProjectTreeNode extends ProjectOverviewNode {
 	}
 	
 	@Override
+	public void close(){
+		modules.close();
+	}
+	
+	@Override
 	public DColorableIcon getIcon() {
 		return ProjectIcon.INSTANCE;
 	}

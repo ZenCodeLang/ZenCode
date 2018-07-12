@@ -16,14 +16,10 @@ import org.openzen.zenscript.ide.ui.icons.ModuleIcon;
  * @author Hoofdgebruiker
  */
 public class ModuleTreeNode extends PackageTreeNode {
-	private final IDEModule module;
-	private final IDEWindow window;
-	
 	public ModuleTreeNode(IDEWindow window, IDEModule module) {
 		super(window, module.getRootPackage());
 		
-		this.module = module;
-		this.window = window;
+		init(module);
 	}
 
 	@Override

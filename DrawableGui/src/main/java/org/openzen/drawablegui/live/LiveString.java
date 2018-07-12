@@ -16,8 +16,6 @@ public interface LiveString {
 	
 	String getValue();
 	
-	void setValue(String value);
-	
 	interface Listener {
 		void onChanged(String oldValue, String newValue);
 	}

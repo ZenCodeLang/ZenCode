@@ -285,7 +285,7 @@ public class FunctionHeader {
 		for (int i = 0; i < parameters.length; i++) {
 			parameters[i] = this.parameters[i].withGenericArguments(mapper);
 		}
-		return new FunctionHeader(null, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
+		return new FunctionHeader(TypeParameter.NONE, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
 	}
 	
 	public FunctionHeader forTypeParameterInference() {

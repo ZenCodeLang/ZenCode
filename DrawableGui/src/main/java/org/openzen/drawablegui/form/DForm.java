@@ -10,12 +10,12 @@ import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -26,7 +26,7 @@ import org.openzen.drawablegui.style.DStylePath;
 public class DForm extends BaseComponentGroup {
 	private final DFormComponent[] components;
 	private final DStyleClass styleClass;
-	private final LiveObject<DDimensionPreferences> preferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DIRectangle bounds;
 	private DUIContext context;
@@ -56,26 +56,26 @@ public class DForm extends BaseComponentGroup {
 		
 		for (DFormComponent component : components) {
 			maxLabelWidth = Math.max(maxLabelWidth, fontMetrics.getWidth(component.label));
-			int componentWidth = component.component.getDimensionPreferences().getValue().preferredWidth;
+			int componentWidth = component.component.getSizing().getValue().preferredWidth;
 			maxFieldWidth = Math.max(maxFieldWidth, componentWidth);
 		}
 		
 		for (DFormComponent component : components) {
-			height += component.component.getDimensionPreferences().getValue().preferredHeight;
+			height += component.component.getSizing().getValue().preferredHeight;
 			height += style.spacing;
 		}
 		
 		this.maxFieldWidth = maxFieldWidth;
 		this.maxLabelWidth = maxLabelWidth;
-		preferences.setValue(new DDimensionPreferences(maxLabelWidth + maxFieldWidth + style.paddingLeft + style.paddingRight + style.spacing, height));
+		sizing.setValue(new DSizing(maxLabelWidth + maxFieldWidth + style.paddingLeft + style.paddingRight + style.spacing, height));
 		
 		if (bounds != null)
 			layout();
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return preferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class DForm extends BaseComponentGroup {
 			canvas.drawText(style.labelFont, style.labelColor, x, y + baseline, component.label);
 			component.component.paint(canvas);
 			
-			y += component.component.getDimensionPreferences().getValue().preferredHeight + style.spacing;
+			y += component.component.getSizing().getValue().preferredHeight + style.spacing;
 		}
 	}
 
@@ -122,7 +122,7 @@ public class DForm extends BaseComponentGroup {
 		int y = bounds.y + style.paddingBottom;
 		
 		for (DFormComponent component : components) {
-			int preferredHeight = component.component.getDimensionPreferences().getValue().preferredHeight;
+			int preferredHeight = component.component.getSizing().getValue().preferredHeight;
 			DIRectangle componentBounds = new DIRectangle(x + maxLabelWidth, y, bounds.width - maxLabelWidth - style.paddingLeft - style.paddingRight - style.spacing, preferredHeight);
 			component.component.setBounds(componentBounds);
 			

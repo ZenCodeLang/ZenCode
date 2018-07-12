@@ -35,8 +35,8 @@ public class DButtonStyle {
 	public DButtonStyle(DStyleDefinition style) {
 		this.paddingTop = style.getDimension("paddingTop", new DDpDimension(4));
 		this.paddingBottom = style.getDimension("paddingBottom", new DDpDimension(4));
-		this.paddingLeft = style.getDimension("paddingLeft", new DDpDimension(4));
-		this.paddingRight = style.getDimension("paddingRight", new DDpDimension(4));
+		this.paddingLeft = style.getDimension("paddingLeft", new DDpDimension(8));
+		this.paddingRight = style.getDimension("paddingRight", new DDpDimension(8));
 		font = style.getFont("font", context -> new DFont(DFontFamily.UI, false, false, false, (int)(14 * context.getTextScale())));
 		textColor = style.getColor("textColor", 0xFF000000);
 		textColorDisabled = style.getColor("textColorDisabled", 0xFF888888);
@@ -46,9 +46,9 @@ public class DButtonStyle {
 		backgroundColorPress = style.getColor("backgroundColorPress", 0xFFE5EFF8);
 		backgroundColorDisabled = style.getColor("backgroundColorDisabled", 0xFFE5EFF8);
 		
-		shadowNormal = style.getShadow("shadowNormal", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()));
-		shadowHover = style.getShadow("shadowHover", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()));
-		shadowPress = style.getShadow("shadowPress", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()));
-		shadowDisabled = style.getShadow("shadowDisabled", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()));
+		shadowNormal = style.getShadow("shadowNormal", context -> new DShadow(0xFF888888, 0, 1f * context.getScale(), 4 * context.getScale()));
+		shadowHover = style.getShadow("shadowHover", context -> new DShadow(0xFF888888, 0, 1f * context.getScale(), 4 * context.getScale()));
+		shadowPress = style.getShadow("shadowPress", context -> new DShadow(0xFF888888, 0, 1f * context.getScale(), 3 * context.getScale()));
+		shadowDisabled = style.getShadow("shadowDisabled", context -> new DShadow(0xFF888888, 0, 1f * context.getScale(), 3 * context.getScale()));
 	}
 }

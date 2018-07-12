@@ -15,9 +15,11 @@ import org.openzen.zenscript.ide.host.IDEPackage;
  */
 public class LocalModule implements IDEModule {
 	private final ModuleReference module;
+	private final LocalPackage rootPackage;
 	
 	public LocalModule(ModuleReference module) {
 		this.module = module;
+		rootPackage = new LocalPackage(module.getRootPackage());
 	}
 
 	@Override
@@ -27,6 +29,6 @@ public class LocalModule implements IDEModule {
 
 	@Override
 	public IDEPackage getRootPackage() {
-		return new LocalPackage(module.getRootPackage());
+		return rootPackage;
 	}
 }

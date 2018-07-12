@@ -38,31 +38,6 @@ public class LiveMappedList<T, U> implements Closeable, LiveList<U> {
 	}
 
 	@Override
-	public void add(U value) {
-		throw new UnsupportedOperationException("Cannot modify a mapped list");
-	}
-
-	@Override
-	public void add(int index, U value) {
-		throw new UnsupportedOperationException("Cannot modify a mapped list");
-	}
-
-	@Override
-	public void set(int index, U value) {
-		throw new UnsupportedOperationException("Cannot modify a mapped list");
-	}
-
-	@Override
-	public void remove(int index) {
-		throw new UnsupportedOperationException("Cannot modify a mapped list");
-	}
-
-	@Override
-	public void remove(U value) {
-		throw new UnsupportedOperationException("Cannot modify a mapped list");
-	}
-
-	@Override
 	public int indexOf(U value) {
 		return mapped.indexOf(value);
 	}

@@ -26,7 +26,7 @@ public class DefinitionTypeID implements ITypeID {
 		if (definition.genericParameters != null)
 			throw new IllegalArgumentException("Definition has type arguments!");
 		
-		return new DefinitionTypeID(definition, null);
+		return new DefinitionTypeID(definition, ITypeID.NONE);
 	}
 	
 	private static final OuterTypeEntry[] NO_OUTER_ENTRIES = new OuterTypeEntry[0];
@@ -44,6 +44,9 @@ public class DefinitionTypeID implements ITypeID {
 	
 	// For inner classes of generic outer classes
 	public DefinitionTypeID(HighLevelDefinition definition, ITypeID[] typeParameters, Map<TypeParameter, ITypeID> outerTypeParameters) {
+		if (typeParameters == null)
+			throw new NullPointerException("typeParameters cannot be null");
+		
 		this.definition = definition;
 		this.typeParameters = typeParameters;
 		this.outerTypeParameters = outerTypeParameters;
@@ -63,7 +66,7 @@ public class DefinitionTypeID implements ITypeID {
 	}
 	
 	public boolean hasTypeParameters() {
-		return typeParameters != null && typeParameters.length > 0;
+		return typeParameters.length > 0;
 	}
 	
 	public void init(GlobalTypeRegistry registry) {
@@ -81,7 +84,7 @@ public class DefinitionTypeID implements ITypeID {
 	// To be used exclusively by StaticDefinitionTypeID
 	protected DefinitionTypeID(HighLevelDefinition definition) {
 		this.definition = definition;
-		this.typeParameters = null;
+		this.typeParameters = ITypeID.NONE;
 		this.superType = definition.superType;
 		this.outerTypeParameters = Collections.emptyMap();
 		this.outerTypeEntries = NO_OUTER_ENTRIES;
@@ -92,8 +95,8 @@ public class DefinitionTypeID implements ITypeID {
 		if (!hasTypeParameters() && outerTypeParameters.isEmpty())
 			return this;
 		
-		ITypeID[] instancedArguments = null;
-		if (typeParameters != null) {
+		ITypeID[] instancedArguments = ITypeID.NONE;
+		if (hasTypeParameters()) {
 			instancedArguments = new ITypeID[typeParameters.length];
 			for (int i = 0; i < typeParameters.length; i++) {
 				// TODO: why was this line written like this?
@@ -160,7 +163,7 @@ public class DefinitionTypeID implements ITypeID {
 	
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		if (typeParameters != null) {
+		if (hasTypeParameters()) {
 			for (ITypeID typeParameter : typeParameters)
 				if (typeParameter.hasInferenceBlockingTypeParameters(parameters))
 					return true;
@@ -197,7 +200,7 @@ public class DefinitionTypeID implements ITypeID {
 	
 	@Override
 	public String toString() {
-		if (typeParameters == null) {
+		if (!hasTypeParameters()) {
 			return definition.name;
 		} else {
 			StringBuilder result = new StringBuilder();

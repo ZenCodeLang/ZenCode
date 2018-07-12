@@ -14,8 +14,6 @@ import org.openzen.drawablegui.listeners.ListenerHandle;
 public interface LiveObject<T> {
 	public T getValue();
 	
-	public void setValue(T value);
-	
 	public ListenerHandle<Listener<T>> addListener(Listener<T> listener);
 	
 	public interface Listener<T> {

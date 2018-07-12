@@ -8,7 +8,7 @@ package org.openzen.zenscript.ide.ui.view.editor;
 import java.io.IOException;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
 import org.openzen.drawablegui.DFontMetrics;
@@ -29,6 +29,7 @@ import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -44,7 +45,7 @@ import org.openzen.zenscript.ide.ui.view.IconButtonControl;
 public class SourceEditor implements DComponent {
 	private final DStyleClass styleClass;
 	private final DFont font = new DFont(DFontFamily.CODE, false, false, false, 24);
-	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(new DDimensionPreferences(0, 0));
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final String tab = "    ";
 	private final IDESourceFile sourceFile;
 	private final TokenModel tokens;
@@ -124,7 +125,7 @@ public class SourceEditor implements DComponent {
 		fullLineHeight = textLineHeight + fontMetrics.getLeading() + style.extraLineSpacing;
 		selectionLineHeight = textLineHeight + style.selectionPaddingTop + style.selectionPaddingBottom;
 		
-		dimensionPreferences.setValue(new DDimensionPreferences(0, fullLineHeight * tokens.getLineCount()));
+		sizing.setValue(new DSizing(0, fullLineHeight * tokens.getLineCount()));
 		
 		if (blinkTimer != null)
 			blinkTimer.close();
@@ -132,8 +133,8 @@ public class SourceEditor implements DComponent {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return dimensionPreferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -464,6 +465,18 @@ public class SourceEditor implements DComponent {
 		if (deleteSelection())
 			return;
 		
+		if (cursorEnd.line > 0) {
+			String indent = tokens.getLine(cursorEnd.line - 1).getIndent(); // TODO: get nominal indent for current scope
+			if (cursorEnd.offset == indent.length()) {
+				// remove entire indent
+				SourcePosition deleteFrom = new SourcePosition(tokens, cursorEnd.line - 1, tokens.getLine(cursorEnd.line - 1).length());
+				tokens.delete(deleteFrom, cursorEnd);
+				unchanged.setValue(false);
+				setCursor(deleteFrom, deleteFrom);
+				return;
+			}
+		}
+		
 		if (cursorEnd.offset == 0) {
 			if (cursorEnd.line == 0)
 				return;
@@ -489,9 +502,25 @@ public class SourceEditor implements DComponent {
 	private void type(String value) {
 		deleteSelection();
 		
-		tokens.insert(cursorEnd, value);
-		SourcePosition position = new SourcePosition(tokens, cursorEnd.line, cursorEnd.offset + value.length());
-		setCursor(position, position);
+		if (value.equals("{")) {
+			String indent = tokens.getLine(cursorEnd.line).getIndent();
+			tokens.insert(cursorEnd, "{\n" + indent + "\t\n" + indent + "}");
+			
+			SourcePosition position = new SourcePosition(tokens, cursorEnd.line + 1, indent.length() + 1);
+			setCursor(position, position);
+		} else if (value.equals(";")) {
+			String indent = tokens.getLine(cursorEnd.line).getIndent();
+			tokens.insert(cursorEnd, ";\n" + indent);
+			
+			SourcePosition position = new SourcePosition(tokens, cursorEnd.line + 1, indent.length());
+			setCursor(position, position);
+		} else {
+			tokens.insert(cursorEnd, value);
+			
+			SourcePosition position = new SourcePosition(tokens, cursorEnd.line, cursorEnd.offset + value.length());
+			setCursor(position, position);
+		}
+		
 		unchanged.setValue(false);
 	}
 	
@@ -620,7 +649,7 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private void onLinesUpdated() {
-		dimensionPreferences.setValue(new DDimensionPreferences(0, fullLineHeight * tokens.getLineCount()));
+		sizing.setValue(new DSizing(0, fullLineHeight * tokens.getLineCount()));
 		
 		if (bounds != null)
 			context.repaint(bounds);

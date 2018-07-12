@@ -31,10 +31,11 @@ public class FunctionExpression extends Expression {
 			CodePosition position,
 			FunctionTypeID type,
 			LambdaClosure closure,
+			FunctionHeader header,
 			Statement body) {
 		super(position, type, body.thrownType);
 		
-		this.header = type.header;
+		this.header = header;
 		this.closure = closure;
 		this.body = body;
 	}
@@ -47,7 +48,7 @@ public class FunctionExpression extends Expression {
 	@Override
 	public FunctionExpression transform(ExpressionTransformer transformer) {
 		Statement tBody = body.transform(transformer, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
-		return tBody == body ? this : new FunctionExpression(position, (FunctionTypeID)type, closure, tBody);
+		return tBody == body ? this : new FunctionExpression(position, (FunctionTypeID)type, closure, header, tBody);
 	}
 	
 	@Override

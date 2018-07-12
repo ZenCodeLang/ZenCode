@@ -7,6 +7,7 @@ package org.openzen.zenscript.ide.host.local;
 
 import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveList;
+import org.openzen.drawablegui.live.MutableLiveList;
 import org.openzen.zenscript.constructor.Library;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.ide.host.IDELibrary;
@@ -18,7 +19,7 @@ import org.openzen.zenscript.ide.host.IDEModule;
  */
 public class LocalLibrary implements IDELibrary {
 	private final Library library;
-	private final LiveList<IDEModule> modules;
+	private final MutableLiveList<IDEModule> modules;
 	
 	public LocalLibrary(Library library) {
 		this.library = library;

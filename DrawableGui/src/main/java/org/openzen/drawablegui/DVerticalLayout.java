@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -21,8 +22,8 @@ public class DVerticalLayout extends BaseComponentGroup {
 	private final DStyleClass styleClass;
 	private final Alignment alignment;
 	private final Element[] components;
-	private final ListenerHandle<LiveObject.Listener<DDimensionPreferences>>[] componentSizeListeners;
-	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final ListenerHandle<LiveObject.Listener<DSizing>>[] componentSizeListeners;
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DUIContext context;
 	private DHorizontalLayoutStyle style;
@@ -40,7 +41,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 		totalShrink = 0;
 		
 		for (int i = 0; i < componentSizeListeners.length; i++) {
-			componentSizeListeners[i] = components[i].component.getDimensionPreferences().addListener((oldValue, newValue) -> updateDimensionPreferences());
+			componentSizeListeners[i] = components[i].component.getSizing().addListener((oldValue, newValue) -> updateDimensionPreferences());
 			
 			totalGrow += components[i].grow;
 			totalShrink += components[i].shrink;
@@ -76,8 +77,8 @@ public class DVerticalLayout extends BaseComponentGroup {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return dimensionPreferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -93,6 +94,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		layout();
 	}
 
 	@Override
@@ -104,8 +106,8 @@ public class DVerticalLayout extends BaseComponentGroup {
 
 	@Override
 	public void close() {
-		for (int i = 0; i < componentSizeListeners.length; i++) {
-			componentSizeListeners[i].close();
+		for (ListenerHandle<LiveObject.Listener<DSizing>> listener : componentSizeListeners) {
+			listener.close();
 		}
 	}
 	
@@ -146,7 +148,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 		if (bounds == null || context == null)
 			return;
 		
-		DDimensionPreferences myPreferences = dimensionPreferences.getValue();
+		DSizing myPreferences = sizing.getValue();
 		if (bounds.height < myPreferences.preferredHeight) {
 			layoutShrinked();
 		} else {
@@ -155,7 +157,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 	}
 	
 	private void layoutShrinked() {
-		DDimensionPreferences myPreferences = dimensionPreferences.getValue();
+		DSizing myPreferences = sizing.getValue();
 		if (totalShrink == 0) {
 			// now what?
 			// shrink proportionally, we have to shrink...
@@ -164,7 +166,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 			
 			for (int i = 0; i < components.length; i++) {
 				Element element = components[i];
-				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+				DSizing preferences = element.component.getSizing().getValue();
 				int newY = y + preferences.preferredHeight;
 				float idealUnspacedY = newY * scale;
 				int idealY = (int)(idealUnspacedY + 0.5f + i * style.spacing);
@@ -176,7 +178,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 			float deltaScaled = delta / totalShrink;
 			int y = bounds.y;
 			for (Element element : components) {
-				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+				DSizing preferences = element.component.getSizing().getValue();
 				float scaledSize = preferences.preferredHeight + deltaScaled * element.shrink;
 				float idealUnspacedY = y + scaledSize;
 				int newY = (int)(idealUnspacedY + 0.5f);
@@ -188,13 +190,13 @@ public class DVerticalLayout extends BaseComponentGroup {
 	
 	private void layoutGrown() {
 		// resize according to grow values
-		DDimensionPreferences myPreferences = dimensionPreferences.getValue();
+		DSizing myPreferences = sizing.getValue();
 		
 		if (totalGrow == 0) {
 			int deltaY = (int)(myPreferences.preferredHeight - bounds.height);
 			int y = bounds.y + (int)(deltaY * alignment.align);
 			for (Element element : components) {
-				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+				DSizing preferences = element.component.getSizing().getValue();
 				int newY = y + preferences.preferredHeight;
 				layout(element, y, newY - y);
 				y = newY;
@@ -204,10 +206,10 @@ public class DVerticalLayout extends BaseComponentGroup {
 			float deltaScaled = delta / totalGrow;
 			int y = bounds.y;
 			for (Element element : components) {
-				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+				DSizing preferences = element.component.getSizing().getValue();
 				float scaledSize = preferences.preferredHeight + deltaScaled * element.grow;
-				float idealUnspacedX = y + scaledSize;
-				int newY = (int)(idealUnspacedX + 0.5f);
+				float idealUnspacedY = y + scaledSize;
+				int newY = (int)(idealUnspacedY + 0.5f);
 				layout(element, y, newY - y);
 				y = newY + style.spacing;
 			}
@@ -215,7 +217,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 	}
 	
 	private void layout(Element element, int y, int height) {
-		DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+		DSizing preferences = element.component.getSizing().getValue();
 		int x;
 		int width;
 		switch (element.alignment) {
@@ -249,7 +251,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 		int maximumHeight = -style.spacing;
 		
 		for (Element element : components) {
-			DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
+			DSizing preferences = element.component.getSizing().getValue();
 			preferredWidth = Math.max(preferredWidth, preferences.preferredWidth);
 			preferredHeight += preferences.preferredHeight + style.spacing;
 			
@@ -260,13 +262,13 @@ public class DVerticalLayout extends BaseComponentGroup {
 			maximumHeight += preferences.maximumHeight + style.spacing;
 		}
 		
-		DDimensionPreferences preferences = new DDimensionPreferences(
+		DSizing preferences = new DSizing(
 				minimumWidth + style.paddingLeft + style.paddingRight,
 				minimumHeight + style.paddingTop + style.paddingBottom,
 				preferredWidth + style.paddingLeft + style.paddingRight,
 				preferredHeight + style.paddingTop + style.paddingBottom,
 				maximumWidth + style.paddingLeft + style.paddingRight,
 				maximumHeight + style.paddingTop + style.paddingBottom);
-		dimensionPreferences.setValue(preferences);
+		sizing.setValue(preferences);
 	}
 }

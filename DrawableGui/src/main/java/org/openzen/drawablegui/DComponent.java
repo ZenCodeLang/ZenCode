@@ -16,7 +16,7 @@ import org.openzen.drawablegui.style.DStylePath;
 public interface DComponent extends Closeable {
 	void setContext(DStylePath parent, DUIContext context);
 	
-	LiveObject<DDimensionPreferences> getDimensionPreferences();
+	LiveObject<DSizing> getSizing();
 	
 	DIRectangle getBounds();
 	

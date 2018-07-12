@@ -78,7 +78,8 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		}
 		
 		FunctionTypeID functionType = scope.getTypeRegistry().getFunction(genericHeader.withGenericArguments(new GenericMapper(scope.getTypeRegistry(), scope.genericInferenceMap)));
-		return new FunctionExpression(position, functionType, closure, statements);
+		definedHeader = definedHeader.forLambda(functionType.header);
+		return new FunctionExpression(position, functionType, closure, definedHeader, statements);
 	}
 	
 	@Override

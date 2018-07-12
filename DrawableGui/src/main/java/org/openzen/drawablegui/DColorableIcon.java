@@ -5,9 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.DCanvas;
-import org.openzen.drawablegui.DTransform2D;
-
 /**
  *
  * @author Hoofdgebruiker

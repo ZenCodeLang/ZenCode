@@ -206,7 +206,7 @@ public interface IParsedType {
 	}
 	
 	public static ITypeID[] compileList(List<IParsedType> typeParameters, BaseScope scope) {
-		ITypeID[] result = null;
+		ITypeID[] result = ITypeID.NONE;
 		if (typeParameters != null) {
 			result = new ITypeID[typeParameters.size()];
 			for (int i = 0; i < typeParameters.size(); i++) {

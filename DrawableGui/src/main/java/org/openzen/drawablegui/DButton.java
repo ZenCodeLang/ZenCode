@@ -8,7 +8,8 @@ package org.openzen.drawablegui;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
+import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -19,8 +20,9 @@ import org.openzen.drawablegui.style.DStylePath;
 public class DButton implements DComponent {
 	private final DStyleClass styleClass;
 	private final LiveString label;
-	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final LiveBool disabled;
+	private final Runnable action;
 	
 	private DUIContext context;
 	private DIRectangle bounds;
@@ -31,10 +33,11 @@ public class DButton implements DComponent {
 	private boolean hovering = false;
 	private boolean pressing = false;
 	
-	public DButton(DStyleClass styleClass, LiveString label, LiveBool disabled) {
+	public DButton(DStyleClass styleClass, LiveString label, LiveBool disabled, Runnable action) {
 		this.styleClass = styleClass;
 		this.label = label;
 		this.disabled = disabled;
+		this.action = action;
 	}
 
 	@Override
@@ -44,11 +47,15 @@ public class DButton implements DComponent {
 		DStylePath path = parent.getChild("Button", styleClass);
 		this.style = new DButtonStyle(context.getStylesheets().get(context, path));
 		fontMetrics = context.getFontMetrics(style.font);
+		
+		sizing.setValue(new DSizing(
+				style.paddingLeft + style.paddingRight + fontMetrics.getWidth(label.getValue()),
+				style.paddingTop + style.paddingBottom + fontMetrics.getAscent() + fontMetrics.getDescent()));
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return dimensionPreferences;
+	public LiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 
 	@Override
@@ -69,14 +76,24 @@ public class DButton implements DComponent {
 	@Override
 	public void paint(DCanvas canvas) {
 		int backgroundColor = style.backgroundColorNormal;
-		if (hovering)
+		DShadow shadow = style.shadowNormal;
+		if (hovering) {
 			backgroundColor = style.backgroundColorHover;
-		if (pressing)
+			shadow = style.shadowNormal;
+		}
+		if (pressing) {
 			backgroundColor = style.backgroundColorPress;
-		if (disabled.getValue())
+			shadow = style.shadowPress;
+		}
+		if (disabled.getValue()) {
 			backgroundColor = style.backgroundColorDisabled;
+			shadow = style.shadowDisabled;
+		}
 		
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, backgroundColor);
+		DPath shape = DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * context.getScale());
+		canvas.shadowPath(shape, DTransform2D.IDENTITY, shadow);
+		canvas.fillPath(shape, DTransform2D.IDENTITY, backgroundColor);
+		canvas.drawText(style.font, style.textColor, bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent(), label.getValue());
 	}
 
 	@Override
@@ -108,7 +125,7 @@ public class DButton implements DComponent {
 		pressing = false;
 		
 		if (!disabled.getValue()) {
-			// TODO
+			action.run();
 		}
 		
 		repaint();

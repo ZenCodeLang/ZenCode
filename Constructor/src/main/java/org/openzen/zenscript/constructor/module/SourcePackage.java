@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.constructor.module;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,11 +14,13 @@ import java.util.Map;
  * @author Hoofdgebruiker
  */
 public class SourcePackage {
+	public final File directory;
 	public final String name;
 	public final Map<String, SourcePackage> subPackages = new HashMap<>();
 	public final Map<String, SourceFile> sourceFiles = new HashMap<>();
 	
-	public SourcePackage(String name) {
+	public SourcePackage(File directory, String name) {
+		this.directory = directory;
 		this.name = name;
 	}
 	

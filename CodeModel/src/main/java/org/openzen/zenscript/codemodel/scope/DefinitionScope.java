@@ -47,7 +47,7 @@ public class DefinitionScope extends BaseScope {
 		this.outer = outer;
 		this.definition = definition;
 		
-		ITypeID[] genericParameterList = null;
+		ITypeID[] genericParameterList = ITypeID.NONE;
 		if (definition.genericParameters != null) {
 			genericParameterList = new ITypeID[definition.genericParameters.length];
 			for (int i = 0; i < definition.genericParameters.length; i++) {

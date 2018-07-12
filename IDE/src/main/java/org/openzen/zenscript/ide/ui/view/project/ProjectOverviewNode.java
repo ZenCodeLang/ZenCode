@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.ide.ui.view.project;
 
-import org.openzen.drawablegui.live.LiveBool;
+import org.openzen.drawablegui.live.MutableLiveBool;
 import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.tree.DTreeNode;
 
@@ -14,12 +14,12 @@ import org.openzen.drawablegui.tree.DTreeNode;
  * @author Hoofdgebruiker
  */
 public abstract class ProjectOverviewNode implements DTreeNode<ProjectOverviewNode> {
-	private final LiveBool collapsed = new SimpleLiveBool();
+	private final MutableLiveBool collapsed = new SimpleLiveBool();
 	
 	public abstract Kind getKind();
 	
 	@Override
-	public LiveBool isCollapsed() {
+	public MutableLiveBool isCollapsed() {
 		return collapsed;
 	}
 	

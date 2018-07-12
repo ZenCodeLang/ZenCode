@@ -9,7 +9,7 @@ import org.openzen.drawablegui.DAnchor;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
@@ -61,7 +61,7 @@ public class DScrollPane implements DComponent {
 		offsetXListener = offsetX.addListener(new ScrollListener());
 		offsetYListener = offsetY.addListener(new ScrollListener());
 		
-		contents.getDimensionPreferences().addListener((oldPreferences, newPreferences) -> {
+		contents.getSizing().addListener((oldPreferences, newPreferences) -> {
 			if (bounds == null)
 				return;
 			
@@ -94,8 +94,8 @@ public class DScrollPane implements DComponent {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return contents.getDimensionPreferences(); // TODO: derived preferences
+	public LiveObject<DSizing> getSizing() {
+		return contents.getSizing(); // TODO: derived preferences
 	}
 
 	@Override
@@ -115,10 +115,9 @@ public class DScrollPane implements DComponent {
 		if (this.context == null)
 			return;
 		
-		int height = Math.max(
-				bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom(),
-				contents.getDimensionPreferences().getValue().preferredHeight);
-		int scrollBarWidth = scrollBar.getDimensionPreferences().getValue().preferredWidth;
+		int height = Math.max(bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom(),
+				contents.getSizing().getValue().preferredHeight);
+		int scrollBarWidth = scrollBar.getSizing().getValue().preferredWidth;
 		scrollBar.setBounds(new DIRectangle(
 				bounds.x + bounds.width - scrollBarWidth - style.border.getPaddingRight(),
 				bounds.y + style.border.getPaddingTop(),

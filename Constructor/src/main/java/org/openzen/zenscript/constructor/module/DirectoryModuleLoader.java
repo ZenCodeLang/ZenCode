@@ -106,7 +106,7 @@ public class DirectoryModuleLoader implements ModuleReference {
 	}
 	
 	private SourcePackage loadPackage(String name, File directory) {
-		SourcePackage pkg = new SourcePackage(name);
+		SourcePackage pkg = new SourcePackage(directory, name);
 		
 		for (File file : directory.listFiles()) {
 			if (file.isDirectory()) {

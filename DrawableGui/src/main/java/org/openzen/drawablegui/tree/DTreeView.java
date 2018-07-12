@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DMouseEvent;
@@ -18,9 +18,9 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.live.LiveList;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStylePath;
 
 /**
@@ -28,7 +28,7 @@ import org.openzen.drawablegui.style.DStylePath;
  * @author Hoofdgebruiker
  */
 public class DTreeView<N extends DTreeNode<N>> implements DComponent {
-	private final LiveObject<DDimensionPreferences> dimensionPreferences = new SimpleLiveObject<>(DDimensionPreferences.EMPTY);
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private DIRectangle bounds;
 	
 	private int selectedRow = -1;
@@ -59,8 +59,8 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	}
 
 	@Override
-	public LiveObject<DDimensionPreferences> getDimensionPreferences() {
-		return dimensionPreferences;
+	public MutableLiveObject<DSizing> getSizing() {
+		return sizing;
 	}
 	
 	@Override
@@ -187,9 +187,8 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		}
 		
 		if (rows.size() != oldRowCount) {
-			DDimensionPreferences preferences = dimensionPreferences.getValue();
-			dimensionPreferences.setValue(
-					new DDimensionPreferences(
+			DSizing preferences = sizing.getValue();
+			sizing.setValue(new DSizing(
 							preferences.minimumWidth,
 							preferences.minimumHeight,
 							preferences.preferredWidth,
@@ -217,15 +216,17 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		// nothing to clean up
 	}
 	
-	private class Row implements Closeable, LiveBool.Listener {
+	private class Row implements Closeable, LiveBool.Listener, LiveList.Listener<N> {
 		private final int x;
 		private final N node;
 		private final ListenerHandle<LiveBool.Listener> collapseListener;
+		private final ListenerHandle<LiveList.Listener<N>> childListener;
 		
 		public Row(int x, N node) {
 			this.x = x;
 			this.node = node;
 			this.collapseListener = node.isCollapsed().addListener(this);
+			this.childListener = node.getChildren().addListener(this);
 		}
 
 		@Override
@@ -233,10 +234,29 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			updateLayout();
 			context.repaint(bounds);
 		}
+
+		@Override
+		public void onInserted(int index, N value) {
+			updateLayout();
+			context.repaint(bounds);
+		}
+
+		@Override
+		public void onChanged(int index, N oldValue, N newValue) {
+			updateLayout();
+			context.repaint(bounds);
+		}
+
+		@Override
+		public void onRemoved(int index, N oldValue) {
+			updateLayout();
+			context.repaint(bounds);
+		}
 		
 		@Override
 		public void close() {
 			collapseListener.close();
+			childListener.close();
 		}
 	}
 }

@@ -8,7 +8,6 @@ package org.openzen.drawablegui.border;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DUIContext;
 
 /**
  *

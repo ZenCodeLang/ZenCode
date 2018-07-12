@@ -7,21 +7,23 @@ package org.openzen.drawablegui.tree;
 
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DMouseEvent;
-import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveList;
+import org.openzen.drawablegui.live.MutableLiveBool;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface DTreeNode<N extends DTreeNode<N>> {
+	void close();
+	
 	DColorableIcon getIcon();
 	
 	String getTitle();
 	
 	LiveList<N> getChildren();
 	
-	LiveBool isCollapsed();
+	MutableLiveBool isCollapsed();
 	
 	boolean isLeaf();
 	

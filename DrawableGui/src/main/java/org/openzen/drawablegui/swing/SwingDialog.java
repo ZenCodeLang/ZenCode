@@ -13,7 +13,7 @@ import java.awt.event.WindowStateListener;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
@@ -87,7 +87,7 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 
 	@Override
 	public void close() {
-		System.exit(0);
+		dispose();
 	}
 
 	@Override
@@ -125,7 +125,7 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 		SwingDialog result = new SwingDialog(this, title, component, false);
 		result.setResizable(false);
 		
-		DDimensionPreferences size = component.getDimensionPreferences().getValue();
+		DSizing size = component.getSizing().getValue();
 		result.setLocation(
 				getX() + (getWidth() - size.preferredWidth) / 2,
 				getY() + (getHeight() - size.preferredHeight) / 2);

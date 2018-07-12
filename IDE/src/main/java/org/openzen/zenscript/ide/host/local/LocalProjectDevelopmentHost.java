@@ -5,9 +5,9 @@
  */
 package org.openzen.zenscript.ide.host.local;
 
-import java.util.List;
 import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveList;
+import org.openzen.drawablegui.live.MutableLiveList;
 import org.openzen.zenscript.constructor.Library;
 import org.openzen.zenscript.constructor.Project;
 import org.openzen.zenscript.constructor.module.ModuleReference;
@@ -23,9 +23,9 @@ import org.openzen.zenscript.ide.host.IDETarget;
  */
 public class LocalProjectDevelopmentHost implements DevelopmentHost {
 	private final Project project;
-	private final LiveList<IDEModule> modules;
-	private final LiveList<IDELibrary> libraries;
-	private final LiveList<IDETarget> targets;
+	private final MutableLiveList<IDEModule> modules;
+	private final MutableLiveList<IDELibrary> libraries;
+	private final MutableLiveList<IDETarget> targets;
 	
 	public LocalProjectDevelopmentHost(Project project) {
 		this.project = project;

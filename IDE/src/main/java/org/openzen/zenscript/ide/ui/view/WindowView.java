@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
-import org.openzen.drawablegui.DDimensionPreferences;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DEmptyView;
 import org.openzen.drawablegui.scroll.DScrollPane;
 import org.openzen.drawablegui.DSideLayout;
@@ -36,7 +36,7 @@ public final class WindowView extends DSideLayout {
 		this.window = window;
 		
 		DTreeView projectView = new DTreeView(DTreeViewStyle.DEFAULT, new RootTreeNode(window, host), false);
-		projectView.getDimensionPreferences().setValue(new DDimensionPreferences(500, 500));
+		projectView.getSizing().setValue(new DSizing(500, 500));
 		setMain(tabs = new TabbedView(DStyleClass.EMPTY));
 		add(Side.LEFT, new DScrollPane(DStyleClass.forId("projectView"), projectView));
 		add(Side.BOTTOM, new StatusBarView(DStyleClass.EMPTY, status));

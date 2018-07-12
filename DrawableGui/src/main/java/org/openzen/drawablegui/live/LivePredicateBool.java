@@ -32,11 +32,6 @@ public class LivePredicateBool<T> implements LiveBool, Closeable, LiveObject.Lis
 	public void close() {
 		sourceListener.close();
 	}
-	
-	@Override
-	public void setValue(boolean value) {
-		throw new UnsupportedOperationException("Cannot modify a calculated value");
-	}
 
 	@Override
 	public boolean getValue() {
