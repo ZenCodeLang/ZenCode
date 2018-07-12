@@ -20,30 +20,10 @@ public class LiveEmptyList<T> implements LiveList<T> {
 	public static <T> LiveEmptyList<T> get() {
 		return INSTANCE;
 	}
-
+	
 	@Override
-	public void add(T value) {
-		throw new UnsupportedOperationException("Immutable list");
-	}
-
-	@Override
-	public void add(int index, T value) {
-		throw new UnsupportedOperationException("Immutable list");
-	}
-
-	@Override
-	public void set(int index, T value) {
-		throw new UnsupportedOperationException("Immutable list");
-	}
-
-	@Override
-	public void remove(int index) {
-		throw new UnsupportedOperationException("Immutable list");
-	}
-
-	@Override
-	public void remove(T value) {
-		throw new UnsupportedOperationException("Immutable list");
+	public void close() {
+		
 	}
 
 	@Override

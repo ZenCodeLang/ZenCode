@@ -5,36 +5,27 @@
  */
 package org.openzen.drawablegui.live;
 
+import org.openzen.drawablegui.listeners.DummyListenerHandle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.listeners.ListenerList;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class SimpleLiveString implements MutableLiveString {
-	private final ListenerList<Listener> listeners = new ListenerList<>();
-	
-	private String value;
-	
-	public SimpleLiveString(String value) {
+public class ImmutableLiveString implements LiveString {
+	private final String value;
+
+	public ImmutableLiveString(String value) {
 		this.value = value;
 	}
-
+	
 	@Override
 	public ListenerHandle<Listener> addListener(Listener listener) {
-		return listeners.add(listener);
+		return new DummyListenerHandle<>(listener);
 	}
 
 	@Override
 	public String getValue() {
 		return value;
-	}
-
-	@Override
-	public void setValue(String value) {
-		String oldValue = this.value;
-		this.value = value;
-		listeners.accept(listener -> listener.onChanged(oldValue, value));
 	}
 }

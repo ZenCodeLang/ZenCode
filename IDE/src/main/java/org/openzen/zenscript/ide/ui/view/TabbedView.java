@@ -19,6 +19,7 @@ import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.live.MutableLiveList;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -29,7 +30,7 @@ import org.openzen.drawablegui.style.DStylePath;
  */
 public class TabbedView extends BaseComponentGroup {
 	private final DStyleClass styleClass;
-	public final LiveList<TabbedViewComponent> tabs = new LiveArrayList<>();
+	public final MutableLiveList<TabbedViewComponent> tabs = new LiveArrayList<>();
 	private final LiveObject<DDimensionPreferences> preferences = new ImmutableLiveObject<>(DDimensionPreferences.EMPTY);
 	public final LiveObject<TabbedViewComponent> currentTab = new SimpleLiveObject<>(null);
 	

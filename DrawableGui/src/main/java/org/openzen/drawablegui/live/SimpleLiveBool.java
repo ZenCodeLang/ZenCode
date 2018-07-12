@@ -12,7 +12,7 @@ import org.openzen.drawablegui.listeners.ListenerList;
  *
  * @author Hoofdgebruiker
  */
-public class SimpleLiveBool implements LiveBool {
+public class SimpleLiveBool implements MutableLiveBool {
 	private final ListenerList<LiveBool.Listener> listeners = new ListenerList<>();
 	private boolean value;
 	

@@ -15,7 +15,7 @@ import org.openzen.drawablegui.listeners.ListenerList;
  *
  * @author Hoofdgebruiker
  */
-public class LiveArrayList<T> implements LiveList<T> {
+public class LiveArrayList<T> implements MutableLiveList<T> {
 	private final List<T> values = new ArrayList<>();
 	private final ListenerList<Listener<T>> listeners = new ListenerList<>();
 
@@ -66,6 +66,11 @@ public class LiveArrayList<T> implements LiveList<T> {
 	@Override
 	public T get(int index) {
 		return values.get(index);
+	}
+	
+	@Override
+	public void close() {
+		// TODO: close closeables
 	}
 
 	@Override

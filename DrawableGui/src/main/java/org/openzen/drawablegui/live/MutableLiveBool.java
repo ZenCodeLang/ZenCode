@@ -5,18 +5,14 @@
  */
 package org.openzen.drawablegui.live;
 
-import org.openzen.drawablegui.listeners.ListenerHandle;
-
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface LiveString {
-	ListenerHandle<Listener> addListener(Listener listener);
+public interface MutableLiveBool extends LiveBool {
+	void setValue(boolean value);
 	
-	String getValue();
-	
-	interface Listener {
-		void onChanged(String oldValue, String newValue);
+	default void toggle() {
+		setValue(!getValue());
 	}
 }

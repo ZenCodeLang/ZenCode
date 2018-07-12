@@ -25,6 +25,11 @@ public class SourceFileTreeNode extends ProjectOverviewNode {
 		this.window = window;
 		this.sourceFile = sourceFile;
 	}
+	
+	@Override
+	public void close() {
+		
+	}
 
 	@Override
 	public Kind getKind() {

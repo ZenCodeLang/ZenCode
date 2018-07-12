@@ -14,12 +14,6 @@ import org.openzen.drawablegui.listeners.ListenerHandle;
 public interface LiveBool {
 	public boolean getValue();
 	
-	public void setValue(boolean value);
-	
-	default void toggle() {
-		setValue(!getValue());
-	}
-	
 	public ListenerHandle<Listener> addListener(Listener listener);
 	
 	public interface Listener {

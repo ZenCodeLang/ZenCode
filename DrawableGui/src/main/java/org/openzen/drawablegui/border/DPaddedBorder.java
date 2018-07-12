@@ -7,39 +7,46 @@ package org.openzen.drawablegui.border;
 
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DUIContext;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class DEmptyBorder implements DBorder {
-	public static final DEmptyBorder INSTANCE = new DEmptyBorder();
+public class DPaddedBorder implements DBorder {
+	private final int left;
+	private final int top;
+	private final int right;
+	private final int bottom;
 	
-	private DEmptyBorder() {}
-	
+	public DPaddedBorder(int left, int top, int right, int bottom) {
+		this.left = left;
+		this.top = top;
+		this.right = right;
+		this.bottom = bottom;
+	}
+
 	@Override
 	public void paint(DCanvas canvas, DIRectangle bounds) {
-		
+		// nothing to paint
 	}
 
 	@Override
 	public int getPaddingLeft() {
-		return 0;
+		return left;
 	}
 
 	@Override
 	public int getPaddingRight() {
-		return 0;
+		return right;
 	}
 
 	@Override
 	public int getPaddingTop() {
-		return 0;
+		return top;
 	}
 
 	@Override
 	public int getPaddingBottom() {
-		return 0;
+		return bottom;
 	}
 }

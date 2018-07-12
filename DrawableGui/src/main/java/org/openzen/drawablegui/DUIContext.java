@@ -40,6 +40,10 @@ public interface DUIContext {
 	
 	DUIWindow openView(int x, int y, DAnchor anchor, DComponent root);
 	
+	default int dp(float dp) {
+		return (int)(dp * getScale());
+	}
+	
 	enum Cursor {
 		NORMAL,
 		HAND,

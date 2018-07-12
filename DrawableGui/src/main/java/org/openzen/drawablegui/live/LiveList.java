@@ -13,21 +13,13 @@ import org.openzen.drawablegui.listeners.ListenerHandle;
  * @author Hoofdgebruiker
  */
 public interface LiveList<T> extends Iterable<T> {
-	void add(T value);
-	
-	void add(int index, T value);
-	
-	void set(int index, T value);
-	
-	void remove(int index);
-	
-	void remove(T value);
-	
 	int indexOf(T value);
 	
 	int size();
 	
 	T get(int index);
+	
+	void close();
 	
 	@Override
 	Iterator<T> iterator();

@@ -30,6 +30,11 @@ public class RootTreeNode extends ProjectOverviewNode {
 	}
 	
 	@Override
+	public void close() {
+		children.close();
+	}
+	
+	@Override
 	public DColorableIcon getIcon() {
 		return ProjectIcon.INSTANCE;
 	}

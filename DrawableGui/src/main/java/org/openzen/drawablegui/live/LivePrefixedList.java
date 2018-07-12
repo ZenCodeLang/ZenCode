@@ -17,13 +17,20 @@ public class LivePrefixedList<T> implements LiveList<T> {
 	private final ListenerList<Listener<T>> listeners = new ListenerList<>();
 	private final T prefix;
 	private final LiveList<T> values;
+	private final ListenerHandle<LiveList.Listener<T>> baseListener;
 	
 	public LivePrefixedList(T prefix, LiveList<T> values) {
 		this.prefix = prefix;
 		this.values = values;
+		this.baseListener = values.addListener(new BaseListener());
+	}
+	
+	@Override
+	public void close() {
+		baseListener.close();
 	}
 
-	@Override
+	/*@Override
 	public void add(T value) {
 		values.add(value);
 	}
@@ -54,7 +61,7 @@ public class LivePrefixedList<T> implements LiveList<T> {
 	@Override
 	public void remove(T value) {
 		values.remove(value);
-	}
+	}*/
 
 	@Override
 	public int indexOf(T value) {

@@ -28,11 +28,6 @@ public class ImmutableLiveBool implements LiveBool {
 	}
 
 	@Override
-	public void setValue(boolean value) {
-		throw new UnsupportedOperationException("Cannot modify an immutable value");
-	}
-
-	@Override
 	public ListenerHandle<Listener> addListener(Listener listener) {
 		return new DummyListenerHandle<>(listener);
 	}

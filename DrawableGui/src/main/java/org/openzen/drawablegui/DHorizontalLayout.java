@@ -93,6 +93,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		layout();
 	}
 
 	@Override
@@ -197,7 +198,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
 				int newX = x + preferences.preferredWidth;
 				layout(element, x, newX - x);
-				x = newX;
+				x = newX + style.spacing;
 			}
 		} else {
 			int delta = bounds.width - myPreferences.preferredWidth;
@@ -237,7 +238,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 				y = bounds.y + style.paddingTop;
 				break;
 		}
-		element.component.setBounds(new DIRectangle(bounds.x + x, y, width, height));
+		element.component.setBounds(new DIRectangle(x, y, width, height));
 	}
 	
 	private void updateDimensionPreferences() {

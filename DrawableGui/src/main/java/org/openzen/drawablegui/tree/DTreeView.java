@@ -21,6 +21,7 @@ import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.style.DStylePath;
 
 /**
@@ -217,15 +218,17 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		// nothing to clean up
 	}
 	
-	private class Row implements Closeable, LiveBool.Listener {
+	private class Row implements Closeable, LiveBool.Listener, LiveList.Listener<N> {
 		private final int x;
 		private final N node;
 		private final ListenerHandle<LiveBool.Listener> collapseListener;
+		private final ListenerHandle<LiveList.Listener<N>> childListener;
 		
 		public Row(int x, N node) {
 			this.x = x;
 			this.node = node;
 			this.collapseListener = node.isCollapsed().addListener(this);
+			this.childListener = node.getChildren().addListener(this);
 		}
 
 		@Override
@@ -233,10 +236,29 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			updateLayout();
 			context.repaint(bounds);
 		}
+
+		@Override
+		public void onInserted(int index, N value) {
+			updateLayout();
+			context.repaint(bounds);
+		}
+
+		@Override
+		public void onChanged(int index, N oldValue, N newValue) {
+			updateLayout();
+			context.repaint(bounds);
+		}
+
+		@Override
+		public void onRemoved(int index, N oldValue) {
+			updateLayout();
+			context.repaint(bounds);
+		}
 		
 		@Override
 		public void close() {
 			collapseListener.close();
+			childListener.close();
 		}
 	}
 }

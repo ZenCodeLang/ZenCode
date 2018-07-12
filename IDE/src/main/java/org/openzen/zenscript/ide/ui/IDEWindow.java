@@ -5,27 +5,18 @@
  */
 package org.openzen.zenscript.ide.ui;
 
-import org.openzen.drawablegui.DAnchor;
-import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DEmptyView;
-import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DInputField;
-import org.openzen.drawablegui.DUIWindow;
-import org.openzen.drawablegui.form.DForm;
-import org.openzen.drawablegui.form.DFormComponent;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LivePredicateBool;
-import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.live.SimpleLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveString;
-import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEPackage;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.host.IDETarget;
+import org.openzen.zenscript.ide.ui.dialog.CreatePackageDialog;
+import org.openzen.zenscript.ide.ui.dialog.CreateSourceFileDialog;
 import org.openzen.zenscript.ide.ui.icons.AddBoxIcon;
 import org.openzen.zenscript.ide.ui.icons.BuildIcon;
 import org.openzen.zenscript.ide.ui.icons.PlayIcon;
@@ -76,24 +67,12 @@ public class IDEWindow {
 	private void init() {
 		projectToolbar = new IDEAspectToolbar(0, ShadedProjectIcon.PURPLE, "Project", "Project management");
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.BLUE, AddBoxIcon.GRAY, addContentDisabled, e -> {
-			DComponent input = new DInputField(DStyleClass.EMPTY, new SimpleLiveString(""), new DDpDimension(100));
-			DForm root = new DForm(DStyleClass.EMPTY, new DFormComponent("Package name:", input));
-			
-			DUIWindow window = e.window;
-			DIRectangle rectangle = window.getWindowBounds();
-			DUIWindow newWindow = e.window.getContext().openDialog(rectangle.getCenterX(), rectangle.getCenterY(), DAnchor.MIDDLE_LEFT, "Create package", root);
-			
-			newWindow.focus(input);
+			CreatePackageDialog dialog = new CreatePackageDialog(this, contextModule.getValue(), contextPackage.getValue());
+			dialog.open(e.window);
 		}));
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.ORANGE, AddBoxIcon.GRAY, addContentDisabled, e -> {
-			DComponent input = new DInputField(DStyleClass.EMPTY, new SimpleLiveString(""), new DDpDimension(100));
-			DForm root = new DForm(DStyleClass.EMPTY, new DFormComponent("Filename:", input));
-			
-			DUIWindow window = e.window;
-			DIRectangle rectangle = window.getWindowBounds();
-			DUIWindow newWindow = e.window.getContext().openDialog(rectangle.getCenterX(), rectangle.getCenterY(), DAnchor.MIDDLE_LEFT, "Create file", root);
-			
-			newWindow.focus(input);
+			CreateSourceFileDialog dialog = new CreateSourceFileDialog(this, contextModule.getValue(), contextPackage.getValue());
+			dialog.open(e.window);
 		}));
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.PURPLE, e -> {
 			
@@ -119,8 +98,8 @@ public class IDEWindow {
 		contextFile.setValue(null);
 	}
 	
-	public void setContextPackage(IDEPackage pkg) {
-		contextModule.setValue(null);
+	public void setContextPackage(IDEModule module, IDEPackage pkg) {
+		contextModule.setValue(module);
 		contextPackage.setValue(pkg);
 		contextFile.setValue(null);
 	}

@@ -5,18 +5,10 @@
  */
 package org.openzen.drawablegui.live;
 
-import org.openzen.drawablegui.listeners.ListenerHandle;
-
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface LiveString {
-	ListenerHandle<Listener> addListener(Listener listener);
-	
-	String getValue();
-	
-	interface Listener {
-		void onChanged(String oldValue, String newValue);
-	}
+public interface MutableLiveString extends LiveString {
+	void setValue(String value);
 }

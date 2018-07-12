@@ -93,6 +93,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		layout();
 	}
 
 	@Override
@@ -206,8 +207,8 @@ public class DVerticalLayout extends BaseComponentGroup {
 			for (Element element : components) {
 				DDimensionPreferences preferences = element.component.getDimensionPreferences().getValue();
 				float scaledSize = preferences.preferredHeight + deltaScaled * element.grow;
-				float idealUnspacedX = y + scaledSize;
-				int newY = (int)(idealUnspacedX + 0.5f);
+				float idealUnspacedY = y + scaledSize;
+				int newY = (int)(idealUnspacedY + 0.5f);
 				layout(element, y, newY - y);
 				y = newY + style.spacing;
 			}

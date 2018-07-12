@@ -87,7 +87,7 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 
 	@Override
 	public void close() {
-		System.exit(0);
+		dispose();
 	}
 
 	@Override
