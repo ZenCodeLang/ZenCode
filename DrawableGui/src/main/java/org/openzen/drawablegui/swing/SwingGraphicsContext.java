@@ -21,6 +21,8 @@ import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DPathTracer;
 import org.openzen.drawablegui.DTimerHandle;
+import org.openzen.drawablegui.DTooltip;
+import org.openzen.drawablegui.DTooltipHandle;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.style.DStylePathRoot;
@@ -185,6 +187,11 @@ public class SwingGraphicsContext implements DUIContext {
 		window.pack();
 		window.setVisible(true);
 		return window;
+	}
+	
+	@Override
+	public DTooltipHandle openTooltip(int x, int y, DTooltip tooltip) {
+		return null; // TODO
 	}
 	
 	private class PathTracer implements DPathTracer {

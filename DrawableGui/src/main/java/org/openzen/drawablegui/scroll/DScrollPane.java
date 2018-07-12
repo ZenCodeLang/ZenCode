@@ -15,6 +15,8 @@ import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTimerHandle;
+import org.openzen.drawablegui.DTooltip;
+import org.openzen.drawablegui.DTooltipHandle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
@@ -231,11 +233,27 @@ public class DScrollPane implements DComponent {
 	private DMouseEvent translateMouseEvent(DMouseEvent e) {
 		return new DMouseEvent(
 				e.window,
-				e.x - bounds.x + offsetX.getValue(),
-				e.y - bounds.y + offsetY.getValue(),
+				toLocalX(e.x),
+				toLocalY(e.y),
 				e.modifiers,
 				e.deltaZ,
 				e.clickCount);
+	}
+
+	private int toGlobalX(int x) {
+		return x + bounds.x - offsetX.getValue();
+	}
+
+	private int toGlobalY(int y) {
+		return y + bounds.y - offsetY.getValue();
+	}
+
+	private int toLocalX(int x) {
+		return x - bounds.x + offsetX.getValue();
+	}
+
+	private int toLocalY(int y) {
+		return y - bounds.y + offsetY.getValue();
 	}
 	
 	private class TranslatedContext implements DUIContext {
@@ -257,8 +275,8 @@ public class DScrollPane implements DComponent {
 
 		@Override
 		public void repaint(int x, int y, int width, int height) {
-			int left = x + bounds.x - offsetX.getValue();
-			int top = y + bounds.y - offsetY.getValue();
+			int left = toGlobalX(x);
+			int top = toGlobalY(y);
 			int right = left + width;
 			int bottom = top + height;
 			
@@ -308,12 +326,17 @@ public class DScrollPane implements DComponent {
 
 		@Override
 		public DUIWindow openDialog(int x, int y, DAnchor anchor, String title, DComponent root) {
-			return context.openDialog(x, y, anchor, title, root);
+			return context.openDialog(toGlobalX(x), toGlobalY(y), anchor, title, root);
 		}
 
 		@Override
 		public DUIWindow openView(int x, int y, DAnchor anchor, DComponent root) {
-			return context.openView(x, y, anchor, root);
+			return context.openView(toGlobalX(x), toGlobalY(y), anchor, root);
+		}
+		
+		@Override
+		public DTooltipHandle openTooltip(int x, int y, DTooltip tooltip) {
+			return context.openTooltip(toGlobalX(x), toGlobalY(y), tooltip);
 		}
 	}
 	
