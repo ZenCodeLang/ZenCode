@@ -17,7 +17,7 @@ public class JavaCapturedExpressionVisitor implements CapturedExpressionVisitor<
 
     @Override
     public Void visitCapturedParameter(CapturedParameterExpression expression) {
-        return null;
+        return new GetFunctionParameterExpression(expression.position, expression.parameter).accept(expressionVisitor);
     }
 
     @Override

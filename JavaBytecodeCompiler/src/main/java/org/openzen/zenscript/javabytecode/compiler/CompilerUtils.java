@@ -151,6 +151,7 @@ public class CompilerUtils {
 
     private static void createLambdaInterface(FunctionHeader header, String name) {
         ClassWriter ifaceWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        ifaceWriter.visitAnnotation("java/lang/FunctionalInterface", true).visitEnd();
         ifaceWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, name, null, "java/lang/Object", null);
 
         ifaceWriter.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "accept", calcDesc(header, false), calcSign(header, false), null).visitEnd();
