@@ -78,7 +78,6 @@ public class DSimpleTooltipComponent implements DComponent {
 	
 	@Override
 	public void paint(DCanvas canvas) {
-		System.out.println("Actually paint tooltip");
 		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
 		style.border.paint(canvas, bounds);
 		canvas.drawText(

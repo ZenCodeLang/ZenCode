@@ -30,7 +30,6 @@ import org.openzen.zenscript.ide.ui.IDEWindow;
  * @author Hoofdgebruiker
  */
 public class CreatePackageDialog {
-	private final IDEWindow ideWindow;
 	private final IDEModule module;
 	private final IDEPackage pkg;
 	
@@ -41,8 +40,7 @@ public class CreatePackageDialog {
 	
 	private DUIWindow window;
 	
-	public CreatePackageDialog(IDEWindow ideWindow, IDEModule module, IDEPackage pkg) {
-		this.ideWindow = ideWindow;
+	public CreatePackageDialog(IDEModule module, IDEPackage pkg) {
 		this.module = module;
 		this.pkg = pkg;
 		

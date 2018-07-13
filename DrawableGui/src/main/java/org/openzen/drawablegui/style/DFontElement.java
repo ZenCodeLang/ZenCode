@@ -5,17 +5,19 @@
  */
 package org.openzen.drawablegui.style;
 
+import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DUIContext;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class DEmptyStylesheets implements DStyleSheets {
-	public static final DEmptyStylesheets INSTANCE = new DEmptyStylesheets();
-
+@FunctionalInterface
+public interface DFontElement extends DStyleElement {
+	DFont eval(DUIContext context);
+	
 	@Override
-	public DStyleDefinition get(DUIContext context, DStylePath path) {
-		return path.getInline(context);
+	default DFontElement asFont() {
+		return this;
 	}
 }

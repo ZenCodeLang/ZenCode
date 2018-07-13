@@ -5,14 +5,19 @@
  */
 package org.openzen.drawablegui.style;
 
-import org.openzen.drawablegui.DUIContext;
-
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface DStylePath {
-	public DStylePath getChild(String element, DStyleClass styleClass);
+public class DColorElement implements DStyleElement {
+	private final int color;
 	
-	public DStyleDefinition getInline(DUIContext context);
+	public DColorElement(int color) {
+		this.color = color;
+	}
+	
+	@Override
+	public int asColor() {
+		return color;
+	}
 }

@@ -26,7 +26,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DUIContext context;
-	private DHorizontalLayoutStyle style;
+	private DVerticalLayoutStyle style;
 	private DIRectangle bounds;
 	private float totalGrow;
 	private float totalShrink;
@@ -68,12 +68,10 @@ public class DVerticalLayout extends BaseComponentGroup {
 		this.context = context;
 		
 		DStylePath path = parent.getChild("verticalLayout", styleClass);
-		style = new DHorizontalLayoutStyle(context.getStylesheets().get(context, path));
+		style = new DVerticalLayoutStyle(context.getStylesheets().get(context, path));
 		
 		for (Element element : components)
 			element.component.setContext(parent, context);
-		
-		layout();
 	}
 
 	@Override
@@ -99,6 +97,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 
 	@Override
 	public void paint(DCanvas canvas) {
+		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
 		for (Element element : components) {
 			element.component.paint(canvas);
 		}
@@ -222,21 +221,21 @@ public class DVerticalLayout extends BaseComponentGroup {
 		int width;
 		switch (element.alignment) {
 			case LEFT:
-				width = Math.min(preferences.preferredWidth, bounds.width - style.paddingLeft - style.paddingRight);
-				x = bounds.x + style.paddingLeft;
+				width = Math.min(preferences.preferredWidth, bounds.width - style.border.getPaddingHorizontal());
+				x = bounds.x + style.border.getPaddingLeft();
 				break;
 			case CENTER:
-				width = Math.min(preferences.preferredWidth, bounds.width - style.paddingLeft - style.paddingRight);
-				x = bounds.x + style.paddingLeft + (bounds.width - style.paddingLeft - style.paddingRight - width) / 2;
+				width = Math.min(preferences.preferredWidth, bounds.width - style.border.getPaddingHorizontal());
+				x = bounds.x + style.border.getPaddingLeft() + (bounds.width - style.border.getPaddingHorizontal() - width) / 2;
 				break;
 			case RIGHT:
-				width = Math.min(preferences.preferredWidth, bounds.width - style.paddingLeft - style.paddingRight);
-				x = bounds.x + bounds.width - style.paddingLeft - width;
+				width = Math.min(preferences.preferredWidth, bounds.width - style.border.getPaddingHorizontal());
+				x = bounds.x + bounds.width - style.border.getPaddingLeft() - width;
 				break;
 			case STRETCH:
 			default:
-				width = bounds.width - style.paddingLeft - style.paddingRight;
-				x = bounds.x + style.paddingLeft;
+				width = bounds.width - style.border.getPaddingHorizontal();
+				x = bounds.x + style.border.getPaddingLeft();
 				break;
 		}
 		element.component.setBounds(new DIRectangle(x, y, width, height));
@@ -262,13 +261,15 @@ public class DVerticalLayout extends BaseComponentGroup {
 			maximumHeight += preferences.maximumHeight + style.spacing;
 		}
 		
+		int paddingHorizontal = style.border.getPaddingHorizontal();
+		int paddingVertical = style.border.getPaddingVertical();
 		DSizing preferences = new DSizing(
-				minimumWidth + style.paddingLeft + style.paddingRight,
-				minimumHeight + style.paddingTop + style.paddingBottom,
-				preferredWidth + style.paddingLeft + style.paddingRight,
-				preferredHeight + style.paddingTop + style.paddingBottom,
-				maximumWidth + style.paddingLeft + style.paddingRight,
-				maximumHeight + style.paddingTop + style.paddingBottom);
+				minimumWidth + paddingHorizontal,
+				minimumHeight + paddingVertical,
+				preferredWidth + paddingHorizontal,
+				preferredHeight + paddingVertical,
+				maximumWidth + paddingHorizontal,
+				maximumHeight + paddingVertical);
 		sizing.setValue(preferences);
 	}
 }

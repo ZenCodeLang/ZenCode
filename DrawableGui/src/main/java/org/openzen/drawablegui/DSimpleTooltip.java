@@ -57,8 +57,6 @@ public class DSimpleTooltip {
 	}
 	
 	private void show() {
-		System.out.println("Show tooltip");
-		
 		DSimpleTooltipComponent view = new DSimpleTooltipComponent(styleClass, tooltip);
 		window = context.openView(enterMouseX, enterMouseY + context.dp(8), DAnchor.TOP_LEFT, view);
 		
@@ -69,8 +67,6 @@ public class DSimpleTooltip {
 	}
 	
 	private void hide() {
-		System.out.println("Hide tooltip");
-		
 		if (window != null) {
 			window.close();
 			window = null;

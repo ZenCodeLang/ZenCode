@@ -24,6 +24,10 @@ public class DPaddedBorder implements DBorder {
 		this.right = right;
 		this.bottom = bottom;
 	}
+	
+	public DPaddedBorder(int size) {
+		this(size, size, size, size);
+	}
 
 	@Override
 	public void paint(DCanvas canvas, DIRectangle bounds) {

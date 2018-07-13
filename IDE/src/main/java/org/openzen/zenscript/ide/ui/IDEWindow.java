@@ -38,10 +38,10 @@ public class IDEWindow {
 	
 	public IDEAspectToolbar projectToolbar;
 	
-	private final MutableLiveObject<IDEModule> contextModule = new SimpleLiveObject<>(null);
-	private final MutableLiveObject<IDEPackage> contextPackage = new SimpleLiveObject<>(null);
-	private final MutableLiveObject<IDESourceFile> contextFile = new SimpleLiveObject<>(null);
-	private final LiveBool addContentDisabled = new LivePredicateBool(contextPackage, pkg -> pkg == null);
+	public final MutableLiveObject<IDEModule> contextModule = new SimpleLiveObject<>(null);
+	public final MutableLiveObject<IDEPackage> contextPackage = new SimpleLiveObject<>(null);
+	public final MutableLiveObject<IDESourceFile> contextFile = new SimpleLiveObject<>(null);
+	public final LiveBool addContentDisabled = new LivePredicateBool(contextPackage, pkg -> pkg == null);
 	
 	public IDEWindow(DevelopmentHost host) {
 		this.host = host;
@@ -67,14 +67,6 @@ public class IDEWindow {
 	
 	private void init() {
 		projectToolbar = new IDEAspectToolbar(0, ShadedProjectIcon.PURPLE, "Project", "Project management");
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.BLUE, AddBoxIcon.GRAY, addContentDisabled, new ImmutableLiveString("Create package"), e -> {
-			CreatePackageDialog dialog = new CreatePackageDialog(this, contextModule.getValue(), contextPackage.getValue());
-			dialog.open(e.window);
-		}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.ORANGE, AddBoxIcon.GRAY, addContentDisabled, new ImmutableLiveString("Create source file"), e -> {
-			CreateSourceFileDialog dialog = new CreateSourceFileDialog(this, contextModule.getValue(), contextPackage.getValue());
-			dialog.open(e.window);
-		}));
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.PURPLE, new ImmutableLiveString("Project settings"), e -> {
 			
 		}));

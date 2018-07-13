@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -99,6 +98,7 @@ public class DHorizontalLayout extends BaseComponentGroup {
 
 	@Override
 	public void paint(DCanvas canvas) {
+		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
 		for (Element element : components) {
 			element.component.paint(canvas);
 		}
@@ -222,21 +222,21 @@ public class DHorizontalLayout extends BaseComponentGroup {
 		int y;
 		switch (element.alignment) {
 			case BOTTOM:
-				height = Math.min(preferences.preferredHeight, bounds.height - style.paddingTop - style.paddingBottom);
-				y = bounds.y + style.paddingTop;
+				height = Math.min(preferences.preferredHeight, bounds.height - style.border.getPaddingVertical());
+				y = bounds.y + style.border.getPaddingTop();
 				break;
 			case MIDDLE:
-				height = Math.min(preferences.preferredHeight, bounds.height - style.paddingTop - style.paddingBottom);
-				y = bounds.y + style.paddingTop + (bounds.height - style.paddingTop - style.paddingBottom - height) / 2;
+				height = Math.min(preferences.preferredHeight, bounds.height - style.border.getPaddingVertical());
+				y = bounds.y + style.border.getPaddingTop() + (bounds.height - style.border.getPaddingVertical() - height) / 2;
 				break;
 			case TOP:
-				height = Math.min(preferences.preferredHeight, bounds.height - style.paddingTop - style.paddingBottom);
-				y = bounds.y + bounds.height - style.paddingBottom - height;
+				height = Math.min(preferences.preferredHeight, bounds.height - style.border.getPaddingVertical());
+				y = bounds.y + bounds.height - style.border.getPaddingBottom() - height;
 				break;
 			case STRETCH:
 			default:
-				height = bounds.height - style.paddingTop - style.paddingBottom;
-				y = bounds.y + style.paddingTop;
+				height = bounds.height - style.border.getPaddingVertical();
+				y = bounds.y + style.border.getPaddingTop();
 				break;
 		}
 		element.component.setBounds(new DIRectangle(x, y, width, height));
@@ -261,13 +261,15 @@ public class DHorizontalLayout extends BaseComponentGroup {
 			maximumHeight = Math.min(maximumHeight, preferences.maximumHeight);
 		}
 		
+		int paddingHorizontal = style.border.getPaddingHorizontal();
+		int paddingVertical = style.border.getPaddingVertical();
 		DSizing preferences = new DSizing(
-				minimumWidth + style.paddingLeft + style.paddingRight,
-				minimumHeight + style.paddingTop + style.paddingBottom,
-				preferredWidth + style.paddingLeft + style.paddingRight,
-				preferredHeight + style.paddingTop + style.paddingBottom,
-				maximumWidth + style.paddingLeft + style.paddingRight,
-				maximumHeight + style.paddingTop + style.paddingBottom);
+				minimumWidth + paddingHorizontal,
+				minimumHeight + paddingVertical,
+				preferredWidth + paddingHorizontal,
+				preferredHeight + paddingVertical,
+				maximumWidth + paddingHorizontal,
+				maximumHeight + paddingVertical);
 		sizing.setValue(preferences);
 	}
 }

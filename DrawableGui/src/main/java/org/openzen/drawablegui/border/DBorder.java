@@ -22,4 +22,12 @@ public interface DBorder {
 	public int getPaddingTop();
 	
 	public int getPaddingBottom();
+	
+	default int getPaddingHorizontal() {
+		return getPaddingLeft() + getPaddingRight();
+	}
+	
+	default int getPaddingVertical() {
+		return getPaddingTop() + getPaddingBottom();
+	}
 }

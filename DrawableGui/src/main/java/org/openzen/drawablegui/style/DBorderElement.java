@@ -6,16 +6,17 @@
 package org.openzen.drawablegui.style;
 
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.border.DBorder;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class DEmptyStylesheets implements DStyleSheets {
-	public static final DEmptyStylesheets INSTANCE = new DEmptyStylesheets();
-
+public interface DBorderElement extends DStyleElement {
+	DBorder eval(DUIContext context);
+	
 	@Override
-	public DStyleDefinition get(DUIContext context, DStylePath path) {
-		return path.getInline(context);
+	default DBorderElement asBorder() {
+		return this;
 	}
 }

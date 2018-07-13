@@ -11,11 +11,11 @@ import org.openzen.drawablegui.DUIContext;
  *
  * @author Hoofdgebruiker
  */
-public class DEmptyStylesheets implements DStyleSheets {
-	public static final DEmptyStylesheets INSTANCE = new DEmptyStylesheets();
-
+public interface DShadowElement extends DStyleElement {
+	DShadow eval(DUIContext context);
+	
 	@Override
-	public DStyleDefinition get(DUIContext context, DStylePath path) {
-		return path.getInline(context);
+	default DShadowElement asShadow() {
+		return this;
 	}
 }

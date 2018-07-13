@@ -5,9 +5,7 @@
  */
 package org.openzen.drawablegui.style;
 
-import java.util.function.Function;
 import org.openzen.drawablegui.DFont;
-import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.border.DBorder;
 
 /**
@@ -21,9 +19,9 @@ public interface DStyleDefinition {
 	
 	public int getColor(String name, int defaultValue);
 	
-	public DShadow getShadow(String name, Function<DUIContext, DShadow> defaultValue);
+	public DShadow getShadow(String name, DShadowElement defaultValue);
 	
-	public DFont getFont(String name, Function<DUIContext, DFont> defaultValue);
+	public DFont getFont(String name, DFontElement defaultValue);
 	
-	public DBorder getBorder(String name, Function<DUIContext, DBorder> defaultValue);
+	public DBorder getBorder(String name, DBorderElement defaultValue);
 }
