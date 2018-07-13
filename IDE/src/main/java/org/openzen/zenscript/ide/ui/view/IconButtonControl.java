@@ -15,10 +15,12 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.DSimpleTooltip;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveBool;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -34,6 +36,7 @@ public class IconButtonControl implements DComponent {
 	private final Consumer<DMouseEvent> onClick;
 	private final LiveBool disabled;
 	private final ListenerHandle<LiveBool.Listener> disabledListener;
+	private final DSimpleTooltip tooltip;
 	
 	private DUIContext context;
 	private IconButtonControlStyle style;
@@ -43,22 +46,25 @@ public class IconButtonControl implements DComponent {
 	private boolean press;
 	private DPath shape;
 	
-	public IconButtonControl(DStyleClass styleClass, DDrawable icon, DDrawable iconDisabled, LiveBool disabled, Consumer<DMouseEvent> onClick) {
+	public IconButtonControl(DStyleClass styleClass, DDrawable icon, DDrawable iconDisabled, LiveBool disabled, LiveString tooltip, Consumer<DMouseEvent> onClick) {
 		this.styleClass = styleClass;
 		this.icon = icon;
 		this.iconDisabled = iconDisabled;
 		this.onClick = onClick;
 		this.disabled = disabled;
+		this.tooltip = new DSimpleTooltip(DStyleClass.EMPTY, tooltip);
 		disabledListener = disabled.addListener((oldValue, newValue) -> repaint());
 	}
 	
-	public IconButtonControl(DStyleClass styleClass, DDrawable icon, Consumer<DMouseEvent> onClick) {
-		this(styleClass, icon, icon, ImmutableLiveBool.FALSE, onClick);
+	public IconButtonControl(DStyleClass styleClass, DDrawable icon, LiveString tooltip, Consumer<DMouseEvent> onClick) {
+		this(styleClass, icon, icon, ImmutableLiveBool.FALSE, tooltip, onClick);
 	}
 
 	@Override
 	public void setContext(DStylePath parent, DUIContext context) {
 		this.context = context;
+		tooltip.setContext(context);
+		
 		DStylePath path = parent.getChild("iconbutton", styleClass);
 		style = new IconButtonControlStyle(context.getStylesheets().get(context, path));
 		
@@ -132,6 +138,7 @@ public class IconButtonControl implements DComponent {
 	public void onMouseEnter(DMouseEvent e) {
 		hover = true;
 		repaint();
+		tooltip.onTargetMouseEnter(e);
 	}
 	
 	@Override
@@ -139,6 +146,12 @@ public class IconButtonControl implements DComponent {
 		hover = false;
 		press = false;
 		repaint();
+		tooltip.onTargetMouseExit(e);
+	}
+	
+	@Override
+	public void onMouseMove(DMouseEvent e) {
+		tooltip.onTargetMouseMove(e);
 	}
 	
 	@Override

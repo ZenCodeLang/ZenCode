@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.ide.ui;
 
+import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LivePredicateBool;
 import org.openzen.drawablegui.live.MutableLiveObject;
@@ -66,24 +67,24 @@ public class IDEWindow {
 	
 	private void init() {
 		projectToolbar = new IDEAspectToolbar(0, ShadedProjectIcon.PURPLE, "Project", "Project management");
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.BLUE, AddBoxIcon.GRAY, addContentDisabled, e -> {
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.BLUE, AddBoxIcon.GRAY, addContentDisabled, new ImmutableLiveString("Create package"), e -> {
 			CreatePackageDialog dialog = new CreatePackageDialog(this, contextModule.getValue(), contextPackage.getValue());
 			dialog.open(e.window);
 		}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.ORANGE, AddBoxIcon.GRAY, addContentDisabled, e -> {
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.ORANGE, AddBoxIcon.GRAY, addContentDisabled, new ImmutableLiveString("Create source file"), e -> {
 			CreateSourceFileDialog dialog = new CreateSourceFileDialog(this, contextModule.getValue(), contextPackage.getValue());
 			dialog.open(e.window);
 		}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.PURPLE, e -> {
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.PURPLE, new ImmutableLiveString("Project settings"), e -> {
 			
 		}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, e -> {
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, new ImmutableLiveString("Build"), e -> {
 			for (IDETarget target : host.getTargets()) {
 				if (target.canBuild())
 					target.build();
 			}
 		}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, PlayIcon.GREEN, e -> {
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, PlayIcon.GREEN, new ImmutableLiveString("Run"), e -> {
 			for (IDETarget target : host.getTargets()) {
 				if (target.canRun())
 					target.run();

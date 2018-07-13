@@ -19,7 +19,6 @@ import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.IDEAspectToolbar;
 import org.openzen.zenscript.ide.ui.IDEWindow;
@@ -29,6 +28,7 @@ import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -83,7 +83,7 @@ public class SourceEditor implements DComponent {
 		tokens = new TokenModel(sourceFile.getName(), tab.length());
 		tokenListener = tokens.addListener(new TokenListener());
 		
-		editToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, ShadedSaveIcon.PURPLE, SaveIcon.GREY, unchanged, e -> save()));
+		editToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, ShadedSaveIcon.PURPLE, SaveIcon.GREY, unchanged, new ImmutableLiveString("Save file"), e -> save()));
 		
 		try {
 			TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(

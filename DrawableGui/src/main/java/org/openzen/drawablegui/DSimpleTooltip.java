@@ -5,10 +5,8 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -17,31 +15,22 @@ import org.openzen.drawablegui.style.DStylePath;
 public class DSimpleTooltip {
 	private final DStyleClass styleClass;
 	private final LiveString tooltip;
-	private final ListenerHandle<LiveString.Listener> tooltipListener;
 	
 	private DUIContext context;
-	private DIRectangle bounds;
-	private DFontMetrics fontMetrics;
-	private DTooltipStyle style;
-	private boolean visible = false;
+	private DSimpleTooltipStyle style;
 	private DTimerHandle timerHandle = null;
+	
+	private int enterMouseX;
+	private int enterMouseY;
+	private DUIWindow window;
 	
 	public DSimpleTooltip(DStyleClass styleClass, LiveString tooltip) {
 		this.styleClass = styleClass;
 		this.tooltip = tooltip;
-		tooltipListener = tooltip.addListener(this::onTooltipChanged);
 	}
 	
-	private void onTooltipChanged(String oldValue, String newValue) {
-		if (context == null || bounds == null)
-			return;
-		
-		bounds = new DIRectangle(
-				bounds.x,
-				bounds.y,
-				style.border.getPaddingLeft() + fontMetrics.getWidth(tooltip.getValue()) + style.border.getPaddingRight(),
-				style.border.getPaddingTop() + fontMetrics.getAscent() + fontMetrics.getDescent() + style.border.getPaddingBottom());
-		context.repaint(bounds);
+	public void setContext(DUIContext context) {
+		this.context = context;
 	}
 	
 	public void onTargetMouseEnter(DMouseEvent e) {
@@ -49,11 +38,13 @@ public class DSimpleTooltip {
 			timerHandle.close();
 		
 		timerHandle = context.setTimer(1000, this::show);
-		bounds = new DIRectangle(
-				e.x,
-				e.y,
-				style.border.getPaddingLeft() + fontMetrics.getWidth(tooltip.getValue()) + style.border.getPaddingRight(),
-				style.border.getPaddingTop() + fontMetrics.getAscent() + fontMetrics.getDescent() + style.border.getPaddingBottom());
+		enterMouseX = e.x;
+		enterMouseY = e.y;
+	}
+	
+	public void onTargetMouseMove(DMouseEvent e) {
+		enterMouseX = e.x;
+		enterMouseY = e.y;
 	}
 	
 	public void onTargetMouseExit(DMouseEvent e) {
@@ -67,8 +58,9 @@ public class DSimpleTooltip {
 	
 	private void show() {
 		System.out.println("Show tooltip");
-		visible = true;
-		context.repaint(bounds);
+		
+		DSimpleTooltipComponent view = new DSimpleTooltipComponent(styleClass, tooltip);
+		window = context.openView(enterMouseX, enterMouseY + context.dp(8), DAnchor.TOP_LEFT, view);
 		
 		if (timerHandle != null) {
 			timerHandle.close();
@@ -78,29 +70,17 @@ public class DSimpleTooltip {
 	
 	private void hide() {
 		System.out.println("Hide tooltip");
-		visible = false;
-		context.repaint(bounds);
-	}
-	
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
 		
-		DStylePath path = parent.getChild("tooltip", styleClass);
-		style = new DTooltipStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.font);
-	}
-	
-	public void paint(DCanvas canvas) {
-		if (!visible)
-			return;
-		
-		System.out.println("Actually paint tooltip");
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
-		style.border.paint(canvas, bounds);
-		canvas.drawText(style.font, style.textColor, bounds.x + style.border.getPaddingLeft(), bounds.y + style.border.getPaddingTop(), tooltip.getValue());
+		if (window != null) {
+			window.close();
+			window = null;
+		}
 	}
 	
 	public void close() {
-		tooltipListener.close();
+		if (window != null) {
+			window.close();
+			window = null;
+		}
 	}
 }

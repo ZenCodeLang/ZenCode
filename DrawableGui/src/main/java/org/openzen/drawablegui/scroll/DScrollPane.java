@@ -15,8 +15,6 @@ import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTimerHandle;
-import org.openzen.drawablegui.DTooltip;
-import org.openzen.drawablegui.DTooltipHandle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
@@ -332,11 +330,6 @@ public class DScrollPane implements DComponent {
 		@Override
 		public DUIWindow openView(int x, int y, DAnchor anchor, DComponent root) {
 			return context.openView(toGlobalX(x), toGlobalY(y), anchor, root);
-		}
-		
-		@Override
-		public DTooltipHandle openTooltip(int x, int y, DTooltip tooltip) {
-			return context.openTooltip(toGlobalX(x), toGlobalY(y), tooltip);
 		}
 	}
 	

@@ -42,7 +42,7 @@ public class AspectBarSelectorButton implements DComponent {
 	private DPath shape;
 	private boolean hovering;
 	private boolean pressing;
-	private DSimpleTooltip tooltip;
+	private final DSimpleTooltip tooltip;
 	
 	private final ListenerHandle<LiveBool.Listener> activeListener;
 	
@@ -69,7 +69,7 @@ public class AspectBarSelectorButton implements DComponent {
 				style.height,
 				style.roundingRadius);
 		
-		tooltip.setContext(parent, context);
+		tooltip.setContext(context);
 	}
 
 	@Override
@@ -119,7 +119,6 @@ public class AspectBarSelectorButton implements DComponent {
 				bounds.x + (style.width - icon.getNominalWidth() * context.getScale()) / 2,
 				bounds.y + (style.height - icon.getNominalHeight() * context.getScale()) / 2,
 				context.getScale()));
-		tooltip.paint(canvas);
 	}
 	
 	@Override
@@ -127,6 +126,11 @@ public class AspectBarSelectorButton implements DComponent {
 		hovering = true;
 		tooltip.onTargetMouseEnter(e);
 		repaint();
+	}
+	
+	@Override
+	public void onMouseMove(DMouseEvent e) {
+		tooltip.onTargetMouseMove(e);
 	}
 	
 	@Override

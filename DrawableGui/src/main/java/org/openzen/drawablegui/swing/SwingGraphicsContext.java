@@ -8,6 +8,7 @@ package org.openzen.drawablegui.swing;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.geom.GeneralPath;
 import java.util.WeakHashMap;
 import javax.swing.JFrame;
@@ -21,8 +22,6 @@ import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DPathTracer;
 import org.openzen.drawablegui.DTimerHandle;
-import org.openzen.drawablegui.DTooltip;
-import org.openzen.drawablegui.DTooltipHandle;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.style.DStylePathRoot;
@@ -171,27 +170,29 @@ public class SwingGraphicsContext implements DUIContext {
 
 	@Override
 	public DUIWindow openView(int x, int y, DAnchor anchor, DComponent root) {
-		SwingDialog window = new SwingDialog((SwingWindow)this.window, "", root, false);
+		SwingWindow swingWindow = (SwingWindow)this.window;
+		SwingInlineWindow window = new SwingInlineWindow(swingWindow, "", root);
 		SwingGraphicsContext windowContext = new SwingGraphicsContext(stylesheets, scale, textScale, window.swingComponent);
 		windowContext.setWindow(window);
 		windowContext.graphics = this.graphics; // help a little...
 		
 		root.setContext(DStylePathRoot.INSTANCE, windowContext);
 		DSizing dimension = root.getSizing().getValue();
-		int tx = (int)(x - anchor.alignX * dimension.preferredWidth);
-		int ty = (int)(y - anchor.alignY * dimension.preferredHeight);
 		
-		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();
+		
+		int tx = (int)(x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
+		int ty = (int)(y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
+		System.out.println("Position: " + tx + ", " + ty);
+		
 		window.swingComponent.setPreferredSize(new Dimension(dimension.preferredWidth, dimension.preferredHeight));
 		window.setLocation(tx, ty);
 		window.pack();
 		window.setVisible(true);
+		window.swingComponent.repaint();
+		
+		System.out.println("Window size: " + window.getWidth() + " x " + window.getHeight());
 		return window;
-	}
-	
-	@Override
-	public DTooltipHandle openTooltip(int x, int y, DTooltip tooltip) {
-		return null; // TODO
 	}
 	
 	private class PathTracer implements DPathTracer {

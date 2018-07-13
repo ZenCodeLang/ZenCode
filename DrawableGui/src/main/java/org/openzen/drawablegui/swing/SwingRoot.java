@@ -77,6 +77,7 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 			firstPaint = false;
 			component.setContext(DStylePathRoot.INSTANCE, context);
 			component.setBounds(new DIRectangle(0, 0, getWidth(), getHeight()));
+			System.out.println("Painting with size " + getWidth() + " x " + getHeight());
 		}
 		
 		Rectangle clipBounds = g.getClipBounds();
