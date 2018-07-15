@@ -109,17 +109,13 @@ public class IconButtonControl implements DComponent {
 	@Override
 	public void paint(DCanvas canvas) {
 		if (disabled.getValue()) {
-			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.shadowDisabled);
-			canvas.fillPath(shape, DTransform2D.IDENTITY, style.colorDisabled);
+			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.colorDisabled, style.shadowDisabled);
 		} else if (press) {
-			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.shadowPress);
-			canvas.fillPath(shape, DTransform2D.IDENTITY, style.colorPress);
+			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.colorPress, style.shadowPress);
 		} else if (hover) {
-			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.shadowHover);
-			canvas.fillPath(shape, DTransform2D.IDENTITY, style.colorHover);
+			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.colorHover, style.shadowHover);
 		} else {
-			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.shadowNormal);
-			canvas.fillPath(shape, DTransform2D.IDENTITY, style.colorNormal);
+			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.colorNormal, style.shadowNormal);
 		}
 		
 		DDrawable icon = disabled.getValue() ? iconDisabled : this.icon;

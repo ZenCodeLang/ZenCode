@@ -11,17 +11,10 @@ import org.openzen.drawablegui.DUIContext;
  *
  * @author Hoofdgebruiker
  */
-public class DPxDimension implements DDimension {
-	public static final DPxDimension ZERO = new DPxDimension(0);
+public interface DMarginElement extends DStyleElement {
+	DMargin eval(DUIContext context);
 	
-	private final float pixels;
-	
-	public DPxDimension(float pixels) {
-		this.pixels = pixels;
-	}
-
-	@Override
-	public float eval(DUIContext context) {
-		return pixels;
+	default DMarginElement asMargin() {
+		return this;
 	}
 }

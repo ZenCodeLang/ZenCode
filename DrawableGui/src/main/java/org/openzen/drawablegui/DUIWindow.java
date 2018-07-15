@@ -13,7 +13,7 @@ import org.openzen.drawablegui.live.LiveObject;
  * @author Hoofdgebruiker
  */
 public interface DUIWindow {
-	DIRectangle getWindowBounds();
+	LiveObject<DIRectangle> getWindowBounds();
 	
 	DUIContext getContext();
 	

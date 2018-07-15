@@ -26,8 +26,7 @@ public class PlayIcon implements DColorableIcon {
 	
 	@Override
 	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		canvas.shadowPath(PATH, transform, new DShadow(0xFFCCCCCC, 0, 1, 4));
-		canvas.fillPath(PATH, transform, color);
+		canvas.shadowPath(PATH, transform, color, new DShadow(0xFFCCCCCC, 0, 1, 4));
 	}
 
 	@Override

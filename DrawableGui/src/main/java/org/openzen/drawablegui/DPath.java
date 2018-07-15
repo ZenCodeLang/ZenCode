@@ -10,6 +10,13 @@ package org.openzen.drawablegui;
  * @author Hoofdgebruiker
  */
 public interface DPath {
+	public static DPath line(float x1, float y1, float x2, float y2) {
+		return tracer -> {
+			tracer.moveTo(x1, y1);
+			tracer.lineTo(x2, y2);
+		};
+	}
+	
 	public static DPath circle(float x, float y, float radius) {
 		// see http://spencermortensen.com/articles/bezier-circle/
 		return tracer -> {
@@ -45,6 +52,9 @@ public interface DPath {
 	}
 	
 	public static DPath roundedRectangle(float x, float y, float width, float height, float radius) {
+		if (radius < 0.01f)
+			return rectangle(x, y, width, height);
+		
 		return tracer -> {
 			float c = radius - radius * 0.551915024494f;
 			tracer.moveTo(x + width - radius, y + height);

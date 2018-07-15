@@ -50,6 +50,11 @@ public class DStylesheetBuilder {
 		return this;
 	}
 	
+	public DStylesheetBuilder marginDp(String name, float value) {
+		elements.put(name, (DMarginElement)context -> new DMargin(context.dp(value)));
+		return this;
+	}
+	
 	public DStylesheet build() {
 		return new DSimpleStylesheet(elements);
 	}

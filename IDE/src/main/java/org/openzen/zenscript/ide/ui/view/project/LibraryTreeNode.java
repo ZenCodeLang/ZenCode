@@ -20,10 +20,10 @@ public class LibraryTreeNode extends ProjectOverviewNode {
 	private final IDELibrary library;
 	private final LiveList<ProjectOverviewNode> modules;
 	
-	public LibraryTreeNode(IDEWindow window, IDELibrary library) {
+	public LibraryTreeNode(ProjectBrowser browser, IDELibrary library) {
 		this.library = library;
 		
-		modules = new LiveMappedList<>(library.getModules(), module -> new ModuleTreeNode(window, module));
+		modules = new LiveMappedList<>(library.getModules(), module -> new ModuleTreeNode(browser, module));
 	}
 	
 	@Override

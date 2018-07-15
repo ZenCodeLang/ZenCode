@@ -120,8 +120,7 @@ public class DCustomWindowBorder implements DComponent {
 					|| canvasBounds.y < bounds.y + spacing
 					|| canvasBounds.x + canvasBounds.width > bounds.x + bounds.width - spacing
 					|| canvasBounds.y + canvasBounds.height > bounds.y + bounds.height - spacing) {
-				canvas.shadowPath(border, DTransform2D.IDENTITY, style.shadow);
-				canvas.fillPath(border, DTransform2D.IDENTITY, style.backgroundColor);
+				canvas.shadowPath(border, DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 				canvas.strokePath(
 						border,
 						DTransform2D.IDENTITY,

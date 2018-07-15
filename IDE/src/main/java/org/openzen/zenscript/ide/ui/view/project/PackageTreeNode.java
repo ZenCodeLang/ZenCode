@@ -12,7 +12,6 @@ import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEPackage;
-import org.openzen.zenscript.ide.ui.IDEWindow;
 import org.openzen.zenscript.ide.ui.icons.FolderIcon;
 
 /**
@@ -20,18 +19,18 @@ import org.openzen.zenscript.ide.ui.icons.FolderIcon;
  * @author Hoofdgebruiker
  */
 public class PackageTreeNode extends ProjectOverviewNode {
-	protected final IDEWindow window;
+	protected final ProjectBrowser browser;
 	protected IDEModule module;
 	private final IDEPackage pkg;
 	private LiveList<ProjectOverviewNode> contents;
 	
-	public PackageTreeNode(IDEWindow window, IDEPackage pkg) {
-		this.window = window;
+	public PackageTreeNode(ProjectBrowser browser, IDEPackage pkg) {
+		this.browser = browser;
 		this.pkg = pkg;
 	}
 	
-	public PackageTreeNode(IDEWindow window, IDEModule module, IDEPackage pkg) {
-		this.window = window;
+	public PackageTreeNode(ProjectBrowser browser, IDEModule module, IDEPackage pkg) {
+		this.browser = browser;
 		this.module = module;
 		this.pkg = pkg;
 		
@@ -41,8 +40,8 @@ public class PackageTreeNode extends ProjectOverviewNode {
 	protected final void init(IDEModule module) {
 		this.module = module;
 		contents = new LiveConcatList<>(
-				new LiveMappedList<>(pkg.getSubPackages(), sub -> new PackageTreeNode(window, module, sub)),
-				new LiveMappedList<>(pkg.getSourceFiles(), source -> new SourceFileTreeNode(window, source))
+				new LiveMappedList<>(pkg.getSubPackages(), sub -> new PackageTreeNode(browser, module, sub)),
+				new LiveMappedList<>(pkg.getSourceFiles(), source -> new SourceFileTreeNode(browser, source))
 		);
 	}
 	
@@ -78,6 +77,6 @@ public class PackageTreeNode extends ProjectOverviewNode {
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		window.setContextPackage(module, pkg);
+		browser.setContextPackage(module, pkg);
 	}
 }

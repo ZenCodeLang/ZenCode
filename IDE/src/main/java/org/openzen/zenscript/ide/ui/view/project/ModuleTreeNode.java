@@ -16,8 +16,8 @@ import org.openzen.zenscript.ide.ui.icons.ModuleIcon;
  * @author Hoofdgebruiker
  */
 public class ModuleTreeNode extends PackageTreeNode {
-	public ModuleTreeNode(IDEWindow window, IDEModule module) {
-		super(window, module.getRootPackage());
+	public ModuleTreeNode(ProjectBrowser projectBrowser, IDEModule module) {
+		super(projectBrowser, module.getRootPackage());
 		
 		init(module);
 	}
@@ -39,7 +39,7 @@ public class ModuleTreeNode extends PackageTreeNode {
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		window.setContextModule(module);
+		browser.setContextModule(module);
 	}
 
 	@Override

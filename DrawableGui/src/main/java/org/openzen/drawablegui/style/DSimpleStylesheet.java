@@ -80,5 +80,13 @@ public class DSimpleStylesheet implements DStylesheet {
 			
 			return elements.get(name).asBorder().eval(context);
 		}
+		
+		@Override
+		public DMargin getMargin(String name, DMarginElement defaultValue) {
+			if (!elements.containsKey(name))
+				return defaultValue.eval(context);
+			
+			return elements.get(name).asMargin().eval(context);
+		}
 	}
 }

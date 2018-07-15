@@ -5,18 +5,12 @@
  */
 package org.openzen.zenscript.ide.host;
 
-import java.io.IOException;
-import java.io.Reader;
-import org.openzen.drawablegui.live.LiveString;
-
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface IDESourceFile {
-	public LiveString getName();
+public interface IDEPropertyStore {
+	IDEPropertyDirectory getRoot();
 	
-	public Reader read() throws IOException;
-	
-	public void update(String content);
+	void save();
 }

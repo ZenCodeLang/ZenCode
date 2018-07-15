@@ -110,11 +110,8 @@ public class AspectBarSelectorButton implements DComponent {
 		canvas.shadowPath(
 					shape,
 					DTransform2D.translate(bounds.x, bounds.y),
+					color,
 					shadow);
-		canvas.fillPath(
-				shape,
-				DTransform2D.translate(bounds.x, bounds.y),
-				color);
 		icon.draw(canvas, DTransform2D.scaleAndTranslate(
 				bounds.x + (style.width - icon.getNominalWidth() * context.getScale()) / 2,
 				bounds.y + (style.height - icon.getNominalHeight() * context.getScale()) / 2,

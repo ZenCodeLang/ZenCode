@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
@@ -14,6 +16,7 @@ import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
@@ -34,6 +37,8 @@ public class TabbedView extends BaseComponentGroup {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	public final MutableLiveObject<TabbedViewComponent> currentTab = new SimpleLiveObject<>(null);
 	
+	private final Map<TabbedViewTab, ListenerHandle<LiveObject.Listener<DSizing>>> tabSizeListeners = new HashMap<>();
+	
 	private DUIContext context;
 	private DStylePath path;
 	private DIRectangle bounds;
@@ -45,6 +50,8 @@ public class TabbedView extends BaseComponentGroup {
 		TabbedViewTab result = new TabbedViewTab(this, currentTab, tab);
 		if (context != null)
 			result.setContext(path, context);
+		
+		tabSizeListeners.put(result, result.getSizing().addListener((oldSize, newSize) -> layoutTabs()));
 		return result;
 	});
 	

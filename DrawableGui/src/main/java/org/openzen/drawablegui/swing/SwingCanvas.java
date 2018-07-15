@@ -118,12 +118,15 @@ public class SwingCanvas implements DCanvas {
 	}
 
 	@Override
-	public void shadowPath(DPath path, DTransform2D transform, DShadow shadow) {
-		if (shadow.color == 0)
+	public void shadowPath(DPath path, DTransform2D transform, int color, DShadow shadow) {
+		if (shadow.color == 0) {
+			fillPath(path, transform, color);
 			return;
+		}
 		
 		if (shadow.radius == 0) {
 			fillPath(path, transform, shadow.color);
+			fillPath(path, transform, color);
 			return;
 		}
 		
@@ -143,6 +146,8 @@ public class SwingCanvas implements DCanvas {
 		image = getGaussianBlurFilter((int)Math.ceil(shadow.radius), true).filter(image, null);
 		image = getGaussianBlurFilter((int)Math.ceil(shadow.radius), false).filter(image, null);
 		g.drawImage(image, bounds.x - offset, bounds.y - offset, null);
+		
+		fillPath(path, transform, color);
 	}
 
 	@Override

@@ -10,7 +10,6 @@ import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
-import org.openzen.zenscript.ide.ui.IDEWindow;
 import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
 
 /**
@@ -18,15 +17,15 @@ import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
  * @author Hoofdgebruiker
  */
 public class ProjectTreeNode extends ProjectOverviewNode {
-	private final IDEWindow window;
+	private final ProjectBrowser browser;
 	private final DevelopmentHost host;
 	private final LiveList<ProjectOverviewNode> modules;
 	
-	public ProjectTreeNode(IDEWindow window, DevelopmentHost host) {
-		this.window = window;
+	public ProjectTreeNode(ProjectBrowser browser, DevelopmentHost host) {
+		this.browser = browser;
 		this.host = host;
 		
-		modules = new LiveMappedList<>(host.getModules(), module -> new ModuleTreeNode(window, module));
+		modules = new LiveMappedList<>(host.getModules(), module -> new ModuleTreeNode(browser, module));
 	}
 	
 	@Override
@@ -61,6 +60,6 @@ public class ProjectTreeNode extends ProjectOverviewNode {
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		window.aspectBar.active.setValue(window.projectToolbar);
+		browser.setContextProject();
 	}
 }

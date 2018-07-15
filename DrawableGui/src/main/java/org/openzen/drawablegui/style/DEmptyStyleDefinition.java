@@ -49,4 +49,9 @@ public class DEmptyStyleDefinition implements DStyleDefinition {
 	public DBorder getBorder(String name, DBorderElement defaultValue) {
 		return defaultValue.eval(context);
 	}
+	
+	@Override
+	public DMargin getMargin(String name, DMarginElement defaultValue) {
+		return defaultValue.eval(context);
+	}
 }

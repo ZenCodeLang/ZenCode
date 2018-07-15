@@ -7,6 +7,7 @@ package org.openzen.drawablegui.border;
 
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.style.DBorderElement;
 
 /**
  *
@@ -14,6 +15,7 @@ import org.openzen.drawablegui.DIRectangle;
  */
 public class DEmptyBorder implements DBorder {
 	public static final DEmptyBorder INSTANCE = new DEmptyBorder();
+	public static final DBorderElement ELEMENT = context -> INSTANCE;
 	
 	private DEmptyBorder() {}
 	

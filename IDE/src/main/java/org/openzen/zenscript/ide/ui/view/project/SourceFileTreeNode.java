@@ -10,7 +10,6 @@ import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.live.LiveEmptyList;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.zenscript.ide.host.IDESourceFile;
-import org.openzen.zenscript.ide.ui.IDEWindow;
 import org.openzen.zenscript.ide.ui.icons.CodeIcon;
 
 /**
@@ -18,11 +17,11 @@ import org.openzen.zenscript.ide.ui.icons.CodeIcon;
  * @author Hoofdgebruiker
  */
 public class SourceFileTreeNode extends ProjectOverviewNode {
-	private final IDEWindow window;
+	private final ProjectBrowser browser;
 	private final IDESourceFile sourceFile;
 	
-	public SourceFileTreeNode(IDEWindow window, IDESourceFile sourceFile) {
-		this.window = window;
+	public SourceFileTreeNode(ProjectBrowser browser, IDESourceFile sourceFile) {
+		this.browser = browser;
 		this.sourceFile = sourceFile;
 	}
 	
@@ -43,7 +42,7 @@ public class SourceFileTreeNode extends ProjectOverviewNode {
 
 	@Override
 	public String getTitle() {
-		return sourceFile.getName();
+		return sourceFile.getName().getValue(); // TODO: live strings for node names
 	}
 
 	@Override
@@ -58,9 +57,9 @@ public class SourceFileTreeNode extends ProjectOverviewNode {
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		window.setContextFile(sourceFile);
+		browser.setContextFile(sourceFile);
 		if (e.isDoubleClick()) {
-			window.open(sourceFile);
+			browser.open(sourceFile);
 		}
 	}
 }

@@ -23,6 +23,9 @@ public class SimpleLiveInt implements LiveInt {
 
 	@Override
 	public void setValue(int value) {
+		if (value == this.value)
+			return;
+		
 		int oldValue = this.value;
 		this.value = value;
 		listeners.accept(listener -> listener.onChanged(oldValue, value));

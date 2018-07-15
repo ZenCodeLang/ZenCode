@@ -6,19 +6,10 @@
 package org.openzen.zenscript.ide.ui;
 
 import org.openzen.drawablegui.live.ImmutableLiveString;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LivePredicateBool;
-import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
-import org.openzen.zenscript.ide.host.IDEModule;
-import org.openzen.zenscript.ide.host.IDEPackage;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.host.IDETarget;
-import org.openzen.zenscript.ide.ui.dialog.CreatePackageDialog;
-import org.openzen.zenscript.ide.ui.dialog.CreateSourceFileDialog;
-import org.openzen.zenscript.ide.ui.icons.AddBoxIcon;
 import org.openzen.zenscript.ide.ui.icons.BuildIcon;
 import org.openzen.zenscript.ide.ui.icons.PlayIcon;
 import org.openzen.zenscript.ide.ui.icons.SettingsIcon;
@@ -37,11 +28,6 @@ public class IDEWindow {
 	public final IDEStatusBar statusBar;
 	
 	public IDEAspectToolbar projectToolbar;
-	
-	public final MutableLiveObject<IDEModule> contextModule = new SimpleLiveObject<>(null);
-	public final MutableLiveObject<IDEPackage> contextPackage = new SimpleLiveObject<>(null);
-	public final MutableLiveObject<IDESourceFile> contextFile = new SimpleLiveObject<>(null);
-	public final LiveBool addContentDisabled = new LivePredicateBool(contextPackage, pkg -> pkg == null);
 	
 	public IDEWindow(DevelopmentHost host) {
 		this.host = host;
@@ -83,23 +69,5 @@ public class IDEWindow {
 			}
 		}));
 		aspectBar.toolbars.add(projectToolbar);
-	}
-	
-	public void setContextModule(IDEModule module) {
-		contextModule.setValue(module);
-		contextPackage.setValue(module.getRootPackage());
-		contextFile.setValue(null);
-	}
-	
-	public void setContextPackage(IDEModule module, IDEPackage pkg) {
-		contextModule.setValue(module);
-		contextPackage.setValue(pkg);
-		contextFile.setValue(null);
-	}
-	
-	public void setContextFile(IDESourceFile file) {
-		contextModule.setValue(null);
-		contextPackage.setValue(null);
-		contextFile.setValue(file);
 	}
 }

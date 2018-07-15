@@ -29,6 +29,8 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.live.ImmutableLiveString;
+import org.openzen.drawablegui.live.InverseLiveBool;
+import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -75,25 +77,32 @@ public class SourceEditor implements DComponent {
 	private final IDEWindow window;
 	private final IDEAspectToolbar editToolbar = new IDEAspectToolbar(0, ShadedCodeIcon.BLUE, "Edit", "Source code editor");
 	
+	private final LiveBool updated;
+	
 	public SourceEditor(DStyleClass styleClass, IDEWindow window, IDESourceFile sourceFile) {
 		this.styleClass = styleClass;
 		this.window = window;
 		this.sourceFile = sourceFile;
 		
-		tokens = new TokenModel(sourceFile.getName(), tab.length());
+		tokens = new TokenModel(sourceFile.getName().getValue(), tab.length());
 		tokenListener = tokens.addListener(new TokenListener());
 		
 		editToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, ShadedSaveIcon.PURPLE, SaveIcon.GREY, unchanged, new ImmutableLiveString("Save file"), e -> save()));
+		updated = new InverseLiveBool(unchanged);
 		
 		try {
 			TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(
-					sourceFile.getName(),
+					sourceFile.getName().getValue(),
 					new ReaderCharReader(sourceFile.read()),
 					tab.length());
 			tokens.set(parser);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
+	}
+	
+	public LiveBool isUpdated() {
+		return updated;
 	}
 	
 	@Override

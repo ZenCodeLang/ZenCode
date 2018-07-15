@@ -14,7 +14,10 @@ import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.listeners.ListenerHandle;
+import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -37,6 +40,9 @@ public class TabbedViewTab implements DComponent {
 	private int textWidth;
 	private DIRectangle bounds;
 	
+	private final ListenerHandle<LiveString.Listener> titleListener;
+	private final ListenerHandle<LiveBool.Listener> updatedListener;
+	
 	private boolean hover;
 	private boolean press;
 	
@@ -45,6 +51,9 @@ public class TabbedViewTab implements DComponent {
 		this.currentTab = currentTab;
 		this.tab = tab;
 		this.closeButton = new TabbedViewTabClose(this);
+		
+		titleListener = tab.title.addListener((oldValue, newValue) -> calculateSizing());
+		updatedListener = tab.updated.addListener((oldValue, newValue) -> calculateSizing());
 	}
 	
 	public void closeTab() {
@@ -59,11 +68,22 @@ public class TabbedViewTab implements DComponent {
 		fontMetrics = context.getFontMetrics(style.tabFont);
 		closeButton.setContext(path, context);
 		
-		textWidth = fontMetrics.getWidth(tab.title);
-		sizing.setValue(new DSizing(
-				style.paddingLeft + textWidth + style.paddingRight
+		calculateSizing();
+	}
+	
+	private void calculateSizing() {
+		textWidth = fontMetrics.getWidth(tab.title.getValue());
+		
+		int width = style.paddingLeft + textWidth + style.paddingRight
 						+ style.closeIconPadding
-						+ closeButton.getSizing().getValue().preferredWidth,
+						+ closeButton.getSizing().getValue().preferredWidth;
+		
+		if (tab.updated.getValue()) {
+			width += style.updatedDiameter + style.updatedPadding;
+		}
+		
+		sizing.setValue(new DSizing(
+				width,
 				style.paddingTop + fontMetrics.getAscent() + fontMetrics.getDescent()
 						+ style.paddingBottom));
 	}
@@ -99,6 +119,9 @@ public class TabbedViewTab implements DComponent {
 	public void paint(DCanvas canvas) {
 		int width = style.paddingLeft + textWidth + style.paddingRight
 				+ closeButton.getSizing().getValue().preferredWidth + style.closeIconPadding;
+		
+		if (tab.updated.getValue())
+			width += style.updatedDiameter + style.updatedPadding;
 
 		int color = style.tabColorNormal;
 		if (currentTab.getValue() == tab)
@@ -110,15 +133,25 @@ public class TabbedViewTab implements DComponent {
 
 		canvas.fillRectangle(bounds.x, bounds.y, width, bounds.height, color);
 		canvas.strokePath(DPath.rectangle(bounds.x, bounds.y, width, bounds.height), DTransform2D.IDENTITY, style.borderColor, style.borderWidth);
-
-		canvas.drawText(style.tabFont, style.tabFontColor, bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent(), tab.title);
+		
+		canvas.drawText(style.tabFont, style.tabFontColor, bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent(), tab.title.getValue());
+		
+		if (tab.updated.getValue()) {
+			canvas.fillPath(
+					DPath.circle(
+						bounds.x + bounds.width - style.paddingRight - closeButton.getBounds().width - style.closeIconPadding - style.updatedDiameter / 2,
+						bounds.y + style.paddingTop + ((bounds.height - style.paddingTop - style.paddingBottom) / 2), style.updatedDiameter / 2),
+					DTransform2D.IDENTITY,
+					style.updatedColor);
+		}
 		
 		closeButton.paint(canvas);
 	}
 
 	@Override
 	public void close() {
-		
+		titleListener.close();
+		updatedListener.close();
 	}
 	
 	@Override

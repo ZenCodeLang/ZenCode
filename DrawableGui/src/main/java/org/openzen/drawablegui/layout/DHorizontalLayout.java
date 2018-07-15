@@ -3,14 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui;
+package org.openzen.drawablegui.layout;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import org.openzen.drawablegui.BaseComponentGroup;
+import org.openzen.drawablegui.DCanvas;
+import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.DSizing;
+import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -18,7 +23,7 @@ import org.openzen.drawablegui.style.DStylePath;
  *
  * @author Hoofdgebruiker
  */
-public class DVerticalLayout extends BaseComponentGroup {
+public class DHorizontalLayout extends BaseComponentGroup {
 	private final DStyleClass styleClass;
 	private final Alignment alignment;
 	private final Element[] components;
@@ -26,12 +31,12 @@ public class DVerticalLayout extends BaseComponentGroup {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DUIContext context;
-	private DVerticalLayoutStyle style;
+	private DHorizontalLayoutStyle style;
 	private DIRectangle bounds;
 	private float totalGrow;
 	private float totalShrink;
 	
-	public DVerticalLayout(DStyleClass styleClass, Alignment alignment, Element... components) {
+	public DHorizontalLayout(DStyleClass styleClass, Alignment alignment, Element... components) {
 		this.styleClass = styleClass;
 		this.alignment = alignment;
 		this.components = components;
@@ -67,11 +72,13 @@ public class DVerticalLayout extends BaseComponentGroup {
 	public void setContext(DStylePath parent, DUIContext context) {
 		this.context = context;
 		
-		DStylePath path = parent.getChild("verticalLayout", styleClass);
-		style = new DVerticalLayoutStyle(context.getStylesheets().get(context, path));
+		DStylePath path = parent.getChild("horizontalLayout", styleClass);
+		style = new DHorizontalLayoutStyle(context.getStylesheets().get(context, path));
 		
 		for (Element element : components)
 			element.component.setContext(parent, context);
+		
+		layout();
 	}
 
 	@Override
@@ -98,6 +105,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 	@Override
 	public void paint(DCanvas canvas) {
 		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
+		style.border.paint(canvas, bounds);
 		for (Element element : components) {
 			element.component.paint(canvas);
 		}
@@ -105,15 +113,15 @@ public class DVerticalLayout extends BaseComponentGroup {
 
 	@Override
 	public void close() {
-		for (ListenerHandle<LiveObject.Listener<DSizing>> listener : componentSizeListeners) {
-			listener.close();
+		for (int i = 0; i < componentSizeListeners.length; i++) {
+			componentSizeListeners[i].close();
 		}
 	}
 	
 	public static enum Alignment {
-		TOP(0),
-		MIDDLE(0.5f),
-		BOTTOM(1);
+		LEFT(0),
+		CENTER(0.5f),
+		RIGHT(1);
 		
 		public final float align;
 		
@@ -123,9 +131,9 @@ public class DVerticalLayout extends BaseComponentGroup {
 	}
 	
 	public static enum ElementAlignment {
-		LEFT,
-		CENTER,
-		RIGHT,
+		TOP,
+		MIDDLE,
+		BOTTOM,
 		STRETCH
 	}
 	
@@ -148,7 +156,7 @@ public class DVerticalLayout extends BaseComponentGroup {
 			return;
 		
 		DSizing myPreferences = sizing.getValue();
-		if (bounds.height < myPreferences.preferredHeight) {
+		if (bounds.width < myPreferences.preferredWidth) {
 			layoutShrinked();
 		} else {
 			layoutGrown();
@@ -160,29 +168,29 @@ public class DVerticalLayout extends BaseComponentGroup {
 		if (totalShrink == 0) {
 			// now what?
 			// shrink proportionally, we have to shrink...
-			float scale = (float)(bounds.height - (components.length - 1) * style.spacing) / (myPreferences.preferredHeight - (components.length - 1) * style.spacing);
-			int y = 0;
+			float scale = (float)(bounds.width - (components.length - 1) * style.spacing) / (myPreferences.preferredWidth - (components.length - 1) * style.spacing);
+			int x = 0;
 			
 			for (int i = 0; i < components.length; i++) {
 				Element element = components[i];
 				DSizing preferences = element.component.getSizing().getValue();
-				int newY = y + preferences.preferredHeight;
-				float idealUnspacedY = newY * scale;
-				int idealY = (int)(idealUnspacedY + 0.5f + i * style.spacing);
-				layout(element, bounds.y + y, idealY - y);
-				y = idealY;
+				int newX = x + preferences.preferredWidth;
+				float idealUnspacedX = newX * scale;
+				int idealX = (int)(idealUnspacedX + 0.5f + i * style.spacing);
+				layout(element, x, idealX - x);
+				x = idealX;
 			}
 		} else {
-			int delta = bounds.height - myPreferences.preferredHeight;
+			int delta = bounds.width - myPreferences.preferredWidth;
 			float deltaScaled = delta / totalShrink;
-			int y = bounds.y;
+			int x = 0;
 			for (Element element : components) {
 				DSizing preferences = element.component.getSizing().getValue();
-				float scaledSize = preferences.preferredHeight + deltaScaled * element.shrink;
-				float idealUnspacedY = y + scaledSize;
-				int newY = (int)(idealUnspacedY + 0.5f);
-				layout(element, y, newY - y);
-				y = newY + style.spacing;
+				float scaledSize = preferences.preferredWidth + deltaScaled * element.shrink;
+				float idealUnspacedX = x + scaledSize;
+				int newX = (int)(idealUnspacedX + 0.5f);
+				layout(element, x, newX - x);
+				x = newX + style.spacing;
 			}
 		}
 	}
@@ -192,73 +200,72 @@ public class DVerticalLayout extends BaseComponentGroup {
 		DSizing myPreferences = sizing.getValue();
 		
 		if (totalGrow == 0) {
-			int deltaY = (int)(myPreferences.preferredHeight - bounds.height);
-			int y = bounds.y + (int)(deltaY * alignment.align);
+			int deltaX = (int)(myPreferences.preferredWidth - bounds.width);
+			int x = bounds.x + (int)(deltaX * alignment.align);
 			for (Element element : components) {
 				DSizing preferences = element.component.getSizing().getValue();
-				int newY = y + preferences.preferredHeight;
-				layout(element, y, newY - y);
-				y = newY;
+				int newX = x + preferences.preferredWidth;
+				layout(element, x, newX - x);
+				x = newX + style.spacing;
 			}
 		} else {
 			int delta = bounds.width - myPreferences.preferredWidth;
 			float deltaScaled = delta / totalGrow;
-			int y = bounds.y;
+			int x = 0;
 			for (Element element : components) {
 				DSizing preferences = element.component.getSizing().getValue();
-				float scaledSize = preferences.preferredHeight + deltaScaled * element.grow;
-				float idealUnspacedY = y + scaledSize;
-				int newY = (int)(idealUnspacedY + 0.5f);
-				layout(element, y, newY - y);
-				y = newY + style.spacing;
+				float scaledSize = preferences.preferredWidth + deltaScaled * element.grow;
+				float idealUnspacedX = x + scaledSize;
+				int newX = (int)(idealUnspacedX + 0.5f);
+				layout(element, x, newX - x);
+				x = newX + style.spacing;
 			}
 		}
 	}
 	
-	private void layout(Element element, int y, int height) {
+	private void layout(Element element, int x, int width) {
 		DSizing preferences = element.component.getSizing().getValue();
-		int x;
-		int width;
+		int height;
+		int y;
 		switch (element.alignment) {
-			case LEFT:
-				width = Math.min(preferences.preferredWidth, bounds.width - style.border.getPaddingHorizontal());
-				x = bounds.x + style.border.getPaddingLeft();
+			case BOTTOM:
+				height = Math.min(preferences.preferredHeight, bounds.height - style.border.getPaddingVertical());
+				y = bounds.y + style.border.getPaddingTop();
 				break;
-			case CENTER:
-				width = Math.min(preferences.preferredWidth, bounds.width - style.border.getPaddingHorizontal());
-				x = bounds.x + style.border.getPaddingLeft() + (bounds.width - style.border.getPaddingHorizontal() - width) / 2;
+			case MIDDLE:
+				height = Math.min(preferences.preferredHeight, bounds.height - style.border.getPaddingVertical());
+				y = bounds.y + style.border.getPaddingTop() + (bounds.height - style.border.getPaddingVertical() - height) / 2;
 				break;
-			case RIGHT:
-				width = Math.min(preferences.preferredWidth, bounds.width - style.border.getPaddingHorizontal());
-				x = bounds.x + bounds.width - style.border.getPaddingLeft() - width;
+			case TOP:
+				height = Math.min(preferences.preferredHeight, bounds.height - style.border.getPaddingVertical());
+				y = bounds.y + bounds.height - style.border.getPaddingBottom() - height;
 				break;
 			case STRETCH:
 			default:
-				width = bounds.width - style.border.getPaddingHorizontal();
-				x = bounds.x + style.border.getPaddingLeft();
+				height = bounds.height - style.border.getPaddingVertical();
+				y = bounds.y + style.border.getPaddingTop();
 				break;
 		}
 		element.component.setBounds(new DIRectangle(x, y, width, height));
 	}
 	
 	private void updateDimensionPreferences() {
-		int preferredWidth = 0;
-		int preferredHeight = -style.spacing;
-		int minimumWidth = 0;
-		int minimumHeight = -style.spacing;
-		int maximumWidth = Integer.MAX_VALUE;
-		int maximumHeight = -style.spacing;
-		
+		int preferredWidth = -style.spacing;
+		int preferredHeight = 0;
+		int minimumWidth = -style.spacing;
+		int minimumHeight = 0;
+		int maximumWidth = -style.spacing;
+		int maximumHeight = Integer.MAX_VALUE;
 		for (Element element : components) {
 			DSizing preferences = element.component.getSizing().getValue();
-			preferredWidth = Math.max(preferredWidth, preferences.preferredWidth);
-			preferredHeight += preferences.preferredHeight + style.spacing;
+			preferredWidth += preferences.preferredWidth + style.spacing;
+			preferredHeight = Math.max(preferredHeight, preferences.preferredHeight);
 			
-			minimumWidth = Math.max(minimumWidth, preferences.minimumWidth);
-			minimumHeight += preferences.minimumHeight + style.spacing;
+			minimumWidth += preferences.minimumWidth + style.spacing;
+			minimumHeight = Math.max(minimumHeight, preferences.minimumHeight);
 			
-			maximumWidth = Math.min(maximumWidth, preferences.maximumWidth);
-			maximumHeight += preferences.maximumHeight + style.spacing;
+			maximumWidth += preferences.maximumWidth + style.spacing;
+			maximumHeight = Math.min(maximumHeight, preferences.maximumHeight);
 		}
 		
 		int paddingHorizontal = style.border.getPaddingHorizontal();

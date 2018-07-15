@@ -24,4 +24,6 @@ public interface DStyleDefinition {
 	public DFont getFont(String name, DFontElement defaultValue);
 	
 	public DBorder getBorder(String name, DBorderElement defaultValue);
+	
+	public DMargin getMargin(String name, DMarginElement defaultValue);
 }

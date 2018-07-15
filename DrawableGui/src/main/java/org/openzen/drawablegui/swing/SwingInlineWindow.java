@@ -6,6 +6,8 @@
 package org.openzen.drawablegui.swing;
 
 import java.awt.BorderLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
@@ -17,7 +19,9 @@ import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.live.ImmutableLiveObject;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveBool;
+import org.openzen.drawablegui.live.SimpleLiveObject;
 
 /**
  *
@@ -27,6 +31,7 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 	public final SwingRoot swingComponent;
 	private final LiveObject<State> state = new ImmutableLiveObject<>(State.NORMAL);
 	private final SimpleLiveBool active = new SimpleLiveBool(true);
+	private final MutableLiveObject<DIRectangle> bounds = new SimpleLiveObject<>(DIRectangle.EMPTY);
 	
 	public SwingInlineWindow(SwingWindow owner, String title, DComponent root) {
 		super(owner);
@@ -37,6 +42,17 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 		getContentPane().add(swingComponent = new SwingRoot(root), BorderLayout.CENTER);
 		swingComponent.setWindow(this);
 		swingComponent.requestFocusInWindow();
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentMoved(ComponentEvent componentEvent) {
+				updateBounds();
+			}
+			
+			@Override
+			public void componentResized(ComponentEvent componentEvent) {
+				updateBounds();
+			}
+		});
 	}
 	
 	@Override
@@ -45,8 +61,8 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 	}
 
 	@Override
-	public DIRectangle getWindowBounds() {
-		return new DIRectangle(getX(), getY(), getWidth(), getHeight());
+	public LiveObject<DIRectangle> getWindowBounds() {
+		return bounds;
 	}
 
 	@Override
@@ -96,7 +112,7 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 
 	@Override
 	public void windowOpened(WindowEvent e) {
-		
+		updateBounds();
 	}
 
 	@Override
@@ -132,5 +148,9 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 	@Override
 	public void windowStateChanged(WindowEvent e) {
 		
+	}
+	
+	private void updateBounds() {
+		bounds.setValue(new DIRectangle(getX(), getY(), getWidth(), getHeight()));
 	}
 }

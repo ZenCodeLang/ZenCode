@@ -150,15 +150,18 @@ public class SwingGraphicsContext implements DUIContext {
 
 	@Override
 	public DUIWindow openDialog(int x, int y, DAnchor anchor, String title, DComponent root) {
-		SwingDialog window = new SwingDialog((SwingWindow)this.window, title, root, false);
+		SwingWindow swingWindow = (SwingWindow)this.window;
+		SwingDialog window = new SwingDialog(swingWindow, title, root, false);
 		SwingGraphicsContext windowContext = new SwingGraphicsContext(stylesheets, scale, textScale, window.swingComponent);
 		windowContext.setWindow(window);
 		windowContext.graphics = this.graphics; // help a little...
 		
+		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();
+		
 		root.setContext(DStylePathRoot.INSTANCE, windowContext);
 		DSizing dimension = root.getSizing().getValue();
-		int tx = (int)(x - anchor.alignX * dimension.preferredWidth);
-		int ty = (int)(y - anchor.alignY * dimension.preferredHeight);
+		int tx = (int)(x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
+		int ty = (int)(y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
 		
 		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		window.swingComponent.setPreferredSize(new Dimension(dimension.preferredWidth, dimension.preferredHeight));
@@ -183,7 +186,6 @@ public class SwingGraphicsContext implements DUIContext {
 		
 		int tx = (int)(x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
 		int ty = (int)(y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
-		System.out.println("Position: " + tx + ", " + ty);
 		
 		window.swingComponent.setPreferredSize(new Dimension(dimension.preferredWidth, dimension.preferredHeight));
 		window.setLocation(tx, ty);
@@ -191,7 +193,6 @@ public class SwingGraphicsContext implements DUIContext {
 		window.setVisible(true);
 		window.swingComponent.repaint();
 		
-		System.out.println("Window size: " + window.getWidth() + " x " + window.getHeight());
 		return window;
 	}
 	

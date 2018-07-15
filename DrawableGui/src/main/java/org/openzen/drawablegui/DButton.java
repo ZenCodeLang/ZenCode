@@ -91,8 +91,7 @@ public class DButton implements DComponent {
 		}
 		
 		DPath shape = DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * context.getScale());
-		canvas.shadowPath(shape, DTransform2D.IDENTITY, shadow);
-		canvas.fillPath(shape, DTransform2D.IDENTITY, backgroundColor);
+		canvas.shadowPath(shape, DTransform2D.IDENTITY, backgroundColor, shadow);
 		canvas.drawText(style.font, style.textColor, bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent(), label.getValue());
 	}
 

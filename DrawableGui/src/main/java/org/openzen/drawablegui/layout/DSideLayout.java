@@ -3,17 +3,22 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui;
+package org.openzen.drawablegui.layout;
 
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import org.openzen.drawablegui.BaseComponentGroup;
+import org.openzen.drawablegui.DCanvas;
+import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.DSizing;
+import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -30,6 +35,7 @@ public class DSideLayout extends BaseComponentGroup {
 	
 	private DStylePath path;
 	private DUIContext context;
+	private DSideLayoutStyle style;
 	private DIRectangle bounds;
 	
 	public DSideLayout(DStyleClass styleClass, DComponent main) {
@@ -61,6 +67,7 @@ public class DSideLayout extends BaseComponentGroup {
 	public void setContext(DStylePath parent, DUIContext context) {
 		this.context = context;
 		this.path = parent.getChild("sidelayout", styleClass);
+		style = new DSideLayoutStyle(context.getStylesheets().get(context, path));
 		
 		main.setContext(path, context);
 		for (SideComponent side : sides)
@@ -169,6 +176,7 @@ public class DSideLayout extends BaseComponentGroup {
 
 	@Override
 	public void paint(DCanvas canvas) {
+		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
 		main.paint(canvas);
 		
 		for (SideComponent component : sides)

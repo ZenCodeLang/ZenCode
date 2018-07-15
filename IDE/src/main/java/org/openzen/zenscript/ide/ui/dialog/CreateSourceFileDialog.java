@@ -8,12 +8,12 @@ package org.openzen.zenscript.ide.ui.dialog;
 import org.openzen.drawablegui.DAnchor;
 import org.openzen.drawablegui.DButton;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DHorizontalLayout;
+import org.openzen.drawablegui.layout.DHorizontalLayout;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DInputField;
 import org.openzen.drawablegui.DLabel;
 import org.openzen.drawablegui.DUIWindow;
-import org.openzen.drawablegui.DVerticalLayout;
+import org.openzen.drawablegui.layout.DVerticalLayout;
 import org.openzen.drawablegui.form.DForm;
 import org.openzen.drawablegui.form.DFormComponent;
 import org.openzen.drawablegui.live.ImmutableLiveBool;
@@ -74,8 +74,8 @@ public class CreateSourceFileDialog {
 	}
 	
 	public void open(DUIWindow parent) {
-		DIRectangle rectangle = parent.getWindowBounds();
-		window = parent.getContext().openDialog(rectangle.getCenterX(), rectangle.getCenterY(), DAnchor.MIDDLE_LEFT, "Create source file", root);
+		DIRectangle rectangle = parent.getWindowBounds().getValue();
+		window = parent.getContext().openDialog(rectangle.getCenterX(), rectangle.getCenterY(), DAnchor.MIDDLE_CENTER, "Create source file", root);
 		window.focus(input);
 	}
 	

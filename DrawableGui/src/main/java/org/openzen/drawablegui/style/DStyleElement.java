@@ -31,6 +31,10 @@ public interface DStyleElement {
 		throw new RuntimeException("Not a border!");
 	}
 	
+	default DMarginElement asMargin() {
+		throw new RuntimeException("Not a margin!");
+	}
+	
 	default DShadowElement asShadow() {
 		throw new RuntimeException("Not a shadow!");
 	}

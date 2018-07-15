@@ -48,7 +48,7 @@ public class LocalPackage implements IDEPackage {
 		}
 		
 		subPackagesSorted = new SortedLiveList<>(subPackages, (a, b) -> a.getName().compareTo(b.getName()));
-		sourceFilesSorted = new SortedLiveList<>(sourceFiles, (a, b) -> a.getName().compareTo(b.getName()));
+		sourceFilesSorted = new SortedLiveList<>(sourceFiles, (a, b) -> a.getName().getValue().compareTo(b.getName().getValue()));
 	}
 	
 	@Override

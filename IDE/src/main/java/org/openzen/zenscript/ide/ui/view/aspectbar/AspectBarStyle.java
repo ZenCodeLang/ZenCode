@@ -21,7 +21,9 @@ public class AspectBarStyle {
 	public final int aspectSelectorToToolbarSpacing;
 	public final int aspectSelectorBottomSize;
 	public final int backgroundColor;
+	public final int backgroundColorBottom;
 	public final int foregroundColor;
+	public final int marginBottom;
 	
 	public final int aspectSelectorButtonSpacing;
 	public final int toolbarTitleToControlsSpacing;
@@ -29,6 +31,7 @@ public class AspectBarStyle {
 	public final DShadow aspectBarShadow;
 	public final int aspectBarPaddingTop;
 	
+	public final int controlHeight;
 	public final int controlPaddingTop;
 	public final int controlPaddingBottom;
 	
@@ -40,19 +43,21 @@ public class AspectBarStyle {
 	public final DShadow windowControlShadow;
 	
 	public AspectBarStyle(DStyleDefinition style) {
-		height = style.getDimension("height", new DDpDimension(38));
 		aspectSelectorPaddingLeft = style.getDimension("aspectSelectorPaddingLeft", new DDpDimension(4));
 		aspectSelectorToToolbarSpacing = style.getDimension("aspectSelectorToToolbarSpacing", new DDpDimension(16));
 		toolbarTitleToControlsSpacing = style.getDimension("toolbarTitleToControlsSpacing", new DDpDimension(8));
 		aspectSelectorBottomSize = style.getDimension("aspectSelectorBottomSize", new DDpDimension(4));
 		backgroundColor = style.getColor("backgroundColor", 0xFFCCCCCC); // 0xFFF0F0F0
+		backgroundColorBottom = style.getColor("backgroundColorBottom", 0xFFEEEEEE);
 		foregroundColor = style.getColor("foregroundColor", 0xFFFFFFFF);
+		marginBottom = style.getDimension("marginBottom", new DDpDimension(2));
 		
 		aspectSelectorButtonSpacing = style.getDimension("aspectSelectorButtonSpacing", new DDpDimension(4));
 		
 		aspectBarShadow = style.getShadow("aspectBarShadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 2 * context.getScale()));
 		aspectBarPaddingTop = style.getDimension("aspectBarPaddingTop", new DDpDimension(4));
 		
+		controlHeight = style.getDimension("controlHeight", new DDpDimension(28));
 		controlPaddingTop = style.getDimension("controlPaddingTop", new DDpDimension(2));
 		controlPaddingBottom = style.getDimension("controlPaddingBottom", new DDpDimension(2));
 		
@@ -63,5 +68,7 @@ public class AspectBarStyle {
 		windowControlSpacingBottom = style.getDimension("windowControlSpacingBottom", new DDpDimension(4));
 		//windowControlShadow = style.getShadow("windowControlShadow", context -> DShadow.NONE);
 		windowControlShadow = style.getShadow("windowControlShadow", context -> new DShadow(0x80888888, 0, 0, 2 * context.getScale()));
+		
+		height = aspectBarPaddingTop + controlPaddingTop + controlHeight + controlPaddingBottom + marginBottom;
 	}
 }

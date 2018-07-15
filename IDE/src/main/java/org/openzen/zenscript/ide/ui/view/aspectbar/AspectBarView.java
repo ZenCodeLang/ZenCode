@@ -153,6 +153,7 @@ public class AspectBarView extends BaseComponentGroup {
 	public void paint(DCanvas canvas) {
 		canvas.pushBounds(bounds);
 		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
+		canvas.fillRectangle(bounds.x, bounds.y + bounds.height - style.marginBottom, bounds.width, style.marginBottom, style.backgroundColorBottom);
 		
 		for (DComponent button : selectorButtons) {
 			if (button.getBounds() == null)
@@ -164,11 +165,8 @@ public class AspectBarView extends BaseComponentGroup {
 		canvas.shadowPath(
 				aspectBarShape,
 				DTransform2D.IDENTITY,
+				style.foregroundColor,
 				style.aspectBarShadow);
-		canvas.fillPath(
-				aspectBarShape,
-				DTransform2D.IDENTITY,
-				style.foregroundColor);
 		
 		if (aspectBar.active.getValue() != null) {
 			int y = bounds.y
@@ -191,7 +189,7 @@ public class AspectBarView extends BaseComponentGroup {
 		}
 		
 		if (showWindowControls) {
-			canvas.shadowPath(windowControlsShape, DTransform2D.IDENTITY, style.windowControlShadow);
+			canvas.shadowPath(windowControlsShape, DTransform2D.IDENTITY, style.backgroundColor, style.windowControlShadow);
 			minimize.paint(canvas);
 			maximizeRestore.paint(canvas);
 			close.paint(canvas);
@@ -251,7 +249,7 @@ public class AspectBarView extends BaseComponentGroup {
 		for (DComponent component : selectorButtons) {
 			int width = component.getSizing().getValue().preferredWidth;
 			int height = component.getSizing().getValue().preferredHeight;
-			int y = bounds.y + (bounds.height - style.aspectSelectorBottomSize - height) / 2;
+			int y = bounds.y + (bounds.height - style.marginBottom - style.aspectSelectorBottomSize - height) / 2;
 			component.setBounds(new DIRectangle(x, y, width, height));
 			
 			x += width + style.aspectSelectorButtonSpacing;
@@ -327,7 +325,8 @@ public class AspectBarView extends BaseComponentGroup {
 		int toX = aspectSelectorEndX;
 		
 		aspectBarShape = tracer -> {
-			int baseY = bounds.y + bounds.height - style.aspectSelectorBottomSize;
+			int height = bounds.height - style.marginBottom;
+			int baseY = bounds.y + height - style.aspectSelectorBottomSize;
 			int barBaseX = toX + style.aspectSelectorToToolbarSpacing;
 			int barBaseY = bounds.y + style.aspectBarPaddingTop;
 			
@@ -355,8 +354,8 @@ public class AspectBarView extends BaseComponentGroup {
 				tracer.lineTo(bounds.x + bounds.width, bounds.y + style.aspectBarPaddingTop);
 			}
 			
-			tracer.lineTo(bounds.x + bounds.width, bounds.y + bounds.height);
-			tracer.lineTo(bounds.x, bounds.y + bounds.height);
+			tracer.lineTo(bounds.x + bounds.width, bounds.y + height);
+			tracer.lineTo(bounds.x, bounds.y + height);
 			tracer.close();
 		};
 		

@@ -14,6 +14,8 @@ import org.openzen.drawablegui.live.LiveList;
 public interface DevelopmentHost {
 	public String getName();
 	
+	public IDEPropertyStore getPropertyStore();
+	
 	public LiveList<IDEModule> getModules();
 	
 	public LiveList<IDELibrary> getLibraries();

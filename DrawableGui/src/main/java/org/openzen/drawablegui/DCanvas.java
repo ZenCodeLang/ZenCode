@@ -52,7 +52,7 @@ public interface DCanvas {
 	 * @param transform
 	 * @param shadow
 	 */
-	void shadowPath(DPath path, DTransform2D transform, DShadow shadow);
+	void shadowPath(DPath path, DTransform2D transform, int color, DShadow shadow);
 	
 	/**
 	 * Fills a rectangle.

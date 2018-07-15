@@ -87,6 +87,9 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 
 	@Override
 	public void componentResized(ComponentEvent e) {
+		if (firstPaint)
+			return;
+		
 		component.setBounds(new DIRectangle(0, 0,
 				e.getComponent().getWidth(),
 				e.getComponent().getHeight()));
