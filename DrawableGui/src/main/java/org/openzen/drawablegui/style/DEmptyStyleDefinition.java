@@ -54,4 +54,9 @@ public class DEmptyStyleDefinition implements DStyleDefinition {
 	public DMargin getMargin(String name, DMarginElement defaultValue) {
 		return defaultValue.eval(context);
 	}
+	
+	@Override
+	public DShape getShape(String name, DShapeElement defaultValue) {
+		return defaultValue.eval(context);
+	}
 }

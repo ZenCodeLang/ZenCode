@@ -9,6 +9,7 @@ import org.openzen.drawablegui.DEmptyView;
 import org.openzen.drawablegui.scroll.DScrollPane;
 import org.openzen.drawablegui.layout.DSideLayout;
 import org.openzen.drawablegui.live.LiveString;
+import org.openzen.drawablegui.live.SimpleLiveInt;
 import org.openzen.drawablegui.live.SimpleLiveString;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylesheetBuilder;
@@ -38,7 +39,9 @@ public final class WindowView extends DSideLayout {
 		
 		projectBrowser = new ProjectBrowser(window, host);
 		
-		setMain(tabs = new TabbedView(DStyleClass.EMPTY));
+		setMain(tabs = new TabbedView(DStyleClass.inline(new DStylesheetBuilder()
+				.marginDp("margin", 3)
+				.build())));
 		add(Side.LEFT, projectBrowser.view);
 		add(Side.BOTTOM, new StatusBarView(DStyleClass.EMPTY, status));
 		add(Side.TOP, new AspectBarView(DStyleClass.EMPTY, window.aspectBar));
@@ -53,7 +56,7 @@ public final class WindowView extends DSideLayout {
 			TabbedViewComponent tab = new TabbedViewComponent(
 					sourceFile.getName(),
 					null,
-					new DScrollPane(DStyleClass.EMPTY, editor),
+					new DScrollPane(DStyleClass.EMPTY, editor, new SimpleLiveInt(0)),
 					editor.isUpdated());
 			tabs.tabs.add(tab);
 			tabs.currentTab.setValue(tab);

@@ -14,8 +14,12 @@ import org.openzen.drawablegui.listeners.ListenerList;
  */
 public class SimpleLiveInt implements LiveInt {
 	private final ListenerList<Listener> listeners = new ListenerList<>();
-	private int value = 0;
+	private int value;
 
+	public SimpleLiveInt(int value) {
+		this.value = value;
+	}
+	
 	@Override
 	public int getValue() {
 		return value;

@@ -6,17 +6,22 @@
 package org.openzen.zenscript.ide.ui.view.project;
 
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.layout.DHorizontalLayout;
 import org.openzen.drawablegui.DSizing;
-import org.openzen.drawablegui.layout.DVerticalLayout;
 import org.openzen.drawablegui.border.DEmptyBorder;
 import org.openzen.drawablegui.border.DPaddedBorder;
+import org.openzen.drawablegui.layout.DLinearLayout;
+import org.openzen.drawablegui.layout.DLinearLayout.Alignment;
+import org.openzen.drawablegui.layout.DLinearLayout.Element;
+import org.openzen.drawablegui.layout.DLinearLayout.ElementAlignment;
+import org.openzen.drawablegui.layout.DLinearLayout.Orientation;
 import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LivePredicateBool;
 import org.openzen.drawablegui.live.MutableLiveObject;
+import org.openzen.drawablegui.live.SimpleLiveInt;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.scroll.DScrollPane;
+import org.openzen.drawablegui.style.DRoundedRectangleShape;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylesheetBuilder;
@@ -74,31 +79,41 @@ public class ProjectBrowser {
 					dialog.open(e.window);
 				});
 		
-		DHorizontalLayout toolbar = new DHorizontalLayout(
+		DLinearLayout toolbar = new DLinearLayout(
 				DStyleClass.inline(new DStylesheetBuilder()
 						.border("border", context -> new DPaddedBorder(0, context.dp(2), 0, 0))
+						.shape("shape", context -> new DRoundedRectangleShape(context.dp(2), context.dp(2), 0, 0))
+						.color("backgroundColor", 0xFFFFFFFF)
+						.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
 						.dimensionPx("spacing", 0)
 						.build()),
-				DHorizontalLayout.Alignment.LEFT,
-				new DHorizontalLayout.Element(addPackageButton, 0, 0, DHorizontalLayout.ElementAlignment.TOP),
-				new DHorizontalLayout.Element(addFileButton, 0, 0, DHorizontalLayout.ElementAlignment.TOP));
+				Orientation.HORIZONTAL,
+				Alignment.LEFT,
+				new Element(addPackageButton, 0, 0, ElementAlignment.TOP),
+				new Element(addFileButton, 0, 0, ElementAlignment.TOP));
 		DTreeView projectTree = new DTreeView(
 				DTreeViewStyle.DEFAULT,
 				new RootTreeNode(this, host), false);
 		projectTree.getSizing().setValue(new DSizing(500, 500));
-		
-		view = new DVerticalLayout(
-				DStyleClass.inline(new DStylesheetBuilder()
-						.border("border", DEmptyBorder.ELEMENT)
-						.dimensionPx("spacing", 0)
-						.marginDp("margin", 3)
-						.dimensionDp("cornerRadius", 2)
+		DScrollPane treeScrollPane = new DScrollPane(
+				DStyleClass.inline("projectView", new DStylesheetBuilder()
+						.shape("shape", context -> new DRoundedRectangleShape(0, 0, context.dp(2), context.dp(2)))
 						.color("backgroundColor", 0xFFFFFFFF)
 						.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
 						.build()),
-				DVerticalLayout.Alignment.TOP,
-				new DVerticalLayout.Element(toolbar, 0, 0, DVerticalLayout.ElementAlignment.STRETCH),
-				new DVerticalLayout.Element(new DScrollPane(DStyleClass.forId("projectView"), projectTree), 1, 1, DVerticalLayout.ElementAlignment.STRETCH));
+				projectTree,
+				new SimpleLiveInt(0));
+		
+		view = new DLinearLayout(
+				DStyleClass.inline(new DStylesheetBuilder()
+						.border("border", DEmptyBorder.ELEMENT)
+						.dimensionDp("spacing", 2)
+						.marginDp("margin", 3)
+						.build()),
+				Orientation.VERTICAL,
+				Alignment.TOP,
+				new Element(toolbar, 0, 0, ElementAlignment.STRETCH),
+				new Element(treeScrollPane, 1, 1, ElementAlignment.STRETCH));
 	}
 	
 	public void setContextModule(IDEModule module) {

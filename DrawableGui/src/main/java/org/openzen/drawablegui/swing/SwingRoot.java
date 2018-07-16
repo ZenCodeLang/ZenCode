@@ -79,10 +79,13 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 			component.setBounds(new DIRectangle(0, 0, getWidth(), getHeight()));
 		}
 		
+		long start = System.currentTimeMillis();
 		Rectangle clipBounds = g.getClipBounds();
 		DIRectangle clipBounds2 = clipBounds == null ? null : new DIRectangle(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 		SwingCanvas canvas = new SwingCanvas((Graphics2D) g, context, clipBounds2);
 		component.paint(canvas);
+		
+		System.out.println("Paint in " + (System.currentTimeMillis() - start) + " ms");
 	}
 
 	@Override

@@ -88,5 +88,13 @@ public class DSimpleStylesheet implements DStylesheet {
 			
 			return elements.get(name).asMargin().eval(context);
 		}
+		
+		@Override
+		public DShape getShape(String name, DShapeElement defaultValue) {
+			if (!elements.containsKey(name))
+				return defaultValue.eval(context);
+			
+			return elements.get(name).asShape().eval(context);
+		}
 	}
 }

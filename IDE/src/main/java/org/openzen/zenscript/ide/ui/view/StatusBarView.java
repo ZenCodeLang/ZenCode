@@ -10,6 +10,8 @@ import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.DPath;
+import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.DUIContext;
@@ -69,7 +71,7 @@ public class StatusBarView implements DComponent {
 
 	@Override
 	public void paint(DCanvas canvas) {
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
+		canvas.shadowPath(DPath.rectangle(bounds.x, bounds.y, bounds.width, bounds.height), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 		canvas.drawText(style.font, style.textColor, style.paddingLeft, style.paddingTop + fontMetrics.getAscent(), content.getValue());
 	}
 

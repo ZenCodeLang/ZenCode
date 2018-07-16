@@ -82,7 +82,7 @@ public class TabbedView extends BaseComponentGroup {
 		path = parent.getChild("tabbedView", styleClass);
 		style = new TabbedViewStyle(context.getStylesheets().get(context, path));
 		fontMetrics = context.getFontMetrics(style.tabFont);
-		totalTabHeight = style.paddingTop + style.paddingBottom + fontMetrics.getAscent() + fontMetrics.getDescent();
+		totalTabHeight = style.tabBorder.getPaddingVertical() + fontMetrics.getAscent() + fontMetrics.getDescent();
 		
 		for (TabbedViewComponent tab : tabs)
 			prepare(tab);
@@ -128,13 +128,12 @@ public class TabbedView extends BaseComponentGroup {
 
 	@Override
 	public void close() {
-		
+		for (Map.Entry<TabbedViewTab, ListenerHandle<LiveObject.Listener<DSizing>>> entry : tabSizeListeners.entrySet()) {
+			entry.getValue().close();
+		}
 	}
 	
 	private void repaintTabs() {
-		if (context == null)
-			return;
-		
 		context.repaint(bounds.x, bounds.y, bounds.width, totalTabHeight);
 	}
 	
@@ -187,11 +186,11 @@ public class TabbedView extends BaseComponentGroup {
 	private class TabListListener implements LiveList.Listener<TabbedViewComponent> {
 		@Override
 		public void onInserted(int index, TabbedViewComponent value) {
-			if (currentTab.getValue() == null)
-				currentTab.setValue(value);
-			
 			prepare(value);
 			layoutTabs();
+			
+			if (currentTab.getValue() == null)
+				currentTab.setValue(value);
 		}
 
 		@Override

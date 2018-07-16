@@ -21,6 +21,10 @@ public class DStyleClass {
 		return new DStyleClass(null, NO_CLASSES, stylesheet);
 	}
 	
+	public static DStyleClass inline(String id, DStylesheet stylesheet) {
+		return new DStyleClass(id, NO_CLASSES, stylesheet);
+	}
+	
 	public final String id;
 	public final String[] classes;
 	public final DStylesheet inline;

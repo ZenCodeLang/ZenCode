@@ -7,44 +7,36 @@ package org.openzen.zenscript.ide.ui.view;
 
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
+import org.openzen.drawablegui.border.DBorder;
+import org.openzen.drawablegui.border.DCompositeBorder;
+import org.openzen.drawablegui.border.DLineBorder;
+import org.openzen.drawablegui.border.DPaddedBorder;
+import org.openzen.drawablegui.style.DBaseStyle;
 import org.openzen.drawablegui.style.DDpDimension;
-import org.openzen.drawablegui.style.DPxDimension;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class TabbedViewStyle {
-	public final int backgroundColor;
+public class TabbedViewStyle extends DBaseStyle {
 	public final DFont tabFont;
 	public final int tabFontColor;
+	public final DBorder tabBorder;
 	
-	public final int paddingTop;
-	public final int paddingBottom;
-	public final int paddingLeft;
-	public final int paddingRight;
 	public final int tabBarSpacingLeft;
 	public final int tabBarSpacingRight;
 	public final int tabSpacing;
 	
-	public final int borderColor;
-	public final int borderWidth;
-	
 	public TabbedViewStyle(DStyleDefinition style) {
-		backgroundColor = style.getColor("backgroundColor", 0xFFEEEEEE);
+		super(style);
+		
 		tabFont = style.getFont("tabFont", context -> new DFont(DFontFamily.UI, false, false, false, (int)(12 * context.getScale())));
 		tabFontColor = style.getColor("tabFontColor", 0xFF000000);
+		tabBorder = style.getBorder("tabBorder", context -> new DCompositeBorder(new DLineBorder(0xFF888888, 1), new DPaddedBorder(context.dp(4))));
 		
-		paddingTop = style.getDimension("paddingTop", new DDpDimension(4));
-		paddingBottom = style.getDimension("paddingTop", new DDpDimension(4));
-		paddingLeft = style.getDimension("paddingLeft", new DDpDimension(4));
-		paddingRight = style.getDimension("paddingRight", new DDpDimension(4));
 		tabBarSpacingLeft = style.getDimension("tabBarSpacingLeft", new DDpDimension(4));
 		tabBarSpacingRight = style.getDimension("tabBarSpacingRight", new DDpDimension(4));
 		tabSpacing = style.getDimension("tabSpacing", new DDpDimension(4));
-		
-		borderColor = style.getColor("borderColor", 0xFF888888);
-		borderWidth = style.getDimension("borderWidth", new DPxDimension(1));
 	}
 }

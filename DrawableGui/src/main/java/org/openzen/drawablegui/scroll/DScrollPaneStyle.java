@@ -5,18 +5,15 @@
  */
 package org.openzen.drawablegui.scroll;
 
-import org.openzen.drawablegui.border.DBorder;
-import org.openzen.drawablegui.border.DLineBorder;
+import org.openzen.drawablegui.style.DBaseStyle;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class DScrollPaneStyle {
-	public final DBorder border;
-	
+public class DScrollPaneStyle extends DBaseStyle {
 	public DScrollPaneStyle(DStyleDefinition style) {
-		this.border = style.getBorder("border", context -> new DLineBorder(0xFF888888, 1));
+		super(style);
 	}
 }

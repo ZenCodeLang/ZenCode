@@ -5,6 +5,8 @@
  */
 package org.openzen.drawablegui.style;
 
+import org.openzen.drawablegui.DIRectangle;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -35,5 +37,13 @@ public class DMargin {
 	
 	public int getHorizontal() {
 		return left + right;
+	}
+	
+	public DIRectangle apply(DIRectangle bounds) {
+		return new DIRectangle(
+				bounds.x + left,
+				bounds.y + top,
+				bounds.width - left - right,
+				bounds.height - top - bottom);
 	}
 }

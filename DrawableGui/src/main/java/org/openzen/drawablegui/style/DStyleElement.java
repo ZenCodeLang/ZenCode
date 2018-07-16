@@ -38,4 +38,8 @@ public interface DStyleElement {
 	default DShadowElement asShadow() {
 		throw new RuntimeException("Not a shadow!");
 	}
+	
+	default DShapeElement asShape() {
+		throw new RuntimeException("Not a shape!");
+	}
 }

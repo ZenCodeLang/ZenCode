@@ -37,7 +37,7 @@ public class DTreeViewStyle {
 	private DTreeViewStyle() {
 		nodeOpenedIcon = ExpandedArrow.INSTANCE;
 		nodeClosedIcon = CollapsedArrow.INSTANCE;
-		backgroundColor = 0xFFFFFFFF;
+		backgroundColor = 0;
 		borderColor = 0xFF888888;
 		padding = new DDpDimension(3);
 		rowSpacing = new DDpDimension(2);

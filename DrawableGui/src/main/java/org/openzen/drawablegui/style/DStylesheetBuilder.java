@@ -55,6 +55,11 @@ public class DStylesheetBuilder {
 		return this;
 	}
 	
+	public DStylesheetBuilder shape(String name, DShapeElement shape) {
+		elements.put(name, shape);
+		return this;
+	}
+	
 	public DStylesheet build() {
 		return new DSimpleStylesheet(elements);
 	}

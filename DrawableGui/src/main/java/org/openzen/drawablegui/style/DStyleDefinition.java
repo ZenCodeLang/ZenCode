@@ -26,4 +26,6 @@ public interface DStyleDefinition {
 	public DBorder getBorder(String name, DBorderElement defaultValue);
 	
 	public DMargin getMargin(String name, DMarginElement defaultValue);
+	
+	public DShape getShape(String name, DShapeElement defaultValue);
 }

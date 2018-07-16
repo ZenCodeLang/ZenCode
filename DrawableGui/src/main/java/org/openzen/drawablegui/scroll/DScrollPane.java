@@ -14,13 +14,16 @@ import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
+import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTimerHandle;
+import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveInt;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 import org.openzen.drawablegui.style.DStyleSheets;
@@ -37,23 +40,30 @@ public class DScrollPane implements DComponent {
 	private DIRectangle bounds;
 	
 	private DScrollPaneStyle style;
+	private DPath shape;
 	private final LiveInt contentsHeight;
 	private final LiveInt offsetX;
 	private final LiveInt offsetY;
 	
+	private final LiveInt preferredHeight;
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
+	
 	private final ListenerHandle<LiveInt.Listener> contentsHeightListener;
 	private final ListenerHandle<LiveInt.Listener> offsetXListener;
 	private final ListenerHandle<LiveInt.Listener> offsetYListener;
+	private final ListenerHandle<LiveInt.Listener> preferredHeightListener;
+	private final ListenerHandle<LiveObject.Listener<DSizing>> contentsSizingListener;
 	
 	private DComponent hovering = null;
 	
-	public DScrollPane(DStyleClass styleClass, DComponent contents) {
+	public DScrollPane(DStyleClass styleClass, DComponent contents, LiveInt preferredHeight) {
 		this.styleClass = styleClass;
 		this.contents = contents;
+		this.preferredHeight = preferredHeight;
 		
-		contentsHeight = new SimpleLiveInt();
-		offsetX = new SimpleLiveInt();
-		offsetY = new SimpleLiveInt();
+		contentsHeight = new SimpleLiveInt(0);
+		offsetX = new SimpleLiveInt(0);
+		offsetY = new SimpleLiveInt(0);
 		
 		scrollBar = new DScrollBar(DStyleClass.EMPTY, contentsHeight, offsetY);
 		
@@ -67,6 +77,12 @@ public class DScrollPane implements DComponent {
 			
 			contents.setBounds(new DIRectangle(0, 0, bounds.width, Math.max(bounds.height, newPreferences.preferredHeight)));
 			contentsHeight.setValue(newPreferences.preferredHeight);
+		});
+		preferredHeightListener = preferredHeight.addListener((oldValue, newValue) -> {
+			sizing.setValue(new DSizing(contents.getSizing().getValue().preferredWidth, newValue));
+		});
+		contentsSizingListener = contents.getSizing().addListener((oldValue, newValue) -> {
+			sizing.setValue(new DSizing(newValue.preferredWidth, preferredHeight.getValue()));
 		});
 	}
 	
@@ -88,14 +104,11 @@ public class DScrollPane implements DComponent {
 		contents.setContext(path, new TranslatedContext());
 		scrollBar.setContext(path, context);
 		style = new DScrollPaneStyle(context.getStylesheets().get(context, path));
-		
-		if (bounds != null)
-			setBounds(bounds);
 	}
 
 	@Override
 	public LiveObject<DSizing> getSizing() {
-		return contents.getSizing(); // TODO: derived preferences
+		return sizing;
 	}
 
 	@Override
@@ -111,28 +124,24 @@ public class DScrollPane implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-		
-		if (this.context == null)
-			return;
+		shape = style.shape.instance(style.margin.apply(bounds));
 		
 		int height = Math.max(bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom(),
 				contents.getSizing().getValue().preferredHeight);
 		int scrollBarWidth = scrollBar.getSizing().getValue().preferredWidth;
 		scrollBar.setBounds(new DIRectangle(
-				bounds.x + bounds.width - scrollBarWidth - style.border.getPaddingRight(),
-				bounds.y + style.border.getPaddingTop(),
+				bounds.x + bounds.width - scrollBarWidth - style.border.getPaddingRight() - style.margin.right,
+				bounds.y + style.border.getPaddingTop() + style.margin.top,
 				scrollBarWidth,
-				bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom()));
+				bounds.height - style.border.getPaddingVertical() - style.margin.getVertical()));
 		contents.setBounds(new DIRectangle(0, 0, bounds.width - scrollBar.getBounds().width, height));
 		contentsHeight.setValue(height);
 	}
 
 	@Override
 	public void paint(DCanvas canvas) {
-		if (bounds == null)
-			return;
-		
-		style.border.paint(canvas, bounds);
+		canvas.shadowPath(shape, DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+		style.border.paint(canvas, style.margin.apply(bounds));
 		scrollBar.paint(canvas);
 		
 		canvas.pushBounds(new DIRectangle(
