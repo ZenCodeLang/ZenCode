@@ -13,7 +13,7 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
@@ -34,7 +34,7 @@ public class TabbedViewTab implements DComponent {
 	private final TabbedView parent;
 	public final TabbedViewTabClose closeButton;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
 	private TabbedViewTabStyle style;
 	private DFontMetrics fontMetrics;
 	private int textWidth;
@@ -61,12 +61,12 @@ public class TabbedViewTab implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
 		DStylePath path = parent.getChild("tab", DStyleClass.EMPTY);
-		style = new TabbedViewTabStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.tabFont);
-		closeButton.setContext(path, context);
+		style = new TabbedViewTabStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.tabFont);
+		closeButton.setSurface(path, z + 1, surface);
 		
 		calculateSizing();
 	}
@@ -185,7 +185,7 @@ public class TabbedViewTab implements DComponent {
 	}
 	
 	private void repaint() {
-		if (context != null && bounds != null)
-			context.repaint(bounds);
+		if (surface != null && bounds != null)
+			surface.repaint(bounds);
 	}
 }

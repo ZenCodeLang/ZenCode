@@ -9,6 +9,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -34,6 +35,7 @@ import org.openzen.drawablegui.style.DStylePathRoot;
  */
 public final class SwingRoot extends Component implements ComponentListener, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
 	public final SwingGraphicsContext context;
+	public final SwingDrawSurface surface;
 	public final DComponent component;
 	private DComponent focus = null;
 	private boolean firstPaint = true;
@@ -48,6 +50,8 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 				Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f,
 				Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f,
 				this);
+		surface = new SwingDrawSurface(context);
+		context.setSurface(surface);
 		
 		addComponentListener(this);
 		addMouseListener(this);
@@ -75,14 +79,19 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 	public void paint(Graphics g) {
 		if (firstPaint) {
 			firstPaint = false;
-			component.setContext(DStylePathRoot.INSTANCE, context);
+			component.setSurface(DStylePathRoot.INSTANCE, 0, surface);
 			component.setBounds(new DIRectangle(0, 0, getWidth(), getHeight()));
 		}
 		
 		long start = System.currentTimeMillis();
 		Rectangle clipBounds = g.getClipBounds();
 		DIRectangle clipBounds2 = clipBounds == null ? null : new DIRectangle(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
-		SwingCanvas canvas = new SwingCanvas((Graphics2D) g, context, clipBounds2);
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+		
+		surface.paint(g2d);
+		SwingCanvas canvas = new SwingCanvas(g2d, context, clipBounds2);
 		component.paint(canvas);
 		
 		System.out.println("Paint in " + (System.currentTimeMillis() - start) + " ms");

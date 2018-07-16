@@ -13,7 +13,7 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -32,7 +32,7 @@ public class DScrollBar implements DComponent {
 	private final ListenerHandle<LiveInt.Listener> targetHeightListener;
 	private final ListenerHandle<LiveInt.Listener> offsetListener;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
 	private DScrollBarStyle style;
 	private DIRectangle bounds;
 	
@@ -53,9 +53,9 @@ public class DScrollBar implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
-		this.style = new DScrollBarStyle(context.getStylesheets().get(context, parent.getChild("scrollbar", styleClass)));
+	public void setSurface(DStylePath parent, int z, DDrawSurface context) {
+		this.surface = context;
+		this.style = new DScrollBarStyle(context.getStylesheet(parent.getChild("scrollbar", styleClass)));
 		sizing.setValue(new DSizing(style.width, 0));
 	}
 
@@ -150,7 +150,7 @@ public class DScrollBar implements DComponent {
 			return;
 		
 		this.hovering = hovering;
-		context.repaint(bounds.x, fromY, bounds.width, toY - fromY);
+		surface.repaint(bounds.x, fromY, bounds.width, toY - fromY);
 	}
 	
 	private void setDragging(boolean dragging) {
@@ -158,7 +158,7 @@ public class DScrollBar implements DComponent {
 			return;
 		
 		this.dragging = dragging;
-		context.repaint(bounds.x, fromY, bounds.width, toY - fromY);
+		surface.repaint(bounds.x, fromY, bounds.width, toY - fromY);
 	}
 	
 	private void recalculate() {

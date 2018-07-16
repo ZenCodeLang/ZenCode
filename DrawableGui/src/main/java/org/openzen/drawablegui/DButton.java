@@ -5,6 +5,7 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
@@ -24,7 +25,7 @@ public class DButton implements DComponent {
 	private final LiveBool disabled;
 	private final Runnable action;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
 	private DIRectangle bounds;
 	
 	private DButtonStyle style;
@@ -39,14 +40,14 @@ public class DButton implements DComponent {
 		this.disabled = disabled;
 		this.action = action;
 	}
-
+	
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
 		
 		DStylePath path = parent.getChild("Button", styleClass);
-		this.style = new DButtonStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.font);
+		this.style = new DButtonStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.font);
 		
 		sizing.setValue(new DSizing(
 				style.paddingLeft + style.paddingRight + fontMetrics.getWidth(label.getValue()),
@@ -90,7 +91,7 @@ public class DButton implements DComponent {
 			shadow = style.shadowDisabled;
 		}
 		
-		DPath shape = DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * context.getScale());
+		DPath shape = DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * surface.getScale());
 		canvas.shadowPath(shape, DTransform2D.IDENTITY, backgroundColor, shadow);
 		canvas.drawText(style.font, style.textColor, bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent(), label.getValue());
 	}
@@ -131,9 +132,9 @@ public class DButton implements DComponent {
 	}
 	
 	private void repaint() {
-		if (context == null || bounds == null)
+		if (surface == null || bounds == null)
 			return;
 		
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 }

@@ -5,6 +5,9 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnRectangle;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
@@ -22,10 +25,14 @@ public class DSimpleTooltipComponent implements DComponent {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final ListenerHandle<LiveString.Listener> tooltipListener;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
+	private int z;
 	private DIRectangle bounds;
 	private DFontMetrics fontMetrics;
 	private DSimpleTooltipStyle style;
+	
+	private DDrawnRectangle background;
+	private DDrawnText text;
 	
 	public DSimpleTooltipComponent(DStyleClass styleClass, LiveString tooltip) {
 		this.styleClass = styleClass;
@@ -34,7 +41,7 @@ public class DSimpleTooltipComponent implements DComponent {
 	}
 	
 	private void onTooltipChanged(String oldValue, String newValue) {
-		if (context == null || bounds == null)
+		if (surface == null || bounds == null)
 			return;
 		
 		calculateSize();
@@ -43,12 +50,31 @@ public class DSimpleTooltipComponent implements DComponent {
 				bounds.y,
 				style.border.getPaddingLeft() + fontMetrics.getWidth(tooltip.getValue()) + style.border.getPaddingRight(),
 				style.border.getPaddingTop() + fontMetrics.getAscent() + fontMetrics.getDescent() + style.border.getPaddingBottom());
-		context.repaint(bounds);
+		surface.repaint(bounds);
+		
+		if (text != null)
+			text.close();
+		
+		text = surface.drawText(
+				z,
+				style.font,
+				style.textColor,
+				bounds.x + style.border.getPaddingLeft(),
+				bounds.y + style.border.getPaddingTop() + fontMetrics.getAscent(),
+				newValue);
 	}
 	
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		style.border.update(surface, z + 1, bounds);
+		
+		if (background != null)
+			background.close();
+		background = surface.fillRect(z, bounds, style.backgroundColor);
+		text.setPosition(
+				bounds.x + style.border.getPaddingLeft(),
+				bounds.y + style.border.getPaddingTop() + fontMetrics.getAscent());
 	}
 	
 	@Override
@@ -67,25 +93,21 @@ public class DSimpleTooltipComponent implements DComponent {
 	}
 	
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
 		
 		DStylePath path = parent.getChild("tooltip", styleClass);
-		style = new DSimpleTooltipStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.font);
+		style = new DSimpleTooltipStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.font);
 		calculateSize();
+		
+		text = surface.drawText(z + 1, style.font, style.textColor, 0, 0, tooltip.getValue());
 	}
 	
 	@Override
 	public void paint(DCanvas canvas) {
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
-		style.border.paint(canvas, bounds);
-		canvas.drawText(
-				style.font,
-				style.textColor,
-				bounds.x + style.border.getPaddingLeft(),
-				bounds.y + style.border.getPaddingTop() + fontMetrics.getAscent(),
-				tooltip.getValue());
+		
 	}
 	
 	@Override

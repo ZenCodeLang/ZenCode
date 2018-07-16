@@ -5,6 +5,7 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
@@ -22,7 +23,8 @@ public class DLabel implements DComponent {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final ListenerHandle<LiveString.Listener> labelListener;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
+	private int z;
 	private DIRectangle bounds;
 	private DLabelStyle style;
 	private DFontMetrics fontMetrics;
@@ -35,13 +37,14 @@ public class DLabel implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
 		
 		DStylePath path = parent.getChild("label", styleClass);
-		style = new DLabelStyle(context.getStylesheets().get(context, path));
+		style = new DLabelStyle(surface.getStylesheet(path));
 		
-		fontMetrics = context.getFontMetrics(style.font);
+		fontMetrics = surface.getFontMetrics(style.font);
 		calculateDimension();
 	}
 
@@ -63,11 +66,11 @@ public class DLabel implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		style.border.update(surface, z + 1, bounds);
 	}
 
 	@Override
 	public void paint(DCanvas canvas) {
-		style.border.paint(canvas, bounds);
 		canvas.drawText(style.font, style.color, bounds.x + style.border.getPaddingLeft(), bounds.y + style.border.getPaddingTop() + fontMetrics.getAscent(), label.getValue());
 	}
 
@@ -78,7 +81,7 @@ public class DLabel implements DComponent {
 	
 	private void onLabelChanged(String oldValue, String newValue) {
 		calculateDimension();
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 	
 	private void calculateDimension() {

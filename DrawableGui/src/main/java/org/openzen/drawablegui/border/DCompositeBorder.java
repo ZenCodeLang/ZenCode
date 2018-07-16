@@ -5,8 +5,8 @@
  */
 package org.openzen.drawablegui.border;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.draw.DDrawSurface;
 
 /**
  *
@@ -20,9 +20,9 @@ public class DCompositeBorder implements DBorder {
 	}
 
 	@Override
-	public void paint(DCanvas canvas, DIRectangle bounds) {
+	public void update(DDrawSurface surface, int z, DIRectangle bounds) {
 		for (DBorder border : borders) {
-			border.paint(canvas, bounds);
+			border.update(surface, z, bounds);
 			bounds = new DIRectangle(
 					bounds.x + border.getPaddingLeft(),
 					bounds.y + border.getPaddingTop(),

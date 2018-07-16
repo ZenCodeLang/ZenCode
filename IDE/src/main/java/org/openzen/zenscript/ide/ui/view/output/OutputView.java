@@ -11,9 +11,8 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.LiveList;
-import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -27,7 +26,7 @@ public class OutputView implements DComponent {
 	private final DStyleClass styleClass;
 	private final LiveList<OutputLine> lines;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
 	private DIRectangle bounds;
 	private DPath shape;
 	private OutputViewStyle style;
@@ -38,11 +37,11 @@ public class OutputView implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
 		
 		DStylePath path = parent.getChild("outputview", styleClass);
-		style = new OutputViewStyle(context.getStylesheets().get(context, path));
+		style = new OutputViewStyle(surface.getStylesheet(path));
 	}
 
 	@Override

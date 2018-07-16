@@ -25,8 +25,10 @@ import org.openzen.drawablegui.style.DRoundedRectangleShape;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylesheetBuilder;
+import org.openzen.drawablegui.tree.CollapsedArrow;
 import org.openzen.drawablegui.tree.DTreeView;
 import org.openzen.drawablegui.tree.DTreeViewStyle;
+import org.openzen.drawablegui.tree.ExpandedArrow;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEPackage;
@@ -92,7 +94,9 @@ public class ProjectBrowser {
 				new Element(addPackageButton, 0, 0, ElementAlignment.TOP),
 				new Element(addFileButton, 0, 0, ElementAlignment.TOP));
 		DTreeView projectTree = new DTreeView(
-				DTreeViewStyle.DEFAULT,
+				DStyleClass.EMPTY,
+				ExpandedArrow.INSTANCE,
+				CollapsedArrow.INSTANCE,
 				new RootTreeNode(this, host), false);
 		projectTree.getSizing().setValue(new DSizing(500, 500));
 		DScrollPane treeScrollPane = new DScrollPane(

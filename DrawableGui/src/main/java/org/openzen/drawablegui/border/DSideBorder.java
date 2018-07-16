@@ -9,6 +9,8 @@ import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
 
 /**
  *
@@ -23,6 +25,11 @@ public class DSideBorder implements DBorder {
 	public final int rightColor;
 	public final int bottomWidth;
 	public final int bottomColor;
+	
+	private DDrawnShape left;
+	private DDrawnShape top;
+	private DDrawnShape right;
+	private DDrawnShape bottom;
 	
 	public DSideBorder(
 			int leftWidth, int leftColor,
@@ -40,22 +47,30 @@ public class DSideBorder implements DBorder {
 	}
 
 	@Override
-	public void paint(DCanvas canvas, DIRectangle bounds) {
+	public void update(DDrawSurface surface, int z, DIRectangle bounds) {
 		if (leftWidth > 0) {
 			int x = bounds.x;
-			canvas.strokePath(DPath.line(x, bounds.y, x, bounds.y + bounds.height), DTransform2D.IDENTITY, topColor, topWidth);
+			if (left != null)
+				left.close();
+			left = surface.strokePath(z, DPath.line(x, bounds.y, x, bounds.y + bounds.height), DTransform2D.IDENTITY, topColor, topWidth);
 		}
 		if (topWidth > 0) {
 			int y = bounds.y;
-			canvas.strokePath(DPath.line(bounds.x, y, bounds.x + bounds.width, y), DTransform2D.IDENTITY, topColor, topWidth);
+			if (top != null)
+				top.close();
+			top = surface.strokePath(z, DPath.line(bounds.x, y, bounds.x + bounds.width, y), DTransform2D.IDENTITY, topColor, topWidth);
 		}
 		if (rightWidth > 0) {
 			int x = bounds.x + bounds.width - rightWidth;
-			canvas.strokePath(DPath.line(x, bounds.y, x, bounds.y + bounds.height), DTransform2D.IDENTITY, topColor, topWidth);
+			if (right != null)
+				right.close();
+			right = surface.strokePath(z, DPath.line(x, bounds.y, x, bounds.y + bounds.height), DTransform2D.IDENTITY, topColor, topWidth);
 		}
 		if (bottomWidth > 0) {
 			int y = bounds.y + bounds.height - bottomWidth;
-			canvas.strokePath(DPath.line(bounds.x, y, bounds.x + bounds.width, y), DTransform2D.IDENTITY, topColor, topWidth);
+			if (bottom != null)
+				bottom.close();
+			bottom = surface.strokePath(z, DPath.line(bounds.x, y, bounds.x + bounds.width, y), DTransform2D.IDENTITY, topColor, topWidth);
 		}
 	}
 

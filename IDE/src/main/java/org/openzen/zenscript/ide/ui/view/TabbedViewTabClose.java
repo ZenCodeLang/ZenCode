@@ -12,7 +12,7 @@ import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -27,7 +27,7 @@ public class TabbedViewTabClose implements DComponent {
 	private final TabbedViewTab tab;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
-	private DUIContext context;
+	private DDrawSurface surface;
 	private DIRectangle bounds;
 	private TabbedViewTabCloseStyle style;
 	private DColorableIcon icon;
@@ -40,11 +40,11 @@ public class TabbedViewTabClose implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
 		
 		DStylePath path = parent.getChild("tabClose", DStyleClass.EMPTY);
-		style = new TabbedViewTabCloseStyle(context.getStylesheets().get(context, path));
+		style = new TabbedViewTabCloseStyle(surface.getStylesheet(path));
 		sizing.setValue(new DSizing(style.size, style.size));
 		icon = new ScalableCloseIcon(style.size / 24);
 	}
@@ -89,13 +89,13 @@ public class TabbedViewTabClose implements DComponent {
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		hover = true;
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
 		hover = false;
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 	
 	@Override

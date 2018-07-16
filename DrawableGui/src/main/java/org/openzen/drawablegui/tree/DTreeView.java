@@ -18,9 +18,10 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.MutableLiveObject;
+import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
 /**
@@ -28,32 +29,44 @@ import org.openzen.drawablegui.style.DStylePath;
  * @author Hoofdgebruiker
  */
 public class DTreeView<N extends DTreeNode<N>> implements DComponent {
+	private final DStyleClass styleClass;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private DIRectangle bounds;
 	
 	private int selectedRow = -1;
 	private N selectedNode = null;
 	
-	private final DTreeViewStyle styleDefinition;
-	private DTreeViewStyle.Calculated style;
+	private DTreeViewStyle style;
 	private DFontMetrics fontMetrics;
 	
-	private DUIContext context;
+	private final DDrawable nodeOpenedIcon;
+	private final DDrawable nodeClosedIcon;
+	
+	private DDrawSurface surface;
 	private final N root;
 	private final boolean showRoot;
 	private final List<Row> rows = new ArrayList<>();
 	
-	public DTreeView(DTreeViewStyle style, N root, boolean showRoot) {
-		this.styleDefinition = style;
+	public DTreeView(
+			DStyleClass styleClass,
+			DDrawable nodeOpenedIcon,
+			DDrawable nodeClosedIcon,
+			N root,
+			boolean showRoot)
+	{
+		this.styleClass = styleClass;
 		this.root = root;
 		this.showRoot = showRoot;
+		
+		this.nodeOpenedIcon = nodeOpenedIcon;
+		this.nodeClosedIcon = nodeClosedIcon;
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
-		style = styleDefinition.forContext(context);
-		fontMetrics = context.getFontMetrics(style.font);
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		style = new DTreeViewStyle(surface.getStylesheet(parent.getChild("tree", styleClass)));
+		fontMetrics = surface.getFontMetrics(style.font);
 		
 		updateLayout();
 	}
@@ -80,7 +93,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 
 	@Override
 	public void paint(DCanvas canvas) {
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, styleDefinition.backgroundColor);
+		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
 		
 		int drawX = bounds.x + style.padding;
 		int drawY = bounds.y + style.padding;
@@ -99,7 +112,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		int row = yToRow(e.y);
 		if (row >= 0 && row < rows.size()) {
 			Row rowEntry = rows.get(row);
-			if (e.x >= rowEntry.x && e.x < (rowEntry.x + styleDefinition.nodeOpenedIcon.getNominalWidth())) {
+			if (e.x >= rowEntry.x && e.x < (rowEntry.x + nodeOpenedIcon.getNominalWidth())) {
 				if (!rowEntry.node.isLeaf())
 					rowEntry.node.isCollapsed().toggle();
 				return;
@@ -113,12 +126,12 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 				selectedNode = rows.get(row).node;
 
 				if (oldRow >= 0)
-					context.repaint(
+					surface.repaint(
 							bounds.x,
 							rowToY(oldRow) - style.selectedPaddingTop,
 							bounds.width,
 							fontMetrics.getAscent() + fontMetrics.getDescent() + style.selectedPaddingTop + style.selectedPaddingBottom);
-				context.repaint(
+				surface.repaint(
 						bounds.x,
 						rowToY(row) - style.selectedPaddingTop,
 						bounds.width,
@@ -136,24 +149,24 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	}
 	
 	private int paintNode(DCanvas canvas, N node, int drawX, int drawY) {
-		int textColor = styleDefinition.nodeTextColor;
+		int textColor = style.nodeTextColor;
 		if (node == selectedNode) {
-			textColor = styleDefinition.selectedNodeTextColor;
+			textColor = style.selectedNodeTextColor;
 			canvas.fillRectangle(
 					bounds.x,
 					drawY - style.selectedPaddingTop,
 					bounds.width,
 					fontMetrics.getAscent() + fontMetrics.getDescent() + style.selectedPaddingTop + style.selectedPaddingBottom,
-					styleDefinition.selectedBackgroundColor);
+					style.selectedBackgroundColor);
 		}
 		
 		int drawingX = drawX;
 		if (!node.isLeaf()) {
-			DDrawable icon = node.isCollapsed().getValue() ? style.nodeClosedIcon : style.nodeOpenedIcon;
+			DDrawable icon = node.isCollapsed().getValue() ? nodeClosedIcon : nodeOpenedIcon;
 			icon.draw(canvas, DTransform2D.translate(drawingX, drawY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
 			drawingX += style.iconTextSpacing + icon.getNominalWidth();
 		} else {
-			drawingX += style.iconTextSpacing + style.nodeClosedIcon.getNominalWidth();
+			drawingX += style.iconTextSpacing + nodeClosedIcon.getNominalWidth();
 		}
 		node.getIcon().draw(canvas, DTransform2D.translate(drawingX, drawY + fontMetrics.getAscent() + fontMetrics.getDescent() - node.getIcon().getNominalHeight()), textColor);
 		drawingX += style.iconTextSpacing + node.getIcon().getNominalWidth();
@@ -232,25 +245,25 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		@Override
 		public void onChanged(boolean oldValue, boolean newValue) {
 			updateLayout();
-			context.repaint(bounds);
+			surface.repaint(bounds);
 		}
 
 		@Override
 		public void onInserted(int index, N value) {
 			updateLayout();
-			context.repaint(bounds);
+			surface.repaint(bounds);
 		}
 
 		@Override
 		public void onChanged(int index, N oldValue, N newValue) {
 			updateLayout();
-			context.repaint(bounds);
+			surface.repaint(bounds);
 		}
 
 		@Override
 		public void onRemoved(int index, N oldValue) {
 			updateLayout();
-			context.repaint(bounds);
+			surface.repaint(bounds);
 		}
 		
 		@Override

@@ -13,8 +13,8 @@ import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
@@ -39,7 +39,7 @@ public class WindowActionButton implements DComponent {
 	private DIRectangle bounds;
 	private boolean hover;
 	private boolean press;
-	private DUIContext context;
+	private DDrawSurface surface;
 	
 	public WindowActionButton(Function<Float, DColorableIcon> icon, Consumer<DMouseEvent> action) {
 		this.scalableIcon = icon;
@@ -47,16 +47,16 @@ public class WindowActionButton implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
 		
-		windowFocused = context.getWindow().getActive();
+		windowFocused = surface.getContext().getWindow().getActive();
 		windowFocusedListener = windowFocused.addListener((a, b) -> repaint());
 		
-		icon = scalableIcon == null ? null : scalableIcon.apply(context.getScale());
+		icon = scalableIcon == null ? null : scalableIcon.apply(surface.getScale());
 		sizing.setValue(new DSizing(
-				(int)(48 * context.getScale()),
-				(int)(24 * context.getScale())));
+				(int)(48 * surface.getScale()),
+				(int)(24 * surface.getScale())));
 	}
 
 	@Override
@@ -139,9 +139,9 @@ public class WindowActionButton implements DComponent {
 	}
 	
 	private void repaint() {
-		if (context == null)
+		if (surface == null)
 			return;
 		
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 }

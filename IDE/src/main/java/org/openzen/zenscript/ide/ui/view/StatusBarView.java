@@ -14,7 +14,8 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -29,22 +30,26 @@ public class StatusBarView implements DComponent {
 	private final DStyleClass styleClass;
 	private final LiveString content;
 	private DIRectangle bounds;
-	private DUIContext context;
+	private DDrawSurface surface;
+	private int z;
 	private StatusBarStyle style;
 	private DFontMetrics fontMetrics;
 
+	private DDrawnShape shape;
+	
 	public StatusBarView(DStyleClass styleClass, LiveString content) {
 		this.styleClass = styleClass;
 		this.content = content;
 	}
 	
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
 		
 		DStylePath path = parent.getChild("StatusBar", styleClass);
-		style = new StatusBarStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.font);
+		style = new StatusBarStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.font);
 		
 		dimensionPreferences.setValue(new DSizing(0, style.paddingTop + fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingBottom));
 	}
@@ -67,12 +72,19 @@ public class StatusBarView implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		
+		if (shape != null)
+			shape.close();
+		shape = surface.shadowPath(z, DPath.rectangle(bounds.x, bounds.y, bounds.width, bounds.height), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 	}
 
 	@Override
 	public void paint(DCanvas canvas) {
-		canvas.shadowPath(DPath.rectangle(bounds.x, bounds.y, bounds.width, bounds.height), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
-		canvas.drawText(style.font, style.textColor, style.paddingLeft, style.paddingTop + fontMetrics.getAscent(), content.getValue());
+		canvas.drawText(
+				style.font,
+				style.textColor,
+				bounds.x + style.paddingLeft,
+				bounds.y + style.paddingTop + fontMetrics.getAscent(), content.getValue());
 	}
 
 	@Override

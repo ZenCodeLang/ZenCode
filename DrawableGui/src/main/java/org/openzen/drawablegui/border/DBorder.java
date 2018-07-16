@@ -5,15 +5,15 @@
  */
 package org.openzen.drawablegui.border;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.draw.DDrawSurface;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface DBorder {
-	public void paint(DCanvas canvas, DIRectangle bounds);
+	public void update(DDrawSurface surface, int z, DIRectangle bounds);
 	
 	public int getPaddingLeft();
 	

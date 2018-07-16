@@ -13,9 +13,9 @@ import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSimpleTooltip;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.LiveBool;
@@ -36,7 +36,7 @@ public class AspectBarSelectorButton implements DComponent {
 	private final DDrawable icon;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final Consumer<DMouseEvent> onClick;
-	private DUIContext context;
+	private DDrawSurface surface;
 	private AspectBarSelectorButtonStyle style;
 	private DIRectangle bounds = DIRectangle.EMPTY;
 	private DPath shape;
@@ -57,10 +57,10 @@ public class AspectBarSelectorButton implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
 		DStylePath path = parent.getChild("selectorbutton", styleClass);
-		style = new AspectBarSelectorButtonStyle(context.getStylesheets().get(context, path));
+		style = new AspectBarSelectorButtonStyle(surface.getStylesheet(path));
 		sizing.setValue(new DSizing(style.width, style.height));
 		shape = DPath.roundedRectangle(
 				0,
@@ -69,7 +69,7 @@ public class AspectBarSelectorButton implements DComponent {
 				style.height,
 				style.roundingRadius);
 		
-		tooltip.setContext(context);
+		tooltip.setContext(surface.getContext());
 	}
 
 	@Override
@@ -113,9 +113,9 @@ public class AspectBarSelectorButton implements DComponent {
 					color,
 					shadow);
 		icon.draw(canvas, DTransform2D.scaleAndTranslate(
-				bounds.x + (style.width - icon.getNominalWidth() * context.getScale()) / 2,
-				bounds.y + (style.height - icon.getNominalHeight() * context.getScale()) / 2,
-				context.getScale()));
+				bounds.x + (style.width - icon.getNominalWidth() * surface.getScale()) / 2,
+				bounds.y + (style.height - icon.getNominalHeight() * surface.getScale()) / 2,
+				surface.getScale()));
 	}
 	
 	@Override
@@ -160,7 +160,7 @@ public class AspectBarSelectorButton implements DComponent {
 	}
 	
 	private void repaint() {
-		if (context != null && bounds != null)
-			context.repaint(bounds);
+		if (surface != null && bounds != null)
+			surface.repaint(bounds);
 	}
 }

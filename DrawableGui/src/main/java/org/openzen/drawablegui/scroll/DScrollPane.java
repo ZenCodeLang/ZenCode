@@ -14,7 +14,6 @@ import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
-import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.listeners.ListenerHandle;
@@ -23,6 +22,9 @@ import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveInt;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
+import org.openzen.drawablegui.draw.DSubSurface;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -36,11 +38,12 @@ public class DScrollPane implements DComponent {
 	private final DStyleClass styleClass;
 	private final DComponent contents;
 	private final DScrollBar scrollBar;
-	private DUIContext context;
+	private DDrawSurface surface;
 	private DIRectangle bounds;
 	
 	private DScrollPaneStyle style;
-	private DPath shape;
+	private int z;
+	private DDrawnShape shape;
 	private final LiveInt contentsHeight;
 	private final LiveInt offsetX;
 	private final LiveInt offsetY;
@@ -55,6 +58,8 @@ public class DScrollPane implements DComponent {
 	private final ListenerHandle<LiveObject.Listener<DSizing>> contentsSizingListener;
 	
 	private DComponent hovering = null;
+	
+	private DSubSurface subSurface;
 	
 	public DScrollPane(DStyleClass styleClass, DComponent contents, LiveInt preferredHeight) {
 		this.styleClass = styleClass;
@@ -97,13 +102,14 @@ public class DScrollPane implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
 		
 		DStylePath path = parent.getChild("scrollpane", styleClass);
-		contents.setContext(path, new TranslatedContext());
-		scrollBar.setContext(path, context);
-		style = new DScrollPaneStyle(context.getStylesheets().get(context, path));
+		subSurface = surface.createSubSurface(z + 1);
+		contents.setSurface(path, 0, subSurface);
+		scrollBar.setSurface(path, z + 2, surface);
+		style = new DScrollPaneStyle(surface.getStylesheet(path));
 	}
 
 	@Override
@@ -124,7 +130,11 @@ public class DScrollPane implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-		shape = style.shape.instance(style.margin.apply(bounds));
+		
+		if (shape != null)
+			shape.close();
+		shape = surface.shadowPath(z, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+		style.border.update(surface, z + 1, style.margin.apply(bounds));
 		
 		int height = Math.max(bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom(),
 				contents.getSizing().getValue().preferredHeight);
@@ -136,12 +146,17 @@ public class DScrollPane implements DComponent {
 				bounds.height - style.border.getPaddingVertical() - style.margin.getVertical()));
 		contents.setBounds(new DIRectangle(0, 0, bounds.width - scrollBar.getBounds().width, height));
 		contentsHeight.setValue(height);
+		
+		subSurface.setOffset(bounds.x - offsetX.getValue(), bounds.y - offsetY.getValue());
+		subSurface.setClip(new DIRectangle(
+				bounds.x + style.border.getPaddingLeft(),
+				bounds.y + style.border.getPaddingTop(),
+				bounds.width - style.border.getPaddingLeft() - style.border.getPaddingTop() - scrollBar.getBounds().width,
+				bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom()));
 	}
 
 	@Override
 	public void paint(DCanvas canvas) {
-		canvas.shadowPath(shape, DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
-		style.border.paint(canvas, style.margin.apply(bounds));
 		scrollBar.paint(canvas);
 		
 		canvas.pushBounds(new DIRectangle(
@@ -264,6 +279,11 @@ public class DScrollPane implements DComponent {
 	}
 	
 	private class TranslatedContext implements DUIContext {
+		private final DUIContext context;
+		
+		public TranslatedContext(DUIContext context) {
+			this.context = context;
+		}
 		
 		@Override
 		public DStyleSheets getStylesheets(){
@@ -354,8 +374,10 @@ public class DScrollPane implements DComponent {
 			
 			if (value != offsetY.getValue())
 				offsetY.setValue(value);
-			if (context != null && bounds != null)
-				context.repaint(bounds);
+			if (surface != null && bounds != null)
+				surface.repaint(bounds);
+			
+			subSurface.setOffset(bounds.x - offsetX.getValue(), bounds.y - offsetY.getValue());
 		}
 	}
 }

@@ -5,6 +5,7 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
@@ -27,7 +28,7 @@ public class DInputField implements DComponent {
 	private DIRectangle bounds = DIRectangle.EMPTY;
 	private final DDimension preferredWidth;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
 	private DInputFieldStyle style;
 	private DFontMetrics fontMetrics;
 	private int cursorFrom = -1;
@@ -64,24 +65,24 @@ public class DInputField implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
 		
 		DStylePath path = parent.getChild("input", styleClass);
-		style = new DInputFieldStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.font);
+		style = new DInputFieldStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.font);
 		sizing.setValue(new DSizing(
-				preferredWidth.evalInt(context) + style.paddingLeft + style.paddingRight + 2 * style.borderWidth,
+				preferredWidth.evalInt(surface.getContext()) + style.paddingLeft + style.paddingRight + 2 * style.borderWidth,
 				fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingTop + style.paddingBottom + 2 * style.borderWidth));
 		
 		if (blinkTimer != null)
 			blinkTimer.close();
-		blinkTimer = context.setTimer(300, this::blink);
+		blinkTimer = surface.getContext().setTimer(300, this::blink);
 	}
 	
 	private void blink() {
 		cursorBlink = !cursorBlink;
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 
 	@Override
@@ -140,17 +141,17 @@ public class DInputField implements DComponent {
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
-		context.setCursor(DUIContext.Cursor.TEXT);
+		surface.getContext().setCursor(DUIContext.Cursor.TEXT);
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
-		context.setCursor(DUIContext.Cursor.NORMAL);
+		surface.getContext().setCursor(DUIContext.Cursor.NORMAL);
 	}
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		context.getWindow().focus(this);
+		surface.getContext().getWindow().focus(this);
 	}
 	
 	@Override
@@ -197,11 +198,11 @@ public class DInputField implements DComponent {
 	private void setCursor(int from, int to) {
 		cursorFrom = from;
 		cursorTo = to;
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 	
 	private void handleValueUpdated(String newValue) {
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 	
 	private void backspace() {

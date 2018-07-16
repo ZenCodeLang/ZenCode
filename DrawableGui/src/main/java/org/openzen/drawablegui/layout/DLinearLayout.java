@@ -11,10 +11,10 @@ import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
@@ -33,12 +33,13 @@ public class DLinearLayout extends BaseComponentGroup {
 	private final ListenerHandle<LiveObject.Listener<DSizing>>[] componentSizeListeners;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
-	private DUIContext context;
+	private DDrawSurface surface;
+	private int z;
 	private DLinearLayoutStyle style;
 	private DIRectangle bounds;
 	private float totalGrow;
 	private float totalShrink;
-	private DPath shape;
+	private DDrawnShape shape;
 	
 	public DLinearLayout(DStyleClass styleClass, Orientation orientation, Alignment alignment, Element... components) {
 		this.styleClass = styleClass;
@@ -74,14 +75,15 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
 		
-		DStylePath path = parent.getChild("verticalLayout", styleClass);
-		style = new DLinearLayoutStyle(context.getStylesheets().get(context, path));
+		DStylePath path = parent.getChild("linearlayout", styleClass);
+		style = new DLinearLayoutStyle(surface.getStylesheet(path));
 		
 		for (Element element : components)
-			element.component.setContext(parent, context);
+			element.component.setSurface(parent, z + 1, surface);
 	}
 
 	@Override
@@ -101,15 +103,21 @@ public class DLinearLayout extends BaseComponentGroup {
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
+		if (bounds.equals(this.bounds))
+			return;
+		
 		this.bounds = bounds;
-		shape = style.shape.instance(style.margin.apply(bounds));
+		style.border.update(surface, z + 1, bounds);
+		
+		if (shape != null)
+			shape.close();
+		shape = surface.shadowPath(z, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+		
 		layout();
 	}
 
 	@Override
 	public void paint(DCanvas canvas) {
-		canvas.shadowPath(shape, DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
-		style.border.paint(canvas, bounds);
 		for (Element element : components) {
 			element.component.paint(canvas);
 		}
@@ -149,7 +157,7 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 	
 	private void layoutHorizontal() {
-		if (bounds == null || context == null)
+		if (bounds == null || surface == null)
 			return;
 		
 		DSizing myPreferences = sizing.getValue();
@@ -161,7 +169,7 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 	
 	private void layoutVertical() {
-		if (bounds == null || context == null)
+		if (bounds == null || surface == null)
 			return;
 		
 		DSizing myPreferences = sizing.getValue();

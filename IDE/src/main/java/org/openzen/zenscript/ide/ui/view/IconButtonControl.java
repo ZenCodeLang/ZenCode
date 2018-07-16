@@ -16,6 +16,7 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSimpleTooltip;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveBool;
 import org.openzen.drawablegui.live.LiveBool;
@@ -38,7 +39,7 @@ public class IconButtonControl implements DComponent {
 	private final ListenerHandle<LiveBool.Listener> disabledListener;
 	private final DSimpleTooltip tooltip;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
 	private IconButtonControlStyle style;
 	private DIRectangle bounds;
 	private final MutableLiveObject<DSizing> preferences = DSizing.create();
@@ -61,15 +62,15 @@ public class IconButtonControl implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
-		tooltip.setContext(context);
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		tooltip.setContext(surface.getContext());
 		
 		DStylePath path = parent.getChild("iconbutton", styleClass);
-		style = new IconButtonControlStyle(context.getStylesheets().get(context, path));
+		style = new IconButtonControlStyle(surface.getStylesheet(path));
 		
-		int iconWidth = (int)(icon.getNominalWidth() * context.getScale() + 0.5f);
-		int iconHeight = (int)(icon.getNominalWidth() * context.getScale() + 0.5f);
+		int iconWidth = (int)(icon.getNominalWidth() * surface.getScale() + 0.5f);
+		int iconHeight = (int)(icon.getNominalWidth() * surface.getScale() + 0.5f);
 		int width = iconWidth + 2 * style.padding + 2 * style.margin;
 		int height = iconHeight + 2 * style.padding + 2 * style.margin;
 		preferences.setValue(new DSizing(width, height));
@@ -97,7 +98,7 @@ public class IconButtonControl implements DComponent {
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
 		
-		if (context != null)
+		if (surface != null)
 			shape = DPath.roundedRectangle(
 					bounds.x + style.margin,
 					bounds.y + style.margin,
@@ -120,9 +121,9 @@ public class IconButtonControl implements DComponent {
 		
 		DDrawable icon = disabled.getValue() ? iconDisabled : this.icon;
 		icon.draw(canvas, DTransform2D.scaleAndTranslate(
-				bounds.x + (bounds.width - icon.getNominalWidth() * context.getScale()) / 2,
-				bounds.y + (bounds.height - icon.getNominalHeight() * context.getScale()) / 2,
-				context.getScale()));
+				bounds.x + (bounds.width - icon.getNominalWidth() * surface.getScale()) / 2,
+				bounds.y + (bounds.height - icon.getNominalHeight() * surface.getScale()) / 2,
+				surface.getScale()));
 	}
 
 	@Override
@@ -168,9 +169,9 @@ public class IconButtonControl implements DComponent {
 	}
 	
 	private void repaint() {
-		if (context == null || bounds == null)
+		if (surface == null || bounds == null)
 			return;
 		
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 }

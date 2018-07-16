@@ -24,6 +24,7 @@ import org.openzen.drawablegui.DPathTracer;
 import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.style.DStylePathRoot;
 import org.openzen.drawablegui.style.DStyleSheets;
 
@@ -40,12 +41,17 @@ public class SwingGraphicsContext implements DUIContext {
 	private final JavaClipboard clipboard = new JavaClipboard();
 	private Graphics graphics;
 	private DUIWindow window;
+	private DDrawSurface surface;
 	
 	public SwingGraphicsContext(DStyleSheets stylesheets, float scale, float textScale, SwingRoot root) {
 		this.stylesheets = stylesheets;
 		this.scale = scale;
 		this.textScale = textScale;
 		this.root = root;
+	}
+	
+	public void setSurface(DDrawSurface surface) {
+		this.surface = surface;
 	}
 	
 	public GeneralPath getPath(DPath path) {
@@ -152,13 +158,14 @@ public class SwingGraphicsContext implements DUIContext {
 	public DUIWindow openDialog(int x, int y, DAnchor anchor, String title, DComponent root) {
 		SwingWindow swingWindow = (SwingWindow)this.window;
 		SwingDialog window = new SwingDialog(swingWindow, title, root, false);
-		SwingGraphicsContext windowContext = new SwingGraphicsContext(stylesheets, scale, textScale, window.swingComponent);
+		SwingGraphicsContext windowContext = window.swingComponent.context;
 		windowContext.setWindow(window);
 		windowContext.graphics = this.graphics; // help a little...
+		windowContext.setSurface(window.swingComponent.surface);
 		
 		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();
 		
-		root.setContext(DStylePathRoot.INSTANCE, windowContext);
+		root.setSurface(DStylePathRoot.INSTANCE, 0, windowContext.surface);
 		DSizing dimension = root.getSizing().getValue();
 		int tx = (int)(x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
 		int ty = (int)(y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
@@ -175,11 +182,12 @@ public class SwingGraphicsContext implements DUIContext {
 	public DUIWindow openView(int x, int y, DAnchor anchor, DComponent root) {
 		SwingWindow swingWindow = (SwingWindow)this.window;
 		SwingInlineWindow window = new SwingInlineWindow(swingWindow, "", root);
-		SwingGraphicsContext windowContext = new SwingGraphicsContext(stylesheets, scale, textScale, window.swingComponent);
+		SwingGraphicsContext windowContext = window.swingComponent.context;
 		windowContext.setWindow(window);
 		windowContext.graphics = this.graphics; // help a little...
+		windowContext.setSurface(window.swingComponent.surface);
 		
-		root.setContext(DStylePathRoot.INSTANCE, windowContext);
+		root.setSurface(DStylePathRoot.INSTANCE, 0, windowContext.surface);
 		DSizing dimension = root.getSizing().getValue();
 		
 		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();

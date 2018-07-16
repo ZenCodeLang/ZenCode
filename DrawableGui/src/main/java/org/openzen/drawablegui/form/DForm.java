@@ -14,6 +14,7 @@ import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -29,7 +30,7 @@ public class DForm extends BaseComponentGroup {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DIRectangle bounds;
-	private DUIContext context;
+	private DDrawSurface context;
 	private DFormStyle style;
 	private DFontMetrics fontMetrics;
 	private int maxFieldWidth;
@@ -41,14 +42,15 @@ public class DForm extends BaseComponentGroup {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.context = surface;
 		
 		DStylePath path = parent.getChild("form", styleClass);
-		style = new DFormStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.labelFont);
+		style = new DFormStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.labelFont);
+		
 		for (DFormComponent component : components)
-			component.component.setContext(path, context);
+			component.component.setSurface(path, z + 1, surface);
 		
 		int height = style.paddingBottom + style.paddingTop;
 		int maxLabelWidth = style.minimumLabelSize;

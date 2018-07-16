@@ -28,6 +28,8 @@ import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.InverseLiveBool;
 import org.openzen.drawablegui.live.LiveBool;
@@ -55,7 +57,8 @@ public class SourceEditor implements DComponent {
 	private final SimpleLiveBool unchanged = new SimpleLiveBool(true);
 	
 	private DIRectangle bounds;
-	private DUIContext context;
+	private int z;
+	private DDrawSurface surface;
 	private SourceEditorStyle style;
 	private DTimerHandle blinkTimer;
 	
@@ -78,6 +81,9 @@ public class SourceEditor implements DComponent {
 	private final IDEAspectToolbar editToolbar = new IDEAspectToolbar(0, ShadedCodeIcon.BLUE, "Edit", "Source code editor");
 	
 	private final LiveBool updated;
+	
+	private DDrawnRectangle background;
+	private DDrawnRectangle lineBarBackground;
 	
 	public SourceEditor(DStyleClass styleClass, IDEWindow window, IDESourceFile sourceFile) {
 		this.styleClass = styleClass;
@@ -125,11 +131,12 @@ public class SourceEditor implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
-		this.style = new SourceEditorStyle(context.getStylesheets().get(context, parent.getChild("sourceeditor", styleClass)));
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
+		this.style = new SourceEditorStyle(surface.getStylesheet(parent.getChild("sourceeditor", styleClass)));
 		
-		fontMetrics = context.getFontMetrics(font);
+		fontMetrics = surface.getFontMetrics(font);
 		textLineHeight = fontMetrics.getAscent() + fontMetrics.getDescent();
 		fullLineHeight = textLineHeight + fontMetrics.getLeading() + style.extraLineSpacing;
 		selectionLineHeight = textLineHeight + style.selectionPaddingTop + style.selectionPaddingBottom;
@@ -138,7 +145,7 @@ public class SourceEditor implements DComponent {
 		
 		if (blinkTimer != null)
 			blinkTimer.close();
-		blinkTimer = context.setTimer(300, this::blink);
+		blinkTimer = surface.getContext().setTimer(300, this::blink);
 	}
 
 	@Override
@@ -159,17 +166,23 @@ public class SourceEditor implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		
+		lineBarWidth = Math.max(style.lineBarMinWidth, fontMetrics.getWidth(Integer.toString(tokens.getLineCount())))
+				+ style.lineBarSpacingLeft
+				+ style.lineBarSpacingRight;
+		
+		if (background != null)
+			background.close();
+		if (lineBarBackground != null)
+			lineBarBackground.close();
+		background = surface.fillRect(z, new DIRectangle(bounds.x + lineBarWidth, bounds.y, bounds.width - lineBarWidth, bounds.height), style.backgroundColor);
+		lineBarBackground = surface.fillRect(z, new DIRectangle(bounds.x, bounds.y, lineBarWidth, bounds.height), style.lineBarBackgroundColor);
 	}
 
 	@Override
 	public void paint(DCanvas canvas) {
 		DIRectangle canvasBounds = canvas.getBounds();
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
 		
-		lineBarWidth = Math.max(style.lineBarMinWidth, fontMetrics.getWidth(Integer.toString(tokens.getLineCount())))
-				+ style.lineBarSpacingLeft
-				+ style.lineBarSpacingRight;
-		canvas.fillRectangle(bounds.x, bounds.y, lineBarWidth, bounds.height, style.lineBarBackgroundColor);
 		if (style.lineBarStrokeWidth > 0) {
 			canvas.strokePath(tracer -> {
 				tracer.moveTo(bounds.x + lineBarWidth, bounds.y);
@@ -234,17 +247,17 @@ public class SourceEditor implements DComponent {
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
-		context.setCursor(DUIContext.Cursor.TEXT);
+		surface.getContext().setCursor(DUIContext.Cursor.TEXT);
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
-		context.setCursor(DUIContext.Cursor.NORMAL);
+		surface.getContext().setCursor(DUIContext.Cursor.NORMAL);
 	}
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		context.getWindow().focus(this);
+		surface.getContext().getWindow().focus(this);
 		
 		SourcePosition position = getPositionAt(e.x, e.y);
 		if (e.isDoubleClick()) {
@@ -404,7 +417,7 @@ public class SourceEditor implements DComponent {
 		String extract = tokens.extract(
 				SourcePosition.min(cursorStart, cursorEnd),
 				SourcePosition.max(cursorStart, cursorEnd));
-		context.getClipboard().copyAsString(extract);
+		surface.getContext().getClipboard().copyAsString(extract);
 	}
 	
 	private void cut() {
@@ -417,7 +430,7 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private void paste() {
-		String text = context.getClipboard().getAsString();
+		String text = surface.getContext().getClipboard().getAsString();
 		if (text == null)
 			return;
 		
@@ -550,11 +563,11 @@ public class SourceEditor implements DComponent {
 			int x2 = getX(to);
 			int fromX = Math.min(x1, x2);
 			int toX = Math.max(x1, x2) + 2;
-			context.repaint(fromX, y, toX - fromX, selectionLineHeight);
+			surface.repaint(fromX, y, toX - fromX, selectionLineHeight);
 		} else {
 			int fromY = lineToY(Math.min(from.line, to.line));
 			int toY = lineToY(Math.max(from.line, to.line) + 1);
-			context.repaint(bounds.x, fromY, bounds.width, toY - fromY);
+			surface.repaint(bounds.x, fromY, bounds.width, toY - fromY);
 		}
 	}
 	
@@ -562,11 +575,11 @@ public class SourceEditor implements DComponent {
 		if (bounds == null)
 			return;
 		
-		context.repaint(bounds.x, lineToY(line), bounds.width, selectionLineHeight);
+		surface.repaint(bounds.x, lineToY(line), bounds.width, selectionLineHeight);
 	}
 	
 	public void scrollTo(SourcePosition position) {
-		context.scrollInView(getX(position), getY(position), 2, selectionLineHeight);
+		surface.getContext().scrollInView(getX(position), getY(position), 2, selectionLineHeight);
 	}
 	
 	private void blink() {
@@ -661,7 +674,7 @@ public class SourceEditor implements DComponent {
 		sizing.setValue(new DSizing(0, fullLineHeight * tokens.getLineCount()));
 		
 		if (bounds != null)
-			context.repaint(bounds);
+			surface.repaint(bounds);
 	}
 	
 	private class TokenListener implements TokenModel.Listener {

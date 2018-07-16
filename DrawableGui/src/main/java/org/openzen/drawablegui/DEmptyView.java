@@ -5,6 +5,7 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.ImmutableLiveObject;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.style.DStylePath;
@@ -21,7 +22,7 @@ public class DEmptyView implements DComponent {
 	private DEmptyView() {}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
 		
 	}
 	

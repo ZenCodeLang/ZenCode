@@ -6,6 +6,7 @@
 package org.openzen.drawablegui;
 
 import java.io.Closeable;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -14,7 +15,7 @@ import org.openzen.drawablegui.style.DStylePath;
  * @author Hoofdgebruiker
  */
 public interface DComponent extends Closeable {
-	void setContext(DStylePath parent, DUIContext context);
+	void setSurface(DStylePath parent, int z, DDrawSurface surface);
 	
 	LiveObject<DSizing> getSizing();
 	

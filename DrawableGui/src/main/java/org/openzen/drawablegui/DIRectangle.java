@@ -42,6 +42,19 @@ public class DIRectangle {
 				&& y >= this.y && y < (this.y + this.height);
 	}
 	
+	public boolean overlaps(DIRectangle other) {
+		if (x + width < other.x)
+			return false;
+		if (y + width < other.y)
+			return false;
+		if (other.x + other.width < x)
+			return false;
+		if (other.y + other.height < y)
+			return false;
+		
+		return true;
+	}
+	
 	@Override
 	public String toString() {
 		return "(x = " + x + ", y = " + y + ", width = " + width + ", height = " + height + ")";

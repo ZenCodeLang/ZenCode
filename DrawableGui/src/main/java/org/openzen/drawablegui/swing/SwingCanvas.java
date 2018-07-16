@@ -39,8 +39,6 @@ public class SwingCanvas implements DCanvas {
 	
 	public SwingCanvas(Graphics2D g, SwingGraphicsContext context, DIRectangle bounds) {
 		this.g = g;
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
 		
 		this.context = context;
 		
@@ -173,7 +171,7 @@ public class SwingCanvas implements DCanvas {
 		font.cached = Font.decode(baseFontName).deriveFont(style, font.size);
 	}
 	
-	private AffineTransform getTransform(DTransform2D transform) {
+	public static AffineTransform getTransform(DTransform2D transform) {
 		return new AffineTransform(transform.xx, transform.xy, transform.yx, transform.yy, transform.dx, transform.dy);
 	}
     

@@ -15,7 +15,8 @@ import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSizing;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
@@ -34,9 +35,12 @@ public class DSideLayout extends BaseComponentGroup {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DStylePath path;
-	private DUIContext context;
+	private DDrawSurface surface;
+	private int z;
 	private DSideLayoutStyle style;
 	private DIRectangle bounds;
+	
+	private DDrawnRectangle background;
 	
 	public DSideLayout(DStyleClass styleClass, DComponent main) {
 		this.styleClass = styleClass;
@@ -44,8 +48,8 @@ public class DSideLayout extends BaseComponentGroup {
 	}
 	
 	public void add(Side side, DComponent component) {
-		if (context != null)
-			component.setContext(path, context);
+		if (surface != null)
+			component.setSurface(path, z + 1, surface);
 		
 		sides.add(new SideComponent(side, component));
 	}
@@ -56,22 +60,25 @@ public class DSideLayout extends BaseComponentGroup {
 		
 		this.main = component;
 		
-		if (context != null && bounds != null) {
-			main.setContext(path, context);
+		if (surface != null && bounds != null) {
+			main.setSurface(path, z + 1, surface);
 			setBounds(bounds);
-			context.repaint(bounds);
+			surface.repaint(bounds);
 		}
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
 		this.path = parent.getChild("sidelayout", styleClass);
-		style = new DSideLayoutStyle(context.getStylesheets().get(context, path));
+		style = new DSideLayoutStyle(surface.getStylesheet(path));
 		
-		main.setContext(path, context);
+		main.setSurface(path, z + 1, surface);
 		for (SideComponent side : sides)
-			side.component.setContext(path, context);
+			side.component.setSurface(path, z + 1, surface);
+		
+		background = surface.fillRect(z, DIRectangle.EMPTY, style.backgroundColor);
 	}
 	
 	@Override
@@ -98,6 +105,8 @@ public class DSideLayout extends BaseComponentGroup {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		
+		background.setRectangle(bounds);
 		
 		int left = bounds.x;
 		int right = bounds.x + bounds.width;
@@ -176,7 +185,7 @@ public class DSideLayout extends BaseComponentGroup {
 
 	@Override
 	public void paint(DCanvas canvas) {
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
+		//canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
 		main.paint(canvas);
 		
 		for (SideComponent component : sides)
@@ -248,6 +257,8 @@ public class DSideLayout extends BaseComponentGroup {
 		main.close();
 		for (SideComponent side : sides)
 			side.close();
+		
+		background.close();
 	}
 	
 	public class SideComponent implements Closeable, LiveObject.Listener<DSizing> {

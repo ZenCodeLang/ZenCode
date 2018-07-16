@@ -11,9 +11,9 @@ import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveObject;
 import org.openzen.drawablegui.live.LiveBool;
@@ -30,7 +30,7 @@ public class DCustomWindowBorder implements DComponent {
 	private final DComponent content;
 	private final LiveObject<DSizing> sizing = new ImmutableLiveObject<>(DSizing.EMPTY);
 	
-	private DUIContext context;
+	private DDrawSurface surface;
 	private DCustomWindowBorderStyle style;
 	private DIRectangle bounds;
 	private DPath border;
@@ -47,17 +47,17 @@ public class DCustomWindowBorder implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
-		content.setContext(parent, context);
+	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		content.setSurface(parent, z + 1, surface);
 		
-		state = context.getWindow().getWindowState();
-		active = context.getWindow().getActive();
+		state = surface.getContext().getWindow().getWindowState();
+		active = surface.getContext().getWindow().getActive();
 		stateListener = state.addListener(this::onStateChanged);
 		activeListener = active.addListener(this::onActiveChanged);
 		
 		DStylePath path = parent.getChild("customwindowborder", styleClass);
-		style = new DCustomWindowBorderStyle(context.getStylesheets().get(context, path));
+		style = new DCustomWindowBorderStyle(surface.getStylesheet(path));
 		
 		if (bounds != null)
 			layout();
@@ -107,7 +107,7 @@ public class DCustomWindowBorder implements DComponent {
 		} else {
 			content.setBounds(bounds);
 		}
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 
 	@Override
@@ -184,6 +184,6 @@ public class DCustomWindowBorder implements DComponent {
 	}
 	
 	private void onActiveChanged(boolean oldValue, boolean newValue) {
-		context.repaint(bounds);
+		surface.repaint(bounds);
 	}
 }
