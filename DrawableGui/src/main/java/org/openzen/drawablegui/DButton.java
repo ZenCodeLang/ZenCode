@@ -6,6 +6,8 @@
 package org.openzen.drawablegui;
 
 import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
@@ -26,6 +28,7 @@ public class DButton implements DComponent {
 	private final Runnable action;
 	
 	private DDrawSurface surface;
+	private int z;
 	private DIRectangle bounds;
 	
 	private DButtonStyle style;
@@ -33,6 +36,10 @@ public class DButton implements DComponent {
 	
 	private boolean hovering = false;
 	private boolean pressing = false;
+	
+	private DDrawnShape shape;
+	private DDrawnText text;
+	private DShadow currentShadow;
 	
 	public DButton(DStyleClass styleClass, LiveString label, LiveBool disabled, Runnable action) {
 		this.styleClass = styleClass;
@@ -42,8 +49,9 @@ public class DButton implements DComponent {
 	}
 	
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
+		this.z = z;
 		
 		DStylePath path = parent.getChild("Button", styleClass);
 		this.style = new DButtonStyle(surface.getStylesheet(path));
@@ -52,6 +60,17 @@ public class DButton implements DComponent {
 		sizing.setValue(new DSizing(
 				style.paddingLeft + style.paddingRight + fontMetrics.getWidth(label.getValue()),
 				style.paddingTop + style.paddingBottom + fontMetrics.getAscent() + fontMetrics.getDescent()));
+		currentShadow = getShadow();
+	}
+	
+	@Override
+	public void unmount() {
+		surface = null;
+		
+		if (shape != null)
+			shape.close();
+		if (text != null)
+			text.close();
 	}
 
 	@Override
@@ -72,52 +91,49 @@ public class DButton implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		int backgroundColor = style.backgroundColorNormal;
-		DShadow shadow = style.shadowNormal;
-		if (hovering) {
-			backgroundColor = style.backgroundColorHover;
-			shadow = style.shadowNormal;
-		}
-		if (pressing) {
-			backgroundColor = style.backgroundColorPress;
-			shadow = style.shadowPress;
-		}
-		if (disabled.getValue()) {
-			backgroundColor = style.backgroundColorDisabled;
-			shadow = style.shadowDisabled;
-		}
 		
-		DPath shape = DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * surface.getScale());
-		canvas.shadowPath(shape, DTransform2D.IDENTITY, backgroundColor, shadow);
-		canvas.drawText(style.font, style.textColor, bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent(), label.getValue());
+		if (shape != null)
+			shape.close();
+		if (text != null)
+			text.close();
+		
+		shape = surface.shadowPath(
+				z,
+				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * surface.getScale()),
+				DTransform2D.IDENTITY,
+				getBackgroundColor(),
+				currentShadow);
+		text = surface.drawText(
+				z +  1, 
+				style.font,
+				style.textColor,
+				bounds.x + style.paddingLeft,
+				bounds.y + style.paddingTop + fontMetrics.getAscent(),
+				label.getValue());
 	}
 
 	@Override
 	public void close() {
-		
+		unmount();
 	}
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		hovering = true;
-		repaint();
+		update();
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
 		hovering = false;
 		pressing = false;
-		repaint();
+		update();
 	}
 	
 	@Override
 	public void onMouseDown(DMouseEvent e) {
 		pressing = true;
-		repaint();
+		update();
 	}
 	
 	@Override
@@ -128,13 +144,47 @@ public class DButton implements DComponent {
 			action.run();
 		}
 		
-		repaint();
+		update();
 	}
 	
-	private void repaint() {
-		if (surface == null || bounds == null)
-			return;
+	private void update() {
+		DShadow newShadow = getShadow();
+		if (newShadow != currentShadow) {
+			currentShadow = newShadow;
+			
+			if (shape != null)
+				shape.close();
+			
+			shape = surface.shadowPath(
+				z,
+				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * surface.getScale()),
+				DTransform2D.IDENTITY,
+				getBackgroundColor(),
+				currentShadow);
+		} else {
+			shape.setColor(getBackgroundColor());
+		}
+	}
+	
+	private DShadow getShadow() {
+		if (disabled.getValue())
+			return style.shadowDisabled;
+		if (pressing)
+			return style.shadowPress;
+		if (hovering)
+			return style.shadowHover;
 		
-		surface.repaint(bounds);
+		return style.shadowNormal;
+	}
+	
+	private int getBackgroundColor() {
+		if (disabled.getValue())
+			return style.backgroundColorDisabled;
+		if (pressing)
+			return style.backgroundColorPress;
+		if (hovering)
+			return style.backgroundColorHover;
+		
+		return style.backgroundColorNormal;
 	}
 }

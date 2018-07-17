@@ -14,6 +14,8 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnRectangle;
+import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveObject;
 import org.openzen.drawablegui.live.LiveBool;
@@ -31,9 +33,9 @@ public class DCustomWindowBorder implements DComponent {
 	private final LiveObject<DSizing> sizing = new ImmutableLiveObject<>(DSizing.EMPTY);
 	
 	private DDrawSurface surface;
+	private int z;
 	private DCustomWindowBorderStyle style;
 	private DIRectangle bounds;
-	private DPath border;
 	
 	private LiveBool active;
 	private LiveObject<DUIWindow.State> state;
@@ -41,15 +43,20 @@ public class DCustomWindowBorder implements DComponent {
 	private ListenerHandle<LiveObject.Listener<DUIWindow.State>> stateListener;
 	private ListenerHandle<LiveBool.Listener> activeListener;
 	
+	private DDrawnRectangle background;
+	private DDrawnShape shadowedBackground;
+	private DDrawnShape border;
+	
 	public DCustomWindowBorder(DStyleClass styleClass, DComponent content) {
 		this.styleClass = styleClass;
 		this.content = content;
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
-		content.setSurface(parent, z + 1, surface);
+		this.z = z;
+		content.mount(parent, z + 1, surface);
 		
 		state = surface.getContext().getWindow().getWindowState();
 		active = surface.getContext().getWindow().getActive();
@@ -61,6 +68,16 @@ public class DCustomWindowBorder implements DComponent {
 		
 		if (bounds != null)
 			layout();
+	}
+	
+	@Override
+	public void unmount() {
+		if (background != null)
+			background.close();
+		if (shadowedBackground != null)
+			shadowedBackground.close();
+		if (border != null)
+			border.close();
 	}
 
 	@Override
@@ -90,11 +107,19 @@ public class DCustomWindowBorder implements DComponent {
 			return;
 		
 		if (state.getValue() != DUIWindow.State.MAXIMIZED) {
-			border = DPath.rectangle(
-				bounds.x + style.padding,
-				bounds.y + style.padding,
-				bounds.width - 2 * style.padding - style.borderWidth,
-				bounds.height - 2 * style.padding - style.borderWidth);
+			DPath path = DPath.rectangle(
+					bounds.x + style.padding,
+					bounds.y + style.padding,
+					bounds.width - 2 * style.padding - style.borderWidth,
+					bounds.height - 2 * style.padding - style.borderWidth);
+			if (border != null)
+				border.close();
+			border = surface.strokePath(
+					z + 1,
+					path,
+					DTransform2D.IDENTITY,
+					active.getValue() ? style.focusedBorderColor : style.inactiveBorderColor,
+					style.borderWidth);
 			
 			int spacing = style.borderWidth + style.padding;
 			DIRectangle inner = new DIRectangle(
@@ -104,34 +129,32 @@ public class DCustomWindowBorder implements DComponent {
 					bounds.height - 2 * spacing);
 
 			content.setBounds(inner);
+			
+			if (shadowedBackground != null)
+				shadowedBackground.close();
+			if (background != null) {
+				background.close();
+				background = null;
+			}
+			shadowedBackground = surface.shadowPath(z, path, DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 		} else {
 			content.setBounds(bounds);
+			
+			if (shadowedBackground != null) {
+				shadowedBackground.close();
+				shadowedBackground = null;
+			}
+			if (border != null) {
+				border.close();
+				border = null;
+			}
+			if (background == null) {
+				background = surface.fillRect(z, bounds, style.backgroundColor);
+			} else {
+				background.setRectangle(bounds);
+			}
 		}
 		surface.repaint(bounds);
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		if (state.getValue() != DUIWindow.State.MAXIMIZED) {
-			int spacing = style.borderWidth + style.padding;
-			DIRectangle canvasBounds = canvas.getBounds();
-			if (canvasBounds == null
-					|| canvasBounds.x < bounds.x + spacing
-					|| canvasBounds.y < bounds.y + spacing
-					|| canvasBounds.x + canvasBounds.width > bounds.x + bounds.width - spacing
-					|| canvasBounds.y + canvasBounds.height > bounds.y + bounds.height - spacing) {
-				canvas.shadowPath(border, DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
-				canvas.strokePath(
-						border,
-						DTransform2D.IDENTITY,
-						active.getValue() ? style.focusedBorderColor : style.inactiveBorderColor,
-						style.borderWidth);
-			}
-		} else {
-			canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
-		}
-		
-		content.paint(canvas);
 	}
 
 	@Override
@@ -176,7 +199,7 @@ public class DCustomWindowBorder implements DComponent {
 	
 	@Override
 	public void close() {
-		
+		unmount();
 	}
 	
 	private void onStateChanged(DUIWindow.State oldValue, DUIWindow.State newValue) {
@@ -184,6 +207,7 @@ public class DCustomWindowBorder implements DComponent {
 	}
 	
 	private void onActiveChanged(boolean oldValue, boolean newValue) {
-		surface.repaint(bounds);
+		if (border != null)
+			border.setColor(newValue ? style.focusedBorderColor : style.inactiveBorderColor);
 	}
 }

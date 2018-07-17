@@ -54,4 +54,9 @@ public class DPaddedBorder implements DBorder {
 	public int getPaddingBottom() {
 		return bottom;
 	}
+
+	@Override
+	public void close() {
+		
+	}
 }

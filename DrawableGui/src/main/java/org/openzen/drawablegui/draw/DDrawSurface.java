@@ -5,13 +5,8 @@
  */
 package org.openzen.drawablegui.draw;
 
-import org.openzen.drawablegui.DFont;
-import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DPath;
-import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIContext;
-import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleDefinition;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -19,26 +14,10 @@ import org.openzen.drawablegui.style.DStylePath;
  *
  * @author Hoofdgebruiker
  */
-public interface DDrawSurface {
+public interface DDrawSurface extends DDrawTarget {
 	DUIContext getContext();
 	
 	DStyleDefinition getStylesheet(DStylePath path);
-	
-	DFontMetrics getFontMetrics(DFont font);
-	
-	float getScale();
-	
-	float getTextScale();
-	
-	DDrawnText drawText(int z, DFont font, int color, float x, float y, String text);
-	
-	DDrawnRectangle fillRect(int z, DIRectangle rectangle, int color);
-	
-	DDrawnShape strokePath(int z, DPath path, DTransform2D transform, int color, float lineWidth);
-	
-	DDrawnShape fillPath(int z, DPath path, DTransform2D transform, int color);
-	
-	DDrawnShape shadowPath(int z, DPath path, DTransform2D transform, int color, DShadow shadow);
 	
 	DSubSurface createSubSurface(int z);
 	

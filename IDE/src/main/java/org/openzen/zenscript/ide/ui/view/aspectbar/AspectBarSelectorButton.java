@@ -10,12 +10,14 @@ import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;
+import org.openzen.drawablegui.DDrawableInstance;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSimpleTooltip;
 import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.LiveBool;
@@ -37,9 +39,13 @@ public class AspectBarSelectorButton implements DComponent {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final Consumer<DMouseEvent> onClick;
 	private DDrawSurface surface;
+	private int z;
 	private AspectBarSelectorButtonStyle style;
 	private DIRectangle bounds = DIRectangle.EMPTY;
-	private DPath shape;
+	private DDrawnShape shape;
+	private DShadow shadow;
+	private DDrawableInstance iconInstance;
+	
 	private boolean hovering;
 	private boolean pressing;
 	private final DSimpleTooltip tooltip;
@@ -53,21 +59,16 @@ public class AspectBarSelectorButton implements DComponent {
 		this.onClick = onClick;
 		this.tooltip = new DSimpleTooltip(DStyleClass.EMPTY, new ImmutableLiveString(tooltip));
 		
-		activeListener = active.addListener((oldValue, newValue) -> repaint());
+		activeListener = active.addListener((oldValue, newValue) -> update());
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
+		this.z = z;
 		DStylePath path = parent.getChild("selectorbutton", styleClass);
 		style = new AspectBarSelectorButtonStyle(surface.getStylesheet(path));
 		sizing.setValue(new DSizing(style.width, style.height));
-		shape = DPath.roundedRectangle(
-				0,
-				0,
-				style.width,
-				style.height,
-				style.roundingRadius);
 		
 		tooltip.setContext(surface.getContext());
 	}
@@ -90,39 +91,41 @@ public class AspectBarSelectorButton implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		int color = style.colorNormal;
-		DShadow shadow = style.shadowNormal;
-		if (active.getValue()) {
-			color = style.colorActive;
-			shadow = style.shadowActive;
-		} else if (pressing) {
-			color = style.colorPress;
-			shadow = style.shadowPress;
-		} else if (hovering) {
-			color = style.colorHover;
-			shadow = style.shadowHover;
-		}
 		
-		canvas.shadowPath(
-					shape,
-					DTransform2D.translate(bounds.x, bounds.y),
-					color,
-					shadow);
-		icon.draw(canvas, DTransform2D.scaleAndTranslate(
+		if (shape != null)
+			shape.close();
+		
+		shadow = getShadow();
+		shape = surface.shadowPath(
+				z,
+				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.roundingRadius),
+				DTransform2D.IDENTITY,
+				getColor(),
+				shadow);
+		
+		if (iconInstance != null)
+			iconInstance.close();
+		iconInstance = new DDrawableInstance(surface, z + 1, icon, DTransform2D.scaleAndTranslate(
 				bounds.x + (style.width - icon.getNominalWidth() * surface.getScale()) / 2,
 				bounds.y + (style.height - icon.getNominalHeight() * surface.getScale()) / 2,
 				surface.getScale()));
 	}
 	
 	@Override
+	public void unmount() {
+		if (shape != null)
+			shape.close();
+		if (iconInstance != null)
+			iconInstance.close();
+		
+		tooltip.close();
+	}
+	
+	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		hovering = true;
 		tooltip.onTargetMouseEnter(e);
-		repaint();
+		update();
 	}
 	
 	@Override
@@ -135,13 +138,13 @@ public class AspectBarSelectorButton implements DComponent {
 		hovering = false;
 		pressing = false;
 		tooltip.onTargetMouseExit(e);
-		repaint();
+		update();
 	}
 	
 	@Override
 	public void onMouseDown(DMouseEvent e) {
 		pressing = true;
-		repaint();
+		update();
 	}
 	
 	@Override
@@ -150,17 +153,58 @@ public class AspectBarSelectorButton implements DComponent {
 			onClick.accept(e);
 		
 		pressing = false;
-		repaint();
+		update();
 	}
 
 	@Override
 	public void close() {
 		activeListener.close();
 		tooltip.close();
+		
+		unmount();
 	}
 	
-	private void repaint() {
-		if (surface != null && bounds != null)
-			surface.repaint(bounds);
+	private void update() {
+		if (surface == null)
+			return;
+		
+		DShadow newShadow = getShadow();
+		if (newShadow != shadow) {
+			shadow = newShadow;
+			
+			if (shape != null)
+				shape.close();
+			
+			shape = surface.shadowPath(
+				z,
+				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.roundingRadius),
+				DTransform2D.IDENTITY,
+				getColor(),
+				shadow);
+		} else {
+			shape.setColor(getColor());
+		}
+	}
+	
+	private DShadow getShadow() {
+		if (active.getValue())
+			return style.shadowActive;
+		if (pressing)
+			return style.shadowPress;
+		if (hovering)
+			return style.shadowHover;
+		
+		return style.shadowNormal;
+	}
+	
+	private int getColor() {
+		if (active.getValue())
+			return style.colorActive;
+		if (pressing)
+			return style.colorPress;
+		if (hovering)
+			return style.colorHover;
+		
+		return style.colorNormal;
 	}
 }

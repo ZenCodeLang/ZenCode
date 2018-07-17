@@ -5,6 +5,7 @@
  */
 package org.openzen.drawablegui.border;
 
+import java.io.Closeable;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.draw.DDrawSurface;
 
@@ -12,7 +13,7 @@ import org.openzen.drawablegui.draw.DDrawSurface;
  *
  * @author Hoofdgebruiker
  */
-public interface DBorder {
+public interface DBorder extends Closeable {
 	public void update(DDrawSurface surface, int z, DIRectangle bounds);
 	
 	public int getPaddingLeft();
@@ -30,4 +31,7 @@ public interface DBorder {
 	default int getPaddingVertical() {
 		return getPaddingTop() + getPaddingBottom();
 	}
+	
+	@Override
+	void close();
 }

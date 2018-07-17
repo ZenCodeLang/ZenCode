@@ -5,6 +5,8 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.draw.DDrawTarget;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -24,6 +26,12 @@ public class DCompositeIcon implements DColorableIcon {
 	public void draw(DCanvas canvas, DTransform2D transform, int color) {
 		base.draw(canvas, transform, color);
 		addition.draw(canvas, transform.mul(additionTransform), color);
+	}
+	
+	@Override
+	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
+		base.draw(target, z, transform, color);
+		addition.draw(target, z + 1, transform.mul(additionTransform), color);
 	}
 
 	@Override

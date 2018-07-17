@@ -10,19 +10,21 @@ import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;
+import org.openzen.drawablegui.DDrawableInstance;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSimpleTooltip;
 import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveBool;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.MutableLiveObject;
+import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
@@ -40,12 +42,16 @@ public class IconButtonControl implements DComponent {
 	private final DSimpleTooltip tooltip;
 	
 	private DDrawSurface surface;
+	private int z;
 	private IconButtonControlStyle style;
 	private DIRectangle bounds;
 	private final MutableLiveObject<DSizing> preferences = DSizing.create();
 	private boolean hover;
 	private boolean press;
-	private DPath shape;
+	
+	private DShadow shadow;
+	private DDrawnShape shape;
+	private DDrawableInstance drawnIcon;
 	
 	public IconButtonControl(DStyleClass styleClass, DDrawable icon, DDrawable iconDisabled, LiveBool disabled, LiveString tooltip, Consumer<DMouseEvent> onClick) {
 		this.styleClass = styleClass;
@@ -54,7 +60,7 @@ public class IconButtonControl implements DComponent {
 		this.onClick = onClick;
 		this.disabled = disabled;
 		this.tooltip = new DSimpleTooltip(DStyleClass.EMPTY, tooltip);
-		disabledListener = disabled.addListener((oldValue, newValue) -> repaint());
+		disabledListener = disabled.addListener((oldValue, newValue) -> onDisabledChanged(newValue));
 	}
 	
 	public IconButtonControl(DStyleClass styleClass, DDrawable icon, LiveString tooltip, Consumer<DMouseEvent> onClick) {
@@ -62,8 +68,10 @@ public class IconButtonControl implements DComponent {
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
+		this.z = z;
+		
 		tooltip.setContext(surface.getContext());
 		
 		DStylePath path = parent.getChild("iconbutton", styleClass);
@@ -77,6 +85,14 @@ public class IconButtonControl implements DComponent {
 		
 		if (bounds != null)
 			setBounds(bounds);
+	}
+	
+	@Override
+	public void unmount() {
+		if (shape != null)
+			shape.close();
+		if (drawnIcon != null)
+			drawnIcon.close();
 	}
 
 	@Override
@@ -98,43 +114,30 @@ public class IconButtonControl implements DComponent {
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
 		
-		if (surface != null)
-			shape = DPath.roundedRectangle(
-					bounds.x + style.margin,
-					bounds.y + style.margin,
-					bounds.width - 2 * style.margin,
-					bounds.height - 2 * style.margin,
-					style.roundingRadius);
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		if (disabled.getValue()) {
-			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.colorDisabled, style.shadowDisabled);
-		} else if (press) {
-			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.colorPress, style.shadowPress);
-		} else if (hover) {
-			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.colorHover, style.shadowHover);
-		} else {
-			canvas.shadowPath(shape, DTransform2D.IDENTITY, style.colorNormal, style.shadowNormal);
-		}
+		if (shape != null)
+			shape.close();
 		
-		DDrawable icon = disabled.getValue() ? iconDisabled : this.icon;
-		icon.draw(canvas, DTransform2D.scaleAndTranslate(
-				bounds.x + (bounds.width - icon.getNominalWidth() * surface.getScale()) / 2,
-				bounds.y + (bounds.height - icon.getNominalHeight() * surface.getScale()) / 2,
-				surface.getScale()));
+		shadow = getShadow();
+		shape = surface.shadowPath(z, DPath.roundedRectangle(
+				bounds.x + style.margin,
+				bounds.y + style.margin,
+				bounds.width - 2 * style.margin,
+				bounds.height - 2 * style.margin,
+				style.roundingRadius), DTransform2D.IDENTITY, getColor(), shadow);
+		
+		onDisabledChanged(disabled.getValue());
 	}
 
 	@Override
 	public void close() {
 		disabledListener.close();
+		unmount();
 	}
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		hover = true;
-		repaint();
+		update();
 		tooltip.onTargetMouseEnter(e);
 	}
 	
@@ -142,7 +145,7 @@ public class IconButtonControl implements DComponent {
 	public void onMouseExit(DMouseEvent e) {
 		hover = false;
 		press = false;
-		repaint();
+		update();
 		tooltip.onTargetMouseExit(e);
 	}
 	
@@ -154,13 +157,13 @@ public class IconButtonControl implements DComponent {
 	@Override
 	public void onMouseDown(DMouseEvent e) {
 		press = true;
-		repaint();
+		update();
 	}
 	
 	@Override
 	public void onMouseRelease(DMouseEvent e) {
 		press = false;
-		repaint();
+		update();
 	}
 	
 	@Override
@@ -168,10 +171,55 @@ public class IconButtonControl implements DComponent {
 		onClick.accept(e);
 	}
 	
-	private void repaint() {
-		if (surface == null || bounds == null)
-			return;
+	private void onDisabledChanged(boolean disabled) {
+		DDrawable icon = disabled ? iconDisabled : this.icon;
 		
-		surface.repaint(bounds);
+		if (drawnIcon != null)
+			drawnIcon.close();
+		
+		drawnIcon = new DDrawableInstance(surface, z + 1, icon, DTransform2D.scaleAndTranslate(
+				bounds.x + (bounds.width - icon.getNominalWidth() * surface.getScale()) / 2,
+				bounds.y + (bounds.height - icon.getNominalHeight() * surface.getScale()) / 2,
+				surface.getScale()));
+	}
+	
+	private void update() {
+		DShadow newShadow = getShadow();
+		if (newShadow != shadow) {
+			if (shape != null)
+				shape.close();
+			
+			shadow = newShadow;
+			shape = surface.shadowPath(z, DPath.roundedRectangle(
+					bounds.x + style.margin,
+					bounds.y + style.margin,
+					bounds.width - 2 * style.margin,
+					bounds.height - 2 * style.margin,
+					style.roundingRadius), DTransform2D.IDENTITY, getColor(), shadow);
+		} else {
+			shape.setColor(getColor());
+		}
+	}
+	
+	private int getColor() {
+		if (disabled.getValue())
+			return style.colorDisabled;
+		if (press)
+			return style.colorPress;
+		if (hover)
+			return style.colorHover;
+		
+		return style.colorNormal;
+	}
+	
+	private DShadow getShadow() {
+		if (disabled.getValue())
+			return style.shadowDisabled;
+		if (press)
+			return style.shadowPress;
+		if (hover)
+			return style.shadowHover;
+		
+		return style.shadowNormal;
 	}
 }

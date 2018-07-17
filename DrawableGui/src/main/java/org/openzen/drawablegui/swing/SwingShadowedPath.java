@@ -25,13 +25,15 @@ import static org.openzen.drawablegui.swing.SwingCanvas.getTransform;
  * @author Hoofdgebruiker
  */
 public class SwingShadowedPath extends SwingDrawnElement implements DDrawnShape {
+	private final DPath originalPath;
 	private final GeneralPath path;
 	private final BufferedImage shadowImage;
 	private final DIRectangle shadowBounds;
 	private final int shadowOffset;
 	
-	private int color;
-	private DTransform2D transform;
+	private Color awtColor;
+	private AffineTransform transform;
+	private DIRectangle bounds;
 	
 	public SwingShadowedPath(
 			SwingDrawSurface target,
@@ -43,9 +45,10 @@ public class SwingShadowedPath extends SwingDrawnElement implements DDrawnShape 
 			DShadow shadow) {
 		super(target, z);
 		
-		this.transform = transform;
+		this.transform = getTransform(transform);
+		this.originalPath = originalPath;
 		this.path = path;
-		this.color = color;
+		this.awtColor = new Color(color, true);
 		
 		shadowBounds = DPathBoundsCalculator.getBounds(originalPath, transform.offset(shadow.offsetX, shadow.offsetY));
 		shadowOffset = 2 * (int)Math.ceil(shadow.radius);
@@ -61,25 +64,37 @@ public class SwingShadowedPath extends SwingDrawnElement implements DDrawnShape 
 		image = getGaussianBlurFilter((int)Math.ceil(shadow.radius), true).filter(image, null);
 		image = getGaussianBlurFilter((int)Math.ceil(shadow.radius), false).filter(image, null);
 		shadowImage = image;
+		
+		bounds = new DIRectangle(
+				shadowBounds.x - shadowOffset,
+				shadowBounds.y - shadowOffset,
+				shadowBounds.width + 2 * shadowOffset,
+				shadowBounds.height + 2 * shadowOffset);
 	}
 
 	@Override
 	public void setTransform(DTransform2D transform) {
-		this.transform = transform;
+		this.transform = getTransform(transform);
+	}
+	
+	@Override
+	public DIRectangle getBounds() {
+		return bounds;
 	}
 
 	@Override
 	public void setColor(int color) {
-		this.color = color;
+		this.awtColor = new Color(color, true);
+		invalidate();
 	}
 
 	@Override
-	public void paint(Graphics2D g) {
+	public void paint(Graphics2D g, DIRectangle clip) {
 		g.drawImage(shadowImage, shadowBounds.x - shadowOffset, shadowBounds.y - shadowOffset, null);
 		
 		AffineTransform old = g.getTransform();
-		g.setColor(new Color(color, true));
-		g.transform(getTransform(transform));
+		g.setColor(awtColor);
+		g.transform(transform);
 		g.fill(path);
 		g.setTransform(old);
 	}

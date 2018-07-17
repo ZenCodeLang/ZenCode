@@ -174,6 +174,7 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 	private void updateBounds() {
 		state.setValue(getStateFromWindowState());
 		bounds.setValue(new DIRectangle(getX(), getY(), getWidth(), getHeight()));
+		swingComponent.repaint();
 	}
 	
 	private State getStateFromWindowState() {

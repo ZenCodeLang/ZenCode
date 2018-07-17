@@ -102,14 +102,22 @@ public class DScrollPane implements DComponent {
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
 		
 		DStylePath path = parent.getChild("scrollpane", styleClass);
 		subSurface = surface.createSubSurface(z + 1);
-		contents.setSurface(path, 0, subSurface);
-		scrollBar.setSurface(path, z + 2, surface);
+		contents.mount(path, 0, subSurface);
+		scrollBar.mount(path, z + 2, surface);
 		style = new DScrollPaneStyle(surface.getStylesheet(path));
+	}
+	
+	@Override
+	public void unmount() {
+		subSurface.close();
+		
+		contents.unmount();
+		scrollBar.unmount();
 	}
 
 	@Override
@@ -151,23 +159,8 @@ public class DScrollPane implements DComponent {
 		subSurface.setClip(new DIRectangle(
 				bounds.x + style.border.getPaddingLeft(),
 				bounds.y + style.border.getPaddingTop(),
-				bounds.width - style.border.getPaddingLeft() - style.border.getPaddingTop() - scrollBar.getBounds().width,
+				bounds.width - style.border.getPaddingLeft() - style.border.getPaddingTop(),
 				bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom()));
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		scrollBar.paint(canvas);
-		
-		canvas.pushBounds(new DIRectangle(
-				bounds.x + style.border.getPaddingLeft(),
-				bounds.y + style.border.getPaddingTop(),
-				bounds.width - style.border.getPaddingLeft() - style.border.getPaddingTop() - scrollBar.getBounds().width,
-				bounds.height - style.border.getPaddingTop() - style.border.getPaddingBottom()));
-		canvas.pushOffset(bounds.x - offsetX.getValue(), bounds.y - offsetY.getValue());
-		contents.paint(canvas);
-		canvas.popOffset();
-		canvas.popBounds();
 	}
 	
 	@Override
@@ -235,6 +228,7 @@ public class DScrollPane implements DComponent {
 	@Override
 	public void close() {
 		contents.close();
+		unmount();
 	}
 	
 	private DMouseEvent forward(DComponent target, DMouseEvent e) {
@@ -374,8 +368,6 @@ public class DScrollPane implements DComponent {
 			
 			if (value != offsetY.getValue())
 				offsetY.setValue(value);
-			if (surface != null && bounds != null)
-				surface.repaint(bounds);
 			
 			subSurface.setOffset(bounds.x - offsetX.getValue(), bounds.y - offsetY.getValue());
 		}

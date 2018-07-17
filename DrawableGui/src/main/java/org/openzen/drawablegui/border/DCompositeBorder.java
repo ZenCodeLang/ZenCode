@@ -62,4 +62,10 @@ public class DCompositeBorder implements DBorder {
 			total += border.getPaddingBottom();
 		return total;
 	}
+	
+	@Override
+	public void close() {
+		for (DBorder border : borders)
+			border.close();
+	}
 }

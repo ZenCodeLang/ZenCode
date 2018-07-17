@@ -6,6 +6,7 @@
 package org.openzen.drawablegui.swing;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.drawablegui.DFont;
@@ -30,14 +31,34 @@ import org.openzen.drawablegui.style.DStylePath;
 public class SwingDrawSurface implements DDrawSurface {
 	private final List<SwingDrawnElement> elements = new ArrayList<>();
 	private final SwingGraphicsContext context;
+	public int offsetX;
+	public int offsetY;
 	
-	public SwingDrawSurface(SwingGraphicsContext context) {
+	public SwingDrawSurface(SwingGraphicsContext context, int offsetX, int offsetY) {
 		this.context = context;
+		this.offsetX = offsetX;
+		this.offsetY = offsetY;
 	}
 	
-	public void paint(Graphics2D g) {
+	public void setOffset(int offsetX, int offsetY) {
+		this.offsetX = offsetX;
+		this.offsetY = offsetY;
+	}
+	
+	public void paint(Graphics2D g, DIRectangle clip) {
 		for (SwingDrawnElement element : elements)
-			element.paint(g);
+			if (clip == null || clip.overlaps(element.getBounds()))
+				element.paint(g, clip);
+	}
+	
+	public DIRectangle calculateBounds() {
+		if (elements.isEmpty())
+			return DIRectangle.EMPTY;
+		
+		DIRectangle result = elements.get(0).getBounds();
+		for (SwingDrawnElement element : elements)
+			result = result.union(element.getBounds());
+		return result;
 	}
 
 	@Override
@@ -67,12 +88,13 @@ public class SwingDrawSurface implements DDrawSurface {
 
 	@Override
 	public DDrawnText drawText(int z, DFont font, int color, float x, float y, String text) {
-		return addElement(new SwingDrawnText(this, z, x, y, color, font, text));
+		DFontMetrics fontMetrics = context.getFontMetrics(font);
+		return addElement(new SwingDrawnText(this, z, x, y, color, font, text, fontMetrics.getAscent(), fontMetrics.getDescent(), fontMetrics.getWidth(text)));
 	}
 
 	@Override
 	public DDrawnShape strokePath(int z, DPath path, DTransform2D transform, int color, float lineWidth) {
-		return addElement(new SwingStrokedPath(this, z, transform, color, context.getPath(path), lineWidth));
+		return addElement(new SwingStrokedPath(this, z, transform, color, path, context.getPath(path), lineWidth));
 	}
 	
 	@Override
@@ -82,7 +104,7 @@ public class SwingDrawSurface implements DDrawSurface {
 
 	@Override
 	public DDrawnShape fillPath(int z, DPath path, DTransform2D transform, int color) {
-		return addElement(new SwingFilledPath(this, z, transform, context.getPath(path), color));
+		return addElement(new SwingFilledPath(this, z, transform, path, context.getPath(path), color));
 	}
 
 	@Override
@@ -101,11 +123,17 @@ public class SwingDrawSurface implements DDrawSurface {
 	
 	public void remove(SwingDrawnElement element) {
 		elements.remove(element);
+		repaint(element.getBounds());
 	}
 
 	@Override
 	public void repaint(int x, int y, int width, int height) {
-		context.repaint(x, y, width, height);
+		context.repaint(x + offsetX, y + offsetY, width, height);
+	}
+	
+	@Override
+	public void repaint(DIRectangle rectangle) {
+		context.repaint(rectangle.offset(offsetX, offsetY));
 	}
 	
 	private <T extends SwingDrawnElement> T addElement(T element) {
@@ -114,6 +142,7 @@ public class SwingDrawSurface implements DDrawSurface {
 			index--;
 		
 		elements.add(index, element);
+		repaint(element.getBounds());
 		return element;
 	}
 }

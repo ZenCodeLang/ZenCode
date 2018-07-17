@@ -29,34 +29,38 @@ import org.openzen.drawablegui.style.DStylePath;
 public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 	private final SwingDrawSurface surface;
 	
-	private int offsetX = 0;
-	private int offsetY = 0;
 	private DIRectangle clip = null;
 	
 	public SwingSubSurface(SwingDrawSurface parent, int z) {
 		super(parent, z);
 		
-		this.surface = new SwingDrawSurface(parent.getContext());
+		this.surface = new SwingDrawSurface(parent.getContext(), 0, 0);
 	}
 	
 	@Override
-	public void paint(Graphics2D g) {
+	public void paint(Graphics2D g, DIRectangle clip) {
 		Rectangle clipBounds = g.getClipBounds();
-		if (clip != null) {
-			g.setClip(clip.x, clip.y, clip.width, clip.height);
+		if (this.clip != null) {
+			g.setClip(this.clip.x, this.clip.y, this.clip.width, this.clip.height);
 		}
 		
 		AffineTransform oldTransform = g.getTransform();
-		g.transform(AffineTransform.getTranslateInstance(offsetX, offsetY));
-		surface.paint(g);
+		g.transform(AffineTransform.getTranslateInstance(surface.offsetX, surface.offsetY));
+		DIRectangle newClip = this.clip == null ? clip : clip.offset(-surface.offsetX, -surface.offsetY).intersect(this.clip.offset(-surface.offsetX, -surface.offsetY));
+		surface.paint(g, newClip);
 		g.setTransform(oldTransform);
 		g.setClip(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
+	}
+	
+	@Override
+	public void setTransform(DTransform2D transform) {
+		setOffset((int)transform.xx, (int)transform.yy);
 	}
 
 	@Override
 	public void setOffset(int x, int y) {
-		offsetX = x;
-		offsetY = y;
+		surface.setOffset(x, y);
+		repaint();
 	}
 
 	@Override
@@ -67,6 +71,11 @@ public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 	@Override
 	public DUIContext getContext() {
 		return surface.getContext();
+	}
+	
+	@Override
+	public DIRectangle getBounds() {
+		return surface.calculateBounds();
 	}
 
 	@Override
@@ -138,20 +147,29 @@ public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 
 		target.repaint(left, top, right - left, bottom - top);
 	}
+	
+	@Override
+	public void repaint() {
+		DIRectangle bounds = surface.calculateBounds().offset(surface.offsetX, surface.offsetY);
+		if (clip != null)
+			bounds = bounds.intersect(clip);
+		
+		target.repaint(bounds);
+	}
 
 	private int toGlobalX(int x) {
-		return x + offsetX;
+		return x + surface.offsetX;
 	}
 
 	private int toGlobalY(int y) {
-		return y + offsetY;
+		return y + surface.offsetY;
 	}
 
 	private int toLocalX(int x) {
-		return x - offsetX;
+		return x - surface.offsetX;
 	}
 
 	private int toLocalY(int y) {
-		return y - offsetY;
+		return y - surface.offsetY;
 	}
 }

@@ -8,10 +8,10 @@ package org.openzen.zenscript.ide.ui.view.output;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -27,9 +27,11 @@ public class OutputView implements DComponent {
 	private final LiveList<OutputLine> lines;
 	
 	private DDrawSurface surface;
+	private int z;
 	private DIRectangle bounds;
-	private DPath shape;
 	private OutputViewStyle style;
+	
+	private DDrawnShape shape;
 	
 	public OutputView(DStyleClass styleClass, LiveList<OutputLine> lines) {
 		this.styleClass = styleClass;
@@ -37,11 +39,20 @@ public class OutputView implements DComponent {
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
+		this.z = z;
 		
 		DStylePath path = parent.getChild("outputview", styleClass);
 		style = new OutputViewStyle(surface.getStylesheet(path));
+	}
+	
+	@Override
+	public void unmount() {
+		if (shape != null) {
+			shape.close();
+			shape = null;
+		}
 	}
 
 	@Override
@@ -62,20 +73,11 @@ public class OutputView implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-		shape = style.shape.instance(bounds);
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		canvas.shadowPath(
-				shape,
-				DTransform2D.IDENTITY,
-				style.backgroundColor,
-				style.shadow);
+		shape = surface.shadowPath(z, style.shape.instance(bounds), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 	}
 
 	@Override
 	public void close() {
-		
+		unmount();
 	}
 }

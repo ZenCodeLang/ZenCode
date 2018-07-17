@@ -30,13 +30,15 @@ public class DTreeViewStyle {
 	public final int selectedBackgroundColor;
 	public final int selectedPaddingTop;
 	public final int selectedPaddingBottom;
+	public final int selectedPaddingLeft;
+	public final int selectedPaddingRight;
 
 	public DTreeViewStyle(DStyleDefinition style) {
 		backgroundColor = style.getColor("backgroundColor", 0);
 		borderColor = style.getColor("borderColor", 0xFF888888);
 		padding = style.getDimension("padding", new DDpDimension(3));
 		rowSpacing = style.getDimension("rowSpacing", new DDpDimension(2));
-		font = style.getFont("font", context -> new DFont(DFontFamily.UI, false, false, false, context.sp(12.5f)));
+		font = style.getFont("font", context -> new DFont(DFontFamily.UI, false, false, false, context.sp(13)));
 		indent = style.getDimension("indent", new DDpDimension(12));
 		iconTextSpacing = style.getDimension("iconTextSpacing", new DDpDimension(2));
 		nodeTextColor = style.getColor("nodeTextColor", 0xFF000000);
@@ -44,5 +46,7 @@ public class DTreeViewStyle {
 		selectedBackgroundColor = style.getColor("selectedBackgroundColor", 0xFF007ACC);
 		selectedPaddingTop = style.getDimension("selectedPaddingTop", new DDpDimension(1));
 		selectedPaddingBottom = style.getDimension("selectedPaddingBottom", new DDpDimension(1));
+		selectedPaddingLeft = style.getDimension("selectedPaddingLeft", new DDpDimension(2));
+		selectedPaddingRight = style.getDimension("selectedPaddingRight", new DDpDimension(2));
 	}
 }

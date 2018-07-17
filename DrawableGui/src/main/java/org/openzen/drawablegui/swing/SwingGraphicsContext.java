@@ -165,7 +165,7 @@ public class SwingGraphicsContext implements DUIContext {
 		
 		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();
 		
-		root.setSurface(DStylePathRoot.INSTANCE, 0, windowContext.surface);
+		root.mount(DStylePathRoot.INSTANCE, 0, windowContext.surface);
 		DSizing dimension = root.getSizing().getValue();
 		int tx = (int)(x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
 		int ty = (int)(y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
@@ -187,7 +187,7 @@ public class SwingGraphicsContext implements DUIContext {
 		windowContext.graphics = this.graphics; // help a little...
 		windowContext.setSurface(window.swingComponent.surface);
 		
-		root.setSurface(DStylePathRoot.INSTANCE, 0, windowContext.surface);
+		root.mount(DStylePathRoot.INSTANCE, 0, windowContext.surface);
 		DSizing dimension = root.getSizing().getValue();
 		
 		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();

@@ -45,6 +45,7 @@ public class Main {
 		output.append("import org.openzen.drawablegui.DPath;\n");
 		output.append("import org.openzen.drawablegui.DTransform2D;\n");
 		output.append("import org.openzen.drawablegui.DColorableIcon;\n");
+		output.append("import org.openzen.drawablegui.draw.DDrawTarget;\n");
 		output.append("\n");
 		output.append("public class ").append(className).append(" implements DColorableIcon {\n");
 		output.append("\tpublic static final ").append(className).append(" INSTANCE = new ").append(className).append("();\n");
@@ -74,6 +75,13 @@ public class Main {
 		output.append("\tpublic void draw(DCanvas canvas, DTransform2D transform, int color) {\n");
 		for (String pathName : pathNames) {
 			output.append("\t\tcanvas.fillPath(").append(pathName).append(", transform, color);\n");
+		}
+		output.append("\t}\n");
+		output.append("\n");
+		output.append("\t@Override\n");
+		output.append("\tpublic void draw(DDrawTarget target, int z, DTransform2D transform) {\n");
+		for (String pathName : pathNames) {
+			output.append("\t\target.fillPath(z, ").append(pathName).append(", transform, DDrawTarget.INSTANCE_COLOR);\n");
 		}
 		output.append("\t}\n");
 		output.append("\n");

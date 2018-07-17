@@ -15,7 +15,9 @@ import org.openzen.drawablegui.style.DStylePath;
  * @author Hoofdgebruiker
  */
 public interface DComponent extends Closeable {
-	void setSurface(DStylePath parent, int z, DDrawSurface surface);
+	void mount(DStylePath parent, int z, DDrawSurface surface);
+	
+	void unmount();
 	
 	LiveObject<DSizing> getSizing();
 	
@@ -24,8 +26,6 @@ public interface DComponent extends Closeable {
 	int getBaselineY();
 	
 	void setBounds(DIRectangle bounds);
-	
-	void paint(DCanvas canvas);
 	
 	default void onMounted() {}
 	

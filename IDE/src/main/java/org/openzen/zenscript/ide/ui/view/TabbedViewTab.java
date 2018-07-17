@@ -14,6 +14,8 @@ import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
@@ -35,6 +37,7 @@ public class TabbedViewTab implements DComponent {
 	public final TabbedViewTabClose closeButton;
 	
 	private DDrawSurface surface;
+	private int z;
 	private TabbedViewTabStyle style;
 	private DFontMetrics fontMetrics;
 	private int textWidth;
@@ -42,9 +45,14 @@ public class TabbedViewTab implements DComponent {
 	
 	private final ListenerHandle<LiveString.Listener> titleListener;
 	private final ListenerHandle<LiveBool.Listener> updatedListener;
+	private final ListenerHandle<LiveObject.Listener<TabbedViewComponent>> currentTabListener;
 	
 	private boolean hover;
 	private boolean press;
+	
+	private DDrawnShape shape;
+	private DDrawnShape updated;
+	private DDrawnText text;
 	
 	public TabbedViewTab(TabbedView parent, MutableLiveObject<TabbedViewComponent> currentTab, TabbedViewComponent tab) {
 		this.parent = parent;
@@ -54,6 +62,7 @@ public class TabbedViewTab implements DComponent {
 		
 		titleListener = tab.title.addListener((oldValue, newValue) -> calculateSizing());
 		updatedListener = tab.updated.addListener((oldValue, newValue) -> calculateSizing());
+		currentTabListener = currentTab.addListener((oldTab, newTab) -> update());
 	}
 	
 	public void closeTab() {
@@ -61,31 +70,45 @@ public class TabbedViewTab implements DComponent {
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
+		this.z = z;
+		
 		DStylePath path = parent.getChild("tab", DStyleClass.EMPTY);
 		style = new TabbedViewTabStyle(surface.getStylesheet(path));
 		fontMetrics = surface.getFontMetrics(style.tabFont);
-		closeButton.setSurface(path, z + 1, surface);
+		closeButton.mount(path, z + 1, surface);
 		
+		text = surface.drawText(z + 1, style.tabFont, style.tabFontColor, 0, 0, tab.title.getValue());
 		calculateSizing();
+	}
+	
+	@Override
+	public void unmount() {
+		if (shape != null)
+			shape.close();
+		if (updated != null)
+			updated.close();
+		if (text != null)
+			text.close();
+		
+		closeButton.close();
+		style.border.close();
 	}
 	
 	private void calculateSizing() {
 		textWidth = fontMetrics.getWidth(tab.title.getValue());
 		
-		int width = style.paddingLeft + textWidth + style.paddingRight
+		int width = style.border.getPaddingHorizontal() + textWidth
 						+ style.closeIconPadding
 						+ closeButton.getSizing().getValue().preferredWidth;
-		
 		if (tab.updated.getValue()) {
 			width += style.updatedDiameter + style.updatedPadding;
 		}
 		
 		sizing.setValue(new DSizing(
 				width,
-				style.paddingTop + fontMetrics.getAscent() + fontMetrics.getDescent()
-						+ style.paddingBottom));
+				style.border.getPaddingHorizontal() + fontMetrics.getAscent() + fontMetrics.getDescent()));
 	}
 
 	@Override
@@ -108,75 +131,70 @@ public class TabbedViewTab implements DComponent {
 		this.bounds = bounds;
 		
 		DSizing close = closeButton.getSizing().getValue();
+		style.border.update(surface, z + 1, style.margin.apply(bounds));
+		
 		closeButton.setBounds(new DIRectangle(
-				bounds.x + bounds.width - close.preferredWidth - style.paddingRight,
+				bounds.x + bounds.width - close.preferredWidth - style.border.getPaddingRight(),
 				bounds.y + (bounds.height - close.preferredHeight) / 2,
 				close.preferredWidth,
 				close.preferredHeight));
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		int width = style.paddingLeft + textWidth + style.paddingRight
-				+ closeButton.getSizing().getValue().preferredWidth + style.closeIconPadding;
 		
-		if (tab.updated.getValue())
-			width += style.updatedDiameter + style.updatedPadding;
-
-		int color = style.tabColorNormal;
-		if (currentTab.getValue() == tab)
-			color = style.tabColorActive;
-		else if (press)
-			color = style.tabColorPress;
-		else if (hover)
-			color = style.tabColorHover;
-
-		canvas.fillRectangle(bounds.x, bounds.y, width, bounds.height, color);
-		canvas.strokePath(DPath.rectangle(bounds.x, bounds.y, width, bounds.height), DTransform2D.IDENTITY, style.borderColor, style.borderWidth);
-		
-		canvas.drawText(style.tabFont, style.tabFontColor, bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent(), tab.title.getValue());
+		if (shape != null)
+			shape.close();
+		shape = surface.shadowPath(z, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+		text.setPosition(
+				bounds.x + style.margin.left + style.border.getPaddingLeft(),
+				bounds.y + style.margin.top + style.border.getPaddingTop() + fontMetrics.getAscent());
 		
 		if (tab.updated.getValue()) {
-			canvas.fillPath(
+			if (updated != null)
+				updated.close();
+			updated = surface.fillPath(
+					z + 1,
 					DPath.circle(
-						bounds.x + bounds.width - style.paddingRight - closeButton.getBounds().width - style.closeIconPadding - style.updatedDiameter / 2,
-						bounds.y + style.paddingTop + ((bounds.height - style.paddingTop - style.paddingBottom) / 2), style.updatedDiameter / 2),
+						bounds.x + bounds.width - style.margin.right - style.border.getPaddingRight() - closeButton.getBounds().width - style.closeIconPadding - style.updatedDiameter / 2,
+						bounds.y + style.margin.top + style.border.getPaddingTop() + ((bounds.height - style.margin.getVertical() - style.border.getPaddingVertical()) / 2), style.updatedDiameter / 2),
 					DTransform2D.IDENTITY,
 					style.updatedColor);
+		} else {
+			if (updated != null) {
+				updated.close();
+				updated = null;
+			}
 		}
-		
-		closeButton.paint(canvas);
 	}
 
 	@Override
 	public void close() {
 		titleListener.close();
 		updatedListener.close();
+		
+		unmount();
 	}
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		hover = true;
-		repaint();
+		update();
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
 		hover = false;
 		press = false;
-		repaint();
+		update();
 	}
 	
 	@Override
 	public void onMouseDown(DMouseEvent e) {
 		press = true;
-		repaint();
+		update();
 	}
 	
 	@Override
 	public void onMouseRelease(DMouseEvent e) {
 		press = false;
-		repaint();
+		update();
 	}
 	
 	@Override
@@ -184,8 +202,17 @@ public class TabbedViewTab implements DComponent {
 		currentTab.setValue(tab);
 	}
 	
-	private void repaint() {
-		if (surface != null && bounds != null)
-			surface.repaint(bounds);
+	private void update() {
+		if (style == null || shape == null)
+			return;
+		
+		int color = style.tabColorNormal;
+		if (currentTab.getValue() == tab)
+			color = style.tabColorActive;
+		else if (press)
+			color = style.tabColorPress;
+		else if (hover)
+			color = style.tabColorHover;
+		shape.setColor(color);
 	}
 }

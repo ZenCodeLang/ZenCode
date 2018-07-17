@@ -5,17 +5,19 @@
  */
 package org.openzen.drawablegui.draw;
 
+import java.io.Closeable;
+import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DTransform2D;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface DDrawnText extends DDrawnColorableElement {
-	@Override
-	default void setTransform(DTransform2D transform) { // only uses position, not scaling or rotation
-		setPosition(transform.xx, transform.yy);
-	}
+public interface DDrawnElement extends Closeable {
+	void setTransform(DTransform2D transform);
 	
-	void setPosition(float x, float y);
+	DIRectangle getBounds();
+	
+	@Override
+	public void close();
 }

@@ -75,7 +75,7 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
 		this.z = z;
 		
@@ -83,7 +83,13 @@ public class DLinearLayout extends BaseComponentGroup {
 		style = new DLinearLayoutStyle(surface.getStylesheet(path));
 		
 		for (Element element : components)
-			element.component.setSurface(parent, z + 1, surface);
+			element.component.mount(parent, z + 1, surface);
+	}
+	
+	@Override
+	public void unmount() {
+		for (Element element : components)
+			element.component.unmount();
 	}
 
 	@Override
@@ -117,17 +123,12 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 
 	@Override
-	public void paint(DCanvas canvas) {
-		for (Element element : components) {
-			element.component.paint(canvas);
-		}
-	}
-
-	@Override
 	public void close() {
 		for (ListenerHandle<LiveObject.Listener<DSizing>> listener : componentSizeListeners) {
 			listener.close();
 		}
+		for (Element element : components)
+			element.component.close();
 	}
 	
 	private int getInnerWidth() {

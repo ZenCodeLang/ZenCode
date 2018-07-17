@@ -22,7 +22,12 @@ public class DEmptyView implements DComponent {
 	private DEmptyView() {}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
+		
+	}
+	
+	@Override
+	public void unmount() {
 		
 	}
 	
@@ -43,11 +48,6 @@ public class DEmptyView implements DComponent {
 	
 	@Override
 	public void setBounds(DIRectangle bounds) {
-		
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
 		
 	}
 

@@ -13,6 +13,7 @@ import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.draw.DDrawTarget;
 
 public class LibraryIcon implements DColorableIcon {
 	public static final LibraryIcon INSTANCE = new LibraryIcon();
@@ -20,7 +21,7 @@ public class LibraryIcon implements DColorableIcon {
 	
 	private LibraryIcon() {}
 	
-	private static final DPath PATH_0 = tracer -> {
+	private static final DPath PATH = tracer -> {
 		tracer.moveTo(20.54f, 5.23f);
 		tracer.lineTo(19.15f, 3.55f);
 		tracer.bezierCubic(18.88f, 3.21f, 18.47f, 3.0f, 18.0f, 3.0f);
@@ -45,7 +46,12 @@ public class LibraryIcon implements DColorableIcon {
 	
 	@Override
 	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		canvas.fillPath(PATH_0, transform, color);
+		canvas.fillPath(PATH, transform, color);
+	}
+	
+	@Override
+	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
+		target.fillPath(z, PATH, transform, color);
 	}
 
 	@Override

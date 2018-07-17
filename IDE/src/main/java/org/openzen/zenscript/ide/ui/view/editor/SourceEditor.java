@@ -6,6 +6,8 @@
 package org.openzen.zenscript.ide.ui.view.editor;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
@@ -30,6 +32,8 @@ import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
+import org.openzen.drawablegui.draw.DDrawnShape;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.InverseLiveBool;
 import org.openzen.drawablegui.live.LiveBool;
@@ -84,6 +88,13 @@ public class SourceEditor implements DComponent {
 	
 	private DDrawnRectangle background;
 	private DDrawnRectangle lineBarBackground;
+	private DDrawnShape lineBarLine;
+	private DDrawnRectangle selection;
+	private DDrawnRectangle cursor;
+	private DDrawnRectangle currentLineHighlight;
+	private final List<DDrawnRectangle> multiLineSelection = new ArrayList<>();
+	private final List<DDrawnText> lineNumbers = new ArrayList<>();
+	private final List<List<DDrawnText>> drawnTokens = new ArrayList<>();
 	
 	public SourceEditor(DStyleClass styleClass, IDEWindow window, IDESourceFile sourceFile) {
 		this.styleClass = styleClass;
@@ -112,17 +123,6 @@ public class SourceEditor implements DComponent {
 	}
 	
 	@Override
-	public void onMounted() {
-		window.aspectBar.toolbars.add(editToolbar);
-		window.aspectBar.active.setValue(editToolbar);
-	}
-	
-	@Override
-	public void onUnmounted() {
-		window.aspectBar.toolbars.remove(editToolbar);
-	}
-	
-	@Override
 	public void close() {
 		if (blinkTimer != null)
 			blinkTimer.close();
@@ -131,7 +131,10 @@ public class SourceEditor implements DComponent {
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
+		if (surface != null)
+			unmount();
+		
 		this.surface = surface;
 		this.z = z;
 		this.style = new SourceEditorStyle(surface.getStylesheet(parent.getChild("sourceeditor", styleClass)));
@@ -143,9 +146,68 @@ public class SourceEditor implements DComponent {
 		
 		sizing.setValue(new DSizing(0, fullLineHeight * tokens.getLineCount()));
 		
+		blinkTimer = surface.getContext().setTimer(300, this::blink);
+		
+		selection = surface.fillRect(z + 2, DIRectangle.EMPTY, style.selectionColor);
+		cursor = surface.fillRect(z + 4, DIRectangle.EMPTY, style.cursorColor);
+		currentLineHighlight = surface.fillRect(z + 1, DIRectangle.EMPTY, style.currentLineHighlight);
+		
+		for (int i = 0; i < tokens.getLineCount(); i++)
+			lineNumbers.add(surface.drawText(z + 3, font, style.lineBarTextColor, 0, 0, Integer.toString(i + 1)));
+		
+		for (TokenLine line : tokens.getLines())
+			drawnTokens.add(lineToTokens(line));
+		
+		window.aspectBar.toolbars.add(editToolbar);
+		window.aspectBar.active.setValue(editToolbar);
+	}
+	
+	@Override
+	public void unmount() {
+		window.aspectBar.toolbars.remove(editToolbar);
+		
+		surface = null;
+		
+		if (background != null) {
+			background.close();
+			background = null;
+		}
+		if (lineBarBackground != null) {
+			lineBarBackground.close();
+			lineBarBackground = null;
+		}
+		if (lineBarLine != null) {
+			lineBarLine.close();
+			lineBarLine = null;
+		}
+		if (selection != null) {
+			selection.close();
+			selection = null;
+		}
+		if (cursor != null) {
+			cursor.close();
+			cursor = null;
+		}
+		
 		if (blinkTimer != null)
 			blinkTimer.close();
-		blinkTimer = surface.getContext().setTimer(300, this::blink);
+		
+		for (DDrawnText lineNumber : lineNumbers)
+			lineNumber.close();
+		lineNumbers.clear();
+		
+		for (List<DDrawnText> line : drawnTokens)
+			for (DDrawnText token : line)
+				token.close();
+		drawnTokens.clear();
+		
+		clearMultilineSelection();
+	}
+	
+	private void clearMultilineSelection() {
+		for (DDrawnRectangle item : multiLineSelection)
+			item.close();
+		multiLineSelection.clear();
 	}
 
 	@Override
@@ -175,74 +237,22 @@ public class SourceEditor implements DComponent {
 			background.close();
 		if (lineBarBackground != null)
 			lineBarBackground.close();
+		if (lineBarLine != null)
+			lineBarLine.close();
 		background = surface.fillRect(z, new DIRectangle(bounds.x + lineBarWidth, bounds.y, bounds.width - lineBarWidth, bounds.height), style.backgroundColor);
 		lineBarBackground = surface.fillRect(z, new DIRectangle(bounds.x, bounds.y, lineBarWidth, bounds.height), style.lineBarBackgroundColor);
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		DIRectangle canvasBounds = canvas.getBounds();
-		
-		if (style.lineBarStrokeWidth > 0) {
-			canvas.strokePath(tracer -> {
+		lineBarLine = surface.strokePath(z + 1, tracer -> {
 				tracer.moveTo(bounds.x + lineBarWidth, bounds.y);
 				tracer.lineTo(bounds.x + lineBarWidth, bounds.y + bounds.height);
 			}, DTransform2D.IDENTITY, style.lineBarStrokeColor, style.lineBarStrokeWidth);
+		
+		for (int i = 0; i < lineNumbers.size(); i++) {
+			lineNumbers.get(i).setPosition(
+					bounds.x + lineBarWidth - style.lineBarSpacingRight - style.lineBarMargin - lineNumbers.get(i).getBounds().width,
+					bounds.y + style.selectionPaddingTop + i * fullLineHeight + fontMetrics.getAscent());
 		}
 		
-		int x = bounds.x + lineBarWidth + style.lineBarMargin;
-		if (cursorEnd != null)
-			canvas.fillRectangle(x, lineToY(cursorEnd.line), bounds.width - x, selectionLineHeight, style.currentLineHighlight);
-		
-		if (cursorStart != null && !cursorStart.equals(cursorEnd)) {
-			if (cursorStart.line == cursorEnd.line) {
-				int y = getY(cursorStart);
-				int x1 = getX(cursorStart);
-				int x2 = getX(cursorEnd);
-				int fromX = Math.min(x1, x2);
-				int toX = Math.max(x1, x2);
-				canvas.fillRectangle(fromX, y, toX - fromX, selectionLineHeight, style.selectionColor);
-			} else {
-				SourcePosition from = SourcePosition.min(cursorStart, cursorEnd);
-				SourcePosition to = SourcePosition.max(cursorStart, cursorEnd);
-				
-				int fromX = getX(from);
-				canvas.fillRectangle(fromX, getY(from), bounds.width - fromX, selectionLineHeight, style.selectionColor);
-				
-				for (int i = from.line + 1; i < to.line; i++) {
-					canvas.fillRectangle(x, lineToY(i), bounds.width - x, selectionLineHeight, style.selectionColor);
-				}
-				
-				int toX = getX(to);
-				canvas.fillRectangle(x, getY(to), toX - x, selectionLineHeight, style.selectionColor);
-			}
-		}
-		
-		int y = bounds.y + style.selectionPaddingTop;
-		int lineIndex = 1;
-		for (TokenLine line : tokens.getLines()) {
-			if (y + textLineHeight  >= canvasBounds.y && y < canvasBounds.y + canvasBounds.height) {
-				String lineNumber = Integer.toString(lineIndex);
-				int lineNumberX = x - style.lineBarSpacingRight - style.lineBarMargin - fontMetrics.getWidth(lineNumber);
-				canvas.drawText(font, style.lineBarTextColor, lineNumberX, y + fontMetrics.getAscent(), lineNumber);
-
-				int lineX = x;
-				for (ZSToken token : line.getTokens()) {
-					String content = getDisplayContent(token);
-					canvas.drawText(font, TokenClass.get(token.type).color, lineX, y + fontMetrics.getAscent(), content);
-					lineX += fontMetrics.getWidth(content);
-				}
-			}
-			
-			y += fullLineHeight;
-			lineIndex++;
-		}
-		
-		if (cursorEnd != null && cursorBlink) {
-			int cursorX = getX(cursorEnd);
-			int cursorY = getY(cursorEnd);
-			canvas.fillRectangle(cursorX, cursorY, style.cursorWidth, selectionLineHeight, style.cursorColor);
-		}
+		layoutLines(0);
 	}
 	
 	@Override
@@ -279,9 +289,6 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private void setCursor(SourcePosition start, SourcePosition end) {
-		if (cursorStart != null)
-			repaint(cursorStart, cursorEnd);
-		
 		int previousLine = cursorEnd == null ? -1 : cursorEnd.line;
 		
 		cursorStart = start;
@@ -292,7 +299,47 @@ public class SourceEditor implements DComponent {
 				repaintLine(previousLine);
 			repaintLine(cursorEnd.line);
 		}
-		repaint(cursorStart, cursorEnd);
+		
+		clearMultilineSelection();
+		
+		int x = bounds.x + lineBarWidth + style.lineBarMargin;
+		currentLineHighlight.setRectangle(new DIRectangle(x, lineToY(cursorEnd.line), bounds.width - x, selectionLineHeight));
+		int cursorX = getX(cursorEnd);
+		int cursorY = getY(cursorEnd);
+		cursor.setRectangle(new DIRectangle(cursorX, cursorY, style.cursorWidth, selectionLineHeight));
+		
+		if (cursorStart != null && !cursorStart.equals(cursorEnd)) {
+			if (cursorStart.line == cursorEnd.line) {
+				int y = getY(cursorStart);
+				int x1 = getX(cursorStart);
+				int x2 = getX(cursorEnd);
+				int fromX = Math.min(x1, x2);
+				int toX = Math.max(x1, x2);
+				selection.setRectangle(new DIRectangle(fromX, y, toX - fromX, selectionLineHeight));
+			} else {
+				SourcePosition from = SourcePosition.min(cursorStart, cursorEnd);
+				SourcePosition to = SourcePosition.max(cursorStart, cursorEnd);
+				
+				int fromX = getX(from);
+				multiLineSelection.add(surface.fillRect(
+						z + 2,
+						new DIRectangle(fromX, getY(from), bounds.width - fromX, selectionLineHeight),
+						style.selectionColor));
+				
+				for (int i = from.line + 1; i < to.line; i++) {
+					multiLineSelection.add(surface.fillRect(z + 2, new DIRectangle(x, lineToY(i), bounds.width - x, selectionLineHeight), style.selectionColor));
+				}
+				
+				int toX = getX(to);
+				multiLineSelection.add(surface.fillRect(z + 2, new DIRectangle(x, getY(to), toX - x, selectionLineHeight), style.selectionColor));
+				selection.setRectangle(DIRectangle.EMPTY);
+			}
+		} else {
+			if (cursorEnd != null)
+				
+			selection.setRectangle(DIRectangle.EMPTY);
+		}
+		
 		scrollTo(cursorEnd);
 	}
 	
@@ -556,21 +603,6 @@ public class SourceEditor implements DComponent {
 		unchanged.setValue(false);
 	}
 	
-	private void repaint(SourcePosition from, SourcePosition to) {
-		if (from.line == to.line) {
-			int y = lineToY(from.line);
-			int x1 = getX(from);
-			int x2 = getX(to);
-			int fromX = Math.min(x1, x2);
-			int toX = Math.max(x1, x2) + 2;
-			surface.repaint(fromX, y, toX - fromX, selectionLineHeight);
-		} else {
-			int fromY = lineToY(Math.min(from.line, to.line));
-			int toY = lineToY(Math.max(from.line, to.line) + 1);
-			surface.repaint(bounds.x, fromY, bounds.width, toY - fromY);
-		}
-	}
-	
 	private void repaintLine(int line) {
 		if (bounds == null)
 			return;
@@ -585,7 +617,7 @@ public class SourceEditor implements DComponent {
 	private void blink() {
 		if (cursorEnd != null) {
 			cursorBlink = !cursorBlink;
-			repaint(cursorEnd, cursorEnd);
+			cursor.setColor(cursorBlink ? style.cursorColor : 0);
 		}
 	}
 	
@@ -677,21 +709,75 @@ public class SourceEditor implements DComponent {
 			surface.repaint(bounds);
 	}
 	
+	private void layoutLines(int fromIndex) {
+		for (int i = fromIndex; i < drawnTokens.size(); i++) {
+			layoutLine(i);
+		}
+	}
+	
+	private void layoutLine(int index) {
+		List<DDrawnText> tokenLine = drawnTokens.get(index);
+		int x = bounds.x + lineBarWidth + style.lineBarMargin;
+		int y = bounds.y + style.selectionPaddingTop + index * fullLineHeight + fontMetrics.getAscent();
+
+		for (DDrawnText token : tokenLine) {
+			token.setPosition(x, y);
+			x += token.getBounds().width;
+		};
+	}
+	
+	private List<DDrawnText> lineToTokens(TokenLine line) {
+		List<DDrawnText> tokenLine = new ArrayList<>();
+		for (ZSToken token : line.getTokens()) {
+			String content = getDisplayContent(token);
+			tokenLine.add(surface.drawText(z + 3, font, TokenClass.get(token.type).color, 0, 0, content));
+		}
+		return tokenLine;
+	}
+	
 	private class TokenListener implements TokenModel.Listener {
 
 		@Override
 		public void onLineInserted(int index) {
 			onLinesUpdated();
+			
+			if (bounds != null) {
+				String str = Integer.toString(lineNumbers.size() + 1);
+				int x = bounds.x + lineBarWidth - style.lineBarSpacingRight - style.lineBarMargin - fontMetrics.getWidth(str);
+				int y = bounds.y + style.selectionPaddingTop + lineNumbers.size() * fullLineHeight + fontMetrics.getAscent();
+				lineNumbers.add(surface.drawText(z + 3, font, style.lineBarTextColor, x, y, str));
+				
+				drawnTokens.add(index, lineToTokens(tokens.getLine(index)));
+				layoutLines(index);
+			}
 		}
 
 		@Override
 		public void onLineChanged(int index) {
 			repaintLine(index);
+			
+			if (bounds != null) {
+				removeLineTokens(drawnTokens.get(index));
+				drawnTokens.get(index).clear();
+				drawnTokens.get(index).addAll(lineToTokens(tokens.getLine(index)));
+				layoutLine(index);
+			}
 		}
 
 		@Override
 		public void onLineDeleted(int index) {
 			onLinesUpdated();
+			
+			if (bounds != null) {
+				lineNumbers.remove(lineNumbers.size() - 1).close();
+				removeLineTokens(drawnTokens.remove(index));
+				layoutLines(index);
+			}
+		}
+		
+		private void removeLineTokens(List<DDrawnText> tokens) {
+			for (DDrawnText token : tokens)
+				token.close();
 		}
 	}
 	

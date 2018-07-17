@@ -5,18 +5,12 @@
  */
 package org.openzen.drawablegui.draw;
 
-import java.io.Closeable;
 import org.openzen.drawablegui.DIRectangle;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface DDrawnRectangle extends Closeable {
+public interface DDrawnRectangle extends DDrawnColorableElement {
 	void setRectangle(DIRectangle rectangle);
-	
-	void setColor(int color);
-	
-	@Override
-	void close();
 }

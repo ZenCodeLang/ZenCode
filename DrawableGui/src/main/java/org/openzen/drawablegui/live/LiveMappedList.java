@@ -80,6 +80,9 @@ public class LiveMappedList<T, U> implements Closeable, LiveList<U> {
 		@Override
 		public void onRemoved(int index, T oldValue) {
 			U oldMappedValue = mapped.remove(index);
+			if (oldMappedValue instanceof AutoCloseable) {
+				try { ((AutoCloseable) oldMappedValue).close(); } catch (Exception ex) {}
+			}
 			listeners.accept(listener -> listener.onRemoved(index, oldMappedValue));
 		}
 	}

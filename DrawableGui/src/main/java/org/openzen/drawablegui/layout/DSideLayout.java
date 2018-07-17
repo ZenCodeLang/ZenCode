@@ -49,7 +49,7 @@ public class DSideLayout extends BaseComponentGroup {
 	
 	public void add(Side side, DComponent component) {
 		if (surface != null)
-			component.setSurface(path, z + 1, surface);
+			component.mount(path, z + 1, surface);
 		
 		sides.add(new SideComponent(side, component));
 	}
@@ -61,24 +61,36 @@ public class DSideLayout extends BaseComponentGroup {
 		this.main = component;
 		
 		if (surface != null && bounds != null) {
-			main.setSurface(path, z + 1, surface);
+			main.mount(path, z + 1, surface);
 			setBounds(bounds);
 			surface.repaint(bounds);
 		}
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
 		this.z = z;
 		this.path = parent.getChild("sidelayout", styleClass);
 		style = new DSideLayoutStyle(surface.getStylesheet(path));
 		
-		main.setSurface(path, z + 1, surface);
+		main.mount(path, z + 1, surface);
 		for (SideComponent side : sides)
-			side.component.setSurface(path, z + 1, surface);
+			side.component.mount(path, z + 1, surface);
 		
+		if (background != null)
+			background.close();
 		background = surface.fillRect(z, DIRectangle.EMPTY, style.backgroundColor);
+	}
+	
+	@Override
+	public void unmount() {
+		main.unmount();
+		for (SideComponent side : sides)
+			side.component.unmount();
+		
+		background.close();
+		background = null;
 	}
 	
 	@Override
@@ -181,15 +193,6 @@ public class DSideLayout extends BaseComponentGroup {
 		}
 		
 		main.setBounds(new DIRectangle(left, top, right - left, bottom - top));
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		//canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
-		main.paint(canvas);
-		
-		for (SideComponent component : sides)
-			component.component.paint(canvas);
 	}
 	
 	private void recalculateSize() {

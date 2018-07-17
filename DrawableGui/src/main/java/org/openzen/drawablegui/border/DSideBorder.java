@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui.border;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
@@ -92,5 +91,17 @@ public class DSideBorder implements DBorder {
 	@Override
 	public int getPaddingBottom() {
 		return bottomWidth;
+	}
+
+	@Override
+	public void close() {
+		if (left != null)
+			left.close();
+		if (top != null)
+			top.close();
+		if (right != null)
+			right.close();
+		if (bottom != null)
+			bottom.close();
 	}
 }

@@ -9,6 +9,7 @@ import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.draw.DDrawTarget;
 
 public class ScalableMaximizeIcon implements DColorableIcon {
 	private final DPath path;
@@ -28,6 +29,11 @@ public class ScalableMaximizeIcon implements DColorableIcon {
 	@Override
 	public void draw(DCanvas canvas, DTransform2D transform, int color) {
 		canvas.strokePath(path, transform, color, 1);
+	}
+	
+	@Override
+	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
+		target.strokePath(z, path, transform, color, 1);
 	}
 
 	@Override

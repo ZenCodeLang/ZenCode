@@ -16,6 +16,7 @@ import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnShape;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -36,6 +37,7 @@ public class StatusBarView implements DComponent {
 	private DFontMetrics fontMetrics;
 
 	private DDrawnShape shape;
+	private DDrawnText text;
 	
 	public StatusBarView(DStyleClass styleClass, LiveString content) {
 		this.styleClass = styleClass;
@@ -43,7 +45,7 @@ public class StatusBarView implements DComponent {
 	}
 	
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
 		this.z = z;
 		
@@ -52,6 +54,15 @@ public class StatusBarView implements DComponent {
 		fontMetrics = surface.getFontMetrics(style.font);
 		
 		dimensionPreferences.setValue(new DSizing(0, style.paddingTop + fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingBottom));
+		text = surface.drawText(z + 1, style.font, style.textColor, 0, 0, content.getValue());
+	}
+	
+	@Override
+	public void unmount() {
+		if (shape != null)
+			shape.close();
+		if (text != null)
+			text.close();
 	}
 	
 	@Override
@@ -76,19 +87,11 @@ public class StatusBarView implements DComponent {
 		if (shape != null)
 			shape.close();
 		shape = surface.shadowPath(z, DPath.rectangle(bounds.x, bounds.y, bounds.width, bounds.height), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		canvas.drawText(
-				style.font,
-				style.textColor,
-				bounds.x + style.paddingLeft,
-				bounds.y + style.paddingTop + fontMetrics.getAscent(), content.getValue());
+		text.setPosition(bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent());
 	}
 
 	@Override
 	public void close() {
-		// nothing to clean up
+		unmount();
 	}
 }

@@ -43,4 +43,9 @@ public class DEmptyBorder implements DBorder {
 	public int getPaddingBottom() {
 		return 0;
 	}
+
+	@Override
+	public void close() {
+		
+	}
 }

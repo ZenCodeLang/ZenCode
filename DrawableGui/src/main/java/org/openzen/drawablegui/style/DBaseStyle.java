@@ -26,4 +26,20 @@ public class DBaseStyle {
 		shape = style.getShape("shape", DRectangleShape.ELEMENT);
 		shadow = style.getShadow("shadow", DShadow.NONE_ELEMENT);
 	}
+	
+	public DBaseStyle(DStyleDefinition style, DBorderElement defaultBorder, int defaultBackgroundColor) {
+		border = style.getBorder("border", defaultBorder);
+		backgroundColor = style.getColor("backgroundColor", defaultBackgroundColor);
+		margin = style.getMargin("margin", DMargin.EMPTY_ELEMENT);
+		shape = style.getShape("shape", DRectangleShape.ELEMENT);
+		shadow = style.getShadow("shadow", DShadow.NONE_ELEMENT);
+	}
+	
+	public DBaseStyle(DStyleDefinition style, DBorderElement defaultBorder, int defaultBackgroundColor, DShapeElement defaultShape, DShadowElement defaultShadow) {
+		border = style.getBorder("border", defaultBorder);
+		backgroundColor = style.getColor("backgroundColor", defaultBackgroundColor);
+		margin = style.getMargin("margin", DMargin.EMPTY_ELEMENT);
+		shape = style.getShape("shape", defaultShape);
+		shadow = style.getShadow("shadow", defaultShadow);
+	}
 }

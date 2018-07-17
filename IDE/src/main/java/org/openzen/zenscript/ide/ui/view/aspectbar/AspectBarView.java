@@ -22,13 +22,13 @@ import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.drawablegui.live.LivePredicateBool;
 import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 import org.openzen.zenscript.ide.ui.IDEAspectBarControl;
@@ -72,6 +72,10 @@ public class AspectBarView extends BaseComponentGroup {
 	private DDrawnRectangle topBackground;
 	private DDrawnRectangle bottomBackground;
 	private DDrawnShape aspectBarShape;
+	private DDrawnText activeBarText;
+	private DDrawnRectangle activeBarSeparator;
+	
+	private DDrawnShape windowControlsBackground;
 	
 	public AspectBarView(DStyleClass styleClass, IDEAspectBar aspectBar) {
 		this.styleClass = styleClass;
@@ -98,7 +102,7 @@ public class AspectBarView extends BaseComponentGroup {
 					LiveBool buttonActive = new LivePredicateBool<>(aspectBar.active, activeBar -> activeBar == bar);
 					AspectBarSelectorButton button = new AspectBarSelectorButton(DStyleClass.EMPTY, bar.icon, buttonActive, bar.description, e -> aspectBar.active.setValue(bar));
 					if (surface != null)
-						button.setSurface(path, z + 1, surface);
+						button.mount(path, z + 1, surface);
 					
 					return button;
 				});
@@ -109,7 +113,7 @@ public class AspectBarView extends BaseComponentGroup {
 	}
 	
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
 		this.z = z;
 		this.path = parent.getChild("aspectbar", styleClass);
@@ -121,15 +125,15 @@ public class AspectBarView extends BaseComponentGroup {
 		sizing.setValue(new DSizing(0, style.height));
 		
 		for (DComponent selectorButton : selectorButtons)
-			selectorButton.setSurface(path, z + 2, surface);
+			selectorButton.mount(path, z + 2, surface);
 		
 		if (activeToolbarComponents != null)
 			for (DComponent component : activeToolbarComponents)
-				component.setSurface(path, z + 2, surface);
+				component.mount(path, z + 2, surface);
 		
-		minimize.setSurface(path, z + 2, surface);
-		maximizeRestore.setSurface(path, z + 2, surface);
-		close.setSurface(path, z + 2, surface);
+		minimize.mount(path, z + 2, surface);
+		maximizeRestore.mount(path, z + 2, surface);
+		close.mount(path, z + 2, surface);
 		
 		if (topBackground != null)
 			topBackground.close();
@@ -138,6 +142,26 @@ public class AspectBarView extends BaseComponentGroup {
 		
 		topBackground = surface.fillRect(z, DIRectangle.EMPTY, style.backgroundColor);
 		bottomBackground = surface.fillRect(z, DIRectangle.EMPTY, style.backgroundColorBottom);
+	}
+	
+	@Override
+	public void unmount() {
+		topBackground.close();
+		topBackground = null;
+		bottomBackground.close();
+		bottomBackground = null;
+		
+		aspectBarShape.close();
+		aspectBarShape = null;
+		activeBarText.close();
+		activeBarText = null;
+		activeBarSeparator.close();
+		activeBarSeparator = null;
+		
+		if (windowControlsBackground != null) {
+			windowControlsBackground.close();
+			windowControlsBackground = null;
+		}
 	}
 	
 	@Override
@@ -161,79 +185,69 @@ public class AspectBarView extends BaseComponentGroup {
 		
 		if (surface != null) {
 			layout();
+			setupActiveBarText();
 			surface.repaint(bounds);
 		}
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		canvas.pushBounds(bounds);
-		//canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
-		//canvas.fillRectangle(bounds.x, bounds.y + bounds.height - style.marginBottom, bounds.width, style.marginBottom, style.backgroundColorBottom);
-		
-		for (DComponent button : selectorButtons) {
-			if (button.getBounds() == null)
-				continue;
-			
-			button.paint(canvas);
-		}
-		
-		/*canvas.shadowPath(
-				aspectBarShape,
-				DTransform2D.IDENTITY,
-				style.foregroundColor,
-				style.aspectBarShadow);*/
-		
-		if (aspectBar.active.getValue() != null) {
-			int y = bounds.y
-					+ style.aspectBarPaddingTop
-					+ (int)(activeToolbarTitleFontMetrics.getAscent() * 0.35f)
-					+ (bounds.height - style.aspectBarPaddingTop) / 2;
-			int x = aspectSelectorEndX + style.aspectSelectorToToolbarSpacing;
-			canvas.drawText(style.activeToolbarTitleFont, style.activeToolbarTitleColor, x, y, aspectBar.active.getValue().title);
-			canvas.fillRectangle(
-					x + activeToolbarTitleFontMetrics.getWidth(aspectBar.active.getValue().title) + 8,
-					bounds.y + style.aspectBarPaddingTop + 8,
-					2,
-					bounds.height - style.aspectBarPaddingTop - 16,
-					0xFFCCCCCC);
-		}
-		
-		if (activeToolbarComponents != null) {
-			for (DComponent component : activeToolbarComponents)
-				component.paint(canvas);
-		}
-		
-		if (showWindowControls) {
-			canvas.shadowPath(windowControlsShape, DTransform2D.IDENTITY, style.backgroundColor, style.windowControlShadow);
-			minimize.paint(canvas);
-			maximizeRestore.paint(canvas);
-			close.paint(canvas);
-		}
-		
-		canvas.popBounds();
 	}
 
 	@Override
 	public void close() {
 		listener.close();
 		
-		topBackground.close();
-		bottomBackground.close();
+		minimizeRelayout.close();
+		maximizeRestoreRelayout.close();
+		closeRelayout.close();
+		unmount();
 	}
 	
 	private void onActiveChanged(IDEAspectToolbar previous, IDEAspectToolbar aspectBar) {
-		if (activeToolbarComponents != null)
+		if (activeToolbarComponents != null) {
+			for (DComponent component : activeToolbarComponents)
+				component.close();
+			
 			activeToolbarComponents.close();
+		}
 		
 		activeToolbarComponents = new LiveMappedList<>(aspectBar.controls, control -> {
 			DComponent result = control.instantiate();
 			if (surface != null)
-				result.setSurface(path, z + 2, surface);
+				result.mount(path, z + 2, surface);
 			return result;
 		});
 		
+		setupActiveBarText();
 		layoutActiveToolbarComponents();
+	}
+	
+	private void setupActiveBarText() {
+		if (bounds == null)
+			return;
+		
+		if (activeBarText != null) {
+			activeBarText.close();
+			activeBarText = null;
+		}
+		if (activeBarSeparator != null) {
+			activeBarSeparator.close();
+			activeBarSeparator = null;
+		}
+		if (aspectBar.active.getValue() == null)
+			return;
+		
+		int y = bounds.y
+				+ style.aspectBarPaddingTop
+				+ (int)(activeToolbarTitleFontMetrics.getAscent() * 0.35f)
+				+ (bounds.height - style.aspectBarPaddingTop) / 2;
+		int x = aspectSelectorEndX + style.aspectSelectorToToolbarSpacing;
+		activeBarText = surface.drawText(z + 3, style.activeToolbarTitleFont, style.activeToolbarTitleColor, x, y, aspectBar.active.getValue().title);
+		activeBarSeparator = surface.fillRect(
+				z + 3,
+				new DIRectangle(
+					x + activeBarText.getBounds().width + 8,
+					bounds.y + style.aspectBarPaddingTop + 8,
+					2,
+					bounds.height - style.aspectBarPaddingTop - 16),
+				0xFFCCCCCC);
 	}
 	
 	private void layout() {
@@ -246,19 +260,54 @@ public class AspectBarView extends BaseComponentGroup {
 		layoutAspectSelectorButtons();
 		layoutActiveToolbarComponents();
 		
-		int x = bounds.x + bounds.width;
-		DSizing closeSize = close.getSizing().getValue();
-		DSizing maximizeRestoreSize = maximizeRestore.getSizing().getValue();
-		DSizing minimizeSize = minimize.getSizing().getValue();
+		if (showWindowControls) {
+			int x = bounds.x + bounds.width;
+			
+			DSizing closeSize = close.getSizing().getValue();
+			DSizing maximizeRestoreSize = maximizeRestore.getSizing().getValue();
+			DSizing minimizeSize = minimize.getSizing().getValue();
+			
+			x -= closeSize.preferredWidth;
+			close.setBounds(new DIRectangle(x, bounds.y, closeSize.preferredWidth, closeSize.preferredHeight));
+			x -= maximizeRestoreSize.preferredWidth;
+			maximizeRestore.setBounds(new DIRectangle(x, bounds.y, maximizeRestoreSize.preferredWidth, maximizeRestoreSize.preferredHeight));
+			x -= minimizeSize.preferredWidth;
+			minimize.setBounds(new DIRectangle(x, bounds.y, minimizeSize.preferredWidth, minimizeSize.preferredHeight));
+		}
 		
-		x -= closeSize.preferredWidth;
-		close.setBounds(new DIRectangle(x, bounds.y, closeSize.preferredWidth, closeSize.preferredHeight));
-		x -= maximizeRestoreSize.preferredWidth;
-		maximizeRestore.setBounds(new DIRectangle(x, bounds.y, maximizeRestoreSize.preferredWidth, maximizeRestoreSize.preferredHeight));
-		x -= minimizeSize.preferredWidth;
-		minimize.setBounds(new DIRectangle(x, bounds.y, minimizeSize.preferredWidth, minimizeSize.preferredHeight));
+		if (activeBarText != null) {
+			int activeBarY = bounds.y
+				+ style.aspectBarPaddingTop
+				+ (int)(activeToolbarTitleFontMetrics.getAscent() * 0.35f)
+				+ (bounds.height - style.aspectBarPaddingTop) / 2;
+			int activeBarX = aspectSelectorEndX + style.aspectSelectorToToolbarSpacing;
+			activeBarText.setPosition(activeBarX, activeBarY);
+			
+			activeBarSeparator.close();
+			activeBarSeparator = surface.fillRect(
+				z + 3,
+				new DIRectangle(
+					activeBarX + activeBarText.getBounds().width + 8,
+					bounds.y + style.aspectBarPaddingTop + 8,
+					2,
+					bounds.height - style.aspectBarPaddingTop - 16),
+				0xFFCCCCCC);
+		}
 		
 		calculateAspectBarShape();
+		
+		if (showWindowControls) {
+			if (windowControlsBackground != null)
+				windowControlsBackground.close();
+			
+			windowControlsBackground = surface.shadowPath(
+					z + 1,
+					windowControlsShape,
+					DTransform2D.IDENTITY,
+					style.backgroundColor,
+					style.windowControlShadow);
+		}
+		
 		surface.repaint(bounds);
 	}
 	

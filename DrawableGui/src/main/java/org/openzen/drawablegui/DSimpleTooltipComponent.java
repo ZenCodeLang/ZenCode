@@ -50,7 +50,6 @@ public class DSimpleTooltipComponent implements DComponent {
 				bounds.y,
 				style.border.getPaddingLeft() + fontMetrics.getWidth(tooltip.getValue()) + style.border.getPaddingRight(),
 				style.border.getPaddingTop() + fontMetrics.getAscent() + fontMetrics.getDescent() + style.border.getPaddingBottom());
-		surface.repaint(bounds);
 		
 		if (text != null)
 			text.close();
@@ -93,7 +92,7 @@ public class DSimpleTooltipComponent implements DComponent {
 	}
 	
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
 		this.z = z;
 		
@@ -106,13 +105,17 @@ public class DSimpleTooltipComponent implements DComponent {
 	}
 	
 	@Override
-	public void paint(DCanvas canvas) {
-		
+	public void unmount() {
+		if (background != null)
+			background.close();
+		if (text != null)
+			text.close();
 	}
 	
 	@Override
 	public void close() {
 		tooltipListener.close();
+		unmount();
 	}
 	
 	private void calculateSize() {

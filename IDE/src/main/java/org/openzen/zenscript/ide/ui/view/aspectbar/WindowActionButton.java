@@ -9,12 +9,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.DColorableIconInstance;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
@@ -40,6 +42,10 @@ public class WindowActionButton implements DComponent {
 	private boolean hover;
 	private boolean press;
 	private DDrawSurface surface;
+	private int z;
+	
+	private DDrawnRectangle background;
+	private DColorableIconInstance drawnIcon;
 	
 	public WindowActionButton(Function<Float, DColorableIcon> icon, Consumer<DMouseEvent> action) {
 		this.scalableIcon = icon;
@@ -47,16 +53,31 @@ public class WindowActionButton implements DComponent {
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
+		this.z = z;
 		
 		windowFocused = surface.getContext().getWindow().getActive();
-		windowFocusedListener = windowFocused.addListener((a, b) -> repaint());
+		windowFocusedListener = windowFocused.addListener((a, b) -> update());
 		
 		icon = scalableIcon == null ? null : scalableIcon.apply(surface.getScale());
 		sizing.setValue(new DSizing(
 				(int)(48 * surface.getScale()),
 				(int)(24 * surface.getScale())));
+		
+		background = surface.fillRect(z, DIRectangle.EMPTY, getBackgroundColor());
+	}
+	
+	@Override
+	public void unmount() {
+		if (drawnIcon != null) {
+			drawnIcon.close();
+			drawnIcon = null;
+		}
+		if (background != null) {
+			background.close();
+			background = null;
+		}
 	}
 
 	@Override
@@ -77,10 +98,59 @@ public class WindowActionButton implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		background.setRectangle(bounds);
+		
+		if (icon != null) {
+			if (drawnIcon != null)
+				drawnIcon.close();
+			
+			int iconX = bounds.x + (int)(bounds.width - icon.getNominalWidth()) / 2;
+			int iconY = bounds.y + (int)(bounds.height - icon.getNominalHeight()) / 2;
+			drawnIcon = new DColorableIconInstance(surface, z + 1, icon, DTransform2D.translate(iconX, iconY), getIconColor());
+		}
 	}
 
 	@Override
-	public void paint(DCanvas canvas) {
+	public void close() {
+		windowFocusedListener.close();
+		unmount();
+	}
+	
+	@Override
+	public void onMouseEnter(DMouseEvent e) {
+		hover = true;
+		update();
+	}
+	
+	@Override
+	public void onMouseExit(DMouseEvent e) {
+		hover = false;
+		press = false;
+		update();
+	}
+	
+	@Override
+	public void onMouseDown(DMouseEvent e) {
+		press = true;
+		update();
+	}
+	
+	@Override
+	public void onMouseRelease(DMouseEvent e) {
+		if (press)
+			action.accept(e);
+		
+		press = false;
+		update();
+	}
+	
+	private void update() {
+		background.setColor(getBackgroundColor());
+		if (drawnIcon != null)
+			drawnIcon.setColor(getIconColor());
+	}
+	
+	private int getBackgroundColor() {
 		int color = 0xFFFFFFFF;
 		int iconColor = windowFocused.getValue() ? 0xFF000000 : 0xFF999999;
 		
@@ -95,53 +165,18 @@ public class WindowActionButton implements DComponent {
 		if (press)
 			color = 0xFFCCCCCC;
 		
+		return color;
+	}
+	
+	private int getIconColor() {
+		int iconColor = windowFocused.getValue() ? 0xFF000000 : 0xFF999999;
 		
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, color);
-		
-		if (scalableIcon != null) {
-			int iconX = bounds.x + (int)(bounds.width - icon.getNominalWidth()) / 2;
-			int iconY = bounds.y + (int)(bounds.height - icon.getNominalHeight()) / 2;
-			icon.draw(canvas, DTransform2D.translate(iconX, iconY), iconColor);
+		if (hover) {
+			if (icon instanceof ScalableCloseIcon) {
+				iconColor = 0xFFFFFFFF;
+			}
 		}
-	}
-
-	@Override
-	public void close() {
-		windowFocusedListener.close();
-	}
-	
-	@Override
-	public void onMouseEnter(DMouseEvent e) {
-		hover = true;
-		repaint();
-	}
-	
-	@Override
-	public void onMouseExit(DMouseEvent e) {
-		hover = false;
-		press = false;
-		repaint();
-	}
-	
-	@Override
-	public void onMouseDown(DMouseEvent e) {
-		press = true;
-		repaint();
-	}
-	
-	@Override
-	public void onMouseRelease(DMouseEvent e) {
-		if (press)
-			action.accept(e);
 		
-		press = false;
-		repaint();
-	}
-	
-	private void repaint() {
-		if (surface == null)
-			return;
-		
-		surface.repaint(bounds);
+		return iconColor;
 	}
 }

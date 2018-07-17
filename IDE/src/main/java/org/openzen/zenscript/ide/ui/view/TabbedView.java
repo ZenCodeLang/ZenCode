@@ -15,7 +15,6 @@ import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveArrayList;
@@ -51,7 +50,7 @@ public class TabbedView extends BaseComponentGroup {
 	private final LiveList<TabbedViewTab> tabComponents = new LiveMappedList<>(tabs, tab -> {
 		TabbedViewTab result = new TabbedViewTab(this, currentTab, tab);
 		if (surface != null)
-			result.setSurface(path, z + 2, surface);
+			result.mount(path, z + 2, surface);
 		
 		tabSizeListeners.put(result, result.getSizing().addListener((oldSize, newSize) -> layoutTabs()));
 		return result;
@@ -62,10 +61,14 @@ public class TabbedView extends BaseComponentGroup {
 		tabs.addListener(new TabListListener());
 		
 		currentTab.addListener((oldValue, newValue) -> {
-			if (oldValue != null)
+			if (oldValue != null) {
 				oldValue.content.onUnmounted();
-			if (newValue != null)
+				oldValue.content.unmount();
+			}
+			if (newValue != null) {
 				newValue.content.onMounted();
+				newValue.content.mount(path, z + 1, surface);
+			}
 			
 			if (newValue != null && bounds != null) {
 				DIRectangle contentBounds = new DIRectangle(
@@ -79,7 +82,7 @@ public class TabbedView extends BaseComponentGroup {
 	}
 	
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
 		this.z = z;
 		
@@ -90,6 +93,14 @@ public class TabbedView extends BaseComponentGroup {
 		
 		for (TabbedViewComponent tab : tabs)
 			prepare(tab);
+	}
+	
+	@Override
+	public void unmount() {
+		for (TabbedViewComponent tab : tabs)
+			tab.content.unmount();
+		for (TabbedViewTab tab : tabComponents)
+			tab.unmount();
 	}
 
 	@Override
@@ -122,19 +133,15 @@ public class TabbedView extends BaseComponentGroup {
 	}
 
 	@Override
-	public void paint(DCanvas canvas) {
-		for (DComponent component : tabComponents)
-			component.paint(canvas);
-		
-		if (currentTab.getValue() != null)
-			currentTab.getValue().content.paint(canvas);
-	}
-
-	@Override
 	public void close() {
 		for (Map.Entry<TabbedViewTab, ListenerHandle<LiveObject.Listener<DSizing>>> entry : tabSizeListeners.entrySet()) {
 			entry.getValue().close();
 		}
+		
+		for (TabbedViewComponent tab : tabs)
+			tab.content.close();
+		for (TabbedViewTab tab : tabComponents)
+			tab.close();
 	}
 	
 	private void repaintTabs() {
@@ -142,7 +149,7 @@ public class TabbedView extends BaseComponentGroup {
 	}
 	
 	private void prepare(TabbedViewComponent tab) {
-		tab.content.setSurface(path, z + 1, surface);
+		tab.content.mount(path, z + 1, surface);
 	}
 	
 	private void layoutTabs() {

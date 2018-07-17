@@ -58,4 +58,10 @@ public class DLineBorder implements DBorder {
 	public int getPaddingBottom() {
 		return borderWidth;
 	}
+
+	@Override
+	public void close() {
+		if (shape != null)
+			shape.close();
+	}
 }

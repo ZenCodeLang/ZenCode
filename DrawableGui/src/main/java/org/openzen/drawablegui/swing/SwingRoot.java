@@ -50,7 +50,7 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 				Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f,
 				Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f,
 				this);
-		surface = new SwingDrawSurface(context);
+		surface = new SwingDrawSurface(context, 0, 0);
 		context.setSurface(surface);
 		
 		addComponentListener(this);
@@ -79,7 +79,7 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 	public void paint(Graphics g) {
 		if (firstPaint) {
 			firstPaint = false;
-			component.setSurface(DStylePathRoot.INSTANCE, 0, surface);
+			component.mount(DStylePathRoot.INSTANCE, 0, surface);
 			component.setBounds(new DIRectangle(0, 0, getWidth(), getHeight()));
 		}
 		
@@ -89,12 +89,9 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+		surface.paint(g2d, clipBounds2);
 		
-		surface.paint(g2d);
-		SwingCanvas canvas = new SwingCanvas(g2d, context, clipBounds2);
-		component.paint(canvas);
-		
-		System.out.println("Paint in " + (System.currentTimeMillis() - start) + " ms");
+		System.out.println("Paint in " + (System.currentTimeMillis() - start) + " ms, bounds: " + clipBounds.toString());
 	}
 
 	@Override

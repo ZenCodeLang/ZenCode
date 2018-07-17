@@ -6,6 +6,7 @@
 package org.openzen.drawablegui;
 
 import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
@@ -29,6 +30,8 @@ public class DLabel implements DComponent {
 	private DLabelStyle style;
 	private DFontMetrics fontMetrics;
 	
+	private DDrawnText text;
+	
 	public DLabel(DStyleClass styleClass, LiveString label) {
 		this.styleClass = styleClass;
 		this.label = label;
@@ -37,7 +40,7 @@ public class DLabel implements DComponent {
 	}
 
 	@Override
-	public void setSurface(DStylePath parent, int z, DDrawSurface surface) {
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
 		this.surface = surface;
 		this.z = z;
 		
@@ -46,6 +49,18 @@ public class DLabel implements DComponent {
 		
 		fontMetrics = surface.getFontMetrics(style.font);
 		calculateDimension();
+		
+		if (text != null)
+			text.close();
+		text = surface.drawText(z, style.font, style.color, 0, 0, label.getValue());
+	}
+	
+	@Override
+	public void unmount() {
+		if (style != null)
+			style.border.close();
+		if (text != null)
+			text.close();
 	}
 
 	@Override
@@ -67,21 +82,29 @@ public class DLabel implements DComponent {
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
 		style.border.update(surface, z + 1, bounds);
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		canvas.drawText(style.font, style.color, bounds.x + style.border.getPaddingLeft(), bounds.y + style.border.getPaddingTop() + fontMetrics.getAscent(), label.getValue());
+		text.setPosition(
+				bounds.x + style.border.getPaddingLeft(),
+				bounds.y + style.border.getPaddingTop() + fontMetrics.getAscent());
 	}
 
 	@Override
 	public void close() {
 		labelListener.close();
+		unmount();
 	}
 	
 	private void onLabelChanged(String oldValue, String newValue) {
 		calculateDimension();
-		surface.repaint(bounds);
+		
+		if (text != null)
+			text.close();
+		text = surface.drawText(
+				z,
+				style.font,
+				style.color,
+				bounds.x + style.border.getPaddingLeft(),
+				bounds.y + style.border.getPaddingTop() + fontMetrics.getAscent(),
+				newValue);
 	}
 	
 	private void calculateDimension() {
