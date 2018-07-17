@@ -10,8 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.constructor.ConstructorException;
@@ -25,15 +27,13 @@ import org.openzen.zenscript.parser.ParsedFile;
  *
  * @author Hoofdgebruiker
  */
-public class DirectoryModuleLoader implements ModuleReference {
-	private final ModuleLoader loader;
+public class DirectoryModuleReference implements ModuleReference {
 	private final String moduleName;
 	private final File directory;
 	private final boolean isStdlib;
 	private SourcePackage rootPackage = null;
 	
-	public DirectoryModuleLoader(ModuleLoader loader, String moduleName, File directory, boolean isStdlib) {
-		this.loader = loader;
+	public DirectoryModuleReference(String moduleName, File directory, boolean isStdlib) {
 		this.moduleName = moduleName;
 		this.directory = directory;
 		this.isStdlib = isStdlib;
@@ -45,7 +45,7 @@ public class DirectoryModuleLoader implements ModuleReference {
 	}
 
 	@Override
-	public SemanticModule load(CompilationUnit unit) {
+	public SemanticModule load(ModuleLoader loader, CompilationUnit unit, Consumer<CompileException> exceptionLogger) {
 		if (!directory.exists())
 			throw new ConstructorException("Error: module directory not found: " + directory);
 		
@@ -71,11 +71,11 @@ public class DirectoryModuleLoader implements ModuleReference {
 			for (String dependencyName : dependencyNames)
 				space.addModule(dependencyName, loader.getModule(dependencyName));
 
-			Module module = new Module(moduleName, directory, jsonFile);
+			Module module = new Module(moduleName, directory, jsonFile, exceptionLogger);
 			ZSPackage pkg = isStdlib ? unit.globalTypeRegistry.stdlib : new ZSPackage(null, module.packageName);
 
 			ParsedFile[] parsedFiles = module.parse(pkg);
-			SemanticModule result = Module.compileSyntaxToSemantic(module.name, module.dependencies, pkg, parsedFiles, space);
+			SemanticModule result = Module.compileSyntaxToSemantic(module.name, module.dependencies, pkg, parsedFiles, space, exceptionLogger);
 			
 			JSONObject globals = json.optJSONObject("globals");
 			if (globals != null) {

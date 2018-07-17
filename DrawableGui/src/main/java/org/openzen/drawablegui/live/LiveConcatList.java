@@ -5,8 +5,8 @@
  */
 package org.openzen.drawablegui.live;
 
-import java.io.Closeable;
 import java.util.Iterator;
+import org.openzen.drawablegui.Destructible;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.listeners.ListenerList;
 
@@ -14,7 +14,7 @@ import org.openzen.drawablegui.listeners.ListenerList;
  *
  * @author Hoofdgebruiker
  */
-public class LiveConcatList<T> implements Closeable, LiveList<T> {
+public class LiveConcatList<T> implements Destructible, LiveList<T> {
 	private final ListenerList<Listener<T>> listeners = new ListenerList<>();
 	private final LiveList<T> a;
 	private final LiveList<T> b;

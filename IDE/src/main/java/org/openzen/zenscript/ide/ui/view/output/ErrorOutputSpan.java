@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.ide.ui.view.output;
 
+import org.openzen.zenscript.ide.ui.IDEStyling;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -19,5 +21,15 @@ public class ErrorOutputSpan implements OutputSpan {
 	@Override
 	public String toString() {
 		return value;
+	}
+
+	@Override
+	public String getText() {
+		return value;
+	}
+
+	@Override
+	public int getColor() {
+		return IDEStyling.ERROR_RED;
 	}
 }

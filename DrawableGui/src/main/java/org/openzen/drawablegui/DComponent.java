@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import java.io.Closeable;
 import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.style.DStylePath;
@@ -14,7 +13,7 @@ import org.openzen.drawablegui.style.DStylePath;
  *
  * @author Hoofdgebruiker
  */
-public interface DComponent extends Closeable {
+public interface DComponent extends Destructible {
 	void mount(DStylePath parent, int z, DDrawSurface surface);
 	
 	void unmount();
@@ -56,7 +55,4 @@ public interface DComponent extends Closeable {
 	default void onKeyPressed(DKeyEvent e) {}
 	
 	default void onKeyReleased(DKeyEvent e) {}
-	
-	@Override
-	void close();
 }

@@ -5,8 +5,8 @@
  */
 package org.openzen.drawablegui.live;
 
-import java.io.Closeable;
 import java.util.function.Predicate;
+import org.openzen.drawablegui.Destructible;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.listeners.ListenerList;
 
@@ -14,7 +14,7 @@ import org.openzen.drawablegui.listeners.ListenerList;
  *
  * @author Hoofdgebruiker
  */
-public class LivePredicateBool<T> implements LiveBool, Closeable, LiveObject.Listener<T> {
+public class LivePredicateBool<T> implements LiveBool, Destructible, LiveObject.Listener<T> {
 	private final ListenerList<LiveBool.Listener> listeners = new ListenerList<>();
 	private final LiveObject<T> source;
 	private final Predicate<T> predicate;

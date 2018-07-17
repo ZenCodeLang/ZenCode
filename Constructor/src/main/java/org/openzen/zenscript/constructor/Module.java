@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -36,10 +37,12 @@ public class Module {
 	public final File sourceDirectory;
 	public final String packageName;
 	public final String host;
+	private final Consumer<CompileException> exceptionLogger;
 	
-	public Module(String name, File directory, File moduleFile) throws IOException {
+	public Module(String name, File directory, File moduleFile, Consumer<CompileException> exceptionLogger) throws IOException {
 		this.name = name;
 		this.sourceDirectory = new File(directory, "src");
+		this.exceptionLogger = exceptionLogger;
 		
 		BufferedInputStream input = new BufferedInputStream(new FileInputStream(moduleFile));
 		JSONObject json = new JSONObject(new JSONTokener(input));
@@ -67,7 +70,7 @@ public class Module {
 				try {
 					files.add(ParsedFile.parse(pkg, file));
 				} catch (CompileException ex) {
-					System.out.println(ex.getMessage());
+					exceptionLogger.accept(ex);
 				}
 			} else if (file.isDirectory()) {
 				parse(files, pkg.getOrCreatePackage(file.getName()), file);
@@ -80,7 +83,8 @@ public class Module {
 			String[] dependencies,
 			ZSPackage pkg,
 			ParsedFile[] files,
-			ModuleSpace registry) {
+			ModuleSpace registry,
+			Consumer<CompileException> exceptionLogger) {
 		// We are considering all these files to be in the same package, so make
 		// a single PackageDefinition instance. If these files were in multiple
 		// packages, we'd need an instance for every package.
@@ -106,7 +110,7 @@ public class Module {
 			try {
 				file.compileTypes(rootPackage, pkg, definitions, registry.compilationUnit.globalTypeRegistry, expansions, globals, registry.getAnnotations());
 			} catch (CompileException ex) {
-				System.out.println(ex.getMessage());
+				exceptionLogger.accept(ex);
 				failed = true;
 			}
 		}
@@ -121,7 +125,7 @@ public class Module {
 			try {
 				file.compileMembers(rootPackage, pkg, definitions, registry.compilationUnit.globalTypeRegistry, expansions, globals, registry.getAnnotations());
 			} catch (CompileException ex) {
-				System.out.println(ex.getMessage());
+				exceptionLogger.accept(ex);
 				failed = true;
 			}
 		}
@@ -138,7 +142,7 @@ public class Module {
 			try {
 				file.compileCode(rootPackage, pkg, definitions, registry.compilationUnit.globalTypeRegistry, expansions, scripts, globals, registry.getAnnotations());
 			} catch (CompileException ex) {
-				System.out.println(ex.getMessage());
+				exceptionLogger.accept(ex);
 				failed = true;
 			}
 		}

@@ -10,5 +10,7 @@ package org.openzen.zenscript.ide.ui.view.output;
  * @author Hoofdgebruiker
  */
 public interface OutputSpan {
+	public String getText();
 	
+	public int getColor();
 }

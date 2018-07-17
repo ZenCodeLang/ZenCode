@@ -5,11 +5,11 @@
  */
 package org.openzen.drawablegui.live;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import org.openzen.drawablegui.Destructible;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.listeners.ListenerList;
 
@@ -17,7 +17,7 @@ import org.openzen.drawablegui.listeners.ListenerList;
  *
  * @author Hoofdgebruiker
  */
-public class LiveMappedList<T, U> implements Closeable, LiveList<U> {
+public class LiveMappedList<T, U> implements Destructible, LiveList<U> {
 	private final ListenerList<Listener<U>> listeners = new ListenerList<>();
 	private final Function<T, U> projection;
 	private final List<U> mapped;

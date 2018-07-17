@@ -46,8 +46,9 @@ public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 		
 		AffineTransform oldTransform = g.getTransform();
 		g.transform(AffineTransform.getTranslateInstance(surface.offsetX, surface.offsetY));
-		DIRectangle newClip = this.clip == null ? clip : clip.offset(-surface.offsetX, -surface.offsetY).intersect(this.clip.offset(-surface.offsetX, -surface.offsetY));
-		surface.paint(g, newClip);
+		
+		DIRectangle intersection = this.clip == null ? clip : this.clip.intersect(clip);
+		surface.paint(g, intersection.offset(-surface.offsetX, -surface.offsetY));
 		g.setTransform(oldTransform);
 		g.setClip(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 	}
@@ -75,7 +76,7 @@ public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 	
 	@Override
 	public DIRectangle getBounds() {
-		return surface.calculateBounds();
+		return clip == null ? surface.calculateBounds().offset(surface.offsetX, surface.offsetY) : clip;
 	}
 
 	@Override

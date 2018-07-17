@@ -24,10 +24,7 @@ public class Main {
 		Arguments arguments = new Arguments(args);
 		File directory = arguments.projectDirectory;
 		
-		CompilationUnit compilationUnit = new CompilationUnit();
-		ModuleLoader loader = new ModuleLoader(compilationUnit);
-		Project project = new Project(loader, directory);
-		
+		Project project = new Project(directory);
 		DevelopmentHost host = new LocalProjectDevelopmentHost(project);
 		open(host);
     }

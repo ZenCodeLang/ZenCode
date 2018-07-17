@@ -5,22 +5,18 @@
  */
 package org.openzen.drawablegui;
 
+import java.util.List;
+
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface DFontMetrics {
-	int getAscent();
-	
-	int getDescent();
-	
-	int getLeading();
-	
-	int getWidth(String str);
-	
-	int getWidth(String str, int offset, int length);
-	
-	default int getLineHeight() {
-		return getAscent() + getDescent();
+public interface Destructible extends AutoCloseable {
+	public static <T extends Destructible> void close(List<T> list) {
+		for (T item : list)
+			item.close();
 	}
+	
+	@Override
+	public void close();
 }

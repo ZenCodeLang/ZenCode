@@ -6,6 +6,8 @@
 package org.openzen.zenscript.ide.ui;
 
 import org.openzen.drawablegui.live.ImmutableLiveString;
+import org.openzen.drawablegui.live.LiveArrayList;
+import org.openzen.drawablegui.live.MutableLiveList;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.IDESourceFile;
@@ -15,6 +17,7 @@ import org.openzen.zenscript.ide.ui.icons.PlayIcon;
 import org.openzen.zenscript.ide.ui.icons.SettingsIcon;
 import org.openzen.zenscript.ide.ui.icons.ShadedProjectIcon;
 import org.openzen.zenscript.ide.ui.view.IconButtonControl;
+import org.openzen.zenscript.ide.ui.view.output.OutputLine;
 
 /**
  *
@@ -26,6 +29,7 @@ public class IDEWindow {
 	public final IDEAspectBar aspectBar;
 	public final IDEDockWindow dockWindow;
 	public final IDEStatusBar statusBar;
+	public final MutableLiveList<OutputLine> output = new LiveArrayList<>();
 	
 	public IDEAspectToolbar projectToolbar;
 	
@@ -59,13 +63,13 @@ public class IDEWindow {
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, new ImmutableLiveString("Build"), e -> {
 			for (IDETarget target : host.getTargets()) {
 				if (target.canBuild())
-					target.build();
+					target.build(line -> output.add(line));
 			}
 		}));
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, PlayIcon.GREEN, new ImmutableLiveString("Run"), e -> {
 			for (IDETarget target : host.getTargets()) {
 				if (target.canRun())
-					target.run();
+					target.run(line -> output.add(line));
 			}
 		}));
 		aspectBar.toolbars.add(projectToolbar);

@@ -9,9 +9,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openzen.zenscript.constructor.module.DirectoryModuleLoader;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.compiler.Target;
 import org.openzen.zenscript.compiler.TargetType;
@@ -27,7 +29,7 @@ public class Project {
 	public final Library[] libraries;
 	public final Target[] targets;
 	
-	public Project(ModuleLoader loader, File directory) throws IOException {
+	public Project(File directory) throws IOException {
 		this.directory = directory;
 		name = directory.getName();
 		
@@ -46,7 +48,7 @@ public class Project {
 		libraries = new Library[jsonLibraries.length()];
 		int k = 0;
 		for (String key : jsonLibraries.keySet()) {
-			libraries[k] = new Library(loader, directory, key, jsonLibraries.getJSONObject(key));
+			libraries[k] = new Library(directory, key, jsonLibraries.getJSONObject(key));
 			k++;
 		}
 		
@@ -55,13 +57,13 @@ public class Project {
 		for (int i = 0; i < jsonModules.length(); i++) {
 			Object module = jsonModules.get(i);
 			if (module instanceof String) {
-				modules[i] = new DirectoryModuleLoader(loader, module.toString(), new File(directory, module.toString()), false);
+				modules[i] = new DirectoryModuleReference(module.toString(), new File(directory, module.toString()), false);
 			} else if (module instanceof JSONObject) {
 				JSONObject jsonModule = (JSONObject) module;
 				String name = jsonModule.getString("name");
 				switch (jsonModule.getString("type")) {
 					case "directory":
-						modules[i] = new DirectoryModuleLoader(loader, name, new File(directory, jsonModule.getString("directory")), false);
+						modules[i] = new DirectoryModuleReference(name, new File(directory, jsonModule.getString("directory")), false);
 						break;
 					default:
 						throw new ConstructorException("Invalid module type: " + jsonModule.getString("type"));

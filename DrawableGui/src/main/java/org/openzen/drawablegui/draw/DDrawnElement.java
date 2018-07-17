@@ -5,19 +5,16 @@
  */
 package org.openzen.drawablegui.draw;
 
-import java.io.Closeable;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DTransform2D;
+import org.openzen.drawablegui.Destructible;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface DDrawnElement extends Closeable {
+public interface DDrawnElement extends Destructible {
 	void setTransform(DTransform2D transform);
 	
 	DIRectangle getBounds();
-	
-	@Override
-	public void close();
 }

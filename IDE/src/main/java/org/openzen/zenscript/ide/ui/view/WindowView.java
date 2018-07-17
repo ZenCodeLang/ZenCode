@@ -6,11 +6,15 @@
 package org.openzen.zenscript.ide.ui.view;
 
 import org.openzen.drawablegui.DEmptyView;
+import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.border.DLineBorder;
 import org.openzen.drawablegui.scroll.DScrollPane;
 import org.openzen.drawablegui.layout.DSideLayout;
+import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveString;
+import org.openzen.drawablegui.live.MutableLiveList;
 import org.openzen.drawablegui.live.SimpleLiveInt;
+import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveString;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -21,6 +25,8 @@ import org.openzen.zenscript.ide.ui.IDEDockWindow;
 import org.openzen.zenscript.ide.ui.IDEWindow;
 import org.openzen.zenscript.ide.ui.view.aspectbar.AspectBarView;
 import org.openzen.zenscript.ide.ui.view.editor.SourceEditor;
+import org.openzen.zenscript.ide.ui.view.output.OutputLine;
+import org.openzen.zenscript.ide.ui.view.output.OutputView;
 import org.openzen.zenscript.ide.ui.view.project.ProjectBrowser;
 
 /**
@@ -41,9 +47,19 @@ public final class WindowView extends DSideLayout {
 		
 		projectBrowser = new ProjectBrowser(window, host);
 		
+		OutputView output = new OutputView(DStyleClass.EMPTY, window.output);
+		
+		DScrollPane scrollOutput = new DScrollPane(DStyleClass.inline(new DStylesheetBuilder()
+							//.border("border", context -> new DLineBorder(0xFF888888, 1))
+							.marginDp("margin", 3)
+							.color("backgroundColor", 0xFFFFFFFF)
+							.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
+							.build()), output, new SimpleLiveObject<>(new DSizing(400, 400)));
+		
 		setMain(tabs = new TabbedView(DStyleClass.inline(new DStylesheetBuilder()
 				.marginDp("margin", 3)
 				.build())));
+		add(Side.BOTTOM, scrollOutput);
 		add(Side.LEFT, projectBrowser.view);
 		add(Side.BOTTOM, new StatusBarView(DStyleClass.EMPTY, status));
 		add(Side.TOP, new AspectBarView(DStyleClass.EMPTY, window.aspectBar));
@@ -61,7 +77,7 @@ public final class WindowView extends DSideLayout {
 					new DScrollPane(DStyleClass.inline(new DStylesheetBuilder()
 							.border("border", context -> new DLineBorder(0xFF888888, 1))
 							//.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
-							.build()), editor, new SimpleLiveInt(0)),
+							.build()), editor, new SimpleLiveObject<>(new DSizing(500, 500))),
 					editor.isUpdated());
 			tabs.tabs.add(tab);
 			tabs.currentTab.setValue(tab);

@@ -20,4 +20,14 @@ public class BasicOutputSpan implements OutputSpan {
 	public String toString() {
 		return value;
 	}
+
+	@Override
+	public String getText() {
+		return value;
+	}
+
+	@Override
+	public int getColor() {
+		return 0xFF000000;
+	}
 }

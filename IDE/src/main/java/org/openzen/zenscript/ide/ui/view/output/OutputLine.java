@@ -12,6 +12,14 @@ package org.openzen.zenscript.ide.ui.view.output;
 public class OutputLine {
 	public final OutputSpan[] spans;
 	
+	public OutputLine(String line) {
+		spans = new OutputSpan[] { new BasicOutputSpan(line) };
+	}
+	
+	public OutputLine(OutputSpan span) {
+		spans = new OutputSpan[] { span };
+	}
+	
 	public OutputLine(OutputSpan[] spans) {
 		this.spans = spans;
 	}

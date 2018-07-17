@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui.tree;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.drawablegui.DColorableIconInstance;
@@ -17,12 +16,14 @@ import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DDrawableInstance;
+import org.openzen.drawablegui.Destructible;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveList;
+import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -94,7 +95,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	}
 
 	@Override
-	public MutableLiveObject<DSizing> getSizing() {
+	public LiveObject<DSizing> getSizing() {
 		return sizing;
 	}
 	
@@ -233,7 +234,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		// nothing to clean up
 	}
 	
-	private class Row implements Closeable, LiveBool.Listener, LiveList.Listener<N> {
+	private class Row implements Destructible, LiveBool.Listener, LiveList.Listener<N> {
 		private final int x;
 		private final int index;
 		private final N node;

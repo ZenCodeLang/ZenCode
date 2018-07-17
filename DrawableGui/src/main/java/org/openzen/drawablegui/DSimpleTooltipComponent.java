@@ -101,6 +101,8 @@ public class DSimpleTooltipComponent implements DComponent {
 		fontMetrics = surface.getFontMetrics(style.font);
 		calculateSize();
 		
+		if (text != null)
+			text.close();
 		text = surface.drawText(z + 1, style.font, style.textColor, 0, 0, tooltip.getValue());
 	}
 	

@@ -142,7 +142,9 @@ public class Main {
 				Collections.emptyList());
 		
 		result = result.normalize();
-		result.validate();
+		result.validate(entry -> {
+			System.out.println(entry.kind + " " + entry.position.toString() + ": " + entry.message);
+		});
 		return result;
 	}
 	

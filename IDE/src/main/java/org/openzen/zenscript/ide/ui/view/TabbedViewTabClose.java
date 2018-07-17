@@ -96,9 +96,6 @@ public class TabbedViewTabClose implements DComponent {
 		drawnIcon = new DColorableIconInstance(surface, z + 1, icon, DTransform2D.translate(
 				bounds.x + (bounds.width - icon.getNominalWidth()) / 2,
 				bounds.y + (bounds.height - icon.getNominalHeight()) / 2), 0xFF000000);
-		/*drawnIcon.setTransform(DTransform2D.translate(
-				bounds.x + (bounds.width - icon.getNominalWidth()) / 2,
-				bounds.y + (bounds.height - icon.getNominalHeight()) / 2));*/
 	}
 
 	@Override
