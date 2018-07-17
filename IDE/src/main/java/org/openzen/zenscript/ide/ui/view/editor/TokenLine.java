@@ -54,6 +54,16 @@ public final class TokenLine {
 		}
 		return indent.toString();
 	}
+	
+	/**
+	 * Adds a temporary token. This token must be relexed later using the relexer.
+	 * 
+	 * @param token 
+	 */
+	public void addTemporary(ZSToken token) {
+		tokens.add(token);
+		length += token.content.length();
+	}
 
 	public void add(ZSToken token) {
 		insert(tokens.size(), token);

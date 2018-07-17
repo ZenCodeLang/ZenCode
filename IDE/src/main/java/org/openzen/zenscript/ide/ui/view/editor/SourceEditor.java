@@ -745,6 +745,9 @@ public class SourceEditor implements DComponent {
 		public void onLineDeleted(int index) {
 			onLinesUpdated();
 			
+			if (index >= lineNumbers.size())
+				return;
+			
 			if (bounds != null) {
 				lineNumbers.remove(lineNumbers.size() - 1).close();
 				removeLineTokens(drawnTokens.remove(index));

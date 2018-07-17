@@ -193,7 +193,7 @@ public class TokenModel {
 		if (!remainder.isEmpty())
 			getLine(fromT.line).insert(fromT.token, new ZSToken(ZSTokenType.INVALID, remainder));
 		
-		relex(fromT.line, Math.max(0, fromT.token - 1), fromT.line, fromT.token + 1);
+		relex(fromT.line, Math.max(0, fromT.token - 1), fromT.line, Math.min(lines.get(fromT.line).getTokenCount(), fromT.token + 1));
 	}
 	
 	public void insert(SourcePosition position, String value) {
@@ -201,7 +201,7 @@ public class TokenModel {
 		Position tokenPosition = position.asTokenPosition();
 		ZSToken token = getTokenAt(tokenPosition);
 		if (token == null) {
-			line.add(new ZSToken(ZSTokenType.INVALID, value));
+			line.addTemporary(new ZSToken(ZSTokenType.INVALID, value));
 		} else {
 			token = token.insert(tokenPosition.offset, value);
 			line.replace(tokenPosition.token, token);
@@ -336,6 +336,13 @@ public class TokenModel {
 		public final int offset;
 		
 		public Position(int line, int token, int offset) {
+			if (line < 0)
+				throw new IllegalArgumentException("line cannot be negative");
+			if (token < 0)
+				throw new IllegalArgumentException("token cannot be negative");
+			if (offset < 0)
+				throw new IllegalArgumentException("offset cannot be negative");
+			
 			this.line = line;
 			this.token = token;
 			this.offset = offset;

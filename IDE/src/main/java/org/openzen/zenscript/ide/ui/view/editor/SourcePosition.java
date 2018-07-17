@@ -18,6 +18,11 @@ public class SourcePosition {
 	private TokenModel.Position position;
 
 	public SourcePosition(TokenModel tokens, int line, int offset) {
+		if (line < 0)
+			throw new IllegalArgumentException("line cannot be negative");
+		if (offset < 0)
+			throw new IllegalArgumentException("offset cannot be negative");
+		
 		this.tokens = tokens;
 		this.line = line;
 		this.offset = offset;

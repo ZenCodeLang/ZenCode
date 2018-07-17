@@ -83,7 +83,7 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 			component.setBounds(new DIRectangle(0, 0, getWidth(), getHeight()));
 		}
 		
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		Rectangle clipBounds = g.getClipBounds();
 		DIRectangle clipBounds2 = clipBounds == null ? null : new DIRectangle(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 		Graphics2D g2d = (Graphics2D) g;
@@ -91,7 +91,7 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
 		surface.paint(g2d, clipBounds2);
 		
-		System.out.println("Paint in " + (System.currentTimeMillis() - start) + " ms, bounds: " + clipBounds.toString());
+		//System.out.println("Paint in " + (System.currentTimeMillis() - start) + " ms, bounds: " + clipBounds.toString());
 	}
 
 	@Override
