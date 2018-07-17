@@ -128,7 +128,7 @@ public class SwingGraphicsContext implements DUIContext {
 		if (graphics == null)
 			throw new AssertionError("No graphics available!");
 		
-		SwingCanvas.prepare(font);
+		SwingDrawSurface.prepare(font);
 		return new SwingFontMetrics(graphics.getFontMetrics((Font) font.cached), graphics);
 	}
 

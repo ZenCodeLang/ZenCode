@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.ide.ui.icons;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
@@ -25,11 +24,6 @@ public class ScalableMinimizeIcon implements DColorableIcon {
 			tracer.moveTo(scale * 8, scale * 14);
 			tracer.lineTo(scale * 16, scale * 14);
 		};
-	}
-
-	@Override
-	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		canvas.strokePath(path, transform, color, 1);
 	}
 	
 	@Override

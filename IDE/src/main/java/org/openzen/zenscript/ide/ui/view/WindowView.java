@@ -6,11 +6,13 @@
 package org.openzen.zenscript.ide.ui.view;
 
 import org.openzen.drawablegui.DEmptyView;
+import org.openzen.drawablegui.border.DLineBorder;
 import org.openzen.drawablegui.scroll.DScrollPane;
 import org.openzen.drawablegui.layout.DSideLayout;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.SimpleLiveInt;
 import org.openzen.drawablegui.live.SimpleLiveString;
+import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylesheetBuilder;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
@@ -56,7 +58,10 @@ public final class WindowView extends DSideLayout {
 			TabbedViewComponent tab = new TabbedViewComponent(
 					sourceFile.getName(),
 					null,
-					new DScrollPane(DStyleClass.EMPTY, editor, new SimpleLiveInt(0)),
+					new DScrollPane(DStyleClass.inline(new DStylesheetBuilder()
+							.border("border", context -> new DLineBorder(0xFF888888, 1))
+							//.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
+							.build()), editor, new SimpleLiveInt(0)),
 					editor.isUpdated());
 			tabs.tabs.add(tab);
 			tabs.currentTab.setValue(tab);

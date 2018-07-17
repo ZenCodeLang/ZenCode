@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui.border;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
@@ -154,7 +153,6 @@ public class DCustomWindowBorder implements DComponent {
 				background.setRectangle(bounds);
 			}
 		}
-		surface.repaint(bounds);
 	}
 
 	@Override

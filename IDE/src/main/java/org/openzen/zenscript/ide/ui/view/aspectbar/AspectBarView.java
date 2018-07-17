@@ -8,7 +8,6 @@ package org.openzen.zenscript.ide.ui.view.aspectbar;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
@@ -186,7 +185,6 @@ public class AspectBarView extends BaseComponentGroup {
 		if (surface != null) {
 			layout();
 			setupActiveBarText();
-			surface.repaint(bounds);
 		}
 	}
 
@@ -307,8 +305,6 @@ public class AspectBarView extends BaseComponentGroup {
 					style.backgroundColor,
 					style.windowControlShadow);
 		}
-		
-		surface.repaint(bounds);
 	}
 	
 	private void layoutAspectSelectorButtons() {
@@ -347,8 +343,6 @@ public class AspectBarView extends BaseComponentGroup {
 					new DIRectangle(x, bounds.y + y, width, height));
 			x += width;
 		}
-		
-		surface.repaint(bounds);
 	}
 
 	@Override

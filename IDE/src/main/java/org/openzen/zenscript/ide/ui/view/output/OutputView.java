@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.ide.ui.view.output;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSizing;

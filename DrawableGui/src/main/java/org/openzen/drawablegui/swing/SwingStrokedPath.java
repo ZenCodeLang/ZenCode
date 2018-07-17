@@ -39,7 +39,7 @@ public class SwingStrokedPath extends SwingDrawnElement implements DDrawnShape {
 			float lineWidth) {
 		super(target, z);
 		
-		this.transform = SwingCanvas.getTransform(transform);
+		this.transform = SwingDrawSurface.getTransform(transform);
 		this.awtColor = color == 0 ? null : new Color(color, true);
 		this.originalPath = originalPath;
 		this.path = path;
@@ -50,7 +50,7 @@ public class SwingStrokedPath extends SwingDrawnElement implements DDrawnShape {
 	@Override
 	public void setTransform(DTransform2D transform) {
 		invalidate();
-		this.transform = SwingCanvas.getTransform(transform);
+		this.transform = SwingDrawSurface.getTransform(transform);
 		this.bounds = DPathBoundsCalculator.getBounds(originalPath, transform);
 		invalidate();
 	}

@@ -5,16 +5,19 @@
  */
 package org.openzen.drawablegui.swing;
 
+import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.drawablegui.DFont;
+import org.openzen.drawablegui.DFontFamily;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
@@ -125,13 +128,11 @@ public class SwingDrawSurface implements DDrawSurface {
 		elements.remove(element);
 		repaint(element.getBounds());
 	}
-
-	@Override
+	
 	public void repaint(int x, int y, int width, int height) {
 		context.repaint(x + offsetX, y + offsetY, width, height);
 	}
 	
-	@Override
 	public void repaint(DIRectangle rectangle) {
 		context.repaint(rectangle.offset(offsetX, offsetY));
 	}
@@ -145,4 +146,57 @@ public class SwingDrawSurface implements DDrawSurface {
 		repaint(element.getBounds());
 		return element;
 	}
+	
+	public static void prepare(DFont font) {
+		if (font.cached != null && font.cached instanceof Font)
+			return;
+		
+		String baseFontName = font.family == DFontFamily.CODE ? "Consolas" : Font.DIALOG;
+		int style = 0;
+		if (font.bold)
+			style |= Font.BOLD;
+		if (font.italic)
+			style |= Font.ITALIC;
+		
+		font.cached = Font.decode(baseFontName).deriveFont(style, font.size);
+	}
+	
+	public static AffineTransform getTransform(DTransform2D transform) {
+		return new AffineTransform(transform.xx, transform.xy, transform.yx, transform.yy, transform.dx, transform.dy);
+	}
+    
+	
+	// taken from http://www.java2s.com/Code/Java/Advanced-Graphics/GaussianBlurDemo.htm
+    public static ConvolveOp getGaussianBlurFilter(int radius, boolean horizontal) {
+        if (radius < 1) {
+            throw new IllegalArgumentException("Radius must be >= 1");
+        }
+        
+        int size = radius * 2 + 1;
+        float[] data = new float[size];
+        
+        float sigma = radius / 3.0f;
+        float twoSigmaSquare = 2.0f * sigma * sigma;
+        float sigmaRoot = (float) Math.sqrt(twoSigmaSquare * Math.PI);
+        float total = 0.0f;
+        
+        for (int i = -radius; i <= radius; i++) {
+            float distance = i * i;
+            int index = i + radius;
+            data[index] = (float) Math.exp(-distance / twoSigmaSquare) / sigmaRoot;
+            total += data[index];
+        }
+        
+        for (int i = 0; i < data.length; i++) {
+            data[i] /= total;
+        }        
+        
+        Kernel kernel = null;
+        if (horizontal) {
+            kernel = new Kernel(size, 1, data);
+        } else {
+            kernel = new Kernel(1, size, data);
+        }
+        return new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+    }
 }

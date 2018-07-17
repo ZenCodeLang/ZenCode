@@ -8,7 +8,6 @@ package org.openzen.zenscript.ide.ui.view.editor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFont;
@@ -289,16 +288,8 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private void setCursor(SourcePosition start, SourcePosition end) {
-		int previousLine = cursorEnd == null ? -1 : cursorEnd.line;
-		
 		cursorStart = start;
 		cursorEnd = end;
-		
-		if (previousLine != cursorEnd.line) {
-			if (previousLine >= 0)
-				repaintLine(previousLine);
-			repaintLine(cursorEnd.line);
-		}
 		
 		clearMultilineSelection();
 		
@@ -331,12 +322,10 @@ public class SourceEditor implements DComponent {
 				}
 				
 				int toX = getX(to);
-				multiLineSelection.add(surface.fillRect(z + 2, new DIRectangle(x, getY(to), toX - x, selectionLineHeight), style.selectionColor));
+				multiLineSelection.add(surface.fillRect(z + 2, new DIRectangle(x, getY(to), Math.max(0, toX - x), selectionLineHeight), style.selectionColor));
 				selection.setRectangle(DIRectangle.EMPTY);
 			}
 		} else {
-			if (cursorEnd != null)
-				
 			selection.setRectangle(DIRectangle.EMPTY);
 		}
 		
@@ -603,13 +592,6 @@ public class SourceEditor implements DComponent {
 		unchanged.setValue(false);
 	}
 	
-	private void repaintLine(int line) {
-		if (bounds == null)
-			return;
-		
-		surface.repaint(bounds.x, lineToY(line), bounds.width, selectionLineHeight);
-	}
-	
 	public void scrollTo(SourcePosition position) {
 		surface.getContext().scrollInView(getX(position), getY(position), 2, selectionLineHeight);
 	}
@@ -704,9 +686,6 @@ public class SourceEditor implements DComponent {
 	
 	private void onLinesUpdated() {
 		sizing.setValue(new DSizing(0, fullLineHeight * tokens.getLineCount()));
-		
-		if (bounds != null)
-			surface.repaint(bounds);
 	}
 	
 	private void layoutLines(int fromIndex) {
@@ -754,8 +733,6 @@ public class SourceEditor implements DComponent {
 
 		@Override
 		public void onLineChanged(int index) {
-			repaintLine(index);
-			
 			if (bounds != null) {
 				removeLineTokens(drawnTokens.get(index));
 				drawnTokens.get(index).clear();

@@ -127,49 +127,12 @@ public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 	public DSubSurface createSubSurface(int z) {
 		return surface.createSubSurface(z);
 	}
-
-	@Override
-	public void repaint(int x, int y, int width, int height) {
-		int left = toGlobalX(x);
-		int top = toGlobalY(y);
-		int right = left + width;
-		int bottom = top + height;
-
-		if (clip != null) {
-			left = Math.max(clip.x, left);
-			top = Math.max(clip.y, top);
-			right = Math.min(clip.x + clip.width, right);
-			bottom = Math.min(clip.y + clip.height, bottom);
-		}
-
-		if (left >= right || top >= bottom)
-			return;
-
-		target.repaint(left, top, right - left, bottom - top);
-	}
 	
-	@Override
 	public void repaint() {
 		DIRectangle bounds = surface.calculateBounds().offset(surface.offsetX, surface.offsetY);
 		if (clip != null)
 			bounds = bounds.intersect(clip);
 		
 		target.repaint(bounds);
-	}
-
-	private int toGlobalX(int x) {
-		return x + surface.offsetX;
-	}
-
-	private int toGlobalY(int y) {
-		return y + surface.offsetY;
-	}
-
-	private int toLocalX(int x) {
-		return x - surface.offsetX;
-	}
-
-	private int toLocalY(int y) {
-		return y - surface.offsetY;
 	}
 }

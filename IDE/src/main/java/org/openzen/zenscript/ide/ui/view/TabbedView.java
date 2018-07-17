@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
@@ -72,12 +71,12 @@ public class TabbedView extends BaseComponentGroup {
 			
 			if (newValue != null && bounds != null) {
 				DIRectangle contentBounds = new DIRectangle(
-					bounds.x, bounds.y + totalTabHeight,
-					bounds.width, bounds.height - totalTabHeight);
+						bounds.x + style.margin.left,
+						bounds.y + style.margin.top + totalTabHeight,
+						bounds.width - style.margin.getHorizontal(),
+						bounds.height - style.margin.getVertical() - totalTabHeight);
 				newValue.content.setBounds(contentBounds);
 			}
-			if (newValue == null && surface != null && bounds != null)
-				surface.repaint(bounds);
 		});
 	}
 	
@@ -126,8 +125,10 @@ public class TabbedView extends BaseComponentGroup {
 			return;
 		
 		DIRectangle contentBounds = new DIRectangle(
-				bounds.x, bounds.y + totalTabHeight,
-				bounds.width, bounds.height - totalTabHeight);
+				bounds.x + style.margin.left,
+				bounds.y + style.margin.top + totalTabHeight,
+				bounds.width - style.margin.getHorizontal(),
+				bounds.height - style.margin.getVertical() - totalTabHeight);
 		currentTab.getValue().content.setBounds(contentBounds);
 		layoutTabs();
 	}
@@ -144,10 +145,6 @@ public class TabbedView extends BaseComponentGroup {
 			tab.close();
 	}
 	
-	private void repaintTabs() {
-		surface.repaint(bounds.x, bounds.y, bounds.width, totalTabHeight);
-	}
-	
 	private void prepare(TabbedViewComponent tab) {
 		tab.content.mount(path, z + 1, surface);
 	}
@@ -156,16 +153,14 @@ public class TabbedView extends BaseComponentGroup {
 		if (bounds == null)
 			return;
 		
-		int x = bounds.x + style.tabBarSpacingLeft;
+		int x = bounds.x + style.margin.left + style.tabBarSpacingLeft;
 		for (DComponent tab : tabComponents) {
 			DSizing preferences = tab.getSizing().getValue();
 			tab.setBounds(new DIRectangle(
-					x, bounds.y + totalTabHeight - preferences.preferredHeight, preferences.preferredWidth, preferences.preferredHeight));
+					x, bounds.y + style.margin.top + totalTabHeight - preferences.preferredHeight, preferences.preferredWidth, preferences.preferredHeight));
 			
 			x += preferences.preferredWidth + style.tabSpacing;
 		}
-		
-		repaintTabs();
 	}
 
 	@Override
@@ -206,7 +201,7 @@ public class TabbedView extends BaseComponentGroup {
 
 		@Override
 		public void onChanged(int index, TabbedViewComponent oldValue, TabbedViewComponent newValue) {
-			repaintTabs();
+			
 		}
 
 		@Override

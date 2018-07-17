@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSizing;
@@ -63,7 +62,6 @@ public class DSideLayout extends BaseComponentGroup {
 		if (surface != null && bounds != null) {
 			main.mount(path, z + 1, surface);
 			setBounds(bounds);
-			surface.repaint(bounds);
 		}
 	}
 

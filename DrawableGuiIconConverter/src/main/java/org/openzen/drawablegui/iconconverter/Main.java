@@ -72,16 +72,9 @@ public class Main {
 		
 		output.append("\t\n");
 		output.append("\t@Override\n");
-		output.append("\tpublic void draw(DCanvas canvas, DTransform2D transform, int color) {\n");
+		output.append("\tpublic void draw(DDrawTarget target, int z, DTransform2D transform, int color) {\n");
 		for (String pathName : pathNames) {
-			output.append("\t\tcanvas.fillPath(").append(pathName).append(", transform, color);\n");
-		}
-		output.append("\t}\n");
-		output.append("\n");
-		output.append("\t@Override\n");
-		output.append("\tpublic void draw(DDrawTarget target, int z, DTransform2D transform) {\n");
-		for (String pathName : pathNames) {
-			output.append("\t\target.fillPath(z, ").append(pathName).append(", transform, DDrawTarget.INSTANCE_COLOR);\n");
+			output.append("\t\target.fillPath(z, ").append(pathName).append(", transform, color);\n");
 		}
 		output.append("\t}\n");
 		output.append("\n");

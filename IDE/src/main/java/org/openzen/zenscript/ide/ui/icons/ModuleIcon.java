@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.ide.ui.icons;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
@@ -37,11 +36,6 @@ public class ModuleIcon implements DColorableIcon {
 		tracer.lineTo(3.0f, 5.0f);
 		tracer.close();
 	};
-	
-	@Override
-	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		canvas.fillPath(PATH, transform, color);
-	}
 	
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {

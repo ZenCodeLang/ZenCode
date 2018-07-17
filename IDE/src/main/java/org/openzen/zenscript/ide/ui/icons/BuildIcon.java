@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 package org.openzen.zenscript.ide.ui.icons;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
@@ -34,11 +33,6 @@ public class BuildIcon implements DColorableIcon {
 		tracer.bezierCubic(23.1f, 20.000002f, 23.1f, 19.300001f, 22.7f, 19.000002f);
 		tracer.close();
 	};
-	
-	@Override
-	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		canvas.shadowPath(PATH, transform, color, new DShadow(0xFFCCCCCC, 0, 1, 4));
-	}
 	
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {

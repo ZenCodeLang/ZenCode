@@ -14,7 +14,6 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DPathBoundsCalculator;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawnShape;
-import static org.openzen.drawablegui.swing.SwingCanvas.getTransform;
 
 /**
  *
@@ -41,13 +40,13 @@ public class SwingFilledPath extends SwingDrawnElement implements DDrawnShape {
 		this.path = path;
 		
 		this.awtColor = color == 0 ? null : new Color(color, true);
-		this.transform = getTransform(transform);
+		this.transform = SwingDrawSurface.getTransform(transform);
 		this.bounds = DPathBoundsCalculator.getBounds(originalPath, transform);
 	}
 
 	@Override
 	public void setTransform(DTransform2D transform) {
-		this.transform = getTransform(transform);
+		this.transform = SwingDrawSurface.getTransform(transform);
 		this.bounds = DPathBoundsCalculator.getBounds(originalPath, transform);
 	}
 	

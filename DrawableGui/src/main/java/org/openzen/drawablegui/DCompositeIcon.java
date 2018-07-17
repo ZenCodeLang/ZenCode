@@ -21,12 +21,6 @@ public class DCompositeIcon implements DColorableIcon {
 		this.addition = addition;
 		this.additionTransform = additionTransform;
 	}
-
-	@Override
-	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		base.draw(canvas, transform, color);
-		addition.draw(canvas, transform.mul(additionTransform), color);
-	}
 	
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {

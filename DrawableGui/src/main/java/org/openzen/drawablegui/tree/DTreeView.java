@@ -50,6 +50,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	private final N root;
 	private final boolean showRoot;
 	private final List<Row> rows = new ArrayList<>();
+	private boolean selectedIsPresent = false;
 	
 	private DDrawnRectangle background;
 	private DDrawnRectangle selectedBackground;
@@ -163,20 +164,10 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 				row.nodeIcon.setColor(style.selectedNodeTextColor);
 				
 				if (oldRowIndex >= 0) {
-					surface.repaint(
-							bounds.x,
-							rowToY(oldRowIndex) - style.selectedPaddingTop,
-							bounds.width,
-							fontMetrics.getAscent() + fontMetrics.getDescent() + style.selectedPaddingTop + style.selectedPaddingBottom);
 					Row oldRow = rows.get(oldRowIndex);
 					oldRow.text.setColor(style.nodeTextColor);
 					oldRow.nodeIcon.setColor(style.nodeTextColor);
 				}
-				surface.repaint(
-						bounds.x,
-						rowToY(rowIndex) - style.selectedPaddingTop,
-						bounds.width,
-						fontMetrics.getAscent() + fontMetrics.getDescent() + style.selectedPaddingTop + style.selectedPaddingBottom);
 			}
 		}
 	}
@@ -196,6 +187,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			row.close();
 		
 		rows.clear();
+		selectedIsPresent = false;
 		
 		if (showRoot) {
 			updateLayout(root, 0);
@@ -203,6 +195,12 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			for (N child : root.getChildren()) {
 				updateLayout(child, 0);
 			}
+		}
+		
+		if (!selectedIsPresent) {
+			selectedNode = null;
+			selectedRow = -1;
+			selectedBackground.setColor(0);
 		}
 		
 		if (rows.size() != oldRowCount) {
@@ -254,6 +252,9 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			this.collapseListener = node.isCollapsed().addListener(this);
 			this.childListener = node.getChildren().addListener(this);
 			
+			if (node == selectedNode)
+				selectedIsPresent = true;
+			
 			int baseX = bounds.x + style.padding + x;
 			int baseY = (int)(bounds.y + style.padding + index * (fontMetrics.getAscent() + fontMetrics.getDescent() + style.rowSpacing));
 			
@@ -263,7 +264,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 					z + 2,
 					node.getIcon(),
 					DTransform2D.translate(baseX + icon.getNominalWidth() + style.iconTextSpacing, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()),
-					style.nodeTextColor);
+					node == selectedNode ? style.selectedNodeTextColor : style.nodeTextColor);
 			
 			if (!node.isLeaf())
 				collapseIcon = new DDrawableInstance(
@@ -275,7 +276,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			text = surface.drawText(
 					z + 2,
 					style.font,
-					style.nodeTextColor,
+					node == selectedNode ? style.selectedNodeTextColor : style.nodeTextColor,
 					baseX + style.iconTextSpacing + icon.getNominalWidth() + style.iconTextSpacing + node.getIcon().getNominalWidth(),
 					baseY + fontMetrics.getAscent(),
 					node.getTitle());

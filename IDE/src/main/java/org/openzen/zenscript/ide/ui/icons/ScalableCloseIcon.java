@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.ide.ui.icons;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
@@ -23,11 +22,6 @@ public class ScalableCloseIcon implements DColorableIcon {
 			tracer.moveTo(scale * 8, scale * 16);
 			tracer.lineTo(scale * 16, scale * 8);
 		};
-	}
-	
-	@Override
-	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		canvas.strokePath(path, transform, color, 1);
 	}
 	
 	@Override

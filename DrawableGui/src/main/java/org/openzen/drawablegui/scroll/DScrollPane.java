@@ -6,7 +6,6 @@
 package org.openzen.drawablegui.scroll;
 
 import org.openzen.drawablegui.DAnchor;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;

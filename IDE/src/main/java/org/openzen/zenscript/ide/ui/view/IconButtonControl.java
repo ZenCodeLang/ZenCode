@@ -6,7 +6,6 @@
 package org.openzen.zenscript.ide.ui.view;
 
 import java.util.function.Consumer;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;

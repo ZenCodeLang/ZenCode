@@ -21,6 +21,4 @@ public interface DSubSurface extends DDrawnElement, DDrawSurface {
 	void setOffset(int x, int y);
 	
 	void setClip(DIRectangle bounds);
-	
-	void repaint();
 }

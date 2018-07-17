@@ -17,8 +17,6 @@ import org.openzen.drawablegui.DPathBoundsCalculator;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.style.DShadow;
-import static org.openzen.drawablegui.swing.SwingCanvas.getGaussianBlurFilter;
-import static org.openzen.drawablegui.swing.SwingCanvas.getTransform;
 
 /**
  *
@@ -45,7 +43,7 @@ public class SwingShadowedPath extends SwingDrawnElement implements DDrawnShape 
 			DShadow shadow) {
 		super(target, z);
 		
-		this.transform = getTransform(transform);
+		this.transform = SwingDrawSurface.getTransform(transform);
 		this.originalPath = originalPath;
 		this.path = path;
 		this.awtColor = new Color(color, true);
@@ -58,11 +56,11 @@ public class SwingShadowedPath extends SwingDrawnElement implements DDrawnShape 
 		
 		imageG.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		imageG.setColor(new Color(shadow.color, true));
-		imageG.setTransform(getTransform(transform.offset(shadowOffset + shadow.offsetX - shadowBounds.x, shadowOffset + shadow.offsetY - shadowBounds.y)));
+		imageG.setTransform(SwingDrawSurface.getTransform(transform.offset(shadowOffset + shadow.offsetX - shadowBounds.x, shadowOffset + shadow.offsetY - shadowBounds.y)));
 		imageG.fill(path);
 		
-		image = getGaussianBlurFilter((int)Math.ceil(shadow.radius), true).filter(image, null);
-		image = getGaussianBlurFilter((int)Math.ceil(shadow.radius), false).filter(image, null);
+		image = SwingDrawSurface.getGaussianBlurFilter((int)Math.ceil(shadow.radius), true).filter(image, null);
+		image = SwingDrawSurface.getGaussianBlurFilter((int)Math.ceil(shadow.radius), false).filter(image, null);
 		shadowImage = image;
 		
 		bounds = new DIRectangle(
@@ -74,7 +72,7 @@ public class SwingShadowedPath extends SwingDrawnElement implements DDrawnShape 
 
 	@Override
 	public void setTransform(DTransform2D transform) {
-		this.transform = getTransform(transform);
+		this.transform = SwingDrawSurface.getTransform(transform);
 	}
 	
 	@Override

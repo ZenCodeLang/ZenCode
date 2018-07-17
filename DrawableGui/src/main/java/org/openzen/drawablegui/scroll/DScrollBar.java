@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui.scroll;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
@@ -172,7 +171,6 @@ public class DScrollBar implements DComponent {
 		
 		this.hovering = hovering;
 		updateBarColor();
-		surface.repaint(bounds.x, fromY, bounds.width, toY - fromY);
 	}
 	
 	private void setDragging(boolean dragging) {
@@ -181,7 +179,6 @@ public class DScrollBar implements DComponent {
 		
 		this.dragging = dragging;
 		updateBarColor();
-		surface.repaint(bounds.x, fromY, bounds.width, toY - fromY);
 	}
 	
 	private void recalculate() {

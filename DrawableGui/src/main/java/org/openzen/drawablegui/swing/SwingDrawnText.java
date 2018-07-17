@@ -11,7 +11,6 @@ import java.awt.Graphics2D;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.draw.DDrawnText;
-import static org.openzen.drawablegui.swing.SwingCanvas.prepare;
 
 /**
  *
@@ -29,7 +28,7 @@ public class SwingDrawnText extends SwingDrawnElement implements DDrawnText {
 	
 	public SwingDrawnText(SwingDrawSurface target, int z, float x, float y, int color, DFont font, String text, int ascent, int descent, int width) {
 		super(target, z);
-		prepare(font);
+		SwingDrawSurface.prepare(font);
 		
 		this.x = x;
 		this.y = y;
