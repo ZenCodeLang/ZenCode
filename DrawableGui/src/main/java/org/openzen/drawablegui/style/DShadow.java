@@ -11,6 +11,7 @@ package org.openzen.drawablegui.style;
  */
 public class DShadow {
 	public static final DShadow NONE = new DShadow(0, 0, 0, 0);
+	public static final DShadowElement NONE_ELEMENT = context -> NONE;
 	
 	public final int color;
 	public final float offsetX;

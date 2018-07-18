@@ -5,8 +5,11 @@
  */
 package org.openzen.zenscript.constructor.module;
 
+import java.util.function.Consumer;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.CompilationUnit;
+import org.openzen.zenscript.constructor.ModuleLoader;
 
 /**
  *
@@ -15,7 +18,7 @@ import org.openzen.zenscript.compiler.CompilationUnit;
 public interface ModuleReference {
 	public String getName();
 	
-	public SemanticModule load(CompilationUnit unit);
+	public SemanticModule load(ModuleLoader loader, CompilationUnit unit, Consumer<CompileException> exceptionLogger);
 	
 	public SourcePackage getRootPackage();
 }

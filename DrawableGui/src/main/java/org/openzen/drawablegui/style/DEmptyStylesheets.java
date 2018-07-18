@@ -16,6 +16,6 @@ public class DEmptyStylesheets implements DStyleSheets {
 
 	@Override
 	public DStyleDefinition get(DUIContext context, DStylePath path) {
-		return new DEmptyStyleDefinition(context);
+		return path.getInline(context);
 	}
 }

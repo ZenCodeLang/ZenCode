@@ -5,17 +5,17 @@
  */
 package org.openzen.zenscript.ide.ui.icons;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.draw.DDrawTarget;
 
 public class ChevronRight implements DColorableIcon {
 	public static final ChevronRight INSTANCE = new ChevronRight();
 	
 	private ChevronRight() {}
 	
-	private static final DPath PATH_0 = tracer -> {
+	private static final DPath PATH = tracer -> {
 		tracer.moveTo(10f, 6f);
 		tracer.lineTo(8.59f, 7.41f);
 		tracer.lineTo(13.17f, 12f);
@@ -26,8 +26,8 @@ public class ChevronRight implements DColorableIcon {
 	};
 	
 	@Override
-	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		canvas.fillPath(PATH_0, transform, color);
+	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
+		target.fillPath(z, PATH, transform, color);
 	}
 
 	@Override

@@ -5,6 +5,8 @@
  */
 package org.openzen.drawablegui.style;
 
+import org.openzen.drawablegui.DUIContext;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -17,6 +19,11 @@ public class DStylePathRoot implements DStylePath {
 	@Override
 	public DStylePath getChild(String element, DStyleClass styleClass) {
 		return new DStyleChildElement(this, element, styleClass);
+	}
+	
+	@Override
+	public DStyleDefinition getInline(DUIContext context) {
+		return new DEmptyStyleDefinition(context);
 	}
 	
 	private static class DStyleChildElement implements DStylePath {
@@ -33,6 +40,11 @@ public class DStylePathRoot implements DStylePath {
 		@Override
 		public DStylePath getChild(String element, DStyleClass styleClass) {
 			return new DStyleChildElement(this, element, styleClass);
+		}
+
+		@Override
+		public DStyleDefinition getInline(DUIContext context) {
+			return styleClass.inline.getInstance(context);
 		}
 	}
 }

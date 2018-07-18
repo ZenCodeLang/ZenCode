@@ -5,15 +5,18 @@
  */
 package org.openzen.drawablegui.scroll;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.DPath;
+import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnRectangle;
+import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -32,8 +35,9 @@ public class DScrollBar implements DComponent {
 	private final ListenerHandle<LiveInt.Listener> targetHeightListener;
 	private final ListenerHandle<LiveInt.Listener> offsetListener;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
 	private DScrollBarStyle style;
+	private int z;
 	private DIRectangle bounds;
 	
 	private int fromY = 0;
@@ -42,6 +46,9 @@ public class DScrollBar implements DComponent {
 	private boolean dragging = false;
 	private int dragStartOffset;
 	private int dragStartY;
+	
+	private DDrawnRectangle background;
+	private DDrawnShape bar;
 	
 	public DScrollBar(DStyleClass styleClass, LiveInt targetHeight, LiveInt offset) {
 		this.styleClass = styleClass;
@@ -53,10 +60,24 @@ public class DScrollBar implements DComponent {
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
-		this.style = new DScrollBarStyle(context.getStylesheets().get(context, parent.getChild("scrollbar", styleClass)));
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
+		this.style = new DScrollBarStyle(surface.getStylesheet(parent.getChild("scrollbar", styleClass)));
 		sizing.setValue(new DSizing(style.width, 0));
+		
+		background = surface.fillRect(z, DIRectangle.EMPTY, style.scrollBarBackgroundColor);
+	}
+	
+	@Override
+	public void unmount() {
+		background.close();
+		background = null;
+		
+		if (bar != null) {
+			bar.close();
+			bar = null;
+		}
 	}
 
 	@Override
@@ -77,23 +98,8 @@ public class DScrollBar implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
+		background.setRectangle(bounds);
 		recalculate();
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		if (targetHeight.getValue() <= this.bounds.height)
-			return; // no scrollbar
-		
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.scrollBarBackgroundColor);
-		
-		int color = style.scrollBarNormalColor;
-		if (hovering)
-			color = style.scrollBarHoverColor;
-		if (dragging)
-			color = style.scrollBarPressColor;
-		
-		canvas.fillRectangle(bounds.x, fromY, this.bounds.width, toY - fromY, color);
 	}
 	
 	@Override
@@ -139,6 +145,20 @@ public class DScrollBar implements DComponent {
 	public void close() {
 		targetHeightListener.close();
 		offsetListener.close();
+		
+		unmount();
+	}
+	
+	private void updateBarColor() {
+		int color = style.scrollBarNormalColor;
+		if (hovering)
+			color = style.scrollBarHoverColor;
+		if (dragging)
+			color = style.scrollBarPressColor;		
+		if (targetHeight.getValue() <= this.bounds.height)
+			color = 0;
+		
+		bar.setColor(color);
 	}
 	
 	private void checkHover(DMouseEvent e) {
@@ -150,7 +170,7 @@ public class DScrollBar implements DComponent {
 			return;
 		
 		this.hovering = hovering;
-		context.repaint(bounds.x, fromY, bounds.width, toY - fromY);
+		updateBarColor();
 	}
 	
 	private void setDragging(boolean dragging) {
@@ -158,7 +178,7 @@ public class DScrollBar implements DComponent {
 			return;
 		
 		this.dragging = dragging;
-		context.repaint(bounds.x, fromY, bounds.width, toY - fromY);
+		updateBarColor();
 	}
 	
 	private void recalculate() {
@@ -167,6 +187,11 @@ public class DScrollBar implements DComponent {
 		
 		fromY = bounds.y + this.bounds.height * offset.getValue() / targetHeight.getValue();
 		toY = bounds.y + this.bounds.height * (offset.getValue() + this.bounds.height) / targetHeight.getValue();
+		
+		if (bar != null)
+			bar.close();
+		bar = surface.fillPath(z + 1, DPath.rectangle(bounds.x, fromY, bounds.width, toY - fromY), DTransform2D.IDENTITY, style.scrollBarNormalColor);
+		updateBarColor();
 	}
 	
 	private class ScrollListener implements LiveInt.Listener {

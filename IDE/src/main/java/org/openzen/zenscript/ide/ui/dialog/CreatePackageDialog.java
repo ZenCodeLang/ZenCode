@@ -8,14 +8,17 @@ package org.openzen.zenscript.ide.ui.dialog;
 import org.openzen.drawablegui.DAnchor;
 import org.openzen.drawablegui.DButton;
 import org.openzen.drawablegui.DComponent;
-import org.openzen.drawablegui.DHorizontalLayout;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DInputField;
 import org.openzen.drawablegui.DLabel;
 import org.openzen.drawablegui.DUIWindow;
-import org.openzen.drawablegui.DVerticalLayout;
 import org.openzen.drawablegui.form.DForm;
 import org.openzen.drawablegui.form.DFormComponent;
+import org.openzen.drawablegui.layout.DLinearLayout;
+import org.openzen.drawablegui.layout.DLinearLayout.Alignment;
+import org.openzen.drawablegui.layout.DLinearLayout.Element;
+import org.openzen.drawablegui.layout.DLinearLayout.ElementAlignment;
+import org.openzen.drawablegui.layout.DLinearLayout.Orientation;
 import org.openzen.drawablegui.live.ImmutableLiveBool;
 import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.SimpleLiveString;
@@ -23,14 +26,12 @@ import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEPackage;
-import org.openzen.zenscript.ide.ui.IDEWindow;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class CreatePackageDialog {
-	private final IDEWindow ideWindow;
 	private final IDEModule module;
 	private final IDEPackage pkg;
 	
@@ -41,8 +42,7 @@ public class CreatePackageDialog {
 	
 	private DUIWindow window;
 	
-	public CreatePackageDialog(IDEWindow ideWindow, IDEModule module, IDEPackage pkg) {
-		this.ideWindow = ideWindow;
+	public CreatePackageDialog(IDEModule module, IDEPackage pkg) {
 		this.module = module;
 		this.pkg = pkg;
 		
@@ -59,22 +59,24 @@ public class CreatePackageDialog {
 
 		DButton ok = new DButton(DStyleClass.EMPTY, new SimpleLiveString("Create"), ImmutableLiveBool.FALSE, this::ok);
 		DButton cancel = new DButton(DStyleClass.EMPTY, new SimpleLiveString("Cancel"), ImmutableLiveBool.FALSE, this::cancel);
-		DHorizontalLayout buttons = new DHorizontalLayout(
+		DLinearLayout buttons = new DLinearLayout(
 				DStyleClass.EMPTY,
-				DHorizontalLayout.Alignment.RIGHT,
-				new DHorizontalLayout.Element(cancel, 0, 0, DHorizontalLayout.ElementAlignment.TOP),
-				new DHorizontalLayout.Element(ok, 0, 0, DHorizontalLayout.ElementAlignment.TOP));
+				Orientation.HORIZONTAL,
+				Alignment.RIGHT,
+				new Element(cancel, 0, 0, ElementAlignment.TOP),
+				new Element(ok, 0, 0, ElementAlignment.TOP));
 
-		root = new DVerticalLayout(
+		root = new DLinearLayout(
 				DStyleClass.EMPTY,
-				DVerticalLayout.Alignment.MIDDLE,
-				new DVerticalLayout.Element(form, 1, 1, DVerticalLayout.ElementAlignment.CENTER),
-				new DVerticalLayout.Element(buttons, 0, 0, DVerticalLayout.ElementAlignment.RIGHT));
+				Orientation.VERTICAL,
+				Alignment.MIDDLE,
+				new Element(form, 1, 1, ElementAlignment.CENTER),
+				new Element(buttons, 0, 0, ElementAlignment.RIGHT));
 	}
 	
 	public void open(DUIWindow parent) {
-		DIRectangle rectangle = parent.getWindowBounds();
-		window = parent.getContext().openDialog(rectangle.getCenterX(), rectangle.getCenterY(), DAnchor.MIDDLE_LEFT, "Create package", root);
+		DIRectangle rectangle = parent.getWindowBounds().getValue();
+		window = parent.getContext().openDialog(rectangle.width / 2, rectangle.height / 2, DAnchor.MIDDLE_CENTER, "Create package", root);
 		window.focus(input);
 	}
 	

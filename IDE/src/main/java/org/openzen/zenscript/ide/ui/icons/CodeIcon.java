@@ -5,10 +5,10 @@
  */
 package org.openzen.zenscript.ide.ui.icons;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.draw.DDrawTarget;
 
 public class CodeIcon implements DColorableIcon {
 	public static final CodeIcon INSTANCE = new CodeIcon();
@@ -37,8 +37,8 @@ public class CodeIcon implements DColorableIcon {
 	};
 	
 	@Override
-	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		canvas.fillPath(PATH, transform, color);
+	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
+		target.fillPath(z, PATH, transform, color);
 	}
 
 	@Override

@@ -10,7 +10,6 @@ import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.drawablegui.live.LivePrefixedList;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
-import org.openzen.zenscript.ide.ui.IDEWindow;
 import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
 
 /**
@@ -21,12 +20,12 @@ public class RootTreeNode extends ProjectOverviewNode {
 	private final DevelopmentHost host;
 	private final LiveList<ProjectOverviewNode> children;
 	
-	public RootTreeNode(IDEWindow window, DevelopmentHost host) {
+	public RootTreeNode(ProjectBrowser browser, DevelopmentHost host) {
 		this.host = host;
 		
 		children = new LivePrefixedList<>(
-				new ProjectTreeNode(window, host),
-				new LiveMappedList<>(host.getLibraries(), library -> new LibraryTreeNode(window, library)));
+				new ProjectTreeNode(browser, host),
+				new LiveMappedList<>(host.getLibraries(), library -> new LibraryTreeNode(browser, library)));
 	}
 	
 	@Override

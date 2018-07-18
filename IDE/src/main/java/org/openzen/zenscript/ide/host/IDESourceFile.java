@@ -7,13 +7,14 @@ package org.openzen.zenscript.ide.host;
 
 import java.io.IOException;
 import java.io.Reader;
+import org.openzen.drawablegui.live.LiveString;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface IDESourceFile {
-	public String getName();
+	public LiveString getName();
 	
 	public Reader read() throws IOException;
 	

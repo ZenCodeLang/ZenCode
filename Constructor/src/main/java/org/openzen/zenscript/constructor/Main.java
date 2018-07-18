@@ -1,9 +1,11 @@
 package org.openzen.zenscript.constructor;
 
-import org.openzen.zenscript.compiler.CompilationUnit;
 import java.io.File;
+import org.openzen.zenscript.compiler.CompilationUnit;
 import java.io.IOException;
-import org.openzen.zenscript.constructor.module.DirectoryModuleLoader;
+import java.util.function.Consumer;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 
 public class Main {
@@ -18,12 +20,15 @@ public class Main {
 			return;
 		}
 		
+		Consumer<CompileException> exceptionLogger = exception -> System.err.println(exception.toString());
+		
 		File currentDirectory = new File(arguments.directory);
 		CompilationUnit compilationUnit = new CompilationUnit();
-		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit);
-		moduleLoader.register("stdlib", new DirectoryModuleLoader(moduleLoader, "stdlib", new File("../../StdLibs/stdlib"), true));
 		
-		Project project = new Project(moduleLoader, currentDirectory);
+		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit, exceptionLogger);
+		moduleLoader.register("stdlib", new DirectoryModuleReference("stdlib", new File("../../StdLibs/stdlib"), true));
+		
+		Project project = new Project(currentDirectory);
 		for (Library library : project.libraries) {
 			for (ModuleReference module : library.modules)
 				moduleLoader.register(module.getName(), module);

@@ -15,15 +15,15 @@ import org.openzen.drawablegui.style.DStyleDefinition;
  *
  * @author Hoofdgebruiker
  */
-public class DTooltipStyle {
+public class DSimpleTooltipStyle {
 	public final DBorder border;
 	public final DFont font;
 	public final int backgroundColor;
 	public final int textColor;
 	
-	public DTooltipStyle(DStyleDefinition style) {
+	public DSimpleTooltipStyle(DStyleDefinition style) {
 		border = style.getBorder("border", context -> new DCompositeBorder(
-				new DLineBorder(0xFF, 1),
+				new DLineBorder(0xFF000000, 1),
 				new DPaddedBorder(context.dp(4), context.dp(4), context.dp(4), context.dp(4))));
 		font = style.getFont("font", context -> new DFont(DFontFamily.UI, false, false, false, context.sp(12)));
 		backgroundColor = style.getColor("backgroundColor", 0xFFFFFFE1);

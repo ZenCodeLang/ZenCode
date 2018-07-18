@@ -5,14 +5,17 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.DPath;
+import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnShape;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
@@ -27,24 +30,38 @@ public class StatusBarView implements DComponent {
 	private final DStyleClass styleClass;
 	private final LiveString content;
 	private DIRectangle bounds;
-	private DUIContext context;
+	private DDrawSurface surface;
+	private int z;
 	private StatusBarStyle style;
 	private DFontMetrics fontMetrics;
 
+	private DDrawnShape shape;
+	private DDrawnText text;
+	
 	public StatusBarView(DStyleClass styleClass, LiveString content) {
 		this.styleClass = styleClass;
 		this.content = content;
 	}
 	
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
 		
 		DStylePath path = parent.getChild("StatusBar", styleClass);
-		style = new StatusBarStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.font);
+		style = new StatusBarStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.font);
 		
 		dimensionPreferences.setValue(new DSizing(0, style.paddingTop + fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingBottom));
+		text = surface.drawText(z + 1, style.font, style.textColor, 0, 0, content.getValue());
+	}
+	
+	@Override
+	public void unmount() {
+		if (shape != null)
+			shape.close();
+		if (text != null)
+			text.close();
 	}
 	
 	@Override
@@ -65,16 +82,15 @@ public class StatusBarView implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
-		canvas.drawText(style.font, style.textColor, style.paddingLeft, style.paddingTop + fontMetrics.getAscent(), content.getValue());
+		
+		if (shape != null)
+			shape.close();
+		shape = surface.shadowPath(z, DPath.rectangle(bounds.x, bounds.y, bounds.width, bounds.height), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+		text.setPosition(bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent());
 	}
 
 	@Override
 	public void close() {
-		// nothing to clean up
+		unmount();
 	}
 }

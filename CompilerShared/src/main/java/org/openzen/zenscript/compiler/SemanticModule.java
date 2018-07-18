@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
@@ -93,7 +94,7 @@ public class SemanticModule {
 				annotations);
 	}
 	
-	public boolean validate() {
+	public boolean validate(Consumer<ValidationLogEntry> logger) {
 		if (state != State.NORMALIZED)
 			throw new IllegalStateException("Module is not yet normalized");
 		
@@ -106,7 +107,7 @@ public class SemanticModule {
 		}
 		
 		for (ValidationLogEntry entry : validator.getLog()) {
-			System.out.println(entry.kind + " " + entry.position.toString() + ": " + entry.message);
+			logger.accept(entry);
 		}
 		state = validator.hasErrors() ? State.INVALID : State.VALIDATED;
 		return !validator.hasErrors();

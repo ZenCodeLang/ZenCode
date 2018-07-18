@@ -27,6 +27,9 @@ public class SimpleLiveObject<T> implements MutableLiveObject<T> {
 	
 	@Override
 	public void setValue(T value) {
+		if (value == this.value)
+			return;
+		
 		T oldValue = this.value;
 		this.value = value;
 		listeners.accept(listener -> listener.onUpdated(oldValue, value));

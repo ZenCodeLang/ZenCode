@@ -5,10 +5,9 @@
  */
 package org.openzen.drawablegui.tree;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.drawablegui.DCanvas;
+import org.openzen.drawablegui.DColorableIconInstance;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;
@@ -16,11 +15,17 @@ import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.DDrawableInstance;
+import org.openzen.drawablegui.Destructible;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnRectangle;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveList;
+import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
+import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylePath;
 
 /**
@@ -28,38 +33,69 @@ import org.openzen.drawablegui.style.DStylePath;
  * @author Hoofdgebruiker
  */
 public class DTreeView<N extends DTreeNode<N>> implements DComponent {
+	private final DStyleClass styleClass;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
-	private DIRectangle bounds;
+	private DIRectangle bounds = DIRectangle.EMPTY;
+	private int z;
 	
 	private int selectedRow = -1;
 	private N selectedNode = null;
 	
-	private final DTreeViewStyle styleDefinition;
-	private DTreeViewStyle.Calculated style;
+	private DTreeViewStyle style;
 	private DFontMetrics fontMetrics;
 	
-	private DUIContext context;
+	private final DDrawable nodeOpenedIcon;
+	private final DDrawable nodeClosedIcon;
+	
+	private DDrawSurface surface;
 	private final N root;
 	private final boolean showRoot;
 	private final List<Row> rows = new ArrayList<>();
+	private boolean selectedIsPresent = false;
 	
-	public DTreeView(DTreeViewStyle style, N root, boolean showRoot) {
-		this.styleDefinition = style;
+	private DDrawnRectangle background;
+	private DDrawnRectangle selectedBackground;
+	
+	public DTreeView(
+			DStyleClass styleClass,
+			DDrawable nodeOpenedIcon,
+			DDrawable nodeClosedIcon,
+			N root,
+			boolean showRoot)
+	{
+		this.styleClass = styleClass;
 		this.root = root;
 		this.showRoot = showRoot;
+		
+		this.nodeOpenedIcon = nodeOpenedIcon;
+		this.nodeClosedIcon = nodeClosedIcon;
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
-		style = styleDefinition.forContext(context);
-		fontMetrics = context.getFontMetrics(style.font);
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		style = new DTreeViewStyle(surface.getStylesheet(parent.getChild("tree", styleClass)));
+		fontMetrics = surface.getFontMetrics(style.font);
+		
+		background = surface.fillRect(z, DIRectangle.EMPTY, style.backgroundColor);
+		selectedBackground = surface.fillRect(z + 1, DIRectangle.EMPTY, 0);
 		
 		updateLayout();
 	}
+	
+	@Override
+	public void unmount() {
+		background.close();
+		background = null;
+		selectedBackground.close();
+		selectedBackground = null;
+		
+		for (Row row : rows)
+			row.close();
+	}
 
 	@Override
-	public MutableLiveObject<DSizing> getSizing() {
+	public LiveObject<DSizing> getSizing() {
 		return sizing;
 	}
 	
@@ -76,30 +112,18 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, styleDefinition.backgroundColor);
+		background.setRectangle(bounds);
 		
-		int drawX = bounds.x + style.padding;
-		int drawY = bounds.y + style.padding;
-		if (showRoot) {
-			paintNode(canvas, root, drawX, drawY);
-		} else {
-			for (N child : root.getChildren()) {
-				drawY = paintNode(canvas, child, drawX, drawY);
-				drawY += style.rowSpacing;
-			}
-		}
+		for (Row row : rows)
+			row.setBounds(bounds);
 	}
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		int row = yToRow(e.y);
-		if (row >= 0 && row < rows.size()) {
-			Row rowEntry = rows.get(row);
-			if (e.x >= rowEntry.x && e.x < (rowEntry.x + styleDefinition.nodeOpenedIcon.getNominalWidth())) {
+		int rowIndex = yToRow(e.y);
+		if (rowIndex >= 0 && rowIndex < rows.size()) {
+			Row rowEntry = rows.get(rowIndex);
+			if (e.x >= rowEntry.x && e.x < (rowEntry.x + nodeOpenedIcon.getNominalWidth())) {
 				if (!rowEntry.node.isLeaf())
 					rowEntry.node.isCollapsed().toggle();
 				return;
@@ -107,22 +131,44 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			
 			rowEntry.node.onMouseClick(e);
 			
-			if (e.isSingleClick()) {
-				int oldRow = selectedRow;
-				selectedRow = row;
-				selectedNode = rows.get(row).node;
-
-				if (oldRow >= 0)
-					context.repaint(
-							bounds.x,
-							rowToY(oldRow) - style.selectedPaddingTop,
-							bounds.width,
-							fontMetrics.getAscent() + fontMetrics.getDescent() + style.selectedPaddingTop + style.selectedPaddingBottom);
-				context.repaint(
-						bounds.x,
-						rowToY(row) - style.selectedPaddingTop,
-						bounds.width,
-						fontMetrics.getAscent() + fontMetrics.getDescent() + style.selectedPaddingTop + style.selectedPaddingBottom);
+			if (e.isSingleClick() && rowIndex != selectedRow) {
+				int oldRowIndex = selectedRow;
+				
+				selectedRow = rowIndex;
+				Row row = rows.get(rowIndex);
+				selectedNode = row.node;
+				
+				int selectionX = bounds.x + style.padding + row.x - style.selectedPaddingLeft;
+				int selectionY = bounds.y + style.padding + rowIndex * (style.rowSpacing + fontMetrics.getAscent() + fontMetrics.getDescent()) - style.selectedPaddingTop;
+				int selectionWidth = (int)(fontMetrics.getWidth(row.node.getTitle())
+						+ style.iconTextSpacing
+						+ row.icon.getNominalWidth()
+						+ style.iconTextSpacing
+						+ row.node.getIcon().getNominalWidth()
+						+ style.selectedPaddingLeft
+						+ style.selectedPaddingRight);
+				int selectionHeight = fontMetrics.getAscent() + fontMetrics.getDescent() + style.selectedPaddingTop + style.selectedPaddingBottom;
+				
+				if (row.node.isLeaf()) {
+					int delta = (int)(row.icon.getNominalWidth() + style.iconTextSpacing);
+					selectionX += delta;
+					selectionWidth -= delta;
+				}
+				
+				selectedBackground.setRectangle(new DIRectangle(
+						selectionX,
+						selectionY,
+						selectionWidth,
+						selectionHeight));
+				selectedBackground.setColor(style.selectedBackgroundColor);
+				row.text.setColor(style.selectedNodeTextColor);
+				row.nodeIcon.setColor(style.selectedNodeTextColor);
+				
+				if (oldRowIndex >= 0) {
+					Row oldRow = rows.get(oldRowIndex);
+					oldRow.text.setColor(style.nodeTextColor);
+					oldRow.nodeIcon.setColor(style.nodeTextColor);
+				}
 			}
 		}
 	}
@@ -135,41 +181,6 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		return (y - bounds.y - style.padding) / (style.rowSpacing + fontMetrics.getAscent() + fontMetrics.getDescent());
 	}
 	
-	private int paintNode(DCanvas canvas, N node, int drawX, int drawY) {
-		int textColor = styleDefinition.nodeTextColor;
-		if (node == selectedNode) {
-			textColor = styleDefinition.selectedNodeTextColor;
-			canvas.fillRectangle(
-					bounds.x,
-					drawY - style.selectedPaddingTop,
-					bounds.width,
-					fontMetrics.getAscent() + fontMetrics.getDescent() + style.selectedPaddingTop + style.selectedPaddingBottom,
-					styleDefinition.selectedBackgroundColor);
-		}
-		
-		int drawingX = drawX;
-		if (!node.isLeaf()) {
-			DDrawable icon = node.isCollapsed().getValue() ? style.nodeClosedIcon : style.nodeOpenedIcon;
-			icon.draw(canvas, DTransform2D.translate(drawingX, drawY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
-			drawingX += style.iconTextSpacing + icon.getNominalWidth();
-		} else {
-			drawingX += style.iconTextSpacing + style.nodeClosedIcon.getNominalWidth();
-		}
-		node.getIcon().draw(canvas, DTransform2D.translate(drawingX, drawY + fontMetrics.getAscent() + fontMetrics.getDescent() - node.getIcon().getNominalHeight()), textColor);
-		drawingX += style.iconTextSpacing + node.getIcon().getNominalWidth();
-		canvas.drawText(style.font, textColor, drawingX, drawY + fontMetrics.getAscent(), node.getTitle());
-		drawY += fontMetrics.getAscent() + fontMetrics.getDescent();
-		
-		if (!node.isCollapsed().getValue()) {
-			for (N child : node.getChildren()) {
-				drawY += style.rowSpacing;
-				drawY = paintNode(canvas, child, drawX + style.indent, drawY);
-			}
-		}
-		
-		return drawY;
-	}
-	
 	private void updateLayout() {
 		int oldRowCount = rows.size();
 		
@@ -177,6 +188,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			row.close();
 		
 		rows.clear();
+		selectedIsPresent = false;
 		
 		if (showRoot) {
 			updateLayout(root, 0);
@@ -184,6 +196,12 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			for (N child : root.getChildren()) {
 				updateLayout(child, 0);
 			}
+		}
+		
+		if (!selectedIsPresent) {
+			selectedNode = null;
+			selectedRow = -1;
+			selectedBackground.setColor(0);
 		}
 		
 		if (rows.size() != oldRowCount) {
@@ -202,7 +220,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	}
 	
 	private void updateLayout(N node, int x) {
-		rows.add(new Row(x, node));
+		rows.add(new Row(x, rows.size(), node));
 		
 		if (!node.isCollapsed().getValue()) {
 			for (N child : node.getChildren()) {
@@ -216,47 +234,102 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		// nothing to clean up
 	}
 	
-	private class Row implements Closeable, LiveBool.Listener, LiveList.Listener<N> {
+	private class Row implements Destructible, LiveBool.Listener, LiveList.Listener<N> {
 		private final int x;
+		private final int index;
 		private final N node;
+		private final DDrawable icon;
 		private final ListenerHandle<LiveBool.Listener> collapseListener;
 		private final ListenerHandle<LiveList.Listener<N>> childListener;
 		
-		public Row(int x, N node) {
+		private DDrawnText text;
+		private DDrawableInstance collapseIcon = null;
+		private DColorableIconInstance nodeIcon;
+		
+		public Row(int x, int index, N node) {
 			this.x = x;
+			this.index = index;
 			this.node = node;
 			this.collapseListener = node.isCollapsed().addListener(this);
 			this.childListener = node.getChildren().addListener(this);
+			
+			if (node == selectedNode)
+				selectedIsPresent = true;
+			
+			int baseX = bounds.x + style.padding + x;
+			int baseY = (int)(bounds.y + style.padding + index * (fontMetrics.getAscent() + fontMetrics.getDescent() + style.rowSpacing));
+			
+			icon = node.isCollapsed().getValue() ? nodeClosedIcon : nodeOpenedIcon;
+			nodeIcon = new DColorableIconInstance(
+					surface,
+					z + 2,
+					node.getIcon(),
+					DTransform2D.translate(baseX + icon.getNominalWidth() + style.iconTextSpacing, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()),
+					node == selectedNode ? style.selectedNodeTextColor : style.nodeTextColor);
+			
+			if (!node.isLeaf())
+				collapseIcon = new DDrawableInstance(
+						surface, 
+						z + 2,
+						icon,
+						DTransform2D.translate(baseX, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
+			
+			text = surface.drawText(
+					z + 2,
+					style.font,
+					node == selectedNode ? style.selectedNodeTextColor : style.nodeTextColor,
+					baseX + style.iconTextSpacing + icon.getNominalWidth() + style.iconTextSpacing + node.getIcon().getNominalWidth(),
+					baseY + fontMetrics.getAscent(),
+					node.getTitle());
+		}
+		
+		public void setBounds(DIRectangle bounds) {
+			int baseX = bounds.x + style.padding + x;
+			int baseY = (int)(bounds.y + style.padding + index * (fontMetrics.getAscent() + fontMetrics.getDescent() + style.rowSpacing));
+			
+			if (collapseIcon != null) {
+				collapseIcon.setTransform(DTransform2D.translate(
+						baseX,
+						baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
+			}
+			nodeIcon.setTransform(DTransform2D.translate(
+					baseX + icon.getNominalWidth() + style.iconTextSpacing,
+					baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
+			text.setPosition(
+					baseX + style.iconTextSpacing + icon.getNominalWidth() + style.iconTextSpacing + node.getIcon().getNominalWidth(),
+					baseY + fontMetrics.getAscent());
 		}
 
 		@Override
 		public void onChanged(boolean oldValue, boolean newValue) {
 			updateLayout();
-			context.repaint(bounds);
 		}
 
 		@Override
 		public void onInserted(int index, N value) {
 			updateLayout();
-			context.repaint(bounds);
 		}
 
 		@Override
 		public void onChanged(int index, N oldValue, N newValue) {
 			updateLayout();
-			context.repaint(bounds);
 		}
 
 		@Override
 		public void onRemoved(int index, N oldValue) {
 			updateLayout();
-			context.repaint(bounds);
 		}
 		
 		@Override
 		public void close() {
 			collapseListener.close();
 			childListener.close();
+			
+			text.close();
+			nodeIcon.close();
+			
+			if (collapseIcon != null)
+				collapseIcon.close();
 		}
 	}
 }

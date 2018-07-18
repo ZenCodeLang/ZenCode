@@ -5,10 +5,10 @@
  */
 package org.openzen.zenscript.ide.ui.icons;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DTransform2D;
+import org.openzen.drawablegui.draw.DDrawTarget;
 
 /**
  *
@@ -24,8 +24,8 @@ public class ColoredIcon implements DDrawable {
 	}
 
 	@Override
-	public void draw(DCanvas canvas, DTransform2D transform) {
-		icon.draw(canvas, transform, color);
+	public void draw(DDrawTarget target, int z, DTransform2D transform) {
+		icon.draw(target, z, transform, color);
 	}
 
 	@Override

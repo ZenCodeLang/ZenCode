@@ -10,6 +10,13 @@ package org.openzen.drawablegui;
  * @author Hoofdgebruiker
  */
 public interface DPath {
+	public static DPath line(float x1, float y1, float x2, float y2) {
+		return tracer -> {
+			tracer.moveTo(x1, y1);
+			tracer.lineTo(x2, y2);
+		};
+	}
+	
 	public static DPath circle(float x, float y, float radius) {
 		// see http://spencermortensen.com/articles/bezier-circle/
 		return tracer -> {
@@ -45,6 +52,9 @@ public interface DPath {
 	}
 	
 	public static DPath roundedRectangle(float x, float y, float width, float height, float radius) {
+		if (radius < 0.01f)
+			return rectangle(x, y, width, height);
+		
 		return tracer -> {
 			float c = radius - radius * 0.551915024494f;
 			tracer.moveTo(x + width - radius, y + height);
@@ -67,6 +77,45 @@ public interface DPath {
 					x, y + height - c,
 					x + c, y + height,
 					x + radius, y + height);
+			tracer.close();
+		};
+	}
+	
+	public static DPath roundedRectangle(float x, float y, float width, float height, float radiusTopLeft, float radiusTopRight, float radiusBottomLeft, float radiusBottomRight) {
+		return tracer -> {
+			float cTopLeft = radiusTopLeft - radiusTopLeft * 0.551915024494f;
+			float cTopRight = radiusTopRight - radiusTopRight * 0.551915024494f;
+			float cBottomLeft = radiusBottomLeft - radiusBottomLeft * 0.551915024494f;
+			float cBottomRight = radiusBottomRight - radiusBottomRight * 0.551915024494f;
+			
+			tracer.moveTo(x + width - radiusBottomRight, y + height);
+			if (radiusBottomRight > 0.01f) {
+				tracer.bezierCubic(
+						x + width - cBottomRight, y + height,
+						x + width, y + height - cBottomRight,
+						x + width, y + height - radiusBottomRight);
+			}
+			tracer.lineTo(x + width, y + radiusTopRight);
+			if (radiusTopRight > 0.01f) {
+				tracer.bezierCubic(
+						x + width, y + cTopRight,
+						x + width - cTopRight, y,
+						x + width - radiusTopRight, y);
+			}
+			tracer.lineTo(x + radiusTopLeft, y);
+			if (radiusTopLeft > 0.01f) {
+				tracer.bezierCubic(
+						x + cTopLeft, y,
+						x, y + cTopLeft,
+						x, y + radiusTopLeft);
+			}
+			tracer.lineTo(x, y + height - radiusBottomLeft);
+			if (radiusBottomLeft > 0.01f) {
+				tracer.bezierCubic(
+						x, y + height - cBottomLeft,
+						x + cBottomLeft, y + height,
+						x + radiusBottomLeft, y + height);
+			}
 			tracer.close();
 		};
 	}

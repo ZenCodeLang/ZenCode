@@ -42,6 +42,46 @@ public class DIRectangle {
 				&& y >= this.y && y < (this.y + this.height);
 	}
 	
+	public boolean overlaps(DIRectangle other) {
+		if (x + width < other.x)
+			return false;
+		if (y + height < other.y)
+			return false;
+		if (other.x + other.width < x)
+			return false;
+		if (other.y + other.height < y)
+			return false;
+		
+		return true;
+	}
+	
+	public DIRectangle offset(int x, int y) {
+		return new DIRectangle(this.x + x, this.y + y, width, height);
+	}
+	
+	public DIRectangle expand(int edge) {
+		return new DIRectangle(x - edge, y - edge, width + 2 * edge, height + 2 * edge);
+	}
+	
+	public DIRectangle union(DIRectangle other) {
+		int left = Math.min(x, other.x);
+		int top = Math.min(y, other.y);
+		int right = Math.max(x + width, other.x + other.width);
+		int bottom = Math.max(y + height, other.y + other.height);
+		return new DIRectangle(left, top, right - left, bottom - top);
+	}
+	
+	public DIRectangle intersect(DIRectangle other) {
+		int left = Math.max(x, other.x);
+		int top = Math.max(y, other.y);
+		int right = Math.min(x + width, other.x + other.width);
+		int bottom = Math.min(y + height, other.y + other.height);
+		if (right < left || bottom < top)
+			return EMPTY;
+		
+		return new DIRectangle(left, top, right - left, bottom - top);
+	}
+	
 	@Override
 	public String toString() {
 		return "(x = " + x + ", y = " + y + ", width = " + width + ", height = " + height + ")";

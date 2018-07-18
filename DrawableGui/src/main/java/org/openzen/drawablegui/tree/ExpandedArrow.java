@@ -5,9 +5,9 @@
  */
 package org.openzen.drawablegui.tree;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DTransform2D;
+import org.openzen.drawablegui.draw.DDrawTarget;
 
 /**
  *
@@ -19,8 +19,8 @@ public class ExpandedArrow implements DDrawable {
 	private ExpandedArrow() {}
 
 	@Override
-	public void draw(DCanvas canvas, DTransform2D transform) {
-		ExpandedColoredArrow.INSTANCE.draw(canvas, transform, 0xFF000000);
+	public void draw(DDrawTarget target, int z, DTransform2D transform) {
+		ExpandedColoredArrow.INSTANCE.draw(target, z, transform, 0xFF000000);
 	}
 
 	@Override

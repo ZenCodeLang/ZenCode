@@ -7,6 +7,8 @@ package org.openzen.drawablegui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
@@ -20,6 +22,7 @@ import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.border.DCustomWindowBorder;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
+import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -33,6 +36,7 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 	private final boolean noTitleBar;
 	private final SimpleLiveObject<State> state = new SimpleLiveObject<>(State.NORMAL);
 	private final SimpleLiveBool active = new SimpleLiveBool(true);
+	private final MutableLiveObject<DIRectangle> bounds = new SimpleLiveObject<>(DIRectangle.EMPTY);
 	
 	public SwingDialog(SwingWindow owner, String title, DComponent root, boolean noTitleBar) {
 		super(owner, title);
@@ -46,6 +50,17 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 		
 		addWindowListener(this);
 		addWindowStateListener(this);
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentMoved(ComponentEvent componentEvent) {
+				updateBounds();
+			}
+			
+			@Override
+			public void componentResized(ComponentEvent componentEvent) {
+				updateBounds();
+			}
+		});
 		
 		getContentPane().add(swingComponent = new SwingRoot(root), BorderLayout.CENTER);
 		swingComponent.setWindow(this);
@@ -76,8 +91,8 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 	}
 
 	@Override
-	public DIRectangle getWindowBounds() {
-		return new DIRectangle(getX(), getY(), getWidth(), getHeight());
+	public LiveObject<DIRectangle> getWindowBounds() {
+		return bounds;
 	}
 
 	@Override
@@ -135,7 +150,7 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 
 	@Override
 	public void windowOpened(WindowEvent e) {
-		
+		updateBounds();
 	}
 
 	@Override
@@ -171,6 +186,10 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 	@Override
 	public void windowStateChanged(WindowEvent e) {
 		state.setValue(getStateFromWindowState());
+	}
+	
+	private void updateBounds() {
+		bounds.setValue(new DIRectangle(getX(), getY(), getWidth(), getHeight()));
 	}
 	
 	private State getStateFromWindowState() {

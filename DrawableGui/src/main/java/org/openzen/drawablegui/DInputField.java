@@ -5,6 +5,10 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnRectangle;
+import org.openzen.drawablegui.draw.DDrawnShape;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
@@ -27,7 +31,8 @@ public class DInputField implements DComponent {
 	private DIRectangle bounds = DIRectangle.EMPTY;
 	private final DDimension preferredWidth;
 	
-	private DUIContext context;
+	private DDrawSurface surface;
+	private int z;
 	private DInputFieldStyle style;
 	private DFontMetrics fontMetrics;
 	private int cursorFrom = -1;
@@ -38,6 +43,11 @@ public class DInputField implements DComponent {
 	
 	private boolean cursorBlink = true;
 	private DTimerHandle blinkTimer;
+	
+	private DDrawnShape shape;
+	private DDrawnText text;
+	private DDrawnRectangle cursor;
+	private DDrawnRectangle selection;
 	
 	public DInputField(DStyleClass styleClass, MutableLiveString value, DDimension preferredWidth) {
 		this.styleClass = styleClass;
@@ -60,28 +70,66 @@ public class DInputField implements DComponent {
 	@Override
 	public void close() {
 		valueListener.close();
-		blinkTimer.close();
+		unmount();
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
 		
 		DStylePath path = parent.getChild("input", styleClass);
-		style = new DInputFieldStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.font);
+		style = new DInputFieldStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.font);
+		
 		sizing.setValue(new DSizing(
-				preferredWidth.evalInt(context) + style.paddingLeft + style.paddingRight + 2 * style.borderWidth,
-				fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingTop + style.paddingBottom + 2 * style.borderWidth));
+				preferredWidth.evalInt(surface.getContext()) + style.margin.getHorizontal() + style.border.getPaddingHorizontal(),
+				fontMetrics.getAscent() + fontMetrics.getDescent() + style.margin.getVertical() + style.border.getPaddingVertical()));
 		
 		if (blinkTimer != null)
 			blinkTimer.close();
-		blinkTimer = context.setTimer(300, this::blink);
+		blinkTimer = surface.getContext().setTimer(300, this::blink);
+		
+		if (text != null)
+			text.close();
+		text = surface.drawText(
+				z + 2,
+				style.font,
+				style.color,
+				bounds.x + style.margin.left + style.border.getPaddingLeft(),
+				bounds.y + style.margin.top + style.border.getPaddingTop() + fontMetrics.getAscent(),
+				value.getValue());
+		
+		if (cursor != null)
+			cursor.close();
+		cursor = surface.fillRect(z + 2, DIRectangle.EMPTY, cursorBlink ? style.cursorColor : 0);
+		
+		if (selection != null)
+			selection.close();
+		selection = surface.fillRect(z + 1, DIRectangle.EMPTY, 0);
+		
+		setCursor(cursorFrom, cursorTo);
+	}
+	
+	@Override
+	public void unmount() {
+		blinkTimer.close();
+		
+		if (style != null)
+			style.border.close();
+		if (shape != null)
+			shape.close();
+		if (text != null)
+			text.close();
+		if (cursor != null)
+			cursor.close();
+		if (selection != null)
+			selection.close();
 	}
 	
 	private void blink() {
 		cursorBlink = !cursorBlink;
-		context.repaint(bounds);
+		cursor.setColor(cursorBlink ? style.cursorColor : 0);
 	}
 
 	@Override
@@ -96,61 +144,36 @@ public class DInputField implements DComponent {
 	
 	@Override
 	public int getBaselineY() {
-		return style.borderWidth + style.paddingTop + fontMetrics.getAscent();
+		return style.margin.top + style.border.getPaddingTop() + fontMetrics.getAscent();
 	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.backgroundColor);
-		if (style.borderWidth > 0) {
-			canvas.strokePath(
-					DPath.rectangle(bounds.x, bounds.y, bounds.width - style.borderWidth, bounds.height - style.borderWidth),
-					DTransform2D.IDENTITY,
-					style.borderColor,
-					style.borderWidth);
-		}
+		setCursor(cursorFrom, cursorTo);
 		
-		int cursorXFrom = fontMetrics.getWidth(value.getValue(), 0, Math.min(cursorFrom, cursorTo));
-		int cursorXTo = fontMetrics.getWidth(value.getValue(), 0, Math.max(cursorFrom, cursorTo));
-		if (cursorFrom != cursorTo) {
-			canvas.fillRectangle(
-					bounds.x + style.paddingLeft + cursorXFrom,
-					bounds.y + style.paddingTop,
-					cursorXTo - cursorXFrom,
-					fontMetrics.getAscent() + fontMetrics.getDescent(),
-					style.selectionColor);
-		}
-		
-		canvas.drawText(style.font, style.color, bounds.x + style.paddingLeft + style.borderWidth, bounds.y + style.paddingBottom + style.borderWidth + fontMetrics.getAscent(), value.getValue());
-		
-		if (cursorBlink) {
-			canvas.fillRectangle(
-					bounds.x + style.paddingLeft + cursorXTo,
-					bounds.y + style.paddingTop,
-					style.cursorWidth,
-					fontMetrics.getAscent() + fontMetrics.getDescent(),
-					style.cursorColor);
-		}
+		if (shape != null)
+			shape.close();
+		shape = surface.fillPath(z, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor);
+		text.setPosition(
+				bounds.x + style.margin.left + style.border.getPaddingLeft(),
+				bounds.y + style.margin.top + style.border.getPaddingTop() + fontMetrics.getAscent());
+		style.border.update(surface, z, bounds);
 	}
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
-		context.setCursor(DUIContext.Cursor.TEXT);
+		surface.getContext().setCursor(DUIContext.Cursor.TEXT);
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
-		context.setCursor(DUIContext.Cursor.NORMAL);
+		surface.getContext().setCursor(DUIContext.Cursor.NORMAL);
 	}
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		context.getWindow().focus(this);
+		surface.getContext().getWindow().focus(this);
 	}
 	
 	@Override
@@ -197,11 +220,37 @@ public class DInputField implements DComponent {
 	private void setCursor(int from, int to) {
 		cursorFrom = from;
 		cursorTo = to;
-		context.repaint(bounds);
+		
+		int cursorXFrom = fontMetrics.getWidth(value.getValue(), 0, Math.min(cursorFrom, cursorTo));
+		int cursorXTo = fontMetrics.getWidth(value.getValue(), 0, Math.max(cursorFrom, cursorTo));
+		if (cursorFrom != cursorTo) {
+			selection.setRectangle(new DIRectangle(
+					bounds.x + style.margin.left + style.border.getPaddingLeft() + cursorXFrom,
+					bounds.y + style.margin.top + style.border.getPaddingTop(),
+					cursorXTo - cursorXFrom,
+					fontMetrics.getAscent() + fontMetrics.getDescent()));
+			selection.setColor(style.selectionColor);
+		} else {
+			selection.setColor(0);
+		}
+		
+		cursor.setRectangle(new DIRectangle(
+				bounds.x + style.margin.left + style.border.getPaddingLeft() + cursorXTo,
+				bounds.y + style.margin.top + style.border.getPaddingTop(),
+				style.cursorWidth,
+				fontMetrics.getAscent() + fontMetrics.getDescent()));
 	}
 	
 	private void handleValueUpdated(String newValue) {
-		context.repaint(bounds);
+		if (text != null)
+			text.close();
+		text = surface.drawText(
+				z + 2,
+				style.font,
+				style.color,
+				bounds.x + style.margin.left + style.border.getPaddingLeft(),
+				bounds.y + style.margin.top + style.border.getPaddingTop() + fontMetrics.getAscent(),
+				value.getValue());
 	}
 	
 	private void backspace() {

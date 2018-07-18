@@ -14,8 +14,12 @@ import org.openzen.drawablegui.listeners.ListenerList;
  */
 public class SimpleLiveInt implements LiveInt {
 	private final ListenerList<Listener> listeners = new ListenerList<>();
-	private int value = 0;
+	private int value;
 
+	public SimpleLiveInt(int value) {
+		this.value = value;
+	}
+	
 	@Override
 	public int getValue() {
 		return value;
@@ -23,6 +27,9 @@ public class SimpleLiveInt implements LiveInt {
 
 	@Override
 	public void setValue(int value) {
+		if (value == this.value)
+			return;
+		
 		int oldValue = this.value;
 		this.value = value;
 		listeners.accept(listener -> listener.onChanged(oldValue, value));

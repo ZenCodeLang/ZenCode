@@ -19,4 +19,8 @@ public interface DFontMetrics {
 	int getWidth(String str);
 	
 	int getWidth(String str, int offset, int length);
+	
+	default int getLineHeight() {
+		return getAscent() + getDescent();
+	}
 }

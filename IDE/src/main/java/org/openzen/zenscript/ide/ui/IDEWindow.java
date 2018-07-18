@@ -5,24 +5,19 @@
  */
 package org.openzen.zenscript.ide.ui;
 
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LivePredicateBool;
-import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import org.openzen.drawablegui.live.ImmutableLiveString;
+import org.openzen.drawablegui.live.LiveArrayList;
+import org.openzen.drawablegui.live.MutableLiveList;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
-import org.openzen.zenscript.ide.host.IDEModule;
-import org.openzen.zenscript.ide.host.IDEPackage;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.host.IDETarget;
-import org.openzen.zenscript.ide.ui.dialog.CreatePackageDialog;
-import org.openzen.zenscript.ide.ui.dialog.CreateSourceFileDialog;
-import org.openzen.zenscript.ide.ui.icons.AddBoxIcon;
 import org.openzen.zenscript.ide.ui.icons.BuildIcon;
 import org.openzen.zenscript.ide.ui.icons.PlayIcon;
 import org.openzen.zenscript.ide.ui.icons.SettingsIcon;
 import org.openzen.zenscript.ide.ui.icons.ShadedProjectIcon;
 import org.openzen.zenscript.ide.ui.view.IconButtonControl;
+import org.openzen.zenscript.ide.ui.view.output.OutputLine;
 
 /**
  *
@@ -34,13 +29,9 @@ public class IDEWindow {
 	public final IDEAspectBar aspectBar;
 	public final IDEDockWindow dockWindow;
 	public final IDEStatusBar statusBar;
+	public final MutableLiveList<OutputLine> output = new LiveArrayList<>();
 	
 	public IDEAspectToolbar projectToolbar;
-	
-	private final MutableLiveObject<IDEModule> contextModule = new SimpleLiveObject<>(null);
-	private final MutableLiveObject<IDEPackage> contextPackage = new SimpleLiveObject<>(null);
-	private final MutableLiveObject<IDESourceFile> contextFile = new SimpleLiveObject<>(null);
-	private final LiveBool addContentDisabled = new LivePredicateBool(contextPackage, pkg -> pkg == null);
 	
 	public IDEWindow(DevelopmentHost host) {
 		this.host = host;
@@ -66,47 +57,21 @@ public class IDEWindow {
 	
 	private void init() {
 		projectToolbar = new IDEAspectToolbar(0, ShadedProjectIcon.PURPLE, "Project", "Project management");
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.BLUE, AddBoxIcon.GRAY, addContentDisabled, e -> {
-			CreatePackageDialog dialog = new CreatePackageDialog(this, contextModule.getValue(), contextPackage.getValue());
-			dialog.open(e.window);
-		}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, AddBoxIcon.ORANGE, AddBoxIcon.GRAY, addContentDisabled, e -> {
-			CreateSourceFileDialog dialog = new CreateSourceFileDialog(this, contextModule.getValue(), contextPackage.getValue());
-			dialog.open(e.window);
-		}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.PURPLE, e -> {
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.PURPLE, new ImmutableLiveString("Project settings"), e -> {
 			
 		}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, e -> {
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, new ImmutableLiveString("Build"), e -> {
 			for (IDETarget target : host.getTargets()) {
 				if (target.canBuild())
-					target.build();
+					target.build(line -> output.add(line));
 			}
 		}));
-		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, PlayIcon.GREEN, e -> {
+		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, PlayIcon.GREEN, new ImmutableLiveString("Run"), e -> {
 			for (IDETarget target : host.getTargets()) {
 				if (target.canRun())
-					target.run();
+					target.run(line -> output.add(line));
 			}
 		}));
 		aspectBar.toolbars.add(projectToolbar);
-	}
-	
-	public void setContextModule(IDEModule module) {
-		contextModule.setValue(module);
-		contextPackage.setValue(module.getRootPackage());
-		contextFile.setValue(null);
-	}
-	
-	public void setContextPackage(IDEModule module, IDEPackage pkg) {
-		contextModule.setValue(module);
-		contextPackage.setValue(pkg);
-		contextFile.setValue(null);
-	}
-	
-	public void setContextFile(IDESourceFile file) {
-		contextModule.setValue(null);
-		contextPackage.setValue(null);
-		contextFile.setValue(file);
 	}
 }

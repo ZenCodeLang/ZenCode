@@ -5,12 +5,14 @@
  */
 package org.openzen.drawablegui;
 
+import org.openzen.drawablegui.draw.DDrawTarget;
+
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface DColorableIcon {
-	void draw(DCanvas canvas, DTransform2D transform, int color);
+	void draw(DDrawTarget target, int z, DTransform2D transform, int color);
 	
 	float getNominalWidth();
 	

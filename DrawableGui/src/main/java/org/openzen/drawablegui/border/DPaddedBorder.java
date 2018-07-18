@@ -5,8 +5,8 @@
  */
 package org.openzen.drawablegui.border;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.draw.DDrawSurface;
 
 /**
  *
@@ -24,9 +24,13 @@ public class DPaddedBorder implements DBorder {
 		this.right = right;
 		this.bottom = bottom;
 	}
+	
+	public DPaddedBorder(int size) {
+		this(size, size, size, size);
+	}
 
 	@Override
-	public void paint(DCanvas canvas, DIRectangle bounds) {
+	public void update(DDrawSurface surface, int z, DIRectangle bounds) {
 		// nothing to paint
 	}
 
@@ -48,5 +52,10 @@ public class DPaddedBorder implements DBorder {
 	@Override
 	public int getPaddingBottom() {
 		return bottom;
+	}
+
+	@Override
+	public void close() {
+		
 	}
 }

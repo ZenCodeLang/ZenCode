@@ -6,19 +6,23 @@
 package org.openzen.zenscript.ide.host.local;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import org.openzen.zenscript.compiler.Target;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.constructor.Library;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.Project;
-import org.openzen.zenscript.constructor.module.DirectoryModuleLoader;
+import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.ide.host.IDETarget;
+import org.openzen.zenscript.ide.ui.view.output.ErrorOutputSpan;
+import org.openzen.zenscript.ide.ui.view.output.OutputLine;
+import org.openzen.zenscript.validator.ValidationLogEntry;
+import stdlib.Strings;
 
 /**
  *
@@ -49,25 +53,30 @@ public class LocalTarget implements IDETarget {
 	}
 
 	@Override
-	public void build() {
-		buildInternal();
+	public void build(Consumer<OutputLine> output) {
+		buildInternal(output);
 	}
 
 	@Override
-	public void run() {
-		ZenCodeCompiler compiler = buildInternal();
+	public void run(Consumer<OutputLine> output) {
+		ZenCodeCompiler compiler = buildInternal(output);
 		if (compiler != null)
 			compiler.run();
 	}
 	
-	private ZenCodeCompiler buildInternal() {
+	private ZenCodeCompiler buildInternal(Consumer<OutputLine> output) {
 		CompilationUnit compilationUnit = new CompilationUnit();
-		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit);
-		moduleLoader.register("stdlib", new DirectoryModuleLoader(moduleLoader, "stdlib", new File("../../StdLibs/stdlib"), true));
+		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit, exception -> output.accept(new OutputLine(new ErrorOutputSpan(exception.getMessage()))));
+		moduleLoader.register("stdlib", new DirectoryModuleReference("stdlib", new File("../../StdLibs/stdlib"), true));
 		Set<String> compiledModules = new HashSet<>();
 		
+		Consumer<ValidationLogEntry> validationLogger = entry -> {
+			String[] message = Strings.split(entry.message, '\n');
+			output.accept(new OutputLine(new ErrorOutputSpan(entry.kind + " " + entry.position.toString() + ": " + message[0])));
+			for (int i = 1; i < message.length; i++)
+				output.accept(new OutputLine(new ErrorOutputSpan("    " + message[i])));
+		};
 		try {
-			Project project = new Project(moduleLoader, this.project.directory);
 			for (Library library : project.libraries) {
 				for (ModuleReference module : library.modules)
 					moduleLoader.register(module.getName(), module);
@@ -78,7 +87,7 @@ public class LocalTarget implements IDETarget {
 			
 			SemanticModule module = moduleLoader.getModule(target.getModule());
 			module = module.normalize();
-			module.validate();
+			module.validate(validationLogger);
 			
 			ZenCodeCompiler compiler = target.createCompiler(module);
 			if (!module.isValid())
@@ -86,37 +95,50 @@ public class LocalTarget implements IDETarget {
 			
 			SemanticModule stdlib = moduleLoader.getModule("stdlib");
 			stdlib = stdlib.normalize();
-			stdlib.validate();
+			stdlib.validate(validationLogger);
 			if (!stdlib.isValid())
 				return compiler;
 			stdlib.compile(compiler);
 			compiledModules.add(stdlib.name);
 			
-			boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, module);
+			boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, module, validationLogger);
 			if (!isValid)
 				return compiler;
 			
 			module.compile(compiler);
 			compiler.finish();
 			return compiler;
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
+			
+			for (String line : Strings.split(ex.toString(), '\n'))
+				output.accept(new OutputLine(new ErrorOutputSpan(line)));
+			for (StackTraceElement element : ex.getStackTrace()) {
+				String source;
+				if (element.isNativeMethod()) {
+					source = "(Native Method)";
+				} else {
+					source = "(" + element.getFileName() + ":" + element.getLineNumber() + ")";
+				}
+				output.accept(new OutputLine(new ErrorOutputSpan("    at " + element.getClassName() + "." + element.getMethodName() + source)));
+			}
+			
 			return null;
 		}
 	}
 	
-	private boolean compileDependencies(ModuleLoader loader, ZenCodeCompiler compiler, Set<String> compiledModules, SemanticModule module) {
+	private boolean compileDependencies(ModuleLoader loader, ZenCodeCompiler compiler, Set<String> compiledModules, SemanticModule module, Consumer<ValidationLogEntry> logger) {
 		for (String dependency : module.dependencies) {
 			if (compiledModules.contains(module.name))
 				continue;
 			
 			SemanticModule dependencyModule = loader.getModule(dependency);
 			module = module.normalize();
-			module.validate();
+			module.validate(logger);
 			if (!module.isValid())
 				return false;
 			
-			if (!compileDependencies(loader, compiler, compiledModules, dependencyModule))
+			if (!compileDependencies(loader, compiler, compiledModules, dependencyModule, logger))
 				return false;
 			
 			module.compile(compiler);

@@ -3,12 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui;
+package org.openzen.zenscript.ide.host;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface DTooltipHandle {
-	void close();
+public interface IDEPropertyStore {
+	IDEPropertyDirectory getRoot();
+	
+	void save();
 }

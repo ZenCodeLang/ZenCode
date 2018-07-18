@@ -4,10 +4,10 @@
  * and open the template in the editor.
  */
 package org.openzen.zenscript.ide.ui.icons;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.draw.DDrawTarget;
 import org.openzen.drawablegui.style.DShadow;
 
 public class BuildIcon implements DColorableIcon {
@@ -35,9 +35,8 @@ public class BuildIcon implements DColorableIcon {
 	};
 	
 	@Override
-	public void draw(DCanvas canvas, DTransform2D transform, int color) {
-		canvas.shadowPath(PATH, transform, new DShadow(0xFFCCCCCC, 0, 1, 4));
-		canvas.fillPath(PATH, transform, color);
+	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
+		target.shadowPath(z, PATH, transform, color, new DShadow(0xFFCCCCCC, 0, 1, 4));
 	}
 
 	@Override

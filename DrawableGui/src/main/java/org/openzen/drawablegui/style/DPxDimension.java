@@ -12,6 +12,8 @@ import org.openzen.drawablegui.DUIContext;
  * @author Hoofdgebruiker
  */
 public class DPxDimension implements DDimension {
+	public static final DPxDimension ZERO = new DPxDimension(0);
+	
 	private final float pixels;
 	
 	public DPxDimension(float pixels) {

@@ -5,8 +5,9 @@
  */
 package org.openzen.drawablegui.border;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DIRectangle;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.style.DBorderElement;
 
 /**
  *
@@ -14,11 +15,12 @@ import org.openzen.drawablegui.DIRectangle;
  */
 public class DEmptyBorder implements DBorder {
 	public static final DEmptyBorder INSTANCE = new DEmptyBorder();
+	public static final DBorderElement ELEMENT = context -> INSTANCE;
 	
 	private DEmptyBorder() {}
 	
 	@Override
-	public void paint(DCanvas canvas, DIRectangle bounds) {
+	public void update(DDrawSurface surface, int z, DIRectangle bounds) {
 		
 	}
 
@@ -40,5 +42,10 @@ public class DEmptyBorder implements DBorder {
 	@Override
 	public int getPaddingBottom() {
 		return 0;
+	}
+
+	@Override
+	public void close() {
+		
 	}
 }

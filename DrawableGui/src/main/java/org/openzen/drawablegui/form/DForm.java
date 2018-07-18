@@ -8,12 +8,12 @@ package org.openzen.drawablegui.form;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -29,26 +29,31 @@ public class DForm extends BaseComponentGroup {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DIRectangle bounds;
-	private DUIContext context;
+	private DDrawSurface context;
 	private DFormStyle style;
 	private DFontMetrics fontMetrics;
 	private int maxFieldWidth;
 	private int maxLabelWidth;
 	
+	private final DDrawnText[] labels;
+	
 	public DForm(DStyleClass styleClass, DFormComponent... components) {
 		this.styleClass = styleClass;
 		this.components = components;
+		
+		labels = new DDrawnText[components.length];
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
+		this.context = surface;
 		
 		DStylePath path = parent.getChild("form", styleClass);
-		style = new DFormStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.labelFont);
+		style = new DFormStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.labelFont);
+		
 		for (DFormComponent component : components)
-			component.component.setContext(path, context);
+			component.component.mount(path, z + 1, surface);
 		
 		int height = style.paddingBottom + style.paddingTop;
 		int maxLabelWidth = style.minimumLabelSize;
@@ -71,6 +76,26 @@ public class DForm extends BaseComponentGroup {
 		
 		if (bounds != null)
 			layout();
+		
+		for (int i = 0; i < labels.length; i++) {
+			if (labels[i] != null)
+				labels[i].close();
+			labels[i] = surface.drawText(z + 1, style.labelFont, style.labelColor, 0, 0, components[i].label);
+		}
+	}
+	
+	@Override
+	public void unmount() {
+		for (int i = 0; i < labels.length; i++) {
+			if (labels[i] == null)
+				continue;
+			
+			labels[i].close();
+			labels[i] = null;
+		}
+		
+		for (DFormComponent component : components)
+			component.component.unmount();
 	}
 
 	@Override
@@ -98,33 +123,25 @@ public class DForm extends BaseComponentGroup {
 	}
 
 	@Override
-	public void paint(DCanvas canvas) {
-		int x = style.paddingLeft;
-		int y = style.paddingTop;
-		for (DFormComponent component : components) {
-			int baseline = component.component.getBaselineY();
-			if (baseline == -1)
-				baseline = fontMetrics.getAscent();
-			canvas.drawText(style.labelFont, style.labelColor, x, y + baseline, component.label);
-			component.component.paint(canvas);
-			
-			y += component.component.getSizing().getValue().preferredHeight + style.spacing;
-		}
-	}
-
-	@Override
 	public void close() {
-		
+		unmount();
 	}
 	
 	private void layout() {
 		int x = bounds.x + style.paddingLeft;
 		int y = bounds.y + style.paddingBottom;
 		
-		for (DFormComponent component : components) {
+		for (int i = 0; i < components.length; i++) {
+			DFormComponent component = components[i];
+			
 			int preferredHeight = component.component.getSizing().getValue().preferredHeight;
 			DIRectangle componentBounds = new DIRectangle(x + maxLabelWidth, y, bounds.width - maxLabelWidth - style.paddingLeft - style.paddingRight - style.spacing, preferredHeight);
 			component.component.setBounds(componentBounds);
+			
+			int baseline = component.component.getBaselineY();
+			if (baseline == -1)
+				baseline = fontMetrics.getAscent();
+			labels[i].setPosition(x, y + baseline);
 			
 			y += preferredHeight + style.spacing;
 		}

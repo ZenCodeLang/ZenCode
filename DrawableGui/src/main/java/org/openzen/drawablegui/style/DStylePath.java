@@ -5,10 +5,14 @@
  */
 package org.openzen.drawablegui.style;
 
+import org.openzen.drawablegui.DUIContext;
+
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface DStylePath {
 	public DStylePath getChild(String element, DStyleClass styleClass);
+	
+	public DStyleDefinition getInline(DUIContext context);
 }

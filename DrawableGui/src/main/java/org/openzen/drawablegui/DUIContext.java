@@ -40,8 +40,6 @@ public interface DUIContext {
 	
 	DUIWindow openView(int x, int y, DAnchor anchor, DComponent root);
 	
-	DTooltipHandle openTooltip(int x, int y, DTooltip tooltip);
-	
 	default int dp(float dp) {
 		return (int)(dp * getScale());
 	}

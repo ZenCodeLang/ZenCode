@@ -5,6 +5,9 @@
  */
 package org.openzen.zenscript.ide.host;
 
+import java.util.function.Consumer;
+import org.openzen.zenscript.ide.ui.view.output.OutputLine;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -16,7 +19,7 @@ public interface IDETarget {
 	
 	boolean canRun();
 	
-	void build();
+	void build(Consumer<OutputLine> output);
 	
-	void run();
+	void run(Consumer<OutputLine> output);
 }

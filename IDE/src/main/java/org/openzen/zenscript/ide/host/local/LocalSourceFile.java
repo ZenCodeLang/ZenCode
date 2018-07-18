@@ -15,6 +15,9 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import org.openzen.drawablegui.live.LiveString;
+import org.openzen.drawablegui.live.MutableLiveString;
+import org.openzen.drawablegui.live.SimpleLiveString;
 import org.openzen.zenscript.constructor.module.SourceFile;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 
@@ -24,14 +27,16 @@ import org.openzen.zenscript.ide.host.IDESourceFile;
  */
 public class LocalSourceFile implements IDESourceFile {
 	private final SourceFile file;
+	private final MutableLiveString name;
 	
 	public LocalSourceFile(SourceFile file) {
 		this.file = file;
+		this.name = new SimpleLiveString(file.name);
 	}
 
 	@Override
-	public String getName() {
-		return file.name;
+	public LiveString getName() {
+		return name;
 	}
 
 	@Override

@@ -5,14 +5,15 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DColorableIcon;
+import org.openzen.drawablegui.DColorableIconInstance;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -27,7 +28,8 @@ public class TabbedViewTabClose implements DComponent {
 	private final TabbedViewTab tab;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
-	private DUIContext context;
+	private DDrawSurface surface;
+	private int z;
 	private DIRectangle bounds;
 	private TabbedViewTabCloseStyle style;
 	private DColorableIcon icon;
@@ -35,18 +37,37 @@ public class TabbedViewTabClose implements DComponent {
 	private boolean hover;
 	private boolean press;
 	
+	private DDrawnRectangle background;
+	private DColorableIconInstance drawnIcon;
+	
 	public TabbedViewTabClose(TabbedViewTab tab) {
 		this.tab = tab;
 	}
 
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
 		
 		DStylePath path = parent.getChild("tabClose", DStyleClass.EMPTY);
-		style = new TabbedViewTabCloseStyle(context.getStylesheets().get(context, path));
+		style = new TabbedViewTabCloseStyle(surface.getStylesheet(path));
 		sizing.setValue(new DSizing(style.size, style.size));
 		icon = new ScalableCloseIcon(style.size / 24);
+		
+		if (background != null)
+			background.close();
+		background = surface.fillRect(z, DIRectangle.EMPTY, hover ? 0xFFE81123 : 0);
+		if (drawnIcon != null)
+			drawnIcon.close();
+		drawnIcon = new DColorableIconInstance(surface, z + 1, icon, DTransform2D.IDENTITY, 0xFF000000);
+	}
+	
+	@Override
+	public void unmount() {
+		if (background != null)
+			background.close();
+		if (drawnIcon != null)
+			drawnIcon.close();
 	}
 
 	@Override
@@ -67,35 +88,33 @@ public class TabbedViewTabClose implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-	}
-
-	@Override
-	public void paint(DCanvas canvas) {
-		if (hover) {
-			canvas.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 0xFFE81123);
-		}
 		
-		icon.draw(canvas, DTransform2D.translate(
+		background.setRectangle(bounds);
+		
+		if (drawnIcon != null)
+			drawnIcon.close();
+		drawnIcon = new DColorableIconInstance(surface, z + 1, icon, DTransform2D.translate(
 				bounds.x + (bounds.width - icon.getNominalWidth()) / 2,
-				bounds.y + (bounds.height - icon.getNominalHeight()) / 2),
-				hover ? 0xFFFFFFFF : 0xFF000000);
+				bounds.y + (bounds.height - icon.getNominalHeight()) / 2), 0xFF000000);
 	}
 
 	@Override
 	public void close() {
-		
+		unmount();
 	}
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		hover = true;
-		context.repaint(bounds);
+		background.setColor(0xFFE81123);
+		drawnIcon.setColor(0xFFFFFFFF);
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
 		hover = false;
-		context.repaint(bounds);
+		background.setColor(0);
+		drawnIcon.setColor(0xFF000000);
 	}
 	
 	@Override

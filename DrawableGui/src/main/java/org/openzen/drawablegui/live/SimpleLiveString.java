@@ -33,6 +33,9 @@ public class SimpleLiveString implements MutableLiveString {
 
 	@Override
 	public void setValue(String value) {
+		if (value.equals(this.value))
+			return;
+		
 		String oldValue = this.value;
 		this.value = value;
 		listeners.accept(listener -> listener.onChanged(oldValue, value));

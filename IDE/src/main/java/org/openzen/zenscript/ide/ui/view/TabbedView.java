@@ -5,15 +5,17 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
-import org.openzen.drawablegui.DCanvas;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.draw.DDrawSurface;
+import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveMappedList;
@@ -34,17 +36,22 @@ public class TabbedView extends BaseComponentGroup {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	public final MutableLiveObject<TabbedViewComponent> currentTab = new SimpleLiveObject<>(null);
 	
-	private DUIContext context;
+	private final Map<TabbedViewTab, ListenerHandle<LiveObject.Listener<DSizing>>> tabSizeListeners = new HashMap<>();
+	
+	private DDrawSurface surface;
 	private DStylePath path;
 	private DIRectangle bounds;
 	private TabbedViewStyle style;
 	private int totalTabHeight;
 	private DFontMetrics fontMetrics;
+	private int z;
 
 	private final LiveList<TabbedViewTab> tabComponents = new LiveMappedList<>(tabs, tab -> {
 		TabbedViewTab result = new TabbedViewTab(this, currentTab, tab);
-		if (context != null)
-			result.setContext(path, context);
+		if (surface != null)
+			result.mount(path, z + 2, surface);
+		
+		tabSizeListeners.put(result, result.getSizing().addListener((oldSize, newSize) -> layoutTabs()));
 		return result;
 	});
 	
@@ -53,32 +60,46 @@ public class TabbedView extends BaseComponentGroup {
 		tabs.addListener(new TabListListener());
 		
 		currentTab.addListener((oldValue, newValue) -> {
-			if (oldValue != null)
+			if (oldValue != null) {
 				oldValue.content.onUnmounted();
-			if (newValue != null)
+				oldValue.content.unmount();
+			}
+			if (newValue != null) {
 				newValue.content.onMounted();
+				newValue.content.mount(path, z + 1, surface);
+			}
 			
 			if (newValue != null && bounds != null) {
 				DIRectangle contentBounds = new DIRectangle(
-					bounds.x, bounds.y + totalTabHeight,
-					bounds.width, bounds.height - totalTabHeight);
+						bounds.x + style.margin.left,
+						bounds.y + style.margin.top + totalTabHeight,
+						bounds.width - style.margin.getHorizontal(),
+						bounds.height - style.margin.getVertical() - totalTabHeight);
 				newValue.content.setBounds(contentBounds);
 			}
-			if (newValue == null && context != null && bounds != null)
-				context.repaint(bounds);
 		});
 	}
 	
 	@Override
-	public void setContext(DStylePath parent, DUIContext context) {
-		this.context = context;
+	public void mount(DStylePath parent, int z, DDrawSurface surface) {
+		this.surface = surface;
+		this.z = z;
+		
 		path = parent.getChild("tabbedView", styleClass);
-		style = new TabbedViewStyle(context.getStylesheets().get(context, path));
-		fontMetrics = context.getFontMetrics(style.tabFont);
-		totalTabHeight = style.paddingTop + style.paddingBottom + fontMetrics.getAscent() + fontMetrics.getDescent();
+		style = new TabbedViewStyle(surface.getStylesheet(path));
+		fontMetrics = surface.getFontMetrics(style.tabFont);
+		totalTabHeight = style.tabBorder.getPaddingVertical() + fontMetrics.getAscent() + fontMetrics.getDescent();
 		
 		for (TabbedViewComponent tab : tabs)
 			prepare(tab);
+	}
+	
+	@Override
+	public void unmount() {
+		for (TabbedViewComponent tab : tabs)
+			tab.content.unmount();
+		for (TabbedViewTab tab : tabComponents)
+			tab.unmount();
 	}
 
 	@Override
@@ -104,51 +125,42 @@ public class TabbedView extends BaseComponentGroup {
 			return;
 		
 		DIRectangle contentBounds = new DIRectangle(
-				bounds.x, bounds.y + totalTabHeight,
-				bounds.width, bounds.height - totalTabHeight);
+				bounds.x + style.margin.left,
+				bounds.y + style.margin.top + totalTabHeight,
+				bounds.width - style.margin.getHorizontal(),
+				bounds.height - style.margin.getVertical() - totalTabHeight);
 		currentTab.getValue().content.setBounds(contentBounds);
 		layoutTabs();
 	}
 
 	@Override
-	public void paint(DCanvas canvas) {
-		for (DComponent component : tabComponents)
-			component.paint(canvas);
-		
-		if (currentTab.getValue() != null)
-			currentTab.getValue().content.paint(canvas);
-	}
-
-	@Override
 	public void close() {
+		for (Map.Entry<TabbedViewTab, ListenerHandle<LiveObject.Listener<DSizing>>> entry : tabSizeListeners.entrySet()) {
+			entry.getValue().close();
+		}
 		
-	}
-	
-	private void repaintTabs() {
-		if (context == null)
-			return;
-		
-		context.repaint(bounds.x, bounds.y, bounds.width, totalTabHeight);
+		for (TabbedViewComponent tab : tabs)
+			tab.content.close();
+		for (TabbedViewTab tab : tabComponents)
+			tab.close();
 	}
 	
 	private void prepare(TabbedViewComponent tab) {
-		tab.content.setContext(path, context);
+		tab.content.mount(path, z + 1, surface);
 	}
 	
 	private void layoutTabs() {
 		if (bounds == null)
 			return;
 		
-		int x = bounds.x + style.tabBarSpacingLeft;
+		int x = bounds.x + style.margin.left + style.tabBarSpacingLeft;
 		for (DComponent tab : tabComponents) {
 			DSizing preferences = tab.getSizing().getValue();
 			tab.setBounds(new DIRectangle(
-					x, bounds.y + totalTabHeight - preferences.preferredHeight, preferences.preferredWidth, preferences.preferredHeight));
+					x, bounds.y + style.margin.top + totalTabHeight - preferences.preferredHeight, preferences.preferredWidth, preferences.preferredHeight));
 			
 			x += preferences.preferredWidth + style.tabSpacing;
 		}
-		
-		repaintTabs();
 	}
 
 	@Override
@@ -180,16 +192,16 @@ public class TabbedView extends BaseComponentGroup {
 	private class TabListListener implements LiveList.Listener<TabbedViewComponent> {
 		@Override
 		public void onInserted(int index, TabbedViewComponent value) {
-			if (currentTab.getValue() == null)
-				currentTab.setValue(value);
-			
 			prepare(value);
 			layoutTabs();
+			
+			if (currentTab.getValue() == null)
+				currentTab.setValue(value);
 		}
 
 		@Override
 		public void onChanged(int index, TabbedViewComponent oldValue, TabbedViewComponent newValue) {
-			repaintTabs();
+			
 		}
 
 		@Override
