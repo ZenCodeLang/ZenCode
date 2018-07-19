@@ -8,14 +8,14 @@ package org.openzen.zenscript.parser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zencode.shared.FileSourceFile;
+import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -42,27 +42,24 @@ import org.openzen.zenscript.parser.statements.ParsedStatement;
  */
 public class ParsedFile {
 	public static ParsedFile parse(ZSPackage pkg, File file) throws IOException {
-		String filename = file.toString();
-		try (FileReader reader = new FileReader(file)) {
-			return parse(pkg, filename, reader);
-		}
+		return parse(pkg, new FileSourceFile(file.getName(), file));
 	}
 	
 	public static ParsedFile parse(ZSPackage pkg, String filename, String content) {
-		try (StringReader reader = new StringReader(content)) {
-			return parse(pkg, filename, reader);
+		try {
+			return parse(pkg, new LiteralSourceFile(filename, content));
 		} catch (IOException ex) {
-			throw new AssertionError(); // supposed to never happen in a StringReader
+			throw new AssertionError(); // shouldn't happen
 		}
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, String filename, Reader reader) throws IOException {
-		ZSTokenParser tokens = ZSTokenParser.create(filename, reader, 4);
+	public static ParsedFile parse(ZSPackage pkg, SourceFile file) throws IOException {
+		ZSTokenParser tokens = ZSTokenParser.create(file, 4);
 		return parse(pkg, tokens);
 	}
 	
 	public static ParsedFile parse(ZSPackage pkg, ZSTokenParser tokens) {
-		ParsedFile result = new ParsedFile(tokens.getFilename());
+		ParsedFile result = new ParsedFile(tokens.getFile());
 		ZSToken eof = null;
 
 		while (true) {
@@ -124,15 +121,15 @@ public class ParsedFile {
 		return result;
 	}
 	
-	public final String filename;
+	public final SourceFile file;
 	
 	private final List<ParsedImport> imports = new ArrayList<>();
 	private final List<ParsedDefinition> definitions = new ArrayList<>();
 	private final List<ParsedStatement> statements = new ArrayList<>();
 	private WhitespacePostComment postComment = null;
 	
-	public ParsedFile(String filename) {
-		this.filename = filename;
+	public ParsedFile(SourceFile file) {
+		this.file = file;
 	}
 	
 	public boolean hasErrors() {
@@ -145,7 +142,7 @@ public class ParsedFile {
 	
 	public void listDefinitions(PackageDefinitions definitions) {
 		for (ParsedDefinition definition : this.definitions) {
-			definition.getCompiled().setTag(SourceFile.class, new SourceFile(filename));
+			definition.getCompiled().setTag(SourceFile.class, file);
 			definitions.add(definition.getCompiled());
 			definition.linkInnerTypes();
 		}
@@ -204,7 +201,7 @@ public class ParsedFile {
 			}
 			
 			ScriptBlock block = new ScriptBlock(statements);
-			block.setTag(SourceFile.class, new SourceFile(filename));
+			block.setTag(SourceFile.class, file);
 			block.setTag(WhitespacePostComment.class, postComment);
 			scripts.add(block);
 		}

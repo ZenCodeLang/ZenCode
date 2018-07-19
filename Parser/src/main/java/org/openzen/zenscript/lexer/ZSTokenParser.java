@@ -7,6 +7,7 @@ package org.openzen.zenscript.lexer;
 
 import java.io.IOException;
 import java.io.Reader;
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 
 /**
@@ -16,9 +17,9 @@ import org.openzen.zenscript.codemodel.WhitespaceInfo;
 public class ZSTokenParser extends LLParserTokenStream<ZSTokenType, ZSToken> {
 	private static final CompiledDFA DFA = CompiledDFA.createLexerDFA(ZSTokenType.values(), ZSTokenType.class);
 	
-	public static TokenParser<ZSToken, ZSTokenType> createRaw(String filename, CharReader reader, int spacesPerTab) {
+	public static TokenParser<ZSToken, ZSTokenType> createRaw(SourceFile file, CharReader reader, int spacesPerTab) {
 		return new TokenParser<>(
-				filename,
+				file,
 				reader,
 				DFA,
 				ZSTokenType.EOF,
@@ -26,16 +27,16 @@ public class ZSTokenParser extends LLParserTokenStream<ZSTokenType, ZSToken> {
 				new ZSTokenFactory(spacesPerTab));
 	}
 	
-	public static ZSTokenParser create(String filename, Reader reader, int spacesPerTab) throws IOException {
-		return new ZSTokenParser(createRaw(filename, new ReaderCharReader(reader), spacesPerTab));
+	public static ZSTokenParser create(SourceFile file, int spacesPerTab) throws IOException {
+		return new ZSTokenParser(createRaw(file, new ReaderCharReader(file.open()), spacesPerTab));
 	}
 	
 	public ZSTokenParser(TokenStream<ZSTokenType, ZSToken> parser) {
 		super(parser);
 	}
 	
-	public String getFilename() {
-		return getPosition().filename;
+	public SourceFile getFile() {
+		return getPosition().file;
 	}
 	
 	public WhitespaceInfo collectWhitespaceInfo(String whitespace, boolean skipLineBefore) {

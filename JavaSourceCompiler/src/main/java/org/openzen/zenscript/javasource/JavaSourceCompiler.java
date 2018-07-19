@@ -93,8 +93,8 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	private String getFilename(HighLevelDefinition definition) {
 		SourceFile source = definition.getTag(SourceFile.class);
 		if (source != null) {
-			int slash = Math.max(source.filename.lastIndexOf('/'), source.filename.lastIndexOf('\\'));
-			String filename = source.filename.substring(slash < 0 ? 0 : slash + 1);
+			int slash = Math.max(source.getFilename().lastIndexOf('/'), source.getFilename().lastIndexOf('\\'));
+			String filename = source.getFilename().substring(slash < 0 ? 0 : slash + 1);
 			filename = filename.substring(0, filename.lastIndexOf('.'));
 			return filename;
 		} else {

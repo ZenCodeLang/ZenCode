@@ -43,4 +43,8 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 	public boolean isExtern() {
 		return Modifiers.isExtern(modifiers);
 	}
+	
+	public boolean isPrivate() {
+		return Modifiers.isPrivate(modifiers);
+	}
 }

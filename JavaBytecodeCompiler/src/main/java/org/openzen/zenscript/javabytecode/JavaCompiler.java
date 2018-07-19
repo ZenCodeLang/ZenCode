@@ -56,7 +56,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 	@Override
 	public void addScriptBlock(ScriptBlock script) {
 		final SourceFile sourceFile = script.getTag(SourceFile.class);
-		final String className = getClassName(sourceFile == null ? null : sourceFile.filename);
+		final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
 		JavaScriptFile scriptFile = getScriptFile(className);
 		
 		String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();

@@ -21,7 +21,6 @@ import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
-import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
 /**
  *

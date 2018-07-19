@@ -86,7 +86,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		}
 		
 		if (mergedImplementations.size() > 0) {
-			output.append("implements ");
+			output.append(" implements ");
 			for (int i = 0; i < mergedImplementations.size(); i++) {
 				if (i > 0)
 					output.append(", ");
@@ -289,7 +289,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			output.append("static ");
 		if (Modifiers.isAbstract(modifiers))
 			output.append("abstract ");
-		if (!Modifiers.isVirtual(modifiers))
+		if (!Modifiers.isVirtual(modifiers) && !Modifiers.isAbstract(modifiers))
 			output.append("final ");
 	}
 	

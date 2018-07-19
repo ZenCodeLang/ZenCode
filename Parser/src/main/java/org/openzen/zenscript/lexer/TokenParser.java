@@ -6,6 +6,7 @@ import java.util.Iterator;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zencode.shared.SourceFile;
 
 /**
  * Represents a token stream. A token stream reads characters from a reader and
@@ -28,13 +29,13 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements I
     /**
      * Creates a token stream using the specified reader and DFA.
      *
-	 * @param filename filename
+	 * @param file filename
      * @param reader reader to read characters from
      * @param dfa DFA to tokenize the stream
 	 * @param eof end of file token type
      */
     public TokenParser(
-			String filename,
+			SourceFile file,
 			CharReader reader, 
 			CompiledDFA<TT> dfa,
 			TT eof,
@@ -44,7 +45,7 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements I
 		if (eof.isWhitespace()) // important for the advance() method
 			throw new IllegalArgumentException("EOF cannot be whitespace");
 		
-        this.reader = new CountingCharReader(reader, filename, 4);
+        this.reader = new CountingCharReader(reader, file, 4);
         this.dfa = dfa;
 		this.eof = eof;
 		this.invalid = invalid;
@@ -54,14 +55,14 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements I
     /**
      * Creates a token stream which reads data from the specified string.
      *
-	 * @param filename filename
+	 * @param file filename
      * @param data data to read
      * @param dfa DFA to tokenize the stream
 	 * @param eof end of file token type
      */
-    public TokenParser(String filename, String data, CompiledDFA<TT> dfa, TT eof, TT invalid, TokenFactory<T, TT> factory)
+    public TokenParser(SourceFile file, String data, CompiledDFA<TT> dfa, TT eof, TT invalid, TokenFactory<T, TT> factory)
 	{
-        this(filename, new StringCharReader(data), dfa, eof, invalid, factory);
+        this(file, new StringCharReader(data), dfa, eof, invalid, factory);
     }
 	
 	@Override

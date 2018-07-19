@@ -3,16 +3,18 @@ package org.openzen.zencode.shared;
 import org.openzen.zencode.shared.CodePosition;
 
 public final class CodePosition {
-	public static final CodePosition BUILTIN = new CodePosition("builtin", 0, 0, 0, 0);
-	public static final CodePosition NATIVE = new CodePosition("native", 0, 0, 0, 0);
+	public static final CodePosition BUILTIN = new CodePosition(new VirtualSourceFile("builtin"), 0, 0, 0, 0);
+	public static final CodePosition NATIVE = new CodePosition(new VirtualSourceFile("native"), 0, 0, 0, 0);
 	public final String filename;
+	public final SourceFile file;
 	public final int fromLine;
 	public final int fromLineOffset;
 	public final int toLine;
 	public final int toLineOffset;
 	
-	public CodePosition(String filename, int fromLine, int fromLineOffset, int toLine, int toLineOffset) {
-	    this.filename = filename;
+	public CodePosition(SourceFile file, int fromLine, int fromLineOffset, int toLine, int toLineOffset) {
+		this.file = file;
+	    this.filename = file.getFilename();
 	    this.fromLine = fromLine;
 	    this.fromLineOffset = fromLineOffset;
 	    this.toLine = toLine;
@@ -30,7 +32,7 @@ public final class CodePosition {
 	public CodePosition until(CodePosition to) {
 	    if (!filename.equals(to.filename))
 	        throw new AssertionError("From and to positions must be in the same file!");
-	    return new CodePosition(filename, fromLine, fromLineOffset, to.toLine, to.toLineOffset);
+	    return new CodePosition(file, fromLine, fromLineOffset, to.toLine, to.toLineOffset);
 	}
 	
 	public String toString() {

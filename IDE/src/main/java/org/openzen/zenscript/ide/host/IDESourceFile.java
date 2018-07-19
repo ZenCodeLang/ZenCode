@@ -5,9 +5,8 @@
  */
 package org.openzen.zenscript.ide.host;
 
-import java.io.IOException;
-import java.io.Reader;
 import org.openzen.drawablegui.live.LiveString;
+import org.openzen.zencode.shared.SourceFile;
 
 /**
  *
@@ -16,7 +15,7 @@ import org.openzen.drawablegui.live.LiveString;
 public interface IDESourceFile {
 	public LiveString getName();
 	
-	public Reader read() throws IOException;
+	public SourceFile getFile();
 	
 	public void update(String content);
 }

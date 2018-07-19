@@ -133,16 +133,16 @@ public class LocalTarget implements IDETarget {
 				continue;
 			
 			SemanticModule dependencyModule = loader.getModule(dependency);
-			module = module.normalize();
-			module.validate(logger);
-			if (!module.isValid())
+			dependencyModule = dependencyModule.normalize();
+			dependencyModule.validate(logger);
+			if (!dependencyModule.isValid())
 				return false;
 			
 			if (!compileDependencies(loader, compiler, compiledModules, dependencyModule, logger))
 				return false;
 			
-			module.compile(compiler);
-			compiledModules.add(module.name);
+			dependencyModule.compile(compiler);
+			compiledModules.add(dependencyModule.name);
 		}
 		
 		return true;
