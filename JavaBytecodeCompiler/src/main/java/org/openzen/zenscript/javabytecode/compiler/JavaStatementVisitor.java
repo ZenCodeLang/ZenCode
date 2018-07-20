@@ -271,12 +271,15 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
     @Override
     public Boolean visitVar(VarStatement statement) {
-        Type type = statement.type.accept(JavaTypeVisitor.INSTANCE);
-        int local = javaWriter.local(type);
+
         if (statement.initializer != null) {
             statement.initializer.accept(expressionVisitor);
-            javaWriter.store(type, local);
         }
+
+        Type type = statement.type.accept(JavaTypeVisitor.INSTANCE);
+        int local = javaWriter.local(type);
+        if (statement.initializer != null)
+            javaWriter.store(type, local);
         final Label variableStart = new Label();
         javaWriter.label(variableStart);
         final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, local, variableStart, statement.name);

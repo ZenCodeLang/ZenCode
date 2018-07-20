@@ -1,5 +1,11 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
+import org.objectweb.asm.*;
+import org.objectweb.asm.commons.LocalVariablesSorter;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.javabytecode.*;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;

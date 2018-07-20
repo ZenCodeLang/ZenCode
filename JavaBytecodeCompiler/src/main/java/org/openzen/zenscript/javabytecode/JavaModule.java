@@ -43,7 +43,7 @@ public class JavaModule {
 		}
 	}
 	
-	private class ScriptClassLoader extends ClassLoader {
+	public class ScriptClassLoader extends ClassLoader {
 		private final Map<String, Class> customClasses = new HashMap<>();
 
 		@Override
