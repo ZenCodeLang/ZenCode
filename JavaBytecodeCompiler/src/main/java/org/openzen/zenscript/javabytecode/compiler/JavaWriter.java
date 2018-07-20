@@ -1,53 +1,52 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.LocalVariablesSorter;
-import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.objectweb.asm.*;
 import static org.objectweb.asm.Opcodes.*;
+import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaFieldInfo;
+import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 
 public class JavaWriter {
-	private static final JavaClassInfo T_STRING = new JavaClassInfo("java/lang/String");
-	private static final JavaMethodInfo STRING_CONCAT = new JavaMethodInfo(
-			T_STRING,
-			"concat",
-			"(Ljava/lang/String;)Ljava/lang/String;",
-			Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-	
-	public final JavaMethodInfo method;
-	public final HighLevelDefinition forDefinition;
-	
+    private static final JavaClassInfo T_STRING = new JavaClassInfo("java/lang/String");
+    private static final JavaMethodInfo STRING_CONCAT = new JavaMethodInfo(
+            T_STRING,
+            "concat",
+            "(Ljava/lang/String;)Ljava/lang/String;",
+            Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+
+    public final JavaMethodInfo method;
+    public final HighLevelDefinition forDefinition;
+
     private final LocalVariablesSorter visitor;
     private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
+    public final ClassVisitor clazzVisitor;
     private boolean debug = true;
     private boolean nameVariables = true;
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();
 
     public JavaWriter(
-			ClassVisitor visitor,
-			boolean nameVariables,
-			JavaMethodInfo method,
-			HighLevelDefinition forDefinition,
-			String signature,
-			String[] exceptions,
-			String... annotations)
-	{
-		this.method = method;
-		this.forDefinition = forDefinition;
-		
+            ClassVisitor visitor,
+            boolean nameVariables,
+            JavaMethodInfo method,
+            HighLevelDefinition forDefinition,
+            String signature,
+            String[] exceptions,
+            String... annotations) {
+        this.clazzVisitor = visitor;
+        this.method = method;
+        this.forDefinition = forDefinition;
+
         final MethodVisitor methodVisitor = visitor.visitMethod(method.modifiers, method.name, method.descriptor, signature, exceptions);
 
         for (String annotation : annotations) {
@@ -178,13 +177,13 @@ public class JavaWriter {
 
         visitor.visitInsn(DUP);
     }
-	
-	public void dup(Type type) {
+
+    public void dup(Type type) {
         if (debug)
             System.out.println("dup");
-		
-		visitor.visitInsn(type.getSize() == 2 ? DUP2 : DUP);
-	}
+
+        visitor.visitInsn(type.getSize() == 2 ? DUP2 : DUP);
+    }
 
     public void dup(boolean large) {
         if (debug)
@@ -241,34 +240,34 @@ public class JavaWriter {
 
         visitor.visitVarInsn(type.getOpcode(ILOAD), local);
     }
-	
-	public void load(JavaParameterInfo parameter) {
+
+    public void load(JavaParameterInfo parameter) {
         if (debug)
             System.out.println("load " + parameter.index);
 
         visitor.visitVarInsn(parameter.type.getOpcode(ILOAD), parameter.index);
-	}
-	
-	public void load(JavaLocalVariableInfo localVariable) {
+    }
+
+    public void load(JavaLocalVariableInfo localVariable) {
         if (debug)
             System.out.println("load " + localVariable.local);
 
         visitor.visitVarInsn(localVariable.type.getOpcode(ILOAD), localVariable.local);
-	}
-	
-	public void store(JavaParameterInfo parameter) {
+    }
+
+    public void store(JavaParameterInfo parameter) {
         if (debug)
             System.out.println("store " + parameter.index);
 
         visitor.visitVarInsn(parameter.type.getOpcode(ISTORE), parameter.index);
-	}
-	
-	public void store(JavaLocalVariableInfo localVariable) {
+    }
+
+    public void store(JavaLocalVariableInfo localVariable) {
         if (debug)
             System.out.println("store " + localVariable.local);
 
         visitor.visitVarInsn(localVariable.type.getOpcode(ISTORE), localVariable.local);
-	}
+    }
 
     public void storeInt(int local) {
         if (debug)
@@ -666,10 +665,10 @@ public class JavaWriter {
     public void iinc(int local) {
         iinc(local, 1);
     }
-	
-	public void idec(int local) {
-		iinc(local, -1);
-	}
+
+    public void idec(int local) {
+        iinc(local, -1);
+    }
 
     public void iinc(int local, int increment) {
         if (debug)
@@ -830,13 +829,13 @@ public class JavaWriter {
     public void invokeSpecial(Class owner, String name, String descriptor) {
         invokeSpecial(Type.getInternalName(owner), name, descriptor);
     }
-	
-	public void invokeVirtual(JavaMethodInfo method) {
+
+    public void invokeVirtual(JavaMethodInfo method) {
         if (debug)
             System.out.println("invokeVirtual " + method.javaClass.internalClassName + '.' + method.name + method.descriptor);
 
         visitor.visitMethodInsn(INVOKEVIRTUAL, method.javaClass.internalClassName, method.name, method.descriptor, false);
-	}
+    }
 
     public void invokeInterface(JavaMethodInfo method) {
         if (debug)
@@ -1182,13 +1181,13 @@ public class JavaWriter {
     }
 
     public void lookupSwitch(Label defaultLabel, JavaSwitchLabel[] switchLabels) {
-		int[] keys = new int[switchLabels.length];
-		Label[] labels = new Label[switchLabels.length];
-		for (int i = 0; i < switchLabels.length; i++) {
-			keys[i] = switchLabels[i].key;
-			labels[i] = switchLabels[i].label;
-		}
-		
+        int[] keys = new int[switchLabels.length];
+        Label[] labels = new Label[switchLabels.length];
+        for (int i = 0; i < switchLabels.length; i++) {
+            keys[i] = switchLabels[i].key;
+            labels[i] = switchLabels[i].label;
+        }
+
         visitor.visitLookupSwitchInsn(defaultLabel, keys, labels);
     }
 

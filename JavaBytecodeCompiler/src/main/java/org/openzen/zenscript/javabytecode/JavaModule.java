@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  * @author Hoofdgebruiker
  */
 public class JavaModule {
-	private final Map<String, byte[]> classes = new HashMap<>();
+	public static final Map<String, byte[]> classes = new HashMap<>();
 	
 	public JavaModule() {
 		
