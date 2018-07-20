@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -56,6 +57,24 @@ public class ParsedMatchExpression extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return false;
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		ITypeID result = null;
+		for (int i = 0; i < cases.size(); i++) {
+			ITypeID caseType = cases.get(i).value.precompileForType(scope, state);
+			if (caseType == null)
+				continue;
+			
+			if (result == null) {
+				result = caseType;
+			} else {
+				result = scope.getTypeMembers(result).union(caseType);
+			}
+		}
+		
+		return result;
 	}
 	
 	public static class Case {

@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -53,5 +54,28 @@ public class ParsedExpressionRange extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return from.hasStrongType() && to.hasStrongType();
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		List<ITypeID> fromHints = new ArrayList<>();
+		List<ITypeID> toHints = new ArrayList<>();
+		
+		for (ITypeID hint : scope.hints) {
+			if (hint instanceof RangeTypeID) {
+				RangeTypeID rangeHint = (RangeTypeID) hint;
+				if (!fromHints.contains(rangeHint.from))
+					fromHints.add(rangeHint.from);
+				if (!toHints.contains(rangeHint.to))
+					toHints.add(rangeHint.to);
+			}
+		}
+		
+		ITypeID fromType = this.from.precompileForType(scope.withHints(fromHints), state);
+		ITypeID toType = this.to.precompileForType(scope.withHints(toHints), state);
+		if (fromType == null || toType == null)
+			return null;
+		
+		return scope.getTypeRegistry().getRange(fromType, toType);
 	}
 }

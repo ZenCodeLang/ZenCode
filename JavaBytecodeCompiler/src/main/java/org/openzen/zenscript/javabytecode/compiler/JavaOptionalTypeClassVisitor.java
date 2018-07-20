@@ -36,8 +36,6 @@ public class JavaOptionalTypeClassVisitor implements ITypeVisitor<Class> {
 				return void.class;
 			case NULL:
 				return Object.class;
-			case ANY:
-				return Object.class; // TODO
 			case BOOL:
 				return Boolean.class;
 			case BYTE:

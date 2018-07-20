@@ -56,7 +56,6 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 	public String visitBasic(BasicTypeID basic) {
 		switch (basic) {
 			case VOID: return "void";
-			case ANY: return "Any";
 			case BOOL: return "boolean";
 			case BYTE: return "byte";
 			case SBYTE: return "byte";

@@ -23,8 +23,6 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  * @author Hoofdgebruiker
  */
 public abstract class BaseScope implements TypeScope {
-	public abstract LocalMemberCache getMemberCache();
-	
 	public abstract IPartialExpression get(CodePosition position, GenericName name);
 	
 	public abstract ITypeID getType(CodePosition position, List<GenericName> name);

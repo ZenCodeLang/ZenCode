@@ -15,7 +15,6 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
  */
 public enum ParsedTypeBasic implements IParsedType {
 	VOID(BasicTypeID.VOID),
-	ANY(BasicTypeID.ANY),
 	BOOL(BasicTypeID.BOOL),
 	BYTE(BasicTypeID.BYTE),
 	SBYTE(BasicTypeID.SBYTE),
@@ -28,7 +27,9 @@ public enum ParsedTypeBasic implements IParsedType {
 	FLOAT(BasicTypeID.FLOAT),
 	DOUBLE(BasicTypeID.DOUBLE),
 	CHAR(BasicTypeID.CHAR),
-	STRING(BasicTypeID.STRING);
+	STRING(BasicTypeID.STRING),
+	
+	UNDETERMINED(BasicTypeID.UNDETERMINED);
 	
 	private final BasicTypeID type;
 

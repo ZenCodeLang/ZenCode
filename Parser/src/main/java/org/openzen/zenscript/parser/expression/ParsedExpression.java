@@ -27,6 +27,7 @@ import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.ParseException;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -595,4 +596,6 @@ public abstract class ParsedExpression {
 	}
 	
 	public abstract boolean hasStrongType();
+	
+	public abstract ITypeID precompileForType(ExpressionScope scope, PrecompilationState state);
 }

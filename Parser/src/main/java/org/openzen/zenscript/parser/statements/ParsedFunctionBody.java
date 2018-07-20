@@ -8,11 +8,15 @@ package org.openzen.zenscript.parser.statements;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public abstract class ParsedFunctionBody {
-	public abstract Statement compile(StatementScope scope, FunctionHeader header);
+public interface ParsedFunctionBody {
+	Statement compile(StatementScope scope, FunctionHeader header);
+	
+	ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState);
 }

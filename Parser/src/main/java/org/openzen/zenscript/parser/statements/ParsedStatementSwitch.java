@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 /**
@@ -50,6 +51,16 @@ public class ParsedStatementSwitch extends ParsedStatement {
 			result.cases.add(switchCase.compile(result.value.type, innerScope));
 		}
 		
+		return result;
+	}
+
+	@Override
+	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
+		ITypeID result = null;
+		ITypeID valueType = value.precompileForType(new ExpressionScope(scope), precompileState);
+		for (ParsedSwitchCase switchCase : cases) {
+			result = union(scope, result, switchCase.precompileForResultType(valueType, scope, precompileState));
+		}
 		return result;
 	}
 	

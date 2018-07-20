@@ -7,15 +7,18 @@ package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class ParsedEmptyFunctionBody extends ParsedFunctionBody {
+public class ParsedEmptyFunctionBody implements ParsedFunctionBody {
 	public final CodePosition position;
 	
 	public ParsedEmptyFunctionBody(CodePosition position) {
@@ -25,5 +28,10 @@ public class ParsedEmptyFunctionBody extends ParsedFunctionBody {
 	@Override
 	public Statement compile(StatementScope scope, FunctionHeader header) {
 		return new EmptyStatement(position);
+	}
+
+	@Override
+	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
+		return null;
 	}
 }

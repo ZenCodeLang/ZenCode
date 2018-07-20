@@ -117,9 +117,8 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		// TODO: implementation merge check
-		//cls.empty = false; -> TODO: 
-		member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false));
+		JavaSourceClass implementationClass = new JavaSourceClass(cls.pkg + "." + cls.name, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation");
+		member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
 		for (IDefinitionMember implementedMember : member.members)
 			implementedMember.accept(this);
 		

@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -50,5 +51,10 @@ public class StaticInitializerMember extends Taggable implements IDefinitionMemb
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitStaticInitializer(this);
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return null;
 	}
 }

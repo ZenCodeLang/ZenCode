@@ -10,11 +10,11 @@ package org.openzen.zenscript.javasource.tags;
  * @author Hoofdgebruiker
  */
 public class JavaSourceImplementation {
-	public boolean inline = true;
+	public final boolean inline;
+	public final JavaSourceClass implementationClass;
 	
-	public JavaSourceImplementation() {}
-	
-	public JavaSourceImplementation(boolean inline) {
+	public JavaSourceImplementation(boolean inline, JavaSourceClass implementationClass) {
 		this.inline = inline;
+		this.implementationClass = implementationClass;
 	}
 }

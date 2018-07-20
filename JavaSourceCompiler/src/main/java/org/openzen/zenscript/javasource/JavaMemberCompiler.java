@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
@@ -30,6 +31,7 @@ import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
+import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
 /**
@@ -67,6 +69,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			
 		
 		begin(ElementType.METHOD);
+		override(member.getOverrides() != null);
 		output.append(indent);
 		if (isInterface && hasBody)
 			output.append("default ");
@@ -196,7 +199,28 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		// TODO
+		JavaSourceImplementation implementation = member.getTag(JavaSourceImplementation.class);
+		if (implementation.inline) {
+			for (IDefinitionMember m : member.members) {
+				m.accept(this);
+			}
+		} else {
+			String interfaceName = member.type.accept(new JavaSourceTypeNameVisitor());
+			String implementationName = interfaceName + "Implementation";
+			
+			begin(ElementType.FIELD);
+			output.append(indent);
+			modifiers(member.modifiers);
+			output.append("final ").append(scope.type(member.type)).append(" as").append(interfaceName).append(" = new ").append(implementationName).append("();\n");
+			
+			begin(ElementType.INNERCLASS);
+			output.append("private class ").append(implementationName).append(" implements ").append(scope.type(member.type)).append(" {\n");
+			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(settings, indent + settings.indent, output, scope, isInterface, definition);
+			for (IDefinitionMember m : member.members) {
+				m.accept(memberCompiler);
+			}
+			output.append(indent).append("}\n");
+		}
 		return null;
 	}
 

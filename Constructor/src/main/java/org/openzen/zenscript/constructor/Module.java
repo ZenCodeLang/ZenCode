@@ -133,6 +133,9 @@ public class Module {
 		if (failed)
 			return new SemanticModule(name, dependencies, SemanticModule.State.INVALID, rootPackage, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
 		
+		if (failed)
+			return new SemanticModule(name, dependencies, SemanticModule.State.INVALID, rootPackage, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
+		
 		// scripts will store all the script blocks encountered in the files
 		List<ScriptBlock> scripts = new ArrayList<>();
 		for (ParsedFile file : files) {

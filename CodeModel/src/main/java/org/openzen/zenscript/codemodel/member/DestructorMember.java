@@ -9,6 +9,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -19,9 +21,10 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  */
 public class DestructorMember extends FunctionalMember {
 	private static final FunctionHeader HEADER = new FunctionHeader(BasicTypeID.VOID);
+	public FunctionalMemberRef overrides;
 	
 	public DestructorMember(CodePosition position, HighLevelDefinition definition, int modifiers) {
-		super(position, definition, modifiers, "~this", HEADER, null);
+		super(position, definition, modifiers, HEADER, null);
 	}
 	
 	@Override
@@ -48,5 +51,10 @@ public class DestructorMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitDestructor(this);
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return overrides;
 	}
 }

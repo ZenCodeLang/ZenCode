@@ -20,6 +20,11 @@ public class ThrowExpression extends Expression {
 		
 		this.value = value;
 	}
+	
+	@Override
+	public boolean aborts() {
+		return true;
+	}
 
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {

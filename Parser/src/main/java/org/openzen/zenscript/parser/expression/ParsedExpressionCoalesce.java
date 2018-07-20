@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -51,5 +52,18 @@ public class ParsedExpressionCoalesce extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return left.hasStrongType();
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		ITypeID leftType = left.precompileForType(scope, state);
+		if (leftType == null)
+			return null;
+		
+		ITypeID resultType = leftType.getOptionalBase();
+		ITypeID rightType = right.precompileForType(scope.withHint(resultType), state);
+		
+		TypeMembers resultTypeMembers = scope.getTypeMembers(resultType);
+		return resultTypeMembers.union(rightType);
 	}
 }

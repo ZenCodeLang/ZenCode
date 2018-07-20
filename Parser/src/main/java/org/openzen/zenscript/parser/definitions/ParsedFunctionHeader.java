@@ -47,7 +47,7 @@ public class ParsedFunctionHeader {
 				ZSToken argName = tokens.required(T_IDENTIFIER, "identifier expected");
 				boolean variadic = tokens.optional(T_DOT3) != null;
 				
-				IParsedType type = ParsedTypeBasic.ANY;
+				IParsedType type = ParsedTypeBasic.UNDETERMINED;
 				if (tokens.optional(K_AS) != null) {
 					type = IParsedType.parse(tokens);
 				}
@@ -60,7 +60,7 @@ public class ParsedFunctionHeader {
 			tokens.required(T_BRCLOSE, ") expected");
 		}
 
-		IParsedType returnType = ParsedTypeBasic.ANY;
+		IParsedType returnType = ParsedTypeBasic.UNDETERMINED;
 		if (tokens.optional(K_AS) != null) {
 			returnType = IParsedType.parse(tokens);
 		}

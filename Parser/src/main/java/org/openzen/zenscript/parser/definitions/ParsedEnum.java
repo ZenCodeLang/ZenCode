@@ -18,6 +18,7 @@ import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 
 /**
@@ -39,7 +40,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 		
 		if (tokens.optional(ZSTokenType.T_SEMICOLON) != null) {
 			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-				result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
+				result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled, null));
 			}
 		} else {
 			tokens.required(ZSTokenType.T_ACLOSE, "} expected");
@@ -76,8 +77,8 @@ public class ParsedEnum extends BaseParsedDefinition {
 	}
 
 	@Override
-	public void compileCode(BaseScope scope) {
-		super.compileCode(scope);
+	public void compileCode(BaseScope scope, PrecompilationState state) {
+		super.compileCode(scope, state);
 		
 		DefinitionTypeID type = new DefinitionTypeID(compiled, new ITypeID[0]);
 		ExpressionScope evalScope = new ExpressionScope(scope);

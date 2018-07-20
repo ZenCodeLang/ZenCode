@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -45,7 +46,12 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void compile(BaseScope scope) {
-		innerDefinition.compileCode(scope);
+	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
+		return true;
+	}
+
+	@Override
+	public void compile(BaseScope scope, PrecompilationState state) {
+		innerDefinition.compileCode(scope, state);
 	}
 }

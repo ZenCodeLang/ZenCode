@@ -6,6 +6,9 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
+import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -39,5 +42,24 @@ public class IteratorMemberRef implements DefinitionMemberRef {
 	
 	public int getLoopVariableCount() {
 		return types.length;
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return target.getOverrides();
+	}
+
+	@Override
+	public FunctionHeader getHeader() {
+		return null; // TODO
+	}
+
+	@Override
+	public MemberAnnotation[] getAnnotations() {
+		if (target instanceof CustomIteratorMember) {
+			return ((CustomIteratorMember)target).annotations;
+		} else {
+			return null;
+		}
 	}
 }

@@ -11,7 +11,9 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 /**
@@ -30,5 +32,10 @@ public class ParsedStatementThrow extends ParsedStatement {
 	@Override
 	public Statement compile(StatementScope scope) {
 		return result(new ThrowStatement(position, expression.compile(new ExpressionScope(scope)).eval()), scope);
+	}
+
+	@Override
+	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
+		return null;
 	}
 }

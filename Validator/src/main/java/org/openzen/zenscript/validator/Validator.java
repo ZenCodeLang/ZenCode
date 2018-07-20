@@ -12,7 +12,10 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 import org.openzen.zenscript.validator.visitors.DefinitionValidator;
 import org.openzen.zenscript.validator.visitors.StatementValidator;
@@ -23,9 +26,18 @@ import org.openzen.zenscript.validator.visitors.StatementValidator;
  */
 public class Validator {
 	private final List<ValidationLogEntry> log = new ArrayList<>();
+	public final GlobalTypeRegistry registry;
+	public final List<ExpansionDefinition> expansions;
+	public final List<AnnotationDefinition> annotations;
 	private boolean hasErrors = false;
 	
 	private final DefinitionValidator definitionValidator = new DefinitionValidator(this);
+	
+	public Validator(GlobalTypeRegistry registry, List<ExpansionDefinition> expansions, List<AnnotationDefinition> annotations) {
+		this.registry = registry;
+		this.expansions = expansions;
+		this.annotations = annotations;
+	}
 	
 	public List<ValidationLogEntry> getLog() {
 		return Collections.unmodifiableList(log);

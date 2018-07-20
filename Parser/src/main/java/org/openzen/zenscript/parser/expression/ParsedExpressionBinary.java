@@ -10,9 +10,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -43,5 +46,21 @@ public class ParsedExpressionBinary extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return left.hasStrongType() && right.hasStrongType();
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		ITypeID leftType = left.precompileForType(scope, state);
+		if (leftType == null)
+			return null;
+		
+		DefinitionMemberGroup members = scope.getTypeMembers(leftType).getOrCreateGroup(this.operator);
+		ExpressionScope innerScope = scope.withHints(members.predictCallTypes(scope, scope.getResultTypeHints(), 1)[0]);
+		ITypeID rightType = right.precompileForType(innerScope, state);
+		FunctionalMemberRef method = members.selectMethod(position, scope, new CallArguments(rightType), true, false);
+		if (!state.precompile(method.getTarget()))
+			return null;
+		
+		return method.getTarget().header.returnType; // TODO: this will not work properly for methods with type parameters
 	}
 }

@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
 import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.member.MemberVisitor;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -69,5 +70,10 @@ public class ArrayIteratorValues extends Taggable implements IIteratorMember {
 	@Override
 	public <T> T acceptForIterator(ForeachIteratorVisitor<T> visitor) {
 		return visitor.visitArrayValueIterator();
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return null;
 	}
 }

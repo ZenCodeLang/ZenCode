@@ -9,7 +9,9 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -21,7 +23,8 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  */
 public class GetterMember extends FunctionalMember {
 	public final String name;
-	public final ITypeID type;
+	public ITypeID type;
+	private GetterMemberRef overrides;
 	
 	public GetterMember(
 			CodePosition position,
@@ -30,7 +33,7 @@ public class GetterMember extends FunctionalMember {
 			String name,
 			ITypeID type,
 			BuiltinID builtin) {
-		super(position, definition, modifiers, name, new FunctionHeader(type), builtin);
+		super(position, definition, modifiers, new FunctionHeader(type), builtin);
 		
 		this.name = name;
 		this.type = type;
@@ -59,5 +62,17 @@ public class GetterMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitGetter(this);
+	}
+
+	@Override
+	public GetterMemberRef getOverrides() {
+		return overrides;
+	}
+	
+	public void setOverrides(GetterMemberRef override) {
+		this.overrides = override;
+		
+		if (type == BasicTypeID.UNDETERMINED)
+			type = override.type;
 	}
 }

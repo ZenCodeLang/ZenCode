@@ -19,10 +19,10 @@ import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -75,7 +75,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 				return new NewExpression(position, assocHint, constructor, CallArguments.EMPTY);
 		}
 		
-		if (!hasAssocHint && scope.hints.size() == 1 && scope.hints.get(0) != BasicTypeID.ANY) {
+		if (!hasAssocHint && scope.hints.size() == 1) {
 			// compile as constructor call
 			ITypeID hint = scope.hints.get(0);
 			for (int i = 0; i < keys.size(); i++) {
@@ -109,7 +109,8 @@ public class ParsedExpressionMap extends ParsedExpression {
 			}
 		}
 		if (keyType == null)
-			keyType = BasicTypeID.ANY;
+			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
+		
 		for (int i = 0; i < cKeys.length; i++)
 			cKeys[i] = cKeys[i].castImplicit(position, scope, keyType);
 		
@@ -125,7 +126,8 @@ public class ParsedExpressionMap extends ParsedExpression {
 			}
 		}
 		if (valueType == null)
-			valueType = BasicTypeID.ANY;
+			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
+		
 		for (int i = 0; i < cValues.length; i++)
 			cValues[i] = cValues[i].castImplicit(position, scope, valueType);
 		
@@ -136,5 +138,10 @@ public class ParsedExpressionMap extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return false;
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		return null; // TODO: fill this later
 	}
 }

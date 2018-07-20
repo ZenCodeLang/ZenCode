@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
@@ -40,6 +41,10 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 		return target.position;
 	}
 	
+	public FunctionalMember getTarget() {
+		return target;
+	}
+	
 	public String getCanonicalName() {
 		return target.getCanonicalName();
 	}
@@ -49,8 +54,24 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 		return target.describe();
 	}
 	
+	@Override
 	public <T> T getTag(Class<T> cls) {
 		return target.getTag(cls);
+	}
+	
+	@Override
+	public MemberAnnotation[] getAnnotations() {
+		return target.annotations;
+	}
+	
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return target.getOverrides();
+	}
+
+	@Override
+	public FunctionHeader getHeader() {
+		return header;
 	}
 	
 	public BuiltinID getBuiltin() {

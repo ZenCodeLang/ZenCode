@@ -24,6 +24,7 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LambdaScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -95,5 +96,10 @@ public class ParsedExpressionFunction extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return false;
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		return null; // TODO: meh...
 	}
 }

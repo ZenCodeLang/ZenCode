@@ -16,11 +16,15 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  * @author Hoofdgebruiker
  */
 public interface TypeScope {
-	public GlobalTypeRegistry getTypeRegistry();
-	
 	public LocalMemberCache getMemberCache();
 	
-	public TypeMembers getTypeMembers(ITypeID type);
+	default TypeMembers getTypeMembers(ITypeID type) {
+		return getMemberCache().get(type);
+	}
+	
+	default GlobalTypeRegistry getTypeRegistry() {
+		return getMemberCache().getRegistry();
+	}
 	
 	public AnnotationDefinition getAnnotation(String name);
 }

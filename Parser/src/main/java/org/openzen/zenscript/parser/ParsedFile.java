@@ -6,7 +6,6 @@
 package org.openzen.zenscript.parser;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -189,8 +188,14 @@ public class ParsedFile {
 			List<AnnotationDefinition> annotations) {
 		FileScope scope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
 		loadImports(scope, rootPackage, modulePackage);
+		
+		PrecompilationState state = new PrecompilationState();
 		for (ParsedDefinition definition : this.definitions) {
-			definition.compileCode(scope);
+			definition.listMembers(scope, state);
+		}
+		
+		for (ParsedDefinition definition : this.definitions) {
+			definition.compileCode(scope, state);
 		}
 		
 		if (!statements.isEmpty() || postComment != null) {

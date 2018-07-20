@@ -9,6 +9,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -27,5 +29,10 @@ public class ParsedExpressionThis extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return true;
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		return scope.getThisType();
 	}
 }

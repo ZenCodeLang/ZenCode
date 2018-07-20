@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.codemodel;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 /**
@@ -31,6 +34,7 @@ public class FunctionHeader {
 	
 	public final int minParameters;
 	public final int maxParameters;
+	public final boolean hasUnknowns;
 	
 	public FunctionHeader(ITypeID returnType) {
 		if (returnType == null)
@@ -43,6 +47,7 @@ public class FunctionHeader {
 		
 		minParameters = 0;
 		maxParameters = 0;
+		hasUnknowns = returnType == BasicTypeID.UNDETERMINED;
 	}
 	
 	public FunctionHeader(ITypeID returnType, ITypeID... parameterTypes) {
@@ -59,6 +64,7 @@ public class FunctionHeader {
 		
 		minParameters = parameterTypes.length;
 		maxParameters = parameterTypes.length;
+		hasUnknowns = hasUnknowns(parameterTypes);
 	}
 	
 	public FunctionHeader(ITypeID returnType, FunctionParameter... parameters) {
@@ -72,6 +78,7 @@ public class FunctionHeader {
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
+		hasUnknowns = hasUnknowns(parameters);
 	}
 	
 	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, ITypeID thrownType, FunctionParameter... parameters) {
@@ -87,10 +94,48 @@ public class FunctionHeader {
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
+		hasUnknowns = hasUnknowns(parameters);
 	}
 	
 	public int getNumberOfTypeParameters() {
 		return typeParameters.length;
+	}
+	
+	public FunctionHeader withReturnType(ITypeID returnType) {
+		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
+	}
+	
+	public FunctionHeader inferFromOverride(GlobalTypeRegistry registry, FunctionHeader overridden) {
+		TypeParameter[] resultTypeParameters = typeParameters;
+		GenericMapper mapper;
+		if (resultTypeParameters == TypeParameter.NONE) {
+			resultTypeParameters = overridden.typeParameters;
+			mapper = new GenericMapper(registry, Collections.emptyMap());
+		} else {
+			Map<TypeParameter, ITypeID> mapping = new HashMap<>();
+			for (int i = 0; i < overridden.typeParameters.length; i++)
+				mapping.put(overridden.typeParameters[i], new GenericTypeID(typeParameters[i]));
+			mapper = new GenericMapper(registry, mapping);
+		}
+		
+		ITypeID resultReturnType = this.returnType;
+		if (resultReturnType == BasicTypeID.UNDETERMINED)
+			resultReturnType = overridden.returnType.instance(mapper);
+		
+		ITypeID resultThrownType = this.thrownType;
+		if (resultThrownType == null && overridden.thrownType != null)
+			resultThrownType = overridden.thrownType.instance(mapper);
+		
+		FunctionParameter[] resultParameters = Arrays.copyOf(parameters, parameters.length);
+		for (int i = 0; i < resultParameters.length; i++) {
+			if (resultParameters[i].type == BasicTypeID.UNDETERMINED) {
+				FunctionParameter parameter = resultParameters[i];
+				FunctionParameter original = overridden.parameters[i];
+				resultParameters[i] = new FunctionParameter(original.type.instance(mapper), parameter.name, parameter.defaultValue, original.variadic);
+			}
+		}
+		
+		return new FunctionHeader(resultTypeParameters, resultReturnType, resultThrownType, resultParameters);
 	}
 	
 	public boolean matchesExactly(CallArguments arguments, TypeScope scope) {
@@ -205,6 +250,25 @@ public class FunctionHeader {
 		
 		for (int i = 0; i < arguments.length; i++) {
 			if (!scope.getTypeMembers(arguments[i].type).canCastImplicit(parameters[i].type))
+				return false;
+		}
+		
+		return true;
+	}
+	
+	public boolean canOverride(TypeScope scope, FunctionHeader other) {
+		if (parameters.length != other.parameters.length)
+			return false;
+		if (returnType != BasicTypeID.UNDETERMINED && !scope.getTypeMembers(returnType).canCastImplicit(other.returnType))
+			return false;
+		
+		for (int i = 0; i < parameters.length; i++) {
+			if (parameters[i].type == BasicTypeID.UNDETERMINED)
+				continue;
+			
+			if (parameters[i].variadic != other.parameters[i].variadic)
+				return false;
+			if (!scope.getTypeMembers(other.parameters[i].type).canCastImplicit(parameters[i].type))
 				return false;
 		}
 		
@@ -360,5 +424,21 @@ public class FunctionHeader {
 			return 0;
 		
 		return parameters[parameters.length - 1].variadic ? Integer.MAX_VALUE : parameters.length;
+	}
+	
+	private static boolean hasUnknowns(ITypeID[] types) {
+		for (ITypeID type : types)
+			if (type == BasicTypeID.UNDETERMINED)
+				return true;
+		
+		return false;
+	}
+	
+	private static boolean hasUnknowns(FunctionParameter[] parameters) {
+		for (FunctionParameter parameter : parameters)
+			if (parameter.type == BasicTypeID.UNDETERMINED)
+				return true;
+		
+		return false;
 	}
 }

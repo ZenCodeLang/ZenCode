@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
@@ -29,7 +30,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  */
 public class FieldMember extends DefinitionMember {
 	public final String name;
-	public final ITypeID type;
+	public ITypeID type;
 	public Expression initializer;
 	public final int autoGetterAccess;
 	public final int autoSetterAccess;
@@ -137,5 +138,10 @@ public class FieldMember extends DefinitionMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitField(this);
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return null;
 	}
 }

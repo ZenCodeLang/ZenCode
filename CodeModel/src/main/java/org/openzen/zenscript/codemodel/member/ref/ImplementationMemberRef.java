@@ -6,6 +6,8 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -35,5 +37,20 @@ public class ImplementationMemberRef implements DefinitionMemberRef {
 	@Override
 	public <T> T getTag(Class<T> type) {
 		return member.getTag(type);
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return null;
+	}
+
+	@Override
+	public FunctionHeader getHeader() {
+		return null;
+	}
+
+	@Override
+	public MemberAnnotation[] getAnnotations() {
+		return member.annotations;
 	}
 }

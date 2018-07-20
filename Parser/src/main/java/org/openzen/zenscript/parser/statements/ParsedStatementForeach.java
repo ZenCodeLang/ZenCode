@@ -6,6 +6,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
+import org.openzen.zenscript.codemodel.scope.BlockScope;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -15,6 +16,7 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.ForeachScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 public class ParsedStatementForeach extends ParsedStatement {
@@ -48,5 +50,20 @@ public class ParsedStatementForeach extends ParsedStatement {
 		ForeachScope innerScope = new ForeachScope(statement, scope);
 		statement.content = this.body.compile(innerScope);
 		return result(statement, scope);
+	}
+
+	@Override
+	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
+		ITypeID listType = list.precompileForType(new ExpressionScope(scope), precompileState);
+		IteratorMemberRef iterator = scope.getTypeMembers(listType).getIterator(varnames.length);
+		if (iterator == null)
+			return null;
+		
+		ITypeID[] loopTypes = iterator.types;
+		BlockScope innerScope = new BlockScope(scope);
+		for (int i = 0; i < varnames.length; i++)
+			innerScope.defineVariable(new VarStatement(position, varnames[i], loopTypes[i], null, true));
+		
+		return body.precompileForResultType(innerScope, precompileState);
 	}
 }

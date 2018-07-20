@@ -7,6 +7,7 @@ package org.openzen.zenscript.scriptingexample;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 
@@ -15,11 +16,11 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
  * @author Hoofdgebruiker
  */
 public class FileContents {
-	public final String filename;
+	public final SourceFile file;
 	public ScriptBlock script;
 	public final List<HighLevelDefinition> definitions = new ArrayList<>();
 	
-	public FileContents(String filename) {
-		this.filename = filename;
+	public FileContents(SourceFile file) {
+		this.file = file;
 	}
 }

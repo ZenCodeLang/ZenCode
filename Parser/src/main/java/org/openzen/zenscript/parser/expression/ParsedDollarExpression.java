@@ -12,6 +12,8 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -34,5 +36,14 @@ public class ParsedDollarExpression extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return true;
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		Function<CodePosition, Expression> dollar = scope.getDollar();
+		if (dollar == null)
+			return null;
+		
+		return dollar.apply(position).type;
 	}
 }

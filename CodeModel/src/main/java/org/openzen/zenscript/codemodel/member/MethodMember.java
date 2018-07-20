@@ -9,6 +9,9 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -18,8 +21,13 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  * @author Hoofdgebruiker
  */
 public class MethodMember extends FunctionalMember {
+	public final String name;
+	private FunctionalMemberRef overrides;
+	
 	public MethodMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header, BuiltinID builtin) {
-		super(position, definition, modifiers, name, header, builtin);
+		super(position, definition, modifiers, header, builtin);
+		
+		this.name = name;
 	}
 	
 	@Override
@@ -45,5 +53,20 @@ public class MethodMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitMethod(this);
+	}
+
+	@Override
+	public FunctionalMemberRef getOverrides() {
+		return overrides;
+	}
+	
+	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {
+		this.overrides = overrides;
+		header = header.inferFromOverride(registry, overrides.header);
+		
+		if (overrides.getTarget().isPublic())
+			modifiers |= Modifiers.PUBLIC;
+		if (overrides.getTarget().isProtected())
+			modifiers |= Modifiers.PROTECTED;
 	}
 }

@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -71,5 +72,15 @@ public class ParsedExpressionConditional extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return ifThen.hasStrongType() && ifElse.hasStrongType();
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		ITypeID thenType = ifThen.precompileForType(scope, state);
+		ITypeID elseType = ifElse.precompileForType(scope, state);
+		if (thenType == null || elseType == null)
+			return null;
+		
+		return scope.getTypeMembers(thenType).union(elseType);
 	}
 }

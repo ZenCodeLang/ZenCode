@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.DefinitionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -73,9 +74,14 @@ public class ParsedAlias extends ParsedDefinition {
 		
 		compiled.setType(type.compile(innerScope));
 	}
+	
+	@Override
+	public void listMembers(BaseScope scope, PrecompilationState state) {
+		// nothing to do
+	}
 
 	@Override
-	public void compileCode(BaseScope scope) {
+	public void compileCode(BaseScope scope, PrecompilationState state) {
 		// nothing to do
 	}
 

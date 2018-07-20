@@ -14,8 +14,10 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
@@ -59,10 +61,18 @@ public class ParsedFunction extends ParsedDefinition {
 	public void compileMembers(BaseScope scope) {
 		compiled.setHeader(header.compile(scope));
 	}
+	
+	@Override
+	public void listMembers(BaseScope scope, PrecompilationState state) {
+		
+	}
 
 	@Override
-	public void compileCode(BaseScope scope) {
+	public void compileCode(BaseScope scope, PrecompilationState state) {
 		FunctionScope innerScope = new FunctionScope(scope, compiled.header);
 		compiled.setCode(body.compile(innerScope, compiled.header));
+		
+		if (compiled.header.returnType == BasicTypeID.UNDETERMINED)
+			compiled.header = compiled.header.withReturnType(body.precompileForResultType(new FunctionScope(scope, compiled.header), state));
 	}
 }

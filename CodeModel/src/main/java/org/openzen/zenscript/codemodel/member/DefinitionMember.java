@@ -18,7 +18,7 @@ import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 public abstract class DefinitionMember extends Taggable implements IDefinitionMember {
 	public final CodePosition position;
 	public final HighLevelDefinition definition;
-	public final int modifiers;
+	public int modifiers;
 	public MemberAnnotation[] annotations = MemberAnnotation.NONE;
 	
 	public DefinitionMember(CodePosition position, HighLevelDefinition definition, int modifiers) {
@@ -46,5 +46,13 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 	
 	public boolean isPrivate() {
 		return Modifiers.isPrivate(modifiers);
+	}
+	
+	public boolean isPublic() {
+		return Modifiers.isPublic(modifiers);
+	}
+	
+	public boolean isProtected() {
+		return Modifiers.isProtected(modifiers);
 	}
 }

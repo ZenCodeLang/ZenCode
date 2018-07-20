@@ -155,8 +155,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 			if (statement.value.type != scope.getFunctionHeader().returnType) {
 				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type.toString());
 			}
-		} else if (scope.getFunctionHeader().returnType != BasicTypeID.ANY
-				&& scope.getFunctionHeader().returnType != BasicTypeID.VOID) {
+		} else if (scope.getFunctionHeader().returnType != BasicTypeID.VOID) {
 			validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Missing return value");
 		}
 		

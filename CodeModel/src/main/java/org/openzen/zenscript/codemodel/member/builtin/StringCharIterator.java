@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
 import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.member.MemberVisitor;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -63,5 +64,10 @@ public class StringCharIterator extends Taggable implements IIteratorMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		throw new UnsupportedOperationException("Not a compilable member");
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return null;
 	}
 }

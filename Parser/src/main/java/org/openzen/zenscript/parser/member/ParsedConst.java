@@ -11,7 +11,10 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -26,6 +29,7 @@ public class ParsedConst extends ParsedDefinitionMember {
 	private final IParsedType type;
 	private final ParsedExpression expression;
 	
+	private boolean precompiled = false;
 	private ConstMember compiled;
 	
 	public ParsedConst(
@@ -68,7 +72,26 @@ public class ParsedConst extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void compile(BaseScope scope) {
+	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
+		if (precompiled)
+			return true;
+		precompiled = true;
+		
+		if (compiled.type == BasicTypeID.UNDETERMINED) {
+			ITypeID type = expression.precompileForType(new ExpressionScope(scope), state);
+			if (type == null)
+				return false;
+			
+			compiled.type = type;
+		}
+		
+		return true;
+	}
+
+	@Override
+	public void compile(BaseScope scope, PrecompilationState state) {
+		inferHeaders(scope, state);
+		
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		
 		if (expression != null) {

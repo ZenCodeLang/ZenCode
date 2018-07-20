@@ -48,7 +48,7 @@ public class ParsedVariant extends BaseParsedDefinition {
 		
 		if (tokens.optional(ZSTokenType.T_SEMICOLON) != null) {
 			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-				result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
+				result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled, null));
 			}
 		} else {
 			tokens.required(ZSTokenType.T_ACLOSE, "} expected");
