@@ -5,16 +5,14 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface DComponent extends Destructible {
-	void mount(DStylePath parent, int z, DDrawSurface surface);
+	void mount(DComponentContext context);
 	
 	void unmount();
 	
@@ -25,10 +23,6 @@ public interface DComponent extends Destructible {
 	int getBaselineY();
 	
 	void setBounds(DIRectangle bounds);
-	
-	default void onMounted() {}
-	
-	default void onUnmounted() {}
 	
 	default void onMouseEnter(DMouseEvent e) {}
 	

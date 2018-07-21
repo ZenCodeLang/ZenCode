@@ -7,6 +7,7 @@ package org.openzen.zenscript.ide.ui.view;
 
 import java.util.function.Consumer;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DDrawableInstance;
@@ -15,7 +16,6 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSimpleTooltip;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveBool;
@@ -25,7 +25,6 @@ import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -39,12 +38,11 @@ public class IconButtonControl implements DComponent {
 	private final LiveBool disabled;
 	private final ListenerHandle<LiveBool.Listener> disabledListener;
 	private final DSimpleTooltip tooltip;
+	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
-	private DDrawSurface surface;
-	private int z;
+	private DComponentContext context;
 	private IconButtonControlStyle style;
 	private DIRectangle bounds;
-	private final MutableLiveObject<DSizing> preferences = DSizing.create();
 	private boolean hover;
 	private boolean press;
 	
@@ -67,20 +65,17 @@ public class IconButtonControl implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("iconbutton", styleClass);
+		style = context.getStyle(IconButtonControlStyle::new);
 		
-		tooltip.setContext(surface.getContext());
+		tooltip.setContext(context.getUIContext());
 		
-		DStylePath path = parent.getChild("iconbutton", styleClass);
-		style = new IconButtonControlStyle(surface.getStylesheet(path));
-		
-		int iconWidth = (int)(icon.getNominalWidth() * surface.getScale() + 0.5f);
-		int iconHeight = (int)(icon.getNominalWidth() * surface.getScale() + 0.5f);
+		int iconWidth = (int)(icon.getNominalWidth() * context.getScale() + 0.5f);
+		int iconHeight = (int)(icon.getNominalWidth() * context.getScale() + 0.5f);
 		int width = iconWidth + 2 * style.padding + 2 * style.margin;
 		int height = iconHeight + 2 * style.padding + 2 * style.margin;
-		preferences.setValue(new DSizing(width, height));
+		sizing.setValue(new DSizing(width, height));
 		
 		if (bounds != null)
 			setBounds(bounds);
@@ -96,7 +91,7 @@ public class IconButtonControl implements DComponent {
 
 	@Override
 	public LiveObject<DSizing> getSizing() {
-		return preferences;
+		return sizing;
 	}
 
 	@Override
@@ -117,7 +112,7 @@ public class IconButtonControl implements DComponent {
 			shape.close();
 		
 		shadow = getShadow();
-		shape = surface.shadowPath(z, DPath.roundedRectangle(
+		shape = context.shadowPath(0, DPath.roundedRectangle(
 				bounds.x + style.margin,
 				bounds.y + style.margin,
 				bounds.width - 2 * style.margin,
@@ -176,10 +171,10 @@ public class IconButtonControl implements DComponent {
 		if (drawnIcon != null)
 			drawnIcon.close();
 		
-		drawnIcon = new DDrawableInstance(surface, z + 1, icon, DTransform2D.scaleAndTranslate(
-				bounds.x + (bounds.width - icon.getNominalWidth() * surface.getScale()) / 2,
-				bounds.y + (bounds.height - icon.getNominalHeight() * surface.getScale()) / 2,
-				surface.getScale()));
+		drawnIcon = new DDrawableInstance(context.surface, context.z + 1, icon, DTransform2D.scaleAndTranslate(
+				bounds.x + (bounds.width - icon.getNominalWidth() * context.getScale()) / 2,
+				bounds.y + (bounds.height - icon.getNominalHeight() * context.getScale()) / 2,
+				context.getScale()));
 	}
 	
 	private void update() {
@@ -189,7 +184,7 @@ public class IconButtonControl implements DComponent {
 				shape.close();
 			
 			shadow = newShadow;
-			shape = surface.shadowPath(z, DPath.roundedRectangle(
+			shape = context.shadowPath(0, DPath.roundedRectangle(
 					bounds.x + style.margin,
 					bounds.y + style.margin,
 					bounds.width - 2 * style.margin,

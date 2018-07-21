@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -38,6 +39,15 @@ public interface IPartialExpression {
 	Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments);
 	
 	ITypeID[] getGenericCallTypes();
+	
+	/**
+	 * Retrieves the (primary) member this expression refers to, or null if there is no primary target.
+	 * 
+	 * @return 
+	 */
+	default IDefinitionMember getMember() {
+		return null;
+	}
 	
 	default Expression assign(CodePosition position, TypeScope scope, Expression value) {
 		throw new CompileException(position, CompileExceptionCode.CANNOT_ASSIGN, "This expression is not assignable");

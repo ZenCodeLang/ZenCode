@@ -19,4 +19,6 @@ public interface MutableLiveList<T> extends LiveList<T> {
 	void remove(int index);
 	
 	void remove(T value);
+	
+	void clear();
 }

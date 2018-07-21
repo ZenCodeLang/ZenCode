@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DPath;
@@ -44,12 +45,9 @@ public class AspectBarView extends BaseComponentGroup {
 	private final DStyleClass styleClass;
 	private final IDEAspectBar aspectBar;
 	
-	private DIRectangle bounds;
-	private DDrawSurface surface;
-	private int z;
-	
-	private DStylePath path;
+	private DComponentContext context;
 	private AspectBarStyle style;
+	private DIRectangle bounds;
 	private DFontMetrics activeToolbarTitleFontMetrics;
 	private boolean showWindowControls;
 	
@@ -83,16 +81,16 @@ public class AspectBarView extends BaseComponentGroup {
 		aspectBar.active.addListener(this::onActiveChanged);
 		listener = aspectBar.toolbars.addListener(new ToolbarListListener());
 		
-		minimize = new WindowActionButton(scale -> new ScalableMinimizeIcon(scale), e -> surface.getContext().getWindow().minimize());
+		minimize = new WindowActionButton(scale -> new ScalableMinimizeIcon(scale), e -> context.getUIContext().getWindow().minimize());
 		minimizeRelayout = minimize.getSizing().addListener((a, b) -> layout());
 		maximizeRestore = new WindowActionButton(ScalableMaximizeIcon::new, e -> {
-			if (surface.getContext().getWindow().getWindowState().getValue() == DUIWindow.State.MAXIMIZED)
-				surface.getContext().getWindow().restore();
+			if (context.getUIContext().getWindow().getWindowState().getValue() == DUIWindow.State.MAXIMIZED)
+				context.getUIContext().getWindow().restore();
 			else
-				surface.getContext().getWindow().maximize();
+				context.getUIContext().getWindow().maximize();
 		});
 		maximizeRestoreRelayout = maximizeRestore.getSizing().addListener((a, b) -> layout());
-		close = new WindowActionButton(scale -> new ScalableCloseIcon(scale), e -> surface.getContext().getWindow().close());
+		close = new WindowActionButton(scale -> new ScalableCloseIcon(scale), e -> context.getUIContext().getWindow().close());
 		closeRelayout = close.getSizing().addListener((a, b) -> layout());
 		
 		selectorButtons = new LiveMappedList<>(
@@ -100,8 +98,8 @@ public class AspectBarView extends BaseComponentGroup {
 				bar -> {
 					LiveBool buttonActive = new LivePredicateBool<>(aspectBar.active, activeBar -> activeBar == bar);
 					AspectBarSelectorButton button = new AspectBarSelectorButton(DStyleClass.EMPTY, bar.icon, buttonActive, bar.description, e -> aspectBar.active.setValue(bar));
-					if (surface != null)
-						button.mount(path, z + 1, surface);
+					if (context != null)
+						button.mount(context);
 					
 					return button;
 				});
@@ -112,35 +110,33 @@ public class AspectBarView extends BaseComponentGroup {
 	}
 	
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		this.path = parent.getChild("aspectbar", styleClass);
-		this.style = new AspectBarStyle(surface.getStylesheet(path));
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("aspectbar", styleClass);
+		style = context.getStyle(AspectBarStyle::new);
 		
-		activeToolbarTitleFontMetrics = surface.getFontMetrics(style.activeToolbarTitleFont);
-		showWindowControls = !surface.getContext().getWindow().hasTitleBar();
+		activeToolbarTitleFontMetrics = context.getFontMetrics(style.activeToolbarTitleFont);
+		showWindowControls = !context.getUIContext().getWindow().hasTitleBar();
 		
 		sizing.setValue(new DSizing(0, style.height));
 		
 		for (DComponent selectorButton : selectorButtons)
-			selectorButton.mount(path, z + 2, surface);
+			selectorButton.mount(context);
 		
 		if (activeToolbarComponents != null)
 			for (DComponent component : activeToolbarComponents)
-				component.mount(path, z + 2, surface);
+				component.mount(context);
 		
-		minimize.mount(path, z + 2, surface);
-		maximizeRestore.mount(path, z + 2, surface);
-		close.mount(path, z + 2, surface);
+		minimize.mount(context);
+		maximizeRestore.mount(context);
+		close.mount(context);
 		
 		if (topBackground != null)
 			topBackground.close();
 		if (bottomBackground != null)
 			bottomBackground.close();
 		
-		topBackground = surface.fillRect(z, DIRectangle.EMPTY, style.backgroundColor);
-		bottomBackground = surface.fillRect(z, DIRectangle.EMPTY, style.backgroundColorBottom);
+		topBackground = context.fillRect(0, DIRectangle.EMPTY, style.backgroundColor);
+		bottomBackground = context.fillRect(0, DIRectangle.EMPTY, style.backgroundColorBottom);
 	}
 	
 	@Override
@@ -182,7 +178,7 @@ public class AspectBarView extends BaseComponentGroup {
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
 		
-		if (surface != null) {
+		if (context != null) {
 			layout();
 			setupActiveBarText();
 		}
@@ -208,8 +204,8 @@ public class AspectBarView extends BaseComponentGroup {
 		
 		activeToolbarComponents = new LiveMappedList<>(aspectBar.controls, control -> {
 			DComponent result = control.instantiate();
-			if (surface != null)
-				result.mount(path, z + 2, surface);
+			if (context != null)
+				result.mount(context);
 			return result;
 		});
 		
@@ -237,9 +233,9 @@ public class AspectBarView extends BaseComponentGroup {
 				+ (int)(activeToolbarTitleFontMetrics.getAscent() * 0.35f)
 				+ (bounds.height - style.aspectBarPaddingTop) / 2;
 		int x = aspectSelectorEndX + style.aspectSelectorToToolbarSpacing;
-		activeBarText = surface.drawText(z + 3, style.activeToolbarTitleFont, style.activeToolbarTitleColor, x, y, aspectBar.active.getValue().title);
-		activeBarSeparator = surface.fillRect(
-				z + 3,
+		activeBarText = context.drawText(3, style.activeToolbarTitleFont, style.activeToolbarTitleColor, x, y, aspectBar.active.getValue().title);
+		activeBarSeparator = context.fillRect(
+				3,
 				new DIRectangle(
 					x + activeBarText.getBounds().width + 8,
 					bounds.y + style.aspectBarPaddingTop + 8,
@@ -282,8 +278,8 @@ public class AspectBarView extends BaseComponentGroup {
 			activeBarText.setPosition(activeBarX, activeBarY);
 			
 			activeBarSeparator.close();
-			activeBarSeparator = surface.fillRect(
-				z + 3,
+			activeBarSeparator = context.fillRect(
+				3,
 				new DIRectangle(
 					activeBarX + activeBarText.getBounds().width + 8,
 					bounds.y + style.aspectBarPaddingTop + 8,
@@ -298,8 +294,8 @@ public class AspectBarView extends BaseComponentGroup {
 			if (windowControlsBackground != null)
 				windowControlsBackground.close();
 			
-			windowControlsBackground = surface.shadowPath(
-					z + 1,
+			windowControlsBackground = context.shadowPath(
+					1,
 					windowControlsShape,
 					DTransform2D.IDENTITY,
 					style.backgroundColor,
@@ -392,23 +388,23 @@ public class AspectBarView extends BaseComponentGroup {
 		if (aspectBarShape != null)
 			aspectBarShape.close();
 		
-		aspectBarShape = surface.shadowPath(z + 1, tracer -> {
+		aspectBarShape = context.shadowPath(1, tracer -> {
 			int height = bounds.height - style.marginBottom;
 			int baseY = bounds.y + height - style.aspectSelectorBottomSize;
 			int barBaseX = toX + style.aspectSelectorToToolbarSpacing;
 			int barBaseY = bounds.y + style.aspectBarPaddingTop;
 			
 			tracer.moveTo(bounds.x, baseY);
-			tracer.lineTo(toX - 3 * surface.getScale(), baseY);
+			tracer.lineTo(toX - 3 * context.getScale(), baseY);
 			tracer.bezierCubic(
-					toX + 0 * surface.getScale(), baseY,
-					toX + 2 * surface.getScale(), baseY,
-					toX + 3.5f * surface.getScale(), baseY - 4 * surface.getScale());
-			tracer.lineTo(barBaseX - 3.5f * surface.getScale(), barBaseY + 4 * surface.getScale());
+					toX + 0 * context.getScale(), baseY,
+					toX + 2 * context.getScale(), baseY,
+					toX + 3.5f * context.getScale(), baseY - 4 * context.getScale());
+			tracer.lineTo(barBaseX - 3.5f * context.getScale(), barBaseY + 4 * context.getScale());
 			tracer.bezierCubic(
-					barBaseX - 2 * surface.getScale(), barBaseY,
-					barBaseX - 0 * surface.getScale(), barBaseY,
-					barBaseX + 3 * surface.getScale(), barBaseY);
+					barBaseX - 2 * context.getScale(), barBaseY,
+					barBaseX - 0 * context.getScale(), barBaseY,
+					barBaseX + 3 * context.getScale(), barBaseY);
 			
 			if (showWindowControls) {
 				int spacingLeft = style.windowControlSpacingLeft;

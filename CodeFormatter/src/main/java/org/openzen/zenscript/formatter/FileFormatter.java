@@ -43,9 +43,11 @@ public class FileFormatter {
 		}
 		
 		StringBuilder scriptOutput = new StringBuilder();
-		StatementFormatter scriptFormatter = new StatementFormatter(scriptOutput, "", settings, expressionFormatter);
-		for (Statement statement : script.statements) {
-			statement.accept(scriptFormatter);
+		if (script != null) {
+			StatementFormatter scriptFormatter = new StatementFormatter(scriptOutput, "", settings, expressionFormatter);
+			for (Statement statement : script.statements) {
+				statement.accept(scriptFormatter);
+			}
 		}
 		
 		StringBuilder output = new StringBuilder();
@@ -61,7 +63,7 @@ public class FileFormatter {
 			output.append(definition.toString());
 		}
 		
-		if (script.statements.size() > 0) {
+		if (script != null && script.statements.size() > 0) {
 			if (definitionFormatters.size() > 0)
 				output.append("\n");
 			

@@ -6,15 +6,15 @@
 package org.openzen.drawablegui.border;
 
 import java.io.Closeable;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.draw.DDrawSurface;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface DBorder extends Closeable {
-	public void update(DDrawSurface surface, int z, DIRectangle bounds);
+	public void update(DComponentContext context, DIRectangle bounds);
 	
 	public int getPaddingLeft();
 	

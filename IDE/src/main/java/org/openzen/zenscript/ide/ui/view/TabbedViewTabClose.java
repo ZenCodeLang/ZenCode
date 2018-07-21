@@ -8,16 +8,15 @@ package org.openzen.zenscript.ide.ui.view;
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DColorableIconInstance;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 import org.openzen.zenscript.ide.ui.icons.ScalableCloseIcon;
 
 /**
@@ -28,8 +27,7 @@ public class TabbedViewTabClose implements DComponent {
 	private final TabbedViewTab tab;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
-	private DDrawSurface surface;
-	private int z;
+	private DComponentContext context;
 	private DIRectangle bounds;
 	private TabbedViewTabCloseStyle style;
 	private DColorableIcon icon;
@@ -45,21 +43,18 @@ public class TabbedViewTabClose implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		
-		DStylePath path = parent.getChild("tabClose", DStyleClass.EMPTY);
-		style = new TabbedViewTabCloseStyle(surface.getStylesheet(path));
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("tabclose", DStyleClass.EMPTY);
+		style = context.getStyle(TabbedViewTabCloseStyle::new);
 		sizing.setValue(new DSizing(style.size, style.size));
 		icon = new ScalableCloseIcon(style.size / 24);
 		
 		if (background != null)
 			background.close();
-		background = surface.fillRect(z, DIRectangle.EMPTY, hover ? 0xFFE81123 : 0);
+		background = context.fillRect(9, DIRectangle.EMPTY, hover ? 0xFFE81123 : 0);
 		if (drawnIcon != null)
 			drawnIcon.close();
-		drawnIcon = new DColorableIconInstance(surface, z + 1, icon, DTransform2D.IDENTITY, 0xFF000000);
+		drawnIcon = new DColorableIconInstance(context.surface, context.z + 1, icon, DTransform2D.IDENTITY, 0xFF000000);
 	}
 	
 	@Override
@@ -93,7 +88,7 @@ public class TabbedViewTabClose implements DComponent {
 		
 		if (drawnIcon != null)
 			drawnIcon.close();
-		drawnIcon = new DColorableIconInstance(surface, z + 1, icon, DTransform2D.translate(
+		drawnIcon = new DColorableIconInstance(context.surface, context.z + 1, icon, DTransform2D.translate(
 				bounds.x + (bounds.width - icon.getNominalWidth()) / 2,
 				bounds.y + (bounds.height - icon.getNominalHeight()) / 2), 0xFF000000);
 	}

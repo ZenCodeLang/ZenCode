@@ -7,4 +7,6 @@ public interface SourceFile {
 	String getFilename();
 	
 	Reader open() throws IOException;
+	
+	void update(String content) throws IOException;
 }

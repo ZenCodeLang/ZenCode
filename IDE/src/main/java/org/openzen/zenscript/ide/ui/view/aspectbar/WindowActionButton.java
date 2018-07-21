@@ -10,17 +10,17 @@ import java.util.function.Function;
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DColorableIconInstance;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.style.DStylePath;
+import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.ui.icons.ScalableCloseIcon;
 
 /**
@@ -36,12 +36,11 @@ public class WindowActionButton implements DComponent {
 	private LiveBool windowFocused;
 	private ListenerHandle<LiveBool.Listener> windowFocusedListener;
 	
+	private DComponentContext context;
 	private DColorableIcon icon;
 	private DIRectangle bounds;
 	private boolean hover;
 	private boolean press;
-	private DDrawSurface surface;
-	private int z;
 	
 	private DDrawnRectangle background;
 	private DColorableIconInstance drawnIcon;
@@ -52,19 +51,18 @@ public class WindowActionButton implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("windowactionbutton", DStyleClass.EMPTY);
 		
-		windowFocused = surface.getContext().getWindow().getActive();
+		windowFocused = context.getUIContext().getWindow().getActive();
 		windowFocusedListener = windowFocused.addListener((a, b) -> update());
 		
-		icon = scalableIcon == null ? null : scalableIcon.apply(surface.getScale());
+		icon = scalableIcon == null ? null : scalableIcon.apply(context.getScale());
 		sizing.setValue(new DSizing(
-				(int)(48 * surface.getScale()),
-				(int)(24 * surface.getScale())));
+				(int)(48 * context.getScale()),
+				(int)(24 * context.getScale())));
 		
-		background = surface.fillRect(z, DIRectangle.EMPTY, getBackgroundColor());
+		background = context.fillRect(0, DIRectangle.EMPTY, getBackgroundColor());
 	}
 	
 	@Override
@@ -105,7 +103,7 @@ public class WindowActionButton implements DComponent {
 			
 			int iconX = bounds.x + (int)(bounds.width - icon.getNominalWidth()) / 2;
 			int iconY = bounds.y + (int)(bounds.height - icon.getNominalHeight()) / 2;
-			drawnIcon = new DColorableIconInstance(surface, z + 1, icon, DTransform2D.translate(iconX, iconY), getIconColor());
+			drawnIcon = new DColorableIconInstance(context.surface, context.z + 1, icon, DTransform2D.translate(iconX, iconY), getIconColor());
 		}
 	}
 
@@ -151,12 +149,10 @@ public class WindowActionButton implements DComponent {
 	
 	private int getBackgroundColor() {
 		int color = 0xFFFFFFFF;
-		int iconColor = windowFocused.getValue() ? 0xFF000000 : 0xFF999999;
 		
 		if (hover) {
 			if (icon instanceof ScalableCloseIcon) {
 				color = 0xFFE81123;
-				iconColor = 0xFFFFFFFF;
 			} else {
 				color = 0xFFE0E0E0;
 			}

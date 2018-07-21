@@ -53,6 +53,13 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 		for (ParsedDefinitionMember member : members)
 			state.register(innerScope, member);
 	}
+	
+	@Override
+	public void precompile(BaseScope scope, PrecompilationState state) {
+		DefinitionScope innerScope = new DefinitionScope(scope, getCompiled());
+		for (ParsedDefinitionMember member : members)
+			state.precompile(member.getCompiled());
+	}
 
 	@Override
 	public void compileCode(BaseScope scope, PrecompilationState state) {

@@ -61,6 +61,7 @@ public class IDEWindow {
 			
 		}));
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, new ImmutableLiveString("Build"), e -> {
+			output.clear();
 			for (IDETarget target : host.getTargets()) {
 				if (target.canBuild())
 					target.build(line -> output.add(line));

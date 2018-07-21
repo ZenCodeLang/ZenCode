@@ -5,42 +5,33 @@
  */
 package org.openzen.drawablegui.scroll;
 
-import org.openzen.drawablegui.DAnchor;
-import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
-import org.openzen.drawablegui.DFont;
-import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
-import org.openzen.drawablegui.DTimerHandle;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveInt;
-import org.openzen.drawablegui.DUIContext;
-import org.openzen.drawablegui.DUIWindow;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DSubSurface;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
-import org.openzen.drawablegui.style.DStyleSheets;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class DScrollPane implements DComponent {
+public class DScrollPane implements DComponent, DScrollContext {
 	private final DStyleClass styleClass;
 	private final DComponent contents;
 	private final DScrollBar scrollBar;
-	private DDrawSurface surface;
+	
+	private DComponentContext context;
+	private DScrollPaneStyle style;
 	private DIRectangle bounds;
 	
-	private DScrollPaneStyle style;
-	private int z;
 	private DDrawnShape shape;
 	private final LiveInt contentsHeight;
 	private final LiveInt offsetX;
@@ -80,32 +71,22 @@ public class DScrollPane implements DComponent {
 			contentsHeight.setValue(newPreferences.preferredHeight);
 		});
 	}
-	
-	@Override
-	public void onMounted() {
-		contents.onMounted();
-	}
-	
-	@Override
-	public void onUnmounted() {
-		contents.onUnmounted();
-	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("scrollpane", styleClass);
+		style = context.getStyle(DScrollPaneStyle::new);
 		
-		DStylePath path = parent.getChild("scrollpane", styleClass);
-		subSurface = surface.createSubSurface(z + 1);
-		contents.mount(path, 1, subSurface);
-		scrollBar.mount(path, z + 2, surface);
-		style = new DScrollPaneStyle(surface.getStylesheet(path));
+		subSurface = context.createSubSurface(1);
+		DComponentContext newContext = new DComponentContext(this, context.path, 0, subSurface);
+		contents.mount(newContext);
+		scrollBar.mount(context);
 	}
 	
 	@Override
 	public void unmount() {
 		subSurface.close();
+		style.border.close();
 		
 		contents.unmount();
 		scrollBar.unmount();
@@ -132,8 +113,8 @@ public class DScrollPane implements DComponent {
 		
 		if (shape != null)
 			shape.close();
-		shape = surface.shadowPath(z, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
-		style.border.update(surface, z + 1, style.margin.apply(bounds));
+		shape = context.shadowPath(0, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+		style.border.update(context, style.margin.apply(bounds));
 		
 		int height = Math.max(
 				bounds.height - style.border.getPaddingHorizontal(),
@@ -267,6 +248,24 @@ public class DScrollPane implements DComponent {
 
 	private int toLocalY(int y) {
 		return y - bounds.y + offsetY.getValue();
+	}
+
+	@Override
+	public void scrollInView(int x, int y, int width, int height) {
+		if (y < offsetY.getValue())
+			offsetY.setValue(y);
+		if (y + height > offsetY.getValue() + bounds.height)
+			offsetY.setValue(y + height - bounds.height);
+	}
+
+	@Override
+	public int getViewportWidth() {
+		return bounds.width;
+	}
+
+	@Override
+	public int getViewportHeight() {
+		return bounds.height;
 	}
 	
 	private class ScrollListener implements LiveInt.Listener {

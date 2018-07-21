@@ -5,10 +5,10 @@
  */
 package org.openzen.drawablegui.border;
 
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnShape;
 
 /**
@@ -46,30 +46,30 @@ public class DSideBorder implements DBorder {
 	}
 
 	@Override
-	public void update(DDrawSurface surface, int z, DIRectangle bounds) {
+	public void update(DComponentContext context, DIRectangle bounds) {
 		if (leftWidth > 0) {
 			int x = bounds.x;
 			if (left != null)
 				left.close();
-			left = surface.strokePath(z, DPath.line(x, bounds.y, x, bounds.y + bounds.height), DTransform2D.IDENTITY, topColor, topWidth);
+			left = context.strokePath(1, DPath.line(x, bounds.y, x, bounds.y + bounds.height), DTransform2D.IDENTITY, topColor, topWidth);
 		}
 		if (topWidth > 0) {
 			int y = bounds.y;
 			if (top != null)
 				top.close();
-			top = surface.strokePath(z, DPath.line(bounds.x, y, bounds.x + bounds.width, y), DTransform2D.IDENTITY, topColor, topWidth);
+			top = context.strokePath(1, DPath.line(bounds.x, y, bounds.x + bounds.width, y), DTransform2D.IDENTITY, topColor, topWidth);
 		}
 		if (rightWidth > 0) {
 			int x = bounds.x + bounds.width - rightWidth;
 			if (right != null)
 				right.close();
-			right = surface.strokePath(z, DPath.line(x, bounds.y, x, bounds.y + bounds.height), DTransform2D.IDENTITY, topColor, topWidth);
+			right = context.strokePath(1, DPath.line(x, bounds.y, x, bounds.y + bounds.height), DTransform2D.IDENTITY, topColor, topWidth);
 		}
 		if (bottomWidth > 0) {
 			int y = bounds.y + bounds.height - bottomWidth;
 			if (bottom != null)
 				bottom.close();
-			bottom = surface.strokePath(z, DPath.line(bounds.x, y, bounds.x + bounds.width, y), DTransform2D.IDENTITY, topColor, topWidth);
+			bottom = context.strokePath(1, DPath.line(bounds.x, y, bounds.x + bounds.width, y), DTransform2D.IDENTITY, topColor, topWidth);
 		}
 	}
 

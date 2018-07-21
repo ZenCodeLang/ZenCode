@@ -229,21 +229,6 @@ public class FunctionHeader {
 		return false;
 	}
 	
-	public boolean canCastTo(TypeScope scope, FunctionHeader header) {
-		if (parameters.length != header.parameters.length)
-			return false;
-		
-		if (!scope.getTypeMembers(returnType).canCastImplicit(header.returnType))
-			return false;
-		
-		for (int i = 0; i < parameters.length; i++) {
-			if (!scope.getTypeMembers(header.parameters[i].type).canCastImplicit(parameters[i].type))
-				return false;
-		}
-		
-		return true;
-	}
-	
 	public boolean accepts(TypeScope scope, Expression... arguments) {
 		if (parameters.length != arguments.length)
 			return false;

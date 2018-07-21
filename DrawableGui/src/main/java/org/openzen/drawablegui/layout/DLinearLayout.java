@@ -9,16 +9,15 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -32,8 +31,7 @@ public class DLinearLayout extends BaseComponentGroup {
 	private final ListenerHandle<LiveObject.Listener<DSizing>>[] componentSizeListeners;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
-	private DDrawSurface surface;
-	private int z;
+	private DComponentContext context;
 	private DLinearLayoutStyle style;
 	private DIRectangle bounds;
 	private float totalGrow;
@@ -74,15 +72,12 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		
-		DStylePath path = parent.getChild("linearlayout", styleClass);
-		style = new DLinearLayoutStyle(surface.getStylesheet(path));
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("linearlayout", styleClass);
+		style = context.getStyle(DLinearLayoutStyle::new);
 		
 		for (Element element : components)
-			element.component.mount(parent, z + 1, surface);
+			element.component.mount(context);
 	}
 	
 	@Override
@@ -112,11 +107,11 @@ public class DLinearLayout extends BaseComponentGroup {
 			return;
 		
 		this.bounds = bounds;
-		style.border.update(surface, z + 1, bounds);
+		style.border.update(context, bounds);
 		
 		if (shape != null)
 			shape.close();
-		shape = surface.shadowPath(z, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+		shape = context.shadowPath(0, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 		
 		layout();
 	}
@@ -149,6 +144,9 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 	
 	private void layout() {
+		if (bounds == null || context == null)
+			return;
+		
 		if (orientation == Orientation.HORIZONTAL) {
 			layoutHorizontal();
 		} else {
@@ -157,9 +155,6 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 	
 	private void layoutHorizontal() {
-		if (bounds == null || surface == null)
-			return;
-		
 		DSizing myPreferences = sizing.getValue();
 		if (bounds.width < myPreferences.preferredWidth) {
 			layoutHorizontalShrinked();
@@ -169,9 +164,6 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 	
 	private void layoutVertical() {
-		if (bounds == null || surface == null)
-			return;
-		
 		DSizing myPreferences = sizing.getValue();
 		if (bounds.height < myPreferences.preferredHeight) {
 			layoutVerticalShrinked();

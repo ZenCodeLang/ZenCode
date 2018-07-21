@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveBool;
@@ -14,7 +13,6 @@ import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -27,8 +25,7 @@ public class DButton implements DComponent {
 	private final LiveBool disabled;
 	private final Runnable action;
 	
-	private DDrawSurface surface;
-	private int z;
+	private DComponentContext context;
 	private DIRectangle bounds;
 	
 	private DButtonStyle style;
@@ -49,13 +46,10 @@ public class DButton implements DComponent {
 	}
 	
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		
-		DStylePath path = parent.getChild("Button", styleClass);
-		this.style = new DButtonStyle(surface.getStylesheet(path));
-		fontMetrics = surface.getFontMetrics(style.font);
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("button", styleClass);
+		style = context.getStyle(DButtonStyle::new);
+		fontMetrics = context.getFontMetrics(style.font);
 		
 		sizing.setValue(new DSizing(
 				style.paddingLeft + style.paddingRight + fontMetrics.getWidth(label.getValue()),
@@ -65,7 +59,7 @@ public class DButton implements DComponent {
 	
 	@Override
 	public void unmount() {
-		surface = null;
+		context = null;
 		
 		if (shape != null)
 			shape.close();
@@ -97,14 +91,14 @@ public class DButton implements DComponent {
 		if (text != null)
 			text.close();
 		
-		shape = surface.shadowPath(
-				z,
-				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * surface.getScale()),
+		shape = context.shadowPath(
+				0,
+				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * context.getScale()),
 				DTransform2D.IDENTITY,
 				getBackgroundColor(),
 				currentShadow);
-		text = surface.drawText(
-				z +  1, 
+		text = context.drawText(
+				1, 
 				style.font,
 				style.textColor,
 				bounds.x + style.paddingLeft,
@@ -155,9 +149,9 @@ public class DButton implements DComponent {
 			if (shape != null)
 				shape.close();
 			
-			shape = surface.shadowPath(
-				z,
-				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * surface.getScale()),
+			shape = context.shadowPath(
+				0,
+				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, 2 * context.getScale()),
 				DTransform2D.IDENTITY,
 				getBackgroundColor(),
 				currentShadow);

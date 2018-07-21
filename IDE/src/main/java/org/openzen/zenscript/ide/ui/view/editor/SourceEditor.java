@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
@@ -31,7 +32,6 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.Destructible;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
@@ -41,7 +41,6 @@ import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveBool;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 import org.openzen.zenscript.ide.ui.icons.SaveIcon;
 import org.openzen.zenscript.ide.ui.icons.ShadedCodeIcon;
 import org.openzen.zenscript.ide.ui.icons.ShadedSaveIcon;
@@ -61,9 +60,8 @@ public class SourceEditor implements DComponent {
 	private final ListenerHandle<TokenModel.Listener> tokenListener;
 	private final SimpleLiveBool unchanged = new SimpleLiveBool(true);
 	
+	private DComponentContext context;
 	private DIRectangle bounds;
-	private int z;
-	private DDrawSurface surface;
 	private SourceEditorStyle style;
 	private DTimerHandle blinkTimer;
 	
@@ -136,29 +134,28 @@ public class SourceEditor implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		if (surface != null)
+	public void mount(DComponentContext parent) {
+		if (context != null)
 			unmount();
 		
-		this.surface = surface;
-		this.z = z;
-		this.style = new SourceEditorStyle(surface.getStylesheet(parent.getChild("sourceeditor", styleClass)));
+		context = parent.getChildContext("sourceeditor", styleClass);
+		style = context.getStyle(SourceEditorStyle::new);
 		
-		fontMetrics = surface.getFontMetrics(font);
+		fontMetrics = context.getFontMetrics(font);
 		textLineHeight = fontMetrics.getAscent() + fontMetrics.getDescent();
 		fullLineHeight = textLineHeight + fontMetrics.getLeading() + style.extraLineSpacing;
 		selectionLineHeight = textLineHeight + style.selectionPaddingTop + style.selectionPaddingBottom;
 		
 		sizing.setValue(new DSizing(0, fullLineHeight * tokens.getLineCount()));
 		
-		blinkTimer = surface.getContext().setTimer(300, this::blink);
+		blinkTimer = context.getUIContext().setTimer(300, this::blink);
 		
-		selection = surface.fillRect(z + 2, DIRectangle.EMPTY, style.selectionColor);
-		cursor = surface.fillRect(z + 4, DIRectangle.EMPTY, style.cursorColor);
-		currentLineHighlight = surface.fillRect(z + 1, DIRectangle.EMPTY, style.currentLineHighlight);
+		selection = context.fillRect(2, DIRectangle.EMPTY, style.selectionColor);
+		cursor = context.fillRect(4, DIRectangle.EMPTY, style.cursorColor);
+		currentLineHighlight = context.fillRect(1, DIRectangle.EMPTY, style.currentLineHighlight);
 		
 		for (int i = 0; i < tokens.getLineCount(); i++)
-			lineNumbers.add(surface.drawText(z + 3, font, style.lineBarTextColor, 0, 0, Integer.toString(i + 1)));
+			lineNumbers.add(context.drawText(3, font, style.lineBarTextColor, 0, 0, Integer.toString(i + 1)));
 		
 		for (TokenLine line : tokens.getLines())
 			drawnTokens.add(lineToTokens(line));
@@ -171,7 +168,7 @@ public class SourceEditor implements DComponent {
 	public void unmount() {
 		window.aspectBar.toolbars.remove(editToolbar);
 		
-		surface = null;
+		context = null;
 		
 		if (background != null) {
 			background.close();
@@ -249,9 +246,9 @@ public class SourceEditor implements DComponent {
 			lineBarBackground.close();
 		if (lineBarLine != null)
 			lineBarLine.close();
-		background = surface.fillRect(z, new DIRectangle(bounds.x + lineBarWidth, bounds.y, bounds.width - lineBarWidth, bounds.height), style.backgroundColor);
-		lineBarBackground = surface.fillRect(z, new DIRectangle(bounds.x, bounds.y, lineBarWidth, bounds.height), style.lineBarBackgroundColor);
-		lineBarLine = surface.strokePath(z + 1, tracer -> {
+		background = context.fillRect(0, new DIRectangle(bounds.x + lineBarWidth, bounds.y, bounds.width - lineBarWidth, bounds.height), style.backgroundColor);
+		lineBarBackground = context.fillRect(0, new DIRectangle(bounds.x, bounds.y, lineBarWidth, bounds.height), style.lineBarBackgroundColor);
+		lineBarLine = context.strokePath(1, tracer -> {
 				tracer.moveTo(bounds.x + lineBarWidth, bounds.y);
 				tracer.lineTo(bounds.x + lineBarWidth, bounds.y + bounds.height);
 			}, DTransform2D.IDENTITY, style.lineBarStrokeColor, style.lineBarStrokeWidth);
@@ -269,17 +266,17 @@ public class SourceEditor implements DComponent {
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
-		surface.getContext().setCursor(DUIContext.Cursor.TEXT);
+		context.getUIContext().setCursor(DUIContext.Cursor.TEXT);
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
-		surface.getContext().setCursor(DUIContext.Cursor.NORMAL);
+		context.getUIContext().setCursor(DUIContext.Cursor.NORMAL);
 	}
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		surface.getContext().getWindow().focus(this);
+		context.getUIContext().getWindow().focus(this);
 		
 		SourcePosition position = getPositionAt(e.x, e.y);
 		if (e.isDoubleClick()) {
@@ -329,17 +326,17 @@ public class SourceEditor implements DComponent {
 				SourcePosition to = SourcePosition.max(cursorStart, cursorEnd);
 				
 				int fromX = getX(from);
-				multiLineSelection.add(surface.fillRect(
-						z + 2,
+				multiLineSelection.add(context.fillRect(
+						2,
 						new DIRectangle(fromX, getY(from), bounds.width - fromX, selectionLineHeight),
 						style.selectionColor));
 				
 				for (int i = from.line + 1; i < to.line; i++) {
-					multiLineSelection.add(surface.fillRect(z + 2, new DIRectangle(x, lineToY(i), bounds.width - x, selectionLineHeight), style.selectionColor));
+					multiLineSelection.add(context.fillRect(2, new DIRectangle(x, lineToY(i), bounds.width - x, selectionLineHeight), style.selectionColor));
 				}
 				
 				int toX = getX(to);
-				multiLineSelection.add(surface.fillRect(z + 2, new DIRectangle(x, getY(to), Math.max(0, toX - x), selectionLineHeight), style.selectionColor));
+				multiLineSelection.add(context.fillRect(2, new DIRectangle(x, getY(to), Math.max(0, toX - x), selectionLineHeight), style.selectionColor));
 				selection.setRectangle(DIRectangle.EMPTY);
 			}
 		} else {
@@ -364,35 +361,38 @@ public class SourceEditor implements DComponent {
 		setCursor(start, getPositionAt(e.x, e.y));
 	}
 	
+	private void moveLines(boolean shift, int lines) {
+		if (cursorEnd == null)
+			return;
+		
+		int line = cursorEnd.line + lines;
+		if (line < 0)
+			line = 0;
+		if (line >= tokens.getLineCount())
+			line = tokens.getLineCount() - 1;
+		
+		SourcePosition position = new SourcePosition(
+				tokens,
+				line,
+				Math.min(tokens.getLineLength(line), cursorEnd.offset));
+		setCursor(shift ? cursorStart : position, position);
+	}
+	
 	@Override
 	public void onKeyPressed(DKeyEvent e) {
 		boolean shift = e.has(DKeyEvent.SHIFT);
 		switch (e.keyCode) {
+			case PAGE_UP:
+				moveLines(shift, -getWindowLines());
+				break;
+			case PAGE_DOWN:
+				moveLines(shift, getWindowLines());
+				break;
 			case UP:
-				if (cursorEnd == null || cursorEnd.line == 0)
-					return;
-				
-				{
-					int line = cursorEnd.line - 1;
-					SourcePosition position = new SourcePosition(
-							tokens,
-							line,
-							Math.min(tokens.getLineLength(line), cursorEnd.offset));
-					setCursor(shift ? cursorStart : position, position);
-				}
+				moveLines(shift, -1);
 				break;
 			case DOWN:
-				if (cursorEnd == null || cursorEnd.line >= tokens.getLineCount() - 1)
-					return;
-				
-				{
-					int line = cursorEnd.line + 1;
-					SourcePosition position = new SourcePosition(
-							tokens,
-							line,
-							Math.min(tokens.getLineLength(line), cursorEnd.offset));
-					setCursor(shift ? cursorStart : position, position);
-				}
+				moveLines(shift, 1);
 				break;
 			case LEFT:
 				if (cursorEnd == null || (cursorEnd.line == 0 && cursorEnd.offset == 0))
@@ -470,7 +470,7 @@ public class SourceEditor implements DComponent {
 		String extract = tokens.extract(
 				SourcePosition.min(cursorStart, cursorEnd),
 				SourcePosition.max(cursorStart, cursorEnd));
-		surface.getContext().getClipboard().copyAsString(extract);
+		context.getUIContext().getClipboard().copyAsString(extract);
 	}
 	
 	private void cut() {
@@ -483,7 +483,7 @@ public class SourceEditor implements DComponent {
 	}
 	
 	private void paste() {
-		String text = surface.getContext().getClipboard().getAsString();
+		String text = context.getUIContext().getClipboard().getAsString();
 		if (text == null)
 			return;
 		
@@ -540,7 +540,7 @@ public class SourceEditor implements DComponent {
 		if (deleteSelection())
 			return;
 		
-		if (cursorEnd.line > 0) {
+		/*if (cursorEnd.line > 0) {
 			String indent = tokens.getLine(cursorEnd.line - 1).getIndent(); // TODO: get nominal indent for current scope
 			if (cursorEnd.offset == indent.length()) {
 				// remove entire indent
@@ -550,7 +550,7 @@ public class SourceEditor implements DComponent {
 				setCursor(deleteFrom, deleteFrom);
 				return;
 			}
-		}
+		}*/
 		
 		if (cursorEnd.offset == 0) {
 			if (cursorEnd.line == 0)
@@ -614,13 +614,22 @@ public class SourceEditor implements DComponent {
 	}
 	
 	public void scrollTo(SourcePosition position) {
-		surface.getContext().scrollInView(getX(position), getY(position), 2, selectionLineHeight);
+		if (context.scrollContext != null)
+			context.scrollContext.scrollInView(getX(position), getY(position), 2, selectionLineHeight);
 	}
 	
 	private void blink() {
 		if (cursorEnd != null) {
 			cursorBlink = !cursorBlink;
 			cursor.setColor(cursorBlink ? style.cursorColor : 0);
+		}
+	}
+	
+	private int getWindowLines() {
+		if (context.scrollContext == null) {
+			return 20;
+		} else {
+			return context.scrollContext.getViewportHeight() / fullLineHeight;
 		}
 	}
 	
@@ -730,7 +739,7 @@ public class SourceEditor implements DComponent {
 		List<DDrawnText> tokenLine = new ArrayList<>();
 		for (ZSToken token : line.getTokens()) {
 			String content = getDisplayContent(token);
-			tokenLine.add(surface.drawText(z + 3, font, TokenClass.get(token.type).color, 0, 0, content));
+			tokenLine.add(context.drawText(3, font, TokenClass.get(token.type).color, 0, 0, content));
 		}
 		return tokenLine;
 	}
@@ -745,7 +754,7 @@ public class SourceEditor implements DComponent {
 				String str = Integer.toString(lineNumbers.size() + 1);
 				int x = bounds.x + lineBarWidth - style.lineBarSpacingRight - style.lineBarMargin - fontMetrics.getWidth(str);
 				int y = bounds.y + style.selectionPaddingTop + lineNumbers.size() * fullLineHeight + fontMetrics.getAscent();
-				lineNumbers.add(surface.drawText(z + 3, font, style.lineBarTextColor, x, y, str));
+				lineNumbers.add(context.drawText(3, font, style.lineBarTextColor, x, y, str));
 				
 				drawnTokens.add(index, lineToTokens(tokens.getLine(index)));
 				layoutLines(index);

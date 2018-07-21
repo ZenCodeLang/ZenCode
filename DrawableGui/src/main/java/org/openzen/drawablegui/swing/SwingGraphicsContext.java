@@ -16,6 +16,7 @@ import javax.swing.Timer;
 import org.openzen.drawablegui.DAnchor;
 import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DFont;
@@ -133,11 +134,6 @@ public class SwingGraphicsContext implements DUIContext {
 	}
 
 	@Override
-	public void scrollInView(int x, int y, int width, int height) {
-		// not in a scrollable context
-	}
-
-	@Override
 	public DTimerHandle setTimer(int millis, Runnable target) {
 		Timer timer = new Timer(millis, e -> target.run());
 		timer.start();
@@ -165,15 +161,19 @@ public class SwingGraphicsContext implements DUIContext {
 		
 		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();
 		
-		root.mount(DStylePathRoot.INSTANCE, 0, windowContext.surface);
+		root.mount(new DComponentContext(null, DStylePathRoot.INSTANCE, 0, windowContext.surface));
 		DSizing dimension = root.getSizing().getValue();
-		int tx = (int)(x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
-		int ty = (int)(y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
+		//int tx = (int)(x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
+		//int ty = (int)(y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
+		int dx = (int)(anchor.alignX * dimension.preferredWidth);
+		int dy = (int)(anchor.alignY * dimension.preferredHeight);
+		int tx = rootLocation.x + x - dx;
+		int ty = rootLocation.y + y - dy;
 		
 		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		window.swingComponent.setPreferredSize(new Dimension(dimension.preferredWidth, dimension.preferredHeight));
-		window.setLocation(tx, ty);
 		window.pack();
+		window.setLocation(tx, ty);
 		window.setVisible(true);
 		return window;
 	}
@@ -187,7 +187,7 @@ public class SwingGraphicsContext implements DUIContext {
 		windowContext.graphics = this.graphics; // help a little...
 		windowContext.setSurface(window.swingComponent.surface);
 		
-		root.mount(DStylePathRoot.INSTANCE, 0, windowContext.surface);
+		root.mount(new DComponentContext(null, DStylePathRoot.INSTANCE, 0, windowContext.surface));
 		DSizing dimension = root.getSizing().getValue();
 		
 		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();

@@ -28,4 +28,9 @@ public class VirtualSourceFile implements SourceFile {
 	public Reader open() throws IOException {
 		throw new UnsupportedOperationException("Cannot open virtual source files");
 	}
+
+	@Override
+	public void update(String content) throws IOException {
+		throw new UnsupportedOperationException("Cannot write to virtual source files");
+	}
 }

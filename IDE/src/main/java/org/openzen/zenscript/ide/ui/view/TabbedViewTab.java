@@ -6,13 +6,13 @@
 package org.openzen.zenscript.ide.ui.view;
 
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.listeners.ListenerHandle;
@@ -21,7 +21,6 @@ import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -32,11 +31,11 @@ public class TabbedViewTab implements DComponent {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final MutableLiveObject<TabbedViewComponent> currentTab;
 	
+	private final DStyleClass styleClass;
 	private final TabbedView parent;
 	public final TabbedViewTabClose closeButton;
 	
-	private DDrawSurface surface;
-	private int z;
+	private DComponentContext context;
 	private TabbedViewTabStyle style;
 	private DFontMetrics fontMetrics;
 	private int textWidth;
@@ -53,7 +52,8 @@ public class TabbedViewTab implements DComponent {
 	private DDrawnShape updated;
 	private DDrawnText text;
 	
-	public TabbedViewTab(TabbedView parent, MutableLiveObject<TabbedViewComponent> currentTab, TabbedViewComponent tab) {
+	public TabbedViewTab(DStyleClass styleClass, TabbedView parent, MutableLiveObject<TabbedViewComponent> currentTab, TabbedViewComponent tab) {
+		this.styleClass = styleClass;
 		this.parent = parent;
 		this.currentTab = currentTab;
 		this.tab = tab;
@@ -69,16 +69,13 @@ public class TabbedViewTab implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("tab", styleClass);
+		style = context.getStyle(TabbedViewTabStyle::new);
+		fontMetrics = context.getFontMetrics(style.tabFont);
+		closeButton.mount(context);
 		
-		DStylePath path = parent.getChild("tab", DStyleClass.EMPTY);
-		style = new TabbedViewTabStyle(surface.getStylesheet(path));
-		fontMetrics = surface.getFontMetrics(style.tabFont);
-		closeButton.mount(path, z + 1, surface);
-		
-		text = surface.drawText(z + 1, style.tabFont, style.tabFontColor, 0, 0, tab.title.getValue());
+		text = context.drawText(1, style.tabFont, style.tabFontColor, 0, 0, tab.title.getValue());
 		calculateSizing();
 	}
 	
@@ -130,7 +127,7 @@ public class TabbedViewTab implements DComponent {
 		this.bounds = bounds;
 		
 		DSizing close = closeButton.getSizing().getValue();
-		style.border.update(surface, z + 1, style.margin.apply(bounds));
+		style.border.update(context, style.margin.apply(bounds));
 		
 		closeButton.setBounds(new DIRectangle(
 				bounds.x + bounds.width - close.preferredWidth - style.border.getPaddingRight(),
@@ -140,7 +137,7 @@ public class TabbedViewTab implements DComponent {
 		
 		if (shape != null)
 			shape.close();
-		shape = surface.shadowPath(z, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+		shape = context.shadowPath(0, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 		text.setPosition(
 				bounds.x + style.margin.left + style.border.getPaddingLeft(),
 				bounds.y + style.margin.top + style.border.getPaddingTop() + fontMetrics.getAscent());
@@ -148,8 +145,8 @@ public class TabbedViewTab implements DComponent {
 		if (tab.updated.getValue()) {
 			if (updated != null)
 				updated.close();
-			updated = surface.fillPath(
-					z + 1,
+			updated = context.fillPath(
+					1,
 					DPath.circle(
 						bounds.x + bounds.width - style.margin.right - style.border.getPaddingRight() - closeButton.getBounds().width - style.closeIconPadding - style.updatedDiameter / 2,
 						bounds.y + style.margin.top + style.border.getPaddingTop() + ((bounds.height - style.margin.getVertical() - style.border.getPaddingVertical()) / 2), style.updatedDiameter / 2),

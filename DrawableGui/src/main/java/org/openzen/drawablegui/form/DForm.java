@@ -9,15 +9,14 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -28,8 +27,8 @@ public class DForm extends BaseComponentGroup {
 	private final DStyleClass styleClass;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
+	private DComponentContext context;
 	private DIRectangle bounds;
-	private DDrawSurface context;
 	private DFormStyle style;
 	private DFontMetrics fontMetrics;
 	private int maxFieldWidth;
@@ -45,15 +44,13 @@ public class DForm extends BaseComponentGroup {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.context = surface;
-		
-		DStylePath path = parent.getChild("form", styleClass);
-		style = new DFormStyle(surface.getStylesheet(path));
-		fontMetrics = surface.getFontMetrics(style.labelFont);
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("form", styleClass);
+		style = context.getStyle(DFormStyle::new);
+		fontMetrics = context.getFontMetrics(style.labelFont);
 		
 		for (DFormComponent component : components)
-			component.component.mount(path, z + 1, surface);
+			component.component.mount(context);
 		
 		int height = style.paddingBottom + style.paddingTop;
 		int maxLabelWidth = style.minimumLabelSize;
@@ -80,7 +77,7 @@ public class DForm extends BaseComponentGroup {
 		for (int i = 0; i < labels.length; i++) {
 			if (labels[i] != null)
 				labels[i].close();
-			labels[i] = surface.drawText(z + 1, style.labelFont, style.labelColor, 0, 0, components[i].label);
+			labels[i] = parent.drawText(1, style.labelFont, style.labelColor, 0, 0, components[i].label);
 		}
 	}
 	

@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
@@ -38,18 +39,16 @@ public class TabbedView extends BaseComponentGroup {
 	
 	private final Map<TabbedViewTab, ListenerHandle<LiveObject.Listener<DSizing>>> tabSizeListeners = new HashMap<>();
 	
-	private DDrawSurface surface;
-	private DStylePath path;
-	private DIRectangle bounds;
+	private DComponentContext context;
 	private TabbedViewStyle style;
+	private DIRectangle bounds;
 	private int totalTabHeight;
 	private DFontMetrics fontMetrics;
-	private int z;
 
 	private final LiveList<TabbedViewTab> tabComponents = new LiveMappedList<>(tabs, tab -> {
-		TabbedViewTab result = new TabbedViewTab(this, currentTab, tab);
-		if (surface != null)
-			result.mount(path, z + 2, surface);
+		TabbedViewTab result = new TabbedViewTab(DStyleClass.EMPTY, this, currentTab, tab);
+		if (context != null)
+			result.mount(context);
 		
 		tabSizeListeners.put(result, result.getSizing().addListener((oldSize, newSize) -> layoutTabs()));
 		return result;
@@ -60,14 +59,10 @@ public class TabbedView extends BaseComponentGroup {
 		tabs.addListener(new TabListListener());
 		
 		currentTab.addListener((oldValue, newValue) -> {
-			if (oldValue != null) {
-				oldValue.content.onUnmounted();
+			if (oldValue != null)
 				oldValue.content.unmount();
-			}
-			if (newValue != null) {
-				newValue.content.onMounted();
-				newValue.content.mount(path, z + 1, surface);
-			}
+			if (newValue != null)
+				newValue.content.mount(context);
 			
 			if (newValue != null && bounds != null) {
 				DIRectangle contentBounds = new DIRectangle(
@@ -81,13 +76,10 @@ public class TabbedView extends BaseComponentGroup {
 	}
 	
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		
-		path = parent.getChild("tabbedView", styleClass);
-		style = new TabbedViewStyle(surface.getStylesheet(path));
-		fontMetrics = surface.getFontMetrics(style.tabFont);
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("tabbedview", styleClass);
+		style = context.getStyle(TabbedViewStyle::new);
+		fontMetrics = context.getFontMetrics(style.tabFont);
 		totalTabHeight = style.tabBorder.getPaddingVertical() + fontMetrics.getAscent() + fontMetrics.getDescent();
 		
 		for (TabbedViewComponent tab : tabs)
@@ -146,7 +138,7 @@ public class TabbedView extends BaseComponentGroup {
 	}
 	
 	private void prepare(TabbedViewComponent tab) {
-		tab.content.mount(path, z + 1, surface);
+		tab.content.mount(context);
 	}
 	
 	private void layoutTabs() {

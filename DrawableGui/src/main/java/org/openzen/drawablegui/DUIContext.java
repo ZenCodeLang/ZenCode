@@ -26,8 +26,6 @@ public interface DUIContext {
 	
 	void setCursor(Cursor cursor);
 	
-	void scrollInView(int x, int y, int width, int height);
-	
 	DTimerHandle setTimer(int millis, Runnable target);
 	
 	DClipboard getClipboard();

@@ -5,8 +5,8 @@
  */
 package org.openzen.drawablegui.border;
 
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.style.DBorderElement;
 
 /**
@@ -20,7 +20,7 @@ public class DEmptyBorder implements DBorder {
 	private DEmptyBorder() {}
 	
 	@Override
-	public void update(DDrawSurface surface, int z, DIRectangle bounds) {
+	public void update(DComponentContext context, DIRectangle bounds) {
 		
 	}
 

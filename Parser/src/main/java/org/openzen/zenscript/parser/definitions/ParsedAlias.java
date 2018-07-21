@@ -79,6 +79,11 @@ public class ParsedAlias extends ParsedDefinition {
 	public void listMembers(BaseScope scope, PrecompilationState state) {
 		// nothing to do
 	}
+	
+	@Override
+	public void precompile(BaseScope scope, PrecompilationState state) {
+		// nothing to do
+	}
 
 	@Override
 	public void compileCode(BaseScope scope, PrecompilationState state) {

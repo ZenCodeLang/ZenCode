@@ -5,7 +5,6 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
@@ -16,7 +15,6 @@ import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.MutableLiveString;
 import org.openzen.drawablegui.style.DDimension;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -31,8 +29,7 @@ public class DInputField implements DComponent {
 	private DIRectangle bounds = DIRectangle.EMPTY;
 	private final DDimension preferredWidth;
 	
-	private DDrawSurface surface;
-	private int z;
+	private DComponentContext context;
 	private DInputFieldStyle style;
 	private DFontMetrics fontMetrics;
 	private int cursorFrom = -1;
@@ -74,26 +71,23 @@ public class DInputField implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		
-		DStylePath path = parent.getChild("input", styleClass);
-		style = new DInputFieldStyle(surface.getStylesheet(path));
-		fontMetrics = surface.getFontMetrics(style.font);
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("input", styleClass);
+		style = context.getStyle(DInputFieldStyle::new);
+		fontMetrics = context.getFontMetrics(style.font);
 		
 		sizing.setValue(new DSizing(
-				preferredWidth.evalInt(surface.getContext()) + style.margin.getHorizontal() + style.border.getPaddingHorizontal(),
+				preferredWidth.evalInt(context.getUIContext()) + style.margin.getHorizontal() + style.border.getPaddingHorizontal(),
 				fontMetrics.getAscent() + fontMetrics.getDescent() + style.margin.getVertical() + style.border.getPaddingVertical()));
 		
 		if (blinkTimer != null)
 			blinkTimer.close();
-		blinkTimer = surface.getContext().setTimer(300, this::blink);
+		blinkTimer = context.getUIContext().setTimer(300, this::blink);
 		
 		if (text != null)
 			text.close();
-		text = surface.drawText(
-				z + 2,
+		text = parent.drawText(
+				2,
 				style.font,
 				style.color,
 				bounds.x + style.margin.left + style.border.getPaddingLeft(),
@@ -102,11 +96,11 @@ public class DInputField implements DComponent {
 		
 		if (cursor != null)
 			cursor.close();
-		cursor = surface.fillRect(z + 2, DIRectangle.EMPTY, cursorBlink ? style.cursorColor : 0);
+		cursor = parent.fillRect(2, DIRectangle.EMPTY, cursorBlink ? style.cursorColor : 0);
 		
 		if (selection != null)
 			selection.close();
-		selection = surface.fillRect(z + 1, DIRectangle.EMPTY, 0);
+		selection = parent.fillRect(1, DIRectangle.EMPTY, 0);
 		
 		setCursor(cursorFrom, cursorTo);
 	}
@@ -154,26 +148,26 @@ public class DInputField implements DComponent {
 		
 		if (shape != null)
 			shape.close();
-		shape = surface.fillPath(z, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor);
+		shape = context.fillPath(0, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor);
 		text.setPosition(
 				bounds.x + style.margin.left + style.border.getPaddingLeft(),
 				bounds.y + style.margin.top + style.border.getPaddingTop() + fontMetrics.getAscent());
-		style.border.update(surface, z, bounds);
+		style.border.update(context, bounds);
 	}
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
-		surface.getContext().setCursor(DUIContext.Cursor.TEXT);
+		context.getUIContext().setCursor(DUIContext.Cursor.TEXT);
 	}
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
-		surface.getContext().setCursor(DUIContext.Cursor.NORMAL);
+		context.getUIContext().setCursor(DUIContext.Cursor.NORMAL);
 	}
 	
 	@Override
 	public void onMouseClick(DMouseEvent e) {
-		surface.getContext().getWindow().focus(this);
+		context.getUIContext().getWindow().focus(this);
 	}
 	
 	@Override
@@ -244,8 +238,8 @@ public class DInputField implements DComponent {
 	private void handleValueUpdated(String newValue) {
 		if (text != null)
 			text.close();
-		text = surface.drawText(
-				z + 2,
+		text = context.drawText(
+				2,
 				style.font,
 				style.color,
 				bounds.x + style.margin.left + style.border.getPaddingLeft(),
