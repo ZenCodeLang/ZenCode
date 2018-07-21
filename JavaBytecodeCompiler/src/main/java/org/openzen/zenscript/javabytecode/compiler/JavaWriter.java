@@ -11,811 +11,803 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.objectweb.asm.*;
+
 import static org.objectweb.asm.Opcodes.*;
-import org.objectweb.asm.commons.LocalVariablesSorter;
-import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.javabytecode.JavaClassInfo;
-import org.openzen.zenscript.javabytecode.JavaFieldInfo;
-import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
-import org.openzen.zenscript.javabytecode.JavaMethodInfo;
-import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 
 public class JavaWriter {
-    private static final JavaClassInfo T_STRING = new JavaClassInfo("java/lang/String");
-    private static final JavaMethodInfo STRING_CONCAT = new JavaMethodInfo(
-            T_STRING,
-            "concat",
-            "(Ljava/lang/String;)Ljava/lang/String;",
-            Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+	private static final JavaClassInfo T_STRING = new JavaClassInfo("java/lang/String");
+	private static final JavaMethodInfo STRING_CONCAT = new JavaMethodInfo(
+			T_STRING,
+			"concat",
+			"(Ljava/lang/String;)Ljava/lang/String;",
+			Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 
-    public final JavaMethodInfo method;
-    public final HighLevelDefinition forDefinition;
+	public final JavaMethodInfo method;
+	public final HighLevelDefinition forDefinition;
 
-    private final LocalVariablesSorter visitor;
-    private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
-    public final ClassVisitor clazzVisitor;
-    private boolean debug = true;
-    private boolean nameVariables = true;
-    private int labelIndex = 1;
-    private Map<Label, String> labelNames = new HashMap<>();
+	private final LocalVariablesSorter visitor;
+	private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
+	public final ClassVisitor clazzVisitor;
+	private boolean debug = true;
+	private boolean nameVariables = true;
+	private int labelIndex = 1;
+	private Map<Label, String> labelNames = new HashMap<>();
 
-    public JavaWriter(
-            ClassVisitor visitor,
-            boolean nameVariables,
-            JavaMethodInfo method,
-            HighLevelDefinition forDefinition,
-            String signature,
-            String[] exceptions,
-            String... annotations) {
-        this.clazzVisitor = visitor;
-        this.method = method;
-        this.forDefinition = forDefinition;
+	public JavaWriter(
+			ClassVisitor visitor,
+			boolean nameVariables,
+			JavaMethodInfo method,
+			HighLevelDefinition forDefinition,
+			String signature,
+			String[] exceptions,
+			String... annotations) {
+		this.clazzVisitor = visitor;
+		this.method = method;
+		this.forDefinition = forDefinition;
 
-        final MethodVisitor methodVisitor = visitor.visitMethod(method.modifiers, method.name, method.descriptor, signature, exceptions);
+		final MethodVisitor methodVisitor = visitor.visitMethod(method.modifiers, method.name, method.descriptor, signature, exceptions);
 
-        for (String annotation : annotations) {
-            methodVisitor.visitAnnotation(annotation, true).visitEnd();
-        }
+		for (String annotation : annotations) {
+			methodVisitor.visitAnnotation(annotation, true).visitEnd();
+		}
 
-        this.visitor = new LocalVariablesSorter(method.modifiers, method.descriptor, methodVisitor);
-        this.nameVariables = nameVariables;
-    }
+		this.visitor = new LocalVariablesSorter(method.modifiers, method.descriptor, methodVisitor);
+		this.nameVariables = nameVariables;
+	}
 
-    public JavaWriter(ClassVisitor visitor, JavaMethodInfo method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
-        this(visitor, true, method, forDefinition, signature, exceptions, annotations);
-    }
+	public JavaWriter(ClassVisitor visitor, JavaMethodInfo method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
+		this(visitor, true, method, forDefinition, signature, exceptions, annotations);
+	}
 
-    private static String signature(Class aClass) {
-        return Type.getDescriptor(aClass);
-    }
+	private static String signature(Class aClass) {
+		return Type.getDescriptor(aClass);
+	}
 
-    private static String internal(Class aClass) {
-        return Type.getInternalName(aClass);
-    }
+	private static String internal(Class aClass) {
+		return Type.getInternalName(aClass);
+	}
 
-    public void enableDebug() {
-        debug = true;
-    }
+	public void enableDebug() {
+		debug = true;
+	}
 
-    public LocalVariablesSorter getVisitor() {
-        return visitor;
-    }
+	public LocalVariablesSorter getVisitor() {
+		return visitor;
+	}
 
-    public void start() {
-        if (debug)
-            System.out.println("--start--");
+	public void start() {
+		if (debug)
+			System.out.println("--start--");
 
-        visitor.visitCode();
-    }
+		visitor.visitCode();
+	}
 
-    public void end() {
-        if (debug)
-            System.out.println("--end--");
+	public void end() {
+		if (debug)
+			System.out.println("--end--");
 
-        visitor.visitMaxs(0, 0);
-        if (nameVariables) {
-            for (JavaLocalVariableInfo info : localVariableInfos) {
-                nameVariable(info.local, info.name, info.start, info.end, info.type);
-            }
-        }
-        visitor.visitEnd();
-    }
+		visitor.visitMaxs(0, 0);
+		if (nameVariables) {
+			for (JavaLocalVariableInfo info : localVariableInfos) {
+				nameVariable(info.local, info.name, info.start, info.end, info.type);
+			}
+		}
+		visitor.visitEnd();
+	}
 
-    public void label(Label label) {
-        if (debug)
-            System.out.println("Label " + getLabelName(label));
+	public void label(Label label) {
+		if (debug)
+			System.out.println("Label " + getLabelName(label));
 
-        visitor.visitLabel(label);
-    }
+		visitor.visitLabel(label);
+	}
 
-    public int local(Type type) {
-        return visitor.newLocal(type);
-    }
+	public int local(Type type) {
+		return visitor.newLocal(type);
+	}
 
-    public int local(Class cls) {
-        return visitor.newLocal(Type.getType(cls));
-    }
+	public int local(Class cls) {
+		return visitor.newLocal(Type.getType(cls));
+	}
 
-    public void iConst0() {
-        if (debug)
-            System.out.println("iconst0");
+	public void iConst0() {
+		if (debug)
+			System.out.println("iconst0");
 
-        visitor.visitInsn(ICONST_0);
-    }
+		visitor.visitInsn(ICONST_0);
+	}
 
-    public void iConst1() {
-        if (debug)
-            System.out.println("iconst1");
+	public void iConst1() {
+		if (debug)
+			System.out.println("iconst1");
 
-        visitor.visitInsn(ICONST_1);
-    }
+		visitor.visitInsn(ICONST_1);
+	}
 
-    public void biPush(byte value) {
-        if (debug)
-            System.out.println("bipush");
+	public void biPush(byte value) {
+		if (debug)
+			System.out.println("bipush");
 
-        visitor.visitIntInsn(BIPUSH, value);
-    }
+		visitor.visitIntInsn(BIPUSH, value);
+	}
 
-    public void siPush(short value) {
-        if (debug)
-            System.out.println("sipush");
+	public void siPush(short value) {
+		if (debug)
+			System.out.println("sipush");
 
-        visitor.visitIntInsn(SIPUSH, value);
-    }
+		visitor.visitIntInsn(SIPUSH, value);
+	}
 
-    public void aConstNull() {
-        if (debug)
-            System.out.println("null");
+	public void aConstNull() {
+		if (debug)
+			System.out.println("null");
 
-        visitor.visitInsn(ACONST_NULL);
-    }
+		visitor.visitInsn(ACONST_NULL);
+	}
 
-    public void constant(Object value) {
+	public void constant(Object value) {
 		if (value == null)
 			throw new NullPointerException("Value cannot be null");
-		
-        if (debug)
-            System.out.println("ldc " + value);
 
-        visitor.visitLdcInsn(value);
-    }
+		if (debug)
+			System.out.println("ldc " + value);
 
-    public void pop() {
-        if (debug)
-            System.out.println("pop");
+		visitor.visitLdcInsn(value);
+	}
 
-        visitor.visitInsn(POP);
-    }
+	public void pop() {
+		if (debug)
+			System.out.println("pop");
 
-    public void pop(boolean large) {
-        if (debug)
-            System.out.println("pop");
+		visitor.visitInsn(POP);
+	}
 
-        visitor.visitInsn(large ? POP2 : POP);
-    }
+	public void pop(boolean large) {
+		if (debug)
+			System.out.println("pop");
 
-    public void dup() {
-        if (debug)
-            System.out.println("dup");
+		visitor.visitInsn(large ? POP2 : POP);
+	}
 
-        visitor.visitInsn(DUP);
-    }
+	public void dup() {
+		if (debug)
+			System.out.println("dup");
 
-    public void dup(Type type) {
-        if (debug)
-            System.out.println("dup");
+		visitor.visitInsn(DUP);
+	}
 
-        visitor.visitInsn(type.getSize() == 2 ? DUP2 : DUP);
-    }
+	public void dup(Type type) {
+		if (debug)
+			System.out.println("dup");
 
-    public void dup(boolean large) {
-        if (debug)
-            System.out.println("dup");
+		visitor.visitInsn(type.getSize() == 2 ? DUP2 : DUP);
+	}
 
-        visitor.visitInsn(large ? DUP2 : DUP);
-    }
+	public void dup(boolean large) {
+		if (debug)
+			System.out.println("dup");
 
-    public void dup2() {
-        if (debug)
-            System.out.println("dup2");
+		visitor.visitInsn(large ? DUP2 : DUP);
+	}
 
-        visitor.visitInsn(DUP2);
-    }
+	public void dup2() {
+		if (debug)
+			System.out.println("dup2");
 
-    public void dupX1() {
-        if (debug)
-            System.out.println("dupx1");
+		visitor.visitInsn(DUP2);
+	}
 
-        visitor.visitInsn(DUP_X1);
-    }
+	public void dupX1() {
+		if (debug)
+			System.out.println("dupx1");
 
-    public void dupX2() {
-        if (debug)
-            System.out.println("dupx2");
+		visitor.visitInsn(DUP_X1);
+	}
 
-        visitor.visitInsn(DUP_X2);
-    }
+	public void dupX2() {
+		if (debug)
+			System.out.println("dupx2");
 
-    public void dup2X1() {
-        if (debug)
-            System.out.println("dup2_x1");
+		visitor.visitInsn(DUP_X2);
+	}
 
-        visitor.visitInsn(DUP2_X1);
-    }
+	public void dup2X1() {
+		if (debug)
+			System.out.println("dup2_x1");
 
-    public void dup2X2() {
-        if (debug)
-            System.out.println("dup2_x2");
+		visitor.visitInsn(DUP2_X1);
+	}
 
-        visitor.visitInsn(DUP2_X2);
-    }
+	public void dup2X2() {
+		if (debug)
+			System.out.println("dup2_x2");
 
-    public void store(Type type, int local) {
-        if (debug)
-            System.out.println("store " + local);
+		visitor.visitInsn(DUP2_X2);
+	}
 
-        visitor.visitVarInsn(type.getOpcode(ISTORE), local);
-    }
+	public void store(Type type, int local) {
+		if (debug)
+			System.out.println("store " + local);
 
-    public void load(Type type, int local) {
-        if (debug)
-            System.out.println("load " + local);
+		visitor.visitVarInsn(type.getOpcode(ISTORE), local);
+	}
 
-        visitor.visitVarInsn(type.getOpcode(ILOAD), local);
-    }
+	public void load(Type type, int local) {
+		if (debug)
+			System.out.println("load " + local);
 
-    public void load(JavaParameterInfo parameter) {
-        if (debug)
-            System.out.println("load " + parameter.index);
+		visitor.visitVarInsn(type.getOpcode(ILOAD), local);
+	}
 
-        visitor.visitVarInsn(parameter.type.getOpcode(ILOAD), parameter.index);
-    }
-
-    public void load(JavaLocalVariableInfo localVariable) {
-        if (debug)
-            System.out.println("load " + localVariable.local);
-
-        visitor.visitVarInsn(localVariable.type.getOpcode(ILOAD), localVariable.local);
-    }
-
-    public void store(JavaParameterInfo parameter) {
-        if (debug)
-            System.out.println("store " + parameter.index);
-
-        visitor.visitVarInsn(parameter.type.getOpcode(ISTORE), parameter.index);
-    }
-
-    public void store(JavaLocalVariableInfo localVariable) {
-        if (debug)
-            System.out.println("store " + localVariable.local);
-
-        visitor.visitVarInsn(localVariable.type.getOpcode(ISTORE), localVariable.local);
-    }
-
-    public void storeInt(int local) {
-        if (debug)
-            System.out.println("storeInt " + local);
-
-        visitor.visitVarInsn(ISTORE, local);
-    }
-
-    public void loadInt(int local) {
-        if (debug)
-            System.out.println("loadInt " + local);
-
-        visitor.visitVarInsn(ILOAD, local);
-    }
-
-    public void storeObject(int local) {
-        if (debug)
-            System.out.println("storeObject " + local);
-
-        visitor.visitVarInsn(ASTORE, local);
-    }
-
-    public void loadObject(int local) {
-        if (debug)
-            System.out.println("loadObject " + local);
-
-        visitor.visitVarInsn(ALOAD, local);
-    }
-
-    public void arrayLength() {
-        if (debug)
-            System.out.println("arrayLength");
-
-        visitor.visitInsn(ARRAYLENGTH);
-    }
-
-    public void arrayLoad(Type type) {
-        if (debug)
-            System.out.println("arrayLoad");
-
-        visitor.visitInsn(type.getOpcode(IALOAD));
-    }
-
-    public void arrayStore(Type type) {
-        if (debug)
-            System.out.println("arrayStore");
-
-        visitor.visitInsn(type.getOpcode(IASTORE));
-    }
-
-    public void newArray(Type componentType) {
-        if (debug)
-            System.out.println("newArray");
-
-        int sort = componentType.getSort();
-        if (sort == Type.METHOD) {
-            throw new RuntimeException("Unsupported array type: " + componentType);
-        } else if (sort == Type.OBJECT || sort == Type.ARRAY) {
-            visitor.visitTypeInsn(ANEWARRAY, componentType.getInternalName());
-        } else {
-            int type;
-            switch (sort) {
-                case Type.BOOLEAN:
-                    type = Opcodes.T_BOOLEAN;
-                    break;
-                case Type.BYTE:
-                    type = Opcodes.T_BYTE;
-                    break;
-                case Type.SHORT:
-                    type = Opcodes.T_SHORT;
-                    break;
-                case Type.INT:
-                    type = Opcodes.T_INT;
-                    break;
-                case Type.LONG:
-                    type = Opcodes.T_LONG;
-                    break;
-                case Type.FLOAT:
-                    type = Opcodes.T_FLOAT;
-                    break;
-                case Type.DOUBLE:
-                    type = Opcodes.T_DOUBLE;
-                    break;
-                default:
-                    throw new RuntimeException("Unsupported array type: " + componentType);
-            }
-            visitor.visitIntInsn(NEWARRAY, type);
-        }
-    }
-
-    public void newArray(Class componentType) {
-        if (debug)
-            System.out.println("newArray " + componentType.getName());
-
-        visitor.visitTypeInsn(NEWARRAY, internal(componentType));
-    }
-
-    public void checkCast(Class newClass) {
-        if (debug)
-            System.out.println("checkCast " + newClass.getName());
-
-        visitor.visitTypeInsn(CHECKCAST, signature(newClass));
-    }
-
-    public void checkCast(String newClass) {
-        if (debug)
-            System.out.println("checkCast " + newClass);
-
-        visitor.visitTypeInsn(CHECKCAST, newClass);
-    }
-
-    public void checkCast(Type type) {
-        if (debug)
-            System.out.println("checkCast " + type.getDescriptor());
-
-        visitor.visitTypeInsn(CHECKCAST, type.getDescriptor());
-    }
-
-    public void iNeg() {
-        if (debug)
-            System.out.println("iNeg");
-
-        visitor.visitInsn(INEG);
-    }
-
-    public void iAdd() {
-        if (debug)
-            System.out.println("iAdd");
-
-        visitor.visitInsn(IADD);
-    }
-
-    public void iSub() {
-        if (debug)
-            System.out.println("iSub");
-
-        visitor.visitInsn(ISUB);
-    }
-
-    public void iMul() {
-        if (debug)
-            System.out.println("iMul");
-
-        visitor.visitInsn(IMUL);
-    }
-
-    public void iDiv() {
-        if (debug)
-            System.out.println("iDiv");
-
-        visitor.visitInsn(IDIV);
-    }
-
-    public void iRem() {
-        if (debug)
-            System.out.println("iRem");
-
-        visitor.visitInsn(IREM);
-    }
-
-    public void iAnd() {
-        if (debug)
-            System.out.println("iAnd");
-
-        visitor.visitInsn(IAND);
-    }
+	public void load(JavaParameterInfo parameter) {
+		if (debug)
+			System.out.println("load " + parameter.index);
 
-    public void iOr() {
-        if (debug)
-            System.out.println("iOr");
+		visitor.visitVarInsn(parameter.type.getOpcode(ILOAD), parameter.index);
+	}
 
-        visitor.visitInsn(IOR);
-    }
+	public void load(JavaLocalVariableInfo localVariable) {
+		if (debug)
+			System.out.println("load " + localVariable.local);
+
+		visitor.visitVarInsn(localVariable.type.getOpcode(ILOAD), localVariable.local);
+	}
+
+	public void store(JavaParameterInfo parameter) {
+		if (debug)
+			System.out.println("store " + parameter.index);
+
+		visitor.visitVarInsn(parameter.type.getOpcode(ISTORE), parameter.index);
+	}
+
+	public void store(JavaLocalVariableInfo localVariable) {
+		if (debug)
+			System.out.println("store " + localVariable.local);
+
+		visitor.visitVarInsn(localVariable.type.getOpcode(ISTORE), localVariable.local);
+	}
+
+	public void storeInt(int local) {
+		if (debug)
+			System.out.println("storeInt " + local);
+
+		visitor.visitVarInsn(ISTORE, local);
+	}
+
+	public void loadInt(int local) {
+		if (debug)
+			System.out.println("loadInt " + local);
+
+		visitor.visitVarInsn(ILOAD, local);
+	}
+
+	public void storeObject(int local) {
+		if (debug)
+			System.out.println("storeObject " + local);
+
+		visitor.visitVarInsn(ASTORE, local);
+	}
+
+	public void loadObject(int local) {
+		if (debug)
+			System.out.println("loadObject " + local);
+
+		visitor.visitVarInsn(ALOAD, local);
+	}
+
+	public void arrayLength() {
+		if (debug)
+			System.out.println("arrayLength");
+
+		visitor.visitInsn(ARRAYLENGTH);
+	}
+
+	public void arrayLoad(Type type) {
+		if (debug)
+			System.out.println("arrayLoad");
+
+		visitor.visitInsn(type.getOpcode(IALOAD));
+	}
+
+	public void arrayStore(Type type) {
+		if (debug)
+			System.out.println("arrayStore");
+
+		visitor.visitInsn(type.getOpcode(IASTORE));
+	}
+
+	public void newArray(Type componentType) {
+		if (debug)
+			System.out.println("newArray");
+
+		int sort = componentType.getSort();
+		if (sort == Type.METHOD) {
+			throw new RuntimeException("Unsupported array type: " + componentType);
+		} else if (sort == Type.OBJECT || sort == Type.ARRAY) {
+			visitor.visitTypeInsn(ANEWARRAY, componentType.getInternalName());
+		} else {
+			int type;
+			switch (sort) {
+				case Type.BOOLEAN:
+					type = Opcodes.T_BOOLEAN;
+					break;
+				case Type.BYTE:
+					type = Opcodes.T_BYTE;
+					break;
+				case Type.SHORT:
+					type = Opcodes.T_SHORT;
+					break;
+				case Type.INT:
+					type = Opcodes.T_INT;
+					break;
+				case Type.LONG:
+					type = Opcodes.T_LONG;
+					break;
+				case Type.FLOAT:
+					type = Opcodes.T_FLOAT;
+					break;
+				case Type.DOUBLE:
+					type = Opcodes.T_DOUBLE;
+					break;
+				default:
+					throw new RuntimeException("Unsupported array type: " + componentType);
+			}
+			visitor.visitIntInsn(NEWARRAY, type);
+		}
+	}
+
+	public void newArray(Class componentType) {
+		if (debug)
+			System.out.println("newArray " + componentType.getName());
+
+		visitor.visitTypeInsn(NEWARRAY, internal(componentType));
+	}
+
+	public void checkCast(Class newClass) {
+		if (debug)
+			System.out.println("checkCast " + newClass.getName());
+
+		visitor.visitTypeInsn(CHECKCAST, signature(newClass));
+	}
+
+	public void checkCast(String newClass) {
+		if (debug)
+			System.out.println("checkCast " + newClass);
+
+		visitor.visitTypeInsn(CHECKCAST, newClass);
+	}
+
+	public void checkCast(Type type) {
+		if (debug)
+			System.out.println("checkCast " + type.getDescriptor());
+
+		visitor.visitTypeInsn(CHECKCAST, type.getDescriptor());
+	}
+
+	public void iNeg() {
+		if (debug)
+			System.out.println("iNeg");
+
+		visitor.visitInsn(INEG);
+	}
+
+	public void iAdd() {
+		if (debug)
+			System.out.println("iAdd");
+
+		visitor.visitInsn(IADD);
+	}
+
+	public void iSub() {
+		if (debug)
+			System.out.println("iSub");
+
+		visitor.visitInsn(ISUB);
+	}
+
+	public void iMul() {
+		if (debug)
+			System.out.println("iMul");
+
+		visitor.visitInsn(IMUL);
+	}
+
+	public void iDiv() {
+		if (debug)
+			System.out.println("iDiv");
+
+		visitor.visitInsn(IDIV);
+	}
+
+	public void iRem() {
+		if (debug)
+			System.out.println("iRem");
+
+		visitor.visitInsn(IREM);
+	}
+
+	public void iAnd() {
+		if (debug)
+			System.out.println("iAnd");
+
+		visitor.visitInsn(IAND);
+	}
 
-    public void iXor() {
-        if (debug)
-            System.out.println("iXor");
+	public void iOr() {
+		if (debug)
+			System.out.println("iOr");
 
-        visitor.visitInsn(IXOR);
-    }
+		visitor.visitInsn(IOR);
+	}
 
-    public void iNot() {
-        if (debug)
-            System.out.println("iNot");
+	public void iXor() {
+		if (debug)
+			System.out.println("iXor");
 
-        visitor.visitInsn(ICONST_M1);
-        visitor.visitInsn(IXOR);
-    }
+		visitor.visitInsn(IXOR);
+	}
 
-    public void iXorVs1() {
-        if (debug)
-            System.out.println("iXor against '1'");
+	public void iNot() {
+		if (debug)
+			System.out.println("iNot");
 
-        visitor.visitInsn(ICONST_1);
-        visitor.visitInsn(IXOR);
-    }
+		visitor.visitInsn(ICONST_M1);
+		visitor.visitInsn(IXOR);
+	}
 
-    public void iShr() {
-        if (debug)
-            System.out.println("iShr");
+	public void iXorVs1() {
+		if (debug)
+			System.out.println("iXor against '1'");
 
-        visitor.visitInsn(ISHR);
-    }
+		visitor.visitInsn(ICONST_1);
+		visitor.visitInsn(IXOR);
+	}
 
-    public void iUShr() {
-        if (debug)
-            System.out.println("iUShr");
+	public void iShr() {
+		if (debug)
+			System.out.println("iShr");
 
-        visitor.visitInsn(IUSHR);
-    }
+		visitor.visitInsn(ISHR);
+	}
 
-    public void iShl() {
-        if (debug)
-            System.out.println("iShl");
+	public void iUShr() {
+		if (debug)
+			System.out.println("iUShr");
 
-        visitor.visitInsn(ISHL);
-    }
+		visitor.visitInsn(IUSHR);
+	}
 
-    public void lNeg() {
-        if (debug)
-            System.out.println("lNeg");
+	public void iShl() {
+		if (debug)
+			System.out.println("iShl");
 
-        visitor.visitInsn(LNEG);
-    }
+		visitor.visitInsn(ISHL);
+	}
 
-    public void lAdd() {
-        if (debug)
-            System.out.println("lAdd");
+	public void lNeg() {
+		if (debug)
+			System.out.println("lNeg");
 
-        visitor.visitInsn(LADD);
-    }
+		visitor.visitInsn(LNEG);
+	}
 
-    public void lSub() {
-        if (debug)
-            System.out.println("lSub");
+	public void lAdd() {
+		if (debug)
+			System.out.println("lAdd");
 
-        visitor.visitInsn(LSUB);
-    }
+		visitor.visitInsn(LADD);
+	}
 
-    public void lMul() {
-        if (debug)
-            System.out.println("lMul");
+	public void lSub() {
+		if (debug)
+			System.out.println("lSub");
 
-        visitor.visitInsn(LMUL);
-    }
+		visitor.visitInsn(LSUB);
+	}
 
-    public void lDiv() {
-        if (debug)
-            System.out.println("lDiv");
+	public void lMul() {
+		if (debug)
+			System.out.println("lMul");
 
-        visitor.visitInsn(LDIV);
-    }
+		visitor.visitInsn(LMUL);
+	}
 
-    public void lRem() {
-        if (debug)
-            System.out.println("lRem");
+	public void lDiv() {
+		if (debug)
+			System.out.println("lDiv");
 
-        visitor.visitInsn(LREM);
-    }
+		visitor.visitInsn(LDIV);
+	}
 
-    public void lAnd() {
-        if (debug)
-            System.out.println("lAnd");
+	public void lRem() {
+		if (debug)
+			System.out.println("lRem");
 
-        visitor.visitInsn(LAND);
-    }
+		visitor.visitInsn(LREM);
+	}
 
-    public void lOr() {
-        if (debug)
-            System.out.println("lOr");
+	public void lAnd() {
+		if (debug)
+			System.out.println("lAnd");
 
-        visitor.visitInsn(LOR);
-    }
+		visitor.visitInsn(LAND);
+	}
 
-    public void lXor() {
-        if (debug)
-            System.out.println("lXor");
+	public void lOr() {
+		if (debug)
+			System.out.println("lOr");
 
-        visitor.visitInsn(LXOR);
-    }
+		visitor.visitInsn(LOR);
+	}
 
-    public void lNot() {
-        if (debug)
-            System.out.println("lNot");
+	public void lXor() {
+		if (debug)
+			System.out.println("lXor");
 
-        constant((long) -1);
-        lXor();
-    }
+		visitor.visitInsn(LXOR);
+	}
 
-    public void lShr() {
-        if (debug)
-            System.out.println("lShr");
+	public void lNot() {
+		if (debug)
+			System.out.println("lNot");
 
-        visitor.visitInsn(LSHR);
-    }
+		constant((long) -1);
+		lXor();
+	}
 
-    public void lUShr() {
-        if (debug)
-            System.out.println("lUShr");
+	public void lShr() {
+		if (debug)
+			System.out.println("lShr");
 
-        visitor.visitInsn(LUSHR);
-    }
+		visitor.visitInsn(LSHR);
+	}
 
-    public void lShl() {
-        if (debug)
-            System.out.println("lShl");
+	public void lUShr() {
+		if (debug)
+			System.out.println("lUShr");
 
-        visitor.visitInsn(LSHL);
-    }
+		visitor.visitInsn(LUSHR);
+	}
 
-    public void fNeg() {
-        if (debug)
-            System.out.println("fNeg");
+	public void lShl() {
+		if (debug)
+			System.out.println("lShl");
 
-        visitor.visitInsn(FNEG);
-    }
+		visitor.visitInsn(LSHL);
+	}
 
-    public void fAdd() {
-        if (debug)
-            System.out.println("fAdd");
+	public void fNeg() {
+		if (debug)
+			System.out.println("fNeg");
 
-        visitor.visitInsn(FADD);
-    }
+		visitor.visitInsn(FNEG);
+	}
 
-    public void fSub() {
-        if (debug)
-            System.out.println("fSub");
+	public void fAdd() {
+		if (debug)
+			System.out.println("fAdd");
 
-        visitor.visitInsn(FSUB);
-    }
+		visitor.visitInsn(FADD);
+	}
 
-    public void fMul() {
-        if (debug)
-            System.out.println("fMul");
+	public void fSub() {
+		if (debug)
+			System.out.println("fSub");
 
-        visitor.visitInsn(FMUL);
-    }
+		visitor.visitInsn(FSUB);
+	}
 
-    public void fDiv() {
-        if (debug)
-            System.out.println("fDiv");
+	public void fMul() {
+		if (debug)
+			System.out.println("fMul");
 
-        visitor.visitInsn(FDIV);
-    }
+		visitor.visitInsn(FMUL);
+	}
 
-    public void fRem() {
-        if (debug)
-            System.out.println("fRem");
+	public void fDiv() {
+		if (debug)
+			System.out.println("fDiv");
 
-        visitor.visitInsn(FREM);
-    }
+		visitor.visitInsn(FDIV);
+	}
 
-    public void dNeg() {
-        if (debug)
-            System.out.println("dNeg");
+	public void fRem() {
+		if (debug)
+			System.out.println("fRem");
 
-        visitor.visitInsn(DNEG);
-    }
+		visitor.visitInsn(FREM);
+	}
 
-    public void dAdd() {
-        if (debug)
-            System.out.println("dAdd");
+	public void dNeg() {
+		if (debug)
+			System.out.println("dNeg");
 
-        visitor.visitInsn(DADD);
-    }
+		visitor.visitInsn(DNEG);
+	}
 
-    public void dSub() {
-        if (debug)
-            System.out.println("dSub");
+	public void dAdd() {
+		if (debug)
+			System.out.println("dAdd");
 
-        visitor.visitInsn(DSUB);
-    }
+		visitor.visitInsn(DADD);
+	}
 
-    public void dMul() {
-        if (debug)
-            System.out.println("dMul");
+	public void dSub() {
+		if (debug)
+			System.out.println("dSub");
 
-        visitor.visitInsn(DMUL);
-    }
+		visitor.visitInsn(DSUB);
+	}
 
-    public void dDiv() {
-        if (debug)
-            System.out.println("dDiv");
+	public void dMul() {
+		if (debug)
+			System.out.println("dMul");
 
-        visitor.visitInsn(DDIV);
-    }
+		visitor.visitInsn(DMUL);
+	}
 
-    public void dRem() {
-        if (debug)
-            System.out.println("dRem");
+	public void dDiv() {
+		if (debug)
+			System.out.println("dDiv");
 
-        visitor.visitInsn(DREM);
-    }
+		visitor.visitInsn(DDIV);
+	}
 
-    public void iinc(int local) {
-        iinc(local, 1);
-    }
+	public void dRem() {
+		if (debug)
+			System.out.println("dRem");
 
-    public void idec(int local) {
-        iinc(local, -1);
-    }
+		visitor.visitInsn(DREM);
+	}
 
-    public void iinc(int local, int increment) {
-        if (debug)
-            System.out.println("iinc " + local + " + " + increment);
+	public void iinc(int local) {
+		iinc(local, 1);
+	}
 
-        visitor.visitIincInsn(local, increment);
-    }
+	public void idec(int local) {
+		iinc(local, -1);
+	}
 
-    public void i2b() {
-        if (debug)
-            System.out.println("i2b");
+	public void iinc(int local, int increment) {
+		if (debug)
+			System.out.println("iinc " + local + " + " + increment);
 
-        visitor.visitInsn(I2B);
-    }
+		visitor.visitIincInsn(local, increment);
+	}
 
-    public void i2s() {
-        if (debug)
-            System.out.println("i2s");
+	public void i2b() {
+		if (debug)
+			System.out.println("i2b");
 
-        visitor.visitInsn(I2S);
-    }
+		visitor.visitInsn(I2B);
+	}
 
-    public void i2l() {
-        if (debug)
-            System.out.println("i2l");
+	public void i2s() {
+		if (debug)
+			System.out.println("i2s");
 
-        visitor.visitInsn(I2L);
-    }
+		visitor.visitInsn(I2S);
+	}
 
-    public void i2f() {
-        if (debug)
-            System.out.println("i2f");
+	public void i2l() {
+		if (debug)
+			System.out.println("i2l");
 
-        visitor.visitInsn(I2F);
-    }
+		visitor.visitInsn(I2L);
+	}
 
-    public void i2d() {
-        if (debug)
-            System.out.println("i2d");
+	public void i2f() {
+		if (debug)
+			System.out.println("i2f");
 
-        visitor.visitInsn(I2D);
-    }
+		visitor.visitInsn(I2F);
+	}
 
-    public void l2i() {
-        if (debug)
-            System.out.println("l2i");
+	public void i2d() {
+		if (debug)
+			System.out.println("i2d");
 
-        visitor.visitInsn(L2I);
-    }
+		visitor.visitInsn(I2D);
+	}
 
-    public void l2f() {
-        if (debug)
-            System.out.println("l2f");
+	public void l2i() {
+		if (debug)
+			System.out.println("l2i");
 
-        visitor.visitInsn(L2F);
-    }
+		visitor.visitInsn(L2I);
+	}
 
-    public void l2d() {
-        if (debug)
-            System.out.println("l2d");
+	public void l2f() {
+		if (debug)
+			System.out.println("l2f");
 
-        visitor.visitInsn(L2D);
-    }
+		visitor.visitInsn(L2F);
+	}
 
-    public void f2i() {
-        if (debug)
-            System.out.println("f2i");
+	public void l2d() {
+		if (debug)
+			System.out.println("l2d");
 
-        visitor.visitInsn(F2I);
-    }
+		visitor.visitInsn(L2D);
+	}
 
-    public void f2l() {
-        if (debug)
-            System.out.println("f2l");
+	public void f2i() {
+		if (debug)
+			System.out.println("f2i");
 
-        visitor.visitInsn(F2L);
-    }
+		visitor.visitInsn(F2I);
+	}
 
-    public void f2d() {
-        if (debug)
-            System.out.println("f2d");
+	public void f2l() {
+		if (debug)
+			System.out.println("f2l");
 
-        visitor.visitInsn(F2D);
-    }
+		visitor.visitInsn(F2L);
+	}
 
-    public void d2i() {
-        if (debug)
-            System.out.println("d2i");
+	public void f2d() {
+		if (debug)
+			System.out.println("f2d");
 
-        visitor.visitInsn(D2I);
-    }
+		visitor.visitInsn(F2D);
+	}
 
-    public void d2l() {
-        if (debug)
-            System.out.println("d2l");
+	public void d2i() {
+		if (debug)
+			System.out.println("d2i");
 
-        visitor.visitInsn(D2L);
-    }
+		visitor.visitInsn(D2I);
+	}
 
-    public void d2f() {
-        if (debug)
-            System.out.println("d2f");
+	public void d2l() {
+		if (debug)
+			System.out.println("d2l");
 
-        visitor.visitInsn(D2F);
-    }
+		visitor.visitInsn(D2L);
+	}
 
-    public void lCmp() {
-        if (debug)
-            System.out.println("lCmp");
+	public void d2f() {
+		if (debug)
+			System.out.println("d2f");
 
-        visitor.visitInsn(LCMP);
-    }
+		visitor.visitInsn(D2F);
+	}
 
-    public void fCmp() {
-        if (debug)
-            System.out.println("fCmp");
+	public void lCmp() {
+		if (debug)
+			System.out.println("lCmp");
 
-        visitor.visitInsn(FCMPL);
-    }
+		visitor.visitInsn(LCMP);
+	}
 
-    public void dCmp() {
-        if (debug)
-            System.out.println("dCmp");
+	public void fCmp() {
+		if (debug)
+			System.out.println("fCmp");
 
-        visitor.visitInsn(DCMPL);
-    }
+		visitor.visitInsn(FCMPL);
+	}
 
-    public void instanceOf(String clsName) {
-        if (debug)
-            System.out.println("instanceOf " + clsName);
+	public void dCmp() {
+		if (debug)
+			System.out.println("dCmp");
 
-        visitor.visitTypeInsn(INSTANCEOF, clsName);
-    }
+		visitor.visitInsn(DCMPL);
+	}
 
-    public void instanceOf(Type type) {
-        if (debug)
-            System.out.println("instanceOf " + type.getDescriptor());
+	public void instanceOf(String clsName) {
+		if (debug)
+			System.out.println("instanceOf " + clsName);
 
-        visitor.visitTypeInsn(INSTANCEOF, type.getDescriptor());
-    }
-	
+		visitor.visitTypeInsn(INSTANCEOF, clsName);
+	}
+
+	public void instanceOf(Type type) {
+		if (debug)
+			System.out.println("instanceOf " + type.getDescriptor());
+
+		visitor.visitTypeInsn(INSTANCEOF, type.getDescriptor());
+	}
+
 	public void invokeStatic(JavaMethodInfo method) {
 		visitor.visitMethodInsn(
 				INVOKESTATIC,
@@ -825,379 +817,379 @@ public class JavaWriter {
 				false);
 	}
 
-    public void invokeSpecial(String owner, String name, String descriptor) {
-        if (debug)
-            System.out.println("invokeSpecial " + owner + '.' + name + descriptor);
+	public void invokeSpecial(String owner, String name, String descriptor) {
+		if (debug)
+			System.out.println("invokeSpecial " + owner + '.' + name + descriptor);
 
-        visitor.visitMethodInsn(INVOKESPECIAL, owner, name, descriptor, false);
-    }
+		visitor.visitMethodInsn(INVOKESPECIAL, owner, name, descriptor, false);
+	}
 
-    public void invokeSpecial(Class owner, String name, String descriptor) {
-        invokeSpecial(Type.getInternalName(owner), name, descriptor);
-    }
+	public void invokeSpecial(Class owner, String name, String descriptor) {
+		invokeSpecial(Type.getInternalName(owner), name, descriptor);
+	}
 
-    public void invokeVirtual(JavaMethodInfo method) {
-        if (debug)
-            System.out.println("invokeVirtual " + method.javaClass.internalClassName + '.' + method.name + method.descriptor);
+	public void invokeVirtual(JavaMethodInfo method) {
+		if (debug)
+			System.out.println("invokeVirtual " + method.javaClass.internalClassName + '.' + method.name + method.descriptor);
 
-        visitor.visitMethodInsn(INVOKEVIRTUAL, method.javaClass.internalClassName, method.name, method.descriptor, false);
-    }
+		visitor.visitMethodInsn(INVOKEVIRTUAL, method.javaClass.internalClassName, method.name, method.descriptor, false);
+	}
 
-    public void invokeInterface(JavaMethodInfo method) {
-        if (debug)
-            System.out.println("invokeInterface " + method.javaClass.internalClassName + '.' + method.name + method.descriptor);
+	public void invokeInterface(JavaMethodInfo method) {
+		if (debug)
+			System.out.println("invokeInterface " + method.javaClass.internalClassName + '.' + method.name + method.descriptor);
 
-        visitor.visitMethodInsn(INVOKEINTERFACE, method.javaClass.internalClassName, method.name, method.descriptor, true);
-    }
+		visitor.visitMethodInsn(INVOKEINTERFACE, method.javaClass.internalClassName, method.name, method.descriptor, true);
+	}
 
-    public void newObject(Class type) {
-        if (debug)
-            System.out.println("newObject " + type.getName());
+	public void newObject(Class type) {
+		if (debug)
+			System.out.println("newObject " + type.getName());
 
-        visitor.visitTypeInsn(NEW, internal(type));
-    }
+		visitor.visitTypeInsn(NEW, internal(type));
+	}
 
-    public void newObject(String type) {
-        if (debug)
-            System.out.println("newObject " + type);
+	public void newObject(String type) {
+		if (debug)
+			System.out.println("newObject " + type);
 
-        visitor.visitTypeInsn(NEW, type);
-    }
+		visitor.visitTypeInsn(NEW, type);
+	}
 
-    public void construct(Class type, Class... arguments) {
-        StringBuilder descriptor = new StringBuilder();
-        descriptor.append('(');
-        for (Class argument : arguments) {
-            descriptor.append(signature(argument));
-        }
-        descriptor.append(")V");
+	public void construct(Class type, Class... arguments) {
+		StringBuilder descriptor = new StringBuilder();
+		descriptor.append('(');
+		for (Class argument : arguments) {
+			descriptor.append(signature(argument));
+		}
+		descriptor.append(")V");
 
-        if (debug)
-            System.out.println("invokeSpecial " + internal(type) + ".<init>" + descriptor);
+		if (debug)
+			System.out.println("invokeSpecial " + internal(type) + ".<init>" + descriptor);
 
-        visitor.visitMethodInsn(INVOKESPECIAL, internal(type), "<init>", descriptor.toString(), false);
-    }
+		visitor.visitMethodInsn(INVOKESPECIAL, internal(type), "<init>", descriptor.toString(), false);
+	}
 
-    public void construct(String type, String... arguments) {
-        StringBuilder descriptor = new StringBuilder();
-        descriptor.append('(');
-        for (String argument : arguments) {
-            descriptor.append(argument);
-        }
-        descriptor.append(")V");
+	public void construct(String type, String... arguments) {
+		StringBuilder descriptor = new StringBuilder();
+		descriptor.append('(');
+		for (String argument : arguments) {
+			descriptor.append(argument);
+		}
+		descriptor.append(")V");
 
-        if (debug)
-            System.out.println("invokeSpecial " + type + ".<init>" + descriptor);
+		if (debug)
+			System.out.println("invokeSpecial " + type + ".<init>" + descriptor);
 
-        visitor.visitMethodInsn(INVOKESPECIAL, type, "<init>", descriptor.toString(), false);
-    }
+		visitor.visitMethodInsn(INVOKESPECIAL, type, "<init>", descriptor.toString(), false);
+	}
 
-    public void goTo(Label lbl) {
-        if (debug)
-            System.out.println("goTo " + getLabelName(lbl));
+	public void goTo(Label lbl) {
+		if (debug)
+			System.out.println("goTo " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(GOTO, lbl);
-    }
+		visitor.visitJumpInsn(GOTO, lbl);
+	}
 
-    /**
-     * Jump if TOS == 0.
-     *
-     * @param lbl target label
-     */
-    public void ifEQ(Label lbl) {
-        if (debug)
-            System.out.println("ifEQ " + getLabelName(lbl));
+	/**
+	 * Jump if TOS == 0.
+	 *
+	 * @param lbl target label
+	 */
+	public void ifEQ(Label lbl) {
+		if (debug)
+			System.out.println("ifEQ " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IFEQ, lbl);
-    }
+		visitor.visitJumpInsn(IFEQ, lbl);
+	}
 
-    public void ifNE(Label lbl) {
-        if (debug)
-            System.out.println("ifNE " + getLabelName(lbl));
+	public void ifNE(Label lbl) {
+		if (debug)
+			System.out.println("ifNE " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IFNE, lbl);
-    }
+		visitor.visitJumpInsn(IFNE, lbl);
+	}
 
-    public void ifLT(Label lbl) {
-        if (debug)
-            System.out.println("ifLT " + getLabelName(lbl));
+	public void ifLT(Label lbl) {
+		if (debug)
+			System.out.println("ifLT " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IFLT, lbl);
-    }
+		visitor.visitJumpInsn(IFLT, lbl);
+	}
 
-    public void ifGT(Label lbl) {
-        if (debug)
-            System.out.println("ifGT " + getLabelName(lbl));
+	public void ifGT(Label lbl) {
+		if (debug)
+			System.out.println("ifGT " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IFGT, lbl);
-    }
+		visitor.visitJumpInsn(IFGT, lbl);
+	}
 
-    public void ifGE(Label lbl) {
-        if (debug)
-            System.out.println("ifGE " + getLabelName(lbl));
+	public void ifGE(Label lbl) {
+		if (debug)
+			System.out.println("ifGE " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IFGE, lbl);
-    }
+		visitor.visitJumpInsn(IFGE, lbl);
+	}
 
-    public void ifLE(Label lbl) {
-        if (debug)
-            System.out.println("ifLE " + getLabelName(lbl));
+	public void ifLE(Label lbl) {
+		if (debug)
+			System.out.println("ifLE " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IFLE, lbl);
-    }
+		visitor.visitJumpInsn(IFLE, lbl);
+	}
 
-    public void ifICmpLE(Label lbl) {
-        if (debug)
-            System.out.println("ifICmpLE " + getLabelName(lbl));
+	public void ifICmpLE(Label lbl) {
+		if (debug)
+			System.out.println("ifICmpLE " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IF_ICMPLE, lbl);
-    }
+		visitor.visitJumpInsn(IF_ICMPLE, lbl);
+	}
 
-    public void ifICmpGE(Label lbl) {
-        if (debug)
-            System.out.println("ifICmpGE " + getLabelName(lbl));
+	public void ifICmpGE(Label lbl) {
+		if (debug)
+			System.out.println("ifICmpGE " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IF_ICMPGE, lbl);
-    }
+		visitor.visitJumpInsn(IF_ICMPGE, lbl);
+	}
 
-    public void ifICmpEQ(Label lbl) {
-        if (debug)
-            System.out.println("ifICmpEQ " + getLabelName(lbl));
+	public void ifICmpEQ(Label lbl) {
+		if (debug)
+			System.out.println("ifICmpEQ " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IF_ICMPEQ, lbl);
-    }
+		visitor.visitJumpInsn(IF_ICMPEQ, lbl);
+	}
 
-    public void ifICmpNE(Label lbl) {
-        if (debug)
-            System.out.println("ifICmpNE " + getLabelName(lbl));
+	public void ifICmpNE(Label lbl) {
+		if (debug)
+			System.out.println("ifICmpNE " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IF_ICMPNE, lbl);
-    }
+		visitor.visitJumpInsn(IF_ICMPNE, lbl);
+	}
 
-    public void ifICmpGT(Label lbl) {
-        if (debug)
-            System.out.println("ifICmpGT " + getLabelName(lbl));
+	public void ifICmpGT(Label lbl) {
+		if (debug)
+			System.out.println("ifICmpGT " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IF_ICMPGT, lbl);
-    }
+		visitor.visitJumpInsn(IF_ICMPGT, lbl);
+	}
 
-    public void ifICmpLT(Label lbl) {
-        if (debug)
-            System.out.println("ifICmpLT " + getLabelName(lbl));
+	public void ifICmpLT(Label lbl) {
+		if (debug)
+			System.out.println("ifICmpLT " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IF_ICMPLT, lbl);
-    }
+		visitor.visitJumpInsn(IF_ICMPLT, lbl);
+	}
 
-    public void ifACmpEq(Label lbl) {
-        if (debug)
-            System.out.println("ifICmpEQ " + getLabelName(lbl));
+	public void ifACmpEq(Label lbl) {
+		if (debug)
+			System.out.println("ifICmpEQ " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IF_ACMPEQ, lbl);
-    }
+		visitor.visitJumpInsn(IF_ACMPEQ, lbl);
+	}
 
-    public void ifACmpNe(Label lbl) {
-        if (debug)
-            System.out.println("ifACmpNE " + getLabelName(lbl));
+	public void ifACmpNe(Label lbl) {
+		if (debug)
+			System.out.println("ifACmpNE " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IF_ACMPNE, lbl);
-    }
+		visitor.visitJumpInsn(IF_ACMPNE, lbl);
+	}
 
-    public void ifNull(Label lbl) {
-        if (debug)
-            System.out.println("ifNull " + getLabelName(lbl));
+	public void ifNull(Label lbl) {
+		if (debug)
+			System.out.println("ifNull " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IFNULL, lbl);
-    }
+		visitor.visitJumpInsn(IFNULL, lbl);
+	}
 
-    public void ifNonNull(Label lbl) {
-        if (debug)
-            System.out.println("ifNonNull " + getLabelName(lbl));
+	public void ifNonNull(Label lbl) {
+		if (debug)
+			System.out.println("ifNonNull " + getLabelName(lbl));
 
-        visitor.visitJumpInsn(IFNONNULL, lbl);
-    }
+		visitor.visitJumpInsn(IFNONNULL, lbl);
+	}
 
-    public void ret() {
-        if (debug)
-            System.out.println("ret");
+	public void ret() {
+		if (debug)
+			System.out.println("ret");
 
-        visitor.visitInsn(RETURN);
-    }
+		visitor.visitInsn(RETURN);
+	}
 
-    public void returnType(Type type) {
-        if (debug)
-            System.out.println("return " + type.getDescriptor());
+	public void returnType(Type type) {
+		if (debug)
+			System.out.println("return " + type.getDescriptor());
 
-        visitor.visitInsn(type.getOpcode(IRETURN));
-    }
+		visitor.visitInsn(type.getOpcode(IRETURN));
+	}
 
-    public void returnInt() {
-        if (debug)
-            System.out.println("ireturn");
+	public void returnInt() {
+		if (debug)
+			System.out.println("ireturn");
 
-        visitor.visitInsn(IRETURN);
-    }
+		visitor.visitInsn(IRETURN);
+	}
 
-    public void returnObject() {
-        if (debug)
-            System.out.println("areturn");
+	public void returnObject() {
+		if (debug)
+			System.out.println("areturn");
 
-        visitor.visitInsn(ARETURN);
-    }
+		visitor.visitInsn(ARETURN);
+	}
 
-    public void getField(String owner, String name, String descriptor) {
-        if (debug)
-            System.out.println("getField " + owner + '.' + name + ":" + descriptor);
+	public void getField(String owner, String name, String descriptor) {
+		if (debug)
+			System.out.println("getField " + owner + '.' + name + ":" + descriptor);
 
-        visitor.visitFieldInsn(GETFIELD, owner, name, descriptor);
-    }
+		visitor.visitFieldInsn(GETFIELD, owner, name, descriptor);
+	}
 
-    public void getField(Class owner, String name, Class descriptor) {
-        if (debug)
-            System.out.println("getField " + owner.getName() + '.' + name + ":" + descriptor.getName());
+	public void getField(Class owner, String name, Class descriptor) {
+		if (debug)
+			System.out.println("getField " + owner.getName() + '.' + name + ":" + descriptor.getName());
 
-        visitor.visitFieldInsn(GETFIELD, internal(owner), name, signature(descriptor));
-    }
-	
+		visitor.visitFieldInsn(GETFIELD, internal(owner), name, signature(descriptor));
+	}
+
 	public void getField(JavaFieldInfo field) {
-        if (debug)
-            System.out.println("getField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
-		
+		if (debug)
+			System.out.println("getField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
+
 		visitor.visitFieldInsn(GETFIELD, field.javaClass.internalClassName, field.name, field.signature);
 	}
 
-    public void putField(String owner, String name, String descriptor) {
-        if (debug)
-            System.out.println("putField " + owner + '.' + name + ":" + descriptor);
+	public void putField(String owner, String name, String descriptor) {
+		if (debug)
+			System.out.println("putField " + owner + '.' + name + ":" + descriptor);
 
-        visitor.visitFieldInsn(PUTFIELD, owner, name, descriptor);
-    }
+		visitor.visitFieldInsn(PUTFIELD, owner, name, descriptor);
+	}
 
-    public void putField(Class owner, String name, Class descriptor) {
-        if (debug)
-            System.out.println("putField " + owner.getName() + '.' + name + ":" + descriptor.getName());
+	public void putField(Class owner, String name, Class descriptor) {
+		if (debug)
+			System.out.println("putField " + owner.getName() + '.' + name + ":" + descriptor.getName());
 
-        visitor.visitFieldInsn(PUTFIELD, internal(owner), name, signature(descriptor));
-    }
-	
+		visitor.visitFieldInsn(PUTFIELD, internal(owner), name, signature(descriptor));
+	}
+
 	public void putField(JavaFieldInfo field) {
-        if (debug)
-            System.out.println("putField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
-		
+		if (debug)
+			System.out.println("putField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
+
 		visitor.visitFieldInsn(PUTFIELD, field.javaClass.internalClassName, field.name, field.signature);
 	}
 
-    public void getStaticField(String owner, String name, String descriptor) {
-        if (debug)
-            System.out.println("getStatic " + owner + '.' + name + ":" + descriptor);
+	public void getStaticField(String owner, String name, String descriptor) {
+		if (debug)
+			System.out.println("getStatic " + owner + '.' + name + ":" + descriptor);
 
-        visitor.visitFieldInsn(GETSTATIC, owner, name, descriptor);
-    }
-	
+		visitor.visitFieldInsn(GETSTATIC, owner, name, descriptor);
+	}
+
 	public void getStaticField(JavaFieldInfo field) {
-        if (debug)
-            System.out.println("getStaticField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
-		
+		if (debug)
+			System.out.println("getStaticField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
+
 		visitor.visitFieldInsn(GETSTATIC, field.javaClass.internalClassName, field.name, field.signature);
 	}
 
-    public void putStaticField(String owner, String name, String descriptor) {
-        if (debug)
-            System.out.println("putStatic " + owner + '.' + name + ":" + descriptor);
+	public void putStaticField(String owner, String name, String descriptor) {
+		if (debug)
+			System.out.println("putStatic " + owner + '.' + name + ":" + descriptor);
 
-        visitor.visitFieldInsn(PUTSTATIC, owner, name, descriptor);
-    }
+		visitor.visitFieldInsn(PUTSTATIC, owner, name, descriptor);
+	}
 
-    public void putStaticField(Class owner, Field field) {
-        if (debug)
-            System.out.println("putStatic " + owner.getName() + '.' + field.getName() + ":" + signature(field.getType()));
+	public void putStaticField(Class owner, Field field) {
+		if (debug)
+			System.out.println("putStatic " + owner.getName() + '.' + field.getName() + ":" + signature(field.getType()));
 
-        visitor.visitFieldInsn(PUTSTATIC, internal(owner), field.getName(), signature(field.getType()));
-    }
-	
+		visitor.visitFieldInsn(PUTSTATIC, internal(owner), field.getName(), signature(field.getType()));
+	}
+
 	public void putStaticField(JavaFieldInfo field) {
-        if (debug)
-            System.out.println("putStaticField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
-		
+		if (debug)
+			System.out.println("putStaticField " + field.javaClass.internalClassName + '.' + field.name + ":" + field.signature);
+
 		visitor.visitFieldInsn(PUTSTATIC, field.javaClass.internalClassName, field.name, field.signature);
 	}
 
-    public void aThrow() {
-        visitor.visitInsn(ATHROW);
-    }
+	public void aThrow() {
+		visitor.visitInsn(ATHROW);
+	}
 
-    public void position(CodePosition position) {
-        Label label = new Label();
-        visitor.visitLabel(label);
-        visitor.visitLineNumber(position.fromLine, label);
-    }
+	public void position(CodePosition position) {
+		Label label = new Label();
+		visitor.visitLabel(label);
+		visitor.visitLineNumber(position.fromLine, label);
+	}
 
-    public void swap() {
-        if (debug)
-            System.out.println("swap");
-        visitor.visitInsn(SWAP);
-    }
+	public void swap() {
+		if (debug)
+			System.out.println("swap");
+		visitor.visitInsn(SWAP);
+	}
 
-    private String getLabelName(Label lbl) {
-        if (labelNames == null)
-            labelNames = new HashMap<>();
+	private String getLabelName(Label lbl) {
+		if (labelNames == null)
+			labelNames = new HashMap<>();
 
-        if (!labelNames.containsKey(lbl)) {
-            labelNames.put(lbl, "L" + labelIndex++);
-        }
+		if (!labelNames.containsKey(lbl)) {
+			labelNames.put(lbl, "L" + labelIndex++);
+		}
 
-        return labelNames.get(lbl);
-    }
+		return labelNames.get(lbl);
+	}
 
-    public String createLabelName() {
-        return "L" + labelIndex++;
-    }
+	public String createLabelName() {
+		return "L" + labelIndex++;
+	}
 
-    public void putNamedLabel(Label lbl, String name) {
-        if (labelNames == null)
-            labelNames = new HashMap<>();
-        labelNames.put(lbl, name);
-    }
+	public void putNamedLabel(Label lbl, String name) {
+		if (labelNames == null)
+			labelNames = new HashMap<>();
+		labelNames.put(lbl, name);
+	}
 
-    public void stringAdd() {
-        invokeVirtual(STRING_CONCAT);
-    }
+	public void stringAdd() {
+		invokeVirtual(STRING_CONCAT);
+	}
 
-    public Label getNamedLabel(String label) {
-        for (Map.Entry<Label, String> entry : labelNames.entrySet()) {
-            if (entry.getValue().matches(label))
-                return entry.getKey();
-        }
-        throw new RuntimeException("Label " + label + " not found!");
-    }
+	public Label getNamedLabel(String label) {
+		for (Map.Entry<Label, String> entry : labelNames.entrySet()) {
+			if (entry.getValue().matches(label))
+				return entry.getKey();
+		}
+		throw new RuntimeException("Label " + label + " not found!");
+	}
 
-    public void tryCatch(Label start, Label end, Label handler, String type) {
-        if (debug)
-            System.out.println("TryCatch " + getLabelName(start) + ", " + getLabelName(end) + ", " + getLabelName(handler) + ", TYPE: " + type);
-        visitor.visitTryCatchBlock(start, end, handler, type);
-    }
+	public void tryCatch(Label start, Label end, Label handler, String type) {
+		if (debug)
+			System.out.println("TryCatch " + getLabelName(start) + ", " + getLabelName(end) + ", " + getLabelName(handler) + ", TYPE: " + type);
+		visitor.visitTryCatchBlock(start, end, handler, type);
+	}
 
-    public void nameVariable(int local, String name, Label start, Label end, Type type) {
-        if (nameVariables && name != null && type != null && end != null && end != start)
-            visitor.visitLocalVariable(name, type.getDescriptor(), null, start, end, local);
-    }
+	public void nameVariable(int local, String name, Label start, Label end, Type type) {
+		if (nameVariables && name != null && type != null && end != null && end != start)
+			visitor.visitLocalVariable(name, type.getDescriptor(), null, start, end, local);
+	}
 
-    public void nameParameter(int modifier, String name) {
-        if (nameVariables)
-            visitor.visitParameter(name, modifier);
-    }
+	public void nameParameter(int modifier, String name) {
+		if (nameVariables)
+			visitor.visitParameter(name, modifier);
+	}
 
-    public void lookupSwitch(Label defaultLabel, JavaSwitchLabel[] switchLabels) {
-        int[] keys = new int[switchLabels.length];
-        Label[] labels = new Label[switchLabels.length];
-        for (int i = 0; i < switchLabels.length; i++) {
-            keys[i] = switchLabels[i].key;
-            labels[i] = switchLabels[i].label;
-        }
+	public void lookupSwitch(Label defaultLabel, JavaSwitchLabel[] switchLabels) {
+		int[] keys = new int[switchLabels.length];
+		Label[] labels = new Label[switchLabels.length];
+		for (int i = 0; i < switchLabels.length; i++) {
+			keys[i] = switchLabels[i].key;
+			labels[i] = switchLabels[i].label;
+		}
 
-        visitor.visitLookupSwitchInsn(defaultLabel, keys, labels);
-    }
+		visitor.visitLookupSwitchInsn(defaultLabel, keys, labels);
+	}
 
-    public void addVariableInfo(JavaLocalVariableInfo info) {
-        localVariableInfos.add(info);
-    }
+	public void addVariableInfo(JavaLocalVariableInfo info) {
+		localVariableInfos.add(info);
+	}
 }

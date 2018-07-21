@@ -5,18 +5,18 @@
  */
 package org.openzen.zenscript.javabytecode.compiler;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaScriptFile {
 	public final JavaClassWriter classWriter;
 	public final List<JavaMethodInfo> scriptMethods;
-	
+
 	public JavaScriptFile(JavaClassWriter classWriter) {
 		this.classWriter = classWriter;
 		this.scriptMethods = new ArrayList<>();

@@ -8,7 +8,6 @@ package org.openzen.zenscript.javabytecode;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface JavaBytecodeImplementation {

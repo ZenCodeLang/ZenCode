@@ -1,10 +1,5 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.StringJoiner;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -160,60 +155,60 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaMethodInfo COLLECTION_SIZE = new JavaMethodInfo(COLLECTION, "size", "()I", PUBLIC);
 	private static final JavaMethodInfo COLLECTION_TOARRAY = new JavaMethodInfo(COLLECTION, "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;", PUBLIC);
 
-    private final JavaWriter javaWriter;
-    private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
+	private final JavaWriter javaWriter;
+	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
 
-    public JavaExpressionVisitor(JavaWriter javaWriter) {
-        this.javaWriter = javaWriter;
-    }
+	public JavaExpressionVisitor(JavaWriter javaWriter) {
+		this.javaWriter = javaWriter;
+	}
 
-    private static Class<?> getForEquals(ITypeID id) {
-        if (CompilerUtils.isPrimitive(id))
-            return id.accept(JavaTypeClassVisitor.INSTANCE);
-        return Object.class;
-    }
+	private static Class<?> getForEquals(ITypeID id) {
+		if (CompilerUtils.isPrimitive(id))
+			return id.accept(JavaTypeClassVisitor.INSTANCE);
+		return Object.class;
+	}
 
-    @Override
-    public Void visitAndAnd(AndAndExpression expression) {
-        Label end = new Label();
-        Label onFalse = new Label();
+	@Override
+	public Void visitAndAnd(AndAndExpression expression) {
+		Label end = new Label();
+		Label onFalse = new Label();
 
-        expression.left.accept(this);
+		expression.left.accept(this);
 
-        javaWriter.ifEQ(onFalse);
-        expression.right.accept(this);
+		javaWriter.ifEQ(onFalse);
+		expression.right.accept(this);
 
-        // //these two calls are redundant but make decompiled code look better. Keep?
-        // javaWriter.ifEQ(onFalse);
-        // javaWriter.iConst1();
+		// //these two calls are redundant but make decompiled code look better. Keep?
+		// javaWriter.ifEQ(onFalse);
+		// javaWriter.iConst1();
 
-        javaWriter.goTo(end);
+		javaWriter.goTo(end);
 
-        javaWriter.label(onFalse);
-        javaWriter.iConst0();
+		javaWriter.label(onFalse);
+		javaWriter.iConst0();
 
 
-        javaWriter.label(end);
+		javaWriter.label(end);
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public Void visitArray(ArrayExpression expression) {
-        javaWriter.constant(expression.expressions.length);
-        Type type = Type.getType(expression.type.accept(JavaTypeClassVisitor.INSTANCE).getComponentType());
-        javaWriter.newArray(type);
-        for (int i = 0; i < expression.expressions.length; i++) {
-            javaWriter.dup();
-            javaWriter.constant(i);
-            expression.expressions[i].accept(this);
-            javaWriter.arrayStore(type);
-        }
-        return null;
-    }
+	@Override
+	public Void visitArray(ArrayExpression expression) {
+		javaWriter.constant(expression.expressions.length);
+		Type type = Type.getType(expression.type.accept(JavaTypeClassVisitor.INSTANCE).getComponentType());
+		javaWriter.newArray(type);
+		for (int i = 0; i < expression.expressions.length; i++) {
+			javaWriter.dup();
+			javaWriter.constant(i);
+			expression.expressions[i].accept(this);
+			javaWriter.arrayStore(type);
+		}
+		return null;
+	}
 
-    @Override
-    public Void visitCompare(CompareExpression expression) {
+	@Override
+	public Void visitCompare(CompareExpression expression) {
 		if (expression.operator.getBuiltin() != null) {
 			switch (expression.operator.getBuiltin()) {
 				case BYTE_COMPARE:
@@ -296,20 +291,33 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			compareGeneric(expression.comparison);
 		}
 
-        return null;
-    }
+		return null;
+	}
 
 	private void compareInt(CompareType comparator) {
 		Label exit = new Label();
 		Label isTrue = new Label();
 		switch (comparator) {
-			case EQ: javaWriter.ifICmpEQ(isTrue); break;
-			case NE: javaWriter.ifICmpNE(isTrue); break;
-			case GT: javaWriter.ifICmpGT(isTrue); break;
-			case GE: javaWriter.ifICmpGE(isTrue); break;
-			case LT: javaWriter.ifICmpLT(isTrue); break;
-			case LE: javaWriter.ifICmpLE(isTrue); break;
-			default: throw new IllegalStateException("Invalid comparator: " + comparator);
+			case EQ:
+				javaWriter.ifICmpEQ(isTrue);
+				break;
+			case NE:
+				javaWriter.ifICmpNE(isTrue);
+				break;
+			case GT:
+				javaWriter.ifICmpGT(isTrue);
+				break;
+			case GE:
+				javaWriter.ifICmpGE(isTrue);
+				break;
+			case LT:
+				javaWriter.ifICmpLT(isTrue);
+				break;
+			case LE:
+				javaWriter.ifICmpLE(isTrue);
+				break;
+			default:
+				throw new IllegalStateException("Invalid comparator: " + comparator);
 		}
 		javaWriter.iConst0();
 		javaWriter.goTo(exit);
@@ -322,13 +330,26 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		Label exit = new Label();
 		Label isTrue = new Label();
 		switch (comparator) {
-			case EQ: javaWriter.ifEQ(isTrue); break;
-			case NE: javaWriter.ifNE(isTrue); break;
-			case GT: javaWriter.ifGT(isTrue); break;
-			case GE: javaWriter.ifGE(isTrue); break;
-			case LT: javaWriter.ifLT(isTrue); break;
-			case LE: javaWriter.ifLE(isTrue); break;
-			default: throw new IllegalStateException("Invalid comparator: " + comparator);
+			case EQ:
+				javaWriter.ifEQ(isTrue);
+				break;
+			case NE:
+				javaWriter.ifNE(isTrue);
+				break;
+			case GT:
+				javaWriter.ifGT(isTrue);
+				break;
+			case GE:
+				javaWriter.ifGE(isTrue);
+				break;
+			case LT:
+				javaWriter.ifLT(isTrue);
+				break;
+			case LE:
+				javaWriter.ifLE(isTrue);
+				break;
+			default:
+				throw new IllegalStateException("Invalid comparator: " + comparator);
 		}
 		javaWriter.iConst0();
 		javaWriter.goTo(exit);
@@ -337,17 +358,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.label(exit);
 	}
 
-    @Override
-    public Void visitCall(CallExpression expression) {
+	@Override
+	public Void visitCall(CallExpression expression) {
 		BuiltinID builtin = expression.member.getBuiltin();
-        if (builtin == null) {
+		if (builtin == null) {
 			expression.target.accept(this);
 			for (Expression argument : expression.arguments.arguments) {
 				argument.accept(this);
 			}
 
 			if (!checkAndExecuteMethodInfo(expression.member))
-	            throw new IllegalStateException("Call target has no method info!");
+				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
 		}
@@ -628,7 +649,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				expression.target.accept(this);
 				Expression argument = expression.arguments.arguments[0];
 				if (argument instanceof RangeExpression) {
-					RangeExpression rangeArgument = (RangeExpression)argument;
+					RangeExpression rangeArgument = (RangeExpression) argument;
 					rangeArgument.from.accept(this);
 					rangeArgument.to.accept(this); // TODO: is this string.length ? if so, use the other substring method
 				} else {
@@ -644,7 +665,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			}
 			case STRING_REMOVE_DIACRITICS:
-				 throw new UnsupportedOperationException("Not yet supported!");
+				throw new UnsupportedOperationException("Not yet supported!");
 			case STRING_TRIM:
 				javaWriter.invokeVirtual(STRING_TRIM);
 				break;
@@ -730,7 +751,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				expression.target.accept(this);
 				Expression argument = expression.arguments.arguments[0];
 				if (argument instanceof RangeExpression) {
-					RangeExpression rangeArgument = (RangeExpression)argument;
+					RangeExpression rangeArgument = (RangeExpression) argument;
 					rangeArgument.from.accept(this);
 					rangeArgument.to.accept(this);
 				} else {
@@ -844,25 +865,25 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				//}
 				javaWriter.invokeInterface(new JavaMethodInfo(new JavaClassInfo(expression.target.type.accept(JavaTypeVisitor.INSTANCE).getInternalName()), "accept", CompilerUtils.calcSign(expression.instancedHeader, false), Opcodes.ACC_PUBLIC));
 				break;
-				//throw new UnsupportedOperationException("Not yet supported!");
+			//throw new UnsupportedOperationException("Not yet supported!");
 			case AUTOOP_NOTEQUALS:
 				throw new UnsupportedOperationException("Not yet supported!");
 			default:
 				throw new UnsupportedOperationException("Unknown builtin: " + builtin);
 		}
 
-        return null;
-    }
+		return null;
+	}
 
 	@Override
-    public Void visitCallStatic(CallStaticExpression expression) {
+	public Void visitCallStatic(CallStaticExpression expression) {
 		for (Expression argument : expression.arguments.arguments)
 			argument.accept(this);
 
 		BuiltinID builtin = expression.member.getBuiltin();
 		if (builtin == null) {
 			if (!checkAndExecuteMethodInfo(expression.member))
-	            throw new IllegalStateException("Call target has no method info!");
+				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
 		}
@@ -934,37 +955,37 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			default:
 				throw new UnsupportedOperationException("Unknown builtin: " + builtin);
 		}
-        return null;
-    }
-
-    @Override
-    public Void visitCapturedClosure(CapturedClosureExpression expression) {
-        return expression.accept(capturedExpressionVisitor);
-    }
-
-    @Override
-    public Void visitCapturedDirect(CapturedDirectExpression expression) {
-        return expression.accept(capturedExpressionVisitor);
-    }
-
-    @Override
-    public Void visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
-        return expression.accept(capturedExpressionVisitor);
-    }
-
-    @Override
-    public Void visitCapturedParameter(CapturedParameterExpression expression) {
-        return expression.accept(capturedExpressionVisitor);
+		return null;
 	}
 
-    @Override
-    public Void visitCapturedThis(CapturedThisExpression expression) {
-        return expression.accept(capturedExpressionVisitor);
-    }
+	@Override
+	public Void visitCapturedClosure(CapturedClosureExpression expression) {
+		return expression.accept(capturedExpressionVisitor);
+	}
 
-    @Override
-    public Void visitCast(CastExpression expression) {
-        expression.target.accept(this);
+	@Override
+	public Void visitCapturedDirect(CapturedDirectExpression expression) {
+		return expression.accept(capturedExpressionVisitor);
+	}
+
+	@Override
+	public Void visitCapturedLocalVariable(CapturedLocalVariableExpression expression) {
+		return expression.accept(capturedExpressionVisitor);
+	}
+
+	@Override
+	public Void visitCapturedParameter(CapturedParameterExpression expression) {
+		return expression.accept(capturedExpressionVisitor);
+	}
+
+	@Override
+	public Void visitCapturedThis(CapturedThisExpression expression) {
+		return expression.accept(capturedExpressionVisitor);
+	}
+
+	@Override
+	public Void visitCast(CastExpression expression) {
+		expression.target.accept(this);
 
 		BuiltinID builtin = expression.member.member.builtin;
 		if (builtin == null) {
@@ -1302,57 +1323,57 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		}
 
 		return null;
-    }
+	}
 
-    @Override
-    public Void visitCheckNull(CheckNullExpression expression) {
-        final Label end = new Label();
-        expression.value.accept(this);
-        javaWriter.dup();
-        javaWriter.ifNonNull(end);
-        javaWriter.pop();
-        javaWriter.newObject(NullPointerException.class);
-        javaWriter.dup();
-        javaWriter.constant("Tried to convert a null value to nonnull type " + expression.type.accept(JavaTypeClassVisitor.INSTANCE).getSimpleName());
-        javaWriter.invokeSpecial(NullPointerException.class, "<init>", "(Ljava/lang/String;)V");
-        javaWriter.aThrow();
-        javaWriter.label(end);
+	@Override
+	public Void visitCheckNull(CheckNullExpression expression) {
+		final Label end = new Label();
+		expression.value.accept(this);
+		javaWriter.dup();
+		javaWriter.ifNonNull(end);
+		javaWriter.pop();
+		javaWriter.newObject(NullPointerException.class);
+		javaWriter.dup();
+		javaWriter.constant("Tried to convert a null value to nonnull type " + expression.type.accept(JavaTypeClassVisitor.INSTANCE).getSimpleName());
+		javaWriter.invokeSpecial(NullPointerException.class, "<init>", "(Ljava/lang/String;)V");
+		javaWriter.aThrow();
+		javaWriter.label(end);
+		
+		return null;
+	}
 
-        return null;
-    }
+	@Override
+	public Void visitCoalesce(CoalesceExpression expression) {
+		final Label end = new Label();
+		expression.left.accept(this);
+		javaWriter.dup();
+		javaWriter.ifNonNull(end);
+		javaWriter.pop();
+		expression.right.accept(this);
+		javaWriter.label(end);
+		return null;
+	}
 
-    @Override
-    public Void visitCoalesce(CoalesceExpression expression) {
-        final Label end = new Label();
-        expression.left.accept(this);
-        javaWriter.dup();
-        javaWriter.ifNonNull(end);
-        javaWriter.pop();
-        expression.right.accept(this);
-        javaWriter.label(end);
-        return null;
-    }
-
-    @Override
-    public Void visitConditional(ConditionalExpression expression) {
-        final Label end = new Label();
-        final Label onElse = new Label();
-        expression.condition.accept(this);
-        javaWriter.ifEQ(onElse);
-        expression.ifThen.accept(this);
-        javaWriter.goTo(end);
-        javaWriter.label(onElse);
-        expression.ifElse.accept(this);
-        javaWriter.label(end);
-        return null;
-    }
+	@Override
+	public Void visitConditional(ConditionalExpression expression) {
+		final Label end = new Label();
+		final Label onElse = new Label();
+		expression.condition.accept(this);
+		javaWriter.ifEQ(onElse);
+		expression.ifThen.accept(this);
+		javaWriter.goTo(end);
+		javaWriter.label(onElse);
+		expression.ifElse.accept(this);
+		javaWriter.label(end);
+		return null;
+	}
 
 	@Override
 	public Void visitConst(ConstExpression expression) {
 		BuiltinID builtin = expression.constant.member.builtin;
 		if (builtin == null) {
 			if (!checkAndGetFieldInfo(expression.constant, true))
-	            throw new IllegalStateException("Call target has no field info!");
+				throw new IllegalStateException("Call target has no field info!");
 
 			return null;
 		}
@@ -1437,137 +1458,137 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-    @Override
-    public Void visitConstantBool(ConstantBoolExpression expression) {
-        if (expression.value)
-            javaWriter.iConst1();
-        else
-            javaWriter.iConst0();
-        return null;
-    }
+	@Override
+	public Void visitConstantBool(ConstantBoolExpression expression) {
+		if (expression.value)
+			javaWriter.iConst1();
+		else
+			javaWriter.iConst0();
+		return null;
+	}
 
-    @Override
-    public Void visitConstantByte(ConstantByteExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantByte(ConstantByteExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantChar(ConstantCharExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantChar(ConstantCharExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantDouble(ConstantDoubleExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantDouble(ConstantDoubleExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantFloat(ConstantFloatExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantFloat(ConstantFloatExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantInt(ConstantIntExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantInt(ConstantIntExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantLong(ConstantLongExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantLong(ConstantLongExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantSByte(ConstantSByteExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantSByte(ConstantSByteExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantShort(ConstantShortExpression expression) {
-        getJavaWriter().siPush(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantShort(ConstantShortExpression expression) {
+		getJavaWriter().siPush(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantString(ConstantStringExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantString(ConstantStringExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantUInt(ConstantUIntExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantUInt(ConstantUIntExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantULong(ConstantULongExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantULong(ConstantULongExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstantUShort(ConstantUShortExpression expression) {
-        getJavaWriter().constant(expression.value);
-        return null;
-    }
+	@Override
+	public Void visitConstantUShort(ConstantUShortExpression expression) {
+		getJavaWriter().constant(expression.value);
+		return null;
+	}
 
-    @Override
-    public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
-        Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
+	@Override
+	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
+		Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
 
-        javaWriter.loadObject(0);
-        if (javaWriter.method.javaClass.isEnum) {
-            javaWriter.loadObject(1);
-            javaWriter.loadInt(2);
-        }
+		javaWriter.loadObject(0);
+		if (javaWriter.method.javaClass.isEnum) {
+			javaWriter.loadObject(1);
+			javaWriter.loadInt(2);
+		}
 
-        for (Expression argument : expression.arguments.arguments) {
-            argument.accept(this);
-        }
-        javaWriter.invokeSpecial(type.getInternalName(), "<init>", CompilerUtils.calcDesc(expression.constructor.header, javaWriter.method.javaClass.isEnum));
-        return null;
-    }
+		for (Expression argument : expression.arguments.arguments) {
+			argument.accept(this);
+		}
+		javaWriter.invokeSpecial(type.getInternalName(), "<init>", CompilerUtils.calcDesc(expression.constructor.header, javaWriter.method.javaClass.isEnum));
+		return null;
+	}
 
-    @Override
-    public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
-        javaWriter.loadObject(0);
-        for (Expression argument : expression.arguments.arguments) {
-            argument.accept(this);
-        }
-        //No super calls in enums possible, and that's already handled in the enum constructor itself.
-        javaWriter.invokeSpecial(expression.objectType.accept(JavaTypeClassVisitor.INSTANCE), "<init>", CompilerUtils.calcDesc(expression.constructor.header, false));
+	@Override
+	public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
+		javaWriter.loadObject(0);
+		for (Expression argument : expression.arguments.arguments) {
+			argument.accept(this);
+		}
+		//No super calls in enums possible, and that's already handled in the enum constructor itself.
+		javaWriter.invokeSpecial(expression.objectType.accept(JavaTypeClassVisitor.INSTANCE), "<init>", CompilerUtils.calcDesc(expression.constructor.header, false));
 
-        CompilerUtils.writeDefaultFieldInitializers(javaWriter, javaWriter.forDefinition, false);
-        return null;
-    }
+		CompilerUtils.writeDefaultFieldInitializers(javaWriter, javaWriter.forDefinition, false);
+		return null;
+	}
 
-    @Override
-    public Void visitEnumConstant(EnumConstantExpression expression) {
-        final Type type = expression.type.accept(JavaTypeVisitor.INSTANCE);
-        javaWriter.getStaticField(type.getInternalName(), expression.value.name, type.getDescriptor());
-        return null;
-    }
+	@Override
+	public Void visitEnumConstant(EnumConstantExpression expression) {
+		final Type type = expression.type.accept(JavaTypeVisitor.INSTANCE);
+		javaWriter.getStaticField(type.getInternalName(), expression.value.name, type.getDescriptor());
+		return null;
+	}
 
-    @Override
-    public Void visitFunction(FunctionExpression expression) {
+	@Override
+	public Void visitFunction(FunctionExpression expression) {
 		CompilerUtils.tagMethodParameters(expression.header, false);
 
-        if (expression.header.parameters.length == 0 && expression.body instanceof ReturnStatement && expression.body.hasTag(MatchExpression.class) && expression.closure.captures.isEmpty()) {
-            ((ReturnStatement) expression.body).value.accept(this);
-            return null;
-        }
-        final String signature = CompilerUtils.calcSign(expression.header, false);
-        //final String name = CompilerUtils.getLambdaInterface(expression.header);
+		if (expression.header.parameters.length == 0 && expression.body instanceof ReturnStatement && expression.body.hasTag(MatchExpression.class) && expression.closure.captures.isEmpty()) {
+			((ReturnStatement) expression.body).value.accept(this);
+			return null;
+		}
+		final String signature = CompilerUtils.calcSign(expression.header, false);
+		//final String name = CompilerUtils.getLambdaInterface(expression.header);
 		final String name = CompilerUtils.getLambdaCounter();
 
-        final JavaMethodInfo methodInfo = new JavaMethodInfo(javaWriter.method.javaClass, "accept", signature, Opcodes.ACC_PUBLIC);
+		final JavaMethodInfo methodInfo = new JavaMethodInfo(javaWriter.method.javaClass, "accept", signature, Opcodes.ACC_PUBLIC);
 		final ClassWriter lambdaCW = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{CompilerUtils.getLambdaInterface(expression.header)});
 		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
@@ -1605,125 +1626,125 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		constructorWriter.end();
 
 
-        functionWriter.start();
+		functionWriter.start();
 
 
-        final JavaStatementVisitor CSV = new JavaStatementVisitor(new JavaExpressionVisitor(functionWriter) {
-            //@Override
-            public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
-                final int position = calculateMemberPosition(varExpression, expression);
-                functionWriter.loadObject(0);
-                functionWriter.getField(name, "captured" + position, varExpression.variable.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
-                return null;
-            }
+		final JavaStatementVisitor CSV = new JavaStatementVisitor(new JavaExpressionVisitor(functionWriter) {
+			//@Override
+			public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
+				final int position = calculateMemberPosition(varExpression, expression);
+				functionWriter.loadObject(0);
+				functionWriter.getField(name, "captured" + position, varExpression.variable.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
+				return null;
+			}
 
-            @Override
-            public Void visitCapturedParameter(CapturedParameterExpression varExpression) {
-                final int position = calculateMemberPosition(varExpression, expression);
-                functionWriter.loadObject(0);
-                functionWriter.getField(name, "captured" + position, varExpression.parameter.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
-                return null;
-            }
-        });
+			@Override
+			public Void visitCapturedParameter(CapturedParameterExpression varExpression) {
+				final int position = calculateMemberPosition(varExpression, expression);
+				functionWriter.loadObject(0);
+				functionWriter.getField(name, "captured" + position, varExpression.parameter.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
+				return null;
+			}
+		});
 
 
 		expression.body.accept(CSV);
-        functionWriter.ret();
+		functionWriter.ret();
 
 
 		functionWriter.end();
-        lambdaCW.visitEnd();
+		lambdaCW.visitEnd();
 
-        JavaModule.classes.putIfAbsent(name, lambdaCW.toByteArray());
+		JavaModule.classes.putIfAbsent(name, lambdaCW.toByteArray());
 
-        try (FileOutputStream out = new FileOutputStream(name + ".class")){
-        	out.write(lambdaCW.toByteArray());
+		try (FileOutputStream out = new FileOutputStream(name + ".class")) {
+			out.write(lambdaCW.toByteArray());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 		return null;
-    }
+	}
 
-    //TODO replace with visitor?
-    private static int calculateMemberPosition(GetLocalVariableExpression localVariableExpression, FunctionExpression expression) {
-        int h = 1;//expression.header.parameters.length;
-            for (CapturedExpression capture : expression.closure.captures) {
-                if (capture instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) capture).variable == localVariableExpression.variable)
-                    return h;
-                if (capture instanceof CapturedClosureExpression && ((CapturedClosureExpression) capture).value instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) ((CapturedClosureExpression) capture).value).variable == localVariableExpression.variable)
-                    return h;
-                h++;
-            }
-        throw new CompileException(localVariableExpression.position, CompileExceptionCode.INTERNAL_ERROR, "Captured Statement error");
-    }
+	//TODO replace with visitor?
+	private static int calculateMemberPosition(GetLocalVariableExpression localVariableExpression, FunctionExpression expression) {
+		int h = 1;//expression.header.parameters.length;
+		for (CapturedExpression capture : expression.closure.captures) {
+			if (capture instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) capture).variable == localVariableExpression.variable)
+				return h;
+			if (capture instanceof CapturedClosureExpression && ((CapturedClosureExpression) capture).value instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) ((CapturedClosureExpression) capture).value).variable == localVariableExpression.variable)
+				return h;
+			h++;
+		}
+		throw new CompileException(localVariableExpression.position, CompileExceptionCode.INTERNAL_ERROR, "Captured Statement error");
+	}
 
-    private static int calculateMemberPosition(CapturedParameterExpression functionParameterExpression, FunctionExpression expression) {
-        int h = 1;//expression.header.parameters.length;
-        for (CapturedExpression capture : expression.closure.captures) {
-            if (capture instanceof CapturedParameterExpression && ((CapturedParameterExpression) capture).parameter == functionParameterExpression.parameter)
-                return h;
-            h++;
-        }
-        throw new CompileException(functionParameterExpression.position, CompileExceptionCode.INTERNAL_ERROR, "Captured Statement error");
-    }
+	private static int calculateMemberPosition(CapturedParameterExpression functionParameterExpression, FunctionExpression expression) {
+		int h = 1;//expression.header.parameters.length;
+		for (CapturedExpression capture : expression.closure.captures) {
+			if (capture instanceof CapturedParameterExpression && ((CapturedParameterExpression) capture).parameter == functionParameterExpression.parameter)
+				return h;
+			h++;
+		}
+		throw new CompileException(functionParameterExpression.position, CompileExceptionCode.INTERNAL_ERROR, "Captured Statement error");
+	}
 
 
-    private String calcFunctionSignature(LambdaClosure closure) {
-        StringJoiner joiner = new StringJoiner("", "(", ")V");
+	private String calcFunctionSignature(LambdaClosure closure) {
+		StringJoiner joiner = new StringJoiner("", "(", ")V");
 
-        for (CapturedExpression capture : closure.captures) {
-            String descriptor = capture.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor();
-            joiner.add(descriptor);
-        }
-        return joiner.toString();
-    }
+		for (CapturedExpression capture : closure.captures) {
+			String descriptor = capture.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor();
+			joiner.add(descriptor);
+		}
+		return joiner.toString();
+	}
 
-    @Override
-    public Void visitGetField(GetFieldExpression expression) {
-        expression.accept(this);
-        if (!checkAndGetFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
-        return null;
-    }
+	@Override
+	public Void visitGetField(GetFieldExpression expression) {
+		expression.accept(this);
+		if (!checkAndGetFieldInfo(expression.field, false))
+			throw new IllegalStateException("Missing field info on a field member!");
+		return null;
+	}
 
-    @Override
-    public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
-        JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
+	@Override
+	public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
+		JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
 
-        if (parameter == null) {
-            throw new CompileException(expression.position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Could not resolve lambda parameter" + expression.parameter);
-        }
+		if (parameter == null) {
+			throw new CompileException(expression.position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Could not resolve lambda parameter" + expression.parameter);
+		}
 
-        javaWriter.load(expression.parameter.type.accept(JavaTypeVisitor.INSTANCE), parameter.index);
-        return null;
-    }
+		javaWriter.load(expression.parameter.type.accept(JavaTypeVisitor.INSTANCE), parameter.index);
+		return null;
+	}
 
-    @Override
-    public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-        final Label label = new Label();
-        final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
-        tag.end = label;
-        javaWriter.load(tag.type, tag.local);
-        javaWriter.label(label);
-        return null;
-    }
+	@Override
+	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
+		final Label label = new Label();
+		final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
+		tag.end = label;
+		javaWriter.load(tag.type, tag.local);
+		javaWriter.label(label);
+		return null;
+	}
 
-    @Override
-    public Void visitGetStaticField(GetStaticFieldExpression expression) {
-        if (!checkAndGetFieldInfo(expression.field, true))
-            throw new IllegalStateException("Missing field info on a field member!");
-        return null;
-    }
+	@Override
+	public Void visitGetStaticField(GetStaticFieldExpression expression) {
+		if (!checkAndGetFieldInfo(expression.field, true))
+			throw new IllegalStateException("Missing field info on a field member!");
+		return null;
+	}
 
-    @Override
-    public Void visitGetter(GetterExpression expression) {
+	@Override
+	public Void visitGetter(GetterExpression expression) {
 		expression.target.accept(this);
 
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
 			if (!checkAndExecuteMethodInfo(expression.getter))
-	            throw new IllegalStateException("Call target has no method info!");
+				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
 		}
@@ -1905,163 +1926,163 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 		}
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public Void visitGlobal(GlobalExpression expression) {
-        return expression.resolution.accept(this);
-    }
+	@Override
+	public Void visitGlobal(GlobalExpression expression) {
+		return expression.resolution.accept(this);
+	}
 
-    @Override
-    public Void visitGlobalCall(GlobalCallExpression expression) {
-        return expression.resolution.accept(this);
-    }
+	@Override
+	public Void visitGlobalCall(GlobalCallExpression expression) {
+		return expression.resolution.accept(this);
+	}
 
-    @Override
-    public Void visitInterfaceCast(InterfaceCastExpression expression) {
-        expression.value.accept(this);
-        javaWriter.checkCast(expression.type.accept(JavaTypeVisitor.INSTANCE));
-        return null;
-    }
+	@Override
+	public Void visitInterfaceCast(InterfaceCastExpression expression) {
+		expression.value.accept(this);
+		javaWriter.checkCast(expression.type.accept(JavaTypeVisitor.INSTANCE));
+		return null;
+	}
 
-    @Override
-    public Void visitIs(IsExpression expression) {
-        expression.value.accept(this);
-        javaWriter.instanceOf(expression.isType.accept(JavaTypeVisitor.INSTANCE));
-        return null;
-    }
+	@Override
+	public Void visitIs(IsExpression expression) {
+		expression.value.accept(this);
+		javaWriter.instanceOf(expression.isType.accept(JavaTypeVisitor.INSTANCE));
+		return null;
+	}
 
-    @Override
-    public Void visitMakeConst(MakeConstExpression expression) {
-        return null;
-    }
+	@Override
+	public Void visitMakeConst(MakeConstExpression expression) {
+		return null;
+	}
 
-    @Override
-    public Void visitMap(MapExpression expression) {
-        javaWriter.newObject(expression.type.accept(JavaTypeClassVisitor.INSTANCE));
-        javaWriter.dup();
-        javaWriter.invokeSpecial("java/util/Map", "<init>", "()V");
-        for (int i = 0; i < expression.keys.length; i++) {
-            javaWriter.dup();
-            expression.keys[i].accept(this);
-            expression.values[i].accept(this);
-            javaWriter.invokeInterface(MAP_PUT);
-            javaWriter.pop();
-        }
-        return null;
-    }
+	@Override
+	public Void visitMap(MapExpression expression) {
+		javaWriter.newObject(expression.type.accept(JavaTypeClassVisitor.INSTANCE));
+		javaWriter.dup();
+		javaWriter.invokeSpecial("java/util/Map", "<init>", "()V");
+		for (int i = 0; i < expression.keys.length; i++) {
+			javaWriter.dup();
+			expression.keys[i].accept(this);
+			expression.values[i].accept(this);
+			javaWriter.invokeInterface(MAP_PUT);
+			javaWriter.pop();
+		}
+		return null;
+	}
 
-    @Override
-    public Void visitMatch(MatchExpression expression) {
+	@Override
+	public Void visitMatch(MatchExpression expression) {
 
-        final Label start = new Label();
-        final Label end = new Label();
-
-
-        javaWriter.label(start);
-        expression.value.accept(this);
-        if (expression.value.type == BasicTypeID.STRING)
-            javaWriter.invokeVirtual(new JavaMethodInfo(new JavaClassInfo("java/lang/Object"), "hashCode", "()I", 0));
-
-        final boolean hasNoDefault = hasNoDefault(expression);
-
-        final MatchExpression.Case[] cases = expression.cases;
-        final JavaSwitchLabel[] switchLabels = new JavaSwitchLabel[hasNoDefault ? cases.length : cases.length - 1];
-        final Label defaultLabel = new Label();
-
-        int i = 0;
-        for (final MatchExpression.Case matchCase : cases) {
-            if (matchCase.key != null) {
-                switchLabels[i++] = new JavaSwitchLabel(CompilerUtils.getKeyForSwitch(matchCase.key), new Label());
-            }
-        }
-
-        JavaSwitchLabel[] sortedSwitchLabels = Arrays.copyOf(switchLabels, switchLabels.length);
-        Arrays.sort(sortedSwitchLabels, Comparator.comparingInt(a -> a.key));
-
-        javaWriter.lookupSwitch(defaultLabel, sortedSwitchLabels);
-
-        i = 0;
-        for (final MatchExpression.Case switchCase : cases) {
-            if (hasNoDefault || switchCase.key != null) {
-                javaWriter.label(switchLabels[i++].label);
-            } else {
-                javaWriter.label(defaultLabel);
-            }
-            //switchCase.value.body.setTag(MatchExpression.class, expression);
-            switchCase.value.accept(this);
-            javaWriter.goTo(end);
-        }
-
-        if (hasNoDefault) {
-            javaWriter.label(defaultLabel);
-        }
-
-        javaWriter.label(end);
+		final Label start = new Label();
+		final Label end = new Label();
 
 
-        //throw new UnsupportedOperationException("Not yet implemented!");
-        return null;
-    }
+		javaWriter.label(start);
+		expression.value.accept(this);
+		if (expression.value.type == BasicTypeID.STRING)
+			javaWriter.invokeVirtual(new JavaMethodInfo(new JavaClassInfo("java/lang/Object"), "hashCode", "()I", 0));
 
-    private static boolean hasNoDefault(MatchExpression switchStatement) {
-        for (MatchExpression.Case switchCase : switchStatement.cases)
-            if (switchCase.key == null) return false;
-        return true;
-    }
+		final boolean hasNoDefault = hasNoDefault(expression);
 
-    @Override
-    public Void visitNew(NewExpression expression) {
-        final String type;
-        if (expression.type instanceof DefinitionTypeID)
-            type = ((DefinitionTypeID) expression.type).definition.name;
-        else
-            type = Type.getDescriptor(expression.type.accept(JavaTypeClassVisitor.INSTANCE));
+		final MatchExpression.Case[] cases = expression.cases;
+		final JavaSwitchLabel[] switchLabels = new JavaSwitchLabel[hasNoDefault ? cases.length : cases.length - 1];
+		final Label defaultLabel = new Label();
 
-        javaWriter.newObject(type);
-        javaWriter.dup();
-        StringBuilder signatureBuilder = new StringBuilder("(");
-        for (Expression argument : expression.arguments.arguments) {
-            argument.accept(this);
-            signatureBuilder.append(Type.getDescriptor(argument.type.accept(JavaTypeClassVisitor.INSTANCE)));
-        }
-        signatureBuilder.append(")V");
-        javaWriter.invokeSpecial(type, "<init>", signatureBuilder.toString());
+		int i = 0;
+		for (final MatchExpression.Case matchCase : cases) {
+			if (matchCase.key != null) {
+				switchLabels[i++] = new JavaSwitchLabel(CompilerUtils.getKeyForSwitch(matchCase.key), new Label());
+			}
+		}
 
-        return null;
-    }
+		JavaSwitchLabel[] sortedSwitchLabels = Arrays.copyOf(switchLabels, switchLabels.length);
+		Arrays.sort(sortedSwitchLabels, Comparator.comparingInt(a -> a.key));
 
-    @Override
-    public Void visitNull(NullExpression expression) {
-        javaWriter.aConstNull();
-        return null;
-    }
+		javaWriter.lookupSwitch(defaultLabel, sortedSwitchLabels);
 
-    @Override
-    public Void visitOrOr(OrOrExpression expression) {
-        Label end = new Label();
-        Label onTrue = new Label();
+		i = 0;
+		for (final MatchExpression.Case switchCase : cases) {
+			if (hasNoDefault || switchCase.key != null) {
+				javaWriter.label(switchLabels[i++].label);
+			} else {
+				javaWriter.label(defaultLabel);
+			}
+			//switchCase.value.body.setTag(MatchExpression.class, expression);
+			switchCase.value.accept(this);
+			javaWriter.goTo(end);
+		}
 
-        expression.left.accept(this);
+		if (hasNoDefault) {
+			javaWriter.label(defaultLabel);
+		}
 
-        javaWriter.ifNE(onTrue);
-        expression.right.accept(this);
-
-        // //these two calls are redundant but make decompiled code look better. Keep?
-        // javaWriter.ifNE(onTrue);
-        // javaWriter.iConst0();
-
-        javaWriter.goTo(end);
-
-        javaWriter.label(onTrue);
-        javaWriter.iConst1();
+		javaWriter.label(end);
 
 
-        javaWriter.label(end);
+		//throw new UnsupportedOperationException("Not yet implemented!");
+		return null;
+	}
 
-        return null;
-    }
+	private static boolean hasNoDefault(MatchExpression switchStatement) {
+		for (MatchExpression.Case switchCase : switchStatement.cases)
+			if (switchCase.key == null) return false;
+		return true;
+	}
+
+	@Override
+	public Void visitNew(NewExpression expression) {
+		final String type;
+		if (expression.type instanceof DefinitionTypeID)
+			type = ((DefinitionTypeID) expression.type).definition.name;
+		else
+			type = Type.getDescriptor(expression.type.accept(JavaTypeClassVisitor.INSTANCE));
+
+		javaWriter.newObject(type);
+		javaWriter.dup();
+		StringBuilder signatureBuilder = new StringBuilder("(");
+		for (Expression argument : expression.arguments.arguments) {
+			argument.accept(this);
+			signatureBuilder.append(Type.getDescriptor(argument.type.accept(JavaTypeClassVisitor.INSTANCE)));
+		}
+		signatureBuilder.append(")V");
+		javaWriter.invokeSpecial(type, "<init>", signatureBuilder.toString());
+
+		return null;
+	}
+
+	@Override
+	public Void visitNull(NullExpression expression) {
+		javaWriter.aConstNull();
+		return null;
+	}
+
+	@Override
+	public Void visitOrOr(OrOrExpression expression) {
+		Label end = new Label();
+		Label onTrue = new Label();
+
+		expression.left.accept(this);
+
+		javaWriter.ifNE(onTrue);
+		expression.right.accept(this);
+
+		// //these two calls are redundant but make decompiled code look better. Keep?
+		// javaWriter.ifNE(onTrue);
+		// javaWriter.iConst0();
+
+		javaWriter.goTo(end);
+
+		javaWriter.label(onTrue);
+		javaWriter.iConst1();
+
+
+		javaWriter.label(end);
+
+		return null;
+	}
 
 	@Override
 	public Void visitPanic(PanicExpression expression) {
@@ -2073,27 +2094,27 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitPostCall(PostCallExpression expression) {
 		expression.target.accept(this);
 		javaWriter.dup(expression.type.accept(new JavaTypeVisitor()));
-        if (!checkAndExecuteByteCodeImplementation(expression.member) && !checkAndExecuteMethodInfo(expression.member))
-            throw new IllegalStateException("Call target has no method info!");
+		if (!checkAndExecuteByteCodeImplementation(expression.member) && !checkAndExecuteMethodInfo(expression.member))
+			throw new IllegalStateException("Call target has no method info!");
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public Void visitRange(RangeExpression expression) {
-        // TODO: there are other kinds of ranges also; there should be a Range<T, T> type with creation of synthetic types
-        if (expression.from.type.accept(JavaTypeClassVisitor.INSTANCE) != int.class)
-            throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Only integer ranges supported");
+	@Override
+	public Void visitRange(RangeExpression expression) {
+		// TODO: there are other kinds of ranges also; there should be a Range<T, T> type with creation of synthetic types
+		if (expression.from.type.accept(JavaTypeClassVisitor.INSTANCE) != int.class)
+			throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Only integer ranges supported");
 
-        javaWriter.newObject(IntRange.class);
-        javaWriter.dup();
-        expression.from.accept(this);
-        expression.to.accept(this);
-        System.out.println(IntRange.class.getName());
-        javaWriter.invokeSpecial("org/openzen/zenscript/implementations/IntRange", "<init>", "(II)V");
+		javaWriter.newObject(IntRange.class);
+		javaWriter.dup();
+		expression.from.accept(this);
+		expression.to.accept(this);
+		System.out.println(IntRange.class.getName());
+		javaWriter.invokeSpecial("org/openzen/zenscript/implementations/IntRange", "<init>", "(II)V");
 
-        return null;
-    }
+		return null;
+	}
 
 
 	@Override
@@ -2117,58 +2138,58 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-    @Override
-    public Void visitSetField(SetFieldExpression expression) {
-        expression.target.accept(this);
-        expression.value.accept(this);
-        if (!checkAndPutFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
-        return null;
-    }
+	@Override
+	public Void visitSetField(SetFieldExpression expression) {
+		expression.target.accept(this);
+		expression.value.accept(this);
+		if (!checkAndPutFieldInfo(expression.field, false))
+			throw new IllegalStateException("Missing field info on a field member!");
+		return null;
+	}
 
-    @Override
-    public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
-        expression.value.accept(this);
-        JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
-        javaWriter.store(expression.type.accept(JavaTypeVisitor.INSTANCE), parameter.index);
-        return null;
-    }
+	@Override
+	public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
+		expression.value.accept(this);
+		JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
+		javaWriter.store(expression.type.accept(JavaTypeVisitor.INSTANCE), parameter.index);
+		return null;
+	}
 
-    @Override
-    public Void visitSetLocalVariable(SetLocalVariableExpression expression) {
-        expression.value.accept(this);
-        Label label = new Label();
-        javaWriter.label(label);
-        final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
-        tag.end = label;
+	@Override
+	public Void visitSetLocalVariable(SetLocalVariableExpression expression) {
+		expression.value.accept(this);
+		Label label = new Label();
+		javaWriter.label(label);
+		final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
+		tag.end = label;
 
-        javaWriter.store(tag.type, tag.local);
+		javaWriter.store(tag.type, tag.local);
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public Void visitSetStaticField(SetStaticFieldExpression expression) {
-        if (expression.field.isFinal())
-            throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
+	@Override
+	public Void visitSetStaticField(SetStaticFieldExpression expression) {
+		if (expression.field.isFinal())
+			throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
 
-        expression.value.accept(this);
-        if (!checkAndPutFieldInfo(expression.field, true))
-            throw new IllegalStateException("Missing field info on a field member!");
-        return null;
-    }
+		expression.value.accept(this);
+		if (!checkAndPutFieldInfo(expression.field, true))
+			throw new IllegalStateException("Missing field info on a field member!");
+		return null;
+	}
 
-    @Override
-    public Void visitSetter(SetterExpression expression) {
-        return null;
-    }
+	@Override
+	public Void visitSetter(SetterExpression expression) {
+		return null;
+	}
 
-    @Override
-    public Void visitStaticGetter(StaticGetterExpression expression) {
+	@Override
+	public Void visitStaticGetter(StaticGetterExpression expression) {
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
 			if (!checkAndExecuteMethodInfo(expression.getter))
-	            throw new IllegalStateException("Call target has no method info!");
+				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
 		}
@@ -2251,23 +2272,23 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		}
 
 		throw new UnsupportedOperationException("Unknown builtin: " + builtin);
-    }
+	}
 
-    @Override
-    public Void visitStaticSetter(StaticSetterExpression expression) {
-        return null;
-    }
+	@Override
+	public Void visitStaticSetter(StaticSetterExpression expression) {
+		return null;
+	}
 
-    @Override
-    public Void visitSupertypeCast(SupertypeCastExpression expression) {
-        return null; // nothing to do
-    }
+	@Override
+	public Void visitSupertypeCast(SupertypeCastExpression expression) {
+		return null; // nothing to do
+	}
 
-    @Override
-    public Void visitThis(ThisExpression expression) {
-        javaWriter.loadObject(0);
-        return null;
-    }
+	@Override
+	public Void visitThis(ThisExpression expression) {
+		javaWriter.loadObject(0);
+		return null;
+	}
 
 	@Override
 	public Void visitThrow(ThrowExpression expression) {
@@ -2281,93 +2302,93 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
-    @Override
-    public Void visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+	@Override
+	public Void visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 
-    @Override
-    public Void visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+	@Override
+	public Void visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 
-    @Override
-    public Void visitVariantValue(VariantValueExpression expression) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+	@Override
+	public Void visitVariantValue(VariantValueExpression expression) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 
-    @Override
-    public Void visitWrapOptional(WrapOptionalExpression expression) {
-        // TODO: convert basic types (char, int, float, ...) to their boxed (Character, Integer, Float, ...) counterparts
-        // -- any object type values can just be passed as-is
-        expression.value.accept(this);
-        return null;
-    }
+	@Override
+	public Void visitWrapOptional(WrapOptionalExpression expression) {
+		// TODO: convert basic types (char, int, float, ...) to their boxed (Character, Integer, Float, ...) counterparts
+		// -- any object type values can just be passed as-is
+		expression.value.accept(this);
+		return null;
+	}
 
-    public JavaWriter getJavaWriter() {
-        return javaWriter;
-    }
-
-
-    //Will return true if a JavaBytecodeImplementation.class tag exists, and will compile that tag
-    private boolean checkAndExecuteByteCodeImplementation(DefinitionMemberRef member) {
-        JavaBytecodeImplementation implementation = member.getTag(JavaBytecodeImplementation.class);
-        if (implementation != null) {
-            implementation.compile(getJavaWriter());
-            return true;
-        }
-        return false;
-    }
-
-    //Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
-    private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member) {
-        JavaMethodInfo methodInfo = member.getTag(JavaMethodInfo.class);
-        if (methodInfo == null)
-            return false;
-
-        if (methodInfo.isStatic()) {
-            getJavaWriter().invokeStatic(methodInfo);
-        } else {
-            getJavaWriter().invokeVirtual(methodInfo);
-        }
-        return true;
-    }
+	public JavaWriter getJavaWriter() {
+		return javaWriter;
+	}
 
 
-    //Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
-    public boolean checkAndPutFieldInfo(FieldMemberRef field, boolean isStatic) {
+	//Will return true if a JavaBytecodeImplementation.class tag exists, and will compile that tag
+	private boolean checkAndExecuteByteCodeImplementation(DefinitionMemberRef member) {
+		JavaBytecodeImplementation implementation = member.getTag(JavaBytecodeImplementation.class);
+		if (implementation != null) {
+			implementation.compile(getJavaWriter());
+			return true;
+		}
+		return false;
+	}
+
+	//Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
+	private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member) {
+		JavaMethodInfo methodInfo = member.getTag(JavaMethodInfo.class);
+		if (methodInfo == null)
+			return false;
+
+		if (methodInfo.isStatic()) {
+			getJavaWriter().invokeStatic(methodInfo);
+		} else {
+			getJavaWriter().invokeVirtual(methodInfo);
+		}
+		return true;
+	}
+
+
+	//Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
+	public boolean checkAndPutFieldInfo(FieldMemberRef field, boolean isStatic) {
 		JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
-        if (fieldInfo == null)
-            return false;
-        //TODO Remove isStatic
-        if (field.isStatic() || isStatic) {
-            getJavaWriter().putStaticField(fieldInfo);
-        } else {
-            getJavaWriter().putField(fieldInfo);
-        }
-        return true;
-    }
+		if (fieldInfo == null)
+			return false;
+		//TODO Remove isStatic
+		if (field.isStatic() || isStatic) {
+			getJavaWriter().putStaticField(fieldInfo);
+		} else {
+			getJavaWriter().putField(fieldInfo);
+		}
+		return true;
+	}
 
-    public boolean checkAndGetFieldInfo(ConstMemberRef field, boolean isStatic) {
-        JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
-        if (fieldInfo == null)
-            return false;
+	public boolean checkAndGetFieldInfo(ConstMemberRef field, boolean isStatic) {
+		JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
+		if (fieldInfo == null)
+			return false;
 
-        getJavaWriter().getStaticField(fieldInfo);
-        return true;
-    }
+		getJavaWriter().getStaticField(fieldInfo);
+		return true;
+	}
 
-    public boolean checkAndGetFieldInfo(FieldMemberRef field, boolean isStatic) {
-        JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
-        if (fieldInfo == null)
-            return false;
+	public boolean checkAndGetFieldInfo(FieldMemberRef field, boolean isStatic) {
+		JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
+		if (fieldInfo == null)
+			return false;
 
-        //TODO Remove isStatic
-        if (field.isStatic() || isStatic) {
-            getJavaWriter().getStaticField(fieldInfo);
-        } else {
-            getJavaWriter().getField(fieldInfo);
-        }
-        return true;
-    }
+		//TODO Remove isStatic
+		if (field.isStatic() || isStatic) {
+			getJavaWriter().getStaticField(fieldInfo);
+		} else {
+			getJavaWriter().getField(fieldInfo);
+		}
+		return true;
+	}
 }

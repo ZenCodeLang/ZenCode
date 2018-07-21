@@ -6,14 +6,13 @@
 package org.openzen.zenscript.javabytecode;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaFieldInfo {
 	public final JavaClassInfo javaClass;
 	public final String name;
 	public final String signature;
-	
+
 	public JavaFieldInfo(JavaClassInfo javaClass, String name, String signature) {
 		this.javaClass = javaClass;
 		this.name = name;
