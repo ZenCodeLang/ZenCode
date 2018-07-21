@@ -27,6 +27,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
@@ -82,6 +83,14 @@ public class DefinitionMemberGroup {
 	
 	public SetterMemberRef getSetter() {
 		return this.setter == null ? null : this.setter.member;
+	}
+	
+	public FunctionalMemberRef getUnaryMethod() {
+		for (TypeMember<FunctionalMemberRef> method : methods)
+			if (method.member.header.parameters.length == 0)
+				return method.member;
+		
+		return null;
 	}
 	
 	public boolean hasMethods() {
@@ -349,5 +358,20 @@ public class DefinitionMemberGroup {
 		}
 		
 		return selected;
+	}
+	
+	public FunctionalMemberRef getOverride(CodePosition position, TypeScope scope, FunctionalMember member) {
+		List<FunctionalMemberRef> candidates = new ArrayList<>();
+		for (TypeMember<FunctionalMemberRef> method : methods) {
+			if (member.header.canOverride(scope, method.member.header))
+				candidates.add(method.member);
+		}
+		
+		if (candidates.isEmpty())
+			return null;
+		if (candidates.size() == 1)
+			return candidates.get(0);
+		
+		throw new CompileException(position, CompileExceptionCode.OVERRIDE_AMBIGUOUS, "Ambiguous override: has " + candidates.size() + " base candidates");
 	}
 }

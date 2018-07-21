@@ -13,7 +13,9 @@ import org.openzen.zenscript.codemodel.statement.BreakStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -34,5 +36,10 @@ public class ParsedStatementBreak extends ParsedStatement {
 		if (target == null)
 			throw new CompileException(position, CompileExceptionCode.BREAK_OUTSIDE_LOOP, name == null ? "Not in a loop" : "No such loop: " + name);
 		return result(new BreakStatement(position, target), scope);
+	}
+
+	@Override
+	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
+		return null;
 	}
 }

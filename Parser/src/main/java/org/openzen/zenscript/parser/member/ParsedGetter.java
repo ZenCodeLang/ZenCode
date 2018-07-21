@@ -7,11 +7,16 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
+import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 /**
  *
@@ -20,9 +25,19 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedGetter extends ParsedFunctionalMember {
 	private final String name;
 	private final IParsedType type;
+	private GetterMember compiled;
 	
-	public ParsedGetter(CodePosition position, HighLevelDefinition definition, int modifiers, ParsedAnnotation[] annotations, String name, IParsedType type, ParsedFunctionBody body) {
-		super(position, definition, modifiers, annotations, body);
+	public ParsedGetter(
+			CodePosition position,
+			HighLevelDefinition definition,
+			ParsedImplementation implementation,
+			int modifiers,
+			ParsedAnnotation[] annotations,
+			String name,
+			IParsedType type,
+			ParsedFunctionBody body)
+	{
+		super(position, definition, implementation, modifiers, annotations, body);
 		
 		this.name = name;
 		this.type = type;
@@ -31,5 +46,24 @@ public class ParsedGetter extends ParsedFunctionalMember {
 	@Override
 	public void linkTypes(BaseScope scope) {
 		compiled = new GetterMember(position, definition, modifiers, name, type.compile(scope), null);
+	}
+
+	@Override
+	public FunctionalMember getCompiled() {
+		return compiled;
+	}
+	
+	@Override
+	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
+		boolean result = super.inferHeaders(scope, state);
+		if (result && type == ParsedTypeBasic.UNDETERMINED)
+			compiled.type = compiled.header.returnType;
+		
+		return result;
+	}
+
+	@Override
+	protected void fillOverride(TypeScope scope, ITypeID baseType, PrecompilationState state) {
+		compiled.setOverrides(scope.getTypeMembers(baseType).getOrCreateGroup(name, false).getGetter());
 	}
 }

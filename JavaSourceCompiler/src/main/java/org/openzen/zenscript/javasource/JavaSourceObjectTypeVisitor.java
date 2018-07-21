@@ -20,7 +20,6 @@ public class JavaSourceObjectTypeVisitor extends JavaSourceTypeVisitor {
 	public String visitBasic(BasicTypeID basic) {
 		switch (basic) {
 			case VOID: return "Void";
-			case ANY: return "Any";
 			case BOOL: return "Boolean";
 			case BYTE: return "Byte";
 			case SBYTE: return "Byte";

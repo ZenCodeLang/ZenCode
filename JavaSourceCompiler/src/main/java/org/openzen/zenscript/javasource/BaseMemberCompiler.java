@@ -68,6 +68,12 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 		this.currentElementType = type;
 	}
 	
+	protected void override(boolean override) {
+		if (override) {
+			output.append(indent).append("@Override\n");
+		}
+	}
+	
 	protected void modifiers(int modifiers) {
 		if (Modifiers.isPublic(modifiers))
 			output.append("public ");
@@ -75,6 +81,8 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 			output.append("protected ");
 		if (Modifiers.isPrivate(modifiers))
 			output.append("private ");
+		if (Modifiers.isAbstract(modifiers))
+			output.append("abstract ");
 		if (Modifiers.isStatic(modifiers))
 			output.append("static ");
 		if (Modifiers.isFinal(modifiers))

@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -21,7 +22,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  */
 public class ConstMember extends DefinitionMember {
 	public final String name;
-	public final ITypeID type;
+	public ITypeID type;
 	public Expression value;
 	public final BuiltinID builtin;
 	
@@ -51,5 +52,10 @@ public class ConstMember extends DefinitionMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitConst(this);
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return null;
 	}
 }

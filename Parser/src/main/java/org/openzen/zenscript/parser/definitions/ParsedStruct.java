@@ -29,7 +29,7 @@ public class ParsedStruct extends BaseParsedDefinition {
 		
 		ParsedStruct result = new ParsedStruct(pkg, position, modifiers, annotations, name, parameters, outerDefinition);
 		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
+			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled, null));
 		}
 		return result;
 	}

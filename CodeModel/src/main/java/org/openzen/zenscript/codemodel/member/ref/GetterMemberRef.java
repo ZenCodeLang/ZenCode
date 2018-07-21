@@ -6,6 +6,8 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
@@ -50,5 +52,20 @@ public class GetterMemberRef implements DefinitionMemberRef {
 	
 	public Expression getStatic(CodePosition position) {
 		return new StaticGetterExpression(position, this);
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return member.getOverrides();
+	}
+
+	@Override
+	public FunctionHeader getHeader() {
+		return member.header;
+	}
+
+	@Override
+	public MemberAnnotation[] getAnnotations() {
+		return member.annotations;
 	}
 }

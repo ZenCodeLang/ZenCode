@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.statement.SwitchCase;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 /**
@@ -34,5 +35,14 @@ public class ParsedSwitchCase {
 			cStatements.add(statement.compile(scope));
 		}
 		return new SwitchCase(cValue, cStatements);
+	}
+	
+	public ITypeID precompileForResultType(ITypeID type, StatementScope scope, PrecompilationState state) {
+		SwitchValue cValue = value == null ? null : value.compileToSwitchValue(type, new ExpressionScope(scope));
+		ITypeID result = null;
+		for (ParsedStatement statement : statements) {
+			result = ParsedStatement.union(scope, result, statement.precompileForResultType(scope, state));
+		}
+		return result;
 	}
 }

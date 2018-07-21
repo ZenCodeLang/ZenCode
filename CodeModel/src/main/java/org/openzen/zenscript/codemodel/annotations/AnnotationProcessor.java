@@ -32,6 +32,8 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.DefinitionScope;
 import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
@@ -187,7 +189,11 @@ public class AnnotationProcessor implements ModuleProcessor {
 		@Override
 		public Void visitStaticInitializer(StaticInitializerMember member) {
 			StatementScope scope = new FunctionScope(this.scope, new FunctionHeader(BasicTypeID.VOID));
-			member.body = process(member.body, scope);
+			if (member.body == null) {
+				throw new IllegalStateException("No body in static initializer @ " + member.position);
+			} else {
+				member.body = process(member.body, scope);
+			}
 			return null;
 		}
 		
@@ -195,8 +201,8 @@ public class AnnotationProcessor implements ModuleProcessor {
 			for (MemberAnnotation annotation : member.annotations)
 				annotation.apply(member, scope);
 			
-			if (member.overrides != null) {
-				functional(member, member.overrides);
+			if (member.getOverrides() != null) {
+				functional(member, member.getOverrides());
 			}
 			
 			if (member.body == null)
@@ -207,12 +213,12 @@ public class AnnotationProcessor implements ModuleProcessor {
 			return null;
 		}
 		
-		private void functional(FunctionalMember member, FunctionalMember overrides) {
-			for (MemberAnnotation annotation : overrides.annotations)
+		private void functional(FunctionalMember member, DefinitionMemberRef overrides) {
+			for (MemberAnnotation annotation : overrides.getAnnotations())
 				annotation.applyOnOverridingMethod(member, scope);
 			
-			if (overrides.overrides != null) {
-				functional(member, overrides.overrides);
+			if (overrides.getOverrides() != null) {
+				functional(member, overrides.getOverrides());
 			}
 		}
 	}

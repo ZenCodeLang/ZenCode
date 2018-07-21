@@ -2,13 +2,16 @@ package stdlib;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import zsynthetic.Function1;
 import zsynthetic.Function2;
 import zsynthetic.Function3;
 import zsynthetic.Function4;
 import zsynthetic.Function5;
 import zsynthetic.Function6;
+import zsynthetic.Function7;
 
 public final class Arrays {
     private Arrays() {}
@@ -168,6 +171,14 @@ public final class Arrays {
 	        if (predicate.invoke(i, value))
 	            result++;
 	    }
+	    return result;
+	}
+	
+	public static <K, T> Map<K, T> index(Class<T> typeOfT, T[] self, Class<K> typeOfK, Function7<K, T> key) {
+	    Map<K, T> result = new HashMap<>();
+	    for (T value : self)
+	        
+	        result.put(key.invoke(value), value);
 	    return result;
 	}
 }

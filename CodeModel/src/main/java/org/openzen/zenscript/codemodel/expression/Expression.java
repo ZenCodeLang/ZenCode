@@ -81,6 +81,16 @@ public abstract class Expression implements IPartialExpression {
 		return scope.getTypeMembers(type).castImplicit(position, this, asType, true);
 	}
 	
+	/**
+	 * Determines if this expression aborts execution; that is, it is either a
+	 * throw or a panic expression.
+	 * 
+	 * @return abort flag
+	 */
+	public boolean aborts() {
+		return false;
+	}
+	
 	@Override
 	public List<ITypeID>[] predictCallTypes(TypeScope scope, List<ITypeID> hints, int arguments) {
 		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).predictCallTypes(scope, hints, arguments);

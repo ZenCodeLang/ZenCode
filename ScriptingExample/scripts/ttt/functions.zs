@@ -1,4 +1,4 @@
-function test() {
+function test() as void {
 	println("functions.zs; test1");
 }
 

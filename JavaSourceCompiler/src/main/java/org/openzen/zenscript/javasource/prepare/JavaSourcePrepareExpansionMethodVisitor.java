@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.member.MemberVisitor;
@@ -27,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
+import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
 /**
@@ -54,7 +56,8 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 	public Void visitField(FieldMember member) {
 		// TODO: expansion fields
 		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
-		cls.empty = false;
+		if (member.hasAutoGetter() || member.hasAutoSetter())
+			cls.empty = false;
 		return null;
 	}
 
@@ -66,7 +69,8 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
-		throw new UnsupportedOperationException("Destructors not allowed on expansions");
+		visitFunctional(member, "");
+		return null;
 	}
 
 	@Override
@@ -113,8 +117,11 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		// TODO: implementation merge check
-		cls.empty = false;
+		JavaSourceClass implementationClass = new JavaSourceClass(cls.pkg + "." + cls.name, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation");
+		member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
+		for (IDefinitionMember implementedMember : member.members)
+			implementedMember.accept(this);
+		
 		return null;
 	}
 

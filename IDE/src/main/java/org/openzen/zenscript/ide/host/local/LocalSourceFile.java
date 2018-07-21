@@ -5,20 +5,17 @@
  */
 package org.openzen.zenscript.ide.host.local;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.MutableLiveString;
 import org.openzen.drawablegui.live.SimpleLiveString;
-import org.openzen.zenscript.constructor.module.SourceFile;
+import org.openzen.zencode.shared.FileSourceFile;
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 
 /**
@@ -31,7 +28,7 @@ public class LocalSourceFile implements IDESourceFile {
 	
 	public LocalSourceFile(SourceFile file) {
 		this.file = file;
-		this.name = new SimpleLiveString(file.name);
+		this.name = new SimpleLiveString(file.getFilename());
 	}
 
 	@Override
@@ -40,18 +37,20 @@ public class LocalSourceFile implements IDESourceFile {
 	}
 
 	@Override
-	public Reader read() throws IOException {
-		return new InputStreamReader(
-				new BufferedInputStream(new FileInputStream(file.file)),
-				StandardCharsets.UTF_8);
+	public SourceFile getFile() {
+		return file;
 	}
 
 	@Override
 	public void update(String content) {
 		try {
-			Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file.file)), StandardCharsets.UTF_8);
-			writer.write(content);
-			writer.close();
+			if (file instanceof FileSourceFile) {
+				Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(((FileSourceFile)file).file)), StandardCharsets.UTF_8);
+				writer.write(content);
+				writer.close();
+			} else {
+				throw new UnsupportedOperationException("Cannot write to a non-file source file!");
+			}
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}

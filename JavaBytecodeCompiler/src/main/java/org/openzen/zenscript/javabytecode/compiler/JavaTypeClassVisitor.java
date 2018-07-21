@@ -17,7 +17,6 @@ public class JavaTypeClassVisitor implements ITypeVisitor<Class> {
         switch (basic) {
             case VOID:
                 return void.class;
-            case ANY:
             case NULL:
             case UNDETERMINED:
                 return Object.class;

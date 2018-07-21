@@ -10,6 +10,7 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -56,5 +57,10 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitImplementation(this);
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return null;
 	}
 }

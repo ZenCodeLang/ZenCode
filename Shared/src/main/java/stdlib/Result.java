@@ -4,11 +4,11 @@ import stdlib.Result;
 import stdlib.Result.Error;
 import stdlib.Result.Ok;
 import zsynthetic.Function10;
-import zsynthetic.Function8;
+import zsynthetic.Function11;
 import zsynthetic.Function9;
 
 public abstract class Result<T, E> {
-	public <R> Result<R, E> then(Class<R> typeOfR, Function8<R, E, T> fn) {
+	public <R> Result<R, E> then(Class<R> typeOfR, Function9<R, E, T> fn) {
 	    Result<R, E> temp1;
 	    switch (this.getDiscriminant()) {
 	        case Ok:
@@ -25,7 +25,7 @@ public abstract class Result<T, E> {
 	    return temp1;
 	}
 	
-	public <X> Result<T, X> handle(Class<X> typeOfX, Function9<T, X, E> handler) {
+	public <X> Result<T, X> handle(Class<X> typeOfX, Function10<T, X, E> handler) {
 	    Result<T, X> temp1;
 	    switch (this.getDiscriminant()) {
 	        case Ok:
@@ -75,7 +75,7 @@ public abstract class Result<T, E> {
 	    return temp1;
 	}
 	
-	public T orElse(Function10<T, E> other) {
+	public T orElse(Function11<T, E> other) {
 	    T temp1;
 	    switch (this.getDiscriminant()) {
 	        case Ok:

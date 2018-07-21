@@ -22,7 +22,9 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  * @author Hoofdgebruiker
  */
 public class SetterMember extends FunctionalMember {
-	public final ITypeID type;
+	public ITypeID type;
+	public final String name;
+	private SetterMemberRef overrides;
 	
 	public SetterMember(
 			CodePosition position,
@@ -35,11 +37,11 @@ public class SetterMember extends FunctionalMember {
 		super(position,
 				definition,
 				modifiers,
-				name,
 				new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(type, "$")),
 				builtin);
 		
 		this.type = type;
+		this.name = name;
 	}
 	
 	@Override
@@ -65,5 +67,17 @@ public class SetterMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitSetter(this);
+	}
+
+	@Override
+	public SetterMemberRef getOverrides() {
+		return overrides;
+	}
+	
+	public void setOverrides(SetterMemberRef overrides) {
+		this.overrides = overrides;
+		
+		if (type == BasicTypeID.UNDETERMINED)
+			type = overrides.type;
 	}
 }

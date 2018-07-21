@@ -8,6 +8,8 @@ package org.openzen.zenscript.constructor.module;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.openzen.zencode.shared.FileSourceFile;
+import org.openzen.zencode.shared.SourceFile;
 
 /**
  *
@@ -29,6 +31,6 @@ public class SourcePackage {
 	}
 	
 	public void addFile(SourceFile file) {
-		sourceFiles.put(file.name, file);
+		sourceFiles.put(file.getFilename(), file);
 	}
 }

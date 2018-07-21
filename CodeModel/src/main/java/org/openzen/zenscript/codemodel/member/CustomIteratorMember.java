@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -23,6 +24,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public class CustomIteratorMember extends DefinitionMember implements IIteratorMember {
 	private final ITypeID[] iteratorTypes;
 	public Statement body;
+	public IteratorMemberRef overrides;
 	
 	public CustomIteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID[] iteratorTypes) {
 		super(position, definition, modifiers);
@@ -67,5 +69,14 @@ public class CustomIteratorMember extends DefinitionMember implements IIteratorM
 	@Override
 	public <T> T acceptForIterator(ForeachIteratorVisitor<T> visitor) {
 		return visitor.visitCustomIterator();
+	}
+	
+	public void setOverrides(IteratorMemberRef overrides) {
+		this.overrides = overrides;
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return overrides;
 	}
 }

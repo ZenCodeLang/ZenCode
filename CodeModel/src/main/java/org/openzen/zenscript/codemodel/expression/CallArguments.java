@@ -18,25 +18,31 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class CallArguments {
-	public static final ITypeID[] NO_TYPE_ARGUMENTS = new ITypeID[0];
 	public static final CallArguments EMPTY = new CallArguments(new Expression[0]);
 	
 	public final ITypeID[] typeArguments;
 	public final Expression[] arguments;
 	
 	public CallArguments(Expression... arguments) {
-		this.typeArguments = NO_TYPE_ARGUMENTS;
+		this.typeArguments = ITypeID.NONE;
 		this.arguments = arguments;
 	}
 	
 	public CallArguments(ITypeID[] typeArguments, Expression[] arguments) {
 		if (typeArguments == null)
-			typeArguments = NO_TYPE_ARGUMENTS;
+			typeArguments = ITypeID.NONE;
 		if (arguments == null)
 			throw new IllegalArgumentException("Arguments cannot be null!");
 		
 		this.typeArguments = typeArguments;
 		this.arguments = arguments;
+	}
+	
+	public CallArguments(ITypeID... dummy) {
+		this.typeArguments = ITypeID.NONE;
+		this.arguments = new Expression[dummy.length];
+		for (int i = 0; i < dummy.length; i++)
+			arguments[i] = new DummyExpression(dummy[i]);
 	}
 	
 	public int getNumberOfTypeArguments() {

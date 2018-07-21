@@ -12,6 +12,8 @@ import org.openzen.zenscript.codemodel.expression.OrOrExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -38,5 +40,15 @@ public class ParsedExpressionOrOr extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return left.hasStrongType() && right.hasStrongType();
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		ITypeID leftType = left.precompileForType(scope, state);
+		ITypeID rightType = right.precompileForType(scope, state);
+		if (leftType == null || rightType == null)
+			return null;
+		
+		return scope.getTypeMembers(leftType).union(rightType);
 	}
 }

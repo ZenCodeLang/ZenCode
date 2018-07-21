@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -54,5 +55,17 @@ public class ParsedExpressionFloat extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return false;
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		for (ITypeID hint : scope.hints) {
+			if (hint == BasicTypeID.DOUBLE)
+				return hint;
+			else if (hint == BasicTypeID.FLOAT)
+				return hint;
+		}
+		
+		return BasicTypeID.DOUBLE;
 	}
 }

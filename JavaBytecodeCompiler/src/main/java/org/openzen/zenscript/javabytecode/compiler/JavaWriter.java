@@ -11,8 +11,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.objectweb.asm.*;
 import static org.objectweb.asm.Opcodes.*;
+import org.objectweb.asm.commons.LocalVariablesSorter;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.javabytecode.JavaClassInfo;
+import org.openzen.zenscript.javabytecode.JavaFieldInfo;
+import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javabytecode.JavaMethodInfo;
+import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 
 public class JavaWriter {
     private static final JavaClassInfo T_STRING = new JavaClassInfo("java/lang/String");

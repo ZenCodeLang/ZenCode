@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.member;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -12,6 +13,7 @@ import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ImplementationScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -21,9 +23,8 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedImplementation extends ParsedDefinitionMember {
 	private final CodePosition position;
 	private final int modifiers;
-	private final ParsedAnnotation[] annotations;
 	private final IParsedType type;
-	private final List<ParsedDefinitionMember> members;
+	private final List<ParsedDefinitionMember> members = new ArrayList<>();
 	
 	private ImplementationMember compiled;
 	
@@ -32,16 +33,17 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			ParsedAnnotation[] annotations,
-			IParsedType type,
-			List<ParsedDefinitionMember> members)
+			IParsedType type)
 	{
 		super(definition, annotations);
 		
 		this.position = position;
 		this.modifiers = modifiers;
-		this.annotations = annotations;
 		this.type = type;
-		this.members = members;
+	}
+	
+	public void addMember(ParsedDefinitionMember member) {
+		members.add(member);
 	}
 	
 	@Override
@@ -63,14 +65,19 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 	public ImplementationMember getCompiled() {
 		return compiled;
 	}
+	
+	@Override
+	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
+		return true; // nothing to do here
+	}
 
 	@Override
-	public void compile(BaseScope scope) {
+	public void compile(BaseScope scope, PrecompilationState state) {
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		
 		ImplementationScope innerScope = new ImplementationScope(scope, compiled);
 		for (ParsedDefinitionMember member : members) {
-			member.compile(innerScope);
+			member.compile(innerScope, state);
 		}
 	}
 }

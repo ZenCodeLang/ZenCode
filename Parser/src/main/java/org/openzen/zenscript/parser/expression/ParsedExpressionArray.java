@@ -8,13 +8,15 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -31,8 +33,8 @@ public class ParsedExpressionArray extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		ITypeID asBaseType = BasicTypeID.ANY;
-		ArrayTypeID asType = scope.getTypeRegistry().getArray(asBaseType, 1);
+		ITypeID asBaseType = null;
+		ArrayTypeID asType = null;
 		boolean couldHintType = false;
 		
 		for (ITypeID hint : scope.hints) {
@@ -53,7 +55,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 			for (int i = 0; i < contents.size(); i++)
 				cContents[i] = contents.get(i).compile(contentScope).eval().castImplicit(position, scope, asBaseType);
 		} else if (contents.isEmpty()) {
-			return new ArrayExpression(position, cContents, asType);
+			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_ARRAY, "Empty array with unknown type");
 		} else {
 			ExpressionScope contentScope = scope.withoutHints();
 			ITypeID resultType = null;
@@ -80,5 +82,21 @@ public class ParsedExpressionArray extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return false;
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		if (contents.isEmpty())
+			return null;
+		
+		ITypeID type = contents.get(0).precompileForType(scope, state);
+		if (type == null)
+			return null;
+		
+		for (int i = 1; i < contents.size(); i++) {
+			ITypeID itemType = contents.get(i).precompileForType(scope, state);
+			type = scope.getTypeMembers(type).union(itemType);
+		}
+		return type;
 	}
 }

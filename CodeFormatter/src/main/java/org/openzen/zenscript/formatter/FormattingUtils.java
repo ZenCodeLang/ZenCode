@@ -78,7 +78,7 @@ public class FormattingUtils {
 			if (parameter.variadic)
 				result.append("...");
 			
-			if (!settings.showAnyInFunctionHeaders || parameter.type != BasicTypeID.ANY) {
+			if (!settings.showAnyInFunctionHeaders || parameter.type != BasicTypeID.UNDETERMINED) {
 				result.append(" as ");
 				result.append(header.returnType.accept(typeFormatter));
 			}
@@ -86,7 +86,7 @@ public class FormattingUtils {
 			parameterIndex++;
 		}
 		result.append(")");
-		if (!settings.showAnyInFunctionHeaders || header.returnType != BasicTypeID.ANY) {
+		if (!settings.showAnyInFunctionHeaders || header.returnType != BasicTypeID.UNDETERMINED) {
 			result.append(" as ");
 			result.append(header.returnType.accept(typeFormatter));
 		}

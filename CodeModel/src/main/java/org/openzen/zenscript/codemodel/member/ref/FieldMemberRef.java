@@ -6,6 +6,8 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -43,5 +45,20 @@ public class FieldMemberRef implements DefinitionMemberRef {
 	
 	public boolean isFinal() {
 		return member.isFinal();
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return null;
+	}
+
+	@Override
+	public FunctionHeader getHeader() {
+		return null;
+	}
+
+	@Override
+	public MemberAnnotation[] getAnnotations() {
+		return member.annotations;
 	}
 }

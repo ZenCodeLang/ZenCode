@@ -49,10 +49,6 @@ public interface IParsedType {
 				tokens.next();
 				result = ParsedTypeBasic.VOID;
 				break;
-			case K_ANY:
-				tokens.next();
-				result = ParsedTypeBasic.ANY;
-				break;
 			case K_BOOL:
 				tokens.next();
 				result = ParsedTypeBasic.BOOL;

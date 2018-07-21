@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -65,7 +66,12 @@ public class ParsedIterator extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void compile(BaseScope scope) {
+	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
+		return true;
+	}
+
+	@Override
+	public void compile(BaseScope scope, PrecompilationState state) {
 		FunctionHeader header = new FunctionHeader(scope.getTypeRegistry().getIterator(compiled.getLoopVariableTypes()));
 		StatementScope innerScope = new FunctionScope(scope, header);
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);

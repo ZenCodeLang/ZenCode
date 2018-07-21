@@ -1,5 +1,10 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.StringJoiner;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -772,10 +777,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 							javaWriter.invokeStatic(ARRAYS_COPY_OF_RANGE_OBJECTS);
 							javaWriter.checkCast("[Ljava/lang/String;");
 							break;
-						case ANY:
-							javaWriter.invokeStatic(ARRAYS_COPY_OF_RANGE_OBJECTS);
-							javaWriter.checkCast("[Lzsynthetic/Any;");
-							break;
 						default:
 							throw new IllegalArgumentException("Unknown basic type: " + type.elementType);
 					}
@@ -821,7 +822,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 							javaWriter.invokeStatic(ARRAYS_EQUALS_CHARS);
 							break;
 						case STRING:
-						case ANY:
 							javaWriter.invokeStatic(ARRAYS_EQUALS_OBJECTS);
 							break;
 						default:
@@ -1864,7 +1864,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 							javaWriter.invokeStatic(ARRAYS_HASHCODE_CHARS);
 							break;
 						case STRING:
-						case ANY:
 							javaWriter.invokeStatic(ARRAYS_DEEPHASHCODE);
 							break;
 						default:

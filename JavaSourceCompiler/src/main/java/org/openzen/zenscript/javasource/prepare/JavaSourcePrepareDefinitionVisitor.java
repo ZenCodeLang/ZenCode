@@ -22,7 +22,6 @@ import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.javasource.JavaOperator;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
@@ -167,6 +166,30 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 			cls.addConstructor("constructor", "");
 			cls.addConstructor("constructorWithCause", "");
 			nativeClasses.put("stdlib::Exception", cls);
+		}
+		
+		{
+			JavaNativeClass cls = new JavaNativeClass(new JavaSourceClass("java.io", "IOException"));
+			cls.addConstructor("constructor", "");
+			nativeClasses.put("io::IOException", cls);
+		}
+		
+		{
+			JavaNativeClass cls = new JavaNativeClass(new JavaSourceClass("java.io", "Reader"));
+			cls.addInstanceMethod("destruct", "close");
+			cls.addInstanceMethod("readCharacter", "read");
+			cls.addInstanceMethod("readArray", "read");
+			cls.addInstanceMethod("readArraySlice", "read");
+			nativeClasses.put("io::Reader", cls);
+		}
+		
+		{
+			JavaNativeClass cls = new JavaNativeClass(new JavaSourceClass("java.io", "StringReader"));
+			cls.addInstanceMethod("constructor", "");
+			cls.addInstanceMethod("destructor", "close");
+			cls.addInstanceMethod("readCharacter", "read");
+			cls.addInstanceMethod("readSlice", "read");
+			nativeClasses.put("io::StringReader", cls);
 		}
 	}
 	

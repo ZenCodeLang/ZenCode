@@ -30,7 +30,7 @@ public class ParsedExpansion extends BaseParsedDefinition {
 		
 		ParsedExpansion result = new ParsedExpansion(pkg, position, modifiers, annotations, parameters, target, outerDefinition);
 		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
+			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled, null));
 		}
 		return result;
 	}

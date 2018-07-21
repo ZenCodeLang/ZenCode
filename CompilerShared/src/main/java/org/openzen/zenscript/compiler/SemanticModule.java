@@ -98,7 +98,7 @@ public class SemanticModule {
 		if (state != State.NORMALIZED)
 			throw new IllegalStateException("Module is not yet normalized");
 		
-		Validator validator = new Validator();
+		Validator validator = new Validator(compilationUnit.globalTypeRegistry, expansions, annotations);
 		for (ScriptBlock script : scripts) {
 			validator.validate(script);
 		}

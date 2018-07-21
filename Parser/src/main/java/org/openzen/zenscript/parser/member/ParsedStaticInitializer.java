@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
 /**
@@ -48,7 +49,12 @@ public class ParsedStaticInitializer extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void compile(BaseScope scope) {
+	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
+		return true;
+	}
+
+	@Override
+	public void compile(BaseScope scope, PrecompilationState state) {
 		compiled.body = body.compile(new FunctionScope(scope, new FunctionHeader(BasicTypeID.VOID)));
 	}
 }

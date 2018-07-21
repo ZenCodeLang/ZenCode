@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -43,6 +44,11 @@ public class ParsedNewExpression extends ParsedExpression{
 	@Override
 	public boolean hasStrongType() {
 		return true;
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		return type.compile(scope);
 	}
 	
 	public static NewExpression compile(CodePosition position, ITypeID type, ParsedCallArguments arguments, ExpressionScope scope) {

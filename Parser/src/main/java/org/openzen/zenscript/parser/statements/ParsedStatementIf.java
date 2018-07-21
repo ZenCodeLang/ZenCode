@@ -8,7 +8,9 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 public class ParsedStatementIf extends ParsedStatement {
@@ -30,5 +32,20 @@ public class ParsedStatementIf extends ParsedStatement {
 		Statement onThen = this.onThen.compile(scope);
 		Statement onElse = this.onElse == null ? null : this.onElse.compile(scope);
 		return result(new IfStatement(position, condition, onThen, onElse), scope);
+	}
+
+	@Override
+	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
+		ITypeID onThenType = onThen.precompileForResultType(scope, precompileState);
+		if (onElse == null)
+			return onThenType;
+		
+		ITypeID onElseType = onElse.precompileForResultType(scope, precompileState);
+		if (onElseType == null)
+			return onThenType;
+		if (onThenType == null)
+			return onElseType;
+		
+		return scope.getTypeMembers(onThenType).union(onElseType);
 	}
 }

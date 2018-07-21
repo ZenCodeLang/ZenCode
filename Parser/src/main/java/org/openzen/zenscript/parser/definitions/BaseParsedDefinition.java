@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.DefinitionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 
 /**
@@ -45,11 +46,18 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 			getCompiled().addMember(member.getCompiled());
 		}
 	}
-
+	
 	@Override
-	public void compileCode(BaseScope scope) {
+	public void listMembers(BaseScope scope, PrecompilationState state) {
 		DefinitionScope innerScope = new DefinitionScope(scope, getCompiled());
 		for (ParsedDefinitionMember member : members)
-			member.compile(innerScope);
+			state.register(innerScope, member);
+	}
+
+	@Override
+	public void compileCode(BaseScope scope, PrecompilationState state) {
+		DefinitionScope innerScope = new DefinitionScope(scope, getCompiled());
+		for (ParsedDefinitionMember member : members)
+			member.compile(innerScope, state);
 	}
 }

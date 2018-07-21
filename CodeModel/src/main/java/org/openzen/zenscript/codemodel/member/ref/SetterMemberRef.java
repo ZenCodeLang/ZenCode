@@ -6,6 +6,8 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -39,5 +41,20 @@ public class SetterMemberRef implements DefinitionMemberRef {
 	
 	public boolean isStatic() {
 		return member.isStatic();
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return member.getOverrides();
+	}
+
+	@Override
+	public FunctionHeader getHeader() {
+		return member.header;
+	}
+
+	@Override
+	public MemberAnnotation[] getAnnotations() {
+		return member.annotations;
 	}
 }

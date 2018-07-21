@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.constructor.ConstructorException;
@@ -112,7 +113,7 @@ public class DirectoryModuleReference implements ModuleReference {
 			if (file.isDirectory()) {
 				pkg.addPackage(loadPackage(file.getName(), file));
 			} else if (file.isFile() && file.getName().toLowerCase().endsWith(".zs")) {
-				pkg.addFile(new SourceFile(file.getName(), file));
+				pkg.addFile(new FileSourceFile(file.getName(), file));
 			}
 		}
 		

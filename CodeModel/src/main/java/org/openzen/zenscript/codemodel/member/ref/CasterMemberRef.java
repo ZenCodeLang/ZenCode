@@ -6,7 +6,9 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.CasterMember;
@@ -46,5 +48,20 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	
 	public boolean isImplicit() {
 		return Modifiers.isImplicit(member.modifiers);
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return member.getOverrides();
+	}
+
+	@Override
+	public FunctionHeader getHeader() {
+		return member.header;
+	}
+
+	@Override
+	public MemberAnnotation[] getAnnotations() {
+		return member.annotations;
 	}
 }

@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.member.MemberVisitor;
@@ -27,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
+import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
 /**
@@ -64,7 +66,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
-		visitFunctional(member, member.name);
+		visitFunctional(member, "<init>");
 		return null;
 	}
 
@@ -118,9 +120,24 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		// TODO: implementation merge check
 		cls.empty = false;
+		if (canMergeImplementation(member)) {
+			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(true, cls));
+			for (IDefinitionMember m : member.members)
+				m.accept(this);
+		} else {
+			JavaSourceClass implementationClass = new JavaSourceClass(cls.pkg + "." + cls.name, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation");
+			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
+			
+			JavaSourcePrepareClassMethodVisitor visitor = new JavaSourcePrepareClassMethodVisitor(implementationClass, null, true);
+			for (IDefinitionMember m : member.members)
+				m.accept(visitor);
+		}
 		return null;
+	}
+	
+	private boolean canMergeImplementation(ImplementationMember member) {
+		return true; // TODO: implementation merge check
 	}
 
 	@Override

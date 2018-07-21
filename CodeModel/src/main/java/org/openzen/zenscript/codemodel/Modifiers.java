@@ -73,4 +73,8 @@ public class Modifiers {
 	public static boolean isExtern(int modifiers) {
 		return (modifiers & EXTERN) > 0;
 	}
+	
+	public static boolean isOverride(int modifiers) {
+		return (modifiers & OVERRIDE) > 0;
+	}
 }

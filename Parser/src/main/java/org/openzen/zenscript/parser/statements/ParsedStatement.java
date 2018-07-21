@@ -7,13 +7,17 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
@@ -219,7 +223,7 @@ public abstract class ParsedStatement {
 					if (parser.isNext(ZSTokenType.T_IDENTIFIER))
 						catchName = parser.next().content;
 					
-					IParsedType catchType = ParsedTypeBasic.ANY;
+					IParsedType catchType = null;
 					if (parser.optional(K_AS) != null)
 						catchType = IParsedType.parse(parser);
 					
@@ -322,5 +326,18 @@ public abstract class ParsedStatement {
 		statement.setTag(WhitespaceInfo.class, whitespace);
 		statement.annotations = ParsedAnnotation.compileForStatement(annotations, statement, scope);
 		return statement;
+	}
+
+	public abstract ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState);
+	
+	protected static ITypeID union(TypeScope scope, ITypeID a, ITypeID b) {
+		if (a == null)
+			return b;
+		if (b == null)
+			return a;
+		if (a == b)
+			return a;
+		
+		return scope.getTypeMembers(a).union(b);
 	}
 }

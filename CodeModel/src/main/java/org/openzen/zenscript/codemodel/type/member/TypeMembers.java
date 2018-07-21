@@ -23,7 +23,10 @@ import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinition;
+import org.openzen.zenscript.codemodel.member.MethodMember;
+import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
@@ -306,7 +309,7 @@ public final class TypeMembers {
 	
 	public Expression unary(CodePosition position, TypeScope scope, OperatorType operator, Expression value) {
 		DefinitionMemberGroup members = getOrCreateGroup(operator);
-		return members.call(position, scope, value, new CallArguments(), false);
+		return members.call(position, scope, value, new CallArguments(Expression.NONE), false);
 	}
 	
 	public Expression ternary(CodePosition position, TypeScope scope, OperatorType operator, Expression a, Expression b, Expression c) {
@@ -335,8 +338,6 @@ public final class TypeMembers {
 			return true;
 		if (toType == null)
 			throw new NullPointerException();
-		if (type == BasicTypeID.ANY || toType == BasicTypeID.ANY || toType == BasicTypeID.UNDETERMINED)
-			return true;
 		
 		if (type == BasicTypeID.NULL && toType.isOptional())
 			return true;
@@ -347,12 +348,25 @@ public final class TypeMembers {
 		if (type.isOptional() && type.unwrap() == toType)
 			return true;
 		
+		return getImplicitCaster(toType) != null || extendsOrImplements(toType);
+	}
+	
+	public CasterMemberRef getImplicitCaster(ITypeID toType) {
 		for (TypeMember<CasterMemberRef> caster : casters) {
 			if (caster.member.isImplicit() && toType == caster.member.toType)
-				return true;
+				return caster.member;
 		}
 		
-		return extendsOrImplements(toType);
+		return null;
+	}
+	
+	public CasterMemberRef getCaster(ITypeID toType) {
+		for (TypeMember<CasterMemberRef> caster : casters) {
+			if (toType == caster.member.toType)
+				return caster.member;
+		}
+		
+		return null;
 	}
 	
 	public boolean canCast(ITypeID toType) {

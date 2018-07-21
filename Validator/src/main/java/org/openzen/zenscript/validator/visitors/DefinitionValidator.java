@@ -5,9 +5,13 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import static org.openzen.zenscript.codemodel.Modifiers.*;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
@@ -19,6 +23,9 @@ import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
@@ -49,7 +56,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		if (definition.superType != null)
 			definition.superType.accept(new SupertypeValidator(validator, definition.position));
 		
-		validateMembers(definition);
+		validateMembers(definition, DefinitionMemberContext.DEFINITION);
 		return null;
 	}
 
@@ -66,7 +73,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				definition.position,
 				definition.name);
 		
-		validateMembers(definition);
+		validateMembers(definition, DefinitionMemberContext.DEFINITION);
 		return null;
 	}
 
@@ -83,7 +90,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				definition.position,
 				definition.name);
 		
-		validateMembers(definition);
+		validateMembers(definition, DefinitionMemberContext.DEFINITION);
 		return null;
 	}
 
@@ -104,7 +111,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				definition.position,
 				definition.name);
 		
-		validateMembers(definition);
+		validateMembers(definition, DefinitionMemberContext.DEFINITION);
 		return null;
 	}
 
@@ -136,7 +143,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				"Invalid expansion modifier");
 		
 		definition.target.accept(new TypeValidator(validator, definition.position));
-		validateMembers(definition);
+		validateMembers(definition, DefinitionMemberContext.EXPANSION);
 		return null;
 	}
 
@@ -156,8 +163,9 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		return null;
 	}
 	
-	private void validateMembers(HighLevelDefinition definition) {
-		DefinitionMemberValidator memberValidator = new DefinitionMemberValidator(validator, definition);
+	private void validateMembers(HighLevelDefinition definition, DefinitionMemberContext context) {
+		SimpleTypeScope scope = new SimpleTypeScope(validator.registry, validator.expansions, validator.annotations);
+		DefinitionMemberValidator memberValidator = new DefinitionMemberValidator(validator, definition, scope, context);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberValidator);
 		}
@@ -181,8 +189,30 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				variant.position,
 				variant.name);
 		
-		validateMembers(variant);
+		validateMembers(variant, DefinitionMemberContext.DEFINITION);
 		return null;
+	}
+	
+	private class SimpleTypeScope implements TypeScope {
+		private final LocalMemberCache memberCache;
+		private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
+		
+		public SimpleTypeScope(GlobalTypeRegistry typeRegistry, List<ExpansionDefinition> expansions, List<AnnotationDefinition> annotations) {
+			memberCache = new LocalMemberCache(typeRegistry, expansions);
+			
+			for (AnnotationDefinition annotation : annotations)
+				this.annotations.put(annotation.getAnnotationName(), annotation);
+		}
+		
+		@Override
+		public LocalMemberCache getMemberCache() {
+			return memberCache;
+		}
+
+		@Override
+		public AnnotationDefinition getAnnotation(String name) {
+			return annotations.get(name);
+		}
 	}
 	
 	private class FunctionStatementScope implements StatementScope {

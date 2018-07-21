@@ -6,6 +6,7 @@
 package org.openzen.zenscript.ide.ui.view.editor;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.drawablegui.DComponent;
@@ -29,6 +30,7 @@ import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.drawablegui.DUIContext;
+import org.openzen.drawablegui.Destructible;
 import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
@@ -95,23 +97,27 @@ public class SourceEditor implements DComponent {
 	private final List<DDrawnText> lineNumbers = new ArrayList<>();
 	private final List<List<DDrawnText>> drawnTokens = new ArrayList<>();
 	
+	//private DDrawnShape test;
+	
 	public SourceEditor(DStyleClass styleClass, IDEWindow window, IDESourceFile sourceFile) {
 		this.styleClass = styleClass;
 		this.window = window;
 		this.sourceFile = sourceFile;
 		
-		tokens = new TokenModel(sourceFile.getName().getValue(), tab.length());
+		tokens = new TokenModel(sourceFile.getFile(), tab.length());
 		tokenListener = tokens.addListener(new TokenListener());
 		
 		editToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, ShadedSaveIcon.PURPLE, SaveIcon.GREY, unchanged, new ImmutableLiveString("Save file"), e -> save()));
 		updated = new InverseLiveBool(unchanged);
 		
 		try {
+			Reader reader = sourceFile.getFile().open();
 			TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(
-					sourceFile.getName().getValue(),
-					new ReaderCharReader(sourceFile.read()),
+					sourceFile.getFile(),
+					new ReaderCharReader(reader),
 					tab.length());
 			tokens.set(parser);
+			reader.close();
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
@@ -188,6 +194,11 @@ public class SourceEditor implements DComponent {
 			cursor = null;
 		}
 		
+		/*if (test != null) {
+			test.close();
+			test = null;
+		}*/
+		
 		if (blinkTimer != null)
 			blinkTimer.close();
 		
@@ -251,6 +262,8 @@ public class SourceEditor implements DComponent {
 					bounds.y + style.selectionPaddingTop + i * fullLineHeight + fontMetrics.getAscent());
 		}
 		
+		//test = surface.strokePath(z + 4, new WavyLine(bounds.x + 50, bounds.y + 50, 100, surface.getContext().dp(2), surface.getContext().dp(3)), DTransform2D.IDENTITY, IDEStyling.ERROR_RED, surface.getScale());
+		
 		layoutLines(0);
 	}
 	
@@ -285,6 +298,10 @@ public class SourceEditor implements DComponent {
 		} else {
 			setCursor(position, position);
 		}
+	}
+	
+	private void setCursor(SourcePosition position) {
+		setCursor(position, position);
 	}
 	
 	private void setCursor(SourcePosition start, SourcePosition end) {
@@ -563,20 +580,24 @@ public class SourceEditor implements DComponent {
 		if (value.equals("{")) {
 			String indent = tokens.getLine(cursorEnd.line).getIndent();
 			tokens.insert(cursorEnd, "{\n" + indent + "\t\n" + indent + "}");
-			
-			SourcePosition position = new SourcePosition(tokens, cursorEnd.line + 1, indent.length() + 1);
-			setCursor(position, position);
-		} else if (value.equals(";")) {
-			String indent = tokens.getLine(cursorEnd.line).getIndent();
-			tokens.insert(cursorEnd, ";\n" + indent);
-			
-			SourcePosition position = new SourcePosition(tokens, cursorEnd.line + 1, indent.length());
-			setCursor(position, position);
+			setCursor(new SourcePosition(tokens, cursorEnd.line + 1, indent.length() + 1));
+		} else if (value.equals("\"")) {
+			if (!tokens.extract(cursorEnd, cursorEnd.advance(1)).equals("\""))
+				tokens.insert(cursorEnd, "\"\"");
+			setCursor(cursorEnd.advance(1));
+		} else if (value.equals("(")) {
+			tokens.insert(cursorEnd, "()");
+			setCursor(cursorEnd.advance(1));
+		} else if (value.equals(")") && tokens.extract(cursorEnd, cursorEnd.advance(1)).equals(")")){
+			setCursor(cursorEnd.advance(1));
+		} else if (value.equals("[")) {
+			tokens.insert(cursorEnd, "[]");
+			setCursor(cursorEnd.advance(1));
+		} else if (value.equals("]") && tokens.extract(cursorEnd, cursorEnd.advance(1)).equals("]")) {
+			setCursor(cursorEnd.advance(1));
 		} else {
 			tokens.insert(cursorEnd, value);
-			
-			SourcePosition position = new SourcePosition(tokens, cursorEnd.line, cursorEnd.offset + value.length());
-			setCursor(position, position);
+			setCursor(cursorEnd.advance(value.length()));
 		}
 		
 		unchanged.setValue(false);
@@ -734,9 +755,8 @@ public class SourceEditor implements DComponent {
 		@Override
 		public void onLineChanged(int index) {
 			if (bounds != null) {
-				removeLineTokens(drawnTokens.get(index));
-				drawnTokens.get(index).clear();
-				drawnTokens.get(index).addAll(lineToTokens(tokens.getLine(index)));
+				Destructible.close(drawnTokens.get(index));
+				drawnTokens.set(index, lineToTokens(tokens.getLine(index)));
 				layoutLine(index);
 			}
 		}
@@ -745,16 +765,14 @@ public class SourceEditor implements DComponent {
 		public void onLineDeleted(int index) {
 			onLinesUpdated();
 			
+			if (index >= lineNumbers.size())
+				return;
+			
 			if (bounds != null) {
 				lineNumbers.remove(lineNumbers.size() - 1).close();
-				removeLineTokens(drawnTokens.remove(index));
+				Destructible.close(drawnTokens.remove(index));
 				layoutLines(index);
 			}
-		}
-		
-		private void removeLineTokens(List<DDrawnText> tokens) {
-			for (DDrawnText token : tokens)
-				token.close();
 		}
 	}
 	

@@ -7,6 +7,8 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -16,6 +18,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -43,8 +46,11 @@ public class ParsedStatementVar extends ParsedStatement {
 		Expression initializer;
 		ITypeID type;
 		if (this.type == null) {
-			initializer = this.initializer == null ? null : this.initializer.compile(new ExpressionScope(scope)).eval();
-			type = initializer == null ? BasicTypeID.ANY : initializer.type;
+			if (this.initializer == null)
+				throw new CompileException(position, CompileExceptionCode.VAR_WITHOUT_TYPE_OR_INITIALIZER, "Local variables must have either a type or an initializer");
+			
+			initializer = this.initializer.compile(new ExpressionScope(scope)).eval();
+			type = initializer.type;
 		} else {
 			type = this.type.compile(scope);
 			initializer = this.initializer == null ? null : this.initializer.compile(new ExpressionScope(scope, type)).eval();
@@ -52,5 +58,19 @@ public class ParsedStatementVar extends ParsedStatement {
 		VarStatement result = new VarStatement(position, name, type, initializer, isFinal);
 		scope.defineVariable(result);
 		return result(result, scope);
+	}
+
+	@Override
+	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
+		ITypeID type = null;
+		if (this.type == null) {
+			if (this.initializer != null)
+				type = initializer.precompileForType(new ExpressionScope(scope), precompileState);
+		} else {
+			type = this.type.compile(scope);
+		}
+		VarStatement result = new VarStatement(position, name, type, null, isFinal);
+		scope.defineVariable(result);
+		return null;
 	}
 }

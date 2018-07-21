@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -34,6 +35,11 @@ import org.openzen.zenscript.validator.analysis.ExpressionScope;
  */
 public class ValidationUtils {
 	private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z_0-9]*$");
+
+	public static void validateValidOverride(Validator target, CodePosition position, TypeScope scope, FunctionHeader header, FunctionHeader overridden) {
+		if (!header.canCastTo(scope, overridden))
+			target.logError(INVALID_OVERRIDE, position, "Invalid override: incompatible parameters or return type");
+	}
 	
 	private ValidationUtils() {}
 	

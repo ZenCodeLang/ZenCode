@@ -278,7 +278,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
         Type type = statement.type.accept(JavaTypeVisitor.INSTANCE);
         int local = javaWriter.local(type);
-        if(statement.initializer != null)
+        if (statement.initializer != null)
             javaWriter.store(type, local);
         final Label variableStart = new Label();
         javaWriter.label(variableStart);

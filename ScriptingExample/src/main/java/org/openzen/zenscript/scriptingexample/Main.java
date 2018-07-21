@@ -65,9 +65,9 @@ public class Main {
 			if (file == null)
 				continue;
 			
-			FileContents contents = new FileContents(file.filename);
+			FileContents contents = new FileContents(file);
 			contents.script = block;
-			files.put(file.filename, contents);
+			files.put(file.getFilename(), contents);
 		}
 		
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
@@ -75,10 +75,10 @@ public class Main {
 			if (file == null)
 				continue;
 			
-			if (!files.containsKey(file.filename))
-				files.put(file.filename, new FileContents(file.filename));
+			if (!files.containsKey(file.getFilename()))
+				files.put(file.getFilename(), new FileContents(file));
 			
-			files.get(file.filename).definitions.add(definition);
+			files.get(file.getFilename()).definitions.add(definition);
 		}
 		
 		List<String> filenames = new ArrayList<>(files.keySet());

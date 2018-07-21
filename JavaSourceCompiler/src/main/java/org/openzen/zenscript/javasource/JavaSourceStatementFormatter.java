@@ -119,6 +119,8 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 	public void formatReturn(StatementFormattingTarget target, ReturnStatement statement) {
 		if (statement.value == null)
 			target.writeLine("return;");
+		else if (statement.value.aborts()) // throw or panic
+			target.writeLine(scope.expression(target, statement.value).value + ";");
 		else
 			target.writeLine("return " + scope.expression(target, statement.value).value + ";");
 	}

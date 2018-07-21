@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 public enum BasicTypeID implements ITypeID {
 	VOID("void"),
 	NULL("null"),
-	ANY("any"),
 	BOOL("bool"),
 	BYTE("byte"),
 	SBYTE("sbyte"),
@@ -74,7 +73,7 @@ public enum BasicTypeID implements ITypeID {
 	
 	@Override
 	public boolean isObjectType() {
-		return this == ANY || this == STRING;
+		return this == STRING;
 	}
 
 	@Override

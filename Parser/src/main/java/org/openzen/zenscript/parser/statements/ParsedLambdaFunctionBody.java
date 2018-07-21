@@ -7,19 +7,22 @@ package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class ParsedLambdaFunctionBody extends ParsedFunctionBody {
+public class ParsedLambdaFunctionBody implements ParsedFunctionBody {
 	private final ParsedExpression value;
 	
 	public ParsedLambdaFunctionBody(ParsedExpression value) {
@@ -38,5 +41,10 @@ public class ParsedLambdaFunctionBody extends ParsedFunctionBody {
 					.castImplicit(value.position, scope, header.returnType);
 			return new ReturnStatement(value.position, returnValue);
 		}
+	}
+
+	@Override
+	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
+		return value.precompileForType(new ExpressionScope(scope), precompileState);
 	}
 }

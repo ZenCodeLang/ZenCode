@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.listeners.ListenerList;
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenType;
 
@@ -23,13 +24,13 @@ import org.openzen.zenscript.lexer.ZSTokenType;
 public class TokenModel {
 	private final ListenerList<Listener> listeners = new ListenerList<>();
 	
-	private final String filename;
+	private final SourceFile file;
 	private final int spacesPerTab;
 	private final List<TokenLine> lines = new ArrayList<>();
 	private long version = 0;
 	
-	public TokenModel(String filename, int spacesPerTab) {
-		this.filename = filename;
+	public TokenModel(SourceFile file, int spacesPerTab) {
+		this.file = file;
 		this.spacesPerTab = spacesPerTab;
 	}
 	
@@ -193,7 +194,7 @@ public class TokenModel {
 		if (!remainder.isEmpty())
 			getLine(fromT.line).insert(fromT.token, new ZSToken(ZSTokenType.INVALID, remainder));
 		
-		relex(fromT.line, Math.max(0, fromT.token - 1), fromT.line, fromT.token + 1);
+		relex(fromT.line, Math.max(0, fromT.token - 1), fromT.line, Math.min(lines.get(fromT.line).getTokenCount(), fromT.token + 1));
 	}
 	
 	public void insert(SourcePosition position, String value) {
@@ -201,7 +202,7 @@ public class TokenModel {
 		Position tokenPosition = position.asTokenPosition();
 		ZSToken token = getTokenAt(tokenPosition);
 		if (token == null) {
-			line.add(new ZSToken(ZSTokenType.INVALID, value));
+			line.addTemporary(new ZSToken(ZSTokenType.INVALID, value));
 		} else {
 			token = token.insert(tokenPosition.offset, value);
 			line.replace(tokenPosition.token, token);
@@ -210,7 +211,7 @@ public class TokenModel {
 	}
 	
 	private void relex(int fromLine, int fromToken, int toLine, int toToken) {
-		TokenRelexer reparser = new TokenRelexer(filename, lines, fromLine, fromToken, toLine, toToken, spacesPerTab);
+		TokenRelexer reparser = new TokenRelexer(file, lines, fromLine, fromToken, toLine, toToken, spacesPerTab);
 		List<ZSToken> tokens = reparser.relex();
 		replaceTokens(fromLine, fromToken, reparser.getLine(), reparser.getToken(), tokens);
 	}
@@ -257,6 +258,7 @@ public class TokenModel {
 		TokenLine currentLine = lines.get(line);
 		Set<Integer> insertedLines = new HashSet<>();
 		Set<Integer> modifiedLines = new HashSet<>();
+		modifiedLines.add(line);
 		while (tokens.hasNext()) {
 			ZSToken token = tokens.next();
 			if (token.type.multiline && token.content.indexOf('\n') >= 0) {
@@ -336,6 +338,13 @@ public class TokenModel {
 		public final int offset;
 		
 		public Position(int line, int token, int offset) {
+			if (line < 0)
+				throw new IllegalArgumentException("line cannot be negative");
+			if (token < 0)
+				throw new IllegalArgumentException("token cannot be negative");
+			if (offset < 0)
+				throw new IllegalArgumentException("offset cannot be negative");
+			
 			this.line = line;
 			this.token = token;
 			this.offset = offset;

@@ -1,13 +1,10 @@
 package org.openzen.zencode.shared;
 
-public final class SourceFile {
-	public final String filename;
+import java.io.IOException;
+import java.io.Reader;
+
+public interface SourceFile {
+	String getFilename();
 	
-	public SourceFile(String filename) {
-	    this.filename = filename;
-	}
-	
-	public String getFilename() {
-	    return filename;
-	}
+	Reader open() throws IOException;
 }

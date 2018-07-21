@@ -7,6 +7,8 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
@@ -14,8 +16,11 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
@@ -59,10 +64,22 @@ public class ParsedFunction extends ParsedDefinition {
 	public void compileMembers(BaseScope scope) {
 		compiled.setHeader(header.compile(scope));
 	}
+	
+	@Override
+	public void listMembers(BaseScope scope, PrecompilationState state) {
+		
+	}
 
 	@Override
-	public void compileCode(BaseScope scope) {
+	public void compileCode(BaseScope scope, PrecompilationState state) {
 		FunctionScope innerScope = new FunctionScope(scope, compiled.header);
 		compiled.setCode(body.compile(innerScope, compiled.header));
+		
+		if (compiled.header.returnType == BasicTypeID.UNDETERMINED) {
+			ITypeID result = body.precompileForResultType(new FunctionScope(scope, compiled.header), state);
+			if (result == null)
+				throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not determine return type for method " + compiled.name);
+			compiled.header = compiled.header.withReturnType(result);
+		}
 	}
 }

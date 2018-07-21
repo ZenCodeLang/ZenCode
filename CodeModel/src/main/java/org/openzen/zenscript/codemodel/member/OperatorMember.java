@@ -10,6 +10,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -20,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  */
 public class OperatorMember extends FunctionalMember {
 	public final OperatorType operator;
+	private FunctionalMemberRef overrides;
 	
 	public OperatorMember(
 			CodePosition position,
@@ -29,7 +32,7 @@ public class OperatorMember extends FunctionalMember {
 			FunctionHeader header,
 			BuiltinID builtin)
 	{
-		super(position, definition, modifiers, operator.operator, header, builtin);
+		super(position, definition, modifiers, header, builtin);
 		
 		this.operator = operator;
 	}
@@ -57,5 +60,15 @@ public class OperatorMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitOperator(this);
+	}
+
+	@Override
+	public FunctionalMemberRef getOverrides() {
+		return overrides;
+	}
+	
+	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {
+		this.overrides = overrides;
+		header = header.inferFromOverride(registry, overrides.header);
 	}
 }

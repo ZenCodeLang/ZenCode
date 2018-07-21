@@ -12,12 +12,14 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -42,6 +44,29 @@ public class ParsedExpressionIndex extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return true;
+	}
+
+	@Override
+	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
+		ITypeID target = value.precompileForType(scope, state);
+		if (target == null)
+			return null;
+		
+		DefinitionMemberGroup members = scope.getTypeMembers(target).getOrCreateGroup(OperatorType.INDEXGET);
+		List<ITypeID>[] predicted = members.predictCallTypes(scope, scope.getResultTypeHints(), indexes.size());
+		
+		ITypeID[] indexTypes = new ITypeID[indexes.size()];
+		for (int i = 0; i < indexTypes.length; i++) {
+			indexTypes[i] = indexes.get(i).precompileForType(scope.withHints(predicted[i]), state);
+			if (indexTypes[i] == null)
+				return null;
+		}
+		
+		FunctionalMemberRef method = members.selectMethod(position, scope, new CallArguments(indexTypes), true, false);
+		if (!state.precompile(method.getTarget()))
+			return null;
+		
+		return method.getTarget().header.returnType; // TODO: this will not work properly for methods with type parameters
 	}
 	
 	private class PartialIndexedExpression implements IPartialExpression {

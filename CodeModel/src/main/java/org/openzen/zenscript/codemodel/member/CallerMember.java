@@ -9,6 +9,9 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -18,6 +21,8 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  * @author Hoofdgebruiker
  */
 public class CallerMember extends FunctionalMember {
+	public FunctionalMemberRef overrides;
+	
 	public CallerMember(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -25,7 +30,7 @@ public class CallerMember extends FunctionalMember {
 			FunctionHeader header,
 			BuiltinID builtin)
 	{
-		super(position, definition, modifiers, "()", header, builtin);
+		super(position, definition, modifiers, header, builtin);
 	}
 	
 	@Override
@@ -51,5 +56,15 @@ public class CallerMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitCaller(this);
+	}
+	
+	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {
+		this.overrides = overrides;
+		header = header.inferFromOverride(registry, overrides.getHeader());
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return overrides;
 	}
 }

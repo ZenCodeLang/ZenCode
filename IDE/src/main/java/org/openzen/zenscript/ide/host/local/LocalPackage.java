@@ -12,7 +12,8 @@ import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.MutableLiveList;
 import org.openzen.drawablegui.live.SortedLiveList;
-import org.openzen.zenscript.constructor.module.SourceFile;
+import org.openzen.zencode.shared.FileSourceFile;
+import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.constructor.module.SourcePackage;
 import org.openzen.zenscript.ide.host.IDEPackage;
 import org.openzen.zenscript.ide.host.IDESourceFile;
@@ -87,7 +88,7 @@ public class LocalPackage implements IDEPackage {
 			ex.printStackTrace(); // TODO
 		}
 		
-		SourceFile sourceFile = new SourceFile(name, file);
+		FileSourceFile sourceFile = new FileSourceFile(name, file);
 		IDESourceFile localSourceFile = new LocalSourceFile(sourceFile);
 		this.pkg.sourceFiles.put(name, sourceFile);
 		sourceFiles.add(localSourceFile);

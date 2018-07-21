@@ -6,6 +6,8 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 
 /**
  *
@@ -17,4 +19,10 @@ public interface DefinitionMemberRef {
 	String describe();
 	
 	<T> T getTag(Class<T> type);
+	
+	DefinitionMemberRef getOverrides();
+	
+	FunctionHeader getHeader();
+	
+	MemberAnnotation[] getAnnotations();
 }

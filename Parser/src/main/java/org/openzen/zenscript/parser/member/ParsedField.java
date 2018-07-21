@@ -12,7 +12,10 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -32,6 +35,7 @@ public class ParsedField extends ParsedDefinitionMember {
 	private final int autoSetter;
 	
 	private FieldMember compiled;
+	private boolean precompiled = false;
 	
 	public ParsedField(
 			CodePosition position,
@@ -82,7 +86,27 @@ public class ParsedField extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void compile(BaseScope scope) {
+	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
+		if (precompiled)
+			return true;
+		precompiled = true;
+		
+		if (compiled.type == BasicTypeID.UNDETERMINED) {
+			if (expression == null)
+				return false;
+			
+			ITypeID type = expression.precompileForType(new ExpressionScope(scope), state);
+			if (type == null)
+				return false;
+			
+			compiled.type = type;
+		}
+		return true;
+	}
+
+	@Override
+	public void compile(BaseScope scope, PrecompilationState state) {
+		inferHeaders(scope, state);
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		
 		if (expression != null) {

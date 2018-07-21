@@ -36,7 +36,7 @@ public class ParsedClass extends BaseParsedDefinition {
 		
 		ParsedClass result = new ParsedClass(pkg, position, modifiers, annotations, name, genericParameters, superclass, outerDefinition);
 		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled));
+			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled, null));
 		}
 		return result;
 	}

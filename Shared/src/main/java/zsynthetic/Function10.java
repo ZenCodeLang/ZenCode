@@ -1,6 +1,8 @@
 package zsynthetic;
+import stdlib.Result;
+
 
 @FunctionalInterface
-public interface Function10<T, E>  {
-    T invoke(E error);
+public interface Function10<T, X, E>  {
+    Result<T, X> invoke(E error);
 }

@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -34,7 +35,6 @@ public class ConstructorMember extends FunctionalMember {
 				position,
 				definition,
 				modifiers,
-				"this",
 				new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters),
 				builtin);
 	}
@@ -78,5 +78,10 @@ public class ConstructorMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitConstructor(this);
+	}
+
+	@Override
+	public DefinitionMemberRef getOverrides() {
+		return null;
 	}
 }

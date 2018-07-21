@@ -18,22 +18,18 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
  * @author Hoofdgebruiker
  */
 public abstract class FunctionalMember extends DefinitionMember {
-	public final FunctionHeader header;
-	public final String name;
+	public FunctionHeader header;
 	public final BuiltinID builtin;
 	public Statement body = null;
-	public FunctionalMember overrides = null;
 	
 	public FunctionalMember(
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
-			String name,
 			FunctionHeader header,
 			BuiltinID builtin) {
 		super(position, definition, modifiers);
 		
-		this.name = name;
 		this.header = header;
 		this.builtin = builtin;
 	}

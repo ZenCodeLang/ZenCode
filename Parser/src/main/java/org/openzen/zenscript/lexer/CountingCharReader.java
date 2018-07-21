@@ -2,6 +2,7 @@ package org.openzen.zenscript.lexer;
 
 import java.io.IOException;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.SourceFile;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -15,16 +16,16 @@ import org.openzen.zencode.shared.CodePosition;
  */
 public class CountingCharReader implements CharReader {
 	private final CharReader reader;
-	private final String filename;
+	private final SourceFile file;
 	private final int tabSize;
 	
 	private int line;
 	private int lineOffset;
-
-	public CountingCharReader(CharReader reader, String filename, int tabSize)
+	
+	public CountingCharReader(CharReader reader, SourceFile file, int tabSize)
 	{
 		this.reader = reader;
-		this.filename = filename;
+		this.file = file;
 		this.tabSize = tabSize;
 		
 		line = 1;
@@ -32,7 +33,7 @@ public class CountingCharReader implements CharReader {
 	}
 	
 	public CodePosition getPosition() {
-		return new CodePosition(filename, line, lineOffset, line, lineOffset);
+		return new CodePosition(file, line, lineOffset, line, lineOffset);
 	}
 
 	@Override

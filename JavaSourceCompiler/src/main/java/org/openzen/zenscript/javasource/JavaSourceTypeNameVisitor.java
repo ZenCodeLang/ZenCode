@@ -29,7 +29,6 @@ public class JavaSourceTypeNameVisitor implements ITypeVisitor<String> {
 	@Override
 	public String visitBasic(BasicTypeID basic) {
 		switch (basic) {
-			case ANY: return "Any";
 			case VOID: return "Void";
 			case BOOL: return "Bool";
 			case BYTE: return "Byte";
