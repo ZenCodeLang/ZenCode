@@ -24,3 +24,28 @@ println(tt1);
 //	case 1 : "tt",
 //	default : "kk"
 //});
+
+
+
+function myFunc (par1 as int) as void {
+
+    val v0 = par1 - 1;
+	println(match par1 {
+		10 => v0,
+		default => match(v0) {
+			10 => 99,
+			default => v0
+		}
+	});
+}
+
+
+myFunc(10);
+myFunc(11);
+myFunc(12);
+
+
+val t = (a as int) as int => a;
+
+
+println(t(10));
