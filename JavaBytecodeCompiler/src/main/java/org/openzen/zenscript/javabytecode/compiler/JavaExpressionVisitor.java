@@ -7,8 +7,6 @@ import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.CompareType;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -1575,7 +1573,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 
 
-
 		javaWriter.newObject(name);
 		javaWriter.dup();
 
@@ -1608,28 +1605,30 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		constructorWriter.end();
 
 
-
         functionWriter.start();
 
 
-		final JavaStatementVisitor CSV = new JavaStatementVisitor(new JavaExpressionVisitor(functionWriter) {
-			//@Override
-			public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
-				final int position = calculateMemberPosition(varExpression, expression) ;
-				if (position < 0)
-					throw new CompileException(varExpression.position, CompileExceptionCode.INTERNAL_ERROR, "Captured Statement error");
-				functionWriter.loadObject(0);
-				functionWriter.getField(name, "captured" + position, varExpression.variable.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
-				return null;
-			}
-		});
+        final JavaStatementVisitor CSV = new JavaStatementVisitor(new JavaExpressionVisitor(functionWriter) {
+            //@Override
+            public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
+                final int position = calculateMemberPosition(varExpression, expression);
+                functionWriter.loadObject(0);
+                functionWriter.getField(name, "captured" + position, varExpression.variable.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
+                return null;
+            }
+
+            @Override
+            public Void visitCapturedParameter(CapturedParameterExpression varExpression) {
+                final int position = calculateMemberPosition(varExpression, expression);
+                functionWriter.loadObject(0);
+                functionWriter.getField(name, "captured" + position, varExpression.parameter.type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
+                return null;
+            }
+        });
 
 
 		expression.body.accept(CSV);
-
-
         functionWriter.ret();
-
 
 
 		functionWriter.end();
@@ -1649,15 +1648,26 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     //TODO replace with visitor?
     private static int calculateMemberPosition(GetLocalVariableExpression localVariableExpression, FunctionExpression expression) {
         int h = 1;//expression.header.parameters.length;
+            for (CapturedExpression capture : expression.closure.captures) {
+                if (capture instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) capture).variable == localVariableExpression.variable)
+                    return h;
+                if (capture instanceof CapturedClosureExpression && ((CapturedClosureExpression) capture).value instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) ((CapturedClosureExpression) capture).value).variable == localVariableExpression.variable)
+                    return h;
+                h++;
+            }
+        throw new CompileException(localVariableExpression.position, CompileExceptionCode.INTERNAL_ERROR, "Captured Statement error");
+    }
+
+    private static int calculateMemberPosition(CapturedParameterExpression functionParameterExpression, FunctionExpression expression) {
+        int h = 1;//expression.header.parameters.length;
         for (CapturedExpression capture : expression.closure.captures) {
-            if (capture instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) capture).variable == localVariableExpression.variable)
-                return h;
-            if (capture instanceof CapturedClosureExpression && ((CapturedClosureExpression) capture).value instanceof CapturedLocalVariableExpression && ((CapturedLocalVariableExpression) ((CapturedClosureExpression) capture).value).variable == localVariableExpression.variable)
+            if (capture instanceof CapturedParameterExpression && ((CapturedParameterExpression) capture).parameter == functionParameterExpression.parameter)
                 return h;
             h++;
         }
-        return -1;
+        throw new CompileException(functionParameterExpression.position, CompileExceptionCode.INTERNAL_ERROR, "Captured Statement error");
     }
+
 
     private String calcFunctionSignature(LambdaClosure closure) {
         StringJoiner joiner = new StringJoiner("", "(", ")V");
@@ -1681,11 +1691,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
         JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
 
-        if(parameter == null) {
-			System.err.println("NULL PARAMETER!!!");
-			//FIXME
-			parameter = new JavaParameterInfo(1, Type.INT_TYPE);
-		}
+        if (parameter == null) {
+            throw new CompileException(expression.position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Could not resolve lambda parameter" + expression.parameter);
+        }
 
         javaWriter.load(expression.parameter.type.accept(JavaTypeVisitor.INSTANCE), parameter.index);
         return null;
