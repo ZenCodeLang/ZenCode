@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.drawablegui.DColorableIconInstance;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DFontMetrics;
@@ -26,7 +27,6 @@ import org.openzen.drawablegui.live.LiveList;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -35,8 +35,9 @@ import org.openzen.drawablegui.style.DStylePath;
 public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	private final DStyleClass styleClass;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
+	
+	private DComponentContext context;
 	private DIRectangle bounds = DIRectangle.EMPTY;
-	private int z;
 	
 	private int selectedRow = -1;
 	private N selectedNode = null;
@@ -47,7 +48,6 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	private final DDrawable nodeOpenedIcon;
 	private final DDrawable nodeClosedIcon;
 	
-	private DDrawSurface surface;
 	private final N root;
 	private final boolean showRoot;
 	private final List<Row> rows = new ArrayList<>();
@@ -72,13 +72,13 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		style = new DTreeViewStyle(surface.getStylesheet(parent.getChild("tree", styleClass)));
-		fontMetrics = surface.getFontMetrics(style.font);
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("tree", styleClass);
+		style = context.getStyle(DTreeViewStyle::new);
+		fontMetrics = context.getFontMetrics(style.font);
 		
-		background = surface.fillRect(z, DIRectangle.EMPTY, style.backgroundColor);
-		selectedBackground = surface.fillRect(z + 1, DIRectangle.EMPTY, 0);
+		background = context.fillRect(0, DIRectangle.EMPTY, style.backgroundColor);
+		selectedBackground = context.fillRect(1, DIRectangle.EMPTY, 0);
 		
 		updateLayout();
 	}
@@ -261,21 +261,21 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			
 			icon = node.isCollapsed().getValue() ? nodeClosedIcon : nodeOpenedIcon;
 			nodeIcon = new DColorableIconInstance(
-					surface,
-					z + 2,
+					context.surface,
+					context.z + 2,
 					node.getIcon(),
 					DTransform2D.translate(baseX + icon.getNominalWidth() + style.iconTextSpacing, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()),
 					node == selectedNode ? style.selectedNodeTextColor : style.nodeTextColor);
 			
 			if (!node.isLeaf())
 				collapseIcon = new DDrawableInstance(
-						surface, 
-						z + 2,
+						context.surface, 
+						context.z + 2,
 						icon,
 						DTransform2D.translate(baseX, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
 			
-			text = surface.drawText(
-					z + 2,
+			text = context.drawText(
+					2,
 					style.font,
 					node == selectedNode ? style.selectedNodeTextColor : style.nodeTextColor,
 					baseX + style.iconTextSpacing + icon.getNominalWidth() + style.iconTextSpacing + node.getIcon().getNominalWidth(),

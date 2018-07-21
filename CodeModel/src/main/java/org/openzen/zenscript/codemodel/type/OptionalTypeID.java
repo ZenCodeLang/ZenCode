@@ -20,11 +20,17 @@ public class OptionalTypeID implements ITypeID {
 	public final ITypeID baseType;
 	
 	public OptionalTypeID(ITypeID baseType) {
+		if (baseType == null)
+			throw new NullPointerException("baseType cannot be null");
+		
 		this.baseType = baseType;
 	}
 	
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
+		if (mapper == null)
+			throw new NullPointerException("mapper cannot be null");
+		
 		return mapper.registry.getModified(TypeMembers.MODIFIER_OPTIONAL, baseType.instance(mapper));
 	}
 

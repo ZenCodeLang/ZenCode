@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 
 /**
@@ -40,5 +41,10 @@ public class ConstExpression extends Expression {
 	@Override
 	public EnumConstantMember evaluateEnumConstant() {
 		return constant.member.value.evaluateEnumConstant();
+	}
+	
+	@Override
+	public IDefinitionMember getMember() {
+		return constant.member;
 	}
 }

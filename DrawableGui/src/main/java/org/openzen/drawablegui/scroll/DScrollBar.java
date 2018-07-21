@@ -6,6 +6,7 @@
 package org.openzen.drawablegui.scroll;
 
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DIRectangle;
@@ -14,12 +15,10 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
 import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -35,9 +34,8 @@ public class DScrollBar implements DComponent {
 	private final ListenerHandle<LiveInt.Listener> targetHeightListener;
 	private final ListenerHandle<LiveInt.Listener> offsetListener;
 	
-	private DDrawSurface surface;
+	private DComponentContext context;
 	private DScrollBarStyle style;
-	private int z;
 	private DIRectangle bounds;
 	
 	private int fromY = 0;
@@ -60,13 +58,12 @@ public class DScrollBar implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		this.style = new DScrollBarStyle(surface.getStylesheet(parent.getChild("scrollbar", styleClass)));
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("scrollbar", styleClass);
+		style = context.getStyle(DScrollBarStyle::new);
 		sizing.setValue(new DSizing(style.width, 0));
 		
-		background = surface.fillRect(z, DIRectangle.EMPTY, style.scrollBarBackgroundColor);
+		background = context.fillRect(0, DIRectangle.EMPTY, style.scrollBarBackgroundColor);
 	}
 	
 	@Override
@@ -190,7 +187,7 @@ public class DScrollBar implements DComponent {
 		
 		if (bar != null)
 			bar.close();
-		bar = surface.fillPath(z + 1, DPath.rectangle(bounds.x, fromY, bounds.width, toY - fromY), DTransform2D.IDENTITY, style.scrollBarNormalColor);
+		bar = context.fillPath(1, DPath.rectangle(bounds.x, fromY, bounds.width, toY - fromY), DTransform2D.IDENTITY, style.scrollBarNormalColor);
 		updateBarColor();
 	}
 	

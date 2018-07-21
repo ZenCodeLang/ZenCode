@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 
@@ -22,7 +23,13 @@ import org.openzen.zenscript.formatter.ScriptFormattingSettings;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.lexer.ZSToken;
+import org.openzen.zenscript.lexer.ZSTokenParser;
+import org.openzen.zenscript.lexer.ZSTokenType;
+import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.ParsedFile;
+import org.openzen.zenscript.parser.expression.ParsedExpression;
+import org.openzen.zenscript.parser.expression.ParsedExpressionString;
 
 public class Main {
     /**
@@ -53,7 +60,7 @@ public class Main {
 	private static ParsedFile[] parse(ZSPackage pkg, File[] files) throws IOException {
 		ParsedFile[] parsedFiles = new ParsedFile[files.length];
 		for (int i = 0; i < files.length; i++) {
-			parsedFiles[i] = ParsedFile.parse(pkg, files[i]);
+			parsedFiles[i] = ParsedFile.parse(pkg, new TestBracketParser(), files[i]);
 		}
 		return parsedFiles;
 	}
@@ -157,5 +164,19 @@ public class Main {
 			compiler.addScriptBlock(script);
 		}
 		return compiler.finishAndGetModule();
+	}
+	
+	private static class TestBracketParser implements BracketExpressionParser {
+		@Override
+		public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) {
+			StringBuilder result = new StringBuilder();
+			while (tokens.optional(ZSTokenType.T_GREATER) == null) {
+				ZSToken token = tokens.next();
+				result.append(token.content);
+				result.append(tokens.getLastWhitespace());
+			}
+			
+			return new ParsedExpressionString(position.until(tokens.getPosition()), result.toString());
+		}
 	}
 }

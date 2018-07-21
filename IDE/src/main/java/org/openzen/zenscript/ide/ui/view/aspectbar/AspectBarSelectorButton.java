@@ -7,6 +7,7 @@ package org.openzen.zenscript.ide.ui.view.aspectbar;
 
 import java.util.function.Consumer;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DDrawable;
 import org.openzen.drawablegui.DDrawableInstance;
@@ -15,7 +16,6 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSimpleTooltip;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.ImmutableLiveString;
@@ -24,7 +24,6 @@ import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -37,8 +36,8 @@ public class AspectBarSelectorButton implements DComponent {
 	private final DDrawable icon;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final Consumer<DMouseEvent> onClick;
-	private DDrawSurface surface;
-	private int z;
+	
+	private DComponentContext context;
 	private AspectBarSelectorButtonStyle style;
 	private DIRectangle bounds = DIRectangle.EMPTY;
 	private DDrawnShape shape;
@@ -62,14 +61,12 @@ public class AspectBarSelectorButton implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		DStylePath path = parent.getChild("selectorbutton", styleClass);
-		style = new AspectBarSelectorButtonStyle(surface.getStylesheet(path));
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("selectorbutton", styleClass);
+		style = context.getStyle(AspectBarSelectorButtonStyle::new);
 		sizing.setValue(new DSizing(style.width, style.height));
 		
-		tooltip.setContext(surface.getContext());
+		tooltip.setContext(context.getUIContext());
 	}
 
 	@Override
@@ -95,8 +92,8 @@ public class AspectBarSelectorButton implements DComponent {
 			shape.close();
 		
 		shadow = getShadow();
-		shape = surface.shadowPath(
-				z,
+		shape = context.shadowPath(
+				0,
 				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.roundingRadius),
 				DTransform2D.IDENTITY,
 				getColor(),
@@ -104,10 +101,10 @@ public class AspectBarSelectorButton implements DComponent {
 		
 		if (iconInstance != null)
 			iconInstance.close();
-		iconInstance = new DDrawableInstance(surface, z + 1, icon, DTransform2D.scaleAndTranslate(
-				bounds.x + (style.width - icon.getNominalWidth() * surface.getScale()) / 2,
-				bounds.y + (style.height - icon.getNominalHeight() * surface.getScale()) / 2,
-				surface.getScale()));
+		iconInstance = new DDrawableInstance(context.surface, context.z + 1, icon, DTransform2D.scaleAndTranslate(
+				bounds.x + (style.width - icon.getNominalWidth() * context.getScale()) / 2,
+				bounds.y + (style.height - icon.getNominalHeight() * context.getScale()) / 2,
+				context.getScale()));
 	}
 	
 	@Override
@@ -164,7 +161,7 @@ public class AspectBarSelectorButton implements DComponent {
 	}
 	
 	private void update() {
-		if (surface == null)
+		if (context == null)
 			return;
 		
 		DShadow newShadow = getShadow();
@@ -174,8 +171,8 @@ public class AspectBarSelectorButton implements DComponent {
 			if (shape != null)
 				shape.close();
 			
-			shape = surface.shadowPath(
-				z,
+			shape = context.shadowPath(
+				0,
 				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.roundingRadius),
 				DTransform2D.IDENTITY,
 				getColor(),

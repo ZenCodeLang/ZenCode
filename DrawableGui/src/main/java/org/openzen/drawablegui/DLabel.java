@@ -5,14 +5,12 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -24,8 +22,7 @@ public class DLabel implements DComponent {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final ListenerHandle<LiveString.Listener> labelListener;
 	
-	private DDrawSurface surface;
-	private int z;
+	private DComponentContext context;
 	private DIRectangle bounds;
 	private DLabelStyle style;
 	private DFontMetrics fontMetrics;
@@ -40,19 +37,15 @@ public class DLabel implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		
-		DStylePath path = parent.getChild("label", styleClass);
-		style = new DLabelStyle(surface.getStylesheet(path));
-		
-		fontMetrics = surface.getFontMetrics(style.font);
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("label", styleClass);
+		style = context.getStyle(DLabelStyle::new);
+		fontMetrics = context.getFontMetrics(style.font);
 		calculateDimension();
 		
 		if (text != null)
 			text.close();
-		text = surface.drawText(z, style.font, style.color, 0, 0, label.getValue());
+		text = context.drawText(0, style.font, style.color, 0, 0, label.getValue());
 	}
 	
 	@Override
@@ -81,7 +74,7 @@ public class DLabel implements DComponent {
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-		style.border.update(surface, z + 1, bounds);
+		style.border.update(context, bounds);
 		text.setPosition(
 				bounds.x + style.border.getPaddingLeft(),
 				bounds.y + style.border.getPaddingTop() + fontMetrics.getAscent());
@@ -98,8 +91,8 @@ public class DLabel implements DComponent {
 		
 		if (text != null)
 			text.close();
-		text = surface.drawText(
-				z,
+		text = context.drawText(
+				0,
 				style.font,
 				style.color,
 				bounds.x + style.border.getPaddingLeft(),

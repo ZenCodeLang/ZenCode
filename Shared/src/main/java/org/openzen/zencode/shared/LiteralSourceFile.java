@@ -31,4 +31,9 @@ public class LiteralSourceFile implements SourceFile {
 	public Reader open() throws IOException {
 		return new StringReader(contents);
 	}
+
+	@Override
+	public void update(String content) throws IOException {
+		throw new UnsupportedOperationException("Cannot update literal source files");
+	}
 }

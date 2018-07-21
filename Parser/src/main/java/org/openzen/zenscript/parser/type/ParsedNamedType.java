@@ -46,7 +46,11 @@ public class ParsedNamedType implements IParsedType {
 		for (ParsedNamePart namePart : name)
 			genericNames.add(namePart.compile(scope));
 		
-		ITypeID result = scope.getTypeRegistry().getModified(modifiers, scope.getType(position, genericNames));
+		ITypeID baseType = scope.getType(position, genericNames);
+		if (baseType == null)
+			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString());
+		
+		ITypeID result = scope.getTypeRegistry().getModified(modifiers, baseType);
 		if (result == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString());
 		

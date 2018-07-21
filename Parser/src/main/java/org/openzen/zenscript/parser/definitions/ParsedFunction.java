@@ -69,17 +69,20 @@ public class ParsedFunction extends ParsedDefinition {
 	public void listMembers(BaseScope scope, PrecompilationState state) {
 		
 	}
-
+	
 	@Override
-	public void compileCode(BaseScope scope, PrecompilationState state) {
-		FunctionScope innerScope = new FunctionScope(scope, compiled.header);
-		compiled.setCode(body.compile(innerScope, compiled.header));
-		
+	public void precompile(BaseScope scope, PrecompilationState state) {
 		if (compiled.header.returnType == BasicTypeID.UNDETERMINED) {
 			ITypeID result = body.precompileForResultType(new FunctionScope(scope, compiled.header), state);
 			if (result == null)
 				throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not determine return type for method " + compiled.name);
 			compiled.header = compiled.header.withReturnType(result);
 		}
+	}
+
+	@Override
+	public void compileCode(BaseScope scope, PrecompilationState state) {
+		FunctionScope innerScope = new FunctionScope(scope, compiled.header);
+		compiled.setCode(body.compile(innerScope, compiled.header));
 	}
 }

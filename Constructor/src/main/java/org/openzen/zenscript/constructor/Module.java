@@ -25,6 +25,7 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.constructor.module.ModuleSpace;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.ParsedFile;
 
 /**
@@ -59,21 +60,22 @@ public class Module {
 	}
 	
 	public ParsedFile[] parse(ZSPackage pkg) throws IOException {
+		// TODO: load bracket parsers from host plugins
 		List<ParsedFile> files = new ArrayList<>();
-		parse(files, pkg, sourceDirectory);
+		parse(files, pkg, null, sourceDirectory);
 		return files.toArray(new ParsedFile[files.size()]);
 	}
 	
-	private void parse(List<ParsedFile> files, ZSPackage pkg, File directory) throws IOException {
+	private void parse(List<ParsedFile> files, ZSPackage pkg, BracketExpressionParser bracketParser, File directory) throws IOException {
 		for (File file : directory.listFiles()) {
 			if (file.getName().endsWith(".zs")) {
 				try {
-					files.add(ParsedFile.parse(pkg, file));
+					files.add(ParsedFile.parse(pkg, bracketParser, file));
 				} catch (CompileException ex) {
 					exceptionLogger.accept(ex);
 				}
 			} else if (file.isDirectory()) {
-				parse(files, pkg.getOrCreatePackage(file.getName()), file);
+				parse(files, pkg.getOrCreatePackage(file.getName()), bracketParser, file);
 			}
 		}
 	}

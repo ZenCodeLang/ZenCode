@@ -5,9 +5,9 @@
  */
 package org.openzen.drawablegui.border;
 
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnShape;
 
 /**
@@ -26,11 +26,11 @@ public class DLineBorder implements DBorder {
 	}
 
 	@Override
-	public void update(DDrawSurface surface, int z, DIRectangle bounds) {
+	public void update(DComponentContext context, DIRectangle bounds) {
 		if (shape != null)
 			shape.close();
 		
-		shape = surface.strokePath(z, tracer -> {
+		shape = context.strokePath(1, tracer -> {
 				tracer.moveTo(bounds.x, bounds.y);
 				tracer.lineTo(bounds.x + bounds.width - borderWidth, bounds.y);
 				tracer.lineTo(bounds.x + bounds.width - borderWidth, bounds.y + bounds.height - borderWidth);

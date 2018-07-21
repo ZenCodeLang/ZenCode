@@ -40,20 +40,20 @@ import org.openzen.zenscript.parser.statements.ParsedStatement;
  * @author Hoofdgebruiker
  */
 public class ParsedFile {
-	public static ParsedFile parse(ZSPackage pkg, File file) throws IOException {
-		return parse(pkg, new FileSourceFile(file.getName(), file));
+	public static ParsedFile parse(ZSPackage pkg, BracketExpressionParser bracketParser, File file) throws IOException {
+		return parse(pkg, bracketParser, new FileSourceFile(file.getName(), file));
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, String filename, String content) {
+	public static ParsedFile parse(ZSPackage pkg, BracketExpressionParser bracketParser, String filename, String content) {
 		try {
-			return parse(pkg, new LiteralSourceFile(filename, content));
+			return parse(pkg, bracketParser, new LiteralSourceFile(filename, content));
 		} catch (IOException ex) {
 			throw new AssertionError(); // shouldn't happen
 		}
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, SourceFile file) throws IOException {
-		ZSTokenParser tokens = ZSTokenParser.create(file, 4);
+	public static ParsedFile parse(ZSPackage pkg, BracketExpressionParser bracketParser, SourceFile file) throws IOException {
+		ZSTokenParser tokens = ZSTokenParser.create(file, bracketParser, 4);
 		return parse(pkg, tokens);
 	}
 	
@@ -193,7 +193,9 @@ public class ParsedFile {
 		for (ParsedDefinition definition : this.definitions) {
 			definition.listMembers(scope, state);
 		}
-		
+		for (ParsedDefinition definition : this.definitions) {
+			definition.precompile(scope, state);
+		}
 		for (ParsedDefinition definition : this.definitions) {
 			definition.compileCode(scope, state);
 		}

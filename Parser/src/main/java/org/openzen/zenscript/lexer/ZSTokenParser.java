@@ -6,9 +6,9 @@
 package org.openzen.zenscript.lexer;
 
 import java.io.IOException;
-import java.io.Reader;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
+import org.openzen.zenscript.parser.BracketExpressionParser;
 
 /**
  *
@@ -27,12 +27,16 @@ public class ZSTokenParser extends LLParserTokenStream<ZSTokenType, ZSToken> {
 				new ZSTokenFactory(spacesPerTab));
 	}
 	
-	public static ZSTokenParser create(SourceFile file, int spacesPerTab) throws IOException {
-		return new ZSTokenParser(createRaw(file, new ReaderCharReader(file.open()), spacesPerTab));
+	public static ZSTokenParser create(SourceFile file, BracketExpressionParser bracketParser, int spacesPerTab) throws IOException {
+		return new ZSTokenParser(createRaw(file, new ReaderCharReader(file.open()), spacesPerTab), bracketParser);
 	}
 	
-	public ZSTokenParser(TokenStream<ZSTokenType, ZSToken> parser) {
+	public final BracketExpressionParser bracketParser;
+	
+	public ZSTokenParser(TokenStream<ZSTokenType, ZSToken> parser, BracketExpressionParser bracketParser) {
 		super(parser);
+		
+		this.bracketParser = bracketParser;
 	}
 	
 	public SourceFile getFile() {

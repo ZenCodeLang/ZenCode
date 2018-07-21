@@ -147,6 +147,9 @@ public class GlobalTypeRegistry {
 	}
 	
 	public OptionalTypeID getOptional(ITypeID original) {
+		if (original == null)
+			throw new NullPointerException("original cannot be null");
+		
 		if (optionalTypes.containsKey(original)) {
 			return optionalTypes.get(original);
 		} else {

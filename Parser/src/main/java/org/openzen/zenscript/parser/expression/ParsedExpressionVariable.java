@@ -26,6 +26,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -144,7 +145,16 @@ public class ParsedExpressionVariable extends ParsedExpression {
 			
 			throw new CompileException(position, CompileExceptionCode.UNDEFINED_VARIABLE, "No such symbol: " + name);
 		} else {
-			return result.eval().type;
+			if (result.getMember() != null) {
+				state.precompile(result.getMember());
+				result = scope.get(position, new GenericName(name, genericArguments));
+			}
+			
+			Expression resultExpression = result.eval();
+			if (resultExpression.type == BasicTypeID.UNDETERMINED)
+				System.out.println("Could not determine type");
+			
+			return resultExpression.type;
 		}
 	}
 }

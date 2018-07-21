@@ -52,6 +52,12 @@ public class LiveArrayList<T> implements MutableLiveList<T> {
 		
 		remove(index);
 	}
+	
+	@Override
+	public void clear() {
+		for (int i = size() - 1; i >= 0; i--)
+			remove(i);
+	}
 
 	@Override
 	public int indexOf(T value) {

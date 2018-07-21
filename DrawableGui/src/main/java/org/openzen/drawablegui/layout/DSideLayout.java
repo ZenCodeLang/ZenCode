@@ -12,15 +12,14 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSizing;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -33,9 +32,7 @@ public class DSideLayout extends BaseComponentGroup {
 	private final List<SideComponent> sides = new ArrayList<>();
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
-	private DStylePath path;
-	private DDrawSurface surface;
-	private int z;
+	private DComponentContext context;
 	private DSideLayoutStyle style;
 	private DIRectangle bounds;
 	
@@ -47,8 +44,8 @@ public class DSideLayout extends BaseComponentGroup {
 	}
 	
 	public void add(Side side, DComponent component) {
-		if (surface != null)
-			component.mount(path, z + 1, surface);
+		if (context != null)
+			component.mount(context);
 		
 		sides.add(new SideComponent(side, component));
 	}
@@ -59,26 +56,24 @@ public class DSideLayout extends BaseComponentGroup {
 		
 		this.main = component;
 		
-		if (surface != null && bounds != null) {
-			main.mount(path, z + 1, surface);
+		if (context != null && bounds != null) {
+			main.mount(context);
 			setBounds(bounds);
 		}
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		this.path = parent.getChild("sidelayout", styleClass);
-		style = new DSideLayoutStyle(surface.getStylesheet(path));
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("sidelayout", styleClass);
+		style = context.getStyle(DSideLayoutStyle::new);
 		
-		main.mount(path, z + 1, surface);
+		main.mount(context);
 		for (SideComponent side : sides)
-			side.component.mount(path, z + 1, surface);
+			side.component.mount(context);
 		
 		if (background != null)
 			background.close();
-		background = surface.fillRect(z, DIRectangle.EMPTY, style.backgroundColor);
+		background = context.fillRect(0, DIRectangle.EMPTY, style.backgroundColor);
 	}
 	
 	@Override

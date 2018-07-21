@@ -37,7 +37,7 @@ public class ValidationUtils {
 	private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z_0-9]*$");
 
 	public static void validateValidOverride(Validator target, CodePosition position, TypeScope scope, FunctionHeader header, FunctionHeader overridden) {
-		if (!header.canCastTo(scope, overridden))
+		if (!header.canOverride(scope, overridden))
 			target.logError(INVALID_OVERRIDE, position, "Invalid override: incompatible parameters or return type");
 	}
 	

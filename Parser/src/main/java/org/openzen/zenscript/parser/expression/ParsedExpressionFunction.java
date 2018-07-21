@@ -50,7 +50,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		for (ITypeID hint : scope.hints) {
 			if (hint instanceof FunctionTypeID) {
 				FunctionTypeID functionHint = (FunctionTypeID) hint;
-				if (header.canCastTo(scope, functionHint.header)) {
+				if (header.canOverride(scope, functionHint.header)) {
 					if (header != definedHeader)
 						throw new CompileException(position, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Ambiguity trying to resolve function types, can't decide for the type");
 					
@@ -87,7 +87,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		if (type instanceof FunctionTypeID) {
 			FunctionHeader definedHeader = header.compile(scope);
 			FunctionTypeID targetFunction = (FunctionTypeID) type;
-			return definedHeader.canCastTo(scope, targetFunction.header);
+			return definedHeader.canOverride(scope, targetFunction.header);
 		} else {
 			return false;
 		}

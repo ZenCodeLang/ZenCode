@@ -80,7 +80,7 @@ public class CreateSourceFileDialog {
 	
 	public void open(DUIWindow parent) {
 		DIRectangle rectangle = parent.getWindowBounds().getValue();
-		window = parent.getContext().openDialog(rectangle.getCenterX(), rectangle.getCenterY(), DAnchor.MIDDLE_CENTER, "Create source file", root);
+		window = parent.getContext().openDialog(rectangle.width / 2, rectangle.height / 2, DAnchor.MIDDLE_CENTER, "Create source file", root);
 		window.focus(input);
 	}
 	

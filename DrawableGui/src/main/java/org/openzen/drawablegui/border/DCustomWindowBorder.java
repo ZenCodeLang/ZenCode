@@ -6,13 +6,13 @@
 package org.openzen.drawablegui.border;
 
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.listeners.ListenerHandle;
@@ -20,7 +20,6 @@ import org.openzen.drawablegui.live.ImmutableLiveObject;
 import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -31,8 +30,7 @@ public class DCustomWindowBorder implements DComponent {
 	private final DComponent content;
 	private final LiveObject<DSizing> sizing = new ImmutableLiveObject<>(DSizing.EMPTY);
 	
-	private DDrawSurface surface;
-	private int z;
+	private DComponentContext context;
 	private DCustomWindowBorderStyle style;
 	private DIRectangle bounds;
 	
@@ -52,18 +50,16 @@ public class DCustomWindowBorder implements DComponent {
 	}
 
 	@Override
-	public void mount(DStylePath parent, int z, DDrawSurface surface) {
-		this.surface = surface;
-		this.z = z;
-		content.mount(parent, z + 1, surface);
+	public void mount(DComponentContext parent) {
+		context = parent.getChildContext("customwindowborder", styleClass);
+		content.mount(context);
 		
-		state = surface.getContext().getWindow().getWindowState();
-		active = surface.getContext().getWindow().getActive();
+		state = parent.getUIContext().getWindow().getWindowState();
+		active = parent.getUIContext().getWindow().getActive();
 		stateListener = state.addListener(this::onStateChanged);
 		activeListener = active.addListener(this::onActiveChanged);
 		
-		DStylePath path = parent.getChild("customwindowborder", styleClass);
-		style = new DCustomWindowBorderStyle(surface.getStylesheet(path));
+		style = parent.getStyle(DCustomWindowBorderStyle::new);
 		
 		if (bounds != null)
 			layout();
@@ -113,8 +109,8 @@ public class DCustomWindowBorder implements DComponent {
 					bounds.height - 2 * style.padding - style.borderWidth);
 			if (border != null)
 				border.close();
-			border = surface.strokePath(
-					z + 1,
+			border = context.strokePath(
+					1,
 					path,
 					DTransform2D.IDENTITY,
 					active.getValue() ? style.focusedBorderColor : style.inactiveBorderColor,
@@ -135,7 +131,7 @@ public class DCustomWindowBorder implements DComponent {
 				background.close();
 				background = null;
 			}
-			shadowedBackground = surface.shadowPath(z, path, DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+			shadowedBackground = context.shadowPath(0, path, DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 		} else {
 			content.setBounds(bounds);
 			
@@ -148,7 +144,7 @@ public class DCustomWindowBorder implements DComponent {
 				border = null;
 			}
 			if (background == null) {
-				background = surface.fillRect(z, bounds, style.backgroundColor);
+				background = context.fillRect(0, bounds, style.backgroundColor);
 			} else {
 				background.setRectangle(bounds);
 			}

@@ -78,5 +78,7 @@ public abstract class ParsedDefinition {
 	
 	public abstract void listMembers(BaseScope scope, PrecompilationState state);
 	
+	public abstract void precompile(BaseScope scope, PrecompilationState state);
+	
 	public abstract void compileCode(BaseScope scope, PrecompilationState state);
 }

@@ -21,6 +21,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import org.openzen.drawablegui.DComponent;
+import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DKeyEvent;
 import static org.openzen.drawablegui.DKeyEvent.KeyCode.*;
@@ -79,7 +80,7 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 	public void paint(Graphics g) {
 		if (firstPaint) {
 			firstPaint = false;
-			component.mount(DStylePathRoot.INSTANCE, 0, surface);
+			component.mount(new DComponentContext(null, DStylePathRoot.INSTANCE, 0, surface));
 			component.setBounds(new DIRectangle(0, 0, getWidth(), getHeight()));
 		}
 		
