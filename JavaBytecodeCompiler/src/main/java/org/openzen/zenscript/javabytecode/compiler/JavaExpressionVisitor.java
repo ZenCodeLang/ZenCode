@@ -162,12 +162,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		this.javaWriter = javaWriter;
 	}
 
-	private static Class<?> getForEquals(ITypeID id) {
-		if (CompilerUtils.isPrimitive(id))
-			return id.accept(JavaTypeClassVisitor.INSTANCE);
-		return Object.class;
-	}
-
 	@Override
 	public Void visitAndAnd(AndAndExpression expression) {
 		Label end = new Label();
@@ -1338,7 +1332,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.invokeSpecial(NullPointerException.class, "<init>", "(Ljava/lang/String;)V");
 		javaWriter.aThrow();
 		javaWriter.label(end);
-		
+
 		return null;
 	}
 
@@ -2086,8 +2080,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitPanic(PanicExpression expression) {
-		// TODO: compile to: throw new AssertionError(expression.value)
-		throw new UnsupportedOperationException("Not yet supported");
+		javaWriter.newObject(AssertionError.class);
+		javaWriter.dup();
+		expression.value.accept(this);
+		javaWriter.invokeSpecial(AssertionError.class, "<init>", "(Ljava/lang/String;)V");
+		javaWriter.aThrow();
+		return null;
 	}
 
 	@Override
@@ -2110,7 +2108,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.dup();
 		expression.from.accept(this);
 		expression.to.accept(this);
-		System.out.println(IntRange.class.getName());
 		javaWriter.invokeSpecial("org/openzen/zenscript/implementations/IntRange", "<init>", "(II)V");
 
 		return null;
@@ -2319,9 +2316,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
-		// TODO: convert basic types (char, int, float, ...) to their boxed (Character, Integer, Float, ...) counterparts
-		// -- any object type values can just be passed as-is
+		//Does nothing if not required to be wrapped
+		final JavaMethodInfo info = expression.value.type.accept(new JavaBoxingTypeVisitor(javaWriter));
 		expression.value.accept(this);
+
+		//i.e. if it was a primitive
+		if(info != null)
+			javaWriter.invokeSpecial(info);
 		return null;
 	}
 
@@ -2332,7 +2333,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	//Will return true if a JavaBytecodeImplementation.class tag exists, and will compile that tag
 	private boolean checkAndExecuteByteCodeImplementation(DefinitionMemberRef member) {
-		JavaBytecodeImplementation implementation = member.getTag(JavaBytecodeImplementation.class);
+		final JavaBytecodeImplementation implementation = member.getTag(JavaBytecodeImplementation.class);
 		if (implementation != null) {
 			implementation.compile(getJavaWriter());
 			return true;
@@ -2342,7 +2343,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	//Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
 	private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member) {
-		JavaMethodInfo methodInfo = member.getTag(JavaMethodInfo.class);
+		final JavaMethodInfo methodInfo = member.getTag(JavaMethodInfo.class);
 		if (methodInfo == null)
 			return false;
 
@@ -2357,7 +2358,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	//Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
 	public boolean checkAndPutFieldInfo(FieldMemberRef field, boolean isStatic) {
-		JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
+		final JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
 		if (fieldInfo == null)
 			return false;
 		//TODO Remove isStatic
@@ -2370,7 +2371,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	}
 
 	public boolean checkAndGetFieldInfo(ConstMemberRef field, boolean isStatic) {
-		JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
+		final JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
 		if (fieldInfo == null)
 			return false;
 
@@ -2379,7 +2380,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	}
 
 	public boolean checkAndGetFieldInfo(FieldMemberRef field, boolean isStatic) {
-		JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
+		final JavaFieldInfo fieldInfo = field.getTag(JavaFieldInfo.class);
 		if (fieldInfo == null)
 			return false;
 
