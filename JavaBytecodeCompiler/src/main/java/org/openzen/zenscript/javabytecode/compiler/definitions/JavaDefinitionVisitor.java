@@ -173,8 +173,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitAlias(AliasDefinition definition) {
-		//TODO would that work?
-		return JavaModule.classes.get(definition.name);
+		throw new AssertionError("Aliases shouldn't exist here...");
 	}
 
 	@Override
