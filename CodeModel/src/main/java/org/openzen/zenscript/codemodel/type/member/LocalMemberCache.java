@@ -34,6 +34,7 @@ public class LocalMemberCache {
 	}
 	
 	public TypeMembers get(ITypeID type) {
+		type = type.getNormalized();
 		if (types.containsKey(type)) {
 			return types.get(type);
 		} else {

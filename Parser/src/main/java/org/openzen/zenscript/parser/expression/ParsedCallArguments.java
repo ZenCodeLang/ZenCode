@@ -230,7 +230,7 @@ public class ParsedCallArguments {
 			if (typeParameters == null && header.typeParameters != null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
 				return false;
 			
-			if (!arguments.get(i).isCompatibleWith(scope, header.parameters[i].type))
+			if (!arguments.get(i).isCompatibleWith(scope, header.parameters[i].type.getNormalized()))
 				return false;
 		}
 		

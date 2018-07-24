@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -38,5 +39,10 @@ public class CapturedClosureExpression extends CapturedExpression {
 		} else {
 			return tValue == value ? this : new CapturedClosureExpression(position, (CapturedExpression)tValue, closure);
 		}
+	}
+
+	@Override
+	public CapturedExpression normalize(TypeScope scope) {
+		return new CapturedClosureExpression(position, value.normalize(scope), closure);
 	}
 }

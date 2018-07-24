@@ -6,7 +6,9 @@
 package org.openzen.zenscript.javasource;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -30,7 +32,9 @@ import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
+import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
@@ -39,20 +43,30 @@ import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
  * @author Hoofdgebruiker
  */
 public class JavaMemberCompiler extends BaseMemberCompiler {
+	private final JavaSourceCompiler compiler;
+	private final JavaSourceFile file;
 	private final List<FieldMember> fields = new ArrayList<>();
 	private final boolean isInterface;
+	private final Map<HighLevelDefinition, SemanticModule> modules;
+	public boolean hasDestructor = false;
 	
 	public JavaMemberCompiler(
+			JavaSourceCompiler compiler,
+			JavaSourceFile file,
 			JavaSourceFormattingSettings settings,
 			String indent,
 			StringBuilder output,
 			JavaSourceFileScope scope,
 			boolean isInterface,
-			HighLevelDefinition definition)
+			HighLevelDefinition definition,
+			Map<HighLevelDefinition, SemanticModule> modules)
 	{
 		super(settings, indent, output, scope, null, definition);
 		
+		this.file = file;
 		this.isInterface = isInterface;
+		this.compiler = compiler;
+		this.modules = modules;
 	}
 	
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
@@ -75,7 +89,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			output.append("default ");
 		
 		modifiers(member.modifiers);
-		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
 		output.append(header.returnType.accept(scope.typeVisitor));
 		output.append(" ");
 		output.append(method.name);
@@ -138,8 +152,8 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		
 		output.append(indent);
 		modifiers(member.modifiers);
-		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, member.header.typeParameters);
-		output.append(scope.cls.name);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, member.header.typeParameters, true);
+		output.append(scope.cls.getName());
 		formatParameters(member.isStatic(), member.header);
 		compileBody(member.body, member.header);
 		return null;
@@ -147,6 +161,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
+		hasDestructor = true;
 		begin(ElementType.METHOD);
 		
 		output.append(indent).append("@Override\n");
@@ -215,7 +230,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			
 			begin(ElementType.INNERCLASS);
 			output.append("private class ").append(implementationName).append(" implements ").append(scope.type(member.type)).append(" {\n");
-			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(settings, indent + settings.indent, output, scope, isInterface, definition);
+			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, file, settings, indent + settings.indent, output, scope, isInterface, definition, modules);
 			for (IDefinitionMember m : member.members) {
 				m.accept(memberCompiler);
 			}
@@ -226,7 +241,16 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		// TODO
+		JavaSourceClass cls = member.innerDefinition.getTag(JavaSourceClass.class);
+		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
+				indent,
+				compiler,
+				cls,
+				file,
+				output,
+				Collections.emptyList(),
+				modules);
+		member.innerDefinition.accept(visitor);
 		return null;
 	}
 

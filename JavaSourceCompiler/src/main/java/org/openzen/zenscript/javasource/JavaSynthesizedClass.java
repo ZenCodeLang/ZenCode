@@ -20,4 +20,8 @@ public class JavaSynthesizedClass {
 		this.cls = cls;
 		this.typeParameters = typeParameters;
 	}
+
+	public JavaSynthesizedClass withTypeParameters(TypeParameter[] typeParameters) {
+		return new JavaSynthesizedClass(cls, typeParameters);
+	}
 }

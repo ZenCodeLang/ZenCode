@@ -57,7 +57,7 @@ public class SimpleBracketSubParser implements BracketExpressionParser {
 
 		@Override
 		public IPartialExpression compile(ExpressionScope scope) {
-			return new CallStaticExpression(position, targetType, method, method.header, new CallArguments(new ConstantStringExpression(position, value)), scope);
+			return new CallStaticExpression(position, targetType, method, method.header, new CallArguments(new ConstantStringExpression(position, value)));
 		}
 
 		@Override

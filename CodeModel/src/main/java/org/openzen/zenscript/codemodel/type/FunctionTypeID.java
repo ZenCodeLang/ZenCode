@@ -18,9 +18,18 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  */
 public class FunctionTypeID implements ITypeID {
 	public final FunctionHeader header;
+	private final FunctionTypeID normalized;
 	
-	public FunctionTypeID(FunctionHeader header) {
+	public FunctionTypeID(GlobalTypeRegistry registry, FunctionHeader header) {
 		this.header = header;
+		
+		FunctionHeader normalizedHeader = header.normalize(registry);
+		normalized = header == normalizedHeader ? this : registry.getFunction(normalizedHeader);
+	}
+	
+	@Override
+	public FunctionTypeID getNormalized() {
+		return normalized;
 	}
 	
 	@Override

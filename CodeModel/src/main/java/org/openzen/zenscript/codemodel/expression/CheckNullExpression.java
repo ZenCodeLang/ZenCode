@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  * Converts a value from X? to X. Throws a NullPointerException if the value is null.
@@ -30,5 +31,10 @@ public class CheckNullExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = transformer.transform(value);
 		return value == tValue ? this : new CheckNullExpression(position, tValue);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new CheckNullExpression(position, value.normalize(scope));
 	}
 }

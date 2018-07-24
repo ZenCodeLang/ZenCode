@@ -20,8 +20,8 @@ import org.openzen.zenscript.parser.type.IParsedType;
  *
  * @author Hoofdgebruiker
  */
-public class ParsedGenericParameter {
-	public static ParsedGenericParameter parse(ZSTokenParser tokens) {
+public class ParsedTypeParameter {
+	public static ParsedTypeParameter parse(ZSTokenParser tokens) {
 		CodePosition position = tokens.getPosition();
 		ZSToken name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
 		List<ParsedGenericBound> bounds = new ArrayList<>();
@@ -32,22 +32,22 @@ public class ParsedGenericParameter {
 				bounds.add(new ParsedTypeBound(tokens.getPosition(), IParsedType.parse(tokens)));
 			}
 		}
-		return new ParsedGenericParameter(position, name.content, bounds);
+		return new ParsedTypeParameter(position, name.content, bounds);
 	}
 	
-	public static List<ParsedGenericParameter> parseAll(ZSTokenParser tokens) {
+	public static List<ParsedTypeParameter> parseAll(ZSTokenParser tokens) {
 		if (tokens.optional(ZSTokenType.T_LESS) == null)
 			return null;
 		
-		List<ParsedGenericParameter> genericParameters = new ArrayList<>();
+		List<ParsedTypeParameter> genericParameters = new ArrayList<>();
 		do {
-			genericParameters.add(ParsedGenericParameter.parse(tokens));
+			genericParameters.add(ParsedTypeParameter.parse(tokens));
 		} while (tokens.optional(ZSTokenType.T_COMMA) != null);
 		tokens.required(ZSTokenType.T_GREATER, "> expected");
 		return genericParameters;
 	}
 	
-	public static void compile(BaseScope scope, TypeParameter[] compiled, List<ParsedGenericParameter> parameters) {
+	public static void compile(BaseScope scope, TypeParameter[] compiled, List<ParsedTypeParameter> parameters) {
 		if (compiled == null)
 			return;
 		
@@ -58,7 +58,7 @@ public class ParsedGenericParameter {
 		}
 	}
 	
-	public static TypeParameter[] getCompiled(List<ParsedGenericParameter> parameters) {
+	public static TypeParameter[] getCompiled(List<ParsedTypeParameter> parameters) {
 		if (parameters == null)
 			return TypeParameter.NONE;
 		
@@ -74,7 +74,7 @@ public class ParsedGenericParameter {
 	
 	public final TypeParameter compiled;
 	
-	public ParsedGenericParameter(CodePosition position, String name, List<ParsedGenericBound> bounds) {
+	public ParsedTypeParameter(CodePosition position, String name, List<ParsedGenericBound> bounds) {
 		this.position = position;
 		this.name = name;
 		this.bounds = bounds;

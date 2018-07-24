@@ -17,9 +17,32 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  */
 public class IteratorTypeID implements ITypeID {
 	public final ITypeID[] iteratorTypes;
+	private final IteratorTypeID normalized;
 	
-	public IteratorTypeID(ITypeID[] iteratorTypes) {
+	public IteratorTypeID(GlobalTypeRegistry registry, ITypeID[] iteratorTypes) {
 		this.iteratorTypes = iteratorTypes;
+		
+		normalized = isDenormalized() ? normalize(registry) : this;
+	}
+	
+	@Override
+	public IteratorTypeID getNormalized() {
+		return normalized;
+	}
+	
+	private boolean isDenormalized() {
+		for (ITypeID type : iteratorTypes)
+			if (type.getNormalized() != type)
+				return true;
+		
+		return false;
+	}
+	
+	private IteratorTypeID normalize(GlobalTypeRegistry registry) {
+		ITypeID[] normalizedTypes = new ITypeID[iteratorTypes.length];
+		for (int i = 0; i < normalizedTypes.length; i++)
+			normalizedTypes[i] = iteratorTypes[i].getNormalized();
+		return registry.getIterator(normalizedTypes);
 	}
 
 	@Override

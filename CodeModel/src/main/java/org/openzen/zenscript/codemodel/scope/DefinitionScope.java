@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -23,6 +24,7 @@ import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -38,6 +40,7 @@ public class DefinitionScope extends BaseScope {
 	private final ITypeID type;
 	private final TypeMembers members;
 	private final Map<String, TypeParameter> genericParameters = new HashMap<>();
+	private final Map<String, Supplier<HighLevelDefinition>> innerTypes = new HashMap<>();
 	
 	public DefinitionScope(BaseScope outer, HighLevelDefinition definition) {
 		this(outer, definition, true);
@@ -47,24 +50,30 @@ public class DefinitionScope extends BaseScope {
 		this.outer = outer;
 		this.definition = definition;
 		
-		ITypeID[] genericParameterList = ITypeID.NONE;
-		if (definition.genericParameters != null) {
-			genericParameterList = new ITypeID[definition.genericParameters.length];
-			for (int i = 0; i < definition.genericParameters.length; i++) {
-				TypeParameter parameter = definition.genericParameters[i];
-				genericParameterList[i] = outer.getTypeRegistry().getGeneric(parameter);
-				genericParameters.put(parameter.name, parameter);
-			}
-		}
-		
 		if (definition instanceof ExpansionDefinition) {
 			ExpansionDefinition expansion = (ExpansionDefinition)definition;
 			type = expansion.target;
+			
+			for (TypeParameter parameter : expansion.genericParameters) {
+				genericParameters.put(parameter.name, parameter);
+			}
 		} else {
-			type = outer.getTypeRegistry().getForDefinition(definition, genericParameterList);
+			DefinitionTypeID definitionType = outer.getTypeRegistry().getForMyDefinition(definition);
+			type = definitionType;
+			
+			while (definitionType != null) {
+				for (TypeParameter parameter : definitionType.definition.genericParameters) {
+					genericParameters.put(parameter.name, parameter);
+				}
+				definitionType = definitionType.definition.isStatic() ? null : definitionType.outer;
+			}
 		}
 		
 		members = withMembers ? outer.getMemberCache().get(type) : null;
+	}
+	
+	public void addInnerType(String name, Supplier<HighLevelDefinition> innerType) {
+		innerTypes.put(name, innerType);
 	}
 	
 	@Override
@@ -79,6 +88,8 @@ public class DefinitionScope extends BaseScope {
 				return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
 			if (members.hasMember(name.name) && !name.hasArguments())
 				return members.getMemberExpression(position, new ThisExpression(position, type), name, true);
+		} else if (innerTypes.containsKey(name.name)) {
+			return new PartialTypeExpression(position, getTypeRegistry().getForDefinition(innerTypes.get(name).get(), name.arguments), name.arguments);
 		}
 		if (genericParameters.containsKey(name.name) && !name.hasArguments())
 			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(genericParameters.get(name.name)), name.arguments);
@@ -96,6 +107,12 @@ public class DefinitionScope extends BaseScope {
 			return result;
 		} else if (genericParameters.containsKey(name.get(0).name) && name.size() == 1 && !name.get(0).hasArguments()) {
 			return getTypeRegistry().getGeneric(genericParameters.get(name.get(0).name));
+		} else if (innerTypes.containsKey(name.get(0).name)) {
+			ITypeID result = getTypeRegistry().getForDefinition(innerTypes.get(name.get(0).name).get(), name.get(0).arguments);
+			for (int i = 1; i < name.size(); i++) {
+				result = getTypeMembers(result).getInnerType(position, name.get(i)); // TODO: this cannot be right, where did the type arguments go? the abyss?
+			}
+			return result;
 		}
 		
 		return outer.getType(position, name);

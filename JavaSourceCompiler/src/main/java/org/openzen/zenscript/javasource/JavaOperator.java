@@ -71,6 +71,8 @@ public enum JavaOperator implements FormattableOperator {
 	NEW(20, null),
 	TOSTRING(CALL.priority, ".toString()"),
 	
+	LAMBDA(1, null),
+	
 	PRIMARY(21, null);
 	
 	private final int priority;

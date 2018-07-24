@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -20,10 +21,6 @@ public class ClassDefinition extends HighLevelDefinition {
 	
 	public ClassDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
 		super(position, pkg, name, modifiers, outerDefinition);
-	}
-	
-	public void setSuperclass(ITypeID superclass) {
-		this.superType = superclass;
 	}
 
 	@Override

@@ -80,7 +80,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 	public void compileCode(BaseScope scope, PrecompilationState state) {
 		super.compileCode(scope, state);
 		
-		DefinitionTypeID type = new DefinitionTypeID(compiled, new ITypeID[0]);
+		DefinitionTypeID type = scope.getTypeRegistry().getForDefinition(compiled, ITypeID.NONE);
 		ExpressionScope evalScope = new ExpressionScope(scope);
 		for (ParsedEnumConstant constant : enumValues) {
 			constant.compileCode(type, evalScope);

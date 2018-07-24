@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -49,5 +50,10 @@ public class LockStatement extends Statement {
 		Expression tObject = object.transform(transformer);
 		Statement tContent = content.transform(transformer, modified);
 		return tObject == object && tContent == content ? this : new LockStatement(position, tObject, tContent);
+	}
+
+	@Override
+	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
+		return new LockStatement(position, object.normalize(scope), content.normalize(scope, modified));
 	}
 }

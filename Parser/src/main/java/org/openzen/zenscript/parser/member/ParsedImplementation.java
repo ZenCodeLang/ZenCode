@@ -68,7 +68,10 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 	
 	@Override
 	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
-		return true; // nothing to do here
+		for (ParsedDefinitionMember member : members)
+			member.inferHeaders(scope, state);
+		
+		return true;
 	}
 
 	@Override

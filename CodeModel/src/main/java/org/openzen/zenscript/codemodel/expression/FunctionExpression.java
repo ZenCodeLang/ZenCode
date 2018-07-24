@@ -12,6 +12,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
@@ -73,6 +74,11 @@ public class FunctionExpression extends Expression {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new FunctionExpression(position, (FunctionTypeID)type, closure, header, body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class)));
 	}
 	
 	private static class ReturnExpressionTransformer implements ExpressionTransformer {

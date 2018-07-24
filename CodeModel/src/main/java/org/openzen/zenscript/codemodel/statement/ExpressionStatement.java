@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -45,5 +46,10 @@ public class ExpressionStatement extends Statement {
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tExpression = expression.transform(transformer);
 		return tExpression == expression ? this : new ExpressionStatement(position, tExpression);
+	}
+
+	@Override
+	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
+		return new ExpressionStatement(position, expression.normalize(scope));
 	}
 }

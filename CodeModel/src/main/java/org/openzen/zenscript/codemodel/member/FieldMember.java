@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
@@ -44,6 +45,7 @@ public class FieldMember extends DefinitionMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
+			ITypeID thisType,
 			ITypeID type,
 			GlobalTypeRegistry registry,
 			int autoGetterAccess,
@@ -62,23 +64,21 @@ public class FieldMember extends DefinitionMember {
 		if (definition.genericParameters != null) {
 			parameters = new ITypeID[definition.genericParameters.length];
 			for (int i = 0; i < parameters.length; i++)
-				parameters[i] = new GenericTypeID(definition.genericParameters[i]);
+				parameters[i] = registry.getGeneric(definition.genericParameters[i]);
 		}
 		
 		if (autoGetterAccess != 0) {
-			ITypeID myType = registry.getForDefinition(definition, parameters);
 			this.autoGetter = new GetterMember(position, definition, autoGetterAccess, name, type, null);
-			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(position, new ThisExpression(position, myType), new FieldMemberRef(this, myType))));
+			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(position, new ThisExpression(position, thisType), new FieldMemberRef(this, thisType))));
 		} else {
 			this.autoGetter = null;
 		}
 		if (autoSetterAccess != 0) {
-			ITypeID myType = registry.getForDefinition(definition, parameters);
 			this.autoSetter = new SetterMember(position, definition, autoSetterAccess, name, type, null);
 			this.autoSetter.setBody(new ExpressionStatement(position, new SetFieldExpression(
 					position,
-					new ThisExpression(position, myType),
-					new FieldMemberRef(this, myType),
+					new ThisExpression(position, thisType),
+					new FieldMemberRef(this, thisType),
 					new GetFunctionParameterExpression(position, this.autoSetter.header.parameters[0]))));
 		} else {
 			this.autoSetter = null;
@@ -143,5 +143,12 @@ public class FieldMember extends DefinitionMember {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return null;
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		type = type.getNormalized();
+		if (initializer != null)
+			initializer = initializer.normalize(scope);
 	}
 }

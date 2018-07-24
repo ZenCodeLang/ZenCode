@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -18,7 +19,7 @@ public class ConstExpression extends Expression {
 	public final ConstMemberRef constant;
 	
 	public ConstExpression(CodePosition position, ConstMemberRef constant) {
-		super(position, constant.type, null);
+		super(position, constant.getType(), null);
 		
 		this.constant = constant;
 	}
@@ -46,5 +47,10 @@ public class ConstExpression extends Expression {
 	@Override
 	public IDefinitionMember getMember() {
 		return constant.member;
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return this;
 	}
 }

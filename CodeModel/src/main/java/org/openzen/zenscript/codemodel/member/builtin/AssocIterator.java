@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.member.MemberVisitor;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -78,5 +79,10 @@ public class AssocIterator extends Taggable implements IIteratorMember {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return null;
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		
 	}
 }

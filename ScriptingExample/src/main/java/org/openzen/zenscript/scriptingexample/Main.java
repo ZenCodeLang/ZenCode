@@ -139,7 +139,7 @@ public class Main {
 		SemanticModule result = new SemanticModule(
 				"scripts",
 				new String[0],
-				SemanticModule.State.SEMANTIC,
+				SemanticModule.State.ASSEMBLED,
 				rootPackage,
 				modulePackage,
 				definitions,

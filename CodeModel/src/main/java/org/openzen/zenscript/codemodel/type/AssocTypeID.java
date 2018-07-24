@@ -16,10 +16,16 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 public class AssocTypeID implements ITypeID {
 	public final ITypeID keyType;
 	public final ITypeID valueType;
+	private final AssocTypeID normalized;
 	
-	public AssocTypeID(ITypeID keyType, ITypeID valueType) {
+	public AssocTypeID(GlobalTypeRegistry typeRegistry, ITypeID keyType, ITypeID valueType) {
 		this.keyType = keyType;
 		this.valueType = valueType;
+		
+		if (keyType != keyType.getNormalized() || valueType != valueType.getNormalized())
+			normalized = typeRegistry.getAssociative(keyType.getNormalized(), valueType.getNormalized());
+		else
+			normalized = this;
 	}
 	
 	@Override
@@ -27,6 +33,11 @@ public class AssocTypeID implements ITypeID {
 		return mapper.registry.getAssociative(
 				keyType.instance(mapper),
 				valueType.instance(mapper));
+	}
+	
+	@Override
+	public AssocTypeID getNormalized() {
+		return normalized;
 	}
 	
 	@Override

@@ -62,7 +62,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 		
 		if (receiver instanceof ParsedExpressionSuper) {
 			// super call (intended as first call in constructor)
-			ITypeID targetType = scope.getThisType().getSuperType();
+			ITypeID targetType = scope.getThisType().getSuperType(scope.getTypeRegistry());
 			if (targetType == null)
 				throw new CompileException(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Class has no superclass");
 			
@@ -72,7 +72,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			if (!member.isConstructor())
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
-			return new ConstructorSuperCallExpression(position, scope.getThisType().getSuperType(), member, callArguments, scope);
+			return new ConstructorSuperCallExpression(position, targetType, member, callArguments);
 		} else if (receiver instanceof ParsedExpressionThis) {
 			// this call (intended as first call in constructor)
 			ITypeID targetType = scope.getThisType();
@@ -83,7 +83,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			if (!member.isConstructor())
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 			
-			return new ConstructorThisCallExpression(position, scope.getThisType(), member, callArguments, scope);
+			return new ConstructorThisCallExpression(position, scope.getThisType(), member, callArguments);
 		}
 		
 		IPartialExpression cReceiver = receiver.compile(scope.withoutHints());

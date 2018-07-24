@@ -26,10 +26,11 @@ public class ParsedExpressionSuper extends ParsedExpression {
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
 		ITypeID type = scope.getThisType();
-		if (type.getSuperType() == null)
+		ITypeID targetType = type.getSuperType(scope.getTypeRegistry());
+		if (targetType == null)
 			throw new CompileException(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Type has no superclass");
 		
-		return new PartialTypeExpression(position, scope.getThisType().getSuperType(), null);
+		return new PartialTypeExpression(position, targetType, null);
 	}
 
 	@Override
@@ -39,6 +40,6 @@ public class ParsedExpressionSuper extends ParsedExpression {
 
 	@Override
 	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		return scope.getThisType().getSuperType();
+		return scope.getThisType().getSuperType(scope.getTypeRegistry());
 	}
 }

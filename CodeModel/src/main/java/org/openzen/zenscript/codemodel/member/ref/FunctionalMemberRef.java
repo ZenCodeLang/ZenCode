@@ -104,7 +104,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	public Expression call(CodePosition position, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return new CallExpression(position, target, this, instancedHeader, arguments, scope);
+		return new CallExpression(position, target, this, instancedHeader, arguments);
 	}
 	
 	public final Expression call(CodePosition position, Expression target, CallArguments arguments, TypeScope scope) {
@@ -116,6 +116,6 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return new CallStaticExpression(position, target, this, instancedHeader, arguments, scope);
+		return new CallStaticExpression(position, target, this, instancedHeader, arguments);
 	}
 }

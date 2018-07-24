@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -62,5 +63,11 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return null;
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		for (IDefinitionMember member : members)
+			member.normalize(scope);
 	}
 }

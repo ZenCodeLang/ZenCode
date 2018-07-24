@@ -3,7 +3,6 @@ package org.openzen.zenscript.javabytecode.compiler.definitions;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -11,7 +10,6 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javabytecode.JavaModule;
-import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 
@@ -42,10 +40,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         //Classes will always be created in a new File/Class
 
         final Type superType;
-        if (definition.superType == null)
+        if (definition.getSuperType() == null)
             superType = Type.getType(Object.class);
         else
-            superType = Type.getType(definition.superType.accept(JavaTypeClassVisitor.INSTANCE));
+            superType = Type.getType(definition.getSuperType().accept(JavaTypeClassVisitor.INSTANCE));
 
 		JavaClassInfo toClass = new JavaClassInfo(definition.name);
         JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -88,10 +86,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		System.out.println("Compiling enum " + definition.name + " in " + definition.position.filename);
 		
         final Type superType;
-        if (definition.superType == null)
+        if (definition.getSuperType() == null)
             superType = Type.getType(Object.class);
         else
-            superType = Type.getType(definition.superType.accept(JavaTypeClassVisitor.INSTANCE));
+            superType = Type.getType(definition.getSuperType().accept(JavaTypeClassVisitor.INSTANCE));
 
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 

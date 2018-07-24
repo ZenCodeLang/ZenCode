@@ -1788,7 +1788,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case ASSOC_KEYS: {
 				AssocTypeID type = (AssocTypeID) expression.target.type;
-				ArrayTypeID result = new ArrayTypeID(type.keyType, 1);
+				ArrayTypeID result = new ArrayTypeID(null, type.keyType, 1);
 				Type resultType = result.accept(JavaTypeVisitor.INSTANCE);
 
 				javaWriter.invokeVirtual(MAP_KEYS);
@@ -1801,7 +1801,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			}
 			case ASSOC_VALUES: {
 				AssocTypeID type = (AssocTypeID) expression.target.type;
-				ArrayTypeID result = new ArrayTypeID(type.valueType, 1);
+				ArrayTypeID result = new ArrayTypeID(null, type.valueType, 1);
 				Type resultType = result.accept(JavaTypeVisitor.INSTANCE);
 
 				javaWriter.invokeVirtual(MAP_VALUES);

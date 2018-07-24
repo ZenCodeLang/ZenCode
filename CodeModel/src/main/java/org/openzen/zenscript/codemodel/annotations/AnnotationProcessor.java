@@ -164,7 +164,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 
 		@Override
 		public Void visitCustomIterator(CustomIteratorMember member) {
-			throw new UnsupportedOperationException("Not supported yet!");
+			return functional(member);
 		}
 
 		@Override

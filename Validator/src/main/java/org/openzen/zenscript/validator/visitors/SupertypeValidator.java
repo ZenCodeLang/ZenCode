@@ -6,18 +6,18 @@
 package org.openzen.zenscript.validator.visitors;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ConstTypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -26,85 +26,81 @@ import org.openzen.zenscript.validator.Validator;
  *
  * @author Hoofdgebruiker
  */
-public class SupertypeValidator implements ITypeVisitor<Boolean> {
+public class SupertypeValidator implements ITypeVisitor<Void> {
 	private final Validator validator;
 	private final CodePosition position;
+	private final HighLevelDefinition subtype;
 	
 	public SupertypeValidator(
 			Validator validator,
-			CodePosition position)
+			CodePosition position,
+			HighLevelDefinition subtype)
 	{
 		this.validator = validator;
 		this.position = position;
+		this.subtype = subtype;
 	}
 
 	@Override
-	public Boolean visitBasic(BasicTypeID basic) {
+	public Void visitBasic(BasicTypeID basic) {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a basic type");
-		return false;
+		return null;
 	}
 
 	@Override
-	public Boolean visitArray(ArrayTypeID array) {
+	public Void visitArray(ArrayTypeID array) {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be an array");
-		return false;
+		return null;
 	}
 
 	@Override
-	public Boolean visitAssoc(AssocTypeID assoc) {
+	public Void visitAssoc(AssocTypeID assoc) {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be an associative array");
-		return false;
+		return null;
 	}
 
 	@Override
-	public Boolean visitIterator(IteratorTypeID iterator) {
+	public Void visitIterator(IteratorTypeID iterator) {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be an iterator");
-		return false;
+		return null;
 	}
 
 	@Override
-	public Boolean visitFunction(FunctionTypeID function) {
+	public Void visitFunction(FunctionTypeID function) {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a function");
-		return false;
+		return null;
 	}
 
 	@Override
-	public Boolean visitDefinition(DefinitionTypeID definition) {
-		boolean isValid = true;
-		if (!Modifiers.isVirtual(definition.definition.modifiers)) {
+	public Void visitDefinition(DefinitionTypeID definition) {
+		if (!Modifiers.isVirtual(definition.definition.modifiers))
 			validator.logError(ValidationLogEntry.Code.INVALID_SUPERTYPE, position, "Supertype must be virtual");
-			isValid = false;
-		}
-		return isValid;
+		if (subtype.isDestructible() && !definition.definition.isDestructible())
+			validator.logError(ValidationLogEntry.Code.SUPERTYPE_NOT_DESTRUCTIBLE, position, "Superclass of a destructible type must be destructible");
+		return null;
 	}
 
 	@Override
-	public Boolean visitGeneric(GenericTypeID generic) {
+	public Void visitGeneric(GenericTypeID generic) {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a type parameter");
-		return false;
+		return null;
 	}
 
 	@Override
-	public Boolean visitRange(RangeTypeID range) {
+	public Void visitRange(RangeTypeID range) {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a range");
-		return false;
+		return null;
 	}
 
 	@Override
-	public Boolean visitConst(ConstTypeID type) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a const type");
-		return false;
+	public Void visitModified(ModifiedTypeID type) {
+		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a modified type");
+		return null;
 	}
 
 	@Override
-	public Boolean visitOptional(OptionalTypeID optional) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be an optional type");
-		return false;
-	}
-
-	@Override
-	public Boolean visitGenericMap(GenericMapTypeID map) {
+	public Void visitGenericMap(GenericMapTypeID map) {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a generic map");
-		return false;
+		return null;
 	}
 }

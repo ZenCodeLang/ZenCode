@@ -16,9 +16,10 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.parser.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
-import org.openzen.zenscript.parser.definitions.ParsedGenericParameter;
+import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 
 /**
  *
@@ -142,7 +143,7 @@ public interface IParsedType {
 						result = new ParsedTypeArray(result, dimension);
 					} else if (tokens.isNext(T_LESS)) {
 						tokens.next();
-						ParsedGenericParameter parameter = ParsedGenericParameter.parse(tokens);
+						ParsedTypeParameter parameter = ParsedTypeParameter.parse(tokens);
 						tokens.required(T_GREATER, "> expected");
 						result = new ParsedTypeGenericMap(parameter, result, modifiers);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");

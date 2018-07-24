@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -27,6 +28,9 @@ public abstract class CapturedExpression extends Expression {
 		closure.add(result);
 		return result;
 	}
+	
+	@Override
+	public abstract CapturedExpression normalize(TypeScope scope);
 	
 	public abstract <T> T accept(CapturedExpressionVisitor<T> visitor);
 }

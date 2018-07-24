@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 /**
@@ -34,5 +35,10 @@ public class ConstantStringExpression extends Expression {
 	@Override
 	public String evaluateStringConstant() {
 		return value;
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return this;
 	}
 }

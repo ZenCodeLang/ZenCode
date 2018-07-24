@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
@@ -27,23 +28,26 @@ import org.openzen.zenscript.javasource.tags.JavaSourceClass;
  * @author Hoofdgebruiker
  */
 public class JavaSourceSyntheticTypeGenerator {
-	private final Map<FunctionTypeID, JavaSynthesizedClass> functions = new HashMap<>();
+	private final Map<String, JavaSynthesizedClass> functions = new HashMap<>();
 	private final File directory;
 	private final JavaSourceFormattingSettings settings;
 	
 	public JavaSourceSyntheticTypeGenerator(File directory, JavaSourceFormattingSettings settings) {
 		this.directory = new File(directory, "zsynthetic");
 		this.settings = settings;
+		
+		
 	}
 	
 	public JavaSynthesizedClass createFunction(JavaSourceTypeVisitor typeFormatter, FunctionTypeID function) {
-		if (functions.containsKey(function))
-			return functions.get(function);
+		String signature = getFunctionSignature(function);
+		if (functions.containsKey(signature))
+			return functions.get(signature).withTypeParameters(extractTypeParameters(function));
 		
-		String className = createFunctionClassName(function);
+		String className = "Function" + signature;
 		JavaSourceClass cls = new JavaSourceClass("zsynthetic", className);
 		JavaSynthesizedClass result = new JavaSynthesizedClass(cls, extractTypeParameters(function));
-		functions.put(function, result);
+		functions.put(signature, result);
 		
 		JavaSourceImporter importer = new JavaSourceImporter(cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, this);
@@ -52,7 +56,7 @@ public class JavaSourceSyntheticTypeGenerator {
 		contents.append("@FunctionalInterface\n");
 		contents.append("public interface ");
 		contents.append(className);
-		JavaSourceUtils.formatTypeParameters(typeFormatter, contents, result.typeParameters);
+		JavaSourceUtils.formatTypeParameters(typeFormatter, contents, result.typeParameters, false);
 		contents.append(" {\n");
 		contents.append(settings.indent);
 		if (function.header.getNumberOfTypeParameters() > 0) {
@@ -121,5 +125,15 @@ public class JavaSourceSyntheticTypeGenerator {
 		List<TypeParameter> result = new ArrayList<>();
 		type.extractTypeParameters(result);
 		return result.toArray(new TypeParameter[result.size()]);
+	}
+	
+	private static String getFunctionSignature(FunctionTypeID type) {
+		return new JavaSyntheticTypeSignatureConverter().visitFunction(type);
+	}
+	
+	private TypeParameter[] getFunctionTypeParameters(FunctionTypeID type) {
+		JavaSyntheticTypeSignatureConverter converter = new JavaSyntheticTypeSignatureConverter();
+		converter.visitFunction(type);
+		return converter.typeParameterList.toArray(new TypeParameter[converter.typeParameterList.size()]);
 	}
 }

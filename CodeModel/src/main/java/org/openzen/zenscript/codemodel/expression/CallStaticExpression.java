@@ -21,12 +21,12 @@ public class CallStaticExpression extends Expression {
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
 	
-	public CallStaticExpression(CodePosition position, ITypeID target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+	public CallStaticExpression(CodePosition position, ITypeID target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments) {
 		super(position, instancedHeader.returnType, multiThrow(position, arguments.arguments));
 		
 		this.member = member;
 		this.target = target;
-		this.arguments = scope == null ? arguments : arguments.normalize(position, scope, instancedHeader);
+		this.arguments = arguments;
 		this.instancedHeader = instancedHeader;
 	}
 
@@ -38,6 +38,16 @@ public class CallStaticExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
-		return arguments == tArguments ? this : new CallStaticExpression(position, target, member, instancedHeader, tArguments, null);
+		return arguments == tArguments ? this : new CallStaticExpression(position, target, member, instancedHeader, tArguments);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new CallStaticExpression(
+				position,
+				target.getNormalized(),
+				member,
+				instancedHeader.normalize(scope.getTypeRegistry()),
+				arguments.normalize(position, scope, instancedHeader));
 	}
 }

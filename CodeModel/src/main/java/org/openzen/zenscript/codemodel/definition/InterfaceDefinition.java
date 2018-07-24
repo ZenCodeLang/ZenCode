@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**

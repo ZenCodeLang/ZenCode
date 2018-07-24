@@ -59,8 +59,7 @@ public class ExpressionBuilder {
 				type,
 				member,
 				compiledArguments,
-				compiledArguments.getNumberOfTypeArguments() == 0 ? member.header : member.header.fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments),
-				scope);
+				compiledArguments.getNumberOfTypeArguments() == 0 ? member.header : member.header.fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments));
 	}
 	
 	public Expression not(Expression value) {

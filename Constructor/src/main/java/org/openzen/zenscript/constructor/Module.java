@@ -152,6 +152,6 @@ public class Module {
 			}
 		}
 		
-		return new SemanticModule(name, dependencies, SemanticModule.State.SEMANTIC, rootPackage, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
+		return new SemanticModule(name, dependencies, SemanticModule.State.ASSEMBLED, rootPackage, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
 	}
 }

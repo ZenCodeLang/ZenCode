@@ -19,6 +19,7 @@ import org.openzen.zenscript.parser.PrecompilationState;
 public class ParsedInnerDefinition extends ParsedDefinitionMember {
 	private final ParsedDefinition innerDefinition;
 	private final InnerDefinitionMember member;
+	private boolean typesCompiled = false;
 	
 	public ParsedInnerDefinition(HighLevelDefinition outer, ParsedDefinition definition) {
 		super(outer, ParsedAnnotation.NONE);
@@ -26,6 +27,15 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 		this.innerDefinition = definition;
 		
 		member = new InnerDefinitionMember(definition.getPosition(), outer, definition.getModifiers(), definition.getCompiled());
+	}
+	
+	@Override
+	public void compileTypes(BaseScope scope) {
+		if (typesCompiled)
+			return;
+		typesCompiled = true;
+		
+		innerDefinition.compileTypes(scope);
 	}
 	
 	@Override

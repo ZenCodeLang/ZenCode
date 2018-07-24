@@ -50,7 +50,7 @@ import org.openzen.zenscript.javasource.tags.JavaSourceClass;
  * @author Hoofdgebruiker
  */
 public class JavaSourceStatementFormatter implements StatementFormatter.Formatter, SwitchValueVisitor<String> {
-	private final JavaSourceStatementScope scope;
+	protected final JavaSourceStatementScope scope;
 	
 	public JavaSourceStatementFormatter(JavaSourceStatementScope scope) {
 		this.scope = scope;

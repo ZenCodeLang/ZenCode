@@ -59,7 +59,7 @@ import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
-import org.openzen.zenscript.codemodel.type.ConstTypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -68,7 +68,6 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
 import static org.openzen.zencode.shared.CodePosition.BUILTIN;
@@ -391,23 +390,11 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	public Void visitDefinition(DefinitionTypeID type) {
 		HighLevelDefinition definition = type.definition;
 		GenericMapper mapper = emptyMapper;
-		if (type.hasTypeParameters() || !type.outerTypeParameters.isEmpty()) {
-			Map<TypeParameter, ITypeID> mapping = new HashMap<>();
-			if (type.typeParameters != null) {
-				if (definition.genericParameters == null)
-					System.out.println("Type parameters but no generic parameters");
-				else
-					for (int i = 0; i < type.typeParameters.length; i++)
-						mapping.put(definition.genericParameters[i], type.typeParameters[i]);
-			}
-			
-			if (!type.definition.isStatic())
-				for (Map.Entry<TypeParameter, ITypeID> entry : type.outerTypeParameters.entrySet())
-					mapping.put(entry.getKey(), entry.getValue());
-			
+		if (type.hasTypeParameters() || (type.outer != null && type.outer.hasTypeParameters())) {
+			Map<TypeParameter, ITypeID> mapping = type.getTypeParameterMapping();
 			mapper = new GenericMapper(registry, mapping);
 		}
-			
+		
 		for (IDefinitionMember member : definition.members) {
 			member.registerTo(members, TypeMemberPriority.SPECIFIED, mapper);
 		}
@@ -525,20 +512,15 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 
 	@Override
-	public Void visitConst(ConstTypeID type) {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "const", Modifiers.EXPORT, null);
-		type.baseType.accept(this);
-		processType(builtin, type);
-		return null;
-	}
-
-	@Override
-	public Void visitOptional(OptionalTypeID optional) {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "optional", Modifiers.EXPORT, null);
-		optional.baseType.accept(this);
-		operator(builtin, OperatorType.EQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NULL);
-		operator(builtin, OperatorType.NOTEQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NOT_NULL);
-		processType(builtin, optional);
+	public Void visitModified(ModifiedTypeID modified) {
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "modified", Modifiers.EXPORT, null);
+		modified.baseType.accept(this);
+		
+		if (modified.isOptional()) {
+			operator(builtin, OperatorType.EQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NULL);
+			operator(builtin, OperatorType.NOTEQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NOT_NULL);
+		}
+		processType(builtin, modified);
 		return null;
 	}
 	

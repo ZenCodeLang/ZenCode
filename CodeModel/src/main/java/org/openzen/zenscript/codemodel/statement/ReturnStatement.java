@@ -57,4 +57,9 @@ public class ReturnStatement extends Statement {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new ReturnStatement(position, tValue);
 	}
+
+	@Override
+	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
+		return new ReturnStatement(position, value.normalize(scope));
+	}
 }

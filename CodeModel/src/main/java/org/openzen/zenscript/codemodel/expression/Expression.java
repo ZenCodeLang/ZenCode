@@ -40,10 +40,10 @@ public abstract class Expression implements IPartialExpression {
 		if (type == null)
 			throw new NullPointerException();
 		if (type == BasicTypeID.UNDETERMINED)
-			throw new IllegalArgumentException("Cannot use undetermined type as expression type");
+			throw new IllegalArgumentException(position + ": Cannot use undetermined type as expression type");
 		
 		this.position = position;
-		this.type = type;
+		this.type = type.getNormalized();
 		this.thrownType = thrownType;
 	}
 	
@@ -65,6 +65,8 @@ public abstract class Expression implements IPartialExpression {
 			}
 		});
 	}
+	
+	public abstract Expression normalize(TypeScope scope);
 	
 	@Override
 	public List<ITypeID> getAssignHints() {

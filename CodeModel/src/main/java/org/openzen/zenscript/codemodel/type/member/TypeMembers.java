@@ -54,6 +54,7 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public final class TypeMembers {
 	public static final int MODIFIER_OPTIONAL = 1;
 	public static final int MODIFIER_CONST = 2;
+	public static final int MODIFIER_IMMUTABLE = 4;
 	
 	private final LocalMemberCache cache;
 	public final ITypeID type;
@@ -81,7 +82,8 @@ public final class TypeMembers {
 	}
 	
 	public boolean extendsOrImplements(ITypeID other) {
-		ITypeID superType = type.getSuperType();
+		other = other.getNormalized();
+		ITypeID superType = type.getSuperType(cache.getRegistry());
 		if (superType != null) {
 			if (superType == other)
 				return true;
@@ -100,7 +102,8 @@ public final class TypeMembers {
 	}
 	
 	public boolean extendsType(ITypeID other) {
-		ITypeID superType = type.getSuperType();
+		other = other.getNormalized();
+		ITypeID superType = type.getSuperType(cache.getRegistry());
 		if (superType != null) {
 			if (superType == other)
 				return true;
@@ -132,6 +135,7 @@ public final class TypeMembers {
 	}
 	
 	public ITypeID union(ITypeID other) {
+		other = other.getNormalized();
 		if (type == other)
 			return type;
 		
@@ -334,6 +338,7 @@ public final class TypeMembers {
 	}
 	
 	public boolean canCastImplicit(ITypeID toType) {
+		toType = toType.getNormalized();
 		if (toType == type)
 			return true;
 		if (toType == null)
@@ -352,6 +357,7 @@ public final class TypeMembers {
 	}
 	
 	public CasterMemberRef getImplicitCaster(ITypeID toType) {
+		toType = toType.getNormalized();
 		for (TypeMember<CasterMemberRef> caster : casters) {
 			if (caster.member.isImplicit() && toType == caster.member.toType)
 				return caster.member;
@@ -361,6 +367,7 @@ public final class TypeMembers {
 	}
 	
 	public CasterMemberRef getCaster(ITypeID toType) {
+		toType = toType.getNormalized();
 		for (TypeMember<CasterMemberRef> caster : casters) {
 			if (toType == caster.member.toType)
 				return caster.member;
@@ -370,6 +377,7 @@ public final class TypeMembers {
 	}
 	
 	public boolean canCast(ITypeID toType) {
+		toType = toType.getNormalized();
 		if (canCastImplicit(toType))
 			return true;
 		
@@ -382,6 +390,7 @@ public final class TypeMembers {
 	}
 	
 	public Expression castImplicit(CodePosition position, Expression value, ITypeID toType, boolean implicit) {
+		toType = toType.getNormalized();
 		if (toType == type || toType == BasicTypeID.UNDETERMINED)
 			return value;
 		if (toType == null)
@@ -411,6 +420,7 @@ public final class TypeMembers {
 	}
 	
 	public Expression castExplicit(CodePosition position, Expression value, ITypeID toType, boolean optional) {
+		toType = toType.getNormalized();
 		if (this.canCastImplicit(toType))
 			return castImplicit(position, value, toType, false);
 		
@@ -442,7 +452,7 @@ public final class TypeMembers {
 		if (members.containsKey(name.name))
 			return new PartialStaticMemberGroupExpression(position, type, members.get(name.name), name.arguments);
 		if (innerTypes.containsKey(name.name))
-			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments), name.arguments);
+			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID)type), name.arguments);
 		
 		return null;
 	}
@@ -455,7 +465,7 @@ public final class TypeMembers {
 		if (!innerTypes.containsKey(name.name))
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_INNER_TYPE, "No such inner type in " + type + ": " + name.name);
 		
-		return innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments);
+		return innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID)type);
 	}
 	
 	@Override

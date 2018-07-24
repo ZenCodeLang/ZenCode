@@ -9,34 +9,38 @@ import java.util.List;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class OptionalTypeID implements ITypeID {
+public class ModifiedTypeID implements ITypeID {
+	public final int modifiers;
 	public final ITypeID baseType;
+	private final ITypeID normalized;
 	
-	public OptionalTypeID(ITypeID baseType) {
-		if (baseType == null)
-			throw new NullPointerException("baseType cannot be null");
-		
+	public ModifiedTypeID(GlobalTypeRegistry registry, int modifiers, ITypeID baseType) {
+		this.modifiers = modifiers;
 		this.baseType = baseType;
+		
+		normalized = baseType.getNormalized() == baseType ? this : registry.getModified(modifiers, baseType.getNormalized());
+	}
+	
+	@Override
+	public ITypeID getNormalized() {
+		return normalized;
 	}
 	
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
-		if (mapper == null)
-			throw new NullPointerException("mapper cannot be null");
-		
-		return mapper.registry.getModified(TypeMembers.MODIFIER_OPTIONAL, baseType.instance(mapper));
+		return mapper.registry.getModified(modifiers, baseType.instance(mapper));
 	}
-
+	
 	@Override
 	public <T> T accept(ITypeVisitor<T> visitor) {
-		return visitor.visitOptional(this);
+		return visitor.visitModified(this);
 	}
 	
 	@Override
@@ -46,22 +50,16 @@ public class OptionalTypeID implements ITypeID {
 
 	@Override
 	public boolean isOptional() {
-		return true;
+		return (modifiers & TypeMembers.MODIFIER_OPTIONAL) > 0;
 	}
 	
-	@Override
-	public ITypeID getOptionalBase() {
-		return baseType;
+	public boolean isImmutable() {
+		return (modifiers & TypeMembers.MODIFIER_IMMUTABLE) > 0;
 	}
 
 	@Override
 	public boolean isConst() {
-		return false;
-	}
-	
-	@Override
-	public boolean isObjectType() {
-		return baseType.isObjectType();
+		return (modifiers & TypeMembers.MODIFIER_CONST) > 0;
 	}
 	
 	@Override
@@ -78,10 +76,15 @@ public class OptionalTypeID implements ITypeID {
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		return baseType.hasInferenceBlockingTypeParameters(parameters);
 	}
+	
+	@Override
+	public boolean isObjectType() {
+		return baseType.isObjectType();
+	}
 
 	@Override
 	public boolean hasDefaultValue() {
-		return true;
+		return baseType.hasDefaultValue();
 	}
 
 	@Override
@@ -91,8 +94,8 @@ public class OptionalTypeID implements ITypeID {
 
 	@Override
 	public int hashCode() {
-		int hash = 7;
-		hash = 29 * hash + Objects.hashCode(this.baseType);
+		int hash = 3;
+		hash = 79 * hash + Objects.hashCode(this.baseType);
 		return hash;
 	}
 
@@ -107,12 +110,12 @@ public class OptionalTypeID implements ITypeID {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		final OptionalTypeID other = (OptionalTypeID) obj;
+		final ModifiedTypeID other = (ModifiedTypeID) obj;
 		return this.baseType == other.baseType;
 	}
 	
 	@Override
 	public String toString() {
-		return baseType.toString() + "?";
+		return "const " + baseType.toString();
 	}
 }

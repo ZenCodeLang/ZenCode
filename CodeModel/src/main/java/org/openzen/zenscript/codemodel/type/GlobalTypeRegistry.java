@@ -13,8 +13,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_CONST;
-import static org.openzen.zenscript.codemodel.type.member.TypeMembers.MODIFIER_OPTIONAL;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
  *
@@ -30,8 +29,7 @@ public class GlobalTypeRegistry {
 	private final Map<DefinitionTypeID, DefinitionTypeID> definitionTypes = new HashMap<>();
 	private final Map<GenericTypeID, GenericTypeID> genericTypes = new HashMap<>();
 	
-	private final Map<ITypeID, ConstTypeID> constTypes = new HashMap<>();
-	private final Map<ITypeID, OptionalTypeID> optionalTypes = new HashMap<>();
+	private final Map<ModifiedTypeID, ModifiedTypeID> modifiedTypes = new HashMap<>();
 	
 	public final ZSPackage stdlib;
 	
@@ -45,7 +43,7 @@ public class GlobalTypeRegistry {
 	}
 	
 	public ArrayTypeID getArray(ITypeID baseType, int dimension) {
-		ArrayTypeID id = new ArrayTypeID(baseType, dimension);
+		ArrayTypeID id = new ArrayTypeID(this, baseType, dimension);
 		if (arrayTypes.containsKey(id)) {
 			return arrayTypes.get(id);
 		} else {
@@ -55,7 +53,7 @@ public class GlobalTypeRegistry {
 	}
 	
 	public AssocTypeID getAssociative(ITypeID keyType, ITypeID valueType) {
-		AssocTypeID id = new AssocTypeID(keyType, valueType);
+		AssocTypeID id = new AssocTypeID(this, keyType, valueType);
 		if (assocTypes.containsKey(id)) {
 			return assocTypes.get(id);
 		} else {
@@ -65,7 +63,7 @@ public class GlobalTypeRegistry {
 	}
 	
 	public GenericMapTypeID getGenericMap(ITypeID valueType, TypeParameter key) {
-		GenericMapTypeID id = new GenericMapTypeID(valueType, key);
+		GenericMapTypeID id = new GenericMapTypeID(this, valueType, key);
 		if (genericMapTypes.containsKey(id)) {
 			return genericMapTypes.get(id);
 		} else {
@@ -75,7 +73,7 @@ public class GlobalTypeRegistry {
 	}
 	
 	public IteratorTypeID getIterator(ITypeID[] loopTypes) {
-		IteratorTypeID id = new IteratorTypeID(loopTypes);
+		IteratorTypeID id = new IteratorTypeID(this, loopTypes);
 		if (iteratorTypes.containsKey(id)) {
 			return iteratorTypes.get(id);
 		} else {
@@ -85,7 +83,7 @@ public class GlobalTypeRegistry {
 	}
 	
 	public FunctionTypeID getFunction(FunctionHeader header) {
-		FunctionTypeID id = new FunctionTypeID(header);
+		FunctionTypeID id = new FunctionTypeID(this, header);
 		if (functionTypes.containsKey(id)) {
 			return functionTypes.get(id);
 		} else {
@@ -95,7 +93,7 @@ public class GlobalTypeRegistry {
 	}
 	
 	public RangeTypeID getRange(ITypeID from, ITypeID to) {
-		RangeTypeID id = new RangeTypeID(from, to);
+		RangeTypeID id = new RangeTypeID(this, from, to);
 		if (rangeTypes.containsKey(id)) {
 			return rangeTypes.get(id);
 		} else {
@@ -114,60 +112,53 @@ public class GlobalTypeRegistry {
 		}
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID... genericArguments) {
-		return this.getForDefinition(definition, genericArguments, Collections.emptyMap());
+	public DefinitionTypeID getForMyDefinition(HighLevelDefinition definition) {
+		ITypeID[] typeArguments = ITypeID.NONE;
+		if (definition.getNumberOfGenericParameters() > 0) {
+			typeArguments = new ITypeID[definition.getNumberOfGenericParameters()];
+			for (int i = 0; i < definition.genericParameters.length; i++)
+				typeArguments[i] = getGeneric(definition.genericParameters[i]);
+		}
+		DefinitionTypeID outer = null;
+		if (definition.outerDefinition != null)
+			outer = getForMyDefinition(definition.outerDefinition);
+		
+		return getForDefinition(definition, typeArguments, outer);
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID[] typeParameters, Map<TypeParameter, ITypeID> outerInstance) {
-		DefinitionTypeID id;
-		if ((definition instanceof FunctionDefinition) || (definition.genericParameters == null && typeParameters.length == 0 && outerInstance.isEmpty())) {
-			// make it a static one
-			id = new StaticDefinitionTypeID(definition);
-		} else {
-			id = new DefinitionTypeID(definition, typeParameters, outerInstance);
-		}
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID... genericArguments) {
+		return this.getForDefinition(definition, genericArguments, null);
+	}
+	
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID[] typeParameters, DefinitionTypeID outer) {
+		DefinitionTypeID id = new DefinitionTypeID(this, definition, typeParameters, outer);
 		
 		if (definitionTypes.containsKey(id)) {
 			return definitionTypes.get(id);
 		} else {
 			definitionTypes.put(id, id);
-			id.init(this);
 			return id;
 		}
 	}
 	
-	private ConstTypeID getConst(ITypeID original) {
-		if (constTypes.containsKey(original)) {
-			return constTypes.get(original);
-		} else {
-			ConstTypeID result = new ConstTypeID(original);
-			constTypes.put(original, result);
-			return result;
-		}
-	}
-	
-	public OptionalTypeID getOptional(ITypeID original) {
-		if (original == null)
-			throw new NullPointerException("original cannot be null");
-		
-		if (optionalTypes.containsKey(original)) {
-			return optionalTypes.get(original);
-		} else {
-			OptionalTypeID result = new OptionalTypeID(original);
-			optionalTypes.put(original, result);
-			return result;
-		}
+	public ITypeID getOptional(ITypeID original) {
+		return getModified(TypeMembers.MODIFIER_OPTIONAL, original);
 	}
 	
 	public ITypeID getModified(int modifiers, ITypeID type) {
 		if (modifiers == 0)
 			return type;
+		if (type instanceof ModifiedTypeID) {
+			ModifiedTypeID modified = (ModifiedTypeID)type;
+			return getModified(modified.modifiers | modifiers, modified.baseType);
+		}
 		
-		if ((modifiers & MODIFIER_OPTIONAL) > 0)
-			return getModified(modifiers & ~MODIFIER_OPTIONAL, getOptional(type));
-		if ((modifiers & MODIFIER_CONST) > 0)
-			return getModified(modifiers & ~MODIFIER_CONST, getConst(type));
-		
-		throw new UnsupportedOperationException();
+		ModifiedTypeID result = new ModifiedTypeID(this, modifiers, type);
+		if (modifiedTypes.containsKey(result)) {
+			return modifiedTypes.get(result);
+		} else {
+			modifiedTypes.put(result, result);
+			return result;
+		}
 	}
 }

@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -27,5 +28,10 @@ public class AliasDefinition extends HighLevelDefinition {
 	@Override
 	public <T> T accept(DefinitionVisitor<T> visitor) {
 		return visitor.visitAlias(this);
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		// nothing to do
 	}
 }

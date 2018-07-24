@@ -14,15 +14,22 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  * @author Hoofdgebruiker
  */
 public class ArrayTypeID implements ITypeID {
-	public static final ArrayTypeID INT = new ArrayTypeID(BasicTypeID.INT, 1);
-	public static final ArrayTypeID CHAR = new ArrayTypeID(BasicTypeID.CHAR, 1);
+	public static final ArrayTypeID INT = new ArrayTypeID(null, BasicTypeID.INT, 1);
+	public static final ArrayTypeID CHAR = new ArrayTypeID(null, BasicTypeID.CHAR, 1);
 	
 	public final ITypeID elementType;
 	public final int dimension;
+	private final ArrayTypeID normalized;
 
-	public ArrayTypeID(ITypeID elementType, int dimension) {
+	public ArrayTypeID(GlobalTypeRegistry registry, ITypeID elementType, int dimension) {
 		this.elementType = elementType;
 		this.dimension = dimension;
+		this.normalized = elementType.getNormalized() == elementType ? this : registry.getArray(elementType.getNormalized(), dimension);
+	}
+	
+	@Override
+	public ArrayTypeID getNormalized() {
+		return normalized;
 	}
 	
 	@Override

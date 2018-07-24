@@ -64,10 +64,10 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 			fillOverride(scope, implementation.getCompiled().type, state);
 			getCompiled().modifiers |= Modifiers.PUBLIC;
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
-			if (definition.superType == null)
+			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 			
-			fillOverride(scope, definition.superType, state);
+			fillOverride(scope, definition.getSuperType(), state);
 		}
 		
 		if (getCompiled().header.returnType == BasicTypeID.UNDETERMINED) {

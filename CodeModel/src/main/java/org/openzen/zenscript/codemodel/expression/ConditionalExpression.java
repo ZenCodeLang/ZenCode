@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -46,5 +47,10 @@ public class ConditionalExpression extends Expression {
 		return tCondition == condition && tIfThen == ifThen && tIfElse == ifElse
 				? this
 				: new ConditionalExpression(position, tCondition, tIfThen, tIfElse, type);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new ConditionalExpression(position, condition.normalize(scope), ifThen.normalize(scope), ifElse.normalize(scope), type.getNormalized());
 	}
 }

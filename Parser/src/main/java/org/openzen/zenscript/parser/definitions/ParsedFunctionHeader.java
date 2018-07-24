@@ -29,11 +29,11 @@ import org.openzen.zenscript.parser.type.ParsedTypeBasic;
  */
 public class ParsedFunctionHeader {
 	public static ParsedFunctionHeader parse(ZSTokenParser tokens) {
-		List<ParsedGenericParameter> genericParameters = null;
+		List<ParsedTypeParameter> genericParameters = null;
 		if (tokens.optional(ZSTokenType.T_LESS) != null) {
 			genericParameters = new ArrayList<>();
 			do {
-				genericParameters.add(ParsedGenericParameter.parse(tokens));
+				genericParameters.add(ParsedTypeParameter.parse(tokens));
 			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
 			tokens.required(ZSTokenType.T_GREATER, "> expected");
 		}
@@ -73,7 +73,7 @@ public class ParsedFunctionHeader {
 		return new ParsedFunctionHeader(genericParameters, parameters, returnType, thrownType);
 	}
 	
-	public final List<ParsedGenericParameter> genericParameters;
+	public final List<ParsedTypeParameter> genericParameters;
 	public final List<ParsedFunctionParameter> parameters;
 	public final IParsedType returnType;
 	public final IParsedType thrownType;
@@ -85,7 +85,7 @@ public class ParsedFunctionHeader {
 		this.thrownType = thrownType;
 	}
 	
-	public ParsedFunctionHeader(List<ParsedGenericParameter> genericParameters, List<ParsedFunctionParameter> parameters, IParsedType returnType, IParsedType thrownType) {
+	public ParsedFunctionHeader(List<ParsedTypeParameter> genericParameters, List<ParsedFunctionParameter> parameters, IParsedType returnType, IParsedType thrownType) {
 		this.genericParameters = genericParameters;
 		this.parameters = parameters;
 		this.returnType = returnType;
@@ -93,8 +93,8 @@ public class ParsedFunctionHeader {
 	}
 	
 	public FunctionHeader compile(BaseScope scope) {
-		TypeParameter[] genericParameters = ParsedGenericParameter.getCompiled(this.genericParameters);
-		ParsedGenericParameter.compile(scope, genericParameters, this.genericParameters);
+		TypeParameter[] genericParameters = ParsedTypeParameter.getCompiled(this.genericParameters);
+		ParsedTypeParameter.compile(scope, genericParameters, this.genericParameters);
 		GenericFunctionScope innerScope = new GenericFunctionScope(scope, genericParameters);
 		
 		ITypeID returnType = this.returnType.compile(innerScope);

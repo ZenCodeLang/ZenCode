@@ -326,6 +326,8 @@ public abstract class ParsedDefinitionMember {
 		this.annotations = annotations;
 	}
 	
+	public void compileTypes(BaseScope scope) {}
+	
 	public abstract void linkInnerTypes();
 	
 	public abstract void linkTypes(BaseScope scope);

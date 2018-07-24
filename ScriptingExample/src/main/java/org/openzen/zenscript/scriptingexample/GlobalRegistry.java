@@ -112,6 +112,7 @@ public class GlobalRegistry {
 			SYSTEM,
 			Modifiers.EXPORT | Modifiers.FINAL,
 			"out",
+			null,
 			DefinitionTypeID.forType(SYSTEM), null, 0, 0, null);
 	
 	
@@ -139,7 +140,7 @@ public class GlobalRegistry {
 		@Override
 		public ITypeID getType(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments) {
 			// don't be fooled! this symbol is the System.out.println bound method and thus its type is a function
-			return new FunctionTypeID(PRINTSTREAM_PRINTLN.header);
+			return new FunctionTypeID(null, PRINTSTREAM_PRINTLN.header);
 		}
 	}
 }

@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.statement;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -31,6 +32,11 @@ public class CatchClause {
 	
 	public CatchClause transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Statement tContent = content.transform(transformer, modified);
+		return content == tContent ? this : new CatchClause(position, exceptionVariable, tContent);
+	}
+	
+	public CatchClause normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
+		Statement tContent = content.normalize(scope, modified);
 		return content == tContent ? this : new CatchClause(position, exceptionVariable, tContent);
 	}
 }

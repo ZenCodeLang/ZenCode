@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -32,5 +33,10 @@ public class StaticSetterExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new StaticSetterExpression(position, setter, tValue);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new StaticSetterExpression(position, setter, value.normalize(scope));
 	}
 }

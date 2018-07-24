@@ -17,5 +17,6 @@ public enum FunctionalKind {
 	GETTER,
 	SETTER,
 	CALLER,
-	CASTER
+	CASTER,
+	ITERATOR
 }

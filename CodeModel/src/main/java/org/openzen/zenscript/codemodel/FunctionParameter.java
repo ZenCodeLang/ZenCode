@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.annotations.Annotation;
 import java.util.Objects;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -46,6 +47,12 @@ public class FunctionParameter extends Taggable {
 		this.name = name;
 		this.defaultValue = defaultValue;
 		this.variadic = variadic;
+	}
+	
+	public FunctionParameter normalized(GlobalTypeRegistry registry) {
+		FunctionParameter result = new FunctionParameter(type.getNormalized(), name, defaultValue, variadic);
+		result.annotations = this.annotations;
+		return result;
 	}
 	
 	public FunctionParameter withGenericArguments(GenericMapper mapper) {

@@ -26,7 +26,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedInterface extends BaseParsedDefinition {
 	public static ParsedInterface parseInterface(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
-		List<ParsedGenericParameter> genericParameters = ParsedGenericParameter.parseAll(tokens);
+		List<ParsedTypeParameter> genericParameters = ParsedTypeParameter.parseAll(tokens);
 		List<IParsedType> superInterfaces = Collections.emptyList();
 		if (tokens.optional(ZSTokenType.T_COLON) != null) {
 			superInterfaces = new ArrayList<>();
@@ -44,19 +44,19 @@ public class ParsedInterface extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final List<ParsedGenericParameter> typeParameters;
+	private final List<ParsedTypeParameter> typeParameters;
 	private final List<IParsedType> superInterfaces;
 	
 	private final InterfaceDefinition compiled;
 	
-	public ParsedInterface(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedGenericParameter> typeParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
+	public ParsedInterface(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
 		super(position, modifiers, annotations);
 		
 		this.typeParameters = typeParameters;
 		this.superInterfaces = superInterfaces;
 		
 		compiled = new InterfaceDefinition(position, pkg, name, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(typeParameters));
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class ParsedInterface extends BaseParsedDefinition {
 
 	@Override
 	public void compileMembers(BaseScope scope) {
-		ParsedGenericParameter.compile(scope, compiled.genericParameters, typeParameters);
+		ParsedTypeParameter.compile(scope, compiled.genericParameters, typeParameters);
 		
 		for (IParsedType superInterface : superInterfaces)
 			compiled.addBaseInterface(superInterface.compile(scope));

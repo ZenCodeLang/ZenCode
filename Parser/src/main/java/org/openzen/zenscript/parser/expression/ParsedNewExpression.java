@@ -66,7 +66,6 @@ public class ParsedNewExpression extends ParsedExpression{
 				type,
 				member,
 				compiledArguments,
-				member.header.fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments),
-				scope);
+				member.header.fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments));
 	}
 }

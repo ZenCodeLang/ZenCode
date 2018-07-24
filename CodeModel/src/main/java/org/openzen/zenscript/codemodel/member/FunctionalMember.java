@@ -6,10 +6,13 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
@@ -49,5 +52,12 @@ public abstract class FunctionalMember extends DefinitionMember {
 	@Override
 	public BuiltinID getBuiltin() {
 		return builtin;
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		header = header.normalize(scope.getTypeRegistry());
+		if (body != null)
+			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}
 }

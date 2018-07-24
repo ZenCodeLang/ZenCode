@@ -1,5 +1,6 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
+import java.util.Map;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.type.*;
 
@@ -48,17 +49,12 @@ public class JavaTypeVisitor implements ITypeVisitor<Type> {
     }
 
     @Override
-    public Type visitConst(ConstTypeID type) {
-        return Type.getType(type.accept(JavaTypeClassVisitor.INSTANCE));
-    }
-
-    @Override
-    public Type visitOptional(OptionalTypeID optional) {
+    public Type visitModified(ModifiedTypeID optional) {
         return Type.getType(optional.accept(JavaTypeClassVisitor.INSTANCE));
     }
 
 	@Override
 	public Type visitGenericMap(GenericMapTypeID map) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return Type.getType(Map.class);
 	}
 }

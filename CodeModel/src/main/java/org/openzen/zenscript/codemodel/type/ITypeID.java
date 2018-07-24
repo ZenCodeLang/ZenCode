@@ -21,9 +21,11 @@ public interface ITypeID {
 	
 	public ITypeID getUnmodified();
 	
+	public ITypeID getNormalized();
+	
 	public <T> T accept(ITypeVisitor<T> visitor);
 	
-	public default ITypeID getSuperType() {
+	public default ITypeID getSuperType(GlobalTypeRegistry registry) {
 		return null;
 	}
 	
@@ -66,6 +68,10 @@ public interface ITypeID {
 	}
 	
 	public void extractTypeParameters(List<TypeParameter> typeParameters);
+
+	public default boolean isDestructible() {
+		return false;
+	}
 	
 	public static class MatchingTypeVisitor implements ITypeVisitor<Boolean> {
 		private final ITypeID type;
@@ -188,20 +194,10 @@ public interface ITypeID {
 		}
 
 		@Override
-		public Boolean visitConst(ConstTypeID type) {
-			if (this.type instanceof ConstTypeID) {
-				ConstTypeID constType = (ConstTypeID) this.type;
+		public Boolean visitModified(ModifiedTypeID type) {
+			if (this.type instanceof ModifiedTypeID) {
+				ModifiedTypeID constType = (ModifiedTypeID) this.type;
 				return match(constType.baseType, type.baseType);
-			} else {
-				return false;
-			}
-		}
-
-		@Override
-		public Boolean visitOptional(OptionalTypeID optional) {
-			if (this.type instanceof ConstTypeID) {
-				OptionalTypeID constType = (OptionalTypeID) this.type;
-				return match(constType.baseType, optional.baseType);
 			} else {
 				return false;
 			}

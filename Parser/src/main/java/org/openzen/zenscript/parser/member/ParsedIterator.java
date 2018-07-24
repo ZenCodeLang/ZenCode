@@ -57,7 +57,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 		for (int i = 0; i < loopVariableTypes.length; i++)
 			loopVariableTypes[i] = header.parameters.get(i).type.compile(scope);
 		
-		compiled = new CustomIteratorMember(position, definition, modifiers, loopVariableTypes);
+		compiled = new CustomIteratorMember(position, definition, modifiers, loopVariableTypes, scope.getTypeRegistry(), null);
 	}
 
 	@Override

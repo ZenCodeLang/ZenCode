@@ -23,18 +23,18 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.parser.definitions.ParsedGenericParameter;
+import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ParsedTypeGenericMap implements IParsedType {
-	private final ParsedGenericParameter key;
+	private final ParsedTypeParameter key;
 	private final IParsedType value;
 	private final int modifiers;
 	
-	public ParsedTypeGenericMap(ParsedGenericParameter key, IParsedType value, int modifiers) {
+	public ParsedTypeGenericMap(ParsedTypeParameter key, IParsedType value, int modifiers) {
 		this.key = key;
 		this.value = value;
 		this.modifiers = modifiers;

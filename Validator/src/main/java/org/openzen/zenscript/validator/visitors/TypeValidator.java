@@ -9,14 +9,14 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ConstTypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -66,7 +66,9 @@ public class TypeValidator implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitIterator(IteratorTypeID iterator) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		for (ITypeID type : iterator.iteratorTypes)
+			type.accept(this);
+		return null;
 	}
 
 	@Override
@@ -94,16 +96,9 @@ public class TypeValidator implements ITypeVisitor<Void> {
 	}
 
 	@Override
-	public Void visitConst(ConstTypeID type) {
+	public Void visitModified(ModifiedTypeID type) {
 		// TODO: detect duplicate const
 		type.baseType.accept(this);
-		return null;
-	}
-
-	@Override
-	public Void visitOptional(OptionalTypeID optional) {
-		// TODO: detect duplicate optional
-		optional.baseType.accept(this);
 		return null;
 	}
 

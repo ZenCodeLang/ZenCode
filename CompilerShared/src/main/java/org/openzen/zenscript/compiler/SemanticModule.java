@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.annotations.AnnotationProcessor;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -71,15 +72,19 @@ public class SemanticModule {
 	}
 	
 	public SemanticModule normalize() {
-		if (state != State.SEMANTIC)
+		if (state != State.ASSEMBLED)
 			throw new IllegalStateException("Module is invalid");
 		
 		AnnotationProcessor annotationProcessor = new AnnotationProcessor(rootPackage, definitions, compilationUnit.globalTypeRegistry, expansions, annotations);
 		List<ScriptBlock> processedScripts = new ArrayList<>();
 		for (ScriptBlock block : scripts)
 			processedScripts.add(annotationProcessor.process(block));
-		for (HighLevelDefinition definition : definitions.getAll())
+		for (HighLevelDefinition definition : definitions.getAll()) {
 			annotationProcessor.process(definition);
+			
+			FileScope fileScope = new FileScope(rootPackage, definitions, compilationUnit.globalTypeRegistry, expansions, new HashMap<>(), annotations);
+			definition.normalize(fileScope);
+		}
 		
 		return new SemanticModule(
 				name,
@@ -127,7 +132,7 @@ public class SemanticModule {
 	
 	public enum State {
 		INVALID,
-		SEMANTIC,
+		ASSEMBLED,
 		NORMALIZED,
 		VALIDATED
 	}

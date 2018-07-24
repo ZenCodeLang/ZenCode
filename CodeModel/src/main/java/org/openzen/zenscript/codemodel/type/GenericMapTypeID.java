@@ -17,10 +17,18 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 public class GenericMapTypeID implements ITypeID {
 	public final ITypeID value;
 	public final TypeParameter key;
+	private final GenericMapTypeID normalized;
 	
-	public GenericMapTypeID(ITypeID value, TypeParameter key) {
+	public GenericMapTypeID(GlobalTypeRegistry registry, ITypeID value, TypeParameter key) {
 		this.value = value;
 		this.key = key;
+		
+		normalized = value.getNormalized() == value ? this : registry.getGenericMap(value.getNormalized(), key);
+	}
+	
+	@Override
+	public GenericMapTypeID getNormalized() {
+		return normalized;
 	}
 
 	@Override

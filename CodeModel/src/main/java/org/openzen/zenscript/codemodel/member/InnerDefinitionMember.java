@@ -8,7 +8,10 @@ package org.openzen.zenscript.codemodel.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -21,7 +24,7 @@ public class InnerDefinitionMember extends DefinitionMember {
 	public final HighLevelDefinition innerDefinition;
 	
 	public InnerDefinitionMember(CodePosition position, HighLevelDefinition outer, int modifiers, HighLevelDefinition definition) {
-		super(position, outer, modifiers);
+		super(position, outer, definition instanceof InterfaceDefinition ? modifiers | Modifiers.STATIC : modifiers);
 		
 		this.innerDefinition = definition;
 	}
@@ -53,5 +56,10 @@ public class InnerDefinitionMember extends DefinitionMember {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return null;
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		innerDefinition.normalize(scope);
 	}
 }

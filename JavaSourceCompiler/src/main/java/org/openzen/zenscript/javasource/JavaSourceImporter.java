@@ -31,21 +31,21 @@ public class JavaSourceImporter {
 		if (cls == null)
 			throw new IllegalStateException("Missing source class tag on " + definition.name);
 		if (cls.pkg.equals(this.cls.pkg))
-			return cls.name;
+			return cls.getClassName();
 		
 		return importType(cls);
 	}
 	
 	public String importType(JavaSourceClass cls) {
-		if (imports.containsKey(cls.name)) {
-			JavaSourceClass imported = imports.get(cls.name);
+		if (imports.containsKey(cls.outer.getName())) {
+			JavaSourceClass imported = imports.get(cls.outer.getName());
 			usedImports.add(imported);
-			return imported.fullName.equals(cls.fullName) ? cls.name : cls.fullName;
+			return imported.fullName.equals(cls.outer.fullName) ? cls.getName() : cls.fullName;
 		}
 		
-		imports.put(cls.name, cls);
-		usedImports.add(cls);
-		return cls.name;
+		imports.put(cls.outer.getName(), cls.outer);
+		usedImports.add(cls.outer);
+		return cls.getClassName();
 	}
 	
 	public JavaSourceClass[] getUsedImports() {

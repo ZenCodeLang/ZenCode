@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 
 /**
@@ -32,5 +33,13 @@ public class ArrayExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression[] tExpressions = Expression.transform(expressions, transformer);
 		return tExpressions == expressions ? this : new ArrayExpression(position, tExpressions, (ArrayTypeID)type);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		Expression[] normalized = new Expression[expressions.length];
+		for (int i = 0; i < normalized.length; i++)
+			normalized[i] = expressions[i].normalize(scope);
+		return new ArrayExpression(position, normalized, arrayType.getNormalized());
 	}
 }

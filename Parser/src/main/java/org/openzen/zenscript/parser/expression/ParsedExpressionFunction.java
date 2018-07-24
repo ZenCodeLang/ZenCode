@@ -48,8 +48,8 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		FunctionHeader definedHeader = header.compile(scope);
 		FunctionHeader header = definedHeader;
 		for (ITypeID hint : scope.hints) {
-			if (hint instanceof FunctionTypeID) {
-				FunctionTypeID functionHint = (FunctionTypeID) hint;
+			if (hint.getNormalized() instanceof FunctionTypeID) {
+				FunctionTypeID functionHint = (FunctionTypeID) hint.getNormalized();
 				if (header.canOverride(scope, functionHint.header)) {
 					if (header != definedHeader)
 						throw new CompileException(position, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Ambiguity trying to resolve function types, can't decide for the type");

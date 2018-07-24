@@ -8,14 +8,13 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ConstTypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 
 /**
@@ -99,13 +98,8 @@ public class JavaOptionalTypeClassVisitor implements ITypeVisitor<Class> {
 	}
 
 	@Override
-	public Class visitConst(ConstTypeID type) {
-		return base.visitConst(type);
-	}
-
-	@Override
-	public Class visitOptional(OptionalTypeID optional) {
-		return base.visitOptional(optional);
+	public Class visitModified(ModifiedTypeID type) {
+		return base.visitModified(type);
 	}
 
 	@Override

@@ -59,7 +59,6 @@ public class ParsedFile {
 	
 	public static ParsedFile parse(ZSPackage pkg, ZSTokenParser tokens) {
 		ParsedFile result = new ParsedFile(tokens.getFile());
-		ZSToken eof = null;
 
 		while (true) {
 			CodePosition position = tokens.getPosition();
@@ -102,7 +101,7 @@ public class ParsedFile {
 
 			if (tokens.optional(K_IMPORT) != null) {
 				result.imports.add(ParsedImport.parse(position, tokens));
-			} else if ((eof = tokens.optional(EOF)) != null) {
+			} else if ((tokens.optional(EOF)) != null) {
 				break;
 			} else {
 				ParsedDefinition definition = ParsedDefinition.parse(pkg, position, modifiers, annotations, tokens, null);
@@ -111,8 +110,6 @@ public class ParsedFile {
 				} else {
 					result.definitions.add(definition);
 				}
-
-				//tokens.required(EOF, "An import, class, interface, enum, struct, function or alias expected.");
 			}
 		}
 		

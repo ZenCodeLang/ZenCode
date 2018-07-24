@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -51,5 +52,10 @@ public class VarStatement extends Statement {
 	public VarStatement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tInitializer = initializer == null ? null : initializer.transform(transformer);
 		return tInitializer == initializer ? this : new VarStatement(position, name, type, tInitializer, isFinal);
+	}
+
+	@Override
+	public VarStatement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
+		return new VarStatement(position, name, type.getNormalized(), initializer == null ? null : initializer.normalize(scope), isFinal);
 	}
 }

@@ -58,4 +58,9 @@ public class GetFieldExpression extends Expression {
 	public IDefinitionMember getMember() {
 		return field.member;
 	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new GetFieldExpression(position, target.normalize(scope), field);
+	}
 }

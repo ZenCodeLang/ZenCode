@@ -10,6 +10,7 @@ import java.util.List;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -37,6 +38,13 @@ public class SwitchCase {
 		for (Statement statement : statements) {
 			tStatements.add(statement.transform(transformer, modified));
 		}
+		return new SwitchCase(value, tStatements);
+	}
+	
+	public SwitchCase normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
+		List<Statement> tStatements = new ArrayList<>();
+		for (Statement statement : statements)
+			tStatements.add(statement.normalize(scope, modified));
 		return new SwitchCase(value, tStatements);
 	}
 }

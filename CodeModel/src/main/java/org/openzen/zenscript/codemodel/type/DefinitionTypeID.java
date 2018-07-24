@@ -6,13 +6,13 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -26,99 +26,125 @@ public class DefinitionTypeID implements ITypeID {
 		if (definition.genericParameters != null)
 			throw new IllegalArgumentException("Definition has type arguments!");
 		
-		return new DefinitionTypeID(definition, ITypeID.NONE);
+		return new DefinitionTypeID(null, definition, ITypeID.NONE);
 	}
 	
 	private static final OuterTypeEntry[] NO_OUTER_ENTRIES = new OuterTypeEntry[0];
 	
 	public final HighLevelDefinition definition;
 	public final ITypeID[] typeParameters;
-	private final OuterTypeEntry[] outerTypeEntries;
+	public final DefinitionTypeID outer;
+	private ITypeID normalized;
 	
 	public ITypeID superType;
-	public Map<TypeParameter, ITypeID> outerTypeParameters; // for nonstatic inner classes of generic types, contains the type parameters for the outer class(es)
 	
-	public DefinitionTypeID(HighLevelDefinition definition, ITypeID[] typeParameters) {
-		this(definition, typeParameters, Collections.emptyMap());
+	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, ITypeID[] typeParameters) {
+		this(typeRegistry, definition, typeParameters, null);
 	}
 	
 	// For inner classes of generic outer classes
-	public DefinitionTypeID(HighLevelDefinition definition, ITypeID[] typeParameters, Map<TypeParameter, ITypeID> outerTypeParameters) {
+	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, ITypeID[] typeParameters, DefinitionTypeID outer) {
 		if (typeParameters == null)
 			throw new NullPointerException("typeParameters cannot be null");
+		if (typeParameters.length != definition.getNumberOfGenericParameters())
+			throw new IllegalArgumentException("Wrong number of type parameters!");
 		
 		this.definition = definition;
 		this.typeParameters = typeParameters;
-		this.outerTypeParameters = outerTypeParameters;
+		this.outer = outer;
 		
-		if (outerTypeParameters.isEmpty()) {
-			this.outerTypeEntries = NO_OUTER_ENTRIES;
-		} else {
-			this.outerTypeEntries = new OuterTypeEntry[outerTypeParameters.size()];
-			int index = 0;
-			for (Map.Entry<TypeParameter, ITypeID> entry : outerTypeParameters.entrySet())
-				outerTypeEntries[index++] = new OuterTypeEntry(entry.getKey(), entry.getValue());
-			Arrays.sort(outerTypeEntries, (a, b) -> a.parameter.name.compareTo(b.parameter.name));
+		normalized = isDenormalized() ? normalize(typeRegistry) : this;
+		if (normalized instanceof DefinitionTypeID && ((DefinitionTypeID)normalized).isDenormalized())
+			throw new AssertionError();
+	}
+	
+	private boolean isDenormalized() {
+		if (definition instanceof AliasDefinition)
+			return true;
+		
+		for (ITypeID typeParameter : typeParameters)
+			if (typeParameter.getNormalized() != typeParameter)
+				return true;
+		if (outer != null && outer.getNormalized() != outer)
+			return true;
+		
+		return false;
+	}
+	
+	private ITypeID normalize(GlobalTypeRegistry typeRegistry) {
+		if (definition instanceof AliasDefinition) {
+			AliasDefinition alias = (AliasDefinition)definition;
+			if (alias.type == null)
+				throw new IllegalStateException("Alias type not yet initialized!");
+			
+			Map<TypeParameter, ITypeID> typeMapping = new HashMap<>();
+			for (int i = 0; i < definition.genericParameters.length; i++)
+				typeMapping.put(definition.genericParameters[i], typeParameters[i].getNormalized());
+			GenericMapper mapper = new GenericMapper(typeRegistry, typeMapping);
+			ITypeID result = alias.type.instance(mapper).getNormalized();
+			return result;
 		}
 		
-		//if ((typeParameters == null ? 0 : typeParameters.length) != definition.getNumberOfGenericParameters())
-		//	throw new RuntimeException("Invalid number of type parameters");
+		ITypeID[] normalizedTypeParameters = new ITypeID[typeParameters.length];
+		for (int i = 0; i < normalizedTypeParameters.length; i++)
+			normalizedTypeParameters[i] = typeParameters[i].getNormalized();
+		
+		return typeRegistry.getForDefinition(definition, normalizedTypeParameters, outer == null ? null : (DefinitionTypeID)outer.getNormalized());
 	}
 	
 	public boolean hasTypeParameters() {
 		return typeParameters.length > 0;
 	}
 	
-	public void init(GlobalTypeRegistry registry) {
-		ITypeID superType = definition.superType;
-		if (superType != null && hasTypeParameters()) {
-			Map<TypeParameter, ITypeID> genericSuperArguments = new HashMap<>();
-			for (int i = 0; i < typeParameters.length; i++)
-				genericSuperArguments.put(definition.genericParameters[i], typeParameters[i]);
-			
-			superType = definition.superType.instance(new GenericMapper(registry, genericSuperArguments));
-		}
-		this.superType = superType;
+	public Map<TypeParameter, ITypeID> getTypeParameterMapping() {
+		Map<TypeParameter, ITypeID> mapping = new HashMap<>();
+		DefinitionTypeID current = this;
+		do {
+			if (current.typeParameters != null) {
+				if (current.definition.genericParameters == null)
+					System.out.println("Type parameters but no generic parameters");
+				else
+					for (int i = 0; i < current.typeParameters.length; i++)
+						mapping.put(current.definition.genericParameters[i], current.typeParameters[i]);
+			}
+
+			current = current.outer;
+		} while (current != null && !current.definition.isStatic());
+		return mapping;
 	}
 	
-	// To be used exclusively by StaticDefinitionTypeID
-	protected DefinitionTypeID(HighLevelDefinition definition) {
+	public DefinitionTypeID(HighLevelDefinition definition) {
 		this.definition = definition;
 		this.typeParameters = ITypeID.NONE;
-		this.superType = definition.superType;
-		this.outerTypeParameters = Collections.emptyMap();
-		this.outerTypeEntries = NO_OUTER_ENTRIES;
+		this.superType = definition.getSuperType();
+		this.outer = null;
 	}
 	
 	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		if (!hasTypeParameters() && outerTypeParameters.isEmpty())
+	public ITypeID getNormalized() {
+		return normalized;
+	}
+	
+	@Override
+	public DefinitionTypeID instance(GenericMapper mapper) {
+		if (!hasTypeParameters() && outer == null)
 			return this;
 		
 		ITypeID[] instancedArguments = ITypeID.NONE;
 		if (hasTypeParameters()) {
 			instancedArguments = new ITypeID[typeParameters.length];
 			for (int i = 0; i < typeParameters.length; i++) {
-				// TODO: why was this line written like this?
-				//instancedArguments[i] = arguments.containsKey(definition.genericParameters[i]) ? arguments.get(definition.genericParameters[i]) : typeParameters[i].withGenericArguments(registry, arguments);
 				instancedArguments[i] = typeParameters[i].instance(mapper);
 			}
 		}
 		
-		Map<TypeParameter, ITypeID> instancedOuter;
-		if (outerTypeParameters.isEmpty()) {
-			instancedOuter = Collections.emptyMap();
-		} else {
-			instancedOuter = new HashMap<>();
-			for (Map.Entry<TypeParameter, ITypeID> entry : outerTypeParameters.entrySet())
-				instancedOuter.put(entry.getKey(), entry.getValue().instance(mapper));
-		}
+		DefinitionTypeID instancedOuter = outer == null ? null : outer.instance(mapper);
 		return mapper.registry.getForDefinition(definition, instancedArguments, instancedOuter);
 	}
 	
 	@Override
-	public ITypeID getSuperType() {
-		return superType;
+	public ITypeID getSuperType(GlobalTypeRegistry registry) {
+		return definition.getSuperType() == null ? null : definition.getSuperType().instance(new GenericMapper(registry, getTypeParameterMapping()));
 	}
 	
 	@Override
@@ -177,7 +203,7 @@ public class DefinitionTypeID implements ITypeID {
 		int hash = 7;
 		hash = 97 * hash + definition.hashCode();
 		hash = 97 * hash + Arrays.deepHashCode(typeParameters);
-		hash = 97 * hash + Arrays.deepHashCode(outerTypeEntries);
+		hash = 97 * hash + Objects.hashCode(outer);
 		return hash;
 	}
 
@@ -195,7 +221,7 @@ public class DefinitionTypeID implements ITypeID {
 		final DefinitionTypeID other = (DefinitionTypeID) obj;
 		return this.definition == other.definition
 				&& Arrays.deepEquals(this.typeParameters, other.typeParameters)
-				&& Arrays.deepEquals(this.outerTypeEntries, other.outerTypeEntries);
+				&& outer == this.outer;
 	}
 	
 	@Override
@@ -225,6 +251,11 @@ public class DefinitionTypeID implements ITypeID {
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
 		for (ITypeID type : this.typeParameters)
 			type.extractTypeParameters(typeParameters);
+	}
+	
+	@Override
+	public boolean isDestructible() {
+		return definition.isDestructible();
 	}
 	
 	private class OuterTypeEntry {

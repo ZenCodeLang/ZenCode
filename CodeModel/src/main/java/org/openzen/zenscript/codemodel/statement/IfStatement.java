@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -67,5 +68,10 @@ public class IfStatement extends Statement {
 		if (onElse != null)
 			result = Expression.binaryThrow(onElse.position, result, onElse.thrownType);
 		return result;
+	}
+
+	@Override
+	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
+		return new IfStatement(position, condition.normalize(scope), onThen.normalize(scope, modified), onElse == null ? null : onElse.normalize(scope, modified));
 	}
 }

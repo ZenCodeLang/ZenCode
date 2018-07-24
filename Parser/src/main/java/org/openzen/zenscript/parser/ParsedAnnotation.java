@@ -43,7 +43,15 @@ public class ParsedAnnotation {
 		
 		List<ParsedAnnotation> results = new ArrayList<>();
 		while (parser.isNext(ZSTokenType.T_SQOPEN)) {
+			parser.pushMark();
 			parser.next();
+			if (!parser.isNext(ZSTokenType.T_IDENTIFIER)) {
+				parser.reset();
+				break;
+			} else {
+				parser.popMark();
+			}
+			
 			CodePosition position = parser.getPosition();
 			IParsedType type = IParsedType.parse(parser);
 			ParsedCallArguments arguments = ParsedCallArguments.parseForAnnotation(parser);

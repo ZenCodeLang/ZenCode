@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -70,6 +71,17 @@ public class TryCatchStatement extends Statement {
 		for (CatchClause clause : catchClauses)
 			tCatchClauses.add(clause.transform(transformer, modified));
 		Statement tFinallyClause = finallyClause == null ? null : finallyClause.transform(transformer, modified);
+		return new TryCatchStatement(position, tResource, tContent, tCatchClauses, tFinallyClause);
+	}
+
+	@Override
+	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
+		VarStatement tResource = resource == null ? null : resource.normalize(scope, modified);
+		Statement tContent = content.normalize(scope, modified);
+		List<CatchClause> tCatchClauses = new ArrayList<>();
+		for (CatchClause clause : catchClauses)
+			tCatchClauses.add(clause.normalize(scope, modified));
+		Statement tFinallyClause = finallyClause == null ? null : finallyClause.normalize(scope, modified);
 		return new TryCatchStatement(position, tResource, tContent, tCatchClauses, tFinallyClause);
 	}
 }

@@ -53,8 +53,8 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				definition.position,
 				definition.name);
 		
-		if (definition.superType != null)
-			definition.superType.accept(new SupertypeValidator(validator, definition.position));
+		if (definition.getSuperType() != null)
+			definition.getSuperType().accept(new SupertypeValidator(validator, definition.position, definition));
 		
 		validateMembers(definition, DefinitionMemberContext.DEFINITION);
 		return null;

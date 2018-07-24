@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 /**
@@ -97,6 +96,26 @@ public class FunctionHeader {
 		hasUnknowns = hasUnknowns(parameters);
 	}
 	
+	public boolean isDenormalized() {
+		if (returnType.getNormalized() != returnType)
+			return true;
+		for (FunctionParameter parameter : parameters)
+			if (parameter.type.getNormalized() != parameter.type)
+				return true;
+		
+		return false;
+	}
+	
+	public FunctionHeader normalize(GlobalTypeRegistry registry) {
+		if (!isDenormalized())
+			return this;
+		
+		FunctionParameter[] normalizedParameters = new FunctionParameter[parameters.length];
+		for (int i = 0; i < normalizedParameters.length; i++)
+			normalizedParameters[i] = parameters[i].normalized(registry);
+		return new FunctionHeader(typeParameters, returnType.getNormalized(), thrownType == null ? null : thrownType.getNormalized(), normalizedParameters);
+	}
+	
 	public int getNumberOfTypeParameters() {
 		return typeParameters.length;
 	}
@@ -114,7 +133,7 @@ public class FunctionHeader {
 		} else {
 			Map<TypeParameter, ITypeID> mapping = new HashMap<>();
 			for (int i = 0; i < overridden.typeParameters.length; i++)
-				mapping.put(overridden.typeParameters[i], new GenericTypeID(typeParameters[i]));
+				mapping.put(overridden.typeParameters[i], registry.getGeneric(typeParameters[i]));
 			mapper = new GenericMapper(registry, mapping);
 		}
 		

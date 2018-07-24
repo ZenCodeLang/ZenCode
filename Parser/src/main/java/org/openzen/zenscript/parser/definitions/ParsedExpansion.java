@@ -7,6 +7,8 @@ package org.openzen.zenscript.parser.definitions;
 
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -24,7 +26,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
  */
 public class ParsedExpansion extends BaseParsedDefinition {
 	public static ParsedExpansion parseExpansion(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
-		List<ParsedGenericParameter> parameters = ParsedGenericParameter.parseAll(tokens);
+		List<ParsedTypeParameter> parameters = ParsedTypeParameter.parseAll(tokens);
 		IParsedType target = IParsedType.parse(tokens);
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
@@ -35,18 +37,18 @@ public class ParsedExpansion extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final List<ParsedGenericParameter> parameters;
+	private final List<ParsedTypeParameter> parameters;
 	private final IParsedType target;
 	private final ExpansionDefinition compiled;
 	
-	public ParsedExpansion(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, List<ParsedGenericParameter> genericParameters, IParsedType target, HighLevelDefinition outerDefinition) {
+	public ParsedExpansion(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, List<ParsedTypeParameter> genericParameters, IParsedType target, HighLevelDefinition outerDefinition) {
 		super(position, modifiers, annotations);
 		
 		this.parameters = genericParameters;
 		this.target = target;
 		
 		compiled = new ExpansionDefinition(position, pkg, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(genericParameters));
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(genericParameters));
 	}
 	
 	@Override
@@ -56,7 +58,9 @@ public class ParsedExpansion extends BaseParsedDefinition {
 
 	@Override
 	public void compileTypes(BaseScope scope) {
-		ParsedGenericParameter.compile(scope, compiled.genericParameters, this.parameters);
+		ParsedTypeParameter.compile(scope, compiled.genericParameters, this.parameters);
 		compiled.target = target.compile(new GenericFunctionScope(scope, compiled.genericParameters));
+		if (compiled.target == null)
+			throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Could not compile expansion target: " + target);
 	}
 }

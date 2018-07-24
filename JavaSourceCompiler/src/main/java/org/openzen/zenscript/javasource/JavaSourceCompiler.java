@@ -46,12 +46,12 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	@Override
 	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
 		String filename = getFilename(definition);
-		JavaSourcePrepareDefinitionVisitor prepare = new JavaSourcePrepareDefinitionVisitor(filename);
+		JavaSourcePrepareDefinitionVisitor prepare = new JavaSourcePrepareDefinitionVisitor(filename, null);
 		JavaSourceClass cls = definition.accept(prepare);
 		if (cls.empty)
 			return;
 		
-		File file = new File(getDirectory(definition.pkg), cls.name + ".java");
+		File file = new File(getDirectory(definition.pkg), cls.getName() + ".java");
 		System.out.println("Compiling " + definition.name + " as " + cls.fullName);
 		JavaSourceFile sourceFile = sourceFiles.get(file);
 		if (sourceFile == null)
