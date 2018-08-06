@@ -17,7 +17,7 @@ public class StaticGetterExpression extends Expression {
 	public final GetterMemberRef getter;
 	
 	public StaticGetterExpression(CodePosition position, GetterMemberRef getter) {
-		super(position, getter.type, null);
+		super(position, getter.getType(), null);
 		
 		this.getter = getter;
 	}

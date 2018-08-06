@@ -14,8 +14,6 @@ import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -49,10 +47,5 @@ public class ParsedTryConvertExpression extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return true;
-	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		return null; // TODO: too lazy to implement
 	}
 }

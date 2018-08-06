@@ -106,8 +106,8 @@ public abstract class Expression implements IPartialExpression {
 		return scope.getTypeMembers(type)
 				.getOrCreateGroup(OperatorType.CALL)
 				.getMethodMembers().stream()
-				.filter(method -> method.member.header.parameters.length == arguments && !method.member.isStatic())
-				.map(method -> method.member.header)
+				.filter(method -> method.member.getHeader().parameters.length == arguments && !method.member.isStatic())
+				.map(method -> method.member.getHeader())
 				.collect(Collectors.toList());
 	}
 	
@@ -119,7 +119,7 @@ public abstract class Expression implements IPartialExpression {
 	@Override
 	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<ITypeID> hints, GenericName name) {
 		TypeMembers members = scope.getTypeMembers(type);
-		IPartialExpression result = members.getMemberExpression(position, this, name, false);
+		IPartialExpression result = members.getMemberExpression(position, scope, this, name, false);
 		if (result == null)
 			System.out.println("No such member: " + name.name);
 		return result;

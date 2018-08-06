@@ -8,11 +8,11 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.GenericFunctionScope;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -47,14 +47,13 @@ public class ParsedTypeParameter {
 		return genericParameters;
 	}
 	
-	public static void compile(BaseScope scope, TypeParameter[] compiled, List<ParsedTypeParameter> parameters) {
+	public static void compile(TypeResolutionContext context, TypeParameter[] compiled, List<ParsedTypeParameter> parameters) {
 		if (compiled == null)
 			return;
 		
-		GenericFunctionScope innerScope = new GenericFunctionScope(scope, compiled);
 		for (int i = 0; i < compiled.length; i++) {
 			for (ParsedGenericBound bound : parameters.get(i).bounds)
-				compiled[i].addBound(bound.compile(innerScope));
+				compiled[i].addBound(bound.compile(context));
 		}
 	}
 	

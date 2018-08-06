@@ -23,10 +23,7 @@ import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinition;
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
@@ -52,10 +49,6 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
  * @author Hoofdgebruiker
  */
 public final class TypeMembers {
-	public static final int MODIFIER_OPTIONAL = 1;
-	public static final int MODIFIER_CONST = 2;
-	public static final int MODIFIER_IMMUTABLE = 4;
-	
 	private final LocalMemberCache cache;
 	public final ITypeID type;
 	
@@ -72,6 +65,8 @@ public final class TypeMembers {
 	public TypeMembers(LocalMemberCache cache, ITypeID type) {
 		if (type == null)
 			throw new NullPointerException("Type must not be null!");
+		if (type == BasicTypeID.UNDETERMINED)
+			throw new IllegalArgumentException("Cannot retrieve members of undetermined type");
 		
 		this.cache = cache;
 		this.type = type;
@@ -295,13 +290,13 @@ public final class TypeMembers {
 		if (operator == CompareType.EQ) {
 			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.EQUALS);
 			for (TypeMember<FunctionalMemberRef> member : equal.getMethodMembers()) {
-				if (member.member.header.accepts(scope, right))
+				if (member.member.getHeader().accepts(scope, right))
 					return equal.call(position, scope, left, new CallArguments(right), false);
 			}
 		} else if (operator == CompareType.NE) {
 			DefinitionMemberGroup equal = getOrCreateGroup(OperatorType.NOTEQUALS);
 			for (TypeMember<FunctionalMemberRef> member : equal.getMethodMembers()) {
-				if (member.member.header.accepts(scope, right)) {
+				if (member.member.getHeader().accepts(scope, right)) {
 					return equal.call(position, scope, left, new CallArguments(right), false);
 				}
 			}
@@ -314,11 +309,6 @@ public final class TypeMembers {
 	public Expression unary(CodePosition position, TypeScope scope, OperatorType operator, Expression value) {
 		DefinitionMemberGroup members = getOrCreateGroup(operator);
 		return members.call(position, scope, value, new CallArguments(Expression.NONE), false);
-	}
-	
-	public Expression ternary(CodePosition position, TypeScope scope, OperatorType operator, Expression a, Expression b, Expression c) {
-		DefinitionMemberGroup members = getOrCreateGroup(operator);
-		return members.call(position, scope, a, new CallArguments(b, c), false);
 	}
 	
 	public IteratorMemberRef getIterator(int variables) {
@@ -343,14 +333,16 @@ public final class TypeMembers {
 			return true;
 		if (toType == null)
 			throw new NullPointerException();
+		if (toType == BasicTypeID.UNDETERMINED)
+			throw new IllegalArgumentException("Cannot cast to undetermined type!");
 		
 		if (type == BasicTypeID.NULL && toType.isOptional())
 			return true;
-		if (toType.isOptional() && canCastImplicit(toType.unwrap()))
+		if (toType.isOptional() && canCastImplicit(toType.withoutOptional()))
 			return true;
-		if (toType.isConst() && canCastImplicit(toType.unwrap()))
+		if (toType.isConst() && canCastImplicit(toType.withoutConst()))
 			return true;
-		if (type.isOptional() && type.unwrap() == toType)
+		if (type.isOptional() && type.withoutOptional() == toType)
 			return true;
 		
 		return getImplicitCaster(toType) != null || extendsOrImplements(toType);
@@ -398,11 +390,11 @@ public final class TypeMembers {
 		
 		if (type == BasicTypeID.NULL && toType.isOptional())
 			return new NullExpression(position, toType);
-		if (toType.isOptional() && canCastImplicit(toType.unwrap()))
-			return new WrapOptionalExpression(position, castImplicit(position, value, toType.unwrap(), implicit), toType);
-		if (toType.isConst() && canCastImplicit(toType.unwrap()))
-			return new MakeConstExpression(position, castImplicit(position, value, toType.unwrap(), implicit), toType);
-		if (type.isOptional() && type.unwrap() == toType)
+		if (toType.isOptional() && canCastImplicit(toType.withoutOptional()))
+			return new WrapOptionalExpression(position, castImplicit(position, value, toType.withoutOptional(), implicit), toType);
+		if (toType.isConst() && canCastImplicit(toType.withoutConst()))
+			return new MakeConstExpression(position, castImplicit(position, value, toType.withoutConst(), implicit), toType);
+		if (type.isOptional() && type.withoutOptional() == toType)
 			return new CheckNullExpression(position, value);
 		
 		for (TypeMember<CasterMemberRef> caster : casters) {
@@ -435,22 +427,22 @@ public final class TypeMembers {
 		return members.containsKey(name);
 	}
 	
-	public IPartialExpression getMemberExpression(CodePosition position, Expression target, GenericName name, boolean allowStatic) {
+	public IPartialExpression getMemberExpression(CodePosition position, TypeScope scope, Expression target, GenericName name, boolean allowStatic) {
 		if (members.containsKey(name.name)) {
 			DefinitionMemberGroup group = members.get(name.name);
 			
 			if (group.isStatic)
-				return new PartialStaticMemberGroupExpression(position, type, group, name.arguments);
+				return new PartialStaticMemberGroupExpression(position, scope, type, group, name.arguments);
 			else
-				return new PartialMemberGroupExpression(position, target, group, name.arguments, allowStatic);
+				return new PartialMemberGroupExpression(position, scope, target, group, name.arguments, allowStatic);
 		}
 		
 		return null;
 	}
 	
-	public IPartialExpression getStaticMemberExpression(CodePosition position, GenericName name) {
+	public IPartialExpression getStaticMemberExpression(CodePosition position, TypeScope scope, GenericName name) {
 		if (members.containsKey(name.name))
-			return new PartialStaticMemberGroupExpression(position, type, members.get(name.name), name.arguments);
+			return new PartialStaticMemberGroupExpression(position, scope, type, members.get(name.name), name.arguments);
 		if (innerTypes.containsKey(name.name))
 			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID)type), name.arguments);
 		

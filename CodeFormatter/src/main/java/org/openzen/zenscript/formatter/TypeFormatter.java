@@ -22,7 +22,6 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import stdlib.Chars;
 
 /**
@@ -104,12 +103,12 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 	@Override
 	public String visitModified(ModifiedTypeID type) {
 		StringBuilder result = new StringBuilder();
-		if ((type.modifiers & TypeMembers.MODIFIER_CONST) > 0)
+		if (type.isConst())
 			result.append("const ");
-		if ((type.modifiers & TypeMembers.MODIFIER_IMMUTABLE) > 0)
+		if (type.isImmutable())
 			result.append("immutable ");
 		result.append(type.accept(this));
-		if ((type.modifiers & TypeMembers.MODIFIER_OPTIONAL) > 0)
+		if (type.isOptional())
 			result.append("?");
 		
 		return result.toString();

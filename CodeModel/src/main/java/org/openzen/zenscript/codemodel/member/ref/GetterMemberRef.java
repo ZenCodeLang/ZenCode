@@ -7,43 +7,24 @@ package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class GetterMemberRef implements DefinitionMemberRef {
+public class GetterMemberRef extends PropertyRef {
 	public final GetterMember member;
-	public final ITypeID type;
 	
-	public GetterMemberRef(GetterMember member, ITypeID type) {
+	public GetterMemberRef(GetterMember member, GenericMapper mapper) {
+		super(member, mapper);
+		
 		this.member = member;
-		this.type = type;
-	}
-
-	@Override
-	public CodePosition getPosition() {
-		return member.position;
-	}
-
-	@Override
-	public String describe() {
-		return member.describe();
-	}
-
-	@Override
-	public <T> T getTag(Class<T> type) {
-		return member.getTag(type);
-	}
-	
-	public boolean isStatic() {
-		return member.isStatic();
 	}
 	
 	public Expression get(CodePosition position, Expression target) {
@@ -57,15 +38,5 @@ public class GetterMemberRef implements DefinitionMemberRef {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return member.getOverrides();
-	}
-
-	@Override
-	public FunctionHeader getHeader() {
-		return member.header;
-	}
-
-	@Override
-	public MemberAnnotation[] getAnnotations() {
-		return member.annotations;
 	}
 }

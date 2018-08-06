@@ -28,6 +28,7 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
@@ -87,7 +88,7 @@ public class DefinitionScope extends BaseScope {
 			if (members.hasInnerType(name.name))
 				return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
 			if (members.hasMember(name.name) && !name.hasArguments())
-				return members.getMemberExpression(position, new ThisExpression(position, type), name, true);
+				return members.getMemberExpression(position, this, new ThisExpression(position, type), name, true);
 		} else if (innerTypes.containsKey(name.name)) {
 			return new PartialTypeExpression(position, getTypeRegistry().getForDefinition(innerTypes.get(name).get(), name.arguments), name.arguments);
 		}
@@ -153,5 +154,10 @@ public class DefinitionScope extends BaseScope {
 	@Override
 	public AnnotationDefinition getAnnotation(String name) {
 		return outer.getAnnotation(name);
+	}
+
+	@Override
+	public TypeMemberPreparer getPreparer() {
+		return outer.getPreparer();
 	}
 }

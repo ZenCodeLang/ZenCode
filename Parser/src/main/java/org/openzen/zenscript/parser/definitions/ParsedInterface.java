@@ -10,11 +10,11 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -63,14 +63,14 @@ public class ParsedInterface extends BaseParsedDefinition {
 	public HighLevelDefinition getCompiled() {
 		return compiled;
 	}
-
+	
 	@Override
-	public void compileMembers(BaseScope scope) {
-		ParsedTypeParameter.compile(scope, compiled.genericParameters, typeParameters);
+	public void linkTypesLocal(TypeResolutionContext context) {
+		ParsedTypeParameter.compile(context, compiled.genericParameters, typeParameters);
 		
 		for (IParsedType superInterface : superInterfaces)
-			compiled.addBaseInterface(superInterface.compile(scope));
+			compiled.addBaseInterface(superInterface.compile(context));
 		
-		super.compileMembers(scope);
+		super.linkTypesLocal(context);
 	}
 }

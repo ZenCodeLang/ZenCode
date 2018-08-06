@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -51,21 +50,5 @@ public class ParsedExpressionMember extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return true;
-	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		IPartialExpression cValue = value.compile(scope.withoutHints());
-		ITypeID[] typeParameters = IParsedType.compileList(genericParameters, scope);
-		// TODO: proper precompilation
-		IPartialExpression member = cValue.getMember(
-				position,
-				scope,
-				scope.hints,
-				new GenericName(this.member, typeParameters));
-		if (member == null)
-			return null;
-		
-		return member.eval().type;
 	}
 }

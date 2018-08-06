@@ -10,6 +10,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.LocalTypeResolutionContext;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -57,10 +59,12 @@ public class ParsedExpansion extends BaseParsedDefinition {
 	}
 
 	@Override
-	public void compileTypes(BaseScope scope) {
-		ParsedTypeParameter.compile(scope, compiled.genericParameters, this.parameters);
-		compiled.target = target.compile(new GenericFunctionScope(scope, compiled.genericParameters));
+	public void linkTypesLocal(TypeResolutionContext context) {
+		ParsedTypeParameter.compile(context, compiled.genericParameters, this.parameters);
+		compiled.target = target.compile(context);
 		if (compiled.target == null)
 			throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Could not compile expansion target: " + target);
+		
+		super.linkTypesLocal(context);
 	}
 }

@@ -45,11 +45,6 @@ public class ParsedNewExpression extends ParsedExpression{
 	public boolean hasStrongType() {
 		return true;
 	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		return type.compile(scope);
-	}
 	
 	public static NewExpression compile(CodePosition position, ITypeID type, ParsedCallArguments arguments, ExpressionScope scope) {
 		DefinitionMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
@@ -66,6 +61,6 @@ public class ParsedNewExpression extends ParsedExpression{
 				type,
 				member,
 				compiledArguments,
-				member.header.fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments));
+				member.getHeader().fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments));
 	}
 }

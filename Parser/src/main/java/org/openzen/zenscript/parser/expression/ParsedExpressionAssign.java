@@ -42,9 +42,4 @@ public class ParsedExpressionAssign extends ParsedExpression {
 	public boolean hasStrongType() {
 		return right.hasStrongType();
 	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		return left.precompileForType(scope, state);
-	}
 }

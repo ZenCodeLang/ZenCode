@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.member.ref;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -29,11 +30,37 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
  */
 public class FunctionalMemberRef implements DefinitionMemberRef {
 	private final FunctionalMember target;
-	public final FunctionHeader header;
 	
-	public FunctionalMemberRef(FunctionalMember target, FunctionHeader header) {
+	private FunctionHeader header;
+	private GenericMapper mapper;
+	
+	public FunctionalMemberRef(FunctionalMember target, GenericMapper mapper) {
 		this.target = target;
-		this.header = header;
+		
+		if (target.header.hasUnknowns) {
+			header = null;
+			this.mapper = mapper;
+		} else {
+			header = mapper.map(target.header);
+			this.mapper = null;
+		}
+	}
+	
+	public boolean accepts(int arguments) {
+		return arguments >= target.header.minParameters && arguments <= target.header.maxParameters;
+	}
+	
+	@Override
+	public FunctionHeader getHeader() {
+		if (header == null) {
+			if (target.header.hasUnknowns)
+				throw new IllegalStateException("member is not yet resolved!");
+			
+			header = mapper.map(target.header);
+			this.mapper = null;
+		}
+		
+		return header;
 	}
 	
 	@Override
@@ -67,11 +94,6 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return target.getOverrides();
-	}
-
-	@Override
-	public FunctionHeader getHeader() {
-		return header;
 	}
 	
 	public BuiltinID getBuiltin() {

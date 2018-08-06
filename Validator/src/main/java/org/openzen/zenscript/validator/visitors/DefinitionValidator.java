@@ -8,6 +8,7 @@ package org.openzen.zenscript.validator.visitors;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import static org.openzen.zenscript.codemodel.Modifiers.*;
@@ -24,8 +25,11 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
@@ -197,7 +201,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		private final LocalMemberCache memberCache;
 		private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
 		
-		public SimpleTypeScope(GlobalTypeRegistry typeRegistry, List<ExpansionDefinition> expansions, List<AnnotationDefinition> annotations) {
+		public SimpleTypeScope(GlobalTypeRegistry typeRegistry, List<ExpansionDefinition> expansions, AnnotationDefinition[] annotations) {
 			memberCache = new LocalMemberCache(typeRegistry, expansions);
 			
 			for (AnnotationDefinition annotation : annotations)
@@ -212,6 +216,21 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		@Override
 		public AnnotationDefinition getAnnotation(String name) {
 			return annotations.get(name);
+		}
+
+		@Override
+		public ITypeID getType(CodePosition position, List<GenericName> name) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public ITypeID getThisType() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public TypeMemberPreparer getPreparer() {
+			return member -> {};
 		}
 	}
 	

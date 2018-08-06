@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -100,6 +101,11 @@ public class ParsedCatchClause {
 		@Override
 		public AnnotationDefinition getAnnotation(String name) {
 			return outer.getAnnotation(name);
+		}
+
+		@Override
+		public TypeMemberPreparer getPreparer() {
+			return outer.getPreparer();
 		}
 	}
 }

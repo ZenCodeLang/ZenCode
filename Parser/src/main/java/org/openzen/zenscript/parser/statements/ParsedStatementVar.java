@@ -13,7 +13,6 @@ import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
@@ -58,19 +57,5 @@ public class ParsedStatementVar extends ParsedStatement {
 		VarStatement result = new VarStatement(position, name, type, initializer, isFinal);
 		scope.defineVariable(result);
 		return result(result, scope);
-	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		ITypeID type = null;
-		if (this.type == null) {
-			if (this.initializer != null)
-				type = initializer.precompileForType(new ExpressionScope(scope), precompileState);
-		} else {
-			type = this.type.compile(scope);
-		}
-		VarStatement result = new VarStatement(position, name, type, null, isFinal);
-		scope.defineVariable(result);
-		return null;
 	}
 }

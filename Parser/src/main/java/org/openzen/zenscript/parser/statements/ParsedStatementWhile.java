@@ -48,9 +48,4 @@ public class ParsedStatementWhile extends ParsedStatement {
 		result.content = this.content.compile(innerScope);
 		return result(result, scope);
 	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		return content.precompileForResultType(scope, precompileState);
-	}
 }

@@ -9,12 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.DefinitionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -79,16 +78,12 @@ public class ParsedVariant extends BaseParsedDefinition {
 	}
 	
 	@Override
-	public void compileTypes(BaseScope scope) {
-		DefinitionScope innerScope = new DefinitionScope(scope, getCompiled(), false);
+	public void linkTypesLocal(TypeResolutionContext context) {
+		ParsedTypeParameter.compile(context, compiled.genericParameters, typeParameters);
 		for (ParsedVariantOption variant : variants) {
-			compiled.options.add(variant.compile(innerScope));
+			compiled.options.add(variant.compile(context));
 		}
-	}
-	
-	@Override
-	public void compileMembers(BaseScope scope) {
-		ParsedTypeParameter.compile(scope, compiled.genericParameters, typeParameters);
-		super.compileMembers(scope);
+		
+		super.linkTypesLocal(context);
 	}
 }

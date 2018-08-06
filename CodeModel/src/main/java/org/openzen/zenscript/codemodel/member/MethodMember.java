@@ -62,7 +62,7 @@ public class MethodMember extends FunctionalMember {
 	
 	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {
 		this.overrides = overrides;
-		header = header.inferFromOverride(registry, overrides.header);
+		header = header.inferFromOverride(registry, overrides.getHeader());
 		
 		if (overrides.getTarget().isPublic())
 			modifiers |= Modifiers.PUBLIC;

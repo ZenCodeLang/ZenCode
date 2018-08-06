@@ -7,7 +7,6 @@ package org.openzen.zenscript.scriptingexample;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +16,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
@@ -27,10 +27,9 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialMemberGroupExpression;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
 import org.openzen.zenscript.javabytecode.JavaClassInfo;
@@ -55,11 +54,6 @@ public class GlobalRegistry {
 		
 		JavaClassInfo jSystem = new JavaClassInfo("java/lang/System");
 		SYSTEM_OUT.setTag(JavaFieldInfo.class, new JavaFieldInfo(jSystem, "out", "Ljava/io/PrintStream;"));
-		
-		PRINTLN.caller.setTag(JavaBytecodeImplementation.class, writer -> {
-			writer.getField(System.class, "out", PrintStream.class);
-			writer.invokeVirtual(printstreamPrintln);
-		});
 	}
 	
 	public ZSPackage collectPackages() {
@@ -115,32 +109,23 @@ public class GlobalRegistry {
 			null,
 			DefinitionTypeID.forType(SYSTEM), null, 0, 0, null);
 	
-	
-	private final FunctionDefinition PRINTLN = new FunctionDefinition(
-			CodePosition.NATIVE,
-			globals,
-			"println",
-			Modifiers.EXPORT,
-			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(BasicTypeID.STRING)));
-	
 	private class PrintlnSymbol implements ISymbol {
 
 		@Override
-		public IPartialExpression getExpression(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments) {
-			//return new PartialStaticMemberGroupExpression(position, PRINTLN.callerGroup);
+		public IPartialExpression getExpression(CodePosition position, BaseScope scope, ITypeID[] typeArguments) {
 			return new PartialMemberGroupExpression(
 					position,
-					new GetStaticFieldExpression(position, new FieldMemberRef(SYSTEM_OUT, SYSTEM_OUT.type)),
+					scope,
+					new GetStaticFieldExpression(position, new FieldMemberRef(SYSTEM_OUT, GenericMapper.EMPTY)),
 					"println",
-					PRINTSTREAM_PRINTLN.ref(new GenericMapper(types, Collections.emptyMap())),
+					PRINTSTREAM_PRINTLN.ref(GenericMapper.EMPTY),
 					null,
 					false);
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, GlobalTypeRegistry types, ITypeID[] typeArguments) {
-			// don't be fooled! this symbol is the System.out.println bound method and thus its type is a function
-			return new FunctionTypeID(null, PRINTSTREAM_PRINTLN.header);
+		public ITypeID getType(CodePosition position, TypeResolutionContext context, ITypeID[] typeArguments) {
+			return null; // not a type
 		}
 	}
 }

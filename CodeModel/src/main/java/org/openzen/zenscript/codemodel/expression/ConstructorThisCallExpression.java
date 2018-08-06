@@ -21,7 +21,10 @@ public class ConstructorThisCallExpression extends Expression {
 	public final CallArguments arguments;
 	
 	public ConstructorThisCallExpression(CodePosition position, ITypeID type, FunctionalMemberRef constructor, CallArguments arguments) {
-		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
+		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));
+		
+		if (type instanceof BasicTypeID)
+			throw new IllegalArgumentException("Type cannot be basic type");
 		
 		this.objectType = type;
 		this.constructor = constructor;
@@ -36,11 +39,11 @@ public class ConstructorThisCallExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
-		return tArguments == arguments ? this : new ConstructorThisCallExpression(position, type, constructor, tArguments);
+		return tArguments == arguments ? this : new ConstructorThisCallExpression(position, objectType, constructor, tArguments);
 	}
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		return new ConstructorThisCallExpression(position, type, constructor, arguments.normalize(position, scope, constructor.header));
+		return new ConstructorThisCallExpression(position, objectType, constructor, arguments.normalize(position, scope, constructor.getHeader()));
 	}
 }

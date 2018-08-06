@@ -27,7 +27,7 @@ public class FunctionHeader {
 	private static final FunctionParameter[] NO_PARAMETERS = new FunctionParameter[0];
 	
 	public final TypeParameter[] typeParameters;
-	public final ITypeID returnType;
+	public ITypeID returnType;
 	public final FunctionParameter[] parameters;
 	public final ITypeID thrownType;
 	
@@ -63,7 +63,7 @@ public class FunctionHeader {
 		
 		minParameters = parameterTypes.length;
 		maxParameters = parameterTypes.length;
-		hasUnknowns = hasUnknowns(parameterTypes);
+		hasUnknowns = hasUnknowns(parameterTypes, returnType);
 	}
 	
 	public FunctionHeader(ITypeID returnType, FunctionParameter... parameters) {
@@ -77,7 +77,7 @@ public class FunctionHeader {
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
-		hasUnknowns = hasUnknowns(parameters);
+		hasUnknowns = hasUnknowns(parameters, returnType);
 	}
 	
 	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, ITypeID thrownType, FunctionParameter... parameters) {
@@ -93,7 +93,7 @@ public class FunctionHeader {
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
-		hasUnknowns = hasUnknowns(parameters);
+		hasUnknowns = hasUnknowns(parameters, returnType);
 	}
 	
 	public boolean isDenormalized() {
@@ -430,7 +430,10 @@ public class FunctionHeader {
 		return parameters[parameters.length - 1].variadic ? Integer.MAX_VALUE : parameters.length;
 	}
 	
-	private static boolean hasUnknowns(ITypeID[] types) {
+	private static boolean hasUnknowns(ITypeID[] types, ITypeID returnType) {
+		if (returnType == BasicTypeID.UNDETERMINED)
+			return true;
+		
 		for (ITypeID type : types)
 			if (type == BasicTypeID.UNDETERMINED)
 				return true;
@@ -438,7 +441,10 @@ public class FunctionHeader {
 		return false;
 	}
 	
-	private static boolean hasUnknowns(FunctionParameter[] parameters) {
+	private static boolean hasUnknowns(FunctionParameter[] parameters, ITypeID returnType) {
+		if (returnType == BasicTypeID.UNDETERMINED)
+			return true;
+		
 		for (FunctionParameter parameter : parameters)
 			if (parameter.type == BasicTypeID.UNDETERMINED)
 				return true;

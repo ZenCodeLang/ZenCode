@@ -40,9 +40,4 @@ public class ParsedExpressionOuter extends ParsedExpression {
 	public boolean hasStrongType() {
 		return value.hasStrongType();
 	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		return null; // TODO: how will this be handled?
-	}
 }

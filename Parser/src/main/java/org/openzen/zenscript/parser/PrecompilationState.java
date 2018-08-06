@@ -11,13 +11,14 @@ import java.util.Map;
 import java.util.Set;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class PrecompilationState {
+public class PrecompilationState implements TypeMemberPreparer {
 	private final Map<IDefinitionMember, CompilableMember> members = new HashMap<>();
 	private final Set<ParsedDefinitionMember> compilingMembers = new HashSet<>();
 	
@@ -38,15 +39,18 @@ public class PrecompilationState {
 			return false;
 		
 		compilingMembers.add(cMember.member);
-		if (!cMember.member.inferHeaders(cMember.definitionScope, this))
-			return false;
-		
+		cMember.member.compile(cMember.definitionScope);
 		compilingMembers.remove(cMember.member);
 		return true;
 	}
 	
 	public void end(ParsedDefinitionMember member) {
 		compilingMembers.remove(member);
+	}
+
+	@Override
+	public void prepare(IDefinitionMember member) {
+		precompile(member);
 	}
 	
 	private class CompilableMember {

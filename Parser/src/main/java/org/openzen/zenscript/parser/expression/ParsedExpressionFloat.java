@@ -56,16 +56,4 @@ public class ParsedExpressionFloat extends ParsedExpression {
 	public boolean hasStrongType() {
 		return false;
 	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		for (ITypeID hint : scope.hints) {
-			if (hint == BasicTypeID.DOUBLE)
-				return hint;
-			else if (hint == BasicTypeID.FLOAT)
-				return hint;
-		}
-		
-		return BasicTypeID.DOUBLE;
-	}
 }

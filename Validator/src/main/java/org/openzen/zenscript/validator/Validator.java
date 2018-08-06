@@ -28,12 +28,12 @@ public class Validator {
 	private final List<ValidationLogEntry> log = new ArrayList<>();
 	public final GlobalTypeRegistry registry;
 	public final List<ExpansionDefinition> expansions;
-	public final List<AnnotationDefinition> annotations;
+	public final AnnotationDefinition[] annotations;
 	private boolean hasErrors = false;
 	
 	private final DefinitionValidator definitionValidator = new DefinitionValidator(this);
 	
-	public Validator(GlobalTypeRegistry registry, List<ExpansionDefinition> expansions, List<AnnotationDefinition> annotations) {
+	public Validator(GlobalTypeRegistry registry, List<ExpansionDefinition> expansions, AnnotationDefinition[] annotations) {
 		this.registry = registry;
 		this.expansions = expansions;
 		this.annotations = annotations;

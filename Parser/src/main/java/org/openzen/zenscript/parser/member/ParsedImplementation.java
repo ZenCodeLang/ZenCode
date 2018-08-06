@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ImplementationScope;
@@ -45,18 +46,13 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 	public void addMember(ParsedDefinitionMember member) {
 		members.add(member);
 	}
-	
-	@Override
-	public void linkInnerTypes() {
-		
-	}
 
 	@Override
-	public void linkTypes(BaseScope scope) {
-		compiled = new ImplementationMember(position, definition, modifiers, type.compile(scope));
+	public void linkTypes(TypeResolutionContext context) {
+		compiled = new ImplementationMember(position, definition, modifiers, type.compile(context));
 		
 		for (ParsedDefinitionMember member : members) {
-			member.linkTypes(scope);
+			member.linkTypes(context);
 			compiled.addMember(member.getCompiled());
 		}
 	}
@@ -65,22 +61,21 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 	public ImplementationMember getCompiled() {
 		return compiled;
 	}
-	
-	@Override
-	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
-		for (ParsedDefinitionMember member : members)
-			member.inferHeaders(scope, state);
-		
-		return true;
-	}
 
 	@Override
-	public void compile(BaseScope scope, PrecompilationState state) {
+	public void compile(BaseScope scope) {
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		
 		ImplementationScope innerScope = new ImplementationScope(scope, compiled);
 		for (ParsedDefinitionMember member : members) {
-			member.compile(innerScope, state);
+			member.compile(innerScope);
 		}
+	}
+	
+	@Override
+	public void registerMembers(BaseScope scope, PrecompilationState state) {
+		ImplementationScope innerScope = new ImplementationScope(scope, compiled);
+		for (ParsedDefinitionMember member : members)
+			state.register(innerScope, member);
 	}
 }

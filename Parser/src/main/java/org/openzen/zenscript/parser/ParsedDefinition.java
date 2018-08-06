@@ -5,8 +5,11 @@
  */
 package org.openzen.zenscript.parser;
 
+import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingType;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
@@ -24,7 +27,7 @@ import org.openzen.zenscript.parser.definitions.ParsedVariant;
  *
  * @author Hoofdgebruiker
  */
-public abstract class ParsedDefinition {
+public abstract class ParsedDefinition implements CompilingType {
 	public static ParsedDefinition parse(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		if (tokens.optional(K_CLASS) != null) {
 			return ParsedClass.parseClass(pkg, position, modifiers, annotations, tokens, outerDefinition);
@@ -58,6 +61,10 @@ public abstract class ParsedDefinition {
 		this.annotations = annotations;
 	}
 	
+	public String getName() {
+		return getCompiled().name;
+	}
+	
 	public final CodePosition getPosition() {
 		return position;
 	}
@@ -68,17 +75,9 @@ public abstract class ParsedDefinition {
 	
 	public abstract HighLevelDefinition getCompiled();
 	
-	public abstract void linkInnerTypes();
+	public abstract void linkTypes(TypeResolutionContext context);
 	
-	public void compileTypes(BaseScope scope) {
-		
-	}
+	public abstract void registerMembers(BaseScope scope, PrecompilationState state);
 	
-	public abstract void compileMembers(BaseScope scope);
-	
-	public abstract void listMembers(BaseScope scope, PrecompilationState state);
-	
-	public abstract void precompile(BaseScope scope, PrecompilationState state);
-	
-	public abstract void compileCode(BaseScope scope, PrecompilationState state);
+	public abstract void compile(BaseScope scope);
 }

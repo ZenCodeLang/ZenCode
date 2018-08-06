@@ -10,20 +10,25 @@ import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ModifiedTypeID implements ITypeID {
+	public static final int MODIFIER_OPTIONAL = 1;
+	public static final int MODIFIER_CONST = 2;
+	public static final int MODIFIER_IMMUTABLE = 4;
+	
 	public final int modifiers;
 	public final ITypeID baseType;
 	private final ITypeID normalized;
+	private final GlobalTypeRegistry registry;
 	
 	public ModifiedTypeID(GlobalTypeRegistry registry, int modifiers, ITypeID baseType) {
 		this.modifiers = modifiers;
 		this.baseType = baseType;
+		this.registry = registry;
 		
 		normalized = baseType.getNormalized() == baseType ? this : registry.getModified(modifiers, baseType.getNormalized());
 	}
@@ -50,16 +55,32 @@ public class ModifiedTypeID implements ITypeID {
 
 	@Override
 	public boolean isOptional() {
-		return (modifiers & TypeMembers.MODIFIER_OPTIONAL) > 0;
+		return (modifiers & MODIFIER_OPTIONAL) > 0;
 	}
 	
+	@Override
 	public boolean isImmutable() {
-		return (modifiers & TypeMembers.MODIFIER_IMMUTABLE) > 0;
+		return (modifiers & MODIFIER_IMMUTABLE) > 0;
 	}
 
 	@Override
 	public boolean isConst() {
-		return (modifiers & TypeMembers.MODIFIER_CONST) > 0;
+		return (modifiers & MODIFIER_CONST) > 0;
+	}
+	
+	@Override
+	public ITypeID withoutOptional() {
+		return without(MODIFIER_OPTIONAL);
+	}
+	
+	@Override
+	public ITypeID withoutImmutable() {
+		return without(MODIFIER_IMMUTABLE);
+	}
+	
+	@Override
+	public ITypeID withoutConst() {
+		return without(MODIFIER_CONST);
 	}
 	
 	@Override
@@ -67,9 +88,9 @@ public class ModifiedTypeID implements ITypeID {
 		return baseType.isDefinition(definition);
 	}
 	
-	@Override
-	public ITypeID unwrap() {
-		return baseType;
+	private ITypeID without(int modifiers) {
+		int newModifiers = this.modifiers & ~modifiers;
+		return newModifiers == 0 ? baseType : registry.getModified(newModifiers, baseType);
 	}
 
 	@Override
@@ -84,7 +105,7 @@ public class ModifiedTypeID implements ITypeID {
 
 	@Override
 	public boolean hasDefaultValue() {
-		return baseType.hasDefaultValue();
+		return isOptional() || baseType.hasDefaultValue();
 	}
 
 	@Override
@@ -116,6 +137,14 @@ public class ModifiedTypeID implements ITypeID {
 	
 	@Override
 	public String toString() {
-		return "const " + baseType.toString();
+		StringBuilder result = new StringBuilder();
+		if ((modifiers & MODIFIER_IMMUTABLE) > 0)
+			result.append("immutable ");
+		if ((modifiers & MODIFIER_CONST) > 0)
+			result.append("const ");
+		result.append(baseType.toString());
+		if ((modifiers & MODIFIER_OPTIONAL) > 0)
+			result.append("?");
+		return result.toString();
 	}
 }

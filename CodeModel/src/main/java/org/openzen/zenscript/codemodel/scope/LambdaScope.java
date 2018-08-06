@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 
 /**
  *
@@ -94,5 +95,10 @@ public class LambdaScope extends StatementScope {
 	@Override
 	public AnnotationDefinition getAnnotation(String name) {
 		return outer.getAnnotation(name);
+	}
+
+	@Override
+	public TypeMemberPreparer getPreparer() {
+		return outer.getPreparer();
 	}
 }

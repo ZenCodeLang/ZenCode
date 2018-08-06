@@ -7,6 +7,7 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -44,8 +45,8 @@ public class ParsedGetter extends ParsedFunctionalMember {
 	}
 
 	@Override
-	public void linkTypes(BaseScope scope) {
-		compiled = new GetterMember(position, definition, modifiers, name, type.compile(scope), null);
+	public void linkTypes(TypeResolutionContext context) {
+		compiled = new GetterMember(position, definition, modifiers, name, type.compile(context), null);
 	}
 
 	@Override
@@ -54,16 +55,15 @@ public class ParsedGetter extends ParsedFunctionalMember {
 	}
 	
 	@Override
-	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
-		boolean result = super.inferHeaders(scope, state);
-		if (result && type == ParsedTypeBasic.UNDETERMINED)
-			compiled.type = compiled.header.returnType;
+	protected void inferHeaders(BaseScope scope) {
+		super.inferHeaders(scope);
 		
-		return result;
+		if (type == ParsedTypeBasic.UNDETERMINED)
+			compiled.type = compiled.header.returnType;
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType, PrecompilationState state) {
+	protected void fillOverride(TypeScope scope, ITypeID baseType) {
 		compiled.setOverrides(scope.getTypeMembers(baseType).getOrCreateGroup(name, false).getGetter());
 	}
 }

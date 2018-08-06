@@ -21,17 +21,15 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  *
  * @author Hoofdgebruiker
  */
-public class ConstMember extends DefinitionMember {
+public class ConstMember extends PropertyMember {
 	public final String name;
-	public ITypeID type;
 	public Expression value;
 	public final BuiltinID builtin;
 	
 	public ConstMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, ITypeID type, BuiltinID builtin) {
-		super(position, definition, modifiers);
+		super(position, definition, modifiers, type, null);
 		
 		this.name = name;
-		this.type = type;
 		this.builtin = builtin;
 	}
 
@@ -47,7 +45,7 @@ public class ConstMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addConst(new ConstMemberRef(this, type, mapper));
+		members.addConst(new ConstMemberRef(this, mapper));
 	}
 
 	@Override

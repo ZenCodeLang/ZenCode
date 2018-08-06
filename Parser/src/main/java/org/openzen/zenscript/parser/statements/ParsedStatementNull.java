@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.PrecompilationState;
 
@@ -27,10 +26,5 @@ public class ParsedStatementNull extends ParsedStatement {
 	@Override
 	public Statement compile(StatementScope scope) {
 		return result(new EmptyStatement(position), scope);
-	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		return null;
 	}
 }

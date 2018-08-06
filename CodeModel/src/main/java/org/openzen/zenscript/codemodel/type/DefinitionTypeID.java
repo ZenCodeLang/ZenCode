@@ -23,13 +23,11 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  */
 public class DefinitionTypeID implements ITypeID {
 	public static DefinitionTypeID forType(HighLevelDefinition definition) {
-		if (definition.genericParameters != null)
+		if (definition.genericParameters != null && definition.genericParameters.length > 0)
 			throw new IllegalArgumentException("Definition has type arguments!");
 		
 		return new DefinitionTypeID(null, definition, ITypeID.NONE);
 	}
-	
-	private static final OuterTypeEntry[] NO_OUTER_ENTRIES = new OuterTypeEntry[0];
 	
 	public final HighLevelDefinition definition;
 	public final ITypeID[] typeParameters;
@@ -48,6 +46,10 @@ public class DefinitionTypeID implements ITypeID {
 			throw new NullPointerException("typeParameters cannot be null");
 		if (typeParameters.length != definition.getNumberOfGenericParameters())
 			throw new IllegalArgumentException("Wrong number of type parameters!");
+		if (definition.isInnerDefinition() && !definition.isStatic() && outer == null)
+			throw new IllegalArgumentException("Inner definition requires outer instance");
+		if ((!definition.isInnerDefinition() || definition.isStatic()) && outer != null)
+			throw new IllegalArgumentException("Static inner definition must not have outer instance");
 		
 		this.definition = definition;
 		this.typeParameters = typeParameters;
@@ -128,6 +130,8 @@ public class DefinitionTypeID implements ITypeID {
 	@Override
 	public DefinitionTypeID instance(GenericMapper mapper) {
 		if (!hasTypeParameters() && outer == null)
+			return this;
+		if (mapper.getMapping().isEmpty())
 			return this;
 		
 		ITypeID[] instancedArguments = ITypeID.NONE;
@@ -221,25 +225,27 @@ public class DefinitionTypeID implements ITypeID {
 		final DefinitionTypeID other = (DefinitionTypeID) obj;
 		return this.definition == other.definition
 				&& Arrays.deepEquals(this.typeParameters, other.typeParameters)
-				&& outer == this.outer;
+				&& Objects.equals(outer, this.outer);
 	}
 	
 	@Override
 	public String toString() {
-		if (!hasTypeParameters()) {
+		if (!hasTypeParameters() && outer == null)
 			return definition.name;
-		} else {
-			StringBuilder result = new StringBuilder();
-			result.append(definition.name);
-			result.append('<');
-			for (int i = 0; i < typeParameters.length; i++) { 
-				if (i > 0)
-					result.append(", ");
-				result.append(typeParameters[i].toString());
-			}
-			result.append('>');
-			return result.toString();
+		
+		StringBuilder result = new StringBuilder();
+		if (outer != null)
+			result.append(outer.toString()).append('.');
+		
+		result.append(definition.name);
+		result.append('<');
+		for (int i = 0; i < typeParameters.length; i++) { 
+			if (i > 0)
+				result.append(", ");
+			result.append(typeParameters[i].toString());
 		}
+		result.append('>');
+		return result.toString();
 	}
 
 	@Override
@@ -257,43 +263,9 @@ public class DefinitionTypeID implements ITypeID {
 	public boolean isDestructible() {
 		return definition.isDestructible();
 	}
-	
-	private class OuterTypeEntry {
-		private final TypeParameter parameter;
-		private final ITypeID type;
-		
-		public OuterTypeEntry(TypeParameter parameter, ITypeID type) {
-			this.parameter = parameter;
-			this.type = type;
-		}
 
-		@Override
-		public int hashCode() {
-			int hash = 3;
-			hash = 11 * hash + Objects.hashCode(this.parameter);
-			hash = 11 * hash + Objects.hashCode(this.type);
-			return hash;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null) {
-				return false;
-			}
-			if (getClass() != obj.getClass()) {
-				return false;
-			}
-			final OuterTypeEntry other = (OuterTypeEntry) obj;
-			if (!Objects.equals(this.parameter, other.parameter)) {
-				return false;
-			}
-			if (!Objects.equals(this.type, other.type)) {
-				return false;
-			}
-			return true;
-		}
+	public DefinitionTypeID getInnerType(GenericName name, GlobalTypeRegistry registry) {
+		HighLevelDefinition type = definition.getInnerType(name.name);
+		return registry.getForDefinition(type, name.arguments, this);
 	}
 }

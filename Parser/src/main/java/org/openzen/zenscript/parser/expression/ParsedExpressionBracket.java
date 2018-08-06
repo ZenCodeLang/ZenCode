@@ -12,8 +12,6 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
@@ -52,13 +50,5 @@ public class ParsedExpressionBracket extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return expressions.get(0).hasStrongType();
-	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		if (expressions.size() != 1)
-			return null;
-		
-		return expressions.get(0).precompileForType(scope, state);
 	}
 }

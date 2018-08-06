@@ -37,9 +37,4 @@ public class ParsedExpressionSuper extends ParsedExpression {
 	public boolean hasStrongType() {
 		return true;
 	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		return scope.getThisType().getSuperType(scope.getTypeRegistry());
-	}
 }

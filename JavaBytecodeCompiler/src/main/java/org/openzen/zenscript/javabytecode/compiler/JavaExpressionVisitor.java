@@ -12,8 +12,6 @@ import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.CompareType;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -26,7 +24,6 @@ import org.openzen.zenscript.javabytecode.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final int PUBLIC = Opcodes.ACC_PUBLIC;
@@ -1523,6 +1520,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
         Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
+		try {
+			type.getInternalName();
+		} catch (NullPointerException ex) {
+			ex.printStackTrace();
+		}
 
         javaWriter.loadObject(0);
         if (javaWriter.method.javaClass.isEnum) {
@@ -1533,7 +1535,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         for (Expression argument : expression.arguments.arguments) {
             argument.accept(this);
         }
-        javaWriter.invokeSpecial(type.getInternalName(), "<init>", CompilerUtils.calcDesc(expression.constructor.header, javaWriter.method.javaClass.isEnum));
+		String internalName = type.getInternalName();
+        javaWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(expression.constructor.getHeader(), javaWriter.method.javaClass.isEnum));
         return null;
     }
 
@@ -1544,7 +1547,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
             argument.accept(this);
         }
         //No super calls in enums possible, and that's already handled in the enum constructor itself.
-        javaWriter.invokeSpecial(expression.objectType.accept(JavaTypeClassVisitor.INSTANCE), "<init>", CompilerUtils.calcDesc(expression.constructor.header, false));
+        javaWriter.invokeSpecial(expression.objectType.accept(JavaTypeClassVisitor.INSTANCE), "<init>", CompilerUtils.calcDesc(expression.constructor.getHeader(), false));
 
         CompilerUtils.writeDefaultFieldInitializers(javaWriter, javaWriter.forDefinition, false);
         return null;

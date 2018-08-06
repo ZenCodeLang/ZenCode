@@ -12,9 +12,6 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -49,10 +46,5 @@ public class ParsedExpressionSame extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return true;
-	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		return BasicTypeID.BOOL;
 	}
 }

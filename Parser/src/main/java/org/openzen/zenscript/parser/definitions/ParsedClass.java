@@ -8,12 +8,11 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.GenericFunctionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -62,11 +61,10 @@ public class ParsedClass extends BaseParsedDefinition {
 	}
 
 	@Override
-	public void compileMembers(BaseScope scope) {
-		ParsedTypeParameter.compile(scope, compiled.genericParameters, genericParameters);
+	protected void linkTypesLocal(TypeResolutionContext context) {
 		if (superclass != null)
-			compiled.setSuperType(superclass.compile(new GenericFunctionScope(scope, compiled.genericParameters)));
+			compiled.setSuperType(superclass.compile(context));
 		
-		super.compileMembers(scope);
+		super.linkTypesLocal(context);
 	}
 }

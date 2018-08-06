@@ -21,7 +21,7 @@ public class ConstructorSuperCallExpression extends Expression {
 	public final CallArguments arguments;
 	
 	public ConstructorSuperCallExpression(CodePosition position, ITypeID type, FunctionalMemberRef constructor, CallArguments arguments) {
-		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
+		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));
 		
 		this.objectType = type;
 		this.constructor = constructor;
@@ -41,6 +41,6 @@ public class ConstructorSuperCallExpression extends Expression {
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		return new ConstructorSuperCallExpression(position, type.getNormalized(), constructor, arguments.normalize(position, scope, constructor.header));
+		return new ConstructorSuperCallExpression(position, type.getNormalized(), constructor, arguments.normalize(position, scope, constructor.getHeader()));
 	}
 }

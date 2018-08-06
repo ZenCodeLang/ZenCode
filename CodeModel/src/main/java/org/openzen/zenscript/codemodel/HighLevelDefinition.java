@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -146,4 +147,16 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 	
 	public abstract <T> T accept(DefinitionVisitor<T> visitor);
+
+	public HighLevelDefinition getInnerType(String name) {
+		for (IDefinitionMember member : members) {
+			if (member instanceof InnerDefinitionMember) {
+				InnerDefinitionMember inner = (InnerDefinitionMember)member;
+				if (inner.innerDefinition.name.equals(name))
+					return inner.innerDefinition;
+			}
+		}
+		
+		return null;
+	}
 }

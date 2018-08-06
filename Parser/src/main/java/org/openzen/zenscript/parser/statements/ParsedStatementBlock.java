@@ -5,12 +5,10 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.BlockScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.PrecompilationState;
 
@@ -36,15 +34,5 @@ public class ParsedStatementBlock extends ParsedStatement {
 		result(block, scope);
 		block.setTag(WhitespacePostComment.class, postComment);
 		return block;
-	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		StatementScope blockScope = new BlockScope(scope);
-		ITypeID result = null;
-		for (ParsedStatement statement : statements) {
-			result = union(scope, result, statement.precompileForResultType(blockScope, precompileState));
-		}
-		return result;
 	}
 }

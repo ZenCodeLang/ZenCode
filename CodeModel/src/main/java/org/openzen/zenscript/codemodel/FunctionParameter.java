@@ -22,7 +22,7 @@ public class FunctionParameter extends Taggable {
 	public Annotation[] annotations;
 	public final ITypeID type;
 	public final String name;
-	public final Expression defaultValue;
+	public Expression defaultValue;
 	public final boolean variadic;
 	
 	public FunctionParameter(ITypeID type) {

@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.scope;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -14,107 +14,68 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.PackageDefinitions;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialGlobalExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class FileScope extends BaseScope {
+	private final TypeResolutionContext context;
 	private final LocalMemberCache memberCache;
-	private final ZSPackage rootPackage;
-	private final PackageDefinitions packageDefinitions;
-	private final GlobalTypeRegistry globalRegistry;
-	private final Map<String, HighLevelDefinition> importedTypes = new HashMap<>();
-	private final Map<String, ISymbol> globalSymbols;
-	private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
+	private final Map<String, ISymbol> globals;
+	private final TypeMemberPreparer preparer;
 	
 	public FileScope(
-			ZSPackage rootPackage,
-			PackageDefinitions packageDefinitions,
-			GlobalTypeRegistry globalRegistry,
+			TypeResolutionContext context,
 			List<ExpansionDefinition> expansions,
-			Map<String, ISymbol> globalSymbols,
-			List<AnnotationDefinition> annotations) {
-		this.rootPackage = rootPackage;
-		this.packageDefinitions = packageDefinitions;
-		this.globalRegistry = globalRegistry;
-		this.globalSymbols = globalSymbols;
+			Map<String, ISymbol> globals,
+			TypeMemberPreparer preparer) {
+		this.context = context;
+		this.globals = globals;
+		this.preparer = preparer;
 		
-		memberCache = new LocalMemberCache(globalRegistry, expansions);
-		
-		for (AnnotationDefinition annotation : annotations) {
-			this.annotations.put(annotation.getAnnotationName(), annotation);
-		}
+		memberCache = new LocalMemberCache(context.getTypeRegistry(), expansions);
 	}
 	
 	@Override
 	public LocalMemberCache getMemberCache() {
 		return memberCache;
 	}
-	
-	public void register(String name, HighLevelDefinition type) {
-		importedTypes.put(name, type);
-	}
 
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
-		if (importedTypes.containsKey(name.name))
-			return new PartialTypeExpression(position, getTypeRegistry().getForDefinition(importedTypes.get(name.name), name.arguments), name.arguments);
+		ITypeID type = context.getType(position, Collections.singletonList(name));
+		if (type != null)
+			return new PartialTypeExpression(position, type, name.arguments);
 		
-		HighLevelDefinition localDefinition = packageDefinitions.getDefinition(name.name);
-		if (localDefinition != null)
-			return new PartialTypeExpression(position, globalRegistry.getForDefinition(localDefinition, name.arguments), name.arguments);
-		
-		if (globalSymbols.containsKey(name.name)) {
-			IPartialExpression resolution = globalSymbols.get(name.name).getExpression(position, globalRegistry, name.arguments);
+		if (globals.containsKey(name.name)) {
+			IPartialExpression resolution = globals.get(name.name).getExpression(position, this, name.arguments);
 			return new PartialGlobalExpression(position, name.name, resolution, name.arguments);
 		}
 		
-		return rootPackage.getMember(position, globalRegistry, name);
+		return null;
 	}
 
 	@Override
 	public ITypeID getType(CodePosition position, List<GenericName> name) {
-		if (importedTypes.containsKey(name.get(0).name)) {
-			HighLevelDefinition definition = importedTypes.get(name.get(0).name);
-			ITypeID type = getTypeRegistry().getForDefinition(definition, name.get(0).arguments);
-			for (int i = 1; i < name.size(); i++)
-				type = getTypeMembers(type).getInnerType(position, name.get(i));
+		ITypeID type = context.getType(position, name);
+		if (type != null)
 			return type;
-		}
 		
-		HighLevelDefinition localDefinition = packageDefinitions.getDefinition(name.get(0).name);
-		if (localDefinition != null) {
-			DefinitionTypeID type = globalRegistry.getForDefinition(localDefinition, name.get(0).arguments);
-			for (int i = 1; i < name.size(); i++) {
-				type = getTypeMembers(type).getInnerType(position, name.get(i));
-				if (type == null)
-					break;
-			}
-			
-			// TODO: take care of non-static inner classes in generic classes!
-			if (type != null && name.get(name.size() - 1).getNumberOfArguments() != type.definition.getNumberOfGenericParameters())
-				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments");
-			
-			if (type != null)
-				return type;
-		} else if (globalSymbols.containsKey(name.get(0).name)) {
-			ITypeID type = globalSymbols.get(name.get(0).name).getType(position, globalRegistry, name.get(0).arguments);
+		if (globals.containsKey(name.get(0).name)) {
+			type = globals.get(name.get(0).name).getType(position, context, name.get(0).arguments);
 			for (int i = 1; i < name.size(); i++) {
 				type = getTypeMembers(type).getInnerType(position, name.get(i));
 				if (type == null)
@@ -125,7 +86,7 @@ public class FileScope extends BaseScope {
 				return type;
 		}
 		
-		return rootPackage.getType(position, this, name);
+		return null;
 	}
 
 	@Override
@@ -155,6 +116,11 @@ public class FileScope extends BaseScope {
 
 	@Override
 	public AnnotationDefinition getAnnotation(String name) {
-		return annotations.get(name);
+		return context.getAnnotation(name);
+	}
+
+	@Override
+	public TypeMemberPreparer getPreparer() {
+		return preparer;
 	}
 }

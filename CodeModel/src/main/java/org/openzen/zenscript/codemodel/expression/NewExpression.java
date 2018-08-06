@@ -26,7 +26,7 @@ public class NewExpression extends Expression {
 			FunctionalMemberRef constructor,
 			CallArguments arguments)
 	{
-		this(position, type, constructor, arguments, constructor.header);
+		this(position, type, constructor, arguments, constructor.getHeader());
 	}
 	
 	public NewExpression(
@@ -36,7 +36,7 @@ public class NewExpression extends Expression {
 			CallArguments arguments,
 			FunctionHeader instancedHeader)
 	{
-		super(position, type, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
+		super(position, type, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));
 		
 		this.constructor = constructor;
 		this.arguments = arguments;

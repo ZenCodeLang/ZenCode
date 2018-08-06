@@ -12,9 +12,7 @@ import org.openzen.zenscript.codemodel.statement.LockStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 /**
@@ -37,10 +35,5 @@ public class ParsedStatementLock extends ParsedStatement {
 		Expression object = this.object.compile(new ExpressionScope(scope)).eval();
 		Statement content = this.content.compile(scope);
 		return result(new LockStatement(position, object, content), scope);
-	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		return content.precompileForResultType(scope, precompileState);
 	}
 }

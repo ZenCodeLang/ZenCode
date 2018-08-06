@@ -32,6 +32,10 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 		return position;
 	}
 	
+	public MemberAnnotation[] getAnnotations() {
+		return annotations;
+	}
+	
 	public boolean isStatic() {
 		return Modifiers.isStatic(modifiers);
 	}

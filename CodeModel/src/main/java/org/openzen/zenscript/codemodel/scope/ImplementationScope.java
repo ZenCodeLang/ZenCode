@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
@@ -38,13 +39,13 @@ public class ImplementationScope extends BaseScope {
 		this.outer = outer;
 		this.implementation = implementation;
 		
-		TypeMembers interfaceMembers = outer.getMemberCache().get(implementation.type);
-		members = new TypeMembers(outer.getMemberCache(), implementation.type);
+		members = outer.getTypeMembers(implementation.type);
+		/*members = new TypeMembers(outer.getMemberCache(), implementation.type);
 		interfaceMembers.copyMembersTo(implementation.position, interfaceMembers, TypeMemberPriority.INHERITED);
 		
 		for (IDefinitionMember member : implementation.members) {
 			member.registerTo(members, TypeMemberPriority.SPECIFIED, new GenericMapper(outer.getTypeRegistry(), Collections.emptyMap()));
-		}
+		}*/
 	}
 
 	@Override
@@ -57,7 +58,7 @@ public class ImplementationScope extends BaseScope {
 		if (members.hasInnerType(name.name))
 			return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
 		if (members.hasMember(name.name))
-			return members.getMemberExpression(position, new ThisExpression(position, outer.getThisType()), name, true);
+			return members.getMemberExpression(position, this, new ThisExpression(position, outer.getThisType()), name, true);
 		
 		return outer.get(position, name);
 	}
@@ -103,5 +104,10 @@ public class ImplementationScope extends BaseScope {
 	@Override
 	public AnnotationDefinition getAnnotation(String name) {
 		return outer.getAnnotation(name);
+	}
+
+	@Override
+	public TypeMemberPreparer getPreparer() {
+		return outer.getPreparer();
 	}
 }

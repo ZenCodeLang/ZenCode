@@ -73,6 +73,7 @@ import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
 import static org.openzen.zencode.shared.CodePosition.BUILTIN;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 
 /**
  *
@@ -108,8 +109,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 			DefinitionMemberGroup group = members.getOrCreateGroup(OperatorType.EQUALS);
 			DefinitionMemberGroup inverse = members.getOrCreateGroup(OperatorType.NOTEQUALS);
 			for (TypeMember<FunctionalMemberRef> method : group.getMethodMembers()) {
-				if (!inverse.hasMethod(method.member.header)) {
-					notequals(definition, BuiltinID.AUTOOP_NOTEQUALS, method.member.header.parameters[0].type);
+				if (!inverse.hasMethod(method.member.getHeader())) {
+					notequals(definition, BuiltinID.AUTOOP_NOTEQUALS, method.member.getHeader().parameters[0].type);
 				}
 			}
 		}
@@ -464,8 +465,14 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 			}
 		}
 		
+		if (definition instanceof InterfaceDefinition) {
+			InterfaceDefinition interfaceDefinition = (InterfaceDefinition)definition;
+			for (ITypeID baseType : interfaceDefinition.baseInterfaces)
+				cache.get(baseType.instance(mapper)).copyMembersTo(type.definition.position, members, TypeMemberPriority.INHERITED);
+		}
+		
 		if (type.superType != null) {
-			cache.get(type.superType).copyMembersTo(type.definition.position, members, TypeMemberPriority.INHERITED);
+			cache.get(type.superType.instance(mapper)).copyMembersTo(type.definition.position, members, TypeMemberPriority.INHERITED);
 		} else {
 			getter(definition, OBJECT_HASHCODE, "objectHashCode", BasicTypeID.INT);
 		}
@@ -1120,7 +1127,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	
 	private void castedTargetCall(OperatorMember member, BuiltinID casterBuiltin) {
 		CasterMemberRef caster = castImplicitRef(member.definition, casterBuiltin, member.header.parameters[0].type);
-		TranslatedOperatorMemberRef method = new TranslatedOperatorMemberRef(member, member.header, call -> member.ref(emptyMapper).call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope));
+		TranslatedOperatorMemberRef method = new TranslatedOperatorMemberRef(member, GenericMapper.EMPTY, call -> member.ref(emptyMapper).call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope));
 		members.getOrCreateGroup(member.operator).addMethod(method, TypeMemberPriority.SPECIFIED);
 	}
 	

@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -35,7 +36,7 @@ public class ParsedDestructor extends ParsedFunctionalMember {
 	}
 
 	@Override
-	public void linkTypes(BaseScope scope) {
+	public void linkTypes(TypeResolutionContext context) {
 		compiled = new DestructorMember(position, definition, modifiers);
 	}
 
@@ -45,7 +46,7 @@ public class ParsedDestructor extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType, PrecompilationState state) {
+	protected void fillOverride(TypeScope scope, ITypeID baseType) {
 		compiled.overrides = scope.getTypeMembers(baseType).getOrCreateGroup(OperatorType.DESTRUCTOR).getOverride(position, scope, compiled);
 	}
 }

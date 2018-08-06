@@ -22,7 +22,7 @@ public class GetFieldExpression extends Expression {
 	public final FieldMemberRef field;
 	
 	public GetFieldExpression(CodePosition position, Expression target, FieldMemberRef field) {
-		super(position, field.type, target.thrownType);
+		super(position, field.getType(), target.thrownType);
 		
 		this.target = target;
 		this.field = field;

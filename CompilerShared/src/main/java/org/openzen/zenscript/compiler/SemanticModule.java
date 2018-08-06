@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.annotations.AnnotationProcessor;
+import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.scope.FileScope;
@@ -39,7 +40,7 @@ public class SemanticModule {
 	
 	public final CompilationUnit compilationUnit;
 	public final List<ExpansionDefinition> expansions;
-	public final List<AnnotationDefinition> annotations;
+	public final AnnotationDefinition[] annotations;
 	
 	public SemanticModule(
 			String name,
@@ -51,7 +52,7 @@ public class SemanticModule {
 			List<ScriptBlock> scripts,
 			CompilationUnit compilationUnit,
 			List<ExpansionDefinition> expansions,
-			List<AnnotationDefinition> annotations)
+			AnnotationDefinition[] annotations)
 	{
 		this.name = name;
 		this.dependencies = dependencies;
@@ -75,14 +76,15 @@ public class SemanticModule {
 		if (state != State.ASSEMBLED)
 			throw new IllegalStateException("Module is invalid");
 		
-		AnnotationProcessor annotationProcessor = new AnnotationProcessor(rootPackage, definitions, compilationUnit.globalTypeRegistry, expansions, annotations);
+		ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(compilationUnit.globalTypeRegistry, annotations, rootPackage, null, globals);
+		AnnotationProcessor annotationProcessor = new AnnotationProcessor(context, expansions);
 		List<ScriptBlock> processedScripts = new ArrayList<>();
 		for (ScriptBlock block : scripts)
 			processedScripts.add(annotationProcessor.process(block));
 		for (HighLevelDefinition definition : definitions.getAll()) {
 			annotationProcessor.process(definition);
 			
-			FileScope fileScope = new FileScope(rootPackage, definitions, compilationUnit.globalTypeRegistry, expansions, new HashMap<>(), annotations);
+			FileScope fileScope = new FileScope(context, expansions, globals, member -> {});
 			definition.normalize(fileScope);
 		}
 		

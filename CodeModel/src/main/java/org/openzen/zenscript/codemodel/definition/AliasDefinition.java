@@ -22,6 +22,9 @@ public class AliasDefinition extends HighLevelDefinition {
 	}
 	
 	public void setType(ITypeID type) {
+		if (type == null)
+			throw new NullPointerException("type cannot be null!");
+		
 		this.type = type;
 	}
 

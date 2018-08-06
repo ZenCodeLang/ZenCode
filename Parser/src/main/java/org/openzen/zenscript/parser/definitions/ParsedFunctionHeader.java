@@ -10,14 +10,14 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.context.LocalTypeResolutionContext;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.GenericFunctionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -92,16 +92,16 @@ public class ParsedFunctionHeader {
 		this.thrownType = thrownType;
 	}
 	
-	public FunctionHeader compile(BaseScope scope) {
+	public FunctionHeader compile(TypeResolutionContext context) {
 		TypeParameter[] genericParameters = ParsedTypeParameter.getCompiled(this.genericParameters);
-		ParsedTypeParameter.compile(scope, genericParameters, this.genericParameters);
-		GenericFunctionScope innerScope = new GenericFunctionScope(scope, genericParameters);
+		LocalTypeResolutionContext localContext = new LocalTypeResolutionContext(context, null, genericParameters);
+		ParsedTypeParameter.compile(localContext, genericParameters, this.genericParameters);
 		
-		ITypeID returnType = this.returnType.compile(innerScope);
+		ITypeID returnType = this.returnType.compile(localContext);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.size()];
 		for (int i = 0; i < parameters.length; i++)
-			parameters[i] = this.parameters.get(i).compile(innerScope);
+			parameters[i] = this.parameters.get(i).compile(localContext);
 		
-		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(scope), parameters);
+		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(context), parameters);
 	}
 }

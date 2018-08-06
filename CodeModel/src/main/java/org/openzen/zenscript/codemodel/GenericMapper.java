@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel;
 
+import java.util.Collections;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
@@ -16,6 +17,8 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class GenericMapper {
+	public static final GenericMapper EMPTY = new GenericMapper(null, Collections.emptyMap());
+	
 	public final GlobalTypeRegistry registry;
 	private final Map<TypeParameter, ITypeID> mapping;
 	

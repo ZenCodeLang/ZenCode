@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -53,8 +54,8 @@ public class ParsedStruct extends BaseParsedDefinition {
 	}
 
 	@Override
-	public void compileMembers(BaseScope scope) {
-		ParsedTypeParameter.compile(scope, compiled.genericParameters, parameters);
-		super.compileMembers(scope);
+	protected void linkTypesLocal(TypeResolutionContext context) {
+		ParsedTypeParameter.compile(context, compiled.genericParameters, parameters);
+		super.linkTypesLocal(context);
 	}
 }

@@ -17,7 +17,7 @@ public class CheckNullExpression extends Expression {
 	public final Expression value;
 	
 	public CheckNullExpression(CodePosition position, Expression value) {
-		super(position, value.type.unwrap(), value.thrownType);
+		super(position, value.type.withoutOptional(), value.thrownType);
 		
 		this.value = value;
 	}

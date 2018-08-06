@@ -5,24 +5,16 @@
  */
 package org.openzen.zenscript.parser.type;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 
 /**
@@ -42,7 +34,7 @@ public class ParsedTypeGenericMap implements IParsedType {
 
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedTypeGenericMap(key, value, modifiers | TypeMembers.MODIFIER_OPTIONAL);
+		return new ParsedTypeGenericMap(key, value, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL);
 	}
 
 	@Override
@@ -51,73 +43,39 @@ public class ParsedTypeGenericMap implements IParsedType {
 	}
 
 	@Override
-	public ITypeID compile(BaseScope scope) {
+	public ITypeID compile(TypeResolutionContext context) {
 		TypeParameter cKey = key.compiled;
-		ITypeID valueType = this.value.compile(new GenericMapScope(scope, cKey));
+		ITypeID valueType = this.value.compile(new GenericMapScope(context, cKey));
 		
-		GlobalTypeRegistry registry = scope.getTypeRegistry();
+		GlobalTypeRegistry registry = context.getTypeRegistry();
 		return registry.getModified(modifiers, registry.getGenericMap(valueType, cKey));
 	}
 	
-	private class GenericMapScope extends BaseScope {
-		private final BaseScope outer;
-		private final Map<String, TypeParameter> typeParameters = new HashMap<>();
+	private class GenericMapScope implements TypeResolutionContext {
+		private final TypeResolutionContext outer;
+		private final TypeParameter parameter;
 		
-		public GenericMapScope(BaseScope outer, TypeParameter[] parameters) {
+		public GenericMapScope(TypeResolutionContext outer, TypeParameter parameter) {
 			this.outer = outer;
-			for (TypeParameter parameter : parameters)
-				typeParameters.put(parameter.name, parameter);
+			this.parameter = parameter;
 		}
 		
-		public GenericMapScope(BaseScope outer, TypeParameter parameter) {
-			this.outer = outer;
-			typeParameters.put(parameter.name, parameter);
-		}
-
 		@Override
-		public LocalMemberCache getMemberCache() {
-			return outer.getMemberCache();
-		}
-
-		@Override
-		public IPartialExpression get(CodePosition position, GenericName name) {
-			if (typeParameters.containsKey(name.name) && name.hasNoArguments())
-				return new PartialTypeExpression(position, getTypeRegistry().getGeneric(typeParameters.get(name.name)), name.arguments);
-			
-			return outer.get(position, name);
+		public GlobalTypeRegistry getTypeRegistry() {
+			return outer.getTypeRegistry();
 		}
 
 		@Override
 		public ITypeID getType(CodePosition position, List<GenericName> name) {
-			if (typeParameters.containsKey(name.get(0).name) && name.size() == 1 && name.get(0).hasNoArguments())
-				return getTypeRegistry().getGeneric(typeParameters.get(name.get(0).name));
+			if (name.get(0).name.equals(parameter.name) && name.size() == 1 && name.get(0).hasNoArguments())
+				return getTypeRegistry().getGeneric(parameter);
 			
 			return outer.getType(position, name);
 		}
-
-		@Override
-		public LoopStatement getLoop(String name) {
-			return outer.getLoop(name);
-		}
-
-		@Override
-		public FunctionHeader getFunctionHeader() {
-			return outer.getFunctionHeader();
-		}
-
+		
 		@Override
 		public ITypeID getThisType() {
 			return outer.getThisType();
-		}
-
-		@Override
-		public Function<CodePosition, Expression> getDollar() {
-			return outer.getDollar();
-		}
-
-		@Override
-		public IPartialExpression getOuterInstance(CodePosition position) {
-			return outer.getOuterInstance(position);
 		}
 
 		@Override

@@ -21,14 +21,14 @@ public class GetStaticFieldExpression extends Expression {
 	public final FieldMemberRef field;
 	
 	public GetStaticFieldExpression(CodePosition position, FieldMemberRef field) {
-		super(position, field.type, null);
+		super(position, field.getType(), null);
 		
 		this.field = field;
 	}
 	
 	@Override
 	public List<ITypeID> getAssignHints() {
-		return Collections.singletonList(field.type);
+		return Collections.singletonList(field.getType());
 	}
 	
 	@Override

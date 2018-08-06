@@ -5,15 +5,12 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
  *
@@ -142,7 +139,7 @@ public class GlobalTypeRegistry {
 	}
 	
 	public ITypeID getOptional(ITypeID original) {
-		return getModified(TypeMembers.MODIFIER_OPTIONAL, original);
+		return getModified(ModifiedTypeID.MODIFIER_OPTIONAL, original);
 	}
 	
 	public ITypeID getModified(int modifiers, ITypeID type) {

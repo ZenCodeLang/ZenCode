@@ -18,7 +18,7 @@ public class GetterExpression extends Expression {
 	public final GetterMemberRef getter;
 	
 	public GetterExpression(CodePosition position, Expression target, GetterMemberRef getter) {
-		super(position, getter.type, target.thrownType);
+		super(position, getter.getType(), target.thrownType);
 		
 		this.target = target;
 		this.getter = getter;

@@ -29,16 +29,28 @@ public interface ITypeID {
 		return null;
 	}
 	
-	public boolean isOptional();
-	
-	public default ITypeID getOptionalBase() {
-		return this;
+	public default boolean isOptional() {
+		return false;
 	}
 	
-	public boolean isConst();
+	public default boolean isConst() {
+		return false;
+	}
 	
-	public default ITypeID unwrap() {
-		return this;
+	public default boolean isImmutable() {
+		return false;
+	}
+	
+	public default ITypeID withoutOptional() {
+		throw new UnsupportedOperationException("Not an optional type");
+	}
+	
+	public default ITypeID withoutConst() {
+		throw new UnsupportedOperationException("Not a const type");
+	}
+	
+	public default ITypeID withoutImmutable() {
+		throw new UnsupportedOperationException("Not an immutable type");
 	}
 	
 	public boolean hasDefaultValue();

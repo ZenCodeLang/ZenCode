@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -68,17 +69,17 @@ public class ParsedEnum extends BaseParsedDefinition {
 	}
 	
 	@Override
-	public void compileMembers(BaseScope scope) {
-		super.compileMembers(scope);
-		
+	protected void linkTypesLocal(TypeResolutionContext context) {
 		for (ParsedEnumConstant constant : enumValues) {
 			compiled.addEnumConstant(constant.getCompiled());
 		}
+		
+		super.linkTypesLocal(context);
 	}
 
 	@Override
-	public void compileCode(BaseScope scope, PrecompilationState state) {
-		super.compileCode(scope, state);
+	public void compile(BaseScope scope) {
+		super.compile(scope);
 		
 		DefinitionTypeID type = scope.getTypeRegistry().getForDefinition(compiled, ITypeID.NONE);
 		ExpressionScope evalScope = new ExpressionScope(scope);

@@ -46,7 +46,7 @@ public abstract class FunctionalMember extends DefinitionMember {
 	public abstract FunctionalKind getKind();
 	
 	public FunctionalMemberRef ref(GenericMapper mapper) {
-		return new FunctionalMemberRef(this, mapper.map(header));
+		return new FunctionalMemberRef(this, mapper);
 	}
 	
 	@Override

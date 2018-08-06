@@ -220,7 +220,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 					argument.accept(clinitStatementVisitor.expressionVisitor);
 				}
 
-				clinitWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(constant.constructor.constructor.header, true));
+				clinitWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(constant.constructor.constructor.getHeader(), true));
 				clinitWriter.putStaticField(internalName, constant.name, "L" + internalName + ";");
 				
 				enumDefinition = (EnumDefinition) constant.definition;

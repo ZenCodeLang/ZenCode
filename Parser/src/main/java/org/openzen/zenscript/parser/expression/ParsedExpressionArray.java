@@ -83,20 +83,4 @@ public class ParsedExpressionArray extends ParsedExpression {
 	public boolean hasStrongType() {
 		return false;
 	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		if (contents.isEmpty())
-			return null;
-		
-		ITypeID type = contents.get(0).precompileForType(scope, state);
-		if (type == null)
-			return null;
-		
-		for (int i = 1; i < contents.size(); i++) {
-			ITypeID itemType = contents.get(i).precompileForType(scope, state);
-			type = scope.getTypeMembers(type).union(itemType);
-		}
-		return type;
-	}
 }

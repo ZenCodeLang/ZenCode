@@ -16,7 +16,6 @@ import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
@@ -65,17 +64,5 @@ public class ParsedStatementTryCatch extends ParsedStatement {
 			resource = new VarStatement(position, resourceName, resourceInitializer.type, resourceInitializer, true);
 		}
 		return result(new TryCatchStatement(position, resource, statement, catches, finallyClause), scope);
-	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		ITypeID result = statement.precompileForResultType(scope, precompileState);
-		for (ParsedCatchClause catchClause : catchClauses) {
-			result = union(scope, result, catchClause.content.precompileForResultType(scope, precompileState));
-		}
-		if (finallyClause != null) {
-			result = union(scope, result, finallyClause.precompileForResultType(scope, precompileState));
-		}
-		return result;
 	}
 }

@@ -12,13 +12,14 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialPackageExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -80,37 +81,29 @@ public class ZSPackage {
 		return null;
 	}
 	
-	public ITypeID getType(CodePosition position, TypeScope scope, List<GenericName> nameParts) {
-		return getType(position, scope, nameParts, 0);
+	public ITypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts) {
+		return getType(position, context, nameParts, 0);
 	}
 	
-	public ITypeID getType(CodePosition position, TypeScope scope, GenericName name) {
+	public ITypeID getType(CodePosition position, TypeResolutionContext context, GenericName name) {
 		if (types.containsKey(name.name)) {
-			return scope.getTypeRegistry().getForDefinition(types.get(name.name), name.arguments);
+			return context.getTypeRegistry().getForDefinition(types.get(name.name), name.arguments);
 		}
 		
 		return null;
 	}
 	
-	private ITypeID getType(CodePosition position, TypeScope scope, List<GenericName> nameParts, int depth) {
+	private ITypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts, int depth) {
 		if (depth >= nameParts.size())
 			return null;
 		
 		GenericName name = nameParts.get(depth);
 		if (subPackages.containsKey(name.name) && name.hasNoArguments())
-			return subPackages.get(name.name).getType(position, scope, nameParts, depth + 1);
+			return subPackages.get(name.name).getType(position, context, nameParts, depth + 1);
 		
 		if (types.containsKey(name.name)) {
-			ITypeID type = scope.getTypeRegistry().getForDefinition(types.get(name.name), name.arguments);
-			depth++;
-			while (depth < nameParts.size()) {
-				GenericName innerName = nameParts.get(depth++);
-				type = scope.getTypeMembers(type).getInnerType(position, innerName);
-				if (type == null)
-					return null;
-			}
-			
-			return type;
+			DefinitionTypeID type = context.getTypeRegistry().getForDefinition(types.get(name.name), name.arguments);
+			return GenericName.getInnerType(context.getTypeRegistry(), type, nameParts, depth + 1);
 		}
 		
 		return null;

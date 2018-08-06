@@ -27,7 +27,7 @@ public class CompareExpression extends Expression {
 		super(position, BasicTypeID.BOOL, binaryThrow(position, left.thrownType, right.thrownType));
 		
 		this.left = left;
-		this.right = scope == null ? right : right.castImplicit(position, scope, operator.header.parameters[0].type);
+		this.right = scope == null ? right : right.castImplicit(position, scope, operator.getHeader().parameters[0].type);
 		this.operator = operator;
 		this.comparison = comparison;
 	}
