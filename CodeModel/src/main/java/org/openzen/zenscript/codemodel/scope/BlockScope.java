@@ -10,6 +10,7 @@ import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
@@ -81,5 +82,10 @@ public class BlockScope extends StatementScope {
 	@Override
 	public TypeMemberPreparer getPreparer() {
 		return parent.getPreparer();
+	}
+
+	@Override
+	public GenericMapper getLocalTypeParameters() {
+		return parent.getLocalTypeParameters();
 	}
 }

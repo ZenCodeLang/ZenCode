@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.scope;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
@@ -14,7 +13,6 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
@@ -23,7 +21,6 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
@@ -40,12 +37,6 @@ public class ImplementationScope extends BaseScope {
 		this.implementation = implementation;
 		
 		members = outer.getTypeMembers(implementation.type);
-		/*members = new TypeMembers(outer.getMemberCache(), implementation.type);
-		interfaceMembers.copyMembersTo(implementation.position, interfaceMembers, TypeMemberPriority.INHERITED);
-		
-		for (IDefinitionMember member : implementation.members) {
-			member.registerTo(members, TypeMemberPriority.SPECIFIED, new GenericMapper(outer.getTypeRegistry(), Collections.emptyMap()));
-		}*/
 	}
 
 	@Override
@@ -109,5 +100,10 @@ public class ImplementationScope extends BaseScope {
 	@Override
 	public TypeMemberPreparer getPreparer() {
 		return outer.getPreparer();
+	}
+
+	@Override
+	public GenericMapper getLocalTypeParameters() {
+		return outer.getLocalTypeParameters();
 	}
 }

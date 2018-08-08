@@ -32,7 +32,7 @@ public class InnerDefinitionMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		if (isStatic() || mapper.getMapping().isEmpty()) {
+		if (isStatic() || mapper == null || mapper.getMapping().isEmpty()) {
 			type.addInnerType(innerDefinition.name, new InnerDefinition(innerDefinition));
 		} else {
 			type.addInnerType(innerDefinition.name, new InnerDefinition(innerDefinition, mapper.getMapping()));

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import static org.openzen.zenscript.codemodel.Modifiers.*;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
@@ -231,6 +232,11 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		@Override
 		public TypeMemberPreparer getPreparer() {
 			return member -> {};
+		}
+
+		@Override
+		public GenericMapper getLocalTypeParameters() {
+			throw new UnsupportedOperationException();
 		}
 	}
 	

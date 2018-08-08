@@ -64,7 +64,10 @@ public class FieldMember extends PropertyMember {
 		
 		if (autoGetterAccess != 0) {
 			this.autoGetter = new GetterMember(position, definition, autoGetterAccess, name, type, null);
-			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(position, new ThisExpression(position, thisType), new FieldMemberRef(this, GenericMapper.EMPTY))));
+			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(
+					position,
+					new ThisExpression(position, thisType),
+					new FieldMemberRef(this, null))));
 		} else {
 			this.autoGetter = null;
 		}
@@ -73,7 +76,7 @@ public class FieldMember extends PropertyMember {
 			this.autoSetter.setBody(new ExpressionStatement(position, new SetFieldExpression(
 					position,
 					new ThisExpression(position, thisType),
-					new FieldMemberRef(this, GenericMapper.EMPTY),
+					new FieldMemberRef(this, null),
 					new GetFunctionParameterExpression(position, this.autoSetter.header.parameters[0]))));
 		} else {
 			this.autoSetter = null;

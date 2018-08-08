@@ -38,7 +38,7 @@ public class ImplementationMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		ITypeID instancedType = mapper.map(type);
+		ITypeID instancedType = mapper == null ? type : mapper.map(type);
 		members.addImplementation(new ImplementationMemberRef(this, instancedType), priority);
 		
 		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType);

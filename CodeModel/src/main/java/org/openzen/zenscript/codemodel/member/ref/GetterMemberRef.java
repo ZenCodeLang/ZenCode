@@ -6,9 +6,7 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;

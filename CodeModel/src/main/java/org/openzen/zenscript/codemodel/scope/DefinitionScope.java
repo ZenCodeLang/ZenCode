@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -42,6 +43,7 @@ public class DefinitionScope extends BaseScope {
 	private final TypeMembers members;
 	private final Map<String, TypeParameter> genericParameters = new HashMap<>();
 	private final Map<String, Supplier<HighLevelDefinition>> innerTypes = new HashMap<>();
+	private final GenericMapper typeParameterMap;
 	
 	public DefinitionScope(BaseScope outer, HighLevelDefinition definition) {
 		this(outer, definition, true);
@@ -51,12 +53,14 @@ public class DefinitionScope extends BaseScope {
 		this.outer = outer;
 		this.definition = definition;
 		
+		Map<TypeParameter, ITypeID> typeParameters = new HashMap<>();
 		if (definition instanceof ExpansionDefinition) {
 			ExpansionDefinition expansion = (ExpansionDefinition)definition;
 			type = expansion.target;
 			
 			for (TypeParameter parameter : expansion.genericParameters) {
 				genericParameters.put(parameter.name, parameter);
+				typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter));
 			}
 		} else {
 			DefinitionTypeID definitionType = outer.getTypeRegistry().getForMyDefinition(definition);
@@ -65,12 +69,14 @@ public class DefinitionScope extends BaseScope {
 			while (definitionType != null) {
 				for (TypeParameter parameter : definitionType.definition.genericParameters) {
 					genericParameters.put(parameter.name, parameter);
+					typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter));
 				}
 				definitionType = definitionType.definition.isStatic() ? null : definitionType.outer;
 			}
 		}
 		
 		members = withMembers ? outer.getMemberCache().get(type) : null;
+		typeParameterMap = outer.getLocalTypeParameters().getInner(typeParameters);
 	}
 	
 	public void addInnerType(String name, Supplier<HighLevelDefinition> innerType) {
@@ -159,5 +165,10 @@ public class DefinitionScope extends BaseScope {
 	@Override
 	public TypeMemberPreparer getPreparer() {
 		return outer.getPreparer();
+	}
+
+	@Override
+	public GenericMapper getLocalTypeParameters() {
+		return typeParameterMap;
 	}
 }

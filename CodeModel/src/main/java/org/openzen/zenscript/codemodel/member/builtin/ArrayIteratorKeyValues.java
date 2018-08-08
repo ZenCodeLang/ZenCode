@@ -65,7 +65,7 @@ public class ArrayIteratorKeyValues extends Taggable implements IIteratorMember 
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addIterator(new IteratorMemberRef(this, mapper.map(loopVariableTypes)), priority);
+		members.addIterator(new IteratorMemberRef(this, mapper == null ? loopVariableTypes : mapper.map(loopVariableTypes)), priority);
 	}
 
 	@Override

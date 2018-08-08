@@ -14,6 +14,7 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -122,5 +123,10 @@ public class FileScope extends BaseScope {
 	@Override
 	public TypeMemberPreparer getPreparer() {
 		return preparer;
+	}
+
+	@Override
+	public GenericMapper getLocalTypeParameters() {
+		return GenericMapper.EMPTY;
 	}
 }

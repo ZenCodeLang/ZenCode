@@ -128,7 +128,7 @@ public class GlobalTypeRegistry {
 	}
 	
 	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID[] typeParameters, DefinitionTypeID outer) {
-		DefinitionTypeID id = new DefinitionTypeID(this, definition, typeParameters, outer);
+		DefinitionTypeID id = new DefinitionTypeID(this, definition, typeParameters, definition.isStatic() ? null : outer);
 		
 		if (definitionTypes.containsKey(id)) {
 			return definitionTypes.get(id);

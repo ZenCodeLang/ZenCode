@@ -71,7 +71,7 @@ public class RangeIterator extends Taggable implements IIteratorMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addIterator(new IteratorMemberRef(this, mapper.map(loopVariableTypes)), priority);
+		type.addIterator(new IteratorMemberRef(this, mapper == null ? loopVariableTypes : mapper.map(loopVariableTypes)), priority);
 	}
 
 	@Override

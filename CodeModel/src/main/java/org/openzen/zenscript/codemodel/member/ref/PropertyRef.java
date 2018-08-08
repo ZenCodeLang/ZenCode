@@ -30,7 +30,7 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 			type = null;
 			this.mapper = mapper;
 		} else {
-			type = member.getType().instance(mapper);
+			type = mapper == null ? member.getType() : member.getType().instance(mapper);
 			this.mapper = null;
 		}
 	}
@@ -40,7 +40,7 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 			if (member.getType() == BasicTypeID.UNDETERMINED)
 				throw new IllegalStateException("Property is not yet resolved!");
 			
-			type = member.getType().instance(mapper);
+			type = mapper == null ? member.getType() : member.getType().instance(mapper);
 			mapper = null;
 		}
 		

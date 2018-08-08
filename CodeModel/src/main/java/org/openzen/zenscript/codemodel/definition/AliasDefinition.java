@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -26,6 +27,11 @@ public class AliasDefinition extends HighLevelDefinition {
 			throw new NullPointerException("type cannot be null!");
 		
 		this.type = type;
+	}
+	
+	@Override
+	public boolean isStatic() {
+		return true;
 	}
 
 	@Override

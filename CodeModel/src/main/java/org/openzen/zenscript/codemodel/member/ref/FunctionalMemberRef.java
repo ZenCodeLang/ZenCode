@@ -41,7 +41,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 			header = null;
 			this.mapper = mapper;
 		} else {
-			header = mapper.map(target.header);
+			header = mapper == null ? target.header : mapper.map(target.header);
 			this.mapper = null;
 		}
 	}
@@ -56,7 +56,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 			if (target.header.hasUnknowns)
 				throw new IllegalStateException("member is not yet resolved!");
 			
-			header = mapper.map(target.header);
+			header = mapper == null ? target.header : mapper.map(target.header);
 			this.mapper = null;
 		}
 		

@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.scope;
 
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -29,4 +30,6 @@ public interface TypeScope extends TypeResolutionContext {
 	}
 	
 	TypeMemberPreparer getPreparer();
+	
+	GenericMapper getLocalTypeParameters();
 }

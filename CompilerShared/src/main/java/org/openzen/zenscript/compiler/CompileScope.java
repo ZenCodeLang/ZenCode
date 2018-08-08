@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -72,5 +73,10 @@ public class CompileScope implements TypeScope {
 	@Override
 	public TypeMemberPreparer getPreparer() {
 		return member -> {};
+	}
+
+	@Override
+	public GenericMapper getLocalTypeParameters() {
+		return GenericMapper.EMPTY;
 	}
 }

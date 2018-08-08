@@ -83,13 +83,11 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	private final GlobalTypeRegistry registry;
 	private final TypeMembers members;
 	private final LocalMemberCache cache;
-	private final GenericMapper emptyMapper;
 	
 	public TypeMemberBuilder(GlobalTypeRegistry registry, TypeMembers members, LocalMemberCache cache) {
 		this.registry = registry;
 		this.members = members;
 		this.cache = cache;
-		emptyMapper = new GenericMapper(registry, Collections.emptyMap());
 	}
 	
 	private void processType(HighLevelDefinition definition, ITypeID type) {
@@ -98,11 +96,12 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				throw new CompileException(expansion.position, CompileExceptionCode.INTERNAL_ERROR, "Missing expansion target");
 			
 			Map<TypeParameter, ITypeID> mapping = matchType(type, expansion.target);
+			if (mapping == null)
+				continue;
+			
 			GenericMapper mapper = new GenericMapper(registry, mapping);
-			if (mapping != null) {
-				for (IDefinitionMember member : expansion.members)
-					member.registerTo(members, TypeMemberPriority.SPECIFIED, mapper);
-			}
+			for (IDefinitionMember member : expansion.members)
+				member.registerTo(members, TypeMemberPriority.SPECIFIED, mapper);
 		}
 		
 		if (members.hasOperator(OperatorType.EQUALS)) {
@@ -117,11 +116,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private Map<TypeParameter, ITypeID> matchType(ITypeID type, ITypeID pattern) {
-		if (type == pattern)
-			return Collections.emptyMap();
-		
 		Map<TypeParameter, ITypeID> mapping = new HashMap<>();
-		if (pattern.inferTypeParameters(cache, type, mapping))
+		if (type.inferTypeParameters(cache, pattern, mapping))
 			return mapping;
 		
 		return null;
@@ -212,7 +208,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 					definition,
 					0,
 					new FunctionHeader(VOID, indexGetParameters),
-					ARRAY_CONSTRUCTOR_SIZED).ref(emptyMapper));
+					ARRAY_CONSTRUCTOR_SIZED).ref(null));
 		}
 
 		FunctionParameter[] initialValueConstructorParameters = new FunctionParameter[dimension + 1];
@@ -226,7 +222,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				0,
 				initialValueConstructorHeader,
 				ARRAY_CONSTRUCTOR_INITIAL_VALUE)
-				.registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				.registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
 		FunctionParameter[] lambdaConstructorParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
@@ -240,7 +236,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				definition,
 				0,
 				lambdaConstructorHeader,
-				ARRAY_CONSTRUCTOR_LAMBDA).ref(emptyMapper));
+				ARRAY_CONSTRUCTOR_LAMBDA).ref(null));
 		
 		{
 			TypeParameter mappedConstructorParameter = new TypeParameter(BUILTIN, "T");
@@ -256,7 +252,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 					definition,
 					Modifiers.PUBLIC,
 					mappedConstructorFunctionWithoutIndex,
-					ARRAY_CONSTRUCTOR_PROJECTED).ref(emptyMapper));
+					ARRAY_CONSTRUCTOR_PROJECTED).ref(null));
 		}
 		
 		{
@@ -290,8 +286,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 		getter(definition, ARRAY_ISEMPTY, "isEmpty", BOOL);
 		getter(definition, ARRAY_HASHCODE, "objectHashCode", INT);
-		new ArrayIteratorKeyValues(array).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
-		new ArrayIteratorValues(array).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		new ArrayIteratorKeyValues(array).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+		new ArrayIteratorValues(array).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
 		equals(definition, ARRAY_EQUALS, array);
 		notequals(definition, ARRAY_NOTEQUALS, array);
@@ -328,7 +324,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		getter(builtin, BuiltinID.ASSOC_VALUES, "values", cache.getRegistry().getArray(valueType, 1));
 		getter(builtin, BuiltinID.ASSOC_HASHCODE, "objectHashCode", BasicTypeID.INT);
 		
-		new AssocIterator(assoc).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		new AssocIterator(assoc).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
 		equals(builtin, BuiltinID.ASSOC_EQUALS, assoc);
 		notequals(builtin, BuiltinID.ASSOC_NOTEQUALS, assoc);
@@ -378,7 +374,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	@Override
 	public Void visitFunction(FunctionTypeID function) {
 		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, null, "", Modifiers.EXPORT, function.header);
-		new CallerMember(BUILTIN, builtin, 0, function.header, FUNCTION_CALL).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		new CallerMember(BUILTIN, builtin, 0, function.header, FUNCTION_CALL).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
 		same(builtin, FUNCTION_SAME, function);
 		notsame(builtin, FUNCTION_NOTSAME, function);
@@ -390,7 +386,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	@Override
 	public Void visitDefinition(DefinitionTypeID type) {
 		HighLevelDefinition definition = type.definition;
-		GenericMapper mapper = emptyMapper;
+		GenericMapper mapper = null;
 		if (type.hasTypeParameters() || (type.outer != null && type.outer.hasTypeParameters())) {
 			Map<TypeParameter, ITypeID> mapping = type.getTypeParameterMapping();
 			mapper = new GenericMapper(registry, mapping);
@@ -435,7 +431,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 							definition,
 							Modifiers.PUBLIC,
 							new FunctionHeader(VOID, parameters),
-							STRUCT_VALUE_CONSTRUCTOR).ref(emptyMapper), TypeMemberPriority.SPECIFIED);
+							STRUCT_VALUE_CONSTRUCTOR).ref(null), TypeMemberPriority.SPECIFIED);
 				}
 			} else if (definition instanceof EnumDefinition) {
 				// add default constructor
@@ -444,7 +440,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 						definition,
 						Modifiers.PRIVATE,
 						new FunctionHeader(VOID),
-						ENUM_EMPTY_CONSTRUCTOR).ref(emptyMapper), TypeMemberPriority.SPECIFIED);
+						ENUM_EMPTY_CONSTRUCTOR).ref(null), TypeMemberPriority.SPECIFIED);
 			}
 		}
 		
@@ -511,7 +507,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				|| range.from == UINT
 				|| range.from == LONG
 				|| range.from == ULONG)) {
-			new RangeIterator(range).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+			new RangeIterator(range).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		}
 		
 		processType(definition, range);
@@ -1120,19 +1116,19 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		method(builtin, STRING_TO_LOWER_CASE, "toLowerCase", STRING);
 		method(builtin, STRING_TO_UPPER_CASE, "toUpperCase", STRING);
 		
-		new StringCharIterator().registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		new StringCharIterator().registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
 		processType(builtin, STRING);
 	}
 	
 	private void castedTargetCall(OperatorMember member, BuiltinID casterBuiltin) {
 		CasterMemberRef caster = castImplicitRef(member.definition, casterBuiltin, member.header.parameters[0].type);
-		TranslatedOperatorMemberRef method = new TranslatedOperatorMemberRef(member, GenericMapper.EMPTY, call -> member.ref(emptyMapper).call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope));
+		TranslatedOperatorMemberRef method = new TranslatedOperatorMemberRef(member, GenericMapper.EMPTY, call -> member.ref(null).call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope));
 		members.getOrCreateGroup(member.operator).addMethod(method, TypeMemberPriority.SPECIFIED);
 	}
 	
 	private void register(IDefinitionMember member) {
-		member.registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		member.registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void operator(
@@ -1146,7 +1142,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				Modifiers.PUBLIC,
 				operator,
 				header,
-				builtin).ref(emptyMapper));
+				builtin).ref(null));
 	}
 	
 	private void not(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
@@ -1180,7 +1176,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void add(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result) {
-		addOp(definition, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		addOp(definition, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void add(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1198,7 +1194,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void sub(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		subOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		subOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void sub(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1216,7 +1212,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void mul(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		mulOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		mulOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void mul(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1234,7 +1230,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void div(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		divOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		divOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void div(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1252,7 +1248,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void mod(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		modOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		modOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void mod(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1270,7 +1266,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void shl(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		shlOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		shlOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void shl(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1288,7 +1284,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void shr(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		shrOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		shrOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void shr(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1306,7 +1302,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void ushr(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		ushrOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		ushrOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void ushr(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1324,11 +1320,11 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void or(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		orOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		orOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void or(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		orOp(definition, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		orOp(definition, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private OperatorMember andOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1342,7 +1338,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void and(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		andOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		andOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void and(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1360,7 +1356,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void xor(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		xorOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		xorOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void xor(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
@@ -1374,7 +1370,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				Modifiers.PUBLIC,
 				OperatorType.INDEXGET,
 				new FunctionHeader(result, new FunctionParameter(operand)),
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void indexSet(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID value) {
@@ -1384,7 +1380,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				Modifiers.PUBLIC,
 				OperatorType.INDEXSET,
 				new FunctionHeader(VOID, operand, value),
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private OperatorMember compareOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand) {
@@ -1398,7 +1394,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void compare(HighLevelDefinition cls, BuiltinID id, ITypeID operand) {
-		compareOp(cls, id, operand).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		compareOp(cls, id, operand).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void compare(HighLevelDefinition definition, BuiltinID id, ITypeID operand, BuiltinID caster) {
@@ -1412,7 +1408,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				Modifiers.PUBLIC,
 				name,
 				type,
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void constant(HighLevelDefinition cls, BuiltinID id, String name, Expression value) {
@@ -1424,7 +1420,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				value.type,
 				id);
 		result.value = value;
-		result.registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+		result.registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void constructor(
@@ -1436,7 +1432,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				definition,
 				Modifiers.PUBLIC,
 				header,
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void constructor(
@@ -1448,7 +1444,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				definition,
 				Modifiers.PUBLIC,
 				new FunctionHeader(VOID, arguments),
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void method(
@@ -1501,7 +1497,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				cls,
 				Modifiers.PUBLIC,
 				result,
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void castImplicit(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
@@ -1510,7 +1506,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				cls,
 				Modifiers.PUBLIC | Modifiers.IMPLICIT,
 				result,
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private CasterMemberRef castImplicitRef(HighLevelDefinition definition, BuiltinID id, ITypeID result) {
@@ -1529,7 +1525,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				Modifiers.PUBLIC,
 				OperatorType.EQUALS,
 				new FunctionHeader(BOOL, new FunctionParameter(type)),
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void same(HighLevelDefinition cls, BuiltinID id, ITypeID type) {
@@ -1539,7 +1535,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				Modifiers.PUBLIC,
 				OperatorType.SAME,
 				new FunctionHeader(BOOL, new FunctionParameter(type)),
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void notequals(HighLevelDefinition cls, BuiltinID id, ITypeID type) {
@@ -1549,7 +1545,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				Modifiers.PUBLIC,
 				OperatorType.NOTEQUALS,
 				new FunctionHeader(BOOL, new FunctionParameter(type)),
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
 	private void notsame(HighLevelDefinition cls, BuiltinID id, ITypeID type) {
@@ -1559,6 +1555,6 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				Modifiers.PUBLIC,
 				OperatorType.NOTSAME,
 				new FunctionHeader(BOOL, new FunctionParameter(type)),
-				id).registerTo(members, TypeMemberPriority.SPECIFIED, emptyMapper);
+				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 }

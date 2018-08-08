@@ -281,7 +281,7 @@ public class DefinitionMemberGroup {
 	
 	public Expression call(CodePosition position, TypeScope scope, Expression target, CallArguments arguments, boolean allowStaticUsage) {
 		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, allowStaticUsage);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			arguments.arguments[i] = arguments.arguments[i].castImplicit(position, scope, instancedHeader.parameters[i].type);
 		}
@@ -309,13 +309,13 @@ public class DefinitionMemberGroup {
 			CallArguments arguments,
 			CompareType compareType) {
 		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, false);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
 		return method.callWithComparator(position, compareType, target, instancedHeader, arguments, scope);
 	}
 	
 	public Expression callStatic(CodePosition position, ITypeID target, TypeScope scope, CallArguments arguments) {
 		FunctionalMemberRef method = selectMethod(position, scope, arguments, false, true);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
 		return method.callStatic(position, target, instancedHeader, arguments, scope);
 	}
 	

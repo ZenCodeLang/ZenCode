@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -25,6 +24,11 @@ public class InterfaceDefinition extends HighLevelDefinition {
 	
 	public void addBaseInterface(ITypeID baseInterface) {
 		baseInterfaces.add(baseInterface);
+	}
+	
+	@Override
+	public boolean isStatic() {
+		return true;
 	}
 
 	@Override
