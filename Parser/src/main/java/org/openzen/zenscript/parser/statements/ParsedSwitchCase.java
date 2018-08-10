@@ -36,13 +36,4 @@ public class ParsedSwitchCase {
 		}
 		return new SwitchCase(cValue, cStatements);
 	}
-	
-	public ITypeID precompileForResultType(ITypeID type, StatementScope scope, PrecompilationState state) {
-		SwitchValue cValue = value == null ? null : value.compileToSwitchValue(type, new ExpressionScope(scope));
-		ITypeID result = null;
-		for (ParsedStatement statement : statements) {
-			result = ParsedStatement.union(scope, result, statement.precompileForResultType(scope, state));
-		}
-		return result;
-	}
 }

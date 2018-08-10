@@ -11,10 +11,11 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 
 /**
  *
@@ -38,19 +39,19 @@ public class ParsedNamedType implements IParsedType {
 	}
 	
 	@Override
-	public ITypeID compile(BaseScope scope) {
+	public ITypeID compile(TypeResolutionContext context) {
 		if (name.size() == 1 && name.get(0).name.equals("Iterator"))
-			return toIterator(scope);
+			return toIterator(context);
 		
 		List<GenericName> genericNames = new ArrayList<>();
 		for (ParsedNamePart namePart : name)
-			genericNames.add(namePart.compile(scope));
+			genericNames.add(namePart.compile(context));
 		
-		ITypeID baseType = scope.getType(position, genericNames);
+		ITypeID baseType = context.getType(position, genericNames);
 		if (baseType == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString());
 		
-		ITypeID result = scope.getTypeRegistry().getModified(modifiers, baseType);
+		ITypeID result = context.getTypeRegistry().getModified(modifiers, baseType);
 		if (result == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString());
 		
@@ -59,7 +60,7 @@ public class ParsedNamedType implements IParsedType {
 	
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedNamedType(position, modifiers | TypeMembers.MODIFIER_OPTIONAL, name);
+		return new ParsedNamedType(position, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, name);
 	}
 	
 	@Override
@@ -92,14 +93,14 @@ public class ParsedNamedType implements IParsedType {
 		return IParsedType.compileList(last.typeArguments, scope);
 	}
 	
-	private ITypeID toIterator(BaseScope scope) {
+	private ITypeID toIterator(TypeResolutionContext context) {
 		List<IParsedType> genericTypes = name.get(0).typeArguments;
 		ITypeID[] iteratorTypes = new ITypeID[genericTypes.size()];
 		for (int i = 0; i < genericTypes.size(); i++)
-			iteratorTypes[i] = genericTypes.get(i).compile(scope);
+			iteratorTypes[i] = genericTypes.get(i).compile(context);
 
-		ITypeID type = scope.getTypeRegistry().getIterator(iteratorTypes);
-		return scope.getTypeRegistry().getModified(modifiers, type);
+		ITypeID type = context.getTypeRegistry().getIterator(iteratorTypes);
+		return context.getTypeRegistry().getModified(modifiers, type);
 	}
 	
 	public static class ParsedNamePart {
@@ -111,8 +112,8 @@ public class ParsedNamedType implements IParsedType {
 			this.typeArguments = genericArguments;
 		}
 		
-		private GenericName compile(BaseScope scope) {
-			return new GenericName(name, IParsedType.compileList(typeArguments, scope));
+		private GenericName compile(TypeResolutionContext context) {
+			return new GenericName(name, IParsedType.compileList(typeArguments, context));
 		}
 		
 		@Override

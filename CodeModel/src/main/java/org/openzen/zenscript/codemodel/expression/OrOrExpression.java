@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 /**
@@ -33,5 +34,10 @@ public class OrOrExpression extends Expression {
 		Expression tLeft = left.transform(transformer);
 		Expression tRight = right.transform(transformer);
 		return tLeft == left && tRight == right ? this : new OrOrExpression(position, tLeft, tRight);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new OrOrExpression(position, left.normalize(scope), right.normalize(scope));
 	}
 }

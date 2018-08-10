@@ -21,22 +21,36 @@ public interface ITypeID {
 	
 	public ITypeID getUnmodified();
 	
+	public ITypeID getNormalized();
+	
 	public <T> T accept(ITypeVisitor<T> visitor);
 	
-	public default ITypeID getSuperType() {
+	public default ITypeID getSuperType(GlobalTypeRegistry registry) {
 		return null;
 	}
 	
-	public boolean isOptional();
-	
-	public default ITypeID getOptionalBase() {
-		return this;
+	public default boolean isOptional() {
+		return false;
 	}
 	
-	public boolean isConst();
+	public default boolean isConst() {
+		return false;
+	}
 	
-	public default ITypeID unwrap() {
-		return this;
+	public default boolean isImmutable() {
+		return false;
+	}
+	
+	public default ITypeID withoutOptional() {
+		throw new UnsupportedOperationException("Not an optional type");
+	}
+	
+	public default ITypeID withoutConst() {
+		throw new UnsupportedOperationException("Not a const type");
+	}
+	
+	public default ITypeID withoutImmutable() {
+		throw new UnsupportedOperationException("Not an immutable type");
 	}
 	
 	public boolean hasDefaultValue();
@@ -62,10 +76,14 @@ public interface ITypeID {
 	// Infers type parameters for this type so it matches with targetType
 	// returns false if that isn't possible
 	public default boolean inferTypeParameters(LocalMemberCache cache, ITypeID targetType, Map<TypeParameter, ITypeID> mapping) {
-		return accept(new MatchingTypeVisitor(cache, targetType, mapping));
+		return targetType.accept(new MatchingTypeVisitor(cache, this, mapping));
 	}
 	
 	public void extractTypeParameters(List<TypeParameter> typeParameters);
+
+	public default boolean isDestructible() {
+		return false;
+	}
 	
 	public static class MatchingTypeVisitor implements ITypeVisitor<Boolean> {
 		private final ITypeID type;
@@ -100,8 +118,8 @@ public interface ITypeID {
 		public Boolean visitAssoc(AssocTypeID assoc) {
 			if (type instanceof AssocTypeID) {
 				AssocTypeID assocType = (AssocTypeID) type;
-				return match(assoc.keyType, assocType.keyType)
-						&& match(assoc.valueType, assocType.valueType);
+				return match(assocType.keyType, assoc.keyType)
+						&& match(assocType.valueType, assoc.valueType);
 			} else {
 				return false;
 			}
@@ -169,7 +187,7 @@ public interface ITypeID {
 		public Boolean visitGeneric(GenericTypeID generic) {
 			if (mapping.containsKey(generic.parameter)) {
 				return mapping.get(generic.parameter) == type;
-			} else if (generic.matches(cache, type)) {
+			} else if (type == generic || generic.matches(cache, type)) {
 				mapping.put(generic.parameter, type);
 				return true;
 			} else {
@@ -188,29 +206,16 @@ public interface ITypeID {
 		}
 
 		@Override
-		public Boolean visitConst(ConstTypeID type) {
-			if (this.type instanceof ConstTypeID) {
-				ConstTypeID constType = (ConstTypeID) this.type;
+		public Boolean visitModified(ModifiedTypeID type) {
+			if (this.type instanceof ModifiedTypeID) {
+				ModifiedTypeID constType = (ModifiedTypeID) this.type;
 				return match(constType.baseType, type.baseType);
-			} else {
-				return false;
-			}
-		}
-
-		@Override
-		public Boolean visitOptional(OptionalTypeID optional) {
-			if (this.type instanceof ConstTypeID) {
-				OptionalTypeID constType = (OptionalTypeID) this.type;
-				return match(constType.baseType, optional.baseType);
 			} else {
 				return false;
 			}
 		}
 		
 		private boolean match(ITypeID type, ITypeID pattern) {
-			if (type == pattern)
-				return true;
-			
 			return pattern.accept(new MatchingTypeVisitor(cache, type, mapping));
 		}
 

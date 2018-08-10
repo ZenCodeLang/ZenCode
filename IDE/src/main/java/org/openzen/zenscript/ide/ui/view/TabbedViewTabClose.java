@@ -51,10 +51,10 @@ public class TabbedViewTabClose implements DComponent {
 		
 		if (background != null)
 			background.close();
-		background = context.fillRect(9, DIRectangle.EMPTY, hover ? 0xFFE81123 : 0);
+		background = context.fillRect(1, DIRectangle.EMPTY, hover ? 0xFFE81123 : 0);
 		if (drawnIcon != null)
 			drawnIcon.close();
-		drawnIcon = new DColorableIconInstance(context.surface, context.z + 1, icon, DTransform2D.IDENTITY, 0xFF000000);
+		drawnIcon = new DColorableIconInstance(context.surface, context.z + 2, icon, DTransform2D.IDENTITY, 0xFF000000);
 	}
 	
 	@Override
@@ -88,7 +88,7 @@ public class TabbedViewTabClose implements DComponent {
 		
 		if (drawnIcon != null)
 			drawnIcon.close();
-		drawnIcon = new DColorableIconInstance(context.surface, context.z + 1, icon, DTransform2D.translate(
+		drawnIcon = new DColorableIconInstance(context.surface, context.z + 2, icon, DTransform2D.translate(
 				bounds.x + (bounds.width - icon.getNominalWidth()) / 2,
 				bounds.y + (bounds.height - icon.getNominalHeight()) / 2), 0xFF000000);
 	}

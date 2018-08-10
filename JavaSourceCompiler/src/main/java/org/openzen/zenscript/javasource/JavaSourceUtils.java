@@ -10,7 +10,6 @@ import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
  *
@@ -19,7 +18,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class JavaSourceUtils {
 	private JavaSourceUtils() {}
 	
-	public static void formatTypeParameters(JavaSourceTypeVisitor typeFormatter, StringBuilder output, TypeParameter[] parameters) {
+	public static void formatTypeParameters(JavaSourceTypeVisitor typeFormatter, StringBuilder output, TypeParameter[] parameters, boolean space) {
 		if (parameters == null || parameters.length == 0)
 			return;
 		
@@ -37,7 +36,9 @@ public class JavaSourceUtils {
 					bound.accept(boundVisitor);
 			}
 		}
-		output.append("> ");
+		output.append(">");
+		if (space)
+			output.append(" ");
 	}
 	
 	public static void formatTypeParameters(JavaSourceTypeVisitor typeFormatter, StringBuilder output, TypeParameter[] expansion, TypeParameter[] parameters) {

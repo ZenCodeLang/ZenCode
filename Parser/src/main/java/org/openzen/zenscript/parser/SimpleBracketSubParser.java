@@ -29,7 +29,7 @@ public class SimpleBracketSubParser implements BracketExpressionParser {
 	public SimpleBracketSubParser(GlobalTypeRegistry registry, FunctionalMemberRef method) {
 		if (!method.isStatic())
 			throw new IllegalArgumentException("Method must be static");
-		if (method.header.getNumberOfTypeParameters() > 0)
+		if (method.getHeader().getNumberOfTypeParameters() > 0)
 			throw new IllegalArgumentException("Method cannot have type parameters");
 		
 		this.method = method;
@@ -57,17 +57,12 @@ public class SimpleBracketSubParser implements BracketExpressionParser {
 
 		@Override
 		public IPartialExpression compile(ExpressionScope scope) {
-			return new CallStaticExpression(position, targetType, method, method.header, new CallArguments(new ConstantStringExpression(position, value)), scope);
+			return new CallStaticExpression(position, targetType, method, method.getHeader(), new CallArguments(new ConstantStringExpression(position, value)));
 		}
 
 		@Override
 		public boolean hasStrongType() {
 			return true;
-		}
-
-		@Override
-		public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-			return method.header.returnType;
 		}
 	}
 }

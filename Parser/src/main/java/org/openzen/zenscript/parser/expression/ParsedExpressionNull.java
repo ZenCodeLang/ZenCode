@@ -32,9 +32,4 @@ public class ParsedExpressionNull extends ParsedExpression {
 	public boolean hasStrongType() {
 		return false;
 	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		return BasicTypeID.BOOL;
-	}
 }

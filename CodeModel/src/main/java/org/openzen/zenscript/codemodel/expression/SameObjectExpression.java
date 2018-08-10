@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 /**
@@ -35,5 +36,10 @@ public class SameObjectExpression extends Expression {
 		Expression tLeft = left.transform(transformer);
 		Expression tRight = right.transform(transformer);
 		return tLeft == left && tRight == right ? this : new SameObjectExpression(position, tLeft, tRight, inverted);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new SameObjectExpression(position, left.normalize(scope), right.normalize(scope), inverted);
 	}
 }

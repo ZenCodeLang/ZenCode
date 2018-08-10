@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -22,7 +23,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  * @author Hoofdgebruiker
  */
 public class CasterMember extends FunctionalMember {
-	public final ITypeID toType;
+	public ITypeID toType;
 	public CasterMemberRef overrides;
 	
 	public CasterMember(
@@ -49,7 +50,7 @@ public class CasterMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addCaster(new CasterMemberRef(this, mapper.map(toType)), priority);
+		type.addCaster(new CasterMemberRef(this, mapper == null ? toType : mapper.map(toType)), priority);
 	}
 
 	@Override
@@ -77,5 +78,11 @@ public class CasterMember extends FunctionalMember {
 	@Override
 	public CasterMemberRef getOverrides() {
 		return overrides;
+	}
+	
+	@Override
+	public void normalize(TypeScope scope) {
+		super.normalize(scope);
+		toType = toType.getNormalized();
 	}
 }

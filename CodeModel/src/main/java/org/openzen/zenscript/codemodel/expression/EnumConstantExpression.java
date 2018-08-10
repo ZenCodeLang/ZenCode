@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -43,5 +44,10 @@ public class EnumConstantExpression extends Expression {
 	@Override
 	public EnumConstantMember evaluateEnumConstant() {
 		return value;
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return this;
 	}
 }

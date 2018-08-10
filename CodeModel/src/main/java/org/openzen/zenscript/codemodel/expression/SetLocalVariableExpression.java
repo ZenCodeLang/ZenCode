@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 
 /**
@@ -32,5 +33,10 @@ public class SetLocalVariableExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new SetLocalVariableExpression(position, variable, tValue);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new SetLocalVariableExpression(position, variable, value.normalize(scope));
 	}
 }

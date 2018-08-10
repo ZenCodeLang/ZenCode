@@ -11,10 +11,9 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ModuleProcessor;
-import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
@@ -33,7 +32,6 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.DefinitionScope;
 import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
@@ -41,35 +39,23 @@ import org.openzen.zenscript.codemodel.scope.GlobalScriptScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class AnnotationProcessor implements ModuleProcessor {
-	private final ZSPackage rootPackage;
-	private final PackageDefinitions packageDefinitions;
-	private final GlobalTypeRegistry globalRegistry;
+	private final TypeResolutionContext context;
 	private final List<ExpansionDefinition> expansions;
-	private final List<AnnotationDefinition> annotations;
 	
-	public AnnotationProcessor(
-			ZSPackage rootPackage,
-			PackageDefinitions packageDefinitions,
-			GlobalTypeRegistry globalRegistry,
-			List<ExpansionDefinition> expansions,
-			List<AnnotationDefinition> annotations) {
-		this.rootPackage = rootPackage;
-		this.packageDefinitions = packageDefinitions;
-		this.globalRegistry = globalRegistry;
+	public AnnotationProcessor(TypeResolutionContext context, List<ExpansionDefinition> expansions) {
+		this.context = context;
 		this.expansions = expansions;
-		this.annotations = annotations;
 	}
 	
 	@Override
 	public ScriptBlock process(ScriptBlock block) {
-		FileScope fileScope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, new HashMap<>(), annotations);
+		FileScope fileScope = new FileScope(context, expansions, new HashMap<>(), member -> {});
 		StatementScope scope = new GlobalScriptScope(fileScope);
 		List<Statement> transformed = new ArrayList<>();
 		boolean unchanged = true;
@@ -83,7 +69,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 	
 	@Override
 	public void process(HighLevelDefinition definition) {
-		FileScope fileScope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, new HashMap<>(), annotations);
+		FileScope fileScope = new FileScope(context, expansions, new HashMap<>(), member -> {});
 		DefinitionScope scope = new DefinitionScope(fileScope, definition);
 		for (DefinitionAnnotation annotation : definition.annotations) {
 			annotation.apply(definition, scope);
@@ -164,7 +150,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 
 		@Override
 		public Void visitCustomIterator(CustomIteratorMember member) {
-			throw new UnsupportedOperationException("Not supported yet!");
+			return functional(member);
 		}
 
 		@Override

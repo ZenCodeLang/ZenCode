@@ -27,6 +27,7 @@ public class JavaSourceFileScope {
 	public final JavaSourceObjectTypeVisitor objectTypeVisitor;
 	public final TypeScope semanticScope;
 	public final boolean isInterface;
+	public final ITypeID thisType;
 	
 	public JavaSourceFileScope(
 			JavaSourceImporter importer, 
@@ -34,7 +35,8 @@ public class JavaSourceFileScope {
 			JavaSourceSyntheticHelperGenerator helperGenerator,
 			JavaSourceClass cls,
 			TypeScope semanticScope,
-			boolean isInterface)
+			boolean isInterface,
+			ITypeID thisType)
 	{
 		this.importer = importer;
 		this.typeGenerator = typeGenerator;
@@ -42,6 +44,7 @@ public class JavaSourceFileScope {
 		this.cls = cls;
 		this.semanticScope = semanticScope;
 		this.isInterface = isInterface;
+		this.thisType = thisType;
 		
 		typeVisitor = new JavaSourceTypeVisitor(importer, typeGenerator);
 		objectTypeVisitor = typeVisitor.objectTypeVisitor;

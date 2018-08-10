@@ -89,7 +89,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				constructorWriter.loadObject(1);
 				constructorWriter.loadInt(2);
 				constructorWriter.invokeSpecial(Type.getInternalName(Enum.class), "<init>", "(Ljava/lang/String;I)V");
-			} else if (definition.superType == null) {
+			} else if (definition.getSuperType() == null) {
 				System.out.println("Writing regular constructor");
 				constructorWriter.load(Type.getType(Object.class), 0);
 				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
@@ -220,7 +220,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 					argument.accept(clinitStatementVisitor.expressionVisitor);
 				}
 
-				clinitWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(constant.constructor.constructor.header, true));
+				clinitWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(constant.constructor.constructor.getHeader(), true));
 				clinitWriter.putStaticField(internalName, constant.name, "L" + internalName + ";");
 
 				enumDefinition = (EnumDefinition) constant.definition;

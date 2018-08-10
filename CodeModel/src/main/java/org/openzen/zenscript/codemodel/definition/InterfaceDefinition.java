@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class InterfaceDefinition extends HighLevelDefinition {
-	private final List<ITypeID> baseInterfaces = new ArrayList<>();
+	public final List<ITypeID> baseInterfaces = new ArrayList<>();
 	
 	public InterfaceDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
 		super(position, pkg, name, modifiers, outerDefinition);
@@ -24,6 +24,11 @@ public class InterfaceDefinition extends HighLevelDefinition {
 	
 	public void addBaseInterface(ITypeID baseInterface) {
 		baseInterfaces.add(baseInterface);
+	}
+	
+	@Override
+	public boolean isStatic() {
+		return true;
 	}
 
 	@Override

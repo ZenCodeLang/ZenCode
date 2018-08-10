@@ -6,7 +6,10 @@
 package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -29,7 +32,7 @@ public class ParsedConst extends ParsedDefinitionMember {
 	private final IParsedType type;
 	private final ParsedExpression expression;
 	
-	private boolean precompiled = false;
+	private boolean isCompiled = false;
 	private ConstMember compiled;
 	
 	public ParsedConst(
@@ -49,20 +52,15 @@ public class ParsedConst extends ParsedDefinitionMember {
 		this.type = type;
 		this.expression = expression;
 	}
-	
-	@Override
-	public void linkInnerTypes() {
-		
-	}
 
 	@Override
-	public void linkTypes(BaseScope scope) {
+	public void linkTypes(TypeResolutionContext context) {
 		compiled = new ConstMember(
 				position,
 				definition,
 				modifiers,
 				name,
-				type.compile(scope),
+				type.compile(context),
 				null);
 	}
 
@@ -72,25 +70,10 @@ public class ParsedConst extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
-		if (precompiled)
-			return true;
-		precompiled = true;
-		
-		if (compiled.type == BasicTypeID.UNDETERMINED) {
-			ITypeID type = expression.precompileForType(new ExpressionScope(scope), state);
-			if (type == null)
-				return false;
-			
-			compiled.type = type;
-		}
-		
-		return true;
-	}
-
-	@Override
-	public void compile(BaseScope scope, PrecompilationState state) {
-		inferHeaders(scope, state);
+	public void compile(BaseScope scope) {
+		if (isCompiled)
+			return;
+		isCompiled = true;
 		
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		
@@ -100,6 +83,11 @@ public class ParsedConst extends ParsedDefinitionMember {
 					.eval()
 					.castImplicit(position, scope, compiled.type);
 			compiled.value = initializer;
+			
+			if (compiled.type == BasicTypeID.UNDETERMINED)
+				compiled.type = initializer.type;
+		} else if (compiled.type == BasicTypeID.UNDETERMINED) {
+			throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "No type or initializer given");
 		}
 	}
 }

@@ -7,6 +7,7 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -42,8 +43,8 @@ public class ParsedSetter extends ParsedFunctionalMember {
 	}
 
 	@Override
-	public void linkTypes(BaseScope scope) {
-		compiled = new SetterMember(position, definition, modifiers, name, type.compile(scope), null);
+	public void linkTypes(TypeResolutionContext context) {
+		compiled = new SetterMember(position, definition, modifiers, name, type.compile(context), null);
 	}
 
 	@Override
@@ -52,7 +53,7 @@ public class ParsedSetter extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType, PrecompilationState state) {
+	protected void fillOverride(TypeScope scope, ITypeID baseType) {
 		compiled.setOverrides(scope.getTypeMembers(baseType).getOrCreateGroup(name, true).getSetter());
 	}
 }

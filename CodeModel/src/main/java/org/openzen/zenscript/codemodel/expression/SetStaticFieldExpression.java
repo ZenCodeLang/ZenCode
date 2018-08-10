@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -17,7 +18,7 @@ public class SetStaticFieldExpression extends Expression {
 	public final Expression value;
 	
 	public SetStaticFieldExpression(CodePosition position, FieldMemberRef field, Expression value) {
-		super(position, field.type, value.thrownType);
+		super(position, field.getType(), value.thrownType);
 		
 		this.field = field;
 		this.value = value;
@@ -32,5 +33,10 @@ public class SetStaticFieldExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return value == tValue ? this : new SetStaticFieldExpression(position, field, tValue);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new SetStaticFieldExpression(position, field, value.normalize(scope));
 	}
 }

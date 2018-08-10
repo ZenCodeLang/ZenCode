@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -47,17 +48,12 @@ public class ParsedIterator extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void linkInnerTypes() {
-		// nothing to do
-	}
-
-	@Override
-	public void linkTypes(BaseScope scope) {
+	public void linkTypes(TypeResolutionContext context) {
 		ITypeID[] loopVariableTypes = new ITypeID[header.parameters.size()];
 		for (int i = 0; i < loopVariableTypes.length; i++)
-			loopVariableTypes[i] = header.parameters.get(i).type.compile(scope);
+			loopVariableTypes[i] = header.parameters.get(i).type.compile(context);
 		
-		compiled = new CustomIteratorMember(position, definition, modifiers, loopVariableTypes);
+		compiled = new CustomIteratorMember(position, definition, modifiers, loopVariableTypes, context.getTypeRegistry(), null);
 	}
 
 	@Override
@@ -66,12 +62,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
-		return true;
-	}
-
-	@Override
-	public void compile(BaseScope scope, PrecompilationState state) {
+	public void compile(BaseScope scope) {
 		FunctionHeader header = new FunctionHeader(scope.getTypeRegistry().getIterator(compiled.getLoopVariableTypes()));
 		StatementScope innerScope = new FunctionScope(scope, header);
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);

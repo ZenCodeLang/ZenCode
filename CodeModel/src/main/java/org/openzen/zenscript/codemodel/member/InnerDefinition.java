@@ -31,7 +31,7 @@ public class InnerDefinition {
 		this.outerTypeArguments = outerTypeArguments;
 	}
 	
-	public DefinitionTypeID instance(GlobalTypeRegistry registry, ITypeID[] typeArguments) {
-		return registry.getForDefinition(definition, typeArguments, outerTypeArguments);
+	public DefinitionTypeID instance(GlobalTypeRegistry registry, ITypeID[] typeArguments, DefinitionTypeID outer) {
+		return registry.getForDefinition(definition, typeArguments, outer);
 	}
 }

@@ -24,7 +24,6 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LambdaScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -48,8 +47,8 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		FunctionHeader definedHeader = header.compile(scope);
 		FunctionHeader header = definedHeader;
 		for (ITypeID hint : scope.hints) {
-			if (hint instanceof FunctionTypeID) {
-				FunctionTypeID functionHint = (FunctionTypeID) hint;
+			if (hint.getNormalized() instanceof FunctionTypeID) {
+				FunctionTypeID functionHint = (FunctionTypeID) hint.getNormalized();
 				if (header.canOverride(scope, functionHint.header)) {
 					if (header != definedHeader)
 						throw new CompileException(position, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Ambiguity trying to resolve function types, can't decide for the type");
@@ -96,10 +95,5 @@ public class ParsedExpressionFunction extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return false;
-	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		return null; // TODO: meh...
 	}
 }

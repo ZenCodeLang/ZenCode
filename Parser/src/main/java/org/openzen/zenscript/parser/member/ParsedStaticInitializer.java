@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -34,13 +35,7 @@ public class ParsedStaticInitializer extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void linkInnerTypes() {
-		
-	}
-
-	@Override
-	public void linkTypes(BaseScope scope) {
-		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
+	public void linkTypes(TypeResolutionContext context) {
 	}
 
 	@Override
@@ -49,12 +44,8 @@ public class ParsedStaticInitializer extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
-		return true;
-	}
-
-	@Override
-	public void compile(BaseScope scope, PrecompilationState state) {
+	public void compile(BaseScope scope) {
+		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		compiled.body = body.compile(new FunctionScope(scope, new FunctionHeader(BasicTypeID.VOID)));
 	}
 }

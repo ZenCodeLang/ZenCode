@@ -28,7 +28,5 @@ public interface ITypeVisitor<T> {
 	
 	public T visitRange(RangeTypeID range);
 	
-	public T visitConst(ConstTypeID type);
-	
-	public T visitOptional(OptionalTypeID optional);
+	public T visitModified(ModifiedTypeID type);
 }

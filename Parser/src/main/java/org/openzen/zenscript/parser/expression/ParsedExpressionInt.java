@@ -84,30 +84,4 @@ public class ParsedExpressionInt extends ParsedExpression {
 	public boolean hasStrongType() {
 		return false;
 	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		for (ITypeID hint : scope.hints) {
-			if (hint instanceof BasicTypeID) {
-				switch ((BasicTypeID) hint) {
-					case SBYTE:
-					case BYTE:
-					case SHORT:
-					case USHORT:
-					case INT:
-					case UINT:
-					case LONG:
-					case ULONG:
-					case CHAR:
-						return hint;
-					default:
-				}
-			}
-		}
-		
-		if (value <= Integer.MAX_VALUE && value >= Integer.MIN_VALUE)
-			return BasicTypeID.INT;
-		else
-			return BasicTypeID.LONG;
-	}
 }

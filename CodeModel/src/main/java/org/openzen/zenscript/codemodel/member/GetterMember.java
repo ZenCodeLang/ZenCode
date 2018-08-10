@@ -9,7 +9,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -21,7 +20,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  *
  * @author Hoofdgebruiker
  */
-public class GetterMember extends FunctionalMember {
+public class GetterMember extends FunctionalMember implements IPropertyMember {
 	public final String name;
 	public ITypeID type;
 	private GetterMemberRef overrides;
@@ -40,6 +39,11 @@ public class GetterMember extends FunctionalMember {
 	}
 	
 	@Override
+	public ITypeID getType() {
+		return type;
+	}
+	
+	@Override
 	public String getCanonicalName() {
 		return definition.getFullName() + ":getter:" + name;
 	}
@@ -51,7 +55,7 @@ public class GetterMember extends FunctionalMember {
 	
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addGetter(new GetterMemberRef(this, mapper.map(type)), priority);
+		members.addGetter(new GetterMemberRef(this, mapper), priority);
 	}
 
 	@Override
@@ -73,6 +77,6 @@ public class GetterMember extends FunctionalMember {
 		this.overrides = override;
 		
 		if (type == BasicTypeID.UNDETERMINED)
-			type = override.type;
+			type = override.getType();
 	}
 }

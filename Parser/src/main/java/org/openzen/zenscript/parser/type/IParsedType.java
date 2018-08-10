@@ -10,15 +10,16 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.parser.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
-import org.openzen.zenscript.parser.definitions.ParsedGenericParameter;
+import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 
 /**
  *
@@ -37,7 +38,9 @@ public interface IParsedType {
 		int modifiers = 0;
 		while (true) {
 			if (tokens.optional(ZSTokenType.K_CONST) != null) {
-				modifiers |= TypeMembers.MODIFIER_CONST;
+				modifiers |= ModifiedTypeID.MODIFIER_CONST;
+			} else if (tokens.optional(ZSTokenType.K_IMMUTABLE) != null) {
+				modifiers |= ModifiedTypeID.MODIFIER_IMMUTABLE;
 			} else {
 				break;
 			}
@@ -142,7 +145,7 @@ public interface IParsedType {
 						result = new ParsedTypeArray(result, dimension);
 					} else if (tokens.isNext(T_LESS)) {
 						tokens.next();
-						ParsedGenericParameter parameter = ParsedGenericParameter.parse(tokens);
+						ParsedTypeParameter parameter = ParsedTypeParameter.parse(tokens);
 						tokens.required(T_GREATER, "> expected");
 						result = new ParsedTypeGenericMap(parameter, result, modifiers);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
@@ -201,12 +204,12 @@ public interface IParsedType {
 		return genericParameters;
 	}
 	
-	public static ITypeID[] compileList(List<IParsedType> typeParameters, BaseScope scope) {
+	public static ITypeID[] compileList(List<IParsedType> typeParameters, TypeResolutionContext context) {
 		ITypeID[] result = ITypeID.NONE;
 		if (typeParameters != null) {
 			result = new ITypeID[typeParameters.size()];
 			for (int i = 0; i < typeParameters.size(); i++) {
-				result[i] = typeParameters.get(i).compile(scope);
+				result[i] = typeParameters.get(i).compile(context);
 			}
 		}
 		return result;
@@ -216,7 +219,7 @@ public interface IParsedType {
 	
 	public IParsedType withModifiers(int modifiers);
 	
-	public ITypeID compile(BaseScope scope);
+	public ITypeID compile(TypeResolutionContext context);
 	
 	public default AnnotationDefinition compileAnnotation(BaseScope scope) {
 		return null;

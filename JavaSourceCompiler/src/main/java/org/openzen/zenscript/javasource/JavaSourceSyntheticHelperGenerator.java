@@ -19,14 +19,13 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ConstTypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
@@ -117,10 +116,10 @@ public class JavaSourceSyntheticHelperGenerator {
 	}
 	
 	private void addMember(JavaSourceClass className, String content) {
-		if (!members.containsKey(className.name))
-			members.put(className.name, new ArrayList<>());
+		if (!members.containsKey(className.getName()))
+			members.put(className.getName(), new ArrayList<>());
 		
-		members.get(className.name).add(content);
+		members.get(className.getName()).add(content);
 	}
 	
 	private static class ArrayKindVisitor implements ITypeVisitor<ArrayKind> {
@@ -194,12 +193,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		}
 
 		@Override
-		public ArrayKind visitConst(ConstTypeID type) {
-			return ArrayKind.OBJECT;
-		}
-
-		@Override
-		public ArrayKind visitOptional(OptionalTypeID optional) {
+		public ArrayKind visitModified(ModifiedTypeID type) {
 			return ArrayKind.OBJECT;
 		}
 	}

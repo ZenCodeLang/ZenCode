@@ -1533,9 +1533,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-	@Override
-	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
-		Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
+    @Override
+    public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
+        Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
+		try {
+			type.getInternalName();
+		} catch (NullPointerException ex) {
+			ex.printStackTrace();
+		}
 
 		javaWriter.loadObject(0);
 		if (javaWriter.method.javaClass.isEnum) {
@@ -1543,12 +1548,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			javaWriter.loadInt(2);
 		}
 
-		for (Expression argument : expression.arguments.arguments) {
-			argument.accept(this);
-		}
-		javaWriter.invokeSpecial(type.getInternalName(), "<init>", CompilerUtils.calcDesc(expression.constructor.header, javaWriter.method.javaClass.isEnum));
-		return null;
-	}
+        for (Expression argument : expression.arguments.arguments) {
+            argument.accept(this);
+        }
+		String internalName = type.getInternalName();
+        javaWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(expression.constructor.getHeader(), javaWriter.method.javaClass.isEnum));
+        return null;
+    }
 
 	@Override
 	public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
@@ -1557,7 +1563,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			argument.accept(this);
 		}
 		//No super calls in enums possible, and that's already handled in the enum constructor itself.
-		javaWriter.invokeSpecial(expression.objectType.accept(JavaTypeClassVisitor.INSTANCE), "<init>", CompilerUtils.calcDesc(expression.constructor.header, false));
+		javaWriter.invokeSpecial(expression.objectType.accept(JavaTypeClassVisitor.INSTANCE), "<init>", CompilerUtils.calcDesc(expression.constructor.getHeader(), false));
 
 		CompilerUtils.writeDefaultFieldInitializers(javaWriter, javaWriter.forDefinition, false);
 		return null;
@@ -1811,7 +1817,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case ASSOC_KEYS: {
 				AssocTypeID type = (AssocTypeID) expression.target.type;
-				ArrayTypeID result = new ArrayTypeID(type.keyType, 1);
+				ArrayTypeID result = new ArrayTypeID(null, type.keyType, 1);
 				Type resultType = result.accept(JavaTypeVisitor.INSTANCE);
 
 				javaWriter.invokeVirtual(MAP_KEYS);
@@ -1824,7 +1830,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			}
 			case ASSOC_VALUES: {
 				AssocTypeID type = (AssocTypeID) expression.target.type;
-				ArrayTypeID result = new ArrayTypeID(type.valueType, 1);
+				ArrayTypeID result = new ArrayTypeID(null, type.valueType, 1);
 				Type resultType = result.accept(JavaTypeVisitor.INSTANCE);
 
 				javaWriter.invokeVirtual(MAP_VALUES);

@@ -33,9 +33,4 @@ public class ParsedStatementThrow extends ParsedStatement {
 	public Statement compile(StatementScope scope) {
 		return result(new ThrowStatement(position, expression.compile(new ExpressionScope(scope)).eval()), scope);
 	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		return null;
-	}
 }

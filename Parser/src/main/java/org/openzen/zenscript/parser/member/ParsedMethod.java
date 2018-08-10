@@ -9,14 +9,14 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -46,8 +46,8 @@ public class ParsedMethod extends ParsedFunctionalMember {
 	}
 
 	@Override
-	public void linkTypes(BaseScope scope) {
-		compiled = new MethodMember(position, definition, modifiers, name, header.compile(scope), null);
+	public void linkTypes(TypeResolutionContext context) {
+		compiled = new MethodMember(position, definition, modifiers, name, header.compile(context), null);
 	}
 
 	@Override
@@ -56,16 +56,15 @@ public class ParsedMethod extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType, PrecompilationState state) {
-		FunctionalMemberRef override = scope.getTypeMembers(baseType)
+	protected void fillOverride(TypeScope scope, ITypeID baseType) {
+		TypeMembers typeMembers = scope.getTypeMembers(baseType);
+		FunctionalMemberRef override = typeMembers
 				.getOrCreateGroup(name, false)
 				.getOverride(position, scope, compiled);
 		if (override == null)
-			return;
+			throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not determine overridden method");
 		if (override.getHeader().hasUnknowns) {
-			if (!state.precompile(override.getTarget()))
-				throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Precompilation failed; could not complete method header");
-			
+			scope.getPreparer().prepare(override.getTarget());
 			override = scope.getTypeMembers(baseType)
 				.getOrCreateGroup(name, false)
 				.getOverride(position, scope, compiled); // to refresh the header

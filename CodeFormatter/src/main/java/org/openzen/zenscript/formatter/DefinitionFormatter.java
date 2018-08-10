@@ -42,9 +42,9 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		output.append(definition.name);
 		FormattingUtils.formatTypeParameters(output, definition.genericParameters, typeFormatter);
 		output.append(" ");
-		if (definition.superType != null) {
+		if (definition.getSuperType() != null) {
 			output.append("extends ");
-			output.append(definition.superType.accept(typeFormatter));
+			output.append(definition.getSuperType().accept(typeFormatter));
 			output.append(" ");
 		}
 		if (settings.classBracketOnSameLine) {

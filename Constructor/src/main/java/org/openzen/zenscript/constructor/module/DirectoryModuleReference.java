@@ -15,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.FileSourceFile;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.constructor.ConstructorException;
@@ -68,15 +69,17 @@ public class DirectoryModuleReference implements ModuleReference {
 				}
 			}
 
-			ModuleSpace space = new ModuleSpace(unit);
+			// TODO: annotation type registration
+			ModuleSpace space = new ModuleSpace(unit, new ArrayList<>());
 			for (String dependencyName : dependencyNames)
 				space.addModule(dependencyName, loader.getModule(dependencyName));
 
 			Module module = new Module(moduleName, directory, jsonFile, exceptionLogger);
 			ZSPackage pkg = isStdlib ? unit.globalTypeRegistry.stdlib : new ZSPackage(null, module.packageName);
-
-			ParsedFile[] parsedFiles = module.parse(pkg);
-			SemanticModule result = Module.compileSyntaxToSemantic(module.name, module.dependencies, pkg, parsedFiles, space, exceptionLogger);
+			CompilingPackage compilingPackage = new CompilingPackage();
+			
+			ParsedFile[] parsedFiles = module.parse(pkg, compilingPackage);
+			SemanticModule result = Module.compileSyntaxToSemantic(module.name, module.dependencies, pkg, compilingPackage, parsedFiles, space, exceptionLogger);
 			
 			JSONObject globals = json.optJSONObject("globals");
 			if (globals != null) {

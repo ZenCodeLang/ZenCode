@@ -6,9 +6,9 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -25,7 +25,7 @@ public class ParsedTypeBound extends ParsedGenericBound {
 	}
 
 	@Override
-	public GenericParameterBound compile(BaseScope scope) {
-		return new ParameterTypeBound(position, type.compile(scope));
+	public GenericParameterBound compile(TypeResolutionContext context) {
+		return new ParameterTypeBound(position, type.compile(context));
 	}
 }

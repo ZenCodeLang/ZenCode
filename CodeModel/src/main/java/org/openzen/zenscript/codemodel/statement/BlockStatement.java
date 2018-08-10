@@ -12,6 +12,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -69,5 +70,13 @@ public class BlockStatement extends Statement {
 		for (Statement statement : statements)
 			result = Expression.binaryThrow(statement.position, result, statement.thrownType);
 		return result;
+	}
+
+	@Override
+	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
+		List<Statement> normalized = new ArrayList<>();
+		for (Statement statement : statements)
+			normalized.add(statement.normalize(scope, modified));
+		return new BlockStatement(position, normalized);
 	}
 }

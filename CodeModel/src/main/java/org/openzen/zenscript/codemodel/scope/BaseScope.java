@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
@@ -25,13 +25,9 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public abstract class BaseScope implements TypeScope {
 	public abstract IPartialExpression get(CodePosition position, GenericName name);
 	
-	public abstract ITypeID getType(CodePosition position, List<GenericName> name);
-	
 	public abstract LoopStatement getLoop(String name);
 	
 	public abstract FunctionHeader getFunctionHeader();
-	
-	public abstract ITypeID getThisType();
 	
 	@Override
 	public TypeMembers getTypeMembers(ITypeID type) {

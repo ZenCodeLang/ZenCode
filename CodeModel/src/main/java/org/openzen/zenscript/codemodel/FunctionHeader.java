@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 /**
@@ -28,7 +27,7 @@ public class FunctionHeader {
 	private static final FunctionParameter[] NO_PARAMETERS = new FunctionParameter[0];
 	
 	public final TypeParameter[] typeParameters;
-	public final ITypeID returnType;
+	public ITypeID returnType;
 	public final FunctionParameter[] parameters;
 	public final ITypeID thrownType;
 	
@@ -64,7 +63,7 @@ public class FunctionHeader {
 		
 		minParameters = parameterTypes.length;
 		maxParameters = parameterTypes.length;
-		hasUnknowns = hasUnknowns(parameterTypes);
+		hasUnknowns = hasUnknowns(parameterTypes, returnType);
 	}
 	
 	public FunctionHeader(ITypeID returnType, FunctionParameter... parameters) {
@@ -78,7 +77,7 @@ public class FunctionHeader {
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
-		hasUnknowns = hasUnknowns(parameters);
+		hasUnknowns = hasUnknowns(parameters, returnType);
 	}
 	
 	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, ITypeID thrownType, FunctionParameter... parameters) {
@@ -94,7 +93,27 @@ public class FunctionHeader {
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
-		hasUnknowns = hasUnknowns(parameters);
+		hasUnknowns = hasUnknowns(parameters, returnType);
+	}
+	
+	public boolean isDenormalized() {
+		if (returnType.getNormalized() != returnType)
+			return true;
+		for (FunctionParameter parameter : parameters)
+			if (parameter.type.getNormalized() != parameter.type)
+				return true;
+		
+		return false;
+	}
+	
+	public FunctionHeader normalize(GlobalTypeRegistry registry) {
+		if (!isDenormalized())
+			return this;
+		
+		FunctionParameter[] normalizedParameters = new FunctionParameter[parameters.length];
+		for (int i = 0; i < normalizedParameters.length; i++)
+			normalizedParameters[i] = parameters[i].normalized(registry);
+		return new FunctionHeader(typeParameters, returnType.getNormalized(), thrownType == null ? null : thrownType.getNormalized(), normalizedParameters);
 	}
 	
 	public int getNumberOfTypeParameters() {
@@ -107,31 +126,20 @@ public class FunctionHeader {
 	
 	public FunctionHeader inferFromOverride(GlobalTypeRegistry registry, FunctionHeader overridden) {
 		TypeParameter[] resultTypeParameters = typeParameters;
-		GenericMapper mapper;
-		if (resultTypeParameters == TypeParameter.NONE) {
-			resultTypeParameters = overridden.typeParameters;
-			mapper = new GenericMapper(registry, Collections.emptyMap());
-		} else {
-			Map<TypeParameter, ITypeID> mapping = new HashMap<>();
-			for (int i = 0; i < overridden.typeParameters.length; i++)
-				mapping.put(overridden.typeParameters[i], new GenericTypeID(typeParameters[i]));
-			mapper = new GenericMapper(registry, mapping);
-		}
-		
 		ITypeID resultReturnType = this.returnType;
 		if (resultReturnType == BasicTypeID.UNDETERMINED)
-			resultReturnType = overridden.returnType.instance(mapper);
+			resultReturnType = overridden.returnType;
 		
 		ITypeID resultThrownType = this.thrownType;
 		if (resultThrownType == null && overridden.thrownType != null)
-			resultThrownType = overridden.thrownType.instance(mapper);
+			resultThrownType = overridden.thrownType;
 		
 		FunctionParameter[] resultParameters = Arrays.copyOf(parameters, parameters.length);
 		for (int i = 0; i < resultParameters.length; i++) {
 			if (resultParameters[i].type == BasicTypeID.UNDETERMINED) {
 				FunctionParameter parameter = resultParameters[i];
 				FunctionParameter original = overridden.parameters[i];
-				resultParameters[i] = new FunctionParameter(original.type.instance(mapper), parameter.name, parameter.defaultValue, original.variadic);
+				resultParameters[i] = new FunctionParameter(original.type, parameter.name, parameter.defaultValue, original.variadic);
 			}
 		}
 		
@@ -142,7 +150,7 @@ public class FunctionHeader {
 		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
 			return false;
 		
-		FunctionHeader header = fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		FunctionHeader header = fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
 		for (int i = 0; i < header.parameters.length; i++) {
 			if (arguments.arguments[i].type != header.parameters[i].type)
 				return false;
@@ -155,7 +163,7 @@ public class FunctionHeader {
 		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
 			return false;
 		
-		FunctionHeader header = fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments);
+		FunctionHeader header = fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
 		for (int i = 0; i < header.parameters.length; i++) {
 			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
 				return false;
@@ -312,6 +320,14 @@ public class FunctionHeader {
 	}
 	
 	public FunctionHeader withGenericArguments(GenericMapper mapper) {
+		if (typeParameters.length > 0) {
+			Map<TypeParameter, ITypeID> innerMap = new HashMap<>();
+			for (TypeParameter parameter : typeParameters)
+				innerMap.put(parameter, mapper.registry.getGeneric(parameter));
+			
+			mapper = mapper.getInner(innerMap);
+		}
+		
 		ITypeID returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
@@ -320,14 +336,14 @@ public class FunctionHeader {
 		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
 	}
 	
-	public FunctionHeader fillGenericArguments(GlobalTypeRegistry registry, ITypeID[] arguments) {
+	public FunctionHeader fillGenericArguments(GlobalTypeRegistry registry, ITypeID[] arguments, GenericMapper typeParameterMapping) {
 		if (arguments == null || arguments.length == 0)
 			return this;
 		
 		Map<TypeParameter, ITypeID> typeArguments = new HashMap<>();
 		for (int i = 0; i < typeParameters.length; i++)
 			typeArguments.put(typeParameters[i], arguments[i]);
-		GenericMapper mapper = new GenericMapper(registry, typeArguments);
+		GenericMapper mapper = typeParameterMapping.getInner(typeArguments);
 		
 		ITypeID returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
@@ -411,7 +427,10 @@ public class FunctionHeader {
 		return parameters[parameters.length - 1].variadic ? Integer.MAX_VALUE : parameters.length;
 	}
 	
-	private static boolean hasUnknowns(ITypeID[] types) {
+	private static boolean hasUnknowns(ITypeID[] types, ITypeID returnType) {
+		if (returnType == BasicTypeID.UNDETERMINED)
+			return true;
+		
 		for (ITypeID type : types)
 			if (type == BasicTypeID.UNDETERMINED)
 				return true;
@@ -419,7 +438,10 @@ public class FunctionHeader {
 		return false;
 	}
 	
-	private static boolean hasUnknowns(FunctionParameter[] parameters) {
+	private static boolean hasUnknowns(FunctionParameter[] parameters, ITypeID returnType) {
+		if (returnType == BasicTypeID.UNDETERMINED)
+			return true;
+		
 		for (FunctionParameter parameter : parameters)
 			if (parameter.type == BasicTypeID.UNDETERMINED)
 				return true;

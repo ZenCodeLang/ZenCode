@@ -108,13 +108,7 @@ public class JavaBoxingTypeVisitor implements ITypeVisitor<JavaMethodInfo> {
 	}
 
 	@Override
-	public JavaMethodInfo visitConst(ConstTypeID type) {
-		//NO-OP
-		return null;
-	}
-
-	@Override
-	public JavaMethodInfo visitOptional(OptionalTypeID optional) {
+	public JavaMethodInfo visitModified(ModifiedTypeID type) {
 		//NO-OP
 		return null;
 	}

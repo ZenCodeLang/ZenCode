@@ -26,6 +26,11 @@ public class GenericTypeID implements ITypeID {
 	}
 	
 	@Override
+	public GenericTypeID getNormalized() {
+		return this;
+	}
+	
+	@Override
 	public ITypeID instance(GenericMapper mapper) {
 		return mapper.map(this);
 	}

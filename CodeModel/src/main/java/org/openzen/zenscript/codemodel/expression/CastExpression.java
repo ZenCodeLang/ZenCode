@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -34,5 +35,10 @@ public class CastExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tTarget = target.transform(transformer);
 		return target == tTarget ? this : new CastExpression(position, tTarget, member, isImplicit);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new CastExpression(position, target.normalize(scope), member, isImplicit);
 	}
 }

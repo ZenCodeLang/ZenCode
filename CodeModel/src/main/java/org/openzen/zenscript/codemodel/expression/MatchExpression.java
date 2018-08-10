@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.BreakStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -49,6 +50,14 @@ public class MatchExpression extends Expression {
 			unmodified &= tCases[i] == cases[i];
 		}
 		return unmodified && tValue == value ? this : new MatchExpression(position, tValue, type, tCases);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		Case[] normalizedCases = new Case[cases.length];
+		for (int i = 0; i < cases.length; i++)
+			normalizedCases[i] = cases[i].normalize(scope);
+		return new MatchExpression(position, value.normalize(scope), type, normalizedCases);
 	}
 	
 	public SwitchedMatch convertToSwitch(String tempVariable) {
@@ -102,6 +111,10 @@ public class MatchExpression extends Expression {
 		public Case transform(ExpressionTransformer transformer) {
 			Expression tValue = value.transform(transformer);
 			return tValue == value ? this : new Case(key, tValue);
+		}
+		
+		public Case normalize(TypeScope scope) {
+			return new Case(key, value.normalize(scope));
 		}
 	}
 	

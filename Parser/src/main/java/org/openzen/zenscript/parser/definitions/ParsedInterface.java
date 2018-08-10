@@ -10,11 +10,11 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -26,7 +26,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedInterface extends BaseParsedDefinition {
 	public static ParsedInterface parseInterface(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
-		List<ParsedGenericParameter> genericParameters = ParsedGenericParameter.parseAll(tokens);
+		List<ParsedTypeParameter> genericParameters = ParsedTypeParameter.parseAll(tokens);
 		List<IParsedType> superInterfaces = Collections.emptyList();
 		if (tokens.optional(ZSTokenType.T_COLON) != null) {
 			superInterfaces = new ArrayList<>();
@@ -44,33 +44,33 @@ public class ParsedInterface extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final List<ParsedGenericParameter> typeParameters;
+	private final List<ParsedTypeParameter> typeParameters;
 	private final List<IParsedType> superInterfaces;
 	
 	private final InterfaceDefinition compiled;
 	
-	public ParsedInterface(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedGenericParameter> typeParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
+	public ParsedInterface(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
 		super(position, modifiers, annotations);
 		
 		this.typeParameters = typeParameters;
 		this.superInterfaces = superInterfaces;
 		
 		compiled = new InterfaceDefinition(position, pkg, name, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(typeParameters));
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
 	}
 
 	@Override
 	public HighLevelDefinition getCompiled() {
 		return compiled;
 	}
-
+	
 	@Override
-	public void compileMembers(BaseScope scope) {
-		ParsedGenericParameter.compile(scope, compiled.genericParameters, typeParameters);
+	public void linkTypesLocal(TypeResolutionContext context) {
+		ParsedTypeParameter.compile(context, compiled.genericParameters, typeParameters);
 		
 		for (IParsedType superInterface : superInterfaces)
-			compiled.addBaseInterface(superInterface.compile(scope));
+			compiled.addBaseInterface(superInterface.compile(context));
 		
-		super.compileMembers(scope);
+		super.linkTypesLocal(context);
 	}
 }

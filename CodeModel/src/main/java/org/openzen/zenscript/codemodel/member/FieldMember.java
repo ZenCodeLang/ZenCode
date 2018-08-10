@@ -15,9 +15,9 @@ import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -28,13 +28,11 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  *
  * @author Hoofdgebruiker
  */
-public class FieldMember extends DefinitionMember {
+public class FieldMember extends PropertyMember {
 	public final String name;
-	public ITypeID type;
 	public Expression initializer;
 	public final int autoGetterAccess;
 	public final int autoSetterAccess;
-	public final BuiltinID builtin;
 	
 	public final GetterMember autoGetter;
 	public final SetterMember autoSetter;
@@ -44,41 +42,41 @@ public class FieldMember extends DefinitionMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
+			ITypeID thisType,
 			ITypeID type,
 			GlobalTypeRegistry registry,
 			int autoGetterAccess,
 			int autoSetterAccess,
 			BuiltinID builtin)
 	{
-		super(position, definition, modifiers);
+		super(position, definition, modifiers, type, builtin);
 		
 		this.name = name;
-		this.type = type;
 		this.autoGetterAccess = autoGetterAccess;
 		this.autoSetterAccess = autoSetterAccess;
-		this.builtin = builtin;
 		
 		ITypeID[] parameters = null;
 		if (definition.genericParameters != null) {
 			parameters = new ITypeID[definition.genericParameters.length];
 			for (int i = 0; i < parameters.length; i++)
-				parameters[i] = new GenericTypeID(definition.genericParameters[i]);
+				parameters[i] = registry.getGeneric(definition.genericParameters[i]);
 		}
 		
 		if (autoGetterAccess != 0) {
-			ITypeID myType = registry.getForDefinition(definition, parameters);
 			this.autoGetter = new GetterMember(position, definition, autoGetterAccess, name, type, null);
-			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(position, new ThisExpression(position, myType), new FieldMemberRef(this, myType))));
+			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(
+					position,
+					new ThisExpression(position, thisType),
+					new FieldMemberRef(this, null))));
 		} else {
 			this.autoGetter = null;
 		}
 		if (autoSetterAccess != 0) {
-			ITypeID myType = registry.getForDefinition(definition, parameters);
 			this.autoSetter = new SetterMember(position, definition, autoSetterAccess, name, type, null);
 			this.autoSetter.setBody(new ExpressionStatement(position, new SetFieldExpression(
 					position,
-					new ThisExpression(position, myType),
-					new FieldMemberRef(this, myType),
+					new ThisExpression(position, thisType),
+					new FieldMemberRef(this, null),
 					new GetFunctionParameterExpression(position, this.autoSetter.header.parameters[0]))));
 		} else {
 			this.autoSetter = null;
@@ -97,15 +95,13 @@ public class FieldMember extends DefinitionMember {
 			SetterMember autoSetter,
 			BuiltinID builtin)
 	{
-		super(position, definition, modifiers);
+		super(position, definition, modifiers, type, builtin);
 		
 		this.name = name;
-		this.type = type;
 		this.autoGetterAccess = autoGetterAccess;
 		this.autoSetterAccess = autoSetterAccess;
 		this.autoGetter = autoGetter;
 		this.autoSetter = autoSetter;
-		this.builtin = builtin;
 	}
 	
 	public boolean hasAutoGetter() {
@@ -122,7 +118,7 @@ public class FieldMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addField(new FieldMemberRef(this, mapper.map(type)), priority);
+		members.addField(new FieldMemberRef(this, mapper), priority);
 	}
 	
 	@Override
@@ -143,5 +139,12 @@ public class FieldMember extends DefinitionMember {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return null;
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		type = type.getNormalized();
+		if (initializer != null)
+			initializer = initializer.normalize(scope);
 	}
 }

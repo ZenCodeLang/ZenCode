@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.parser.member;
 
+import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -14,6 +15,8 @@ import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.context.CompilingType;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -326,13 +329,13 @@ public abstract class ParsedDefinitionMember {
 		this.annotations = annotations;
 	}
 	
-	public abstract void linkInnerTypes();
+	public abstract void linkTypes(TypeResolutionContext context);
 	
-	public abstract void linkTypes(BaseScope scope);
+	public void registerInnerTypes(Map<String, CompilingType> innerTypes) {}
 	
 	public abstract IDefinitionMember getCompiled();
 	
-	public abstract boolean inferHeaders(BaseScope scope, PrecompilationState state);
+	public abstract void compile(BaseScope scope);
 	
-	public abstract void compile(BaseScope scope, PrecompilationState state);
+	public void registerMembers(BaseScope scope, PrecompilationState state) {}
 }

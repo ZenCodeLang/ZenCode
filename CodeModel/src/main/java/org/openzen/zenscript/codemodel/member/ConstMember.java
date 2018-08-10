@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -20,17 +21,15 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  *
  * @author Hoofdgebruiker
  */
-public class ConstMember extends DefinitionMember {
+public class ConstMember extends PropertyMember {
 	public final String name;
-	public ITypeID type;
 	public Expression value;
 	public final BuiltinID builtin;
 	
 	public ConstMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, ITypeID type, BuiltinID builtin) {
-		super(position, definition, modifiers);
+		super(position, definition, modifiers, type, null);
 		
 		this.name = name;
-		this.type = type;
 		this.builtin = builtin;
 	}
 
@@ -46,7 +45,7 @@ public class ConstMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addConst(new ConstMemberRef(this, mapper.map(type)));
+		members.addConst(new ConstMemberRef(this, mapper));
 	}
 
 	@Override
@@ -57,5 +56,11 @@ public class ConstMember extends DefinitionMember {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return null;
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		type = type.getNormalized();
+		value = value.normalize(scope);
 	}
 }

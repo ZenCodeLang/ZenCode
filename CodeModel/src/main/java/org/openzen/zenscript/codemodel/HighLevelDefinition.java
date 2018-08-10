@@ -10,12 +10,18 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
+import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -28,11 +34,13 @@ public abstract class HighLevelDefinition extends Taggable {
 	public final String name;
 	public final int modifiers;
 	public final List<IDefinitionMember> members = new ArrayList<>();
-	public TypeParameter[] genericParameters = null;
+	public TypeParameter[] genericParameters = TypeParameter.NONE;
 	public DefinitionAnnotation[] annotations = DefinitionAnnotation.NONE;
 	
 	public HighLevelDefinition outerDefinition;
-	public ITypeID superType;
+	private ITypeID superType;
+	
+	private boolean isDestructible = false;
 	
 	public HighLevelDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
 		this.position = position;
@@ -45,8 +53,25 @@ public abstract class HighLevelDefinition extends Taggable {
 			pkg.register(this);
 	}
 	
+	public HighLevelDefinition getOutermost() {
+		HighLevelDefinition result = this;
+		while (result.outerDefinition != null)
+			result = result.outerDefinition;
+		return result;
+	}
+	
 	public String getFullName() {
 		return pkg.fullName + '.' + name;
+	}
+	
+	public ITypeID getSuperType() {
+		return superType;
+	}
+	
+	public void setSuperType(ITypeID superType) {
+		this.superType = superType;
+		if (outerDefinition != null)
+			isDestructible |= outerDefinition.isDestructible;
 	}
 	
 	public int getNumberOfGenericParameters() {
@@ -61,9 +86,30 @@ public abstract class HighLevelDefinition extends Taggable {
 		return outerDefinition != null;
 	}
 	
+	public boolean isInterface() {
+		return this instanceof InterfaceDefinition;
+	}
+	
+	public boolean isAlias() {
+		return this instanceof AliasDefinition;
+	}
+	
 	public void addMember(IDefinitionMember member) {
 		if (!members.contains(member))
 			members.add(member);
+	}
+	
+	public boolean isDestructible() {
+		boolean isDestructible = false;
+		for (IDefinitionMember member : members) {
+			if (member instanceof DestructorMember)
+				isDestructible = true;
+			if ((member instanceof FieldMember) && ((FieldMember)member).type.isDestructible())
+				isDestructible = true;
+			if ((member instanceof ImplementationMember) && ((ImplementationMember)member).type.isDestructible())
+				isDestructible = true;
+		}
+		return isDestructible;
 	}
 	
 	public void setTypeParameters(TypeParameter[] typeParameters) {
@@ -94,5 +140,23 @@ public abstract class HighLevelDefinition extends Taggable {
 		return (modifiers & Modifiers.STATIC) > 0;
 	}
 	
+	public void normalize(TypeScope scope) {
+		for (IDefinitionMember member : members) {
+			member.normalize(scope);
+		}
+	}
+	
 	public abstract <T> T accept(DefinitionVisitor<T> visitor);
+
+	public HighLevelDefinition getInnerType(String name) {
+		for (IDefinitionMember member : members) {
+			if (member instanceof InnerDefinitionMember) {
+				InnerDefinitionMember inner = (InnerDefinitionMember)member;
+				if (inner.innerDefinition.name.equals(name))
+					return inner.innerDefinition;
+			}
+		}
+		
+		return null;
+	}
 }

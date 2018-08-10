@@ -42,6 +42,11 @@ public enum BasicTypeID implements ITypeID {
 	}
 	
 	@Override
+	public BasicTypeID getNormalized() {
+		return this;
+	}
+	
+	@Override
 	public ITypeID instance(GenericMapper mapper) {
 		return this;
 	}

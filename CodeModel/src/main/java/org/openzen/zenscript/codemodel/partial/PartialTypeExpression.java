@@ -49,14 +49,14 @@ public class PartialTypeExpression implements IPartialExpression {
 		return scope.getTypeMembers(type)
 				.getOrCreateGroup(OperatorType.CALL)
 				.getMethodMembers().stream()
-				.filter(method -> method.member.header.parameters.length == arguments && method.member.isStatic())
-				.map(method -> method.member.header)
+				.filter(method -> method.member.getHeader().parameters.length == arguments && method.member.isStatic())
+				.map(method -> method.member.getHeader())
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<ITypeID> hints, GenericName name) {
-		return scope.getTypeMembers(type).getStaticMemberExpression(position, name);
+		return scope.getTypeMembers(type).getStaticMemberExpression(position, scope, name);
 	}
 
 	@Override

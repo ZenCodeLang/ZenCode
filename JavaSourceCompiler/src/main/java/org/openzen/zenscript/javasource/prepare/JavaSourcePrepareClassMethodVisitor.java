@@ -36,10 +36,12 @@ import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
  * @author Hoofdgebruiker
  */
 public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> {
+	private final String filename;
 	private final JavaSourceClass cls;
 	private final JavaNativeClass nativeClass;
 	
-	public JavaSourcePrepareClassMethodVisitor(JavaSourceClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
+	public JavaSourcePrepareClassMethodVisitor(String filename, JavaSourceClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
+		this.filename = filename;
 		this.cls = cls;
 		this.nativeClass = nativeClass;
 		cls.empty = startsEmpty;
@@ -126,10 +128,10 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 			for (IDefinitionMember m : member.members)
 				m.accept(this);
 		} else {
-			JavaSourceClass implementationClass = new JavaSourceClass(cls.pkg + "." + cls.name, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation");
+			JavaSourceClass implementationClass = new JavaSourceClass(cls, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation");
 			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
 			
-			JavaSourcePrepareClassMethodVisitor visitor = new JavaSourcePrepareClassMethodVisitor(implementationClass, null, true);
+			JavaSourcePrepareClassMethodVisitor visitor = new JavaSourcePrepareClassMethodVisitor(filename, implementationClass, null, true);
 			for (IDefinitionMember m : member.members)
 				m.accept(visitor);
 		}
@@ -142,7 +144,9 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		// TODO
+		JavaSourcePrepareDefinitionVisitor innerDefinitionPrepare = new JavaSourcePrepareDefinitionVisitor(filename, cls);
+		member.innerDefinition.accept(innerDefinitionPrepare);
+		
 		cls.empty = false;
 		return null;
 	}

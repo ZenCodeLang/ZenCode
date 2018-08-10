@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -33,6 +34,11 @@ public class CapturedParameterExpression extends CapturedExpression {
 
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
+		return this;
+	}
+
+	@Override
+	public CapturedExpression normalize(TypeScope scope) {
 		return this;
 	}
 }

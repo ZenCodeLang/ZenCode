@@ -26,11 +26,7 @@ public class NewExpression extends Expression {
 			FunctionalMemberRef constructor,
 			CallArguments arguments)
 	{
-		super(position, type, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
-		
-		this.constructor = constructor;
-		this.arguments = arguments;
-		this.instancedHeader = constructor.header;
+		this(position, type, constructor, arguments, constructor.getHeader());
 	}
 	
 	public NewExpression(
@@ -38,13 +34,12 @@ public class NewExpression extends Expression {
 			ITypeID type,
 			FunctionalMemberRef constructor,
 			CallArguments arguments,
-			FunctionHeader instancedHeader,
-			TypeScope scope)
+			FunctionHeader instancedHeader)
 	{
-		super(position, type, binaryThrow(position, constructor.header.thrownType, multiThrow(position, arguments.arguments)));
+		super(position, type, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));
 		
 		this.constructor = constructor;
-		this.arguments = scope == null ? arguments : arguments.normalize(position, scope, instancedHeader);
+		this.arguments = arguments;
 		this.instancedHeader = instancedHeader;
 	}
 
@@ -56,6 +51,11 @@ public class NewExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
-		return tArguments == arguments ? this : new NewExpression(position, type, constructor, tArguments, instancedHeader, null);
+		return tArguments == arguments ? this : new NewExpression(position, type, constructor, tArguments, instancedHeader);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new NewExpression(position, type.getNormalized(), constructor, arguments.normalize(position, scope, instancedHeader), instancedHeader);
 	}
 }

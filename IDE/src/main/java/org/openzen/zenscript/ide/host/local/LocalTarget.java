@@ -8,6 +8,7 @@ package org.openzen.zenscript.ide.host.local;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.Consumer;
 import org.openzen.zenscript.compiler.Target;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
@@ -106,7 +107,7 @@ public class LocalTarget implements IDETarget {
 			stdlib.compile(compiler);
 			compiledModules.add(stdlib.name);
 			
-			boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, module, validationLogger);
+			boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, new Stack<>(), module, validationLogger);
 			if (!isValid)
 				return compiler;
 			
@@ -132,22 +133,42 @@ public class LocalTarget implements IDETarget {
 		}
 	}
 	
-	private boolean compileDependencies(ModuleLoader loader, ZenCodeCompiler compiler, Set<String> compiledModules, SemanticModule module, Consumer<ValidationLogEntry> logger) {
+	private boolean compileDependencies(ModuleLoader loader, ZenCodeCompiler compiler, Set<String> compiledModules, Stack<String> compilingModules, SemanticModule module, Consumer<ValidationLogEntry> logger) {
 		for (String dependency : module.dependencies) {
-			if (compiledModules.contains(module.name))
+			if (compiledModules.contains(dependency))
 				continue;
+			compiledModules.add(dependency);
+			System.out.println("== Compiling module " + dependency + " ==");
+			
+			if (compilingModules.contains(dependency)) {
+				StringBuilder message = new StringBuilder("Circular dependency:\n");
+				for (String s : compilingModules)
+					message.append("    ").append(s).append("\n");
+				
+				throw new IllegalStateException(message.toString());
+			}
+			compilingModules.push(dependency);
 			
 			SemanticModule dependencyModule = loader.getModule(dependency);
+			if (!dependencyModule.isValid()) {
+				compilingModules.pop();
+				return false;
+			}
+			
 			dependencyModule = dependencyModule.normalize();
 			dependencyModule.validate(logger);
-			if (!dependencyModule.isValid())
+			if (!dependencyModule.isValid()) {
+				compilingModules.pop();
 				return false;
+			}
 			
-			if (!compileDependencies(loader, compiler, compiledModules, dependencyModule, logger))
+			if (!compileDependencies(loader, compiler, compiledModules, compilingModules, dependencyModule, logger)) {
+				compilingModules.pop();
 				return false;
+			}
 			
 			dependencyModule.compile(compiler);
-			compiledModules.add(dependencyModule.name);
+			compilingModules.pop();
 		}
 		
 		return true;

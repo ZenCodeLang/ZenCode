@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CallTranslator;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -20,8 +21,8 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class TranslatedOperatorMemberRef extends FunctionalMemberRef {
 	private final CallTranslator translator;
 	
-	public TranslatedOperatorMemberRef(OperatorMember member, FunctionHeader header, CallTranslator translator) {
-		super(member, header);
+	public TranslatedOperatorMemberRef(OperatorMember member, GenericMapper mapper, CallTranslator translator) {
+		super(member, mapper);
 		
 		this.translator = translator;
 	}

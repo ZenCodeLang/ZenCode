@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LoopScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
@@ -47,10 +46,5 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 		LoopScope innerScope = new LoopScope(result, scope);
 		result.content = this.content.compile(innerScope);
 		return result(result, scope);
-	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		return content.precompileForResultType(scope, precompileState);
 	}
 }

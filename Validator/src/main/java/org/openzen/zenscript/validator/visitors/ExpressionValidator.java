@@ -135,7 +135,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitCompare(CompareExpression expression) {
-		if (expression.right.type != expression.operator.header.parameters[0].type) {
+		if (expression.right.type != expression.operator.getHeader().parameters[0].type) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison has invalid right type!");
 		}
 		expression.left.accept(this);
@@ -146,13 +146,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitCall(CallExpression expression) {
 		expression.target.accept(this);
-		checkCallArguments(expression.position, expression.member.header, expression.instancedHeader, expression.arguments);
+		checkCallArguments(expression.position, expression.member.getHeader(), expression.instancedHeader, expression.arguments);
 		return null;
 	}
 
 	@Override
 	public Void visitCallStatic(CallStaticExpression expression) {
-		checkCallArguments(expression.position, expression.member.header, expression.instancedHeader, expression.arguments);
+		checkCallArguments(expression.position, expression.member.getHeader(), expression.instancedHeader, expression.arguments);
 		return null;
 	}
 	
@@ -295,7 +295,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_NOT_FIRST_STATEMENT, expression.position, "Constructor forwarder must be first expression");
 		}
 		scope.markConstructorForwarded();
-		checkCallArguments(expression.position, expression.constructor.header, expression.constructor.header, expression.arguments);
+		checkCallArguments(expression.position, expression.constructor.getHeader(), expression.constructor.getHeader(), expression.arguments);
 		return null;
 	}
 
@@ -308,7 +308,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_NOT_FIRST_STATEMENT, expression.position, "Constructor forwarder must be first expression");
 		}
 		scope.markConstructorForwarded();
-		checkCallArguments(expression.position, expression.constructor.header, expression.constructor.header, expression.arguments);
+		checkCallArguments(expression.position, expression.constructor.getHeader(), expression.constructor.getHeader(), expression.arguments);
 		return null;
 	}
 
@@ -422,7 +422,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitNew(NewExpression expression) {
 		checkCallArguments(
 				expression.position,
-				expression.constructor.header,
+				expression.constructor.getHeader(),
 				expression.instancedHeader,
 				expression.arguments);
 		return null;
@@ -487,11 +487,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitSetField(SetFieldExpression expression) {
 		expression.target.accept(this);
 		expression.value.accept(this);
-		if (expression.value.type != expression.field.type) {
+		if (expression.value.type != expression.field.getType()) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
 					expression.position,
-					"Trying to set a field of type " + expression.field.type + " to a value of type " + expression.value.type);
+					"Trying to set a field of type " + expression.field.getType() + " to a value of type " + expression.value.type);
 		}
 		if (expression.field.isFinal()) {
 			if (!(expression.target instanceof ThisExpression && scope.isConstructor())) {
@@ -531,11 +531,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitSetStaticField(SetStaticFieldExpression expression) {
 		expression.value.accept(this);
-		if (expression.value.type != expression.field.type) {
+		if (expression.value.type != expression.field.getType()) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
-					"Trying to set a static field of type " + expression.field.type + " to a value of type " + expression.value.type);
+					"Trying to set a static field of type " + expression.field.getType() + " to a value of type " + expression.value.type);
 		}
 		if (expression.field.isFinal()) {
 			if (!scope.isStaticInitializer() || expression.field.member.definition != scope.getDefinition()) {
@@ -552,11 +552,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitSetter(SetterExpression expression) {
 		expression.target.accept(this);
 		expression.value.accept(this);
-		if (expression.value.type != expression.setter.type) {
+		if (expression.value.type != expression.setter.getType()) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
-					"Trying to set a property of type " + expression.setter.type + " to a value of type " + expression.value.type);
+					"Trying to set a property of type " + expression.setter.getType() + " to a value of type " + expression.value.type);
 		}
 		return null;
 	}
@@ -569,11 +569,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitStaticSetter(StaticSetterExpression expression) {
 		expression.value.accept(this);
-		if (expression.value.type != expression.setter.type) {
+		if (expression.value.type != expression.setter.getType()) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
-					"Trying to set a static property of type " + expression.setter.type + " to a value of type " + expression.value.type);
+					"Trying to set a static property of type " + expression.setter.getType() + " to a value of type " + expression.value.type);
 		}
 		return null;
 	}

@@ -8,12 +8,11 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.GenericFunctionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -25,7 +24,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedClass extends BaseParsedDefinition {
 	public static ParsedClass parseClass(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
-		List<ParsedGenericParameter> genericParameters = ParsedGenericParameter.parseAll(tokens);
+		List<ParsedTypeParameter> genericParameters = ParsedTypeParameter.parseAll(tokens);
 		
 		IParsedType superclass = null;
 		if (tokens.optional(ZSTokenType.T_COLON) != null) {
@@ -41,19 +40,19 @@ public class ParsedClass extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final List<ParsedGenericParameter> genericParameters;
+	private final List<ParsedTypeParameter> genericParameters;
 	private final IParsedType superclass;
 	
 	private final ClassDefinition compiled;
 	
-	public ParsedClass(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedGenericParameter> genericParameters, IParsedType superclass, HighLevelDefinition outerDefinition) {
+	public ParsedClass(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> genericParameters, IParsedType superclass, HighLevelDefinition outerDefinition) {
 		super(position, modifiers, annotations);
 		
 		this.genericParameters = genericParameters;
 		this.superclass = superclass;
 		
 		compiled = new ClassDefinition(position, pkg, name, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(genericParameters));
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(genericParameters));
 	}
 
 	@Override
@@ -62,11 +61,10 @@ public class ParsedClass extends BaseParsedDefinition {
 	}
 
 	@Override
-	public void compileMembers(BaseScope scope) {
-		ParsedGenericParameter.compile(scope, compiled.genericParameters, genericParameters);
+	protected void linkTypesLocal(TypeResolutionContext context) {
 		if (superclass != null)
-			compiled.setSuperclass(superclass.compile(new GenericFunctionScope(scope, compiled.genericParameters)));
+			compiled.setSuperType(superclass.compile(context));
 		
-		super.compileMembers(scope);
+		super.linkTypesLocal(context);
 	}
 }

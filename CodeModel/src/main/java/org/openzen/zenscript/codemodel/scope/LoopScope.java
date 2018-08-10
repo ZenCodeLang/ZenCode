@@ -10,12 +10,14 @@ import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 
 /**
  *
@@ -83,5 +85,15 @@ public class LoopScope extends StatementScope {
 	@Override
 	public AnnotationDefinition getAnnotation(String name) {
 		return outer.getAnnotation(name);
+	}
+
+	@Override
+	public TypeMemberPreparer getPreparer() {
+		return outer.getPreparer();
+	}
+
+	@Override
+	public GenericMapper getLocalTypeParameters() {
+		return outer.getLocalTypeParameters();
 	}
 }

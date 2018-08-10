@@ -99,6 +99,7 @@ public enum ZSTokenType implements TokenType {
 	K_IMPLICIT(true, "implicit"),
 	K_VIRTUAL(true, "virtual"),
 	K_EXTERN(true, "extern"),
+	K_IMMUTABLE(true, "immutable"),
 	
 	K_VAL(true, "val"),
 	K_VAR(true, "var"),

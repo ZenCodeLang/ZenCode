@@ -194,9 +194,11 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 	}
 	
 	private final String filename;
+	private final JavaSourceClass outerClass;
 	
-	public JavaSourcePrepareDefinitionVisitor(String filename) {
+	public JavaSourcePrepareDefinitionVisitor(String filename, JavaSourceClass outerClass) {
 		this.filename = filename;
+		this.outerClass = outerClass;
 	}
 	
 	@Override
@@ -244,7 +246,8 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 
 	@Override
 	public JavaSourceClass visitAlias(AliasDefinition definition) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		// nothing to do
+		return null;
 	}
 
 	@Override
@@ -265,12 +268,12 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
 		JavaNativeClass nativeClass = nativeTag == null ? null : nativeClasses.get(nativeTag.value);
 		if (nativeClass == null) {
-			JavaSourceClass cls = new JavaSourceClass(definition.pkg.fullName, definition.name);
+			JavaSourceClass cls = outerClass == null ? new JavaSourceClass(definition.pkg.fullName, definition.name) : new JavaSourceClass(outerClass, definition.name);
 			definition.setTag(JavaSourceClass.class, cls);
 			visitClassMembers(definition, cls, null, startsEmpty);
 			return cls;
 		} else {
-			JavaSourceClass cls = new JavaSourceClass(definition.pkg.fullName, filename);
+			JavaSourceClass cls = outerClass == null ? new JavaSourceClass(definition.pkg.fullName, filename) : new JavaSourceClass(outerClass, filename);
 			definition.setTag(JavaSourceClass.class, nativeClass.cls);
 			definition.setTag(JavaNativeClass.class, nativeClass);
 			visitExpansionMembers(definition, cls, nativeClass);
@@ -279,7 +282,7 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 	}
 	
 	private void visitClassMembers(HighLevelDefinition definition, JavaSourceClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
-		JavaSourcePrepareClassMethodVisitor methodVisitor = new JavaSourcePrepareClassMethodVisitor(cls, nativeClass, startsEmpty);
+		JavaSourcePrepareClassMethodVisitor methodVisitor = new JavaSourcePrepareClassMethodVisitor(filename, cls, nativeClass, startsEmpty);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
 		}

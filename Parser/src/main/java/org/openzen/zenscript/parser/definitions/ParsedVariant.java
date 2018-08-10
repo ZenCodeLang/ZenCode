@@ -9,12 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.DefinitionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -26,7 +25,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedVariant extends BaseParsedDefinition {
 	public static ParsedVariant parseVariant(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
-		List<ParsedGenericParameter> typeParameters = ParsedGenericParameter.parseAll(tokens);
+		List<ParsedTypeParameter> typeParameters = ParsedTypeParameter.parseAll(tokens);
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
 		ParsedVariant result = new ParsedVariant(pkg, position, modifiers, annotations, name, typeParameters, outerDefinition);
@@ -56,17 +55,17 @@ public class ParsedVariant extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final List<ParsedGenericParameter> typeParameters;
+	private final List<ParsedTypeParameter> typeParameters;
 	private final List<ParsedVariantOption> variants = new ArrayList<>();
 	
 	private final VariantDefinition compiled;
 	
-	public ParsedVariant(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedGenericParameter> typeParameters, HighLevelDefinition outerDefinition) {
+	public ParsedVariant(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters, HighLevelDefinition outerDefinition) {
 		super(position, modifiers, annotations);
 		
 		this.typeParameters = typeParameters;
 		compiled = new VariantDefinition(position, pkg, name, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(typeParameters));
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
 	}
 	
 	public void addVariant(ParsedVariantOption value) {
@@ -79,16 +78,12 @@ public class ParsedVariant extends BaseParsedDefinition {
 	}
 	
 	@Override
-	public void compileTypes(BaseScope scope) {
-		DefinitionScope innerScope = new DefinitionScope(scope, getCompiled(), false);
+	public void linkTypesLocal(TypeResolutionContext context) {
+		ParsedTypeParameter.compile(context, compiled.genericParameters, typeParameters);
 		for (ParsedVariantOption variant : variants) {
-			compiled.options.add(variant.compile(innerScope));
+			compiled.options.add(variant.compile(context));
 		}
-	}
-	
-	@Override
-	public void compileMembers(BaseScope scope) {
-		ParsedGenericParameter.compile(scope, compiled.genericParameters, typeParameters);
-		super.compileMembers(scope);
+		
+		super.linkTypesLocal(context);
 	}
 }

@@ -42,6 +42,8 @@ public abstract class Statement extends Taggable {
 	
 	public abstract void forEachStatement(Consumer<Statement> consumer);
 	
+	public abstract Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified);
+	
 	public final Statement transform(StatementTransformer transformer) {
 		return transform(transformer, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}

@@ -53,14 +53,4 @@ public class ParsedExpressionAndAnd extends ParsedExpression {
 	public boolean hasStrongType() {
 		return left.hasStrongType() && right.hasStrongType();
 	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		ITypeID leftType = left.precompileForType(scope, state);
-		ITypeID rightType = right.precompileForType(scope, state);
-		if (leftType == null || rightType == null)
-			return null;
-		
-		return scope.getTypeMembers(leftType).union(rightType);
-	}
 }

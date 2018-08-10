@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.member.MemberVisitor;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -25,7 +26,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  * @author Hoofdgebruiker
  */
 public class ArrayIteratorKeyValues extends Taggable implements IIteratorMember {
-	private final ArrayTypeID type;
+	private ArrayTypeID type;
 	private final ITypeID[] loopVariableTypes;
 	
 	public ArrayIteratorKeyValues(ArrayTypeID type) {
@@ -64,7 +65,7 @@ public class ArrayIteratorKeyValues extends Taggable implements IIteratorMember 
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addIterator(new IteratorMemberRef(this, mapper.map(loopVariableTypes)), priority);
+		members.addIterator(new IteratorMemberRef(this, mapper == null ? loopVariableTypes : mapper.map(loopVariableTypes)), priority);
 	}
 
 	@Override
@@ -80,5 +81,10 @@ public class ArrayIteratorKeyValues extends Taggable implements IIteratorMember 
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return null;
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		
 	}
 }

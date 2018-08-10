@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 /**
@@ -35,5 +36,10 @@ public class AndAndExpression extends Expression {
 		return tLeft == left && tRight == right
 				? this
 				: new AndAndExpression(position, tLeft, tRight);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new AndAndExpression(position, left.normalize(scope), right.normalize(scope));
 	}
 }

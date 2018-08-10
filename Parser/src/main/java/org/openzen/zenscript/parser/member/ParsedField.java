@@ -6,8 +6,11 @@
 package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -35,7 +38,7 @@ public class ParsedField extends ParsedDefinitionMember {
 	private final int autoSetter;
 	
 	private FieldMember compiled;
-	private boolean precompiled = false;
+	private boolean isCompiled = false;
 	
 	public ParsedField(
 			CodePosition position,
@@ -60,21 +63,17 @@ public class ParsedField extends ParsedDefinitionMember {
 		this.autoGetter = autoGetter;
 		this.autoSetter = autoSetter;
 	}
-	
-	@Override
-	public void linkInnerTypes() {
-		
-	}
 
 	@Override
-	public void linkTypes(BaseScope scope) {
+	public void linkTypes(TypeResolutionContext context) {
 		compiled = new FieldMember(
 				position,
 				definition,
 				modifiers | (isFinal ? Modifiers.FINAL : 0),
 				name,
-				type.compile(scope),
-				scope.getTypeRegistry(),
+				context.getThisType(),
+				type.compile(context),
+				context.getTypeRegistry(),
 				autoGetter,
 				autoSetter,
 				null);
@@ -86,27 +85,11 @@ public class ParsedField extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
-		if (precompiled)
-			return true;
-		precompiled = true;
+	public void compile(BaseScope scope) {
+		if (isCompiled)
+			return;
+		isCompiled = true;
 		
-		if (compiled.type == BasicTypeID.UNDETERMINED) {
-			if (expression == null)
-				return false;
-			
-			ITypeID type = expression.precompileForType(new ExpressionScope(scope), state);
-			if (type == null)
-				return false;
-			
-			compiled.type = type;
-		}
-		return true;
-	}
-
-	@Override
-	public void compile(BaseScope scope, PrecompilationState state) {
-		inferHeaders(scope, state);
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		
 		if (expression != null) {
@@ -115,6 +98,11 @@ public class ParsedField extends ParsedDefinitionMember {
 					.eval()
 					.castImplicit(position, scope, compiled.type);
 			compiled.setInitializer(initializer);
+			
+			if (compiled.type == BasicTypeID.UNDETERMINED)
+				compiled.type = initializer.type;
+		} else if (compiled.type == BasicTypeID.UNDETERMINED) {
+			throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not infer type since no initializer is given");
 		}
 	}
 }

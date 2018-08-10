@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -23,7 +24,7 @@ import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 public class ParsedStruct extends BaseParsedDefinition {
 	public static ParsedStruct parseStruct(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
-		List<ParsedGenericParameter> parameters = ParsedGenericParameter.parseAll(tokens);
+		List<ParsedTypeParameter> parameters = ParsedTypeParameter.parseAll(tokens);
 		
 		tokens.required(ZSTokenType.T_AOPEN, "{");
 		
@@ -34,17 +35,17 @@ public class ParsedStruct extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final List<ParsedGenericParameter> parameters;
+	private final List<ParsedTypeParameter> parameters;
 	
 	private final StructDefinition compiled;
 	
-	public ParsedStruct(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedGenericParameter> genericParameters, HighLevelDefinition outerDefinition) {
+	public ParsedStruct(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> genericParameters, HighLevelDefinition outerDefinition) {
 		super(position, modifiers, annotations);
 		
 		this.parameters = genericParameters;
 		
 		compiled = new StructDefinition(position, pkg, name, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedGenericParameter.getCompiled(genericParameters));
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(genericParameters));
 	}
 
 	@Override
@@ -53,8 +54,8 @@ public class ParsedStruct extends BaseParsedDefinition {
 	}
 
 	@Override
-	public void compileMembers(BaseScope scope) {
-		ParsedGenericParameter.compile(scope, compiled.genericParameters, parameters);
-		super.compileMembers(scope);
+	protected void linkTypesLocal(TypeResolutionContext context) {
+		ParsedTypeParameter.compile(context, compiled.genericParameters, parameters);
+		super.linkTypesLocal(context);
 	}
 }

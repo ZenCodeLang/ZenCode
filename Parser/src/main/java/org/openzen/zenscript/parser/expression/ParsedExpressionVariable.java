@@ -26,9 +26,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -118,43 +116,5 @@ public class ParsedExpressionVariable extends ParsedExpression {
 	@Override
 	public boolean hasStrongType() {
 		return true;
-	}
-
-	@Override
-	public ITypeID precompileForType(ExpressionScope scope, PrecompilationState state) {
-		ITypeID[] genericArguments = ITypeID.NONE;
-		if (genericParameters != null) {
-			genericArguments = new ITypeID[genericParameters.size()];
-			for (int i = 0; i < genericParameters.size(); i++) {
-				genericArguments[i] = genericParameters.get(i).compile(scope);
-			}
-		}
-		
-		IPartialExpression result = scope.get(position, new GenericName(name, genericArguments));
-		if (result == null) {
-			for (ITypeID hint : scope.hints) {
-				TypeMembers members = scope.getTypeMembers(hint);
-				EnumConstantMember member = members.getEnumMember(name);
-				if (member != null)
-					return hint;
-				
-				VariantOptionRef option = members.getVariantOption(name);
-				if (option != null)
-					return hint;
-			}
-			
-			throw new CompileException(position, CompileExceptionCode.UNDEFINED_VARIABLE, "No such symbol: " + name);
-		} else {
-			if (result.getMember() != null) {
-				state.precompile(result.getMember());
-				result = scope.get(position, new GenericName(name, genericArguments));
-			}
-			
-			Expression resultExpression = result.eval();
-			if (resultExpression.type == BasicTypeID.UNDETERMINED)
-				System.out.println("Could not determine type");
-			
-			return resultExpression.type;
-		}
 	}
 }

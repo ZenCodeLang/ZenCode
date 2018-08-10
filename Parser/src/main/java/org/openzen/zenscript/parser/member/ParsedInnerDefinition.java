@@ -5,7 +5,10 @@
  */
 package org.openzen.zenscript.parser.member;
 
+import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingType;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -19,6 +22,7 @@ import org.openzen.zenscript.parser.PrecompilationState;
 public class ParsedInnerDefinition extends ParsedDefinitionMember {
 	private final ParsedDefinition innerDefinition;
 	private final InnerDefinitionMember member;
+	private boolean typesCompiled = false;
 	
 	public ParsedInnerDefinition(HighLevelDefinition outer, ParsedDefinition definition) {
 		super(outer, ParsedAnnotation.NONE);
@@ -29,15 +33,18 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 	}
 	
 	@Override
-	public void linkInnerTypes() {
-		definition.addMember(member);
-		
-		this.innerDefinition.linkInnerTypes();
+	public void registerInnerTypes(Map<String, CompilingType> inner) {
+		inner.put(innerDefinition.getCompiled().name, innerDefinition);
 	}
-
+	
 	@Override
-	public void linkTypes(BaseScope scope) {
-		this.innerDefinition.compileMembers(scope);
+	public void linkTypes(TypeResolutionContext context) {
+		if (typesCompiled)
+			return;
+		typesCompiled = true;
+		
+		System.out.println("compileTypes " + definition.name + "::" + innerDefinition.getCompiled().name);
+		innerDefinition.linkTypes(context);
 	}
 
 	@Override
@@ -46,12 +53,12 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
-		return true;
+	public void compile(BaseScope scope) {
+		innerDefinition.compile(scope);
 	}
-
+	
 	@Override
-	public void compile(BaseScope scope, PrecompilationState state) {
-		innerDefinition.compileCode(scope, state);
+	public void registerMembers(BaseScope scope, PrecompilationState state) {
+		innerDefinition.registerMembers(scope, state);
 	}
 }

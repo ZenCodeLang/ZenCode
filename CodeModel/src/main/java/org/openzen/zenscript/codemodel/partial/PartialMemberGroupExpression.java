@@ -29,17 +29,35 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	private final DefinitionMemberGroup group;
 	private final ITypeID[] typeArguments;
 	private final boolean allowStaticUsage;
+	private final TypeScope scope;
 	
-	public PartialMemberGroupExpression(CodePosition position, Expression target, DefinitionMemberGroup group, ITypeID[] typeArguments, boolean allowStaticMembers) {
+	public PartialMemberGroupExpression(
+			CodePosition position,
+			TypeScope scope,
+			Expression target,
+			DefinitionMemberGroup group,
+			ITypeID[] typeArguments,
+			boolean allowStaticMembers)
+	{
 		this.position = position;
+		this.scope = scope;
 		this.target = target;
 		this.group = group;
 		this.typeArguments = typeArguments;
 		this.allowStaticUsage = allowStaticMembers;
 	}
 	
-	public PartialMemberGroupExpression(CodePosition position, Expression target, String name, FunctionalMemberRef member, ITypeID[] typeArguments, boolean allowStaticMembers) {
+	public PartialMemberGroupExpression(
+			CodePosition position,
+			TypeScope scope,
+			Expression target,
+			String name,
+			FunctionalMemberRef member,
+			ITypeID[] typeArguments,
+			boolean allowStaticMembers)
+	{
 		this.position = position;
+		this.scope = scope;
 		this.target = target;
 		this.group = DefinitionMemberGroup.forMethod(name, member);
 		this.typeArguments = typeArguments;
@@ -48,15 +66,15 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 
 	@Override
 	public Expression eval() {
-		return group.getter(position, target, allowStaticUsage);
+		return group.getter(position, scope, target, allowStaticUsage);
 	}
 	
 	@Override
 	public List<ITypeID> getAssignHints() {
 		if (group.getSetter() != null)
-			return Collections.singletonList(group.getSetter().type);
+			return Collections.singletonList(group.getSetter().getType());
 		if (group.getField() != null)
-			return Collections.singletonList(group.getField().type);
+			return Collections.singletonList(group.getField().getType());
 		
 		return Collections.emptyList();
 	}
@@ -69,8 +87,11 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	@Override
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<ITypeID> hints, int arguments) {
 		List<FunctionHeader> results = group.getMethodMembers().stream()
-				.filter(method -> method.member.header.parameters.length == arguments && !method.member.isStatic())
-				.map(method -> method.member.header)
+				.filter(method -> method.member.accepts(arguments) && !method.member.isStatic())
+				.map(method -> {
+					scope.getPreparer().prepare(method.member.getTarget());
+					return method.member.getHeader();
+				})
 				.collect(Collectors.toList());
 		if (results.isEmpty())
 			System.out.println("!");
@@ -94,7 +115,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	
 	@Override
 	public IPartialExpression capture(CodePosition position, LambdaClosure closure) {
-		return new PartialMemberGroupExpression(position, target.capture(position, closure).eval(), group, typeArguments, allowStaticUsage);
+		return new PartialMemberGroupExpression(position, scope, target.capture(position, closure).eval(), group, typeArguments, allowStaticUsage);
 	}
 
 	@Override

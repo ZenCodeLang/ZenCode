@@ -22,7 +22,7 @@ public class GetFieldExpression extends Expression {
 	public final FieldMemberRef field;
 	
 	public GetFieldExpression(CodePosition position, Expression target, FieldMemberRef field) {
-		super(position, field.type, target.thrownType);
+		super(position, field.getType(), target.thrownType);
 		
 		this.target = target;
 		this.field = field;
@@ -57,5 +57,10 @@ public class GetFieldExpression extends Expression {
 	@Override
 	public IDefinitionMember getMember() {
 		return field.member;
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new GetFieldExpression(position, target.normalize(scope), field);
 	}
 }

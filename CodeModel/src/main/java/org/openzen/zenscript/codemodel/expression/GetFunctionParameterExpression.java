@@ -43,4 +43,9 @@ public class GetFunctionParameterExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return this;
+	}
 }

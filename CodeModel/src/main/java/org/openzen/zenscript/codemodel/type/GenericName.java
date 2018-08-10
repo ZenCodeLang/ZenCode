@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.List;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -35,6 +37,17 @@ public class GenericName {
 	
 	public boolean hasNoArguments() {
 		return arguments.length == 0;
+	}
+	
+	public static ITypeID getInnerType(GlobalTypeRegistry registry, DefinitionTypeID type, List<GenericName> name, int index) {
+		while (index < name.size()) {
+			GenericName innerName = name.get(index++);
+			type = type.getInnerType(innerName, registry);
+			if (type == null)
+				return null;
+		}
+
+		return type;
 	}
 	
 	@Override

@@ -9,14 +9,13 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ConstTypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 
 /**
@@ -100,12 +99,15 @@ public class JavaSourceTypeNameVisitor implements ITypeVisitor<String> {
 	}
 
 	@Override
-	public String visitConst(ConstTypeID type) {
-		return "Const" + type.accept(this);
-	}
-
-	@Override
-	public String visitOptional(OptionalTypeID optional) {
-		return "Optional" + optional.accept(this);
+	public String visitModified(ModifiedTypeID type) {
+		StringBuilder result = new StringBuilder();
+		if (type.isConst())
+			result.append("Const");
+		if (type.isOptional())
+			result.append("Optional");
+		if (type.isImmutable())
+			result.append("Immutable");
+		result.append(type.accept(this));
+		return result.toString();
 	}
 }

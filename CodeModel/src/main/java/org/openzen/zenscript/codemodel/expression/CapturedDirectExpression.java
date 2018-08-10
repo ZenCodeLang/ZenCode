@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -33,5 +34,10 @@ public class CapturedDirectExpression extends CapturedExpression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = transformer.transform(value);
 		return tValue == value ? this : new CapturedDirectExpression(position, closure, tValue);
+	}
+
+	@Override
+	public CapturedExpression normalize(TypeScope scope) {
+		return new CapturedDirectExpression(position, closure, value.normalize(scope));
 	}
 }

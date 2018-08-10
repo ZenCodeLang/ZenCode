@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -29,6 +30,11 @@ public class NullExpression extends Expression {
 
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
+		return this;
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
 		return this;
 	}
 }

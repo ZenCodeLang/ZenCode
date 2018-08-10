@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -17,7 +18,7 @@ public class GetterExpression extends Expression {
 	public final GetterMemberRef getter;
 	
 	public GetterExpression(CodePosition position, Expression target, GetterMemberRef getter) {
-		super(position, getter.type, target.thrownType);
+		super(position, getter.getType(), target.thrownType);
 		
 		this.target = target;
 		this.getter = getter;
@@ -32,5 +33,10 @@ public class GetterExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tTarget = target.transform(transformer);
 		return target == tTarget ? this : new GetterExpression(position, tTarget, getter);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new GetterExpression(position, target.normalize(scope), getter);
 	}
 }

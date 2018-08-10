@@ -32,6 +32,7 @@ public class JavaSourceStatementScope {
 	public final String indent;
 	public final LoopStatement innerLoop;
 	public final boolean isExpansion;
+	public final ITypeID thisType;
 	
 	private final JavaSourceStatementScope outer;
 	private final Set<String> localVariables = new HashSet<>();
@@ -51,6 +52,7 @@ public class JavaSourceStatementScope {
 		this.innerLoop = innerLoop;
 		this.outer = outer;
 		this.isExpansion = isExpansion;
+		this.thisType = fileScope.thisType;
 		
 		if (header != null) {
 			for (FunctionParameter parameter : header.parameters)

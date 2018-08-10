@@ -39,11 +39,11 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	public byte[] visitClass(ClassDefinition definition) {
 		//Classes will always be created in a new File/Class
 
-		final Type superType;
-		if (definition.superType == null)
-			superType = Type.getType(Object.class);
-		else
-			superType = Type.getType(definition.superType.accept(JavaTypeClassVisitor.INSTANCE));
+        final Type superType;
+        if (definition.getSuperType() == null)
+            superType = Type.getType(Object.class);
+        else
+            superType = Type.getType(definition.getSuperType().accept(JavaTypeClassVisitor.INSTANCE));
 
 		JavaClassInfo toClass = new JavaClassInfo(definition.name);
 		JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -84,12 +84,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	@Override
 	public byte[] visitEnum(EnumDefinition definition) {
 		System.out.println("Compiling enum " + definition.name + " in " + definition.position.filename);
-
-		final Type superType;
-		if (definition.superType == null)
-			superType = Type.getType(Object.class);
-		else
-			superType = Type.getType(definition.superType.accept(JavaTypeClassVisitor.INSTANCE));
+		
+        final Type superType;
+        if (definition.getSuperType() == null)
+            superType = Type.getType(Object.class);
+        else
+            superType = Type.getType(definition.getSuperType().accept(JavaTypeClassVisitor.INSTANCE));
 
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 

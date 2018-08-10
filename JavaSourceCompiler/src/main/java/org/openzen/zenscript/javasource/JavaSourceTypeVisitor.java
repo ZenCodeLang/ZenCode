@@ -5,20 +5,22 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ConstTypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 
@@ -57,10 +59,10 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 		switch (basic) {
 			case VOID: return "void";
 			case BOOL: return "boolean";
-			case BYTE: return "byte";
+			case BYTE: return "int";
 			case SBYTE: return "byte";
 			case SHORT: return "short";
-			case USHORT: return "ushort";
+			case USHORT: return "int";
 			case INT: return "int";
 			case UINT: return "int";
 			case LONG: return "long";
@@ -124,18 +126,29 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 
 	@Override
 	public String visitDefinition(DefinitionTypeID definition) {
-		String javaType = cls == null ? importer.importType(definition.definition) : importer.importType(cls);
-		StringBuilder result = new StringBuilder(javaType);
-		if (definition.typeParameters != null && definition.typeParameters.length > 0) {
-			result.append("<");
-			for (int i = 0; i < definition.typeParameters.length; i++) {
-				if (i > 0)
-					result.append(", ");
-				result.append(definition.typeParameters[i].accept(objectTypeVisitor));
-			}
-			result.append(">");
-		}
+		StringBuilder result = new StringBuilder();
+		format(result, definition, cls, false);
 		return result.toString();
+	}
+	
+	private void format(StringBuilder output, DefinitionTypeID type, JavaSourceClass cls, boolean isStatic) {
+		if (type.outer != null) {
+			format(output, type.outer, null, type.definition.isStatic() || type.definition.isInterface());
+			output.append(".");
+			output.append(type.definition.name);
+		} else {
+			output.append(cls == null ? importer.importType(type.definition) : importer.importType(cls));
+		}
+		
+		if (!isStatic && type.typeParameters.length > 0) {
+			output.append("<");
+			for (int i = 0; i < type.typeParameters.length; i++) {
+				if (i > 0)
+					output.append(", ");
+				output.append(type.typeParameters[i].accept(objectTypeVisitor));
+			}
+			output.append(">");
+		}
 	}
 
 	@Override
@@ -149,12 +162,7 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 	}
 
 	@Override
-	public String visitConst(ConstTypeID type) {
-		return type.baseType.accept(this);
-	}
-
-	@Override
-	public String visitOptional(OptionalTypeID optional) {
+	public String visitModified(ModifiedTypeID optional) {
 		return optional.baseType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator));
 	}
 

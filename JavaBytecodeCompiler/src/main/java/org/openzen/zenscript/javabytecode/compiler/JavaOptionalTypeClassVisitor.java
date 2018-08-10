@@ -87,13 +87,8 @@ public class JavaOptionalTypeClassVisitor implements ITypeVisitor<Class> {
 	}
 
 	@Override
-	public Class visitConst(ConstTypeID type) {
-		return base.visitConst(type);
-	}
-
-	@Override
-	public Class visitOptional(OptionalTypeID optional) {
-		return base.visitOptional(optional);
+	public Class visitModified(ModifiedTypeID type) {
+		return base.visitModified(type);
 	}
 
 	@Override

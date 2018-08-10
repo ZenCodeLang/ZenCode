@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -33,5 +34,10 @@ public class IsExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new IsExpression(position, tValue, type);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new IsExpression(position, value.normalize(scope), type.getNormalized());
 	}
 }

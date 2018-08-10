@@ -29,17 +29,14 @@ public final class ModuleSpace {
 	public final ZSPackage globalsPackage = new ZSPackage(null, "");
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
 	private final Map<String, ISymbol> globals = new HashMap<>();
-	private final List<AnnotationDefinition> annotations = new ArrayList<>();
+	private final AnnotationDefinition[] annotations;
 	
-	public ModuleSpace(CompilationUnit compilationUnit) {
+	public ModuleSpace(CompilationUnit compilationUnit, List<AnnotationDefinition> annotations) {
 		this.compilationUnit = compilationUnit;
 		
-		addAnnotation(NativeAnnotationDefinition.INSTANCE);
-		addAnnotation(PreconditionAnnotationDefinition.INSTANCE);
-	}
-	
-	public void addAnnotation(AnnotationDefinition annotation) {
-		annotations.add(annotation);
+		annotations.add(NativeAnnotationDefinition.INSTANCE);
+		annotations.add(PreconditionAnnotationDefinition.INSTANCE);
+		this.annotations = annotations.toArray(new AnnotationDefinition[annotations.size()]);
 	}
 	
 	public void addModule(String name, SemanticModule dependency) {
@@ -54,6 +51,10 @@ public final class ModuleSpace {
 		}
 	}
 	
+	public void addGlobal(String name, ISymbol global) {
+		globals.put(name, global);
+	}
+	
 	public ZSPackage collectPackages() {
 		return rootPackage;
 	}
@@ -66,7 +67,7 @@ public final class ModuleSpace {
 		return globals;
 	}
 	
-	public List<AnnotationDefinition> getAnnotations() {
+	public AnnotationDefinition[] getAnnotations() {
 		return annotations;
 	}
 }

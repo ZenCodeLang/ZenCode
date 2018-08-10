@@ -87,17 +87,12 @@ public class JavaTypeClassVisitor implements ITypeVisitor<Class> {
 	}
 
 	@Override
-	public Class visitConst(ConstTypeID type) {
-		return type.baseType.accept(this);
-	}
-
-	@Override
-	public Class visitOptional(OptionalTypeID optional) {
-		return optional.baseType.accept(this.optional);
+	public Class visitModified(ModifiedTypeID modified) {
+		return modified.baseType.accept(this.optional);
 	}
 
 	@Override
 	public Class visitGenericMap(GenericMapTypeID map) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return Map.class;
 	}
 }

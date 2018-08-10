@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -34,8 +35,8 @@ public class ParsedConstructor extends ParsedFunctionalMember {
 	}
 
 	@Override
-	public void linkTypes(BaseScope scope) {
-		compiled = new ConstructorMember(position, definition, modifiers, header.compile(scope), null);
+	public void linkTypes(TypeResolutionContext context) {
+		compiled = new ConstructorMember(position, definition, modifiers, header.compile(context), null);
 	}
 
 	@Override
@@ -44,7 +45,7 @@ public class ParsedConstructor extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType, PrecompilationState state) {
+	protected void fillOverride(TypeScope scope, ITypeID baseType) {
 		throw new CompileException(position, CompileExceptionCode.OVERRIDE_CONSTRUCTOR, "Cannot override a constructor");
 	}
 }

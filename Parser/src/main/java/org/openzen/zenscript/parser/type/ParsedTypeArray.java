@@ -5,10 +5,11 @@
  */
 package org.openzen.zenscript.parser.type;
 
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 
 /**
  *
@@ -33,7 +34,7 @@ public class ParsedTypeArray implements IParsedType {
 	
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedTypeArray(baseType, dimension, modifiers | TypeMembers.MODIFIER_OPTIONAL);
+		return new ParsedTypeArray(baseType, dimension, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL);
 	}
 
 	@Override
@@ -42,9 +43,9 @@ public class ParsedTypeArray implements IParsedType {
 	}
 
 	@Override
-	public ITypeID compile(BaseScope scope) {
-		ITypeID baseType = this.baseType.compile(scope);
-		GlobalTypeRegistry registry = scope.getTypeRegistry();
+	public ITypeID compile(TypeResolutionContext context) {
+		ITypeID baseType = this.baseType.compile(context);
+		GlobalTypeRegistry registry = context.getTypeRegistry();
 		return registry.getModified(modifiers, registry.getArray(baseType, dimension));
 	}
 }

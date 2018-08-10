@@ -37,9 +37,4 @@ public class ParsedStatementContinue extends ParsedStatement {
 			throw new CompileException(position, CompileExceptionCode.CONTINUE_OUTSIDE_LOOP, name == null ? "Not in a loop" : "No such loop: " + name);
 		return result(new ContinueStatement(position, target), scope);
 	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		return null;
-	}
 }

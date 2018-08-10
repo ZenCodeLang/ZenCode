@@ -5,9 +5,11 @@
  */
 package org.openzen.zenscript.parser.type;
 
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 
 /**
  *
@@ -32,7 +34,7 @@ public class ParsedTypeRange implements IParsedType {
 
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedTypeRange(from, to, modifiers | TypeMembers.MODIFIER_OPTIONAL);
+		return new ParsedTypeRange(from, to, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL);
 	}
 
 	@Override
@@ -41,9 +43,9 @@ public class ParsedTypeRange implements IParsedType {
 	}
 	
 	@Override
-	public ITypeID compile(BaseScope scope) {
-		ITypeID from = this.from.compile(scope);
-		ITypeID to = this.to.compile(scope);
-		return scope.getTypeRegistry().getModified(modifiers, scope.getTypeRegistry().getRange(from, to));
+	public ITypeID compile(TypeResolutionContext context) {
+		ITypeID from = this.from.compile(context);
+		ITypeID to = this.to.compile(context);
+		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getRange(from, to));
 	}
 }

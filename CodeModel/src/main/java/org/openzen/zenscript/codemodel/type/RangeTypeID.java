@@ -14,14 +14,26 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  * @author Hoofdgebruiker
  */
 public class RangeTypeID implements ITypeID {
-	public static final RangeTypeID INT = new RangeTypeID(BasicTypeID.INT, BasicTypeID.INT);
+	public static final RangeTypeID INT = new RangeTypeID(null, BasicTypeID.INT, BasicTypeID.INT);
 	
 	public final ITypeID from;
 	public final ITypeID to;
+	private final RangeTypeID normalized;
 	
-	public RangeTypeID(ITypeID from, ITypeID to) {
+	public RangeTypeID(GlobalTypeRegistry registry, ITypeID from, ITypeID to) {
 		this.from = from;
 		this.to = to;
+		
+		if (from.getNormalized() == from && to.getNormalized() == to) {
+			normalized = this;
+		} else {
+			normalized = registry.getRange(from.getNormalized(), to.getNormalized());
+		}
+	}
+	
+	@Override
+	public RangeTypeID getNormalized() {
+		return normalized;
 	}
 	
 	@Override

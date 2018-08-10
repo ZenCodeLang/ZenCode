@@ -10,6 +10,7 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -20,14 +21,14 @@ public class GetStaticFieldExpression extends Expression {
 	public final FieldMemberRef field;
 	
 	public GetStaticFieldExpression(CodePosition position, FieldMemberRef field) {
-		super(position, field.type, null);
+		super(position, field.getType(), null);
 		
 		this.field = field;
 	}
 	
 	@Override
 	public List<ITypeID> getAssignHints() {
-		return Collections.singletonList(field.type);
+		return Collections.singletonList(field.getType());
 	}
 	
 	@Override
@@ -48,5 +49,10 @@ public class GetStaticFieldExpression extends Expression {
 	@Override
 	public IDefinitionMember getMember() {
 		return field.member;
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return this;
 	}
 }

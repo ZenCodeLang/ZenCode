@@ -22,11 +22,13 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
+import org.openzen.zenscript.codemodel.context.FileResolutionContext;
+import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.FileScope;
@@ -40,26 +42,25 @@ import org.openzen.zenscript.parser.statements.ParsedStatement;
  * @author Hoofdgebruiker
  */
 public class ParsedFile {
-	public static ParsedFile parse(ZSPackage pkg, BracketExpressionParser bracketParser, File file) throws IOException {
-		return parse(pkg, bracketParser, new FileSourceFile(file.getName(), file));
+	public static ParsedFile parse(ZSPackage pkg, CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File file) throws IOException {
+		return parse(pkg, compilingPackage, bracketParser, new FileSourceFile(file.getName(), file));
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, BracketExpressionParser bracketParser, String filename, String content) {
+	public static ParsedFile parse(ZSPackage pkg, CompilingPackage compilingPackage, BracketExpressionParser bracketParser, String filename, String content) {
 		try {
-			return parse(pkg, bracketParser, new LiteralSourceFile(filename, content));
+			return parse(pkg, compilingPackage, bracketParser, new LiteralSourceFile(filename, content));
 		} catch (IOException ex) {
 			throw new AssertionError(); // shouldn't happen
 		}
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, BracketExpressionParser bracketParser, SourceFile file) throws IOException {
+	public static ParsedFile parse(ZSPackage pkg, CompilingPackage compilingPackage, BracketExpressionParser bracketParser, SourceFile file) throws IOException {
 		ZSTokenParser tokens = ZSTokenParser.create(file, bracketParser, 4);
-		return parse(pkg, tokens);
+		return parse(pkg, compilingPackage, tokens);
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, ZSTokenParser tokens) {
+	public static ParsedFile parse(ZSPackage pkg, CompilingPackage compilingPackage, ZSTokenParser tokens) {
 		ParsedFile result = new ParsedFile(tokens.getFile());
-		ZSToken eof = null;
 
 		while (true) {
 			CodePosition position = tokens.getPosition();
@@ -102,7 +103,7 @@ public class ParsedFile {
 
 			if (tokens.optional(K_IMPORT) != null) {
 				result.imports.add(ParsedImport.parse(position, tokens));
-			} else if ((eof = tokens.optional(EOF)) != null) {
+			} else if ((tokens.optional(EOF)) != null) {
 				break;
 			} else {
 				ParsedDefinition definition = ParsedDefinition.parse(pkg, position, modifiers, annotations, tokens, null);
@@ -110,9 +111,11 @@ public class ParsedFile {
 					result.statements.add(ParsedStatement.parse(tokens, annotations));
 				} else {
 					result.definitions.add(definition);
+					definition.getCompiled().setTag(SourceFile.class, tokens.getFile());
+					
+					if (definition.getName() != null)
+						compilingPackage.addType(definition.getName(), definition);
 				}
-
-				//tokens.required(EOF, "An import, class, interface, enum, struct, function or alias expected.");
 			}
 		}
 		
@@ -141,63 +144,51 @@ public class ParsedFile {
 	
 	public void listDefinitions(PackageDefinitions definitions) {
 		for (ParsedDefinition definition : this.definitions) {
-			definition.getCompiled().setTag(SourceFile.class, file);
 			definitions.add(definition.getCompiled());
-			definition.linkInnerTypes();
 		}
 	}
 	
 	public void compileTypes(
+			ModuleTypeResolutionContext moduleContext,
 			ZSPackage rootPackage,
-			ZSPackage modulePackage,
-			PackageDefinitions packageDefinitions,
-			GlobalTypeRegistry globalRegistry,
-			List<ExpansionDefinition> expansions,
-			Map<String, ISymbol> globalSymbols,
-			List<AnnotationDefinition> annotations) {
-		FileScope scope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
-		loadImports(scope, rootPackage, modulePackage);
+			CompilingPackage modulePackage) {
+		FileResolutionContext context = new FileResolutionContext(moduleContext);
+		loadImports(context, rootPackage, modulePackage);
 		for (ParsedDefinition definition : this.definitions) {
-			definition.compileTypes(scope);
+			definition.linkTypes(context);
 		}
 	}
 	
-	public void compileMembers(
+	public void registerMembers(
+			ModuleTypeResolutionContext moduleContext,
+			PrecompilationState precompiler,
 			ZSPackage rootPackage,
-			ZSPackage modulePackage,
-			PackageDefinitions packageDefinitions,
-			GlobalTypeRegistry globalRegistry,
+			CompilingPackage modulePackage,
 			List<ExpansionDefinition> expansions,
-			Map<String, ISymbol> globalSymbols,
-			List<AnnotationDefinition> annotations) {
-		FileScope scope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
-		loadImports(scope, rootPackage, modulePackage);
+			Map<String, ISymbol> globals) {
+		FileResolutionContext context = new FileResolutionContext(moduleContext);
+		loadImports(context, rootPackage, modulePackage);
+		
+		FileScope scope = new FileScope(context, expansions, globals, precompiler);
 		for (ParsedDefinition definition : this.definitions) {
-			definition.compileMembers(scope);
+			definition.registerMembers(scope, precompiler);
 		}
 	}
 	
 	public void compileCode(
+			ModuleTypeResolutionContext moduleContext,
+			PrecompilationState precompiler,
 			ZSPackage rootPackage,
-			ZSPackage modulePackage,
-			PackageDefinitions packageDefinitions,
-			GlobalTypeRegistry globalRegistry,
+			CompilingPackage modulePackage,
 			List<ExpansionDefinition> expansions,
 			List<ScriptBlock> scripts,
-			Map<String, ISymbol> globalSymbols,
-			List<AnnotationDefinition> annotations) {
-		FileScope scope = new FileScope(rootPackage, packageDefinitions, globalRegistry, expansions, globalSymbols, annotations);
-		loadImports(scope, rootPackage, modulePackage);
+			Map<String, ISymbol> globals) {
+		FileResolutionContext context = new FileResolutionContext(moduleContext);
+		loadImports(context, rootPackage, modulePackage);
 		
-		PrecompilationState state = new PrecompilationState();
+		FileScope scope = new FileScope(context, expansions, globals, precompiler);
 		for (ParsedDefinition definition : this.definitions) {
-			definition.listMembers(scope, state);
-		}
-		for (ParsedDefinition definition : this.definitions) {
-			definition.precompile(scope, state);
-		}
-		for (ParsedDefinition definition : this.definitions) {
-			definition.compileCode(scope, state);
+			definition.compile(scope);
 		}
 		
 		if (!statements.isEmpty() || postComment != null) {
@@ -214,11 +205,11 @@ public class ParsedFile {
 		}
 	}
 	
-	private void loadImports(FileScope scope, ZSPackage rootPackage, ZSPackage modulePackage) {
+	private void loadImports(FileResolutionContext context, ZSPackage rootPackage, CompilingPackage modulePackage) {
 		for (ParsedImport importEntry : imports) {
 			HighLevelDefinition definition;
 			if (importEntry.isRelative()) {
-				definition = modulePackage.getImport(importEntry.getPath(), 0);
+				definition = modulePackage.getImport(context, importEntry.getPath());
 			} else {
 				definition = rootPackage.getImport(importEntry.getPath(), 0);
 			}
@@ -226,7 +217,7 @@ public class ParsedFile {
 			if (definition == null)
 				throw new CompileException(importEntry.position, CompileExceptionCode.IMPORT_NOT_FOUND, "Could not find type " + importEntry.toString());
 			
-			scope.register(importEntry.getName(), definition);
+			context.addImport(importEntry.getName(), definition);
 		}
 	}
 }

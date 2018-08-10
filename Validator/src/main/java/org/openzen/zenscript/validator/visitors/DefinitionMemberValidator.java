@@ -33,6 +33,7 @@ import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -117,7 +118,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			member.body.accept(statementValidator);
 			validateThrow(member);
 			
-			if (member.definition.superType != null && !statementValidator.constructorForwarded) {
+			if (member.definition.getSuperType() != null && !statementValidator.constructorForwarded) {
 				validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_MISSING, member.position, "Constructor not forwarded to base type");
 			}
 		}
@@ -214,6 +215,14 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 					"Type is already implemented: " + implementation.type);
 		}
 		implementedTypes.add(implementation.type);
+		
+		if (!(implementation.type instanceof DefinitionTypeID)) {
+			validator.logError(ValidationLogEntry.Code.INVALID_IMPLEMENTATION_TYPE, implementation.position, "Implementation type must be an interface");
+		} else {
+			DefinitionTypeID type = (DefinitionTypeID)(implementation.type);
+			if (!type.definition.isInterface())
+				validator.logError(ValidationLogEntry.Code.INVALID_IMPLEMENTATION_TYPE, implementation.position, "Implementation type must be an interface");
+		}
 		
 		DefinitionMemberValidator memberValidator = new DefinitionMemberValidator(validator, definition, scope, DefinitionMemberContext.IMPLEMENTATION);
 		for (IDefinitionMember member : implementation.members) {

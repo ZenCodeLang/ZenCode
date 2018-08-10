@@ -7,6 +7,7 @@ package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -39,8 +40,8 @@ public class ParsedCaster extends ParsedFunctionalMember {
 	}
 
 	@Override
-	public void linkTypes(BaseScope scope) {
-		compiled = new CasterMember(position, definition, modifiers, type.compile(scope), null);
+	public void linkTypes(TypeResolutionContext context) {
+		compiled = new CasterMember(position, definition, modifiers, type.compile(context), null);
 	}
 
 	@Override
@@ -49,7 +50,7 @@ public class ParsedCaster extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType, PrecompilationState state) {
+	protected void fillOverride(TypeScope scope, ITypeID baseType) {
 		compiled.overrides = scope.getTypeMembers(baseType).getCaster(compiled.toType);
 	}
 }

@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
 /**
@@ -29,7 +28,7 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	protected final int modifiers;
 	protected final ParsedImplementation implementation;
 	protected final ParsedFunctionBody body;
-	private boolean precompiled = false;
+	private boolean isCompiled = false;
 	
 	public ParsedFunctionalMember(
 			CodePosition position,
@@ -47,47 +46,38 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	}
 	
 	@Override
-	public void linkInnerTypes() {
-		
-	}
-	
-	@Override
 	public abstract FunctionalMember getCompiled();
-
-	@Override
-	public boolean inferHeaders(BaseScope scope, PrecompilationState state) {
-		if (precompiled)
-			return true;
-		precompiled = true;
-		
+	
+	protected void inferHeaders(BaseScope scope) {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(scope, implementation.getCompiled().type, state);
+			fillOverride(scope, implementation.getCompiled().type);
 			getCompiled().modifiers |= Modifiers.PUBLIC;
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
-			if (definition.superType == null)
+			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 			
-			fillOverride(scope, definition.superType, state);
+			fillOverride(scope, definition.getSuperType());
 		}
 		
-		if (getCompiled().header.returnType == BasicTypeID.UNDETERMINED) {
-			ITypeID returnType = body.precompileForResultType(new FunctionScope(scope, getCompiled().header), state);
-			if (returnType == null)
-				return false;
-			
-			getCompiled().header = getCompiled().header.withReturnType(returnType);
-		}
-		return true;
+		if (getCompiled() == null || getCompiled().header == null)
+			throw new IllegalStateException("Types not yet linked");
 	}
 	
 	@Override
-	public void compile(BaseScope scope, PrecompilationState state) {
-		inferHeaders(scope, state);
+	public final void compile(BaseScope scope) {
+		if (isCompiled)
+			return;
+		isCompiled = true;
+		
+		inferHeaders(scope);
 		
 		FunctionScope innerScope = new FunctionScope(scope, getCompiled().header);
 		getCompiled().annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		getCompiled().setBody(body.compile(innerScope, getCompiled().header));
+		
+		if (getCompiled().header.returnType == BasicTypeID.UNDETERMINED)
+			getCompiled().header.returnType = getCompiled().body.getReturnType();
 	}
 	
-	protected abstract void fillOverride(TypeScope scope, ITypeID baseType, PrecompilationState state);
+	protected abstract void fillOverride(TypeScope scope, ITypeID baseType);
 }

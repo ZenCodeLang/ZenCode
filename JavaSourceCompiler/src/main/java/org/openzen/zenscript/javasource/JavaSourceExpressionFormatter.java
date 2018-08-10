@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.CompareType;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.AndAndExpression;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
@@ -285,7 +286,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			return visitBuiltinConstant(expression, expression.constant.member.builtin);
 		
 		return new ExpressionString(
-				scope.type(expression.type) + "." + expression.constant.member.name, 
+				scope.type(expression.constant.member.definition.getTag(JavaSourceClass.class)) + "." + expression.constant.member.name, 
 				JavaOperator.MEMBER);
 	}
 
@@ -381,7 +382,22 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitFunction(FunctionExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		StringBuilder result = new StringBuilder();
+		FunctionHeader header = expression.header;
+		if (header.parameters.length == 1) {
+			result.append(header.parameters[0].name);
+		} else {
+			result.append("(");
+			for (int i = 0; i < header.parameters.length; i++) {
+				if (i > 0)
+					result.append(", ");
+				result.append(header.parameters[i].name);
+			}
+			result.append(")");
+		}
+		result.append(" -> ");
+		expression.body.accept(new JavaSourceLambdaStatementCompiler(scope, result, false, false));
+		return new ExpressionString(result.toString(), JavaOperator.LAMBDA);
 	}
 
 	@Override
@@ -419,10 +435,12 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.getter.member.builtin != null)
 			return visitBuiltinGetter(expression, expression.getter.member.builtin);
 		
+		JavaSourceMethod method = expression.getter.getTag(JavaSourceMethod.class);
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(this));
-		result.append('.');
-		result.append(expression.getter.member.name);
+		result.append(".");
+		result.append(method.name);
+		result.append("()");
 		return new ExpressionString(result.toString(), JavaOperator.MEMBER);
 	}
 	
@@ -441,11 +459,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitInterfaceCast(InterfaceCastExpression expression) {
-		StringBuilder result = new StringBuilder();
-		result.append(expression.value.accept(this).value);
-		result.append(" as ");
-		result.append(scope.type(expression.type));
-		return new ExpressionString(result.toString(), JavaOperator.CAST);
+		return expression.value.accept(this);
 	}
 
 	@Override
@@ -621,7 +635,16 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitThis(ThisExpression expression) {
-		return new ExpressionString(scope.isExpansion ? "self" : "this", JavaOperator.PRIMARY);
+		if (scope.isExpansion || scope.thisType == expression.type) {
+			return new ExpressionString(scope.isExpansion ? "self" : "this", JavaOperator.PRIMARY);
+		} else {
+			return new ExpressionString(constructThisName((DefinitionTypeID)expression.type) + ".this", JavaOperator.MEMBER);
+		}
+	}
+	
+	private String constructThisName(DefinitionTypeID type) {
+		JavaSourceClass cls = type.definition.getTag(JavaSourceClass.class);
+		return cls.getClassName();
 	}
 
 	@Override

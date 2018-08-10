@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ConstTypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -21,7 +21,6 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import stdlib.Chars;
 
@@ -102,13 +101,17 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 	}
 
 	@Override
-	public String visitConst(ConstTypeID type) {
-		return "const " + type.accept(this);
-	}
-
-	@Override
-	public String visitOptional(OptionalTypeID optional) {
-		return optional.baseType.accept(this) + "?";
+	public String visitModified(ModifiedTypeID type) {
+		StringBuilder result = new StringBuilder();
+		if (type.isConst())
+			result.append("const ");
+		if (type.isImmutable())
+			result.append("immutable ");
+		result.append(type.accept(this));
+		if (type.isOptional())
+			result.append("?");
+		
+		return result.toString();
 	}
 
 	@Override

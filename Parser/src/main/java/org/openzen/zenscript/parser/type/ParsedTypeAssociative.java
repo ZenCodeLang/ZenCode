@@ -5,10 +5,12 @@
  */
 package org.openzen.zenscript.parser.type;
 
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 
 /**
  *
@@ -33,7 +35,7 @@ public class ParsedTypeAssociative implements IParsedType {
 	
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedTypeAssociative(key, value, modifiers | TypeMembers.MODIFIER_OPTIONAL);
+		return new ParsedTypeAssociative(key, value, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL);
 	}
 
 	@Override
@@ -42,10 +44,10 @@ public class ParsedTypeAssociative implements IParsedType {
 	}
 
 	@Override
-	public ITypeID compile(BaseScope scope) {
-		ITypeID key = this.key.compile(scope);
-		ITypeID value = this.value.compile(scope);
-		GlobalTypeRegistry registry = scope.getTypeRegistry();
-		return registry.getModified(modifiers, scope.getTypeRegistry().getAssociative(key, value));
+	public ITypeID compile(TypeResolutionContext context) {
+		ITypeID key = this.key.compile(context);
+		ITypeID value = this.value.compile(context);
+		GlobalTypeRegistry registry = context.getTypeRegistry();
+		return registry.getModified(modifiers, context.getTypeRegistry().getAssociative(key, value));
 	}
 }

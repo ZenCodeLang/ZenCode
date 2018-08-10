@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -95,7 +96,7 @@ public class ParsedCallArguments {
 			DefinitionMemberGroup member)
 	{
 		List<FunctionHeader> possibleHeaders = member.getMethodMembers().stream()
-				.map(method -> method.member.header)
+				.map(method -> method.member.getHeader())
 				.collect(Collectors.toList());
 		return compileCall(position, scope, genericParameters, possibleHeaders);
 	}
@@ -230,7 +231,7 @@ public class ParsedCallArguments {
 			if (typeParameters == null && header.typeParameters != null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
 				return false;
 			
-			if (!arguments.get(i).isCompatibleWith(scope, header.parameters[i].type))
+			if (!arguments.get(i).isCompatibleWith(scope, header.parameters[i].type.getNormalized()))
 				return false;
 		}
 		

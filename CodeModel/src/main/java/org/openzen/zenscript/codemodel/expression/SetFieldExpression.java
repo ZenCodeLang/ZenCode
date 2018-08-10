@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  *
@@ -18,7 +19,7 @@ public class SetFieldExpression extends Expression {
 	public final Expression value;
 	
 	public SetFieldExpression(CodePosition position, Expression target, FieldMemberRef field, Expression value) {
-		super(position, field.type, binaryThrow(position, target.thrownType, value.thrownType));
+		super(position, field.getType(), binaryThrow(position, target.thrownType, value.thrownType));
 		
 		this.target = target;
 		this.field = field;
@@ -37,5 +38,10 @@ public class SetFieldExpression extends Expression {
 		return tTarget == target && tValue == value
 				? this
 				: new SetFieldExpression(position, tTarget, field, tValue);
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new SetFieldExpression(position, target, field, value.normalize(scope));
 	}
 }

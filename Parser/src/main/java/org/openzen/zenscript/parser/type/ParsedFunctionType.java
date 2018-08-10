@@ -6,9 +6,10 @@
 package org.openzen.zenscript.parser.type;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 
 /**
@@ -34,7 +35,7 @@ public class ParsedFunctionType implements IParsedType {
 	
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedFunctionType(position, header, modifiers | TypeMembers.MODIFIER_OPTIONAL);
+		return new ParsedFunctionType(position, header, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL);
 	}
 
 	@Override
@@ -43,7 +44,7 @@ public class ParsedFunctionType implements IParsedType {
 	}
 
 	@Override
-	public ITypeID compile(BaseScope scope) {
-		return scope.getTypeRegistry().getModified(modifiers, scope.getTypeRegistry().getFunction(header.compile(scope)));
+	public ITypeID compile(TypeResolutionContext context) {
+		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getFunction(header.compile(context)));
 	}
 }

@@ -24,19 +24,21 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  * @author Hoofdgebruiker
  */
 public class PartialStaticMemberGroupExpression implements IPartialExpression {
-	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, String name, ITypeID target, FunctionalMemberRef method, ITypeID[] typeArguments) {
+	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, TypeScope scope, String name, ITypeID target, FunctionalMemberRef method, ITypeID[] typeArguments) {
 		DefinitionMemberGroup group = new DefinitionMemberGroup(true, name);
 		group.addMethod(method, TypeMemberPriority.SPECIFIED);
-		return new PartialStaticMemberGroupExpression(position, target, group, typeArguments);
+		return new PartialStaticMemberGroupExpression(position, scope, target, group, typeArguments);
 	}
 	
 	private final CodePosition position;
+	private final TypeScope scope;
 	private final ITypeID target;
 	private final DefinitionMemberGroup group;
 	private final ITypeID[] typeArguments;
 	
-	public PartialStaticMemberGroupExpression(CodePosition position, ITypeID target, DefinitionMemberGroup group, ITypeID[] typeArguments) {
+	public PartialStaticMemberGroupExpression(CodePosition position, TypeScope scope, ITypeID target, DefinitionMemberGroup group, ITypeID[] typeArguments) {
 		this.position = position;
+		this.scope = scope;
 		this.group = group;
 		this.target = target;
 		this.typeArguments = typeArguments;
@@ -44,7 +46,7 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	
 	@Override
 	public Expression eval() {
-		return group.staticGetter(position);
+		return group.staticGetter(position, scope);
 	}
 
 	@Override
@@ -55,8 +57,8 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	@Override
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<ITypeID> hints, int arguments) {
 		return group.getMethodMembers().stream()
-				.filter(method -> method.member.header.parameters.length == arguments && method.member.isStatic())
-				.map(method -> method.member.header)
+				.filter(method -> method.member.getHeader().parameters.length == arguments && method.member.isStatic())
+				.map(method -> method.member.getHeader())
 				.collect(Collectors.toList());
 	}
 
@@ -83,9 +85,9 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	@Override
 	public List<ITypeID> getAssignHints() {
 		if (group.getSetter() != null)
-			return Collections.singletonList(group.getSetter().type);
+			return Collections.singletonList(group.getSetter().getType());
 		if (group.getField() != null)
-			return Collections.singletonList(group.getField().type);
+			return Collections.singletonList(group.getField().getType());
 		
 		return Collections.emptyList();
 	}

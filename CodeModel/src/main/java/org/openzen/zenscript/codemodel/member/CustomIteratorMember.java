@@ -6,12 +6,14 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -21,19 +23,24 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  *
  * @author Hoofdgebruiker
  */
-public class CustomIteratorMember extends DefinitionMember implements IIteratorMember {
+public class CustomIteratorMember extends FunctionalMember implements IIteratorMember {
 	private final ITypeID[] iteratorTypes;
 	public Statement body;
 	public IteratorMemberRef overrides;
 	
-	public CustomIteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID[] iteratorTypes) {
-		super(position, definition, modifiers);
+	public CustomIteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID[] iteratorTypes, GlobalTypeRegistry registry, BuiltinID builtin) {
+		super(position, definition, modifiers, createIteratorHeader(registry, iteratorTypes), builtin);
 		
 		this.iteratorTypes = iteratorTypes;
 	}
 	
 	public void setContent(Statement body) {
 		this.body = body;
+	}
+	
+	@Override
+	public String getCanonicalName() {
+		return definition.getFullName() + ":iterator:" + iteratorTypes.length;
 	}
 
 	@Override
@@ -78,5 +85,14 @@ public class CustomIteratorMember extends DefinitionMember implements IIteratorM
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return overrides;
+	}
+	
+	@Override
+	public FunctionalKind getKind() {
+		return FunctionalKind.ITERATOR;
+	}
+	
+	private static FunctionHeader createIteratorHeader(GlobalTypeRegistry registry, ITypeID[] iteratorTypes) {
+		return new FunctionHeader(registry.getIterator(iteratorTypes));
 	}
 }

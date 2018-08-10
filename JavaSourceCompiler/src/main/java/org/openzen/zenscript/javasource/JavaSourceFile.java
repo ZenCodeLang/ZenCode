@@ -52,14 +52,14 @@ public class JavaSourceFile {
 	}
 	
 	public String getName() {
-		return cls.name;
+		return cls.getName();
 	}
 	
 	public void add(HighLevelDefinition definition, SemanticModule module) {
 		if (definition instanceof ExpansionDefinition) {
 			expansions.add((ExpansionDefinition)definition);
 		} else if (mainDefinition != null) {
-			throw new IllegalStateException("Multiple main definitions!");
+			throw new IllegalStateException("Multiple main definitions in " + file + "!");
 		} else {
 			mainDefinition = definition;
 		}
@@ -75,6 +75,7 @@ public class JavaSourceFile {
 		
 		HighLevelDefinition definition = mainDefinition;
 		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
+				"",
 				compiler,
 				cls,
 				this,

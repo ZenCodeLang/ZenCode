@@ -37,9 +37,4 @@ public class ParsedStatementBreak extends ParsedStatement {
 			throw new CompileException(position, CompileExceptionCode.BREAK_OUTSIDE_LOOP, name == null ? "Not in a loop" : "No such loop: " + name);
 		return result(new BreakStatement(position, target), scope);
 	}
-
-	@Override
-	public ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState) {
-		return null;
-	}
 }

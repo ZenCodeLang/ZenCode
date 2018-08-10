@@ -5,26 +5,31 @@
  */
 package org.openzen.zenscript.codemodel.scope;
 
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface TypeScope {
+public interface TypeScope extends TypeResolutionContext {
 	public LocalMemberCache getMemberCache();
 	
 	default TypeMembers getTypeMembers(ITypeID type) {
 		return getMemberCache().get(type);
 	}
 	
+	@Override
 	default GlobalTypeRegistry getTypeRegistry() {
 		return getMemberCache().getRegistry();
 	}
 	
-	public AnnotationDefinition getAnnotation(String name);
+	TypeMemberPreparer getPreparer();
+	
+	GenericMapper getLocalTypeParameters();
 }

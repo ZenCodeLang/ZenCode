@@ -20,12 +20,12 @@ public class CallExpression extends Expression {
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
 	
-	public CallExpression(CodePosition position, Expression target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+	public CallExpression(CodePosition position, Expression target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments) {
 		super(position, instancedHeader.returnType, multiThrow(position, arguments.arguments));
 		
 		this.target = target;
 		this.member = member;
-		this.arguments = scope == null ? arguments : arguments.normalize(position, scope, instancedHeader);
+		this.arguments = arguments;
 		this.instancedHeader = instancedHeader;
 	}
 	
@@ -44,7 +44,7 @@ public class CallExpression extends Expression {
 		CallArguments tArguments = arguments.transform(transformer);
 		return tTarget == target && tArguments == arguments
 				? this
-				: new CallExpression(position, tTarget, member, instancedHeader, tArguments, null);
+				: new CallExpression(position, tTarget, member, instancedHeader, tArguments);
 	}
 	
 	@Override
@@ -58,5 +58,15 @@ public class CallExpression extends Expression {
 			default:
 				throw new UnsupportedOperationException("Cannot evaluate to a string constant!");
 		}
+	}
+
+	@Override
+	public Expression normalize(TypeScope scope) {
+		return new CallExpression(
+				position,
+				target.normalize(scope),
+				member,
+				instancedHeader.normalize(scope.getTypeRegistry()),
+				arguments.normalize(position, scope, instancedHeader));
 	}
 }

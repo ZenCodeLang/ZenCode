@@ -7,7 +7,6 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -17,10 +16,8 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 public abstract class ParsedStatement {
 	public static ParsedFunctionBody parseLambdaBody(ZSTokenParser tokens, boolean inExpression) {
@@ -328,8 +325,6 @@ public abstract class ParsedStatement {
 		return statement;
 	}
 
-	public abstract ITypeID precompileForResultType(StatementScope scope, PrecompilationState precompileState);
-	
 	protected static ITypeID union(TypeScope scope, ITypeID a, ITypeID b) {
 		if (a == null)
 			return b;
