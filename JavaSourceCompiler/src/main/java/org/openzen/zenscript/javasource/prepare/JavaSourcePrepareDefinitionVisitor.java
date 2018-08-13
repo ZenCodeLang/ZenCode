@@ -22,6 +22,8 @@ import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.javasource.JavaOperator;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
@@ -68,13 +70,28 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 			list.addInstanceMethod("insert", "add");
 			list.addInstanceMethod("remove", "remove");
 			list.addInstanceMethod("indexOf", "indexOf");
+			list.addInstanceMethod("lastIndexOf", "lastIndexOf");
 			list.addInstanceMethod("getAtIndex", "get");
 			list.addInstanceMethod("setAtIndex", "set");
 			list.addInstanceMethod("contains", "contains");
 			list.addMethod("toArray", new JavaSourceMethod((formatter, call) -> formatter.listToArray((CastExpression)call)));
-			list.addInstanceMethod("length", "length");
+			list.addInstanceMethod("length", "size");
 			list.addInstanceMethod("isEmpty", "isEmpty");
+			list.addInstanceMethod("iterate", "iterator");
 			nativeClasses.put("stdlib::List", list);
+		}
+		
+		{
+			JavaNativeClass iterable = new JavaNativeClass(new JavaSourceClass("java.lang", "Iterable"));
+			iterable.addInstanceMethod("iterate", "iterator");
+			nativeClasses.put("stdlib::Iterable", iterable);
+		}
+		
+		{
+			JavaNativeClass iterator = new JavaNativeClass(new JavaSourceClass("java.lang", "Iterator"));
+			iterator.addInstanceMethod("hasNext", "hasNext");
+			iterator.addInstanceMethod("next", "next");
+			nativeClasses.put("stdlib::Iterator", iterator);
 		}
 		
 		{
@@ -184,7 +201,7 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 		}
 		
 		{
-			JavaNativeClass cls = new JavaNativeClass(new JavaSourceClass("java.io", "StringReader"));
+			JavaNativeClass cls = new JavaNativeClass(new JavaSourceClass("java.io", "StringReader"), true);
 			cls.addInstanceMethod("constructor", "");
 			cls.addInstanceMethod("destructor", "close");
 			cls.addInstanceMethod("readCharacter", "read");
@@ -201,28 +218,58 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 		this.outerClass = outerClass;
 	}
 	
+	private boolean isPrepared(HighLevelDefinition definition) {
+		return definition.hasTag(JavaSourceClass.class);
+	}
+	
+	public void prepare(ITypeID type) {
+		if (!(type instanceof DefinitionTypeID))
+			return;
+			
+		HighLevelDefinition definition = ((DefinitionTypeID)type).definition;
+		definition.accept(this);
+	}
+	
 	@Override
 	public JavaSourceClass visitClass(ClassDefinition definition) {
+		if (isPrepared(definition))
+			return definition.getTag(JavaSourceClass.class);
+		
 		return visitClassCompiled(definition, true);
 	}
 
 	@Override
 	public JavaSourceClass visitInterface(InterfaceDefinition definition) {
+		if (isPrepared(definition))
+			return definition.getTag(JavaSourceClass.class);
+		
+		for (ITypeID baseType : definition.baseInterfaces)
+			prepare(baseType);
+		
 		return visitClassCompiled(definition, true);
 	}
 
 	@Override
 	public JavaSourceClass visitEnum(EnumDefinition definition) {
+		if (isPrepared(definition))
+			return definition.getTag(JavaSourceClass.class);
+		
 		return visitClassCompiled(definition, false);
 	}
 
 	@Override
 	public JavaSourceClass visitStruct(StructDefinition definition) {
+		if (isPrepared(definition))
+			return definition.getTag(JavaSourceClass.class);
+		
 		return visitClassCompiled(definition, true);
 	}
 
 	@Override
 	public JavaSourceClass visitFunction(FunctionDefinition definition) {
+		if (isPrepared(definition))
+			return definition.getTag(JavaSourceClass.class);
+		
 		JavaSourceClass cls = new JavaSourceClass(definition.pkg.fullName, filename);
 		definition.setTag(JavaSourceClass.class, cls);
 		JavaSourceMethod method = new JavaSourceMethod(cls, JavaSourceMethod.Kind.STATIC, definition.name, true);
@@ -232,6 +279,9 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 
 	@Override
 	public JavaSourceClass visitExpansion(ExpansionDefinition definition) {
+		if (isPrepared(definition))
+			return definition.getTag(JavaSourceClass.class);
+		
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
 		JavaNativeClass nativeClass = null;
 		if (nativeTag != null) {
@@ -252,6 +302,9 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 
 	@Override
 	public JavaSourceClass visitVariant(VariantDefinition variant) {
+		if (isPrepared(variant))
+			return variant.getTag(JavaSourceClass.class);
+		
 		JavaSourceClass cls = new JavaSourceClass(variant.pkg.fullName, variant.name);
 		variant.setTag(JavaSourceClass.class, cls);
 		
@@ -265,10 +318,14 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 	}
 	
 	private JavaSourceClass visitClassCompiled(HighLevelDefinition definition, boolean startsEmpty) {
+		if (definition.getSuperType() != null)
+			prepare(definition.getSuperType());
+		
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
 		JavaNativeClass nativeClass = nativeTag == null ? null : nativeClasses.get(nativeTag.value);
 		if (nativeClass == null) {
 			JavaSourceClass cls = outerClass == null ? new JavaSourceClass(definition.pkg.fullName, definition.name) : new JavaSourceClass(outerClass, definition.name);
+			cls.destructible = definition.isDestructible();
 			definition.setTag(JavaSourceClass.class, cls);
 			visitClassMembers(definition, cls, null, startsEmpty);
 			return cls;
@@ -277,12 +334,16 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 			definition.setTag(JavaSourceClass.class, nativeClass.cls);
 			definition.setTag(JavaNativeClass.class, nativeClass);
 			visitExpansionMembers(definition, cls, nativeClass);
+			
+			if (nativeClass.nonDestructible)
+				cls.destructible = false;
+			
 			return cls;
 		}
 	}
 	
 	private void visitClassMembers(HighLevelDefinition definition, JavaSourceClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
-		JavaSourcePrepareClassMethodVisitor methodVisitor = new JavaSourcePrepareClassMethodVisitor(filename, cls, nativeClass, startsEmpty);
+		JavaSourcePrepareClassMethodVisitor methodVisitor = new JavaSourcePrepareClassMethodVisitor(this, filename, cls, nativeClass, startsEmpty);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
 		}

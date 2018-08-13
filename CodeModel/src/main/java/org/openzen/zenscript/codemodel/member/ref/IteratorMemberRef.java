@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -61,5 +62,10 @@ public class IteratorMemberRef implements DefinitionMemberRef {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public IDefinitionMember getTarget() {
+		return target;
 	}
 }

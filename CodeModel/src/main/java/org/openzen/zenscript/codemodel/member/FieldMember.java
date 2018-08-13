@@ -147,4 +147,9 @@ public class FieldMember extends PropertyMember {
 		if (initializer != null)
 			initializer = initializer.normalize(scope);
 	}
+
+	@Override
+	public boolean isAbstract() {
+		return false;
+	}
 }

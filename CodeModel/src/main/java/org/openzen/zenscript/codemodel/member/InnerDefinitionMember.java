@@ -63,4 +63,9 @@ public class InnerDefinitionMember extends DefinitionMember {
 	public void normalize(TypeScope scope) {
 		innerDefinition.normalize(scope);
 	}
+
+	@Override
+	public boolean isAbstract() {
+		return false;
+	}
 }

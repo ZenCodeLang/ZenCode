@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
@@ -29,6 +30,7 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -166,7 +168,12 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		
 		output.append(indent).append("@Override\n");
 		output.append(indent).append("public void close()");
-		compileBody(member.body, member.header);
+		
+		Statement body = member.body;
+		if ((body == null || body instanceof EmptyStatement) && !(definition instanceof InterfaceDefinition))
+			body = new BlockStatement(member.position, Collections.emptyList());
+		
+		compileBody(body, member.header);
 		return null;
 	}
 
@@ -263,12 +270,6 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	}
 	
 	public void finish() {
-		// TODO: needs to be moved elsewhere (normalization stage?)
-		for (FieldMember field : fields) {
-			if (field.autoGetter != null)
-				visitGetter(field.autoGetter);
-			if (field.autoSetter != null)
-				visitSetter(field.autoSetter);
-		}
+		
 	}
 }

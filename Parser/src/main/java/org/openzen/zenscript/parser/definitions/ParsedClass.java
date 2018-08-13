@@ -40,19 +40,19 @@ public class ParsedClass extends BaseParsedDefinition {
 		return result;
 	}
 	
-	private final List<ParsedTypeParameter> genericParameters;
+	private final List<ParsedTypeParameter> parameters;
 	private final IParsedType superclass;
 	
 	private final ClassDefinition compiled;
 	
-	public ParsedClass(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> genericParameters, IParsedType superclass, HighLevelDefinition outerDefinition) {
+	public ParsedClass(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> parameters, IParsedType superclass, HighLevelDefinition outerDefinition) {
 		super(position, modifiers, annotations);
 		
-		this.genericParameters = genericParameters;
+		this.parameters = parameters;
 		this.superclass = superclass;
 		
 		compiled = new ClassDefinition(position, pkg, name, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(genericParameters));
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
 	}
 
 	@Override
@@ -62,6 +62,8 @@ public class ParsedClass extends BaseParsedDefinition {
 
 	@Override
 	protected void linkTypesLocal(TypeResolutionContext context) {
+		ParsedTypeParameter.compile(context, compiled.genericParameters, this.parameters);
+		
 		if (superclass != null)
 			compiled.setSuperType(superclass.compile(context));
 		

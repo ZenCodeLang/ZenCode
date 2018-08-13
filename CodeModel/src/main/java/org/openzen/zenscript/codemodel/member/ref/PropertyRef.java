@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.IPropertyMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -78,5 +79,10 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 	@Override
 	public final MemberAnnotation[] getAnnotations() {
 		return member.getAnnotations();
+	}
+	
+	@Override
+	public final IDefinitionMember getTarget() {
+		return member;
 	}
 }

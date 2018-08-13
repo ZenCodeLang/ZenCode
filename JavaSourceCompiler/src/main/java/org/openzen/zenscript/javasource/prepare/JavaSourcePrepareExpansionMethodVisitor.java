@@ -36,6 +36,8 @@ import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
  * @author Hoofdgebruiker
  */
 public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Void> {
+	private static final boolean DEBUG_EMPTY = true;
+	
 	private final JavaSourceClass cls;
 	private final JavaNativeClass nativeClass;
 	
@@ -48,6 +50,10 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 	@Override
 	public Void visitConst(ConstMember member) {
 		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
+		
+		if (DEBUG_EMPTY && cls.empty)
+			System.out.println("Class " + cls.fullName + " not empty because of const");
+		
 		cls.empty = false;
 		return null;
 	}
@@ -69,6 +75,9 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
+		if (nativeClass != null && nativeClass.nonDestructible)
+			return null;
+		
 		visitFunctional(member, "");
 		return null;
 	}
@@ -146,8 +155,12 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 		if (method == null)
 			method = new JavaSourceMethod(cls, getKind(member), name, true); 
 		
-		if (method.compile)
+		if (method.compile) {
+			if (DEBUG_EMPTY && cls.empty)
+				System.out.println("Class " + cls.fullName + " not empty because of " + member.describe());
+			
 			cls.empty = false;
+		}
 		
 		member.setTag(JavaSourceMethod.class, method);
 	}

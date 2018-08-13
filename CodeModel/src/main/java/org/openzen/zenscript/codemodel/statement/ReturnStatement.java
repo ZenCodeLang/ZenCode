@@ -48,18 +48,18 @@ public class ReturnStatement extends Statement {
 
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		Expression tValue = value.transform(transformer);
+		Expression tValue = value == null ? null : value.transform(transformer);
 		return tValue == value ? this : new ReturnStatement(position, tValue);
 	}
 
 	@Override
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		Expression tValue = value.transform(transformer);
+		Expression tValue = value == null ? null : value.transform(transformer);
 		return tValue == value ? this : new ReturnStatement(position, tValue);
 	}
 
 	@Override
 	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return new ReturnStatement(position, value.normalize(scope));
+		return new ReturnStatement(position, value == null ? null : value.normalize(scope));
 	}
 }

@@ -38,4 +38,6 @@ public interface IDefinitionMember {
 	DefinitionMemberRef getOverrides();
 
 	public void normalize(TypeScope scope);
+	
+	boolean isAbstract();
 }

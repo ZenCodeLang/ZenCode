@@ -264,7 +264,7 @@ public class DefinitionMemberGroup {
 				for (ITypeID resultHint : typeHints) {
 					Map<TypeParameter, ITypeID> mapping = new HashMap<>();
 					if (header.returnType.inferTypeParameters(scope.getMemberCache(), resultHint, mapping)) {
-						header = header.withGenericArguments(new GenericMapper(scope.getTypeRegistry(), mapping));
+						header = header.withGenericArguments(scope.getLocalTypeParameters().getInner(mapping));
 						break;
 					}
 				}

@@ -1680,7 +1680,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 					throw new UnsupportedOperationException("Not yet supported!");
 				}
 			}
-			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED:
+			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
 				ArrayTypeID type = (ArrayTypeID) expression.type;
 				
 				if (type.dimension == 1) {
@@ -1759,6 +1759,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 					// TODO: implement
 					throw new UnsupportedOperationException("Not yet supported!");
 				}
+			}
+			case CLASS_DEFAULT_CONSTRUCTOR:
+				return new ExpressionString("new " + scope.type(expression.type) + "()", JavaOperator.NEW);
 		}
 		
 		throw new UnsupportedOperationException("Unknown builtin constructor: " + expression.constructor.getBuiltin());

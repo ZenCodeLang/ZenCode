@@ -35,6 +35,7 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
@@ -151,7 +152,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitGetter(GetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
 		member.type.accept(new TypeValidator(validator, member.position));
-		validateFunctional(member, new MethodStatementScope(member.header));
+		validateProperty(member, new MethodStatementScope(member.header));
 		return null;
 	}
 
@@ -159,7 +160,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitSetter(SetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
 		member.type.accept(new TypeValidator(validator, member.position));
-		validateFunctional(member, new MethodStatementScope(member.header));
+		validateProperty(member, new MethodStatementScope(member.header));
 		return null;
 	}
 	
@@ -191,7 +192,9 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCustomIterator(CustomIteratorMember member) {
-		// TODO: validate iterators
+		for (ITypeID type : member.getLoopVariableTypes())
+			type.accept(new TypeValidator(validator, member.position));
+		validateFunctional(member, new MethodStatementScope(new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes()))));
 		return null;
 	}
 
@@ -229,7 +232,28 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			member.accept(memberValidator);
 		}
 		
+		checkImplementationComplete(implementation);
 		return null;
+	}
+	
+	private void checkImplementationComplete(ImplementationMember implementation) {
+		Set<IDefinitionMember> implemented = new HashSet<>();
+		for (IDefinitionMember member : implementation.members)
+			if (member.getOverrides() != null)
+				implemented.add(member.getOverrides().getTarget());
+		
+		TypeMembers members = scope.getTypeMembers(implementation.type);
+		List<IDefinitionMember> unimplemented = members.getUnimplementedMembers(implemented);
+		if (unimplemented.size() == 1) {
+			validator.logError(ValidationLogEntry.Code.INCOMPLETE_IMPLEMENTATION, implementation.position, unimplemented.get(0).describe() + " not implemented");
+		} else if (unimplemented.size() > 1) {
+			StringBuilder message = new StringBuilder();
+			message.append("Implementation incomplete: ").append(unimplemented.size()).append(" members not yet implemented:");
+			for (IDefinitionMember member : unimplemented) {
+				message.append("\n").append("  - ").append(member.describe());
+			}
+			validator.logError(ValidationLogEntry.Code.INCOMPLETE_IMPLEMENTATION, implementation.position, message.toString());
+		}
 	}
 
 	@Override
@@ -264,6 +288,20 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
 			} else {
 				ValidationUtils.validateValidOverride(validator, member.position, this.scope, member.header, member.getOverrides().getHeader());
+			}
+		}
+		
+		if (member.body != null) {
+			StatementValidator statementValidator = new StatementValidator(validator, scope);
+			member.body.accept(statementValidator);
+			validateThrow(member);
+		}
+	}
+	
+	private void validateProperty(FunctionalMember member, StatementScope scope) {
+		if (Modifiers.isOverride(member.modifiers) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
+			if (member.getOverrides() == null) {
+				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
 			}
 		}
 		

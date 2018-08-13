@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.member.ref;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 
 /**
  *
@@ -25,4 +26,6 @@ public interface DefinitionMemberRef {
 	FunctionHeader getHeader();
 	
 	MemberAnnotation[] getAnnotations();
+	
+	IDefinitionMember getTarget();
 }
