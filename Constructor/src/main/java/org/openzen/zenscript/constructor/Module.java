@@ -64,25 +64,25 @@ public class Module {
 		}
 	}
 	
-	public ParsedFile[] parse(ZSPackage pkg, CompilingPackage compilingPackage) throws IOException {
+	public ParsedFile[] parse(CompilingPackage compilingPackage) throws IOException {
 		// TODO: load bracket parsers from host plugins
 		List<ParsedFile> files = new ArrayList<>();
-		parse(files, pkg, compilingPackage, null, sourceDirectory);
+		parse(files, compilingPackage, null, sourceDirectory);
 		return files.toArray(new ParsedFile[files.size()]);
 	}
 	
-	private void parse(List<ParsedFile> files, ZSPackage pkg, CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File directory) throws IOException {
+	private void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, File directory) throws IOException {
 		for (File file : directory.listFiles()) {
 			if (file.getName().endsWith(".zs")) {
 				try {
-					files.add(ParsedFile.parse(pkg, compilingPackage, bracketParser, file));
+					files.add(ParsedFile.parse(pkg, bracketParser, file));
 				} catch (CompileException ex) {
 					exceptionLogger.accept(ex);
 				}
 			} else if (file.isDirectory()) {
-				CompilingPackage innerPackage = new CompilingPackage();
-				compilingPackage.addPackage(file.getName(), innerPackage);
-				parse(files, pkg.getOrCreatePackage(file.getName()), innerPackage, bracketParser, file);
+				CompilingPackage innerPackage = pkg.getOrCreatePackage(file.getName());
+				pkg.addPackage(file.getName(), innerPackage);
+				parse(files, innerPackage, bracketParser, file);
 			}
 		}
 	}
@@ -90,8 +90,7 @@ public class Module {
 	public static SemanticModule compileSyntaxToSemantic(
 			String name,
 			String[] dependencies,
-			ZSPackage pkg,
-			CompilingPackage compilingPkg,
+			CompilingPackage pkg,
 			ParsedFile[] files,
 			ModuleSpace registry,
 			Consumer<CompileException> exceptionLogger) {
@@ -117,15 +116,19 @@ public class Module {
 				registry.compilationUnit.globalTypeRegistry,
 				registry.getAnnotations(),
 				rootPackage,
-				compilingPkg,
+				pkg,
 				globals);
+		
+		for (ParsedFile file : files) {
+			file.registerTypes(moduleContext, rootPackage, pkg);
+		}
 		
 		for (ParsedFile file : files) {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
 			try {
-				file.compileTypes(moduleContext, rootPackage, compilingPkg);
+				file.compileTypes(moduleContext, rootPackage, pkg);
 			} catch (CompileException ex) {
 				exceptionLogger.accept(ex);
 				failed = true;
@@ -133,12 +136,12 @@ public class Module {
 		}
 		
 		if (failed)
-			return new SemanticModule(name, dependencies, SemanticModule.State.INVALID, rootPackage, pkg, definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
+			return new SemanticModule(name, dependencies, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
 		
 		// scripts will store all the script blocks encountered in the files
 		PrecompilationState precompiler = new PrecompilationState();
 		for (ParsedFile file : files) {
-			file.registerMembers(moduleContext, precompiler, rootPackage, compilingPkg, expansions, globals);
+			file.registerMembers(moduleContext, precompiler, rootPackage, pkg, expansions, globals);
 		}
 		
 		List<ScriptBlock> scripts = new ArrayList<>();
@@ -147,13 +150,13 @@ public class Module {
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
 			try {
-				file.compileCode(moduleContext, precompiler, rootPackage, compilingPkg, expansions, scripts, globals);
+				file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals);
 			} catch (CompileException ex) {
 				exceptionLogger.accept(ex);
 				failed = true;
 			}
 		}
 		
-		return new SemanticModule(name, dependencies, SemanticModule.State.ASSEMBLED, rootPackage, pkg, definitions, scripts, registry.compilationUnit, expansions, registry.getAnnotations());
+		return new SemanticModule(name, dependencies, SemanticModule.State.ASSEMBLED, rootPackage, pkg.getPackage(), definitions, scripts, registry.compilationUnit, expansions, registry.getAnnotations());
 	}
 }

@@ -316,7 +316,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				String name = option.types.length == 1 ? "value" : "value" + (i + 1);
 				output.append(scope.type(option.types[i])).append(' ').append(name);
 			}
-			output.append("){\n");
+			output.append(") {\n");
 			for (int i = 0; i < option.types.length; i++) {
 				if (i > 0)
 					output.append(indent).append(settings.indent).append(settings.indent).append(settings.indent).append(";\n");

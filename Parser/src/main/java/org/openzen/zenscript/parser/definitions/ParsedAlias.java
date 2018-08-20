@@ -8,11 +8,11 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.CompilingType;
 import org.openzen.zenscript.codemodel.context.LocalTypeResolutionContext;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -27,7 +27,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
  * @author Hoofdgebruiker
  */
 public class ParsedAlias extends ParsedDefinition {
-	public static ParsedAlias parseAlias(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedAlias parseAlias(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> parameters = ParsedTypeParameter.parseAll(tokens);
 		tokens.required(ZSTokenType.K_AS, "as expected");
@@ -43,14 +43,14 @@ public class ParsedAlias extends ParsedDefinition {
 	private final AliasDefinition compiled;
 	private boolean typesLinked = false;
 	
-	public ParsedAlias(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> parameters, IParsedType type, HighLevelDefinition outerDefinition) {
-		super(position, modifiers, annotations);
+	public ParsedAlias(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> parameters, IParsedType type, HighLevelDefinition outerDefinition) {
+		super(position, modifiers, pkg, annotations);
 		
 		this.name = name;
 		this.parameters = parameters;
 		this.type = type;
 		
-		compiled = new AliasDefinition(position, pkg, name, modifiers, outerDefinition);
+		compiled = new AliasDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
 		
 		if (parameters != null && parameters.size() > 0) {
 			TypeParameter[] typeParameters = new TypeParameter[parameters.size()];
@@ -67,14 +67,13 @@ public class ParsedAlias extends ParsedDefinition {
 			return;
 		typesLinked = true;
 		
-		LocalTypeResolutionContext localContext = new LocalTypeResolutionContext(context, this, compiled.genericParameters);
-		compiled.setType(type.compile(localContext));
+		compiled.setType(type.compile(context));
 		
 		for (int i = 0; i < compiled.genericParameters.length; i++) {
 			TypeParameter output = compiled.genericParameters[i];
 			ParsedTypeParameter input = this.parameters.get(i);
 			for (ParsedGenericBound bound : input.bounds) {
-				output.addBound(bound.compile(localContext));
+				output.addBound(bound.compile(context));
 			}
 		}
 	}
@@ -95,14 +94,27 @@ public class ParsedAlias extends ParsedDefinition {
 	}
 
 	@Override
-	public CompilingType getInner(String name) {
-		// TODO: this should be possible too
-		return null;
+	public CompilingType getCompiling(TypeResolutionContext context) {
+		return new Compiling(context);
 	}
+	
+	private class Compiling implements CompilingType {
+		private final TypeResolutionContext context;
+		
+		public Compiling(TypeResolutionContext context) {
+			this.context = new LocalTypeResolutionContext(context, this, compiled.genericParameters);
+		}
+		
+		@Override
+		public CompilingType getInner(String name) {
+			// TODO: this should be possible too
+			return null;
+		}
 
-	@Override
-	public HighLevelDefinition load(TypeResolutionContext context) {
-		linkTypes(context);
-		return compiled;
+		@Override
+		public HighLevelDefinition load() {
+			linkTypes(context);
+			return compiled;
+		}
 	}
 }

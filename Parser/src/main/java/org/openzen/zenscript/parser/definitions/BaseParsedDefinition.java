@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.CompilingType;
 import org.openzen.zenscript.codemodel.context.LocalTypeResolutionContext;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
@@ -28,11 +29,11 @@ import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 public abstract class BaseParsedDefinition extends ParsedDefinition {
 	protected final List<ParsedDefinitionMember> members = new ArrayList<>();
 	private boolean typesCompiled = false;
-	private final Map<String, CompilingType> innerTypes = new HashMap<>();
+	private final Map<String, ParsedDefinition> innerTypes = new HashMap<>();
 	private boolean isCompiled = false;
 	
-	public BaseParsedDefinition(CodePosition position, int modifiers, ParsedAnnotation[] annotations) {
-		super(position, modifiers, annotations);
+	public BaseParsedDefinition(CodePosition position, int modifiers, CompilingPackage pkg, ParsedAnnotation[] annotations) {
+		super(position, modifiers, pkg, annotations);
 	}
 	
 	public void addMember(ParsedDefinitionMember member) {
@@ -47,8 +48,7 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 		typesCompiled = true;
 		
 		System.out.println("compileTypes " + getCompiled().name);
-		LocalTypeResolutionContext localContext = new LocalTypeResolutionContext(context, this, getCompiled().genericParameters);
-		linkTypesLocal(localContext);
+		linkTypesLocal(context);
 	}
 	
 	protected void linkTypesLocal(TypeResolutionContext localContext) {
@@ -79,15 +79,31 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 		for (ParsedDefinitionMember member : members)
 			member.compile(innerScope);
 	}
-	
+
 	@Override
-	public HighLevelDefinition load(TypeResolutionContext context) {
-		linkTypes(context);
-		return getCompiled();
+	public CompilingType getCompiling(TypeResolutionContext context) {
+		return new Compiling(context);
 	}
 	
-	@Override
-	public CompilingType getInner(String name) {
-		return innerTypes.get(name);
+	private class Compiling implements CompilingType {
+		private final TypeResolutionContext context;
+		
+		public Compiling(TypeResolutionContext context) {
+			this.context = new LocalTypeResolutionContext(context, this, getCompiled().genericParameters);
+		}
+		
+		@Override
+		public HighLevelDefinition load() {
+			linkTypes(context);
+			return getCompiled();
+		}
+
+		@Override
+		public CompilingType getInner(String name) {
+			if (!innerTypes.containsKey(name))
+				return null;
+			
+			return innerTypes.get(name).getCompiling(context);
+		}
 	}
 }

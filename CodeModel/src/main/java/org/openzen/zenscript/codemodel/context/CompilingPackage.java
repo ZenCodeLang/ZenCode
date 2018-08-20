@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -18,8 +19,26 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class CompilingPackage {
+	private final ZSPackage pkg;
 	private final Map<String, CompilingPackage> packages = new HashMap<>();
 	private final Map<String, CompilingType> types = new HashMap<>();
+	
+	public CompilingPackage(ZSPackage pkg) {
+		this.pkg = pkg;
+	}
+	
+	public ZSPackage getPackage() {
+		return pkg;
+	}
+	
+	public CompilingPackage getOrCreatePackage(String name) {
+		if (packages.containsKey(name))
+			return packages.get(name);
+		
+		CompilingPackage newPackage = new CompilingPackage(pkg.getOrCreatePackage(name));
+		packages.put(name, newPackage);
+		return newPackage;
+	}
 	
 	public void addPackage(String name, CompilingPackage package_) {
 		packages.put(name, package_);
@@ -44,7 +63,7 @@ public class CompilingPackage {
 	
 	private HighLevelDefinition getImportType(TypeResolutionContext context, CompilingType type, List<String> name, int index) {
 		if (index == name.size())
-			return type.load(context);
+			return type.load();
 		
 		return getImportType(context, type.getInner(name.get(index)), name, index + 1);
 	}
@@ -62,7 +81,7 @@ public class CompilingPackage {
 		
 		if (types.containsKey(name.get(index).name)) {
 			CompilingType type = types.get(name.get(index).name);
-			DefinitionTypeID result = context.getTypeRegistry().getForDefinition(type.load(context), name.get(index).arguments);
+			DefinitionTypeID result = context.getTypeRegistry().getForDefinition(type.load(), name.get(index).arguments);
 			return getInner(context, name, index + 1, type, result);
 		}
 		
@@ -77,7 +96,7 @@ public class CompilingPackage {
 		if (innerType == null)
 			return null;
 		
-		DefinitionTypeID innerResult = context.getTypeRegistry().getForDefinition(innerType.load(context), name.get(index).arguments, result);
+		DefinitionTypeID innerResult = context.getTypeRegistry().getForDefinition(innerType.load(), name.get(index).arguments, result);
 		return getInner(context, name, index + 1, innerType, innerResult);
 	}
 }

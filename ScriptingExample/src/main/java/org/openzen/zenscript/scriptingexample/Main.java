@@ -42,7 +42,7 @@ public class Main {
 		File[] inputFiles = Optional.ofNullable(inputDirectory.listFiles((dir, name) -> name.endsWith(".zs"))).orElseGet(() -> new File[0]);
 		
 		ZSPackage pkg = new ZSPackage(null, "");
-		CompilingPackage compilingPkg = new CompilingPackage();
+		CompilingPackage compilingPkg = new CompilingPackage(pkg);
 		ParsedFile[] parsedFiles = parse(pkg, compilingPkg, inputFiles);
 		
 		ZSPackage global = new ZSPackage(null, "");
@@ -62,7 +62,7 @@ public class Main {
 	private static ParsedFile[] parse(ZSPackage pkg, CompilingPackage compilingPkg, File[] files) throws IOException {
 		ParsedFile[] parsedFiles = new ParsedFile[files.length];
 		for (int i = 0; i < files.length; i++) {
-			parsedFiles[i] = ParsedFile.parse(pkg, compilingPkg, new TestBracketParser(), files[i]);
+			parsedFiles[i] = ParsedFile.parse(compilingPkg, new TestBracketParser(), files[i]);
 		}
 		return parsedFiles;
 	}
@@ -110,7 +110,6 @@ public class Main {
 		SemanticModule result = Module.compileSyntaxToSemantic(
 				"scripts",
 				new String[0],
-				pkg,
 				compiling,
 				files,
 				space,

@@ -7,7 +7,7 @@ package org.openzen.zenscript.parser.member;
 
 import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.context.CompilingType;
+import org.openzen.zenscript.codemodel.context.LocalTypeResolutionContext;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -33,7 +33,7 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 	}
 	
 	@Override
-	public void registerInnerTypes(Map<String, CompilingType> inner) {
+	public void registerInnerTypes(Map<String, ParsedDefinition> inner) {
 		inner.put(innerDefinition.getCompiled().name, innerDefinition);
 	}
 	

@@ -202,7 +202,7 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 		
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaSourceClass("java.io", "StringReader"), true);
-			cls.addInstanceMethod("constructor", "");
+			cls.addConstructor("constructor", "");
 			cls.addInstanceMethod("destructor", "close");
 			cls.addInstanceMethod("readCharacter", "read");
 			cls.addInstanceMethod("readSlice", "read");

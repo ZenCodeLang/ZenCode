@@ -5,12 +5,11 @@
  */
 package org.openzen.zenscript.parser;
 
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.CompilingType;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -27,8 +26,8 @@ import org.openzen.zenscript.parser.definitions.ParsedVariant;
  *
  * @author Hoofdgebruiker
  */
-public abstract class ParsedDefinition implements CompilingType {
-	public static ParsedDefinition parse(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+public abstract class ParsedDefinition {
+	public static ParsedDefinition parse(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		if (tokens.optional(K_CLASS) != null) {
 			return ParsedClass.parseClass(pkg, position, modifiers, annotations, tokens, outerDefinition);
 		} else if (tokens.optional(K_INTERFACE) != null) {
@@ -54,9 +53,11 @@ public abstract class ParsedDefinition implements CompilingType {
 	public final CodePosition position;
 	public final int modifiers;
 	public final ParsedAnnotation[] annotations;
+	public final CompilingPackage pkg;
 	
-	public ParsedDefinition(CodePosition position, int modifiers, ParsedAnnotation[] annotations) {
+	public ParsedDefinition(CodePosition position, int modifiers, CompilingPackage pkg, ParsedAnnotation[] annotations) {
 		this.position = position;
+		this.pkg = pkg;
 		this.modifiers = modifiers;
 		this.annotations = annotations;
 	}
@@ -72,6 +73,8 @@ public abstract class ParsedDefinition implements CompilingType {
 	public final int getModifiers() {
 		return modifiers;
 	}
+	
+	public abstract CompilingType getCompiling(TypeResolutionContext context);
 	
 	public abstract HighLevelDefinition getCompiled();
 	

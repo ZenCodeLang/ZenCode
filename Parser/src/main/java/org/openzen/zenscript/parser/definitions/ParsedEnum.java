@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -19,7 +19,6 @@ import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 
 /**
@@ -27,7 +26,7 @@ import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
  * @author Hoofdgebruiker
  */
 public class ParsedEnum extends BaseParsedDefinition {
-	public static ParsedEnum parseEnum(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedEnum parseEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
@@ -41,7 +40,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 		
 		if (tokens.optional(ZSTokenType.T_SEMICOLON) != null) {
 			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-				result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled, null));
+				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
 			}
 		} else {
 			tokens.required(ZSTokenType.T_ACLOSE, "} expected");
@@ -53,10 +52,10 @@ public class ParsedEnum extends BaseParsedDefinition {
 	
 	private final EnumDefinition compiled;
 	
-	public ParsedEnum(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, HighLevelDefinition outerDefinition) {
-		super(position, modifiers, annotations);
+	public ParsedEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, HighLevelDefinition outerDefinition) {
+		super(position, modifiers, pkg, annotations);
 		
-		compiled = new EnumDefinition(position, pkg, name, modifiers, outerDefinition);
+		compiled = new EnumDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
 	}
 	
 	public void addEnumValue(ParsedEnumConstant value) {
