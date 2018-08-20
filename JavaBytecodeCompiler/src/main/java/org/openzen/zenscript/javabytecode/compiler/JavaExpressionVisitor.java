@@ -1703,6 +1703,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         javaWriter.label(label);
         return null;
     }
+	
+	@Override
+	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
+		throw new UnsupportedOperationException(); // TODO
+	}
 
     @Override
     public Void visitGetStaticField(GetStaticFieldExpression expression) {

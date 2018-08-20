@@ -42,6 +42,7 @@ import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
@@ -276,11 +277,16 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 		javaWriter.idec(expression.parameter.getTag(JavaParameterInfo.class).index);
 		return null;
 	}
-
+	
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
 		javaWriter.idec(expression.variable.getTag(JavaLocalVariableInfo.class).local);
 		return null;
+	}
+
+	@Override
+	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
 	}
 
 	@Override

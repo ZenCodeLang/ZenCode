@@ -15,12 +15,12 @@ public final class VirtualSourceFile implements SourceFile {
         throw new AssertionError("Cannot open virtual source files");
     }
     
+    @Override
+    public void update(String content) throws IOException {
+        throw new AssertionError("Cannot write to virtual source files");
+    }
+    
     public String getFilename() {
         return filename;
     }
-
-	@Override
-	public void update(String content) throws IOException {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
 }

@@ -42,6 +42,7 @@ import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
@@ -286,6 +287,11 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 		javaWriter.iinc(localVariable.local);
 		javaWriter.load(localVariable);
 		return null;
+	}
+
+	@Override
+	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
 	}
 
 	@Override

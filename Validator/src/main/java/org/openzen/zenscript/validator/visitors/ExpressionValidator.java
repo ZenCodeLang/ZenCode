@@ -46,6 +46,7 @@ import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
@@ -350,6 +351,14 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
 		if (!scope.isLocalVariableInitialized(expression.variable)) {
 			validator.logError(ValidationLogEntry.Code.LOCAL_VARIABLE_NOT_YET_INITIALIZED, expression.position, "Local variable not yet initialized");
+		}
+		return null;
+	}
+	
+	@Override
+	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
+		if (expression.index >= expression.value.parameters.length) {
+			validator.logError(ValidationLogEntry.Code.MATCHING_VARIANT_FIELD_INVALID, expression.position, "Invalid matching variant field");
 		}
 		return null;
 	}

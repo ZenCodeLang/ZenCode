@@ -30,6 +30,7 @@ public class ParsedVariant extends BaseParsedDefinition {
 		
 		ParsedVariant result = new ParsedVariant(pkg, position, modifiers, annotations, name, typeParameters, outerDefinition);
 		
+		int ordinal = 0;
 		while (!tokens.isNext(ZSTokenType.T_ACLOSE) && !tokens.isNext(ZSTokenType.T_SEMICOLON)) {
 			String optionName = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 			List<IParsedType> types = new ArrayList<>();
@@ -40,7 +41,7 @@ public class ParsedVariant extends BaseParsedDefinition {
 				}
 				tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
 			}
-			result.addVariant(new ParsedVariantOption(optionName, types));
+			result.addVariant(new ParsedVariantOption(optionName, ordinal++, types));
 			if (tokens.optional(ZSTokenType.T_COMMA) == null)
 				break;
 		}

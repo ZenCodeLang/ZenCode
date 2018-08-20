@@ -215,7 +215,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				clinitWriter.newObject(internalName);
 				clinitWriter.dup();
 				clinitWriter.constant(constant.name);
-				clinitWriter.constant(constant.value);
+				clinitWriter.constant(constant.ordinal);
 				for (Expression argument : constant.constructor.arguments.arguments) {
 					argument.accept(clinitStatementVisitor.expressionVisitor);
 				}
@@ -233,7 +233,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
             for (EnumConstantMember enumConstant : enumConstants) {
                 clinitWriter.dup();
-                clinitWriter.constant(enumConstant.value);
+                clinitWriter.constant(enumConstant.ordinal);
                 clinitWriter.getStaticField(definition.name, enumConstant.name, "L" + definition.name + ";");
                 clinitWriter.arrayStore(Type.getType("L" + definition.name + ";"));
             }

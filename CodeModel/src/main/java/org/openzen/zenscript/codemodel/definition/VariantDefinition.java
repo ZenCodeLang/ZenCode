@@ -32,10 +32,12 @@ public class VariantDefinition extends HighLevelDefinition {
 	
 	public static class Option extends Taggable {
 		public final String name;
+		public final int ordinal;
 		public final ITypeID[] types;
 		
-		public Option(String name, ITypeID[] types) {
+		public Option(String name, int ordinal, ITypeID[] types) {
 			this.name = name;
+			this.ordinal = ordinal;
 			this.types = types;
 		}
 		

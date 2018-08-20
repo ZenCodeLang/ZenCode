@@ -41,6 +41,7 @@ import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
@@ -254,6 +255,11 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 
 	@Override
 	public Boolean visitGetLocalVariable(GetLocalVariableExpression expression) {
+		return false;
+	}
+
+	@Override
+	public Boolean visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		return false;
 	}
 

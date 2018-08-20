@@ -45,6 +45,7 @@ import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
@@ -479,6 +480,11 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitGetLocalVariable(GetLocalVariableExpression expression) {
 		return new ExpressionString(expression.variable.name, ZenScriptOperator.PRIMARY);
+	}
+	
+	@Override
+	public ExpressionString visitGetMatchingVariantField(GetMatchingVariantField expression) {
+		return new ExpressionString(expression.value.parameters[expression.index], ZenScriptOperator.PRIMARY);
 	}
 
 	@Override

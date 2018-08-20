@@ -100,7 +100,7 @@ public abstract class Result<T, E> {
     public static class Ok<T, E> extends Result<T, E> {
         public final T value;
         
-        public Ok(T value){
+        public Ok(T value) {
             this.value = value;
         }
         
@@ -113,7 +113,7 @@ public abstract class Result<T, E> {
     public static class Error<T, E> extends Result<T, E> {
         public final E value;
         
-        public Error(E value){
+        public Error(E value) {
             this.value = value;
         }
         
