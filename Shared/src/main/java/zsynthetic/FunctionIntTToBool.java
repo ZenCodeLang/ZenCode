@@ -1,6 +1,6 @@
 package zsynthetic;
 
 @FunctionalInterface
-public interface Function4<T>  {
+public interface FunctionIntTToBool<T> {
     boolean invoke(int index, T value);
 }

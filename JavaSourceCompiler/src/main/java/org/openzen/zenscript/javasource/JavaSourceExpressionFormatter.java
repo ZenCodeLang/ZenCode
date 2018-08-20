@@ -49,6 +49,7 @@ import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
@@ -419,6 +420,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	@Override
 	public ExpressionString visitGetLocalVariable(GetLocalVariableExpression expression) {
 		return new ExpressionString(expression.variable.name, JavaOperator.PRIMARY);
+	}
+
+	@Override
+	public ExpressionString visitGetMatchingVariantField(GetMatchingVariantField expression) {
+		return new ExpressionString(expression.value.parameters[expression.index], JavaOperator.PRIMARY);
 	}
 
 	@Override
@@ -1680,7 +1686,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 					throw new UnsupportedOperationException("Not yet supported!");
 				}
 			}
-			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED:
+			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
 				ArrayTypeID type = (ArrayTypeID) expression.type;
 				
 				if (type.dimension == 1) {
@@ -1759,6 +1765,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 					// TODO: implement
 					throw new UnsupportedOperationException("Not yet supported!");
 				}
+			}
+			case CLASS_DEFAULT_CONSTRUCTOR:
+				return new ExpressionString("new " + scope.type(expression.type) + "()", JavaOperator.NEW);
 		}
 		
 		throw new UnsupportedOperationException("Unknown builtin constructor: " + expression.constructor.getBuiltin());

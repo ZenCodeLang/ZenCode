@@ -12,6 +12,7 @@ import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -141,8 +142,29 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 	
 	public void normalize(TypeScope scope) {
+		DestructorMember destructor = null;
+		List<FieldMember> fields = new ArrayList();
+		
 		for (IDefinitionMember member : members) {
 			member.normalize(scope);
+			
+			if (member instanceof DestructorMember)
+				destructor = (DestructorMember)member;
+			if (member instanceof FieldMember)
+				fields.add((FieldMember)member);
+		}
+		
+		if (isDestructible() && destructor == null && !(this instanceof ExpansionDefinition)) {
+			System.out.println("Added destructor to " + position);
+			destructor = new DestructorMember(position, this, Modifiers.PUBLIC);
+			members.add(destructor);
+		}
+		
+		for (FieldMember field : fields) {
+			if (field.autoGetter != null)
+				members.add(field.autoGetter);
+			if (field.autoSetter != null)
+				members.add(field.autoSetter);
 		}
 	}
 	

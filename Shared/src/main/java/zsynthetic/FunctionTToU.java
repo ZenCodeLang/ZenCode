@@ -1,6 +1,6 @@
 package zsynthetic;
 
 @FunctionalInterface
-public interface Function1<U, T>  {
+public interface FunctionTToU<U, T> {
     U invoke(T value);
 }

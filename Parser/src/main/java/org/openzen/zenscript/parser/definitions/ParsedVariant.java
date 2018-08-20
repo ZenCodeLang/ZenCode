@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -23,13 +23,14 @@ import org.openzen.zenscript.parser.type.IParsedType;
  * @author Hoofdgebruiker
  */
 public class ParsedVariant extends BaseParsedDefinition {
-	public static ParsedVariant parseVariant(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedVariant parseVariant(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> typeParameters = ParsedTypeParameter.parseAll(tokens);
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
 		ParsedVariant result = new ParsedVariant(pkg, position, modifiers, annotations, name, typeParameters, outerDefinition);
 		
+		int ordinal = 0;
 		while (!tokens.isNext(ZSTokenType.T_ACLOSE) && !tokens.isNext(ZSTokenType.T_SEMICOLON)) {
 			String optionName = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 			List<IParsedType> types = new ArrayList<>();
@@ -40,14 +41,14 @@ public class ParsedVariant extends BaseParsedDefinition {
 				}
 				tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
 			}
-			result.addVariant(new ParsedVariantOption(optionName, types));
+			result.addVariant(new ParsedVariantOption(optionName, ordinal++, types));
 			if (tokens.optional(ZSTokenType.T_COMMA) == null)
 				break;
 		}
 		
 		if (tokens.optional(ZSTokenType.T_SEMICOLON) != null) {
 			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-				result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled, null));
+				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
 			}
 		} else {
 			tokens.required(ZSTokenType.T_ACLOSE, "} expected");
@@ -60,11 +61,11 @@ public class ParsedVariant extends BaseParsedDefinition {
 	
 	private final VariantDefinition compiled;
 	
-	public ParsedVariant(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters, HighLevelDefinition outerDefinition) {
-		super(position, modifiers, annotations);
+	public ParsedVariant(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters, HighLevelDefinition outerDefinition) {
+		super(position, modifiers, pkg, annotations);
 		
 		this.typeParameters = typeParameters;
-		compiled = new VariantDefinition(position, pkg, name, modifiers, outerDefinition);
+		compiled = new VariantDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
 		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
 	}
 	

@@ -1,7 +1,7 @@
 package stdlib;
 
 public enum EnforcementLevel {
-	INFO,
-	ENFORCE,
-	PROVE
+	INFO(),
+	ENFORCE(),
+	PROVE()
 }

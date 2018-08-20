@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -36,6 +37,14 @@ public class GetterMember extends FunctionalMember implements IPropertyMember {
 		
 		this.name = name;
 		this.type = type;
+	}
+	
+	@Override
+	public void setBody(Statement body) {
+		super.setBody(body);
+		
+		if (type == BasicTypeID.UNDETERMINED)
+			type = body.getReturnType();
 	}
 	
 	@Override

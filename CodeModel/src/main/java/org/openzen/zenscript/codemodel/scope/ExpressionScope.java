@@ -16,6 +16,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
+import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
+import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
@@ -35,7 +37,7 @@ public class ExpressionScope extends BaseScope {
 	
 	public final List<ITypeID> hints;
 	public final Map<TypeParameter, ITypeID> genericInferenceMap;
-	public final Map<String, VarStatement> innerVariables = new HashMap<>();
+	public final Map<String, Function<CodePosition, Expression>> innerVariables = new HashMap<>();
 	
 	public ExpressionScope(BaseScope outer) {
 		this.outer = outer;
@@ -70,7 +72,7 @@ public class ExpressionScope extends BaseScope {
 			List<ITypeID> hints,
 			Function<CodePosition, Expression> dollar,
 			Map<TypeParameter, ITypeID> genericInferenceMap,
-			Map<String, VarStatement> innerVariables) {
+			Map<String, Function<CodePosition, Expression>> innerVariables) {
 		this.outer = scope;
 		this.hints = hints;
 		this.dollar = dollar;
@@ -79,7 +81,11 @@ public class ExpressionScope extends BaseScope {
 	}
 	
 	public void addInnerVariable(VarStatement variable) {
-		innerVariables.put(variable.name, variable);
+		innerVariables.put(variable.name, position -> new GetLocalVariableExpression(position, variable));
+	}
+	
+	public void addMatchingVariantOption(String name, int index, VariantOptionSwitchValue value) {
+		innerVariables.put(name, position -> new GetMatchingVariantField(position, value, index));
 	}
 	
 	public List<ITypeID> getResultTypeHints() {
@@ -121,7 +127,7 @@ public class ExpressionScope extends BaseScope {
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		if (name.hasNoArguments() && innerVariables.containsKey(name.name))
-			return new GetLocalVariableExpression(position, innerVariables.get(name.name));
+			return innerVariables.get(name.name).apply(position);
 		
 		return outer.get(position, name);
 	}

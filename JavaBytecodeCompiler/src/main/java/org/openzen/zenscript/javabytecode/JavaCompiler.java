@@ -46,7 +46,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 
 	@Override
 	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
-		String className = getClassName(definition.position.filename);
+		String className = getClassName(definition.position.getFilename());
 		JavaScriptFile scriptFile = getScriptFile(className);
 		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(scriptFile.classWriter)));
 	}

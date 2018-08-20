@@ -70,4 +70,9 @@ public class ImplementationMember extends DefinitionMember {
 		for (IDefinitionMember member : members)
 			member.normalize(scope);
 	}
+
+	@Override
+	public boolean isAbstract() {
+		return false;
+	}
 }

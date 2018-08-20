@@ -129,7 +129,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
-		throw new UnsupportedOperationException("Expansions cannot declare destructors");
+		return null; // ignore
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
 import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
@@ -36,19 +37,32 @@ import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
  * @author Hoofdgebruiker
  */
 public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> {
+	private static final boolean DEBUG_EMPTY = true;
+	
+	private final JavaSourcePrepareDefinitionVisitor definitionPreparer;
 	private final String filename;
 	private final JavaSourceClass cls;
 	private final JavaNativeClass nativeClass;
 	
-	public JavaSourcePrepareClassMethodVisitor(String filename, JavaSourceClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
+	public JavaSourcePrepareClassMethodVisitor(
+			JavaSourcePrepareDefinitionVisitor definitionPreparer,
+			String filename,
+			JavaSourceClass cls,
+			JavaNativeClass nativeClass,
+			boolean startsEmpty) {
+		this.definitionPreparer = definitionPreparer;
 		this.filename = filename;
 		this.cls = cls;
 		this.nativeClass = nativeClass;
+		
 		cls.empty = startsEmpty;
 	}
 	
 	@Override
 	public Void visitConst(ConstMember member) {
+		if (DEBUG_EMPTY && cls.empty)
+			System.out.println("Class " + cls.fullName + " not empty because of const " + member.name);
+		
 		cls.empty = false;
 		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
 		return null;
@@ -56,7 +70,6 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 	
 	@Override
 	public Void visitField(FieldMember member) {
-		cls.empty = false;
 		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
 		if (member.hasAutoGetter())
 			visitGetter(member.autoGetter);
@@ -74,6 +87,9 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
+		if (DEBUG_EMPTY && cls.empty)
+			System.out.println("Class " + cls.fullName + " not empty because of destructor");
+		
 		cls.empty = false;
 		return null;
 	}
@@ -122,16 +138,22 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		cls.empty = false;
+		definitionPreparer.prepare(member.type);
+		
 		if (canMergeImplementation(member)) {
 			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(true, cls));
 			for (IDefinitionMember m : member.members)
 				m.accept(this);
 		} else {
+			if (DEBUG_EMPTY && cls.empty)
+				System.out.println("Class " + cls.fullName + " not empty because of unmergeable implementation");
+			
+			cls.empty = false;
+			
 			JavaSourceClass implementationClass = new JavaSourceClass(cls, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation");
 			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
 			
-			JavaSourcePrepareClassMethodVisitor visitor = new JavaSourcePrepareClassMethodVisitor(filename, implementationClass, null, true);
+			JavaSourcePrepareClassMethodVisitor visitor = new JavaSourcePrepareClassMethodVisitor(definitionPreparer, filename, implementationClass, null, true);
 			for (IDefinitionMember m : member.members)
 				m.accept(visitor);
 		}
@@ -147,12 +169,17 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 		JavaSourcePrepareDefinitionVisitor innerDefinitionPrepare = new JavaSourcePrepareDefinitionVisitor(filename, cls);
 		member.innerDefinition.accept(innerDefinitionPrepare);
 		
+		if (DEBUG_EMPTY && cls.empty)
+			System.out.println("Class " + cls.fullName + " not empty because of inner definition " + member.innerDefinition.name);
 		cls.empty = false;
 		return null;
 	}
 
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
+		if (DEBUG_EMPTY && cls.empty)
+			System.out.println("Class " + cls.fullName + " not empty because of static initializer");
+		
 		cls.empty = false;
 		return null;
 	}
@@ -252,11 +279,24 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 		JavaSourceMethod method = null;
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
-		if (method == null)
-			method = new JavaSourceMethod(cls, getKind(member), name, true);
 		
-		if (method.compile)
+		if (member.getOverrides() != null) {
+			DefinitionMemberRef base = member.getOverrides();
+			JavaSourceMethod baseMethod = base.getTarget().getTag(JavaSourceMethod.class);
+			if (baseMethod == null)
+				throw new IllegalStateException("Base method not yet prepared!");
+			
+			method = new JavaSourceMethod(cls, baseMethod.kind, baseMethod.name, true);
+		} else if (method == null) {
+			method = new JavaSourceMethod(cls, getKind(member), name, true);
+		}
+		
+		if (method.compile) {
+			if (DEBUG_EMPTY && cls.empty)
+				System.out.println("Class " + cls.fullName + " not empty because of " + member.describe());
+			
 			cls.empty = false;
+		}
 		
 		member.setTag(JavaSourceMethod.class, method);
 	}

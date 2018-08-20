@@ -80,13 +80,13 @@ public class FunctionHeader {
 		hasUnknowns = hasUnknowns(parameters, returnType);
 	}
 	
-	public FunctionHeader(TypeParameter[] genericParameters, ITypeID returnType, ITypeID thrownType, FunctionParameter... parameters) {
+	public FunctionHeader(TypeParameter[] typeParameters, ITypeID returnType, ITypeID thrownType, FunctionParameter... parameters) {
 		if (returnType == null)
 			throw new NullPointerException();
-		if (genericParameters == null)
+		if (typeParameters == null)
 			throw new NullPointerException();
 		
-		this.typeParameters = genericParameters;
+		this.typeParameters = typeParameters;
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.thrownType = thrownType;
@@ -250,6 +250,8 @@ public class FunctionHeader {
 	}
 	
 	public boolean canOverride(TypeScope scope, FunctionHeader other) {
+		if (other == null)
+			throw new NullPointerException();
 		if (parameters.length != other.parameters.length)
 			return false;
 		if (returnType != BasicTypeID.UNDETERMINED && !scope.getTypeMembers(returnType).canCastImplicit(other.returnType))

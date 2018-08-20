@@ -82,10 +82,11 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	@Override
 	public Void visitClass(ClassDefinition definition) {
 		JavaSourceFileScope scope = createScope(definition);
+		JavaSourceClass cls = definition.getTag(JavaSourceClass.class);
 		
 		output.append(indent);
 		convertModifiers(definition.modifiers);
-		output.append("class ").append(definition.name);
+		output.append("class ").append(cls.getName());
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.genericParameters, false);
 		if (definition.getSuperType() != null) {
 			output.append(" extends ");
@@ -99,7 +100,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			}
 		}
 		
-		if (mergedImplementations.size() > 0 || definition.isDestructible()) {
+		if (mergedImplementations.size() > 0 || cls.destructible) {
 			output.append(" implements ");
 			boolean first = true;
 			for (int i = 0; i < mergedImplementations.size(); i++) {
@@ -112,7 +113,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				output.append(scope.type(implementation.type));
 			}
 			
-			if (definition.isDestructible()) {
+			if (cls.destructible) {
 				if (first)
 					first = false;
 				else
@@ -132,15 +133,28 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	@Override
 	public Void visitInterface(InterfaceDefinition definition) {
 		JavaSourceFileScope scope = createScope(definition);
+		JavaSourceClass cls = definition.getTag(JavaSourceClass.class);
 		
 		output.append(indent);
 		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
-		output.append("interface ").append(definition.name);
+		output.append("interface ").append(cls.getName());
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.genericParameters, false);
-			
+		
+		boolean firstExtends = true;
 		if (definition.isDestructible()) {
 			output.append(" extends ");
 			output.append(scope.importer.importType(new JavaSourceClass("java.lang", "AutoCloseable")));
+			firstExtends = false;
+		}
+		
+		for (ITypeID base : definition.baseInterfaces) {
+			if (firstExtends) {
+				firstExtends = false;
+				output.append(" extends ");
+			} else {
+				output.append(", ");
+			}
+			output.append(scope.type(base));
 		}
 		
 		output.append(" {\n");
@@ -302,7 +316,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				String name = option.types.length == 1 ? "value" : "value" + (i + 1);
 				output.append(scope.type(option.types[i])).append(' ').append(name);
 			}
-			output.append("){\n");
+			output.append(") {\n");
 			for (int i = 0; i < option.types.length; i++) {
 				if (i > 0)
 					output.append(indent).append(settings.indent).append(settings.indent).append(settings.indent).append(";\n");

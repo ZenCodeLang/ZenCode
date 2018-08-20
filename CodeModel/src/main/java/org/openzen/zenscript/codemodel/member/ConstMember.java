@@ -63,4 +63,9 @@ public class ConstMember extends PropertyMember {
 		type = type.getNormalized();
 		value = value.normalize(scope);
 	}
+
+	@Override
+	public boolean isAbstract() {
+		return false;
+	}
 }

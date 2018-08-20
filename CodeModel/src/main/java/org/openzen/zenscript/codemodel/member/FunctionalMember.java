@@ -60,4 +60,9 @@ public abstract class FunctionalMember extends DefinitionMember {
 		if (body != null)
 			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}
+	
+	@Override
+	public boolean isAbstract() {
+		return body == null && builtin == null;
+	}
 }

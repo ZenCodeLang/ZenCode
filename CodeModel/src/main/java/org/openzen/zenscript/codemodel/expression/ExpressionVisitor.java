@@ -80,6 +80,8 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitGetLocalVariable(GetLocalVariableExpression expression);
 	
+	public T visitGetMatchingVariantField(GetMatchingVariantField expression);
+	
 	public T visitGetStaticField(GetStaticFieldExpression expression);
 	
 	public T visitGetter(GetterExpression expression);

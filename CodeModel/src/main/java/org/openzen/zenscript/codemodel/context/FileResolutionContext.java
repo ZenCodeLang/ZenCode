@@ -21,10 +21,12 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class FileResolutionContext implements TypeResolutionContext {
 	private final ModuleTypeResolutionContext module;
+	private final CompilingPackage modulePackage;
 	private final Map<String, HighLevelDefinition> imports = new HashMap<>();
 	
-	public FileResolutionContext(ModuleTypeResolutionContext module) {
+	public FileResolutionContext(ModuleTypeResolutionContext module, CompilingPackage modulePackage) {
 		this.module = module;
+		this.modulePackage = modulePackage;
 	}
 	
 	public void addImport(String name, HighLevelDefinition definition) {
@@ -50,6 +52,10 @@ public class FileResolutionContext implements TypeResolutionContext {
 					name,
 					1);
 		}
+		
+		ITypeID moduleType = modulePackage.getType(this, name);
+		if (moduleType != null)
+			return moduleType;
 		
 		return module.getType(position, name);
 	}

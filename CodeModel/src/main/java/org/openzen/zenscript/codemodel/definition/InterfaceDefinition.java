@@ -27,6 +27,15 @@ public class InterfaceDefinition extends HighLevelDefinition {
 	}
 	
 	@Override
+	public boolean isDestructible() {
+		for (ITypeID baseInterface : baseInterfaces)
+			if (baseInterface.isDestructible())
+				return true;
+		
+		return super.isDestructible();
+	}
+	
+	@Override
 	public boolean isStatic() {
 		return true;
 	}

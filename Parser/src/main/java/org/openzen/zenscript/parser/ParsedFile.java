@@ -16,7 +16,6 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
@@ -28,7 +27,6 @@ import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.FileScope;
@@ -42,24 +40,24 @@ import org.openzen.zenscript.parser.statements.ParsedStatement;
  * @author Hoofdgebruiker
  */
 public class ParsedFile {
-	public static ParsedFile parse(ZSPackage pkg, CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File file) throws IOException {
-		return parse(pkg, compilingPackage, bracketParser, new FileSourceFile(file.getName(), file));
+	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File file) throws IOException {
+		return parse(compilingPackage, bracketParser, new FileSourceFile(file.getName(), file));
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, CompilingPackage compilingPackage, BracketExpressionParser bracketParser, String filename, String content) {
+	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, String filename, String content) {
 		try {
-			return parse(pkg, compilingPackage, bracketParser, new LiteralSourceFile(filename, content));
+			return parse(compilingPackage, bracketParser, new LiteralSourceFile(filename, content));
 		} catch (IOException ex) {
 			throw new AssertionError(); // shouldn't happen
 		}
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, CompilingPackage compilingPackage, BracketExpressionParser bracketParser, SourceFile file) throws IOException {
+	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, SourceFile file) throws IOException {
 		ZSTokenParser tokens = ZSTokenParser.create(file, bracketParser, 4);
-		return parse(pkg, compilingPackage, tokens);
+		return parse(compilingPackage, tokens);
 	}
 	
-	public static ParsedFile parse(ZSPackage pkg, CompilingPackage compilingPackage, ZSTokenParser tokens) {
+	public static ParsedFile parse(CompilingPackage compilingPackage, ZSTokenParser tokens) {
 		ParsedFile result = new ParsedFile(tokens.getFile());
 
 		while (true) {
@@ -106,15 +104,12 @@ public class ParsedFile {
 			} else if ((tokens.optional(EOF)) != null) {
 				break;
 			} else {
-				ParsedDefinition definition = ParsedDefinition.parse(pkg, position, modifiers, annotations, tokens, null);
+				ParsedDefinition definition = ParsedDefinition.parse(compilingPackage, position, modifiers, annotations, tokens, null);
 				if (definition == null) {
 					result.statements.add(ParsedStatement.parse(tokens, annotations));
 				} else {
 					result.definitions.add(definition);
 					definition.getCompiled().setTag(SourceFile.class, tokens.getFile());
-					
-					if (definition.getName() != null)
-						compilingPackage.addType(definition.getName(), definition);
 				}
 			}
 		}
@@ -148,14 +143,33 @@ public class ParsedFile {
 		}
 	}
 	
+	public void registerTypes(
+			ModuleTypeResolutionContext moduleContext,
+			ZSPackage rootPackage,
+			CompilingPackage modulePackage) {
+		FileResolutionContext context = new FileResolutionContext(moduleContext, modulePackage);
+		loadImports(context, rootPackage, modulePackage);
+		
+		for (ParsedDefinition definition : this.definitions) {
+			if (definition.getName() != null)
+				definition.pkg.addType(definition.getName(), definition.getCompiling(context));
+		}
+	}
+	
 	public void compileTypes(
 			ModuleTypeResolutionContext moduleContext,
 			ZSPackage rootPackage,
 			CompilingPackage modulePackage) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext);
+		FileResolutionContext context = new FileResolutionContext(moduleContext, modulePackage);
 		loadImports(context, rootPackage, modulePackage);
+		
 		for (ParsedDefinition definition : this.definitions) {
-			definition.linkTypes(context);
+			if (definition.getName() != null)
+				modulePackage.addType(definition.getName(), definition.getCompiling(context));
+		}
+		
+		for (ParsedDefinition definition : this.definitions) {
+			definition.getCompiling(context).load();
 		}
 	}
 	
@@ -166,7 +180,7 @@ public class ParsedFile {
 			CompilingPackage modulePackage,
 			List<ExpansionDefinition> expansions,
 			Map<String, ISymbol> globals) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext);
+		FileResolutionContext context = new FileResolutionContext(moduleContext, modulePackage);
 		loadImports(context, rootPackage, modulePackage);
 		
 		FileScope scope = new FileScope(context, expansions, globals, precompiler);
@@ -183,7 +197,7 @@ public class ParsedFile {
 			List<ExpansionDefinition> expansions,
 			List<ScriptBlock> scripts,
 			Map<String, ISymbol> globals) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext);
+		FileResolutionContext context = new FileResolutionContext(moduleContext, modulePackage);
 		loadImports(context, rootPackage, modulePackage);
 		
 		FileScope scope = new FileScope(context, expansions, globals, precompiler);

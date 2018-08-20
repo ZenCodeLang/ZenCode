@@ -93,4 +93,9 @@ public class RangeIterator extends Taggable implements IIteratorMember {
 	public void normalize(TypeScope scope) {
 		
 	}
+
+	@Override
+	public boolean isAbstract() {
+		return false;
+	}
 }

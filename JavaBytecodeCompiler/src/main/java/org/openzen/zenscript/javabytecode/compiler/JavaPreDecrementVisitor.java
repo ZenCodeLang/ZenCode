@@ -217,6 +217,11 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 	}
 
 	@Override
+	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+
+	@Override
 	public Void visitGetStaticField(GetStaticFieldExpression expression) {
 		if (!expressionCompiler.checkAndGetFieldInfo(expression.field, false))
 			throw new IllegalStateException("Missing field info on a field member!");

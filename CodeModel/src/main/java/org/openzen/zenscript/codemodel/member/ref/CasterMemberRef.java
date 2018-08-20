@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -63,5 +64,10 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	@Override
 	public MemberAnnotation[] getAnnotations() {
 		return member.annotations;
+	}
+
+	@Override
+	public IDefinitionMember getTarget() {
+		return member;
 	}
 }

@@ -76,10 +76,10 @@ public class DirectoryModuleReference implements ModuleReference {
 
 			Module module = new Module(moduleName, directory, jsonFile, exceptionLogger);
 			ZSPackage pkg = isStdlib ? unit.globalTypeRegistry.stdlib : new ZSPackage(null, module.packageName);
-			CompilingPackage compilingPackage = new CompilingPackage();
+			CompilingPackage compilingPackage = new CompilingPackage(pkg);
 			
-			ParsedFile[] parsedFiles = module.parse(pkg, compilingPackage);
-			SemanticModule result = Module.compileSyntaxToSemantic(module.name, module.dependencies, pkg, compilingPackage, parsedFiles, space, exceptionLogger);
+			ParsedFile[] parsedFiles = module.parse(compilingPackage);
+			SemanticModule result = Module.compileSyntaxToSemantic(module.name, module.dependencies, compilingPackage, parsedFiles, space, exceptionLogger);
 			
 			JSONObject globals = json.optJSONObject("globals");
 			if (globals != null) {

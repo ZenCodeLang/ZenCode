@@ -17,9 +17,15 @@ import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 public class JavaNativeClass {
 	public final JavaSourceClass cls;
 	private final Map<String, JavaSourceMethod> methods = new HashMap<>();
+	public final boolean nonDestructible;
 	
 	public JavaNativeClass(JavaSourceClass cls) {
+		this(cls, false);
+	}
+	
+	public JavaNativeClass(JavaSourceClass cls, boolean nonDestructible) {
 		this.cls = cls;
+		this.nonDestructible = nonDestructible;
 	}
 	
 	public void addMethod(String key, JavaSourceMethod method) {

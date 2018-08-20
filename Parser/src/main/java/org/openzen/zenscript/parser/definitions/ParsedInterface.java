@@ -10,9 +10,9 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -24,7 +24,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
  * @author Hoofdgebruiker
  */
 public class ParsedInterface extends BaseParsedDefinition {
-	public static ParsedInterface parseInterface(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedInterface parseInterface(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> genericParameters = ParsedTypeParameter.parseAll(tokens);
 		List<IParsedType> superInterfaces = Collections.emptyList();
@@ -39,7 +39,7 @@ public class ParsedInterface extends BaseParsedDefinition {
 		
 		ParsedInterface result = new ParsedInterface(pkg, position, modifiers, annotations, name, genericParameters, superInterfaces, outerDefinition);
 		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-			result.addMember(ParsedDefinitionMember.parse(tokens, result.compiled, null));
+			result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
 		}
 		return result;
 	}
@@ -49,13 +49,13 @@ public class ParsedInterface extends BaseParsedDefinition {
 	
 	private final InterfaceDefinition compiled;
 	
-	public ParsedInterface(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
-		super(position, modifiers, annotations);
+	public ParsedInterface(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> typeParameters, List<IParsedType> superInterfaces, HighLevelDefinition outerDefinition) {
+		super(position, modifiers, pkg, annotations);
 		
 		this.typeParameters = typeParameters;
 		this.superInterfaces = superInterfaces;
 		
-		compiled = new InterfaceDefinition(position, pkg, name, modifiers, outerDefinition);
+		compiled = new InterfaceDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
 		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
 	}
 

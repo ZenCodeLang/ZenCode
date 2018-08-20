@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -14,14 +12,8 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  *
  * @author Hoofdgebruiker
  */
-public interface IPropertyMember {
+public interface IPropertyMember extends IDefinitionMember {
 	ITypeID getType();
-	
-	CodePosition getPosition();
-	
-	String describe();
-
-	<T> T getTag(Class<T> type);
 	
 	boolean isStatic();
 	

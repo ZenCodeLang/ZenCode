@@ -9,6 +9,7 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 
 /**
  *
@@ -17,10 +18,10 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 public interface CompilingType {
 	CompilingType getInner(String name);
 	
-	HighLevelDefinition load(TypeResolutionContext context);
+	HighLevelDefinition load();
 	
-	default DefinitionTypeID getInnerType(TypeResolutionContext context, List<GenericName> name, int index, DefinitionTypeID outer) {
-		DefinitionTypeID type = context.getTypeRegistry().getForDefinition(load(context), name.get(index).arguments, outer);
+	default DefinitionTypeID getInnerType(GlobalTypeRegistry registry, List<GenericName> name, int index, DefinitionTypeID outer) {
+		DefinitionTypeID type = registry.getForDefinition(load(), name.get(index).arguments, outer);
 		index++;
 		if (index == name.size())
 			return type;
@@ -29,6 +30,6 @@ public interface CompilingType {
 		if (innerType == null)
 			return null;
 		
-		return innerType.getInnerType(context, name, index, type);
+		return innerType.getInnerType(registry, name, index, type);
 	}
 }

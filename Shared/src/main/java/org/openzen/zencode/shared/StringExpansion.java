@@ -18,11 +18,8 @@ public final class StringExpansion {
 	
 	static  {
 	    CharacterEntity[] entities = StringExpansion.getCharacterEntities();
-	    // TODO: getCharacterEntities().index(e => e.stringValue);
-	    
 	    NAMED_CHARACTER_ENTITIES = new HashMap<>();
 	    for (CharacterEntity entity : entities)
-	        
 	        StringExpansion.NAMED_CHARACTER_ENTITIES.put(entity.stringValue, entity);
 	}
 	
@@ -57,12 +54,10 @@ public final class StringExpansion {
 	                return new Error("Unfinished escape sequence");
 	            switch (quoted.charAt(i + 1)) {
 	                case '\\':
-	                    
 	                    i++;
 	                    result.append('\\');
 	                    break;
 	                case '&':
-	                    
 	                    Result<CharacterEntity, String> temp1 = StringExpansion.readCharacterEntity(quoted, i + 1);
 	                    if (temp1 instanceof Result.Error)
 	                        return new Result.Error<>(((Result.Error<CharacterEntity, String>)temp1).value);
@@ -99,7 +94,6 @@ public final class StringExpansion {
 	                    result.append('\'');
 	                    break;
 	                case 'u':
-	                    
 	                    if (i >= quoted.length() - 5)
 	                        return new Error("Unfinished escape sequence");
 	                    Result<Integer, String> temp2 = StringExpansion.readHexCharacter(quoted.charAt(i + 2));
@@ -122,7 +116,6 @@ public final class StringExpansion {
 	                    result.append((char)hex0 << 12 | hex1 << 8 | hex2 << 4 | hex3);
 	                    break;
 	                default:
-	                    
 	                    return new Error("Illegal escape sequence");
 	            }
 	        }
@@ -140,18 +133,15 @@ public final class StringExpansion {
 	    for (char c : self.toCharArray()) {
 	        switch (c) {
 	            case '\\':
-	                
 	                output.append("\\\\");
 	                break;
 	            case '"':
-	                
 	                if (quote == '"')
 	                    output.append("\\\"");
 	                else
 	                    output.append('"');
 	                break;
 	            case '\'':
-	                
 	                if (quote == '\'')
 	                    output.append("\\'");
 	                else
@@ -167,7 +157,6 @@ public final class StringExpansion {
 	                output.append("\\t");
 	                break;
 	            default:
-	                
 	                if (escapeUnicode && c > '') {
 	                    output.append("\\u").append(Strings.lpad(Integer.toHexString((int)c), 4, '0'));
 	                }
@@ -206,15 +195,13 @@ public final class StringExpansion {
 	    if (entity.charAt(0) == '#') {
 	        if (entity.length() < 2)
 	            return new Error("Character entity number too short");
-	        if (str.charAt(1) == 'x') {// hex character entity
-	            
+	        if (str.charAt(1) == 'x') {
 	            if (entity.length() != 7)
 	                return new Error("Hexadecimal character entity must have 4 hex digits");
 	            int ivalue = Integer.parseInt(entity.substring(2, entity.length()), 16);
 	            return new Ok(new CharacterEntity(entity, (char)ivalue));
 	        }
-	        else {// decimal character entity
-	            
+	        else {
 	            int ivalue = Integer.parseInt(entity.substring(1, entity.length()));
 	            return new Ok(new CharacterEntity(entity, (char)ivalue));
 	        }

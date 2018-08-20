@@ -140,15 +140,15 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 				String header = switchValue == null ? "default:" : "case " + switchValue.option.getName() + ":";
 				List<String> statements = new ArrayList<>();
 				if (switchValue != null) {
-					for (VarStatement var : switchValue.parameters) {
+					for (int i = 0; i < switchValue.parameters.length; i++) {
 						StringBuilder statementOutput = new StringBuilder();
-						statementOutput.append(scope.type(var.type)).append(" ").append(var.name).append(" = ((").append(variantTypeName).append(".").append(switchValue.option.getName());
+						statementOutput.append(scope.type(switchValue.option.types[i])).append(" ").append(switchValue.parameters[i]).append(" = ((").append(variantTypeName).append(".").append(switchValue.option.getName());
 						if (variant.genericParameters != null && variant.genericParameters.length > 0) {
 							statementOutput.append("<");
-							for (int i = 0; i < variantType.typeParameters.length; i++) {
-								if (i > 0)
+							for (int j = 0; j < variantType.typeParameters.length; j++) {
+								if (j > 0)
 									statementOutput.append(", ");
-								statementOutput.append(scope.type(variantType.typeParameters[i]));
+								statementOutput.append(scope.type(variantType.typeParameters[j]));
 							}
 							statementOutput.append(">");
 						}

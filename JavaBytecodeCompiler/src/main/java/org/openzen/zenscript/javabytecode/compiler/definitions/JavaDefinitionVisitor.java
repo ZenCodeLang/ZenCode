@@ -89,7 +89,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitEnum(EnumDefinition definition) {
-		System.out.println("Compiling enum " + definition.name + " in " + definition.position.filename);
+		System.out.println("Compiling enum " + definition.name + " in " + definition.position.getFilename());
 
 		final Type superType;
 		if (definition.getSuperType() == null)

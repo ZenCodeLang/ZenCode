@@ -9,10 +9,10 @@ package org.openzen.zenscript.parser.definitions;
 import org.openzen.zencode.shared.CodePosition;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.CompilingType;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
@@ -28,7 +28,7 @@ import org.openzen.zenscript.parser.statements.ParsedStatement;
  * @author Stanneke
  */
 public class ParsedFunction extends ParsedDefinition {
-	public static ParsedFunction parseFunction(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser parser, HighLevelDefinition outerDefinition) {
+	public static ParsedFunction parseFunction(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser parser, HighLevelDefinition outerDefinition) {
 		String name = parser.required(T_IDENTIFIER, "identifier expected").content;
 		ParsedFunctionHeader header = ParsedFunctionHeader.parse(parser);
 		ParsedFunctionBody body = ParsedStatement.parseFunctionBody(parser);
@@ -40,13 +40,13 @@ public class ParsedFunction extends ParsedDefinition {
 
 	private final FunctionDefinition compiled;
 	
-	private ParsedFunction(ZSPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, ParsedFunctionHeader header, ParsedFunctionBody body, HighLevelDefinition outerDefinition) {
-		super(position, modifiers, annotations);
+	private ParsedFunction(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, ParsedFunctionHeader header, ParsedFunctionBody body, HighLevelDefinition outerDefinition) {
+		super(position, modifiers, pkg, annotations);
 		
 		this.header = header;
 		this.body = body;
 		
-		compiled = new FunctionDefinition(position, pkg, name, modifiers, outerDefinition);
+		compiled = new FunctionDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
 	}
 
 	@Override
@@ -75,12 +75,25 @@ public class ParsedFunction extends ParsedDefinition {
 	}
 
 	@Override
-	public CompilingType getInner(String name) {
-		return null;
+	public CompilingType getCompiling(TypeResolutionContext context) {
+		return new Compiling(context);
 	}
 
-	@Override
-	public HighLevelDefinition load(TypeResolutionContext context) {
-		return compiled;
+	private class Compiling implements CompilingType {
+		private final TypeResolutionContext context;
+		
+		public Compiling(TypeResolutionContext context) {
+			this.context = context;
+		}
+		
+		@Override
+		public CompilingType getInner(String name) {
+			return null;
+		}
+
+		@Override
+		public HighLevelDefinition load() {
+			return compiled;
+		}
 	}
 }

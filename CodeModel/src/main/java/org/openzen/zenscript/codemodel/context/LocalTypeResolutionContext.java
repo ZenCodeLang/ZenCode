@@ -44,8 +44,8 @@ public class LocalTypeResolutionContext implements TypeResolutionContext {
 		if (type != null) {
 			CompilingType compiling = type.getInner(name.get(0).name);
 			if (compiling != null) {
-				DefinitionTypeID outer = getTypeRegistry().getForMyDefinition(type.load(this));
-				return compiling.getInnerType(this, name, 0, outer);
+				DefinitionTypeID outer = getTypeRegistry().getForMyDefinition(type.load());
+				return compiling.getInnerType(getTypeRegistry(), name, 0, outer);
 			}
 		}
 		
@@ -60,6 +60,6 @@ public class LocalTypeResolutionContext implements TypeResolutionContext {
 	
 	@Override
 	public ITypeID getThisType() {
-		return type == null ? null : getTypeRegistry().getForMyDefinition(type.load(this));
+		return type == null ? null : getTypeRegistry().getForMyDefinition(type.load());
 	}
 }

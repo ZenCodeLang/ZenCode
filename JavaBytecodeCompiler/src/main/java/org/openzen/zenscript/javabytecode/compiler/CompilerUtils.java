@@ -84,7 +84,7 @@ public class CompilerUtils {
 	}
 
 	public static String calcClasName(CodePosition position) {
-		return position.filename.substring(0, position.filename.lastIndexOf('.')).replace("/", "_");
+		return position.getFilename().substring(0, position.getFilename().lastIndexOf('.')).replace("/", "_");
 	}
 
 	public static void tagMethodParameters(FunctionHeader header, boolean isStatic) {
@@ -191,7 +191,7 @@ public class CompilerUtils {
 
 		@Override
 		public Integer acceptEnumConstant(EnumConstantSwitchValue value) {
-			return value.constant.value;
+			return value.constant.ordinal;
 		}
 
 		@Override

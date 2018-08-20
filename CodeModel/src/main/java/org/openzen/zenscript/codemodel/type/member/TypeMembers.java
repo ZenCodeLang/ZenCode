@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -23,6 +24,7 @@ import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinition;
 import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
@@ -140,6 +142,42 @@ public final class TypeMembers {
 			return type;
 		
 		return null;
+	}
+	
+	public List<IDefinitionMember> getUnimplementedMembers(Set<IDefinitionMember> implemented) {
+		List<IDefinitionMember> result = new ArrayList<>();
+		for (TypeMember<CasterMemberRef> caster : casters) {
+			if (caster.member.member.isAbstract() && !implemented.contains(caster.member.member))
+				result.add(caster.member.member);
+		}
+		for (TypeMember<IteratorMemberRef> iterator : iterators) {
+			if (iterator.member.target.isAbstract() && !implemented.contains(iterator.member.target))
+				result.add(iterator.member.target);
+		}
+		for (Map.Entry<String, DefinitionMemberGroup> entry : members.entrySet()) {
+			DefinitionMemberGroup group = entry.getValue();
+			if (group.getGetter() != null && group.getGetter().member.isAbstract() && !implemented.contains(group.getGetter().member))
+				result.add(group.getGetter().member);
+			if (group.getSetter() != null && group.getSetter().member.isAbstract() && !implemented.contains(group.getSetter().member))
+				result.add(group.getSetter().member);
+			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers())
+				if (member.member.getTarget().isAbstract() && !implemented.contains(member.member.getTarget()))
+					result.add(member.member.getTarget());
+		}
+		for (Map.Entry<OperatorType, DefinitionMemberGroup> entry : operators.entrySet()) {
+			if (entry.getKey() == OperatorType.DESTRUCTOR)
+				continue; // destructor doesn't have to be implemented; the compiler can do so automatically
+			
+			DefinitionMemberGroup group = entry.getValue();
+			if (group.getGetter() != null && group.getGetter().member.isAbstract() && !implemented.contains(group.getGetter().member))
+				result.add(group.getGetter().member);
+			if (group.getSetter() != null && group.getSetter().member.isAbstract() && !implemented.contains(group.getSetter().member))
+				result.add(group.getSetter().member);
+			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers())
+				if (member.member.getTarget().isAbstract() && !implemented.contains(member.member.getTarget()))
+					result.add(member.member.getTarget());
+		}
+		return result;
 	}
 	
 	public void addConstructor(FunctionalMemberRef constructor, TypeMemberPriority priority) {

@@ -1735,6 +1735,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	}
 
 	@Override
+	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
+		throw new UnsupportedOperationException(); // TODO
+	}
+
+	@Override
 	public Void visitGetStaticField(GetStaticFieldExpression expression) {
 		if (!checkAndGetFieldInfo(expression.field, true))
 			throw new IllegalStateException("Missing field info on a field member!");

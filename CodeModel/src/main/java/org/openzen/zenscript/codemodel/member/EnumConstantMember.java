@@ -17,14 +17,14 @@ public class EnumConstantMember {
 	public final CodePosition position;
 	public final HighLevelDefinition definition;
 	public final String name;
-	public final int value;
+	public final int ordinal;
 	
 	public NewExpression constructor;
 	
-	public EnumConstantMember(CodePosition position, HighLevelDefinition definition, String name, int value) {
+	public EnumConstantMember(CodePosition position, HighLevelDefinition definition, String name, int ordinal) {
 		this.position = position;
 		this.definition = definition;
 		this.name = name;
-		this.value = value;
+		this.ordinal = ordinal;
 	}
 }
