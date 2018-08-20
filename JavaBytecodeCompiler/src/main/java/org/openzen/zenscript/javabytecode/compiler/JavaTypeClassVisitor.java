@@ -78,7 +78,7 @@ public class JavaTypeClassVisitor implements ITypeVisitor<Class> {
 
 	@Override
 	public Class visitGeneric(GenericTypeID generic) {
-		return null;
+		return Object.class;
 	}
 
 	@Override

@@ -143,7 +143,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		for (final FunctionParameter parameter : member.header.parameters) {
 			methodWriter.nameParameter(0, parameter.name);
 			if (!isAbstract)
-				methodWriter.nameVariable(parameter.getTag(JavaParameterInfo.class).index, parameter.name, methodStart, methodEnd, Type.getType(parameter.type.accept(JavaTypeClassVisitor.INSTANCE)));
+				methodWriter.nameVariable(parameter.getTag(JavaParameterInfo.class).index, parameter.name, methodStart, methodEnd, parameter.type.accept(JavaTypeVisitor.INSTANCE));
 		}
 
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(methodWriter);

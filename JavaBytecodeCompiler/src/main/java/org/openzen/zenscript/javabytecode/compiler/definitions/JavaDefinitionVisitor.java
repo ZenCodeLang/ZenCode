@@ -1,8 +1,10 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -11,6 +13,10 @@ import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.javabytecode.compiler.*;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
 
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
@@ -39,11 +45,11 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	public byte[] visitClass(ClassDefinition definition) {
 		//Classes will always be created in a new File/Class
 
-        final Type superType;
-        if (definition.getSuperType() == null)
-            superType = Type.getType(Object.class);
-        else
-            superType = Type.getType(definition.getSuperType().accept(JavaTypeClassVisitor.INSTANCE));
+		final Type superType;
+		if (definition.getSuperType() == null)
+			superType = Type.getType(Object.class);
+		else
+			superType = Type.getType(definition.getSuperType().accept(JavaTypeClassVisitor.INSTANCE));
 
 		JavaClassInfo toClass = new JavaClassInfo(definition.name);
 		JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -84,12 +90,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	@Override
 	public byte[] visitEnum(EnumDefinition definition) {
 		System.out.println("Compiling enum " + definition.name + " in " + definition.position.filename);
-		
-        final Type superType;
-        if (definition.getSuperType() == null)
-            superType = Type.getType(Object.class);
-        else
-            superType = Type.getType(definition.getSuperType().accept(JavaTypeClassVisitor.INSTANCE));
+
+		final Type superType;
+		if (definition.getSuperType() == null)
+			superType = Type.getType(Object.class);
+		else
+			superType = Type.getType(definition.getSuperType().accept(JavaTypeClassVisitor.INSTANCE));
 
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
@@ -178,6 +184,89 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitVariant(VariantDefinition variant) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+		final String variantName = variant.name;
+		final JavaClassInfo toClass = new JavaClassInfo(variantName);
+		final JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+
+		writer.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, variantName, null, "java/lang/Object", null);
+		writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "getDenominator", "()I", null, null).visitEnd();
+
+
+		final JavaMemberVisitor visitor = new JavaMemberVisitor(writer, toClass, variant);
+
+
+		final List<VariantDefinition.Option> options = variant.options;
+		for (int optionNo = 0, optionsSize = options.size(); optionNo < optionsSize; optionNo++) {
+			final VariantDefinition.Option option = options.get(optionNo);
+			option.setTag(JavaOptionInfoTag.class, new JavaOptionInfoTag(optionNo));
+		}
+
+		for (final IDefinitionMember member : variant.members) {
+			member.accept(visitor);
+		}
+
+
+
+
+		//Each option is one of the possible child classes
+		for (int optionNo = 0, optionsSize = options.size(); optionNo < optionsSize; ++optionNo) {
+			final VariantDefinition.Option option = options.get(optionNo);
+
+			final String optionClassName = variantName + "$" + option.name;
+			final JavaClassInfo optionClass = new JavaClassInfo(variantName);
+			final JavaClassWriter optionWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+
+
+			//Generic option signature
+			final String signature;
+			{
+				StringBuilder builder = new StringBuilder();
+				for (int i = 0; i < option.types.length; ++i) {
+					builder.append("<T").append(i).append(":");
+					builder.append(option.types[i].accept(JavaTypeVisitor.INSTANCE).getDescriptor());
+				}
+				builder.append(">");
+				builder.append("L").append(variantName).append(";");
+
+
+				signature = builder.toString();
+			}
+
+			optionWriter.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, optionClassName, signature, variantName, null);
+			final JavaMemberVisitor optionVisitor = new JavaMemberVisitor(optionWriter, optionClass, variant);
+
+			ITypeID[] types = option.types;
+			for (int i = 0; i < types.length; ++i) {
+				final ITypeID type = types[i];
+				final String internalName = type.accept(JavaTypeVisitor.INSTANCE).getInternalName();
+				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "Field" + i, internalName, "TT" + i + ";", null).visitEnd();
+			}
+
+
+			//Denominator for switch-cases
+			final JavaWriter getDenominator = new JavaWriter(optionWriter, new JavaMethodInfo(optionClass, "getDenominator", "()I", Modifiers.PUBLIC), null,null, null, "java/lang/Override");
+			getDenominator.start();
+			getDenominator.constant(optionNo);
+			getDenominator.returnInt();
+			getDenominator.end();
+
+
+
+			//Print the option files, won't be in production
+			optionVisitor.end();
+			optionWriter.visitEnd();
+			JavaModule.classes.put(optionClassName, optionWriter.toByteArray());
+			try (FileOutputStream out = new FileOutputStream(optionClassName + ".class")) {
+				out.write(optionWriter.toByteArray());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		visitor.end();
+		writer.visitEnd();
+
+
+		return writer.toByteArray();
 	}
 }

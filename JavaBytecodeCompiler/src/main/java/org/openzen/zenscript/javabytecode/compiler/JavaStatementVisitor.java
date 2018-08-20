@@ -142,7 +142,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	@Override
 	public Boolean visitReturn(ReturnStatement statement) {
 		statement.value.accept(expressionVisitor);
-		javaWriter.returnType(Type.getType(statement.value.type.accept(JavaTypeClassVisitor.INSTANCE)));
+		javaWriter.returnType(statement.value.type.accept(JavaTypeVisitor.INSTANCE));
 		return true;
 	}
 

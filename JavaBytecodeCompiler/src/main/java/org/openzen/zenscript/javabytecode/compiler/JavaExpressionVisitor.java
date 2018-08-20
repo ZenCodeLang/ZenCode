@@ -8,11 +8,15 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
-import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.AssocTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.implementations.IntRange;
 import org.openzen.zenscript.javabytecode.*;
@@ -155,7 +159,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaMethodInfo COLLECTION_SIZE = new JavaMethodInfo(COLLECTION, "size", "()I", PUBLIC);
 	private static final JavaMethodInfo COLLECTION_TOARRAY = new JavaMethodInfo(COLLECTION, "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;", PUBLIC);
 
-	private final JavaWriter javaWriter;
+	protected final JavaWriter javaWriter;
 	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
 
 	public JavaExpressionVisitor(JavaWriter javaWriter) {
@@ -1533,9 +1537,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-    @Override
-    public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
-        Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
+	@Override
+	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
+		Type type = expression.objectType.accept(JavaTypeVisitor.INSTANCE);
 		try {
 			type.getInternalName();
 		} catch (NullPointerException ex) {
@@ -1548,13 +1552,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			javaWriter.loadInt(2);
 		}
 
-        for (Expression argument : expression.arguments.arguments) {
-            argument.accept(this);
-        }
+		for (Expression argument : expression.arguments.arguments) {
+			argument.accept(this);
+		}
 		String internalName = type.getInternalName();
-        javaWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(expression.constructor.getHeader(), javaWriter.method.javaClass.isEnum));
-        return null;
-    }
+		javaWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(expression.constructor.getHeader(), javaWriter.method.javaClass.isEnum));
+		return null;
+	}
 
 	@Override
 	public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
@@ -1982,8 +1986,21 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		javaWriter.label(start);
 		expression.value.accept(this);
+
+
+		//TODO replace beforeSwitch visitor or similar
 		if (expression.value.type == BasicTypeID.STRING)
 			javaWriter.invokeVirtual(new JavaMethodInfo(new JavaClassInfo("java/lang/Object"), "hashCode", "()I", 0));
+
+		//TODO replace with beforeSwitch visitor or similar
+		for (MatchExpression.Case aCase : expression.cases) {
+			if (aCase.key instanceof VariantOptionSwitchValue) {
+				VariantOptionSwitchValue variantOptionSwitchValue = (VariantOptionSwitchValue) aCase.key;
+				javaWriter.invokeVirtual(new JavaMethodInfo(new JavaClassInfo(variantOptionSwitchValue.option.getName()), "getDenominator", "()I", 0));
+				break;
+			}
+		}
+
 
 		final boolean hasNoDefault = hasNoDefault(expression);
 
@@ -2011,12 +2028,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.label(defaultLabel);
 			}
 			//switchCase.value.body.setTag(MatchExpression.class, expression);
-			switchCase.value.accept(this);
+			switchCase.value.accept(new MatchExpressionVisitor(this.javaWriter));
 			javaWriter.goTo(end);
 		}
 
 		if (hasNoDefault) {
 			javaWriter.label(defaultLabel);
+			if (Object.class.isAssignableFrom(expression.type.accept(JavaTypeClassVisitor.INSTANCE)))
+				javaWriter.aConstNull();
+			else
+				javaWriter.iConst0();
 		}
 
 		javaWriter.label(end);
@@ -2327,7 +2348,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 
 		//i.e. if it was a primitive
-		if(info != null)
+		if (info != null)
 			javaWriter.invokeSpecial(info);
 		return null;
 	}
@@ -2397,5 +2418,28 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			getJavaWriter().getField(fieldInfo);
 		}
 		return true;
+	}
+
+
+	private static final class MatchExpressionVisitor extends JavaExpressionVisitor {
+		public MatchExpressionVisitor(JavaWriter javaWriter) {
+			super(javaWriter);
+		}
+
+		@Override
+		public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
+			final Label label = new Label();
+			final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
+			if (tag != null) {
+				tag.end = label;
+				javaWriter.load(tag.type, tag.local);
+				javaWriter.label(label);
+				return null;
+			}
+
+			javaWriter.aConstNull();
+			return null;
+
+		}
 	}
 }

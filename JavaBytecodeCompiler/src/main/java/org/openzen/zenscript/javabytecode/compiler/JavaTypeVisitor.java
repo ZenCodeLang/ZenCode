@@ -40,7 +40,8 @@ public class JavaTypeVisitor implements ITypeVisitor<Type> {
 
 	@Override
 	public Type visitGeneric(GenericTypeID generic) {
-		return Type.getType(generic.accept(JavaTypeClassVisitor.INSTANCE));
+		final Class<?> clazz = generic.accept(JavaTypeClassVisitor.INSTANCE);
+		return Type.getType(clazz == null ? Object.class : clazz);
 	}
 
 	@Override
