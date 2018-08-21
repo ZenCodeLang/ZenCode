@@ -134,40 +134,39 @@ public class LocalTarget implements IDETarget {
 	}
 	
 	private boolean compileDependencies(ModuleLoader loader, ZenCodeCompiler compiler, Set<String> compiledModules, Stack<String> compilingModules, SemanticModule module, Consumer<ValidationLogEntry> logger) {
-		for (String dependency : module.dependencies) {
-			if (compiledModules.contains(dependency))
+		for (SemanticModule dependency : module.dependencies) {
+			if (compiledModules.contains(dependency.name))
 				continue;
-			compiledModules.add(dependency);
+			compiledModules.add(dependency.name);
 			System.out.println("== Compiling module " + dependency + " ==");
 			
-			if (compilingModules.contains(dependency)) {
+			if (compilingModules.contains(dependency.name)) {
 				StringBuilder message = new StringBuilder("Circular dependency:\n");
 				for (String s : compilingModules)
 					message.append("    ").append(s).append("\n");
 				
 				throw new IllegalStateException(message.toString());
 			}
-			compilingModules.push(dependency);
+			compilingModules.push(dependency.name);
 			
-			SemanticModule dependencyModule = loader.getModule(dependency);
-			if (!dependencyModule.isValid()) {
+			if (!dependency.isValid()) {
 				compilingModules.pop();
 				return false;
 			}
 			
-			dependencyModule = dependencyModule.normalize();
-			dependencyModule.validate(logger);
-			if (!dependencyModule.isValid()) {
+			dependency = dependency.normalize();
+			dependency.validate(logger);
+			if (!dependency.isValid()) {
 				compilingModules.pop();
 				return false;
 			}
 			
-			if (!compileDependencies(loader, compiler, compiledModules, compilingModules, dependencyModule, logger)) {
+			if (!compileDependencies(loader, compiler, compiledModules, compilingModules, dependency, logger)) {
 				compilingModules.pop();
 				return false;
 			}
 			
-			dependencyModule.compile(compiler);
+			dependency.compile(compiler);
 			compilingModules.pop();
 		}
 		

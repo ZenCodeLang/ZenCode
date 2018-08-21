@@ -89,7 +89,7 @@ public class Module {
 	
 	public static SemanticModule compileSyntaxToSemantic(
 			String name,
-			String[] dependencies,
+			SemanticModule[] dependencies,
 			CompilingPackage pkg,
 			ParsedFile[] files,
 			ModuleSpace registry,

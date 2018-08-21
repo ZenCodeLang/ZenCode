@@ -5,6 +5,10 @@
  */
 package org.openzen.zenscript.javabytecode;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zencode.shared.SourceFile;
@@ -32,13 +36,15 @@ public class JavaCompiler implements ZenCodeCompiler {
 	private int generatedScriptBlockCounter = 0;
 	private boolean finished = false;
 	private JavaModule compiled = null;
+private final File jarFile;
 
-	public JavaCompiler() {
-		this(false);
+	public JavaCompiler(File jarFile) {
+		this(false, jarFile);
 	}
 
-	public JavaCompiler(boolean debug) {
+	public JavaCompiler(boolean debug, File jarFile) {
 		target = new JavaModule();
+this.jarFile = jarFile;
 
 		scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
@@ -96,7 +102,11 @@ public class JavaCompiler implements ZenCodeCompiler {
 
 	@Override
 	public void finish() {
-		finishAndGetModule();
+		JavaModule module = finishAndGetModule();
+
+		if (jarFile != null) {
+			// TODO: write module to a Jar file
+		}
 	}
 
 	@Override
@@ -104,7 +114,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 		if (compiled == null)
 			throw new IllegalStateException("Not yet built!");
 
-
+// TODO: execute this
 	}
 
 	public JavaModule finishAndGetModule() {

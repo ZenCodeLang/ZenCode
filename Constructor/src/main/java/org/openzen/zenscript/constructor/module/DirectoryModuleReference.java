@@ -71,15 +71,20 @@ public class DirectoryModuleReference implements ModuleReference {
 
 			// TODO: annotation type registration
 			ModuleSpace space = new ModuleSpace(unit, new ArrayList<>());
-			for (String dependencyName : dependencyNames)
-				space.addModule(dependencyName, loader.getModule(dependencyName));
+			SemanticModule[] dependencies = new SemanticModule[dependencyNames.size()];
+			for (int i = 0; i < dependencies.length; i++) {
+				String dependencyName = dependencyNames.get(i);
+				SemanticModule module = loader.getModule(dependencyName);
+				dependencies[i] = module;
+				space.addModule(dependencyName, module);
+			}
 
 			Module module = new Module(moduleName, directory, jsonFile, exceptionLogger);
 			ZSPackage pkg = isStdlib ? unit.globalTypeRegistry.stdlib : new ZSPackage(null, module.packageName);
 			CompilingPackage compilingPackage = new CompilingPackage(pkg);
 			
 			ParsedFile[] parsedFiles = module.parse(compilingPackage);
-			SemanticModule result = Module.compileSyntaxToSemantic(module.name, module.dependencies, compilingPackage, parsedFiles, space, exceptionLogger);
+			SemanticModule result = Module.compileSyntaxToSemantic(module.name, dependencies, compilingPackage, parsedFiles, space, exceptionLogger);
 			
 			JSONObject globals = json.optJSONObject("globals");
 			if (globals != null) {

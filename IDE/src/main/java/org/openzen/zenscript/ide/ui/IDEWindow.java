@@ -25,6 +25,7 @@ import org.openzen.zenscript.ide.ui.view.output.OutputLine;
  */
 public class IDEWindow {
 	private final DevelopmentHost host;
+	private final String target;
 	
 	public final IDEAspectBar aspectBar;
 	public final IDEDockWindow dockWindow;
@@ -33,8 +34,9 @@ public class IDEWindow {
 	
 	public IDEAspectToolbar projectToolbar;
 	
-	public IDEWindow(DevelopmentHost host) {
+	public IDEWindow(DevelopmentHost host, String target) {
 		this.host = host;
+		this.target = target;
 		
 		aspectBar = new IDEAspectBar();
 		dockWindow = new IDEDockWindow();
@@ -42,8 +44,9 @@ public class IDEWindow {
 		init();
 	}
 	
-	public IDEWindow(DevelopmentHost host, IDEAspectBar aspectBar, IDEDockWindow dockWindow, IDEStatusBar statusBar) {
+	public IDEWindow(DevelopmentHost host, IDEAspectBar aspectBar, IDEDockWindow dockWindow, IDEStatusBar statusBar, String target) {
 		this.host = host;
+		this.target = target;
 		
 		this.aspectBar = aspectBar;
 		this.dockWindow = dockWindow;
@@ -63,13 +66,13 @@ public class IDEWindow {
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, new ImmutableLiveString("Build"), e -> {
 			output.clear();
 			for (IDETarget target : host.getTargets()) {
-				if (target.canBuild())
+				if (target.getName().equals(this.target) && target.canBuild())
 					target.build(line -> output.add(line));
 			}
 		}));
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, PlayIcon.GREEN, new ImmutableLiveString("Run"), e -> {
 			for (IDETarget target : host.getTargets()) {
-				if (target.canRun())
+				if (target.getName().equals(this.target) && target.canRun())
 					target.run(line -> output.add(line));
 			}
 		}));
