@@ -35,6 +35,12 @@ public class FunctionScope extends StatementScope {
 	public FunctionScope(BaseScope outer, FunctionHeader header) {
 		this.outer = outer;
 		this.header = header;
+		
+		if (outer.getLocalTypeParameters() == null)
+			throw new NullPointerException();
+		if (header == null)
+			throw new NullPointerException();
+		
 		typeParameterMap = outer.getLocalTypeParameters().getInner(outer.getTypeRegistry(), header.typeParameters);
 	}
 	

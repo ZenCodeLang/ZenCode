@@ -27,7 +27,7 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
 /**
@@ -38,7 +38,7 @@ public class JavaSourceSyntheticHelperGenerator {
 	private final File directory;
 	private final JavaSourceFormattingSettings settings;
 	private final Map<String, List<String>> members = new HashMap<>();
-	private final JavaSourceClass arrayHelpers = new JavaSourceClass("zsynthetic", "ArrayHelpers");
+	private final JavaClass arrayHelpers = new JavaClass("zsynthetic", "ArrayHelpers", JavaClass.Kind.CLASS);
 	private final Map<ArrayKind, JavaSourceMethod> existingContains = new HashMap<>();
 	private final Map<ArrayKind, JavaSourceMethod> existingIndexOf = new HashMap<>();
 	
@@ -115,7 +115,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		}
 	}
 	
-	private void addMember(JavaSourceClass className, String content) {
+	private void addMember(JavaClass className, String content) {
 		if (!members.containsKey(className.getName()))
 			members.put(className.getName(), new ArrayList<>());
 		

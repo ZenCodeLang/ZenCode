@@ -5,20 +5,19 @@
  */
 package org.openzen.zenscript.javabytecode;
 
+import org.objectweb.asm.Type;
 import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaFieldInfo {
-	public final JavaClass javaClass;
-	public final String name;
-	public final String signature;
+public class JavaCompileUtils {
+	private JavaCompileUtils() {}
 	
-	public JavaFieldInfo(JavaClass javaClass, String name, String signature) {
-		this.javaClass = javaClass;
-		this.name = name;
-		this.signature = signature;
+	public static JavaClass get(Class<?> cls) {
+		return JavaClass.fromInternalName(
+				Type.getInternalName(cls),
+				cls.isInterface() ? JavaClass.Kind.INTERFACE : (cls.isEnum() ? JavaClass.Kind.ENUM : JavaClass.Kind.CLASS));
 	}
 }

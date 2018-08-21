@@ -212,7 +212,7 @@ public class ParsedFile {
 				statements.add(statement.compile(statementScope));
 			}
 			
-			ScriptBlock block = new ScriptBlock(statements);
+			ScriptBlock block = new ScriptBlock(modulePackage.getPackage(), statements);
 			block.setTag(SourceFile.class, file);
 			block.setTag(WhitespacePostComment.class, postComment);
 			scripts.add(block);

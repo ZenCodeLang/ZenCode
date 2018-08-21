@@ -27,7 +27,7 @@ import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
 import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
@@ -41,13 +41,13 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 	
 	private final JavaSourcePrepareDefinitionVisitor definitionPreparer;
 	private final String filename;
-	private final JavaSourceClass cls;
+	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
 	
 	public JavaSourcePrepareClassMethodVisitor(
 			JavaSourcePrepareDefinitionVisitor definitionPreparer,
 			String filename,
-			JavaSourceClass cls,
+			JavaClass cls,
 			JavaNativeClass nativeClass,
 			boolean startsEmpty) {
 		this.definitionPreparer = definitionPreparer;
@@ -150,7 +150,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 			
 			cls.empty = false;
 			
-			JavaSourceClass implementationClass = new JavaSourceClass(cls, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation");
+			JavaClass implementationClass = new JavaClass(cls, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation", JavaClass.Kind.CLASS);
 			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
 			
 			JavaSourcePrepareClassMethodVisitor visitor = new JavaSourcePrepareClassMethodVisitor(definitionPreparer, filename, implementationClass, null, true);

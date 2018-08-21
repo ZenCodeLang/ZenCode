@@ -12,7 +12,7 @@ import org.openzen.zenscript.javasource.JavaSourceObjectTypeVisitor;
 import org.openzen.zenscript.javasource.JavaSourceSyntheticHelperGenerator;
 import org.openzen.zenscript.javasource.JavaSourceSyntheticTypeGenerator;
 import org.openzen.zenscript.javasource.JavaSourceTypeVisitor;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
@@ -22,7 +22,7 @@ public class JavaSourceFileScope {
 	public final JavaSourceImporter importer;
 	public final JavaSourceSyntheticTypeGenerator typeGenerator;
 	public final JavaSourceSyntheticHelperGenerator helperGenerator;
-	public final JavaSourceClass cls;
+	public final JavaClass cls;
 	public final JavaSourceTypeVisitor typeVisitor;
 	public final JavaSourceObjectTypeVisitor objectTypeVisitor;
 	public final TypeScope semanticScope;
@@ -33,7 +33,7 @@ public class JavaSourceFileScope {
 			JavaSourceImporter importer, 
 			JavaSourceSyntheticTypeGenerator typeGenerator,
 			JavaSourceSyntheticHelperGenerator helperGenerator,
-			JavaSourceClass cls,
+			JavaClass cls,
 			TypeScope semanticScope,
 			boolean isInterface,
 			ITypeID thisType)
@@ -54,7 +54,7 @@ public class JavaSourceFileScope {
 		return type.accept(typeVisitor);
 	}
 	
-	public String type(ITypeID type, JavaSourceClass rename) {
+	public String type(ITypeID type, JavaClass rename) {
 		return type.accept(new JavaSourceTypeVisitor(importer, typeGenerator, rename));
 	}
 }

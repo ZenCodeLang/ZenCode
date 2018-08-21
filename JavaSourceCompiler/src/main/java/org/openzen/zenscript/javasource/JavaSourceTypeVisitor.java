@@ -5,11 +5,9 @@
  */
 package org.openzen.zenscript.javasource;
 
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -18,31 +16,26 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParameterBoundVisitor<String> {
-	private static final JavaSourceClass MAP = new JavaSourceClass("java.util", "Map");
-	private static final JavaSourceClass HASHMAP = new JavaSourceClass("java.util", "HashMap");
-	private static final JavaSourceClass ITERATOR = new JavaSourceClass("java.util", "Iterator");
-	
 	public final JavaSourceImporter importer;
 	public final JavaSourceSyntheticTypeGenerator typeGenerator;
 	public final JavaSourceObjectTypeVisitor objectTypeVisitor;
-	public final JavaSourceClass cls;
+	public final JavaClass cls;
 	
 	public JavaSourceTypeVisitor(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator) {
 		this(importer, typeGenerator, null);
 	}
 	
-	public JavaSourceTypeVisitor(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator, JavaSourceClass cls) {
+	public JavaSourceTypeVisitor(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator, JavaClass cls) {
 		this.importer = importer;
 		this.typeGenerator = typeGenerator;
 		this.cls = cls;
@@ -88,19 +81,19 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 
 	@Override
 	public String visitAssoc(AssocTypeID assoc) {
-		String map = importer.importType(MAP);
+		String map = importer.importType(JavaClass.MAP);
 		return map + "<" + assoc.keyType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator)) + ", " + assoc.valueType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator)) + ">";
 	}
 
 	@Override
 	public String visitGenericMap(GenericMapTypeID map) {
-		return importer.importType(MAP) + "<Class<?>, Object>";
+		return importer.importType(JavaClass.MAP) + "<Class<?>, Object>";
 	}
 
 	@Override
 	public String visitIterator(IteratorTypeID iterator) {
 		if (iterator.iteratorTypes.length == 1) {
-			return importer.importType(ITERATOR) + "<" + iterator.iteratorTypes[0].accept(objectTypeVisitor) + '>';
+			return importer.importType(JavaClass.ITERATOR) + "<" + iterator.iteratorTypes[0].accept(objectTypeVisitor) + '>';
 		} else {
 			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 		}
@@ -131,7 +124,7 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 		return result.toString();
 	}
 	
-	private void format(StringBuilder output, DefinitionTypeID type, JavaSourceClass cls, boolean isStatic) {
+	private void format(StringBuilder output, DefinitionTypeID type, JavaClass cls, boolean isStatic) {
 		if (type.outer != null) {
 			format(output, type.outer, null, type.definition.isStatic() || type.definition.isInterface());
 			output.append(".");

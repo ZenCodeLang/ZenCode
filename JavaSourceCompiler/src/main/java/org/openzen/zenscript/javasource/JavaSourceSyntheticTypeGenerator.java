@@ -16,12 +16,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
@@ -35,8 +34,6 @@ public class JavaSourceSyntheticTypeGenerator {
 	public JavaSourceSyntheticTypeGenerator(File directory, JavaSourceFormattingSettings settings) {
 		this.directory = new File(directory, "zsynthetic");
 		this.settings = settings;
-		
-		
 	}
 	
 	public JavaSynthesizedClass createFunction(JavaSourceTypeVisitor typeFormatter, FunctionTypeID function) {
@@ -45,7 +42,7 @@ public class JavaSourceSyntheticTypeGenerator {
 			return functions.get(signature).withTypeParameters(extractTypeParameters(function));
 		
 		String className = "Function" + signature;
-		JavaSourceClass cls = new JavaSourceClass("zsynthetic", className);
+		JavaClass cls = new JavaClass("zsynthetic", className, JavaClass.Kind.INTERFACE);
 		JavaSynthesizedClass result = new JavaSynthesizedClass(cls, extractTypeParameters(function));
 		functions.put(signature, result);
 		
@@ -92,9 +89,9 @@ public class JavaSourceSyntheticTypeGenerator {
 		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
 			writer.write("package zsynthetic;\n");
 			
-			JavaSourceClass[] imports = importer.getUsedImports();
+			JavaClass[] imports = importer.getUsedImports();
 			if (imports.length > 0) {
-				for (JavaSourceClass import_ : imports) {
+				for (JavaClass import_ : imports) {
 					if (import_.pkg.equals("java.lang"))
 						continue;
 					
@@ -112,13 +109,6 @@ public class JavaSourceSyntheticTypeGenerator {
 			ex.printStackTrace();
 		}
 		return result;
-	}
-	
-	private String createFunctionClassName(FunctionTypeID function) {
-		StringBuilder className = new StringBuilder();
-		className.append("Function");
-		className.append(functions.size() + 1); // TODO: create more meaningful names
-		return className.toString();
 	}
 	
 	private TypeParameter[] extractTypeParameters(ITypeID type) {

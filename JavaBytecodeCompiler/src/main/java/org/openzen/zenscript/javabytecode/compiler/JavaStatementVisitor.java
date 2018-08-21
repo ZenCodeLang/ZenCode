@@ -4,12 +4,12 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openzen.zenscript.javashared.JavaClass;
 
 public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     private final JavaWriter javaWriter;
@@ -162,7 +162,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         javaWriter.label(start);
         statement.value.accept(expressionVisitor);
         if (statement.value.type == BasicTypeID.STRING)
-            javaWriter.invokeVirtual(new JavaMethodInfo(new JavaClassInfo("java/lang/Object"), "hashCode", "()I", 0));
+            javaWriter.invokeVirtual(new JavaMethodInfo(JavaClass.OBJECT, "hashCode", "()I", 0));
         boolean out = false;
 
         final boolean hasNoDefault = hasNoDefault(statement);

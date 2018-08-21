@@ -7,23 +7,21 @@ import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.javabytecode.compiler.*;
+import org.openzen.zenscript.javashared.JavaClass;
 
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
-	private static final JavaClassInfo T_CLASS = new JavaClassInfo("java/lang/Class");
 	private static final JavaMethodInfo CLASS_FORNAME = new JavaMethodInfo(
-			T_CLASS,
+			JavaClass.CLASS,
 			"forName",
 			"(Ljava/lang/String;)Ljava/lang/Class;",
 			Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 	
-	private static final JavaClassInfo T_ENUM = new JavaClassInfo("java/lang/Enum");
 	private static final JavaMethodInfo ENUM_VALUEOF = new JavaMethodInfo(
-			T_ENUM,
+			JavaClass.ENUM,
 			"valueOf",
 			"(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;",
 			Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
@@ -45,14 +43,13 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         else
             superType = Type.getType(definition.getSuperType().accept(JavaTypeClassVisitor.INSTANCE));
 
-		JavaClassInfo toClass = new JavaClassInfo(definition.name);
+		JavaClass toClass = new JavaClass(definition.pkg.fullName, definition.name, JavaClass.Kind.CLASS);
         JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
         //TODO: Calculate signature from generic parameters
         //TODO: Interfaces?
         String signature = null;
-
-
+		
         writer.visit(Opcodes.V1_8, definition.modifiers, definition.name, signature, superType.getInternalName(), null);
 		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(writer, toClass, definition); 
         for (IDefinitionMember member : definition.members) {
@@ -65,7 +62,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
     @Override
     public byte[] visitInterface(InterfaceDefinition definition) {
-		JavaClassInfo toClass = new JavaClassInfo(definition.name);
+		JavaClass toClass = new JavaClass(definition.pkg.fullName, definition.name, JavaClass.Kind.INTERFACE);
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
         //TODO: Calculate signature from generic parameters
@@ -95,7 +92,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
         writer.visit(Opcodes.V1_8, Opcodes.ACC_ENUM | Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER | Opcodes.ACC_FINAL, definition.name, "Ljava/lang/Enum<L" + definition.name + ";>;", superType.getInternalName(), null);
 
-		JavaClassInfo toClass = new JavaClassInfo(definition.name, true);
+		JavaClass toClass = new JavaClass(definition.pkg.fullName, definition.name, JavaClass.Kind.ENUM);
 
         //Enum Stuff(required!)
         writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL | Opcodes.ACC_SYNTHETIC, "$VALUES", "[L" + definition.name + ";", null, null).visitEnd();
@@ -105,7 +102,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
             member.accept(visitor);
         }
 		
-		JavaClassInfo arrayClass = new JavaClassInfo("[L" + definition.name + ";");
+		JavaClass arrayClass = JavaClass.fromInternalName("[L" + definition.name + ";", JavaClass.Kind.ARRAY);
 		JavaMethodInfo arrayClone = new JavaMethodInfo(arrayClass, "clone", "()Ljava/lang/Object;", Opcodes.ACC_PUBLIC);
 
 		JavaMethodInfo valuesMethodInfo = new JavaMethodInfo(toClass, "values", "()[L" + definition.name + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
@@ -143,7 +140,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		
         final String signature = CompilerUtils.calcSign(definition.header, false);
 		
-		final JavaClassInfo toClass = new JavaClassInfo(CompilerUtils.calcClasName(definition.position));
+		final JavaClass toClass = new JavaClass(definition.pkg.fullName, CompilerUtils.calcClasName(definition.position), JavaClass.Kind.CLASS);
 		final JavaMethodInfo methodInfo = new JavaMethodInfo(toClass, definition.name, CompilerUtils.calcDesc(definition.header, false), CompilerUtils.calcAccess(definition.modifiers) | Opcodes.ACC_STATIC);
 
 		final JavaWriter writer = new JavaWriter(outerWriter, true, methodInfo, definition, signature, null);

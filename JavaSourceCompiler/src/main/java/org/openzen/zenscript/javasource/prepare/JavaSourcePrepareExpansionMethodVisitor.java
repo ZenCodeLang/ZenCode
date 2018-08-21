@@ -26,7 +26,7 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
 import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
@@ -38,10 +38,10 @@ import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
 	
-	private final JavaSourceClass cls;
+	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
 	
-	public JavaSourcePrepareExpansionMethodVisitor(JavaSourceClass cls, JavaNativeClass nativeClass) {
+	public JavaSourcePrepareExpansionMethodVisitor(JavaClass cls, JavaNativeClass nativeClass) {
 		this.cls = cls;
 		this.nativeClass = nativeClass;
 		cls.empty = true;
@@ -126,7 +126,7 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		JavaSourceClass implementationClass = new JavaSourceClass(cls, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation");
+		JavaClass implementationClass = new JavaClass(cls, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation", JavaClass.Kind.CLASS);
 		member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
 		for (IDefinitionMember implementedMember : member.members)
 			implementedMember.accept(this);

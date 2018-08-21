@@ -20,7 +20,7 @@ import org.openzen.zenscript.javasource.ExpressionHoistingChecker;
 import org.openzen.zenscript.javasource.JavaSourceFormattingSettings;
 import org.openzen.zenscript.javasource.JavaSourceExpressionFormatter;
 import org.openzen.zenscript.javasource.JavaSourceStatementFormatter;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
@@ -76,11 +76,11 @@ public class JavaSourceStatementScope {
 		return fileScope.type(type);
 	}
 	
-	public String type(ITypeID type, JavaSourceClass renamed) {
+	public String type(ITypeID type, JavaClass renamed) {
 		return fileScope.type(type, renamed);
 	}
 	
-	public String type(JavaSourceClass cls) {
+	public String type(JavaClass cls) {
 		return fileScope.importer.importType(cls);
 	}
 	

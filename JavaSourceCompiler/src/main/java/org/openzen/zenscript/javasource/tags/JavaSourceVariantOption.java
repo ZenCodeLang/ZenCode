@@ -5,15 +5,17 @@
  */
 package org.openzen.zenscript.javasource.tags;
 
+import org.openzen.zenscript.javashared.JavaClass;
+
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSourceVariantOption {
-	public final JavaSourceClass variantClass;
-	public final JavaSourceClass variantOptionClass;
+	public final JavaClass variantClass;
+	public final JavaClass variantOptionClass;
 	
-	public JavaSourceVariantOption(JavaSourceClass variantClass, JavaSourceClass variantOptionClass) {
+	public JavaSourceVariantOption(JavaClass variantClass, JavaClass variantOptionClass) {
 		this.variantClass = variantClass;
 		this.variantOptionClass = variantOptionClass;
 	}

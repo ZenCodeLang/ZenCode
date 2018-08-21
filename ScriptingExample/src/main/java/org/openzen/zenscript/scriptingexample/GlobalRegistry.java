@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.scriptingexample;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +18,6 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.member.FieldMember;
@@ -31,11 +29,10 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.javabytecode.JavaBytecodeImplementation;
-import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaFieldInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
@@ -48,11 +45,11 @@ public class GlobalRegistry {
 	private final ZSPackage javaLang = rootPackage.getOrCreatePackage("java").getOrCreatePackage("lang");
 	
 	public GlobalRegistry(ZSPackage globals) {
-		JavaClassInfo jPrintStream = new JavaClassInfo("java/io/PrintStream");
+		JavaClass jPrintStream = new JavaClass("java.io", "PrintStream", JavaClass.Kind.CLASS);
 		JavaMethodInfo printstreamPrintln = new JavaMethodInfo(jPrintStream, "println", "(Ljava/lang/String;)V", Opcodes.ACC_PUBLIC);
 		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, printstreamPrintln);
 		
-		JavaClassInfo jSystem = new JavaClassInfo("java/lang/System");
+		JavaClass jSystem = new JavaClass("java.lang", "System", JavaClass.Kind.CLASS);
 		SYSTEM_OUT.setTag(JavaFieldInfo.class, new JavaFieldInfo(jSystem, "out", "Ljava/io/PrintStream;"));
 	}
 	
@@ -64,7 +61,7 @@ public class GlobalRegistry {
 			// the visitors can then during compilation check if a method is an instance of NativeMethodMember and treat it accordingly
 			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("package");
 			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, packageMyPackage, "MyClass", Modifiers.PUBLIC, null);
-			JavaClassInfo myClassInfo = new JavaClassInfo("my/test/MyClass");
+			JavaClass myClassInfo = new JavaClass("my.test", "MyClass", JavaClass.Kind.CLASS);
 			
 			MethodMember member = new MethodMember(CodePosition.NATIVE, myClassDefinition, Modifiers.PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING), null);
 			member.setTag(JavaMethodInfo.class, new JavaMethodInfo(myClassInfo, "test", "()Ljava/lang/String;", Opcodes.ACC_PUBLIC));

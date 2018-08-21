@@ -5,15 +5,17 @@
  */
 package org.openzen.zenscript.javasource.tags;
 
+import org.openzen.zenscript.javashared.JavaClass;
+
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSourceField {
-	public final JavaSourceClass cls;
+	public final JavaClass cls;
 	public final String name;
 	
-	public JavaSourceField(JavaSourceClass cls, String name) {
+	public JavaSourceField(JavaClass cls, String name) {
 		this.cls = cls;
 		this.name = name;
 	}

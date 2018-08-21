@@ -24,28 +24,29 @@ import org.openzen.zenscript.javabytecode.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import org.openzen.zenscript.javashared.JavaClass;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final int PUBLIC = Opcodes.ACC_PUBLIC;
 	private static final int STATIC = Opcodes.ACC_STATIC;
 	private static final int PUBLIC_STATIC = PUBLIC | STATIC;
 
-	private static final JavaClassInfo BOOLEAN = JavaClassInfo.get(Boolean.class);
+	private static final JavaClass BOOLEAN = JavaCompileUtils.get(Boolean.class);
 	private static final JavaMethodInfo BOOLEAN_PARSE = new JavaMethodInfo(BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z", PUBLIC_STATIC);
 	private static final JavaMethodInfo BOOLEAN_TO_STRING = new JavaMethodInfo(BOOLEAN, "toString", "(Z)Ljava/lang/String;", PUBLIC_STATIC);
-	private static final JavaClassInfo BYTE = JavaClassInfo.get(Byte.class);
+	private static final JavaClass BYTE = JavaCompileUtils.get(Byte.class);
 	private static final JavaMethodInfo BYTE_PARSE = new JavaMethodInfo(BYTE, "parseByte", "(Ljava/lang/String;)B", PUBLIC_STATIC);
 	private static final JavaMethodInfo BYTE_PARSE_WITH_BASE = new JavaMethodInfo(BYTE, "parseByte", "(Ljava/lang/String;I)B", PUBLIC_STATIC);
 	private static final JavaFieldInfo BYTE_MIN_VALUE = new JavaFieldInfo(BYTE, "MIN_VALUE", "B");
 	private static final JavaFieldInfo BYTE_MAX_VALUE = new JavaFieldInfo(BYTE, "MAX_VALUE", "B");
 	private static final JavaMethodInfo BYTE_TO_STRING = new JavaMethodInfo(BYTE, "toString", "(B)Ljava/lang/String;", PUBLIC_STATIC);
-	private static final JavaClassInfo SHORT = JavaClassInfo.get(Short.class);
+	private static final JavaClass SHORT = JavaCompileUtils.get(Short.class);
 	private static final JavaMethodInfo SHORT_PARSE = new JavaMethodInfo(SHORT, "parseShort", "(Ljava/lang/String;)S", PUBLIC_STATIC);
 	private static final JavaMethodInfo SHORT_PARSE_WITH_BASE = new JavaMethodInfo(SHORT, "parseShort", "(Ljava/lang/String;I)S", PUBLIC_STATIC);
 	private static final JavaFieldInfo SHORT_MIN_VALUE = new JavaFieldInfo(SHORT, "MIN_VALUE", "S");
 	private static final JavaFieldInfo SHORT_MAX_VALUE = new JavaFieldInfo(SHORT, "MAX_VALUE", "S");
 	private static final JavaMethodInfo SHORT_TO_STRING = new JavaMethodInfo(SHORT, "toString", "(S)Ljava/lang/String;", PUBLIC_STATIC);
-	private static final JavaClassInfo INTEGER = JavaClassInfo.get(Integer.class);
+	private static final JavaClass INTEGER = JavaCompileUtils.get(Integer.class);
 	private static final JavaMethodInfo INTEGER_COMPARE_UNSIGNED = new JavaMethodInfo(INTEGER, "compareUnsigned", "(II)I", PUBLIC_STATIC);
 	private static final JavaMethodInfo INTEGER_DIVIDE_UNSIGNED = new JavaMethodInfo(INTEGER, "divideUnsigned", "(II)I", PUBLIC_STATIC);
 	private static final JavaMethodInfo INTEGER_REMAINDER_UNSIGNED = new JavaMethodInfo(INTEGER, "remainderUnsigned", "(II)I", PUBLIC_STATIC);
@@ -62,7 +63,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaFieldInfo INTEGER_MAX_VALUE = new JavaFieldInfo(INTEGER, "MAX_VALUE", "I");
 	private static final JavaMethodInfo INTEGER_TO_STRING = new JavaMethodInfo(INTEGER, "toString", "(I)Ljava/lang/String;", PUBLIC_STATIC);
 	private static final JavaMethodInfo INTEGER_TO_UNSIGNED_STRING = new JavaMethodInfo(INTEGER, "toUnsignedString", "(I)Ljava/lang/String;", PUBLIC_STATIC);
-	private static final JavaClassInfo LONG = new JavaClassInfo(Type.getInternalName(Long.class));
+	private static final JavaClass LONG = JavaCompileUtils.get(Long.class);
 	private static final JavaMethodInfo LONG_COMPARE = new JavaMethodInfo(LONG, "compare", "(JJ)I", PUBLIC_STATIC);
 	private static final JavaMethodInfo LONG_COMPARE_UNSIGNED = new JavaMethodInfo(LONG, "compareUnsigned", "(JJ)I", PUBLIC_STATIC);
 	private static final JavaMethodInfo LONG_DIVIDE_UNSIGNED = new JavaMethodInfo(LONG, "divideUnsigned", "(JJ)J", PUBLIC_STATIC);
@@ -80,7 +81,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaFieldInfo LONG_MAX_VALUE = new JavaFieldInfo(LONG, "MAX_VALUE", "J");
 	private static final JavaMethodInfo LONG_TO_STRING = new JavaMethodInfo(LONG, "toString", "(J)Ljava/lang/String;", PUBLIC_STATIC);
 	private static final JavaMethodInfo LONG_TO_UNSIGNED_STRING = new JavaMethodInfo(LONG, "toUnsignedString", "(J)Ljava/lang/String;", PUBLIC_STATIC);
-	private static final JavaClassInfo FLOAT = new JavaClassInfo(Type.getInternalName(Float.class));
+	private static final JavaClass FLOAT = JavaCompileUtils.get(Float.class);
 	private static final JavaMethodInfo FLOAT_COMPARE = new JavaMethodInfo(FLOAT, "compare", "(FF)I", PUBLIC_STATIC);
 	private static final JavaMethodInfo FLOAT_PARSE = new JavaMethodInfo(FLOAT, "parseFloat", "(Ljava/lang/String;)F", PUBLIC_STATIC);
 	private static final JavaMethodInfo FLOAT_FROM_BITS = new JavaMethodInfo(FLOAT, "intBitsToFloat", "(I)F", PUBLIC_STATIC);
@@ -88,7 +89,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaFieldInfo FLOAT_MIN_VALUE = new JavaFieldInfo(FLOAT, "MIN_VALUE", "F");
 	private static final JavaFieldInfo FLOAT_MAX_VALUE = new JavaFieldInfo(FLOAT, "MAX_VALUE", "F");
 	private static final JavaMethodInfo FLOAT_TO_STRING = new JavaMethodInfo(FLOAT, "toString", "(F)Ljava/lang/String;", PUBLIC_STATIC);
-	private static final JavaClassInfo DOUBLE = new JavaClassInfo(Type.getInternalName(Double.class));
+	private static final JavaClass DOUBLE = JavaCompileUtils.get(Double.class);
 	private static final JavaMethodInfo DOUBLE_COMPARE = new JavaMethodInfo(DOUBLE, "compare", "(DD)I", PUBLIC_STATIC);
 	private static final JavaMethodInfo DOUBLE_PARSE = new JavaMethodInfo(DOUBLE, "parseDouble", "(Ljava/lang/String;)D", PUBLIC_STATIC);
 	private static final JavaMethodInfo DOUBLE_FROM_BITS = new JavaMethodInfo(DOUBLE, "longBitsToDouble", "(J)D", PUBLIC_STATIC);
@@ -96,13 +97,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaFieldInfo DOUBLE_MIN_VALUE = new JavaFieldInfo(DOUBLE, "MIN_VALUE", "D");
 	private static final JavaFieldInfo DOUBLE_MAX_VALUE = new JavaFieldInfo(DOUBLE, "MAX_VALUE", "D");
 	private static final JavaMethodInfo DOUBLE_TO_STRING = new JavaMethodInfo(DOUBLE, "toString", "(D)Ljava/lang/String;", PUBLIC_STATIC);
-	private static final JavaClassInfo CHARACTER = new JavaClassInfo(Type.getInternalName(Character.class));
+	private static final JavaClass CHARACTER = JavaCompileUtils.get(Character.class);
 	private static final JavaMethodInfo CHARACTER_TO_LOWER_CASE = new JavaMethodInfo(CHARACTER, "toLowerCase", "()C", PUBLIC);
 	private static final JavaMethodInfo CHARACTER_TO_UPPER_CASE = new JavaMethodInfo(CHARACTER, "toUpperCase", "()C", PUBLIC);
 	private static final JavaFieldInfo CHARACTER_MIN_VALUE = new JavaFieldInfo(CHARACTER, "MIN_VALUE", "C");
 	private static final JavaFieldInfo CHARACTER_MAX_VALUE = new JavaFieldInfo(CHARACTER, "MAX_VALUE", "C");
 	private static final JavaMethodInfo CHARACTER_TO_STRING = new JavaMethodInfo(CHARACTER, "toString", "(C)Ljava/lang/String;", PUBLIC_STATIC);
-	private static final JavaClassInfo STRING = new JavaClassInfo(Type.getInternalName(String.class));
+	private static final JavaClass STRING = JavaCompileUtils.get(String.class);
 	private static final JavaMethodInfo STRING_COMPARETO = new JavaMethodInfo(STRING, "compareTo", "(Ljava/lang/String;)I", PUBLIC);
 	private static final JavaMethodInfo STRING_CONCAT = new JavaMethodInfo(STRING, "concat", "(Ljava/lang/String;)Ljava/lang/String;", PUBLIC);
 	private static final JavaMethodInfo STRING_CHAR_AT = new JavaMethodInfo(STRING, "charAt", "(I)C", PUBLIC);
@@ -113,11 +114,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaMethodInfo STRING_LENGTH = new JavaMethodInfo(STRING, "length", "()I", PUBLIC);
 	private static final JavaMethodInfo STRING_CHARACTERS = new JavaMethodInfo(STRING, "toCharArray", "()[C", PUBLIC);
 	private static final JavaMethodInfo STRING_ISEMPTY = new JavaMethodInfo(STRING, "isEmpty", "()Z", PUBLIC);
-	private static final JavaClassInfo ENUM = new JavaClassInfo(Type.getInternalName(Enum.class));
+	private static final JavaClass ENUM = JavaCompileUtils.get(Enum.class);
 	private static final JavaMethodInfo ENUM_COMPARETO = new JavaMethodInfo(STRING, "compareTo", "(Ljava/lang/Enum;)I", PUBLIC);
 	private static final JavaMethodInfo ENUM_NAME = new JavaMethodInfo(STRING, "name", "()Ljava/lang/String;", PUBLIC);
 	private static final JavaMethodInfo ENUM_ORDINAL = new JavaMethodInfo(STRING, "ordinal", "()I", PUBLIC);
-	private static final JavaClassInfo MAP = new JavaClassInfo(Type.getInternalName(Map.class));
+	private static final JavaClass MAP = JavaCompileUtils.get(Map.class);
 	private static final JavaMethodInfo MAP_GET = new JavaMethodInfo(MAP, "get", "(Ljava/lang/Object;)Ljava/lang/Object;", PUBLIC);
 	private static final JavaMethodInfo MAP_PUT = new JavaMethodInfo(MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", PUBLIC);
 	private static final JavaMethodInfo MAP_CONTAINS_KEY = new JavaMethodInfo(MAP, "containsKey", "(Ljava/lang/Object;)Z", PUBLIC);
@@ -125,7 +126,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaMethodInfo MAP_ISEMPTY = new JavaMethodInfo(MAP, "isEmpty", "()Z", PUBLIC);
 	private static final JavaMethodInfo MAP_KEYS = new JavaMethodInfo(MAP, "keys", "()Ljava/lang/Object;", PUBLIC);
 	private static final JavaMethodInfo MAP_VALUES = new JavaMethodInfo(MAP, "values", "()Ljava/lang/Object;", PUBLIC);
-	private static final JavaClassInfo ARRAYS = new JavaClassInfo(Type.getInternalName(Arrays.class));
+	private static final JavaClass ARRAYS = JavaCompileUtils.get(Arrays.class);
 	private static final JavaMethodInfo ARRAYS_COPY_OF_RANGE_OBJECTS = new JavaMethodInfo(ARRAYS, "copyOfRange", "([Ljava/lang/Object;II)[Ljava/lang/Object;", PUBLIC_STATIC);
 	private static final JavaMethodInfo ARRAYS_COPY_OF_RANGE_BOOLS = new JavaMethodInfo(ARRAYS, "copyOfRange", "([ZII)[Z", PUBLIC_STATIC);
 	private static final JavaMethodInfo ARRAYS_COPY_OF_RANGE_BYTES = new JavaMethodInfo(ARRAYS, "copyOfRange", "([BII)[B", PUBLIC_STATIC);
@@ -153,9 +154,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaMethodInfo ARRAYS_HASHCODE_FLOATS = new JavaMethodInfo(ARRAYS, "hashCode", "([F)I", PUBLIC_STATIC);
 	private static final JavaMethodInfo ARRAYS_HASHCODE_DOUBLES = new JavaMethodInfo(ARRAYS, "hashCode", "([D)I", PUBLIC_STATIC);
 	private static final JavaMethodInfo ARRAYS_HASHCODE_CHARS = new JavaMethodInfo(ARRAYS, "hashCode", "([C)I", PUBLIC_STATIC);
-	private static final JavaClassInfo OBJECT = JavaClassInfo.get(Object.class);
+	private static final JavaClass OBJECT = JavaCompileUtils.get(Object.class);
 	private static final JavaMethodInfo OBJECT_HASHCODE = new JavaMethodInfo(OBJECT, "hashCode", "()I", PUBLIC);
-	private static final JavaClassInfo COLLECTION = JavaClassInfo.get(Collection.class);
+	private static final JavaClass COLLECTION = JavaCompileUtils.get(Collection.class);
 	private static final JavaMethodInfo COLLECTION_SIZE = new JavaMethodInfo(COLLECTION, "size", "()I", PUBLIC);
 	private static final JavaMethodInfo COLLECTION_TOARRAY = new JavaMethodInfo(COLLECTION, "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;", PUBLIC);
 
@@ -837,13 +838,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			}
 			case FUNCTION_CALL:
-				//expression.target.accept(this);
-				//for (Expression argument : expression.arguments.arguments) {
-				//	argument.accept(this);
-				//}
-				javaWriter.invokeInterface(new JavaMethodInfo(new JavaClassInfo(expression.target.type.accept(JavaTypeVisitor.INSTANCE).getInternalName()), "accept", CompilerUtils.calcSign(expression.instancedHeader, false), Opcodes.ACC_PUBLIC));
+				javaWriter.invokeInterface(
+						new JavaMethodInfo(
+								JavaClass.fromInternalName(expression.target.type.accept(JavaTypeVisitor.INSTANCE).getInternalName(), JavaClass.Kind.INTERFACE),
+								"accept",
+								CompilerUtils.calcSign(expression.instancedHeader, false),
+								Opcodes.ACC_PUBLIC));
 				break;
-				//throw new UnsupportedOperationException("Not yet supported!");
 			case AUTOOP_NOTEQUALS:
 				throw new UnsupportedOperationException("Not yet supported!");
 			default:
@@ -1425,8 +1426,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case ENUM_VALUES: {
 				DefinitionTypeID type = (DefinitionTypeID) expression.type;
-				JavaClassInfo cls = type.definition.getTag(JavaClassInfo.class);
-				javaWriter.invokeStatic(new JavaMethodInfo(cls, "values", "()[L" + cls.internalClassName + ";", PUBLIC_STATIC));
+				JavaClass cls = type.definition.getTag(JavaClass.class);
+				javaWriter.invokeStatic(new JavaMethodInfo(cls, "values", "()[L" + cls.internalName + ";", PUBLIC_STATIC));
 				break;
 			}
 			default:
@@ -1527,7 +1528,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		}
 
         javaWriter.loadObject(0);
-        if (javaWriter.method.javaClass.isEnum) {
+        if (javaWriter.method.javaClass.isEnum()) {
             javaWriter.loadObject(1);
             javaWriter.loadInt(2);
         }
@@ -1536,7 +1537,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
             argument.accept(this);
         }
 		String internalName = type.getInternalName();
-        javaWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(expression.constructor.getHeader(), javaWriter.method.javaClass.isEnum));
+        javaWriter.invokeSpecial(internalName, "<init>", CompilerUtils.calcDesc(expression.constructor.getHeader(), javaWriter.method.javaClass.isEnum()));
         return null;
     }
 
@@ -1962,7 +1963,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         javaWriter.label(start);
         expression.value.accept(this);
         if (expression.value.type == BasicTypeID.STRING)
-            javaWriter.invokeVirtual(new JavaMethodInfo(new JavaClassInfo("java/lang/Object"), "hashCode", "()I", 0));
+            javaWriter.invokeVirtual(new JavaMethodInfo(OBJECT, "hashCode", "()I", 0));
 
         final boolean hasNoDefault = hasNoDefault(expression);
 
@@ -2242,8 +2243,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case ENUM_VALUES: {
 				DefinitionTypeID type = (DefinitionTypeID) expression.type;
-				JavaClassInfo cls = type.definition.getTag(JavaClassInfo.class);
-				javaWriter.invokeStatic(new JavaMethodInfo(cls, "values", "()[L" + cls.internalClassName + ";", PUBLIC_STATIC));
+				JavaClass cls = type.definition.getTag(JavaClass.class);
+				javaWriter.invokeStatic(new JavaMethodInfo(cls, "values", "()[L" + cls.internalName + ";", PUBLIC_STATIC));
 				break;
 			}
 			default:
