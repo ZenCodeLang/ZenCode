@@ -29,7 +29,7 @@ import org.openzen.zenscript.validator.Validator;
  */
 public class SemanticModule {
 	public final String name;
-	public final String[] dependencies;
+	public final SemanticModule[] dependencies;
 	
 	private State state;
 	public final ZSPackage rootPackage;
@@ -44,7 +44,7 @@ public class SemanticModule {
 	
 	public SemanticModule(
 			String name,
-			String[] dependencies,
+			SemanticModule[] dependencies,
 			State state,
 			ZSPackage rootPackage,
 			ZSPackage modulePackage,

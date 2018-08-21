@@ -26,13 +26,13 @@ public class Main {
 		
 		Project project = new Project(directory);
 		DevelopmentHost host = new LocalProjectDevelopmentHost(project);
-		open(host);
+		open(host, "SharedJavaSource");
     }
 	
-	private static void open(DevelopmentHost host) {
+	public static void open(DevelopmentHost host, String target) {
 		IDEPropertyStore properties = host.getPropertyStore();
 		
-		IDEWindow window = new IDEWindow(host);
+		IDEWindow window = new IDEWindow(host, target);
 		WindowView root = new WindowView(window, host);
 		
 		IDEPropertyDirectory uiState = properties.getRoot().getSubdirectory("uiState");

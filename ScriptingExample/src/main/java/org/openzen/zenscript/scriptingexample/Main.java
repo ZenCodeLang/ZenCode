@@ -43,11 +43,11 @@ public class Main {
 		
 		ZSPackage pkg = new ZSPackage(null, "");
 		CompilingPackage compilingPkg = new CompilingPackage(pkg);
-		ParsedFile[] parsedFiles = parse(pkg, compilingPkg, inputFiles);
+		ParsedFile[] parsedFiles = parse(compilingPkg, inputFiles);
 		
 		ZSPackage global = new ZSPackage(null, "");
 		GlobalRegistry registry = new GlobalRegistry(global);
-		SemanticModule module = compileSyntaxToSemantic(pkg, compilingPkg, parsedFiles, registry);
+		SemanticModule module = compileSyntaxToSemantic(compilingPkg, parsedFiles, registry);
 		
 		//formatFiles(pkg, module);
 		
@@ -59,7 +59,7 @@ public class Main {
 		}
     }
 	
-	private static ParsedFile[] parse(ZSPackage pkg, CompilingPackage compilingPkg, File[] files) throws IOException {
+	private static ParsedFile[] parse(CompilingPackage compilingPkg, File[] files) throws IOException {
 		ParsedFile[] parsedFiles = new ParsedFile[files.length];
 		for (int i = 0; i < files.length; i++) {
 			parsedFiles[i] = ParsedFile.parse(compilingPkg, new TestBracketParser(), files[i]);
@@ -102,14 +102,14 @@ public class Main {
 		}
 	}
 	
-	private static SemanticModule compileSyntaxToSemantic(ZSPackage pkg, CompilingPackage compiling, ParsedFile[] files, GlobalRegistry registry) {
+	private static SemanticModule compileSyntaxToSemantic(CompilingPackage compiling, ParsedFile[] files, GlobalRegistry registry) {
 		ModuleSpace space = new ModuleSpace(new CompilationUnit(), new ArrayList<>());
 		for (Map.Entry<String, ISymbol> global : registry.collectGlobals().entrySet()) {
 			space.addGlobal(global.getKey(), global.getValue());
 		}
 		SemanticModule result = Module.compileSyntaxToSemantic(
 				"scripts",
-				new String[0],
+				new SemanticModule[0],
 				compiling,
 				files,
 				space,

@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javabytecode;
 
+import java.io.File;
 import org.json.JSONObject;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.Target;
@@ -16,17 +17,19 @@ import org.openzen.zenscript.compiler.Target;
 public class JavaBytecodeJarTarget implements Target {
 	private final String module;
 	private final String name;
+	private final File file;
 	private final boolean debugCompiler;
 	
 	public JavaBytecodeJarTarget(JSONObject definition) {
 		module = definition.getString("module");
-		name = definition.optString("name", "Java Bytecode: " + module);
+		name = definition.getString("name");
+		file = new File(definition.getString("output"));
 		debugCompiler = definition.optBoolean("debugCompiler", false);
 	}
 	
 	@Override
 	public JavaCompiler createCompiler(SemanticModule module) {
-		return new JavaCompiler(debugCompiler);
+		return new JavaCompiler(debugCompiler, file);
 	}
 
 	@Override

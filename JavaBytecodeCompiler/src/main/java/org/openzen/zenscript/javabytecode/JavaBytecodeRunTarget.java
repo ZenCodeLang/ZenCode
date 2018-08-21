@@ -20,13 +20,13 @@ public class JavaBytecodeRunTarget implements Target {
 	
 	public JavaBytecodeRunTarget(JSONObject definition) {
 		module = definition.getString("module");
-		name = definition.optString("name", "Java Run: " + module);
+		name = definition.getString("name");
 		debugCompiler = definition.optBoolean("debugCompiler", false);
 	}
 	
 	@Override
 	public JavaCompiler createCompiler(SemanticModule module) {
-		return new JavaCompiler(debugCompiler);
+		return new JavaCompiler(debugCompiler, null);
 	}
 
 	@Override
