@@ -17,4 +17,5 @@ dependencies {
 	compile 'org.ow2.asm:asm-debug-all:6.0_BETA'
 	compile project(':CodeModel')
 	compile project(':CompilerShared')
+	compile project(':JavaShared')
 }

@@ -35,7 +35,7 @@ import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javasource.prepare.JavaNativeClass;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
@@ -44,7 +44,7 @@ import org.openzen.zenscript.javasource.tags.JavaSourceClass;
 public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	private final String indent;
 	private final JavaSourceCompiler compiler;
-	private final JavaSourceClass cls;
+	private final JavaClass cls;
 	private final JavaSourceFile file;
 	private final JavaSourceFormattingSettings settings;
 	private final List<ExpansionDefinition> expansions;
@@ -54,7 +54,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	public JavaDefinitionVisitor(
 			String indent,
 			JavaSourceCompiler compiler,
-			JavaSourceClass cls,
+			JavaClass cls,
 			JavaSourceFile file,
 			StringBuilder output,
 			List<ExpansionDefinition> expansions,
@@ -82,7 +82,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	@Override
 	public Void visitClass(ClassDefinition definition) {
 		JavaSourceFileScope scope = createScope(definition);
-		JavaSourceClass cls = definition.getTag(JavaSourceClass.class);
+		JavaClass cls = definition.getTag(JavaClass.class);
 		
 		output.append(indent);
 		convertModifiers(definition.modifiers);
@@ -119,7 +119,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				else
 					output.append(", ");
 				
-				output.append(scope.importer.importType(new JavaSourceClass("java.lang", "AutoCloseable")));
+				output.append(scope.importer.importType(JavaClass.CLOSEABLE));
 			}
 		}
 		
@@ -133,7 +133,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	@Override
 	public Void visitInterface(InterfaceDefinition definition) {
 		JavaSourceFileScope scope = createScope(definition);
-		JavaSourceClass cls = definition.getTag(JavaSourceClass.class);
+		JavaClass cls = definition.getTag(JavaClass.class);
 		
 		output.append(indent);
 		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
@@ -143,7 +143,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		boolean firstExtends = true;
 		if (definition.isDestructible()) {
 			output.append(" extends ");
-			output.append(scope.importer.importType(new JavaSourceClass("java.lang", "AutoCloseable")));
+			output.append(scope.importer.importType(JavaClass.CLOSEABLE));
 			firstExtends = false;
 		}
 		

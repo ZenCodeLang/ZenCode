@@ -10,22 +10,22 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.javabytecode.JavaClassInfo;
 import org.openzen.zenscript.javabytecode.JavaFieldInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 import java.util.List;
+import org.openzen.zenscript.javashared.JavaClass;
 
 public class JavaMemberVisitor implements MemberVisitor<Void> {
 	private final ClassWriter writer;
-	private final JavaClassInfo toClass;
+	private final JavaClass toClass;
 	private final HighLevelDefinition definition;
 	private final JavaStatementVisitor clinitStatementVisitor;
 	private EnumDefinition enumDefinition = null;
 
-	public JavaMemberVisitor(ClassWriter writer, JavaClassInfo toClass, HighLevelDefinition definition) {
+	public JavaMemberVisitor(ClassWriter writer, JavaClass toClass, HighLevelDefinition definition) {
 		this.writer = writer;
 		this.toClass = toClass;
 		this.definition = definition;

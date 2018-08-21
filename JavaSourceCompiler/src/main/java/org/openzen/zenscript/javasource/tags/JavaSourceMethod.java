@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource.tags;
 
+import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javasource.JavaCallCompiler;
 
 /**
@@ -12,13 +13,13 @@ import org.openzen.zenscript.javasource.JavaCallCompiler;
  * @author Hoofdgebruiker
  */
 public class JavaSourceMethod {
-	public final JavaSourceClass cls;
+	public final JavaClass cls;
 	public final Kind kind;
 	public final String name;
 	public final boolean compile;
 	public final JavaCallCompiler compiler;
 	
-	public JavaSourceMethod(JavaSourceClass cls, Kind kind, String name, boolean compile) {
+	public JavaSourceMethod(JavaClass cls, Kind kind, String name, boolean compile) {
 		this.cls = cls;
 		this.kind = kind;
 		this.name = name;

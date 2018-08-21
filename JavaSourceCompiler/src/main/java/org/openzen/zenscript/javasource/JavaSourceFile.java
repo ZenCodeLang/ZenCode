@@ -22,7 +22,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.SemanticModule;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
@@ -32,7 +32,7 @@ public class JavaSourceFile {
 	public final JavaSourceImporter importer;
 	private final JavaSourceCompiler compiler;
 	private final File file;
-	private final JavaSourceClass cls;
+	private final JavaClass cls;
 	private final StringBuilder contents = new StringBuilder();
 	private final ZSPackage pkg;
 	
@@ -42,7 +42,7 @@ public class JavaSourceFile {
 	private final Map<HighLevelDefinition, SemanticModule> modules = new HashMap<>();
 	private final Set<String> existing = new HashSet<>();
 	
-	public JavaSourceFile(JavaSourceCompiler compiler, File file, JavaSourceClass cls, ZSPackage pkg) {
+	public JavaSourceFile(JavaSourceCompiler compiler, File file, JavaClass cls, ZSPackage pkg) {
 		this.compiler = compiler;
 		this.pkg = pkg;
 		this.cls = cls;
@@ -92,9 +92,9 @@ public class JavaSourceFile {
 			writer.write(pkg.fullName);
 			writer.write(";\n\n");
 			
-			JavaSourceClass[] imports = importer.getUsedImports();
+			JavaClass[] imports = importer.getUsedImports();
 			if (imports.length > 0) {
-				for (JavaSourceClass import_ : imports) {
+				for (JavaClass import_ : imports) {
 					if (import_.pkg.equals("java.lang"))
 						continue;
 					

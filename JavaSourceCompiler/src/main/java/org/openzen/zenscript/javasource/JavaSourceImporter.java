@@ -11,23 +11,23 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSourceImporter {
-	private final JavaSourceClass cls;
-	private final Map<String, JavaSourceClass> imports = new HashMap<>();
-	private final Set<JavaSourceClass> usedImports = new HashSet<>();
+	private final JavaClass cls;
+	private final Map<String, JavaClass> imports = new HashMap<>();
+	private final Set<JavaClass> usedImports = new HashSet<>();
 	
-	public JavaSourceImporter(JavaSourceClass cls) {
+	public JavaSourceImporter(JavaClass cls) {
 		this.cls = cls;
 	}
 	
 	public String importType(HighLevelDefinition definition) {
-		JavaSourceClass cls = definition.getTag(JavaSourceClass.class);
+		JavaClass cls = definition.getTag(JavaClass.class);
 		if (cls == null)
 			throw new IllegalStateException("Missing source class tag on " + definition.name);
 		if (cls.pkg.equals(this.cls.pkg))
@@ -36,9 +36,9 @@ public class JavaSourceImporter {
 		return importType(cls);
 	}
 	
-	public String importType(JavaSourceClass cls) {
+	public String importType(JavaClass cls) {
 		if (imports.containsKey(cls.outer.getName())) {
-			JavaSourceClass imported = imports.get(cls.outer.getName());
+			JavaClass imported = imports.get(cls.outer.getName());
 			usedImports.add(imported);
 			return imported.fullName.equals(cls.outer.fullName) ? cls.getName() : cls.fullName;
 		}
@@ -48,8 +48,8 @@ public class JavaSourceImporter {
 		return cls.getClassName();
 	}
 	
-	public JavaSourceClass[] getUsedImports() {
-		JavaSourceClass[] imports = usedImports.toArray(new JavaSourceClass[usedImports.size()]);
+	public JavaClass[] getUsedImports() {
+		JavaClass[] imports = usedImports.toArray(new JavaClass[usedImports.size()]);
 		Arrays.sort(imports);
 		return imports;
 	}

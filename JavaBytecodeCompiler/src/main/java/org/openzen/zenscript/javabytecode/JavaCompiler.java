@@ -25,6 +25,7 @@ import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVis
 
 import java.util.HashMap;
 import java.util.Map;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  * @author Hoofdgebruiker
@@ -68,7 +69,7 @@ this.jarFile = jarFile;
 		// convert scripts into methods (add them to a Scripts class?)
 		// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
 		final JavaClassWriter visitor = scriptFile.classWriter;
-		JavaMethodInfo method = new JavaMethodInfo(new JavaClassInfo(className), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+		JavaMethodInfo method = new JavaMethodInfo(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		scriptFile.scriptMethods.add(method);
 
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(visitor, method, null, null, null));
@@ -122,7 +123,7 @@ this.jarFile = jarFile;
 			throw new IllegalStateException("Already finished!");
 		finished = true;
 
-		JavaMethodInfo runMethod = new JavaMethodInfo(new JavaClassInfo("Scripts"), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+		JavaMethodInfo runMethod = new JavaMethodInfo(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, runMethod, null, null, null);
 		runWriter.start();
 		for (Map.Entry<String, JavaScriptFile> entry : scriptBlocks.entrySet()) {

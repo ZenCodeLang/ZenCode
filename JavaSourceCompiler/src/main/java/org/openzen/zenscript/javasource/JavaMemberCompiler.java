@@ -36,7 +36,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
@@ -248,7 +248,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		JavaSourceClass cls = member.innerDefinition.getTag(JavaSourceClass.class);
+		JavaClass cls = member.innerDefinition.getTag(JavaClass.class);
 		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
 				indent,
 				compiler,

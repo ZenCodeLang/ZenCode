@@ -7,6 +7,7 @@ package org.openzen.zenscript.javabytecode;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  * @author Hoofdgebruiker
@@ -20,15 +21,15 @@ public class JavaMethodInfo {
 		}
 		descriptor.append(')');
 		descriptor.append(result == null ? 'V' : Type.getDescriptor(result));
-		return new JavaMethodInfo(new JavaClassInfo(Type.getInternalName(owner)), name, descriptor.toString(), modifiers);
+		return new JavaMethodInfo(JavaCompileUtils.get(owner), name, descriptor.toString(), modifiers);
 	}
 
-	public final JavaClassInfo javaClass;
+	public final JavaClass javaClass;
 	public final String name;
 	public final String descriptor;
 	public final int modifiers;
 
-	public JavaMethodInfo(JavaClassInfo javaClass, String name, String signature, int modifiers) {
+	public JavaMethodInfo(JavaClass javaClass, String name, String signature, int modifiers) {
 		this.javaClass = javaClass;
 		this.name = name;
 		this.descriptor = signature;

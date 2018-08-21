@@ -93,7 +93,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javasource.tags.JavaSourceField;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 import org.openzen.zenscript.javasource.tags.JavaSourceVariantOption;
@@ -103,9 +103,9 @@ import org.openzen.zenscript.javasource.tags.JavaSourceVariantOption;
  * @author Hoofdgebruiker
  */
 public class JavaSourceExpressionFormatter implements ExpressionVisitor<ExpressionString> {
-	private static final JavaSourceClass RESULT = new JavaSourceClass("stdlib", "Result");
-	private static final JavaSourceClass RESULT_OK = new JavaSourceClass("stdlib", "Result.Ok");
-	private static final JavaSourceClass RESULT_ERROR = new JavaSourceClass("stdlib", "Result.Error");
+	private static final JavaClass RESULT = new JavaClass("stdlib", "Result", JavaClass.Kind.CLASS);
+	private static final JavaClass RESULT_OK = new JavaClass("stdlib", "Result.Ok", JavaClass.Kind.CLASS);
+	private static final JavaClass RESULT_ERROR = new JavaClass("stdlib", "Result.Error", JavaClass.Kind.CLASS);
 	
 	public final JavaSourceStatementScope scope;
 	public final StatementFormattingTarget target;
@@ -287,7 +287,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			return visitBuiltinConstant(expression, expression.constant.member.builtin);
 		
 		return new ExpressionString(
-				scope.type(expression.constant.member.definition.getTag(JavaSourceClass.class)) + "." + expression.constant.member.name, 
+				scope.type(expression.constant.member.definition.getTag(JavaClass.class)) + "." + expression.constant.member.name, 
 				JavaOperator.MEMBER);
 	}
 
@@ -649,7 +649,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 	
 	private String constructThisName(DefinitionTypeID type) {
-		JavaSourceClass cls = type.definition.getTag(JavaSourceClass.class);
+		JavaClass cls = type.definition.getTag(JavaClass.class);
 		return cls.getClassName();
 	}
 
@@ -733,7 +733,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (elementType instanceof GenericTypeID) {
 			// generic array creation
 			GenericTypeID generic = (GenericTypeID)elementType;
-			String array = scope.type(new JavaSourceClass("java.lang.reflect", "Array"));
+			String array = scope.type(new JavaClass("java.lang.reflect", "Array", JavaClass.Kind.CLASS));
 			return new ExpressionString("(" + generic.parameter.name + "[])(" + array + ".newInstance(typeOf" + generic.parameter.name + ", " + length.value + "))", JavaOperator.CAST);
 		} else {
 			return new ExpressionString("new " + scope.type(elementType) + "[" + length.value + "]", JavaOperator.NEW);
@@ -1472,7 +1472,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case STRING_CONSTRUCTOR_CHARACTERS:
 				return callStatic("new String", expression.arguments.arguments[0]);
 			case ASSOC_CONSTRUCTOR: {
-				String typeName = scope.type(new JavaSourceClass("java.util", "HashMap"));
+				String typeName = scope.type(new JavaClass("java.util", "HashMap", JavaClass.Kind.CLASS));
 				AssocTypeID type = (AssocTypeID) expression.type;
 				
 				StringBuilder result = new StringBuilder();
@@ -1484,7 +1484,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				return new ExpressionString(result.toString(), JavaOperator.NEW);
 			}
 			case GENERICMAP_CONSTRUCTOR: {
-				String typeName = scope.type(new JavaSourceClass("java.util", "HashMap"));
+				String typeName = scope.type(new JavaClass("java.util", "HashMap", JavaClass.Kind.CLASS));
 				StringBuilder result = new StringBuilder();
 				result.append("new ").append(typeName).append("<Class<?>, Object>()");
 				return new ExpressionString(result.toString(), JavaOperator.NEW);

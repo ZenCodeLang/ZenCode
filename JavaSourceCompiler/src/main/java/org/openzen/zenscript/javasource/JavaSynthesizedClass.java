@@ -6,17 +6,17 @@
 package org.openzen.zenscript.javasource;
 
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSynthesizedClass {
-	public final JavaSourceClass cls;
+	public final JavaClass cls;
 	public final TypeParameter[] typeParameters;
 	
-	public JavaSynthesizedClass(JavaSourceClass cls, TypeParameter[] typeParameters) {
+	public JavaSynthesizedClass(JavaClass cls, TypeParameter[] typeParameters) {
 		this.cls = cls;
 		this.typeParameters = typeParameters;
 	}

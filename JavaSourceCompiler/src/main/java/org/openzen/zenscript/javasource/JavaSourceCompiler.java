@@ -16,7 +16,7 @@ import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.javasource.prepare.JavaSourcePrepareDefinitionVisitor;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
@@ -47,7 +47,7 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
 		String filename = getFilename(definition);
 		JavaSourcePrepareDefinitionVisitor prepare = new JavaSourcePrepareDefinitionVisitor(filename, null);
-		JavaSourceClass cls = definition.accept(prepare);
+		JavaClass cls = definition.accept(prepare);
 		if (cls.empty)
 			return;
 		

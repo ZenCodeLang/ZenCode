@@ -43,7 +43,7 @@ import org.openzen.zenscript.formattershared.StatementFormatter;
 import org.openzen.zenscript.formattershared.StatementFormattingSubBlock;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
-import org.openzen.zenscript.javasource.tags.JavaSourceClass;
+import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *
@@ -134,7 +134,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			
 			DefinitionTypeID variantType = (DefinitionTypeID)statement.value.type;
 			HighLevelDefinition variant = variantType.definition;
-			String variantTypeName = scope.type(variant.getTag(JavaSourceClass.class));
+			String variantTypeName = scope.type(variant.getTag(JavaClass.class));
 			for (SwitchCase switchCase : statement.cases) {
 				VariantOptionSwitchValue switchValue = (VariantOptionSwitchValue)switchCase.value;
 				String header = switchValue == null ? "default:" : "case " + switchValue.option.getName() + ":";

@@ -5,15 +5,17 @@
  */
 package org.openzen.zenscript.javasource.tags;
 
+import org.openzen.zenscript.javashared.JavaClass;
+
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSourceImplementation {
 	public final boolean inline;
-	public final JavaSourceClass implementationClass;
+	public final JavaClass implementationClass;
 	
-	public JavaSourceImplementation(boolean inline, JavaSourceClass implementationClass) {
+	public JavaSourceImplementation(boolean inline, JavaClass implementationClass) {
 		this.inline = inline;
 		this.implementationClass = implementationClass;
 	}

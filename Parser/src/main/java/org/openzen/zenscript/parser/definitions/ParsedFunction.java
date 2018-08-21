@@ -56,7 +56,8 @@ public class ParsedFunction extends ParsedDefinition {
 
 	@Override
 	public void linkTypes(TypeResolutionContext context) {
-		compiled.setHeader(header.compile(context));
+		if (compiled.header == null)
+			compiled.setHeader(header.compile(context));
 	}
 	
 	@Override
@@ -93,6 +94,7 @@ public class ParsedFunction extends ParsedDefinition {
 
 		@Override
 		public HighLevelDefinition load() {
+			linkTypes(context);
 			return compiled;
 		}
 	}
