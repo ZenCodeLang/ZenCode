@@ -13,10 +13,7 @@ import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.AssocTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.implementations.IntRange;
 import org.openzen.zenscript.javabytecode.*;
@@ -1736,7 +1733,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
-		throw new UnsupportedOperationException(); // TODO
+		javaWriter.loadObject(0);
+		final ITypeID type = expression.value.option.getParameterType(expression.index);
+		javaWriter.getField(new JavaFieldInfo(expression.value.option.getTag(JavaClassInfo.class), "Field" + expression.index, type.accept(JavaTypeVisitor.INSTANCE).getInternalName()));
+		return null;
+		//throw new UnsupportedOperationException(); // TODO
 	}
 
 	@Override
@@ -2033,7 +2034,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.label(defaultLabel);
 			}
 			//switchCase.value.body.setTag(MatchExpression.class, expression);
-			switchCase.value.accept(new MatchExpressionVisitor(this.javaWriter));
+			switchCase.value.accept(this);
 			javaWriter.goTo(end);
 		}
 
@@ -2425,26 +2426,4 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return true;
 	}
 
-
-	private static final class MatchExpressionVisitor extends JavaExpressionVisitor {
-		public MatchExpressionVisitor(JavaWriter javaWriter) {
-			super(javaWriter);
-		}
-
-		@Override
-		public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-			final Label label = new Label();
-			final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
-			if (tag != null) {
-				tag.end = label;
-				javaWriter.load(tag.type, tag.local);
-				javaWriter.label(label);
-				return null;
-			}
-
-			javaWriter.aConstNull();
-			return null;
-
-		}
-	}
 }

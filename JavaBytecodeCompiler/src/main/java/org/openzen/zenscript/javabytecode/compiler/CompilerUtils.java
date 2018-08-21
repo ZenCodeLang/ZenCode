@@ -15,7 +15,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.javabytecode.JavaParameterInfo;
-import org.openzen.zenscript.javabytecode.compiler.definitions.JavaOptionInfoTag;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -196,7 +195,7 @@ public class CompilerUtils {
 
 		@Override
 		public Integer acceptVariantOption(VariantOptionSwitchValue value) {
-			return value.option.getTag(JavaOptionInfoTag.class).number;
+			return value.option.getOrdinal();
 		}
 	}
 }

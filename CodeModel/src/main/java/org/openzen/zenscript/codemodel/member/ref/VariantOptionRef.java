@@ -32,4 +32,12 @@ public class VariantOptionRef {
 	public <T> T getTag(Class<T> type) {
 		return option.getTag(type);
 	}
+
+	public int getOrdinal() {
+		return option.ordinal;
+	}
+
+	public VariantDefinition.Option getOption() {
+		return option;
+	}
 }

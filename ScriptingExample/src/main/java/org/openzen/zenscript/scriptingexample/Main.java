@@ -123,7 +123,7 @@ public class Main {
 	}
 	
 	private static JavaModule compileSemanticToJava(SemanticModule module) {
-		JavaCompiler compiler = new JavaCompiler(false);
+		JavaCompiler compiler = new JavaCompiler(false, null);
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			compiler.addDefinition(definition, module);
 		}

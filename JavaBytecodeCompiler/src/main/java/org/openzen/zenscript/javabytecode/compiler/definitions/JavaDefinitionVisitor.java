@@ -195,27 +195,14 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 		final JavaMemberVisitor visitor = new JavaMemberVisitor(writer, toClass, variant);
 
-
 		final List<VariantDefinition.Option> options = variant.options;
-		for (int optionNo = 0, optionsSize = options.size(); optionNo < optionsSize; optionNo++) {
-			final VariantDefinition.Option option = options.get(optionNo);
-			option.setTag(JavaOptionInfoTag.class, new JavaOptionInfoTag(optionNo));
-		}
-
-		for (final IDefinitionMember member : variant.members) {
-			member.accept(visitor);
-		}
-
-
-
-
 		//Each option is one of the possible child classes
-		for (int optionNo = 0, optionsSize = options.size(); optionNo < optionsSize; ++optionNo) {
-			final VariantDefinition.Option option = options.get(optionNo);
-
+		for (final VariantDefinition.Option option : options) {
 			final String optionClassName = variantName + "$" + option.name;
-			final JavaClassInfo optionClass = new JavaClassInfo(variantName);
+			final JavaClassInfo optionClass = new JavaClassInfo(optionClassName);
 			final JavaClassWriter optionWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+
+			option.setTag(JavaClassInfo.class, optionClass);
 
 
 			//Generic option signature
@@ -245,12 +232,11 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 
 			//Denominator for switch-cases
-			final JavaWriter getDenominator = new JavaWriter(optionWriter, new JavaMethodInfo(optionClass, "getDenominator", "()I", Modifiers.PUBLIC), null,null, null, "java/lang/Override");
+			final JavaWriter getDenominator = new JavaWriter(optionWriter, new JavaMethodInfo(optionClass, "getDenominator", "()I", Modifiers.PUBLIC), null, null, null, "java/lang/Override");
 			getDenominator.start();
-			getDenominator.constant(optionNo);
+			getDenominator.constant(option.ordinal);
 			getDenominator.returnInt();
 			getDenominator.end();
-
 
 
 			//Print the option files, won't be in production
@@ -263,6 +249,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				e.printStackTrace();
 			}
 		}
+
+
+		for (final IDefinitionMember member : variant.members) {
+			member.accept(visitor);
+		}
+
 		visitor.end();
 		writer.visitEnd();
 
