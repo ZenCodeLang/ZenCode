@@ -8,13 +8,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValueVisitor;
-import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.*;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -34,47 +28,47 @@ import org.openzen.zenscript.javashared.JavaSynthesizedClassNamer;
 public class CompilerUtils {
 	private CompilerUtils() {}
 
-    public static boolean isPrimitive(ITypeID id) {
-        if (id instanceof BasicTypeID) {
-            switch ((BasicTypeID) id) {
-                case BOOL:
-                case BYTE:
-                case SBYTE:
-                case SHORT:
-                case USHORT:
-                case INT:
-                case UINT:
-                case LONG:
-                case ULONG:
-                case FLOAT:
-                case DOUBLE:
-                case CHAR:
-                    return true;
-            }
-        }
-        return false;
-    }
+	public static boolean isPrimitive(ITypeID id) {
+		if (id instanceof BasicTypeID) {
+			switch ((BasicTypeID) id) {
+				case BOOL:
+				case BYTE:
+				case SBYTE:
+				case SHORT:
+				case USHORT:
+				case INT:
+				case UINT:
+				case LONG:
+				case ULONG:
+				case FLOAT:
+				case DOUBLE:
+				case CHAR:
+					return true;
+			}
+		}
+		return false;
+	}
 
-    public static int calcAccess(int modifiers) {
-        int out = 0;
-        if (Modifiers.isStatic(modifiers))
-            out |= Opcodes.ACC_STATIC;
-        if (Modifiers.isFinal(modifiers))
-            out |= Opcodes.ACC_FINAL;
-        if (Modifiers.isPublic(modifiers))
-            out |= Opcodes.ACC_PUBLIC;
-        if (Modifiers.isPrivate(modifiers))
-            out |= Opcodes.ACC_PRIVATE;
-        if (Modifiers.isProtected(modifiers))
-            out |= Opcodes.ACC_PROTECTED;
-        if (Modifiers.isAbstract(modifiers))
-            out |= Opcodes.ACC_ABSTRACT;
-        return out;
-    }
+	public static int calcAccess(int modifiers) {
+		int out = 0;
+		if (Modifiers.isStatic(modifiers))
+			out |= Opcodes.ACC_STATIC;
+		if (Modifiers.isFinal(modifiers))
+			out |= Opcodes.ACC_FINAL;
+		if (Modifiers.isPublic(modifiers))
+			out |= Opcodes.ACC_PUBLIC;
+		if (Modifiers.isPrivate(modifiers))
+			out |= Opcodes.ACC_PRIVATE;
+		if (Modifiers.isProtected(modifiers))
+			out |= Opcodes.ACC_PROTECTED;
+		if (Modifiers.isAbstract(modifiers))
+			out |= Opcodes.ACC_ABSTRACT;
+		return out;
+	}
 
-    public static String calcClasName(CodePosition position) {
-        return position.getFilename().substring(0, position.getFilename().lastIndexOf('.')).replace("/", "_");
-    }
+	public static String calcClasName(CodePosition position) {
+		return position.getFilename().substring(0, position.getFilename().lastIndexOf('.')).replace("/", "_");
+	}
 
     public static void tagMethodParameters(JavaContext context, FunctionHeader header, boolean isStatic) {
         for (int i = 0; i < header.parameters.length; i++) {
@@ -153,10 +147,10 @@ public class CompilerUtils {
         return "lambda" + ++lambdaCounter;
     }
 
-    public static int getKeyForSwitch(SwitchValue expression) {
+	public static int getKeyForSwitch(SwitchValue expression) {
 		return expression.accept(new SwitchKeyVisitor());
-    }
-	
+	}
+
 	private static class SwitchKeyVisitor implements SwitchValueVisitor<Integer> {
 
 		@Override
@@ -166,7 +160,7 @@ public class CompilerUtils {
 
 		@Override
 		public Integer acceptChar(CharSwitchValue value) {
-			return (int)value.value;
+			return (int) value.value;
 		}
 
 		@Override
@@ -181,7 +175,7 @@ public class CompilerUtils {
 
 		@Override
 		public Integer acceptVariantOption(VariantOptionSwitchValue value) {
-			throw new UnsupportedOperationException("Not there yet");
+			return value.option.getOrdinal();
 		}
 	}
 }

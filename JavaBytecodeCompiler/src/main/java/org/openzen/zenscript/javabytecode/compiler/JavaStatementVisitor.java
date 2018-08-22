@@ -32,72 +32,72 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         this.expressionVisitor = expressionVisitor;
     }
 
-    @Override
-    public Boolean visitBlock(BlockStatement statement) {
-        Boolean returns = false;
-        for (Statement statement1 : statement.statements) {
-            returns = statement1.accept(this);
-        }
-        return returns;
-    }
+	@Override
+	public Boolean visitBlock(BlockStatement statement) {
+		Boolean returns = false;
+		for (Statement statement1 : statement.statements) {
+			returns = statement1.accept(this);
+		}
+		return returns;
+	}
 
-    @Override
-    public Boolean visitBreak(BreakStatement statement) {
-        javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_end"));
-        return false;
-    }
+	@Override
+	public Boolean visitBreak(BreakStatement statement) {
+		javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_end"));
+		return false;
+	}
 
-    @Override
-    public Boolean visitContinue(ContinueStatement statement) {
-        javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_start"));
-        return false;
-    }
+	@Override
+	public Boolean visitContinue(ContinueStatement statement) {
+		javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_start"));
+		return false;
+	}
 
-    @Override
-    public Boolean visitDoWhile(DoWhileStatement statement) {
-        Label start = new Label();
-        Label end = new Label();
-        if (statement.label == null)
-            statement.label = javaWriter.createLabelName() + "DoWhile";
-        javaWriter.putNamedLabel(start, statement.label + "_start");
-        javaWriter.putNamedLabel(end, statement.label + "_end");
-        javaWriter.label(start);
-        statement.content.accept(this);
+	@Override
+	public Boolean visitDoWhile(DoWhileStatement statement) {
+		Label start = new Label();
+		Label end = new Label();
+		if (statement.label == null)
+			statement.label = javaWriter.createLabelName() + "DoWhile";
+		javaWriter.putNamedLabel(start, statement.label + "_start");
+		javaWriter.putNamedLabel(end, statement.label + "_end");
+		javaWriter.label(start);
+		statement.content.accept(this);
 
-        statement.condition.accept(expressionVisitor);
-        javaWriter.ifNE(start);
+		statement.condition.accept(expressionVisitor);
+		javaWriter.ifNE(start);
 
-        //Only needed for break statements, should be nop if not used
-        javaWriter.label(end);
-        return false;
-    }
+		//Only needed for break statements, should be nop if not used
+		javaWriter.label(end);
+		return false;
+	}
 
-    @Override
-    public Boolean visitEmpty(EmptyStatement statement) {
-        //No-Op
-        return false;
-    }
+	@Override
+	public Boolean visitEmpty(EmptyStatement statement) {
+		//No-Op
+		return false;
+	}
 
-    @Override
-    public Boolean visitExpression(ExpressionStatement statement) {
-        statement.expression.accept(expressionVisitor);
-        return false;
-    }
+	@Override
+	public Boolean visitExpression(ExpressionStatement statement) {
+		statement.expression.accept(expressionVisitor);
+		return false;
+	}
 
-    @Override
-    public Boolean visitForeach(ForeachStatement statement) {
-        //Create Labels
-        Label start = new Label();
-        Label end = new Label();
-        if (statement.label == null) {
-            statement.label = javaWriter.createLabelName() + "ForEach";
-        }
-        javaWriter.putNamedLabel(start, statement.label + "_start");
-        javaWriter.putNamedLabel(end, statement.label + "_end");
+	@Override
+	public Boolean visitForeach(ForeachStatement statement) {
+		//Create Labels
+		Label start = new Label();
+		Label end = new Label();
+		if (statement.label == null) {
+			statement.label = javaWriter.createLabelName() + "ForEach";
+		}
+		javaWriter.putNamedLabel(start, statement.label + "_start");
+		javaWriter.putNamedLabel(end, statement.label + "_end");
 
 
-        //Compile Array/Collection
-        statement.list.accept(expressionVisitor);
+		//Compile Array/Collection
+		statement.list.accept(expressionVisitor);
 
         //Create local variables
         for (VarStatement variable : statement.loopVariables) {
@@ -109,219 +109,218 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
             javaWriter.addVariableInfo(info);
         }
 
-        //javaWriter.label(min);
-        statement.iterator.target.acceptForIterator(new JavaForeachVisitor(this, statement.loopVariables, statement.content, start, end));
-        javaWriter.goTo(start);
-        javaWriter.label(end);
-        return false;
-    }
+		//javaWriter.label(min);
+		statement.iterator.target.acceptForIterator(new JavaForeachVisitor(this, statement.loopVariables, statement.content, start, end));
+		javaWriter.goTo(start);
+		javaWriter.label(end);
+		return false;
+	}
 
-    @Override
-    public Boolean visitIf(IfStatement statement) {
-        statement.condition.accept(expressionVisitor);
-        Label onElse = null;
-        Label end = new Label();
-        final boolean hasElse = statement.onElse != null;
-        if (hasElse) {
-            onElse = new Label();
-            javaWriter.ifEQ(onElse);
-        } else {
-            javaWriter.ifEQ(end);
-        }
-        statement.onThen.accept(this);
-        if (hasElse) {
-            javaWriter.goTo(end);
-            javaWriter.label(onElse);
-            statement.onElse.accept(this);
-        }
-        javaWriter.label(end);
-        return false;
-    }
+	@Override
+	public Boolean visitIf(IfStatement statement) {
+		statement.condition.accept(expressionVisitor);
+		Label onElse = null;
+		Label end = new Label();
+		final boolean hasElse = statement.onElse != null;
+		if (hasElse) {
+			onElse = new Label();
+			javaWriter.ifEQ(onElse);
+		} else {
+			javaWriter.ifEQ(end);
+		}
+		statement.onThen.accept(this);
+		if (hasElse) {
+			javaWriter.goTo(end);
+			javaWriter.label(onElse);
+			statement.onElse.accept(this);
+		}
+		javaWriter.label(end);
+		return false;
+	}
 
-    @Override
-    public Boolean visitLock(LockStatement statement) {
-        return false;
-    }
+	@Override
+	public Boolean visitLock(LockStatement statement) {
+		return false;
+	}
 
-    @Override
-    public Boolean visitReturn(ReturnStatement statement) {
-        statement.value.accept(expressionVisitor);
-        javaWriter.returnType(context.getType(statement.value.type));
-        return true;
-    }
+	@Override
+	public Boolean visitReturn(ReturnStatement statement) {
+		statement.value.accept(expressionVisitor);
+		javaWriter.returnType(context.getType(statement.value.type));
+		return true;
+	}
 
-    @Override
-    public Boolean visitSwitch(SwitchStatement statement) {
+	@Override
+	public Boolean visitSwitch(SwitchStatement statement) {
 
-        final Label start = new Label();
-        final Label end = new Label();
+		final Label start = new Label();
+		final Label end = new Label();
 
-        if (statement.label == null)
-            statement.label = javaWriter.createLabelName() + "Switch";
+		if (statement.label == null)
+			statement.label = javaWriter.createLabelName() + "Switch";
 
-        javaWriter.putNamedLabel(start, statement.label + "_start");
-        javaWriter.putNamedLabel(end, statement.label + "_end");
-
-
-        javaWriter.label(start);
-        statement.value.accept(expressionVisitor);
-        if (statement.value.type == BasicTypeID.STRING)
-            javaWriter.invokeVirtual(new JavaMethodInfo(JavaClass.OBJECT, "hashCode", "()I", 0));
-        boolean out = false;
-
-        final boolean hasNoDefault = hasNoDefault(statement);
-
-        final List<SwitchCase> cases = statement.cases;
-        final JavaSwitchLabel[] switchLabels = new JavaSwitchLabel[hasNoDefault ? cases.size() : cases.size() - 1];
-        final Label defaultLabel = new Label();
-
-        int i = 0;
-        for (final SwitchCase switchCase : cases) {
-            if (switchCase.value != null) {
-                switchLabels[i++] = new JavaSwitchLabel(CompilerUtils.getKeyForSwitch(switchCase.value), new Label());
-            }
-        }
-
-        JavaSwitchLabel[] sortedSwitchLabels = Arrays.copyOf(switchLabels, switchLabels.length);
-        Arrays.sort(sortedSwitchLabels, (a, b) -> a.key - b.key);
-
-        javaWriter.lookupSwitch(defaultLabel, sortedSwitchLabels);
-
-        i = 0;
-        for (final SwitchCase switchCase : cases) {
-            if (hasNoDefault || switchCase.value != null) {
-                javaWriter.label(switchLabels[i++].label);
-            } else {
-                javaWriter.label(defaultLabel);
-            }
-            for (Statement statement1 : switchCase.statements) {
-                out |= statement1.accept(this);
-            }
-        }
-
-        if (hasNoDefault)
-            javaWriter.label(defaultLabel);
-
-        javaWriter.label(end);
+		javaWriter.putNamedLabel(start, statement.label + "_start");
+		javaWriter.putNamedLabel(end, statement.label + "_end");
 
 
-        //throw new UnsupportedOperationException("Not yet implemented!");
-        return out;
-    }
+		javaWriter.label(start);
+		statement.value.accept(expressionVisitor);
+		if (statement.value.type == BasicTypeID.STRING)
+			javaWriter.invokeVirtual(new JavaMethodInfo(JavaClass.OBJECT, "hashCode", "()I", 0));
+		boolean out = false;
 
-    private boolean hasNoDefault(SwitchStatement switchStatement) {
-        for (SwitchCase switchCase : switchStatement.cases)
-            if (switchCase.value == null) return false;
-        return true;
-    }
+		final boolean hasNoDefault = hasNoDefault(statement);
 
-    @Override
-    public Boolean visitThrow(ThrowStatement statement) {
-        statement.value.accept(expressionVisitor);
-        javaWriter.aThrow();
-        return false;
-    }
+		final List<SwitchCase> cases = statement.cases;
+		final JavaSwitchLabel[] switchLabels = new JavaSwitchLabel[hasNoDefault ? cases.size() : cases.size() - 1];
+		final Label defaultLabel = new Label();
 
-    @Override
-    public Boolean visitTryCatch(TryCatchStatement statement) {
-        final Label tryCatchStart = new Label();
-        final Label tryFinish = new Label();
-        final Label tryCatchFinish = new Label();
-        final Label finallyStart = new Label();
+		int i = 0;
+		for (final SwitchCase switchCase : cases) {
+			if (switchCase.value != null) {
+				switchLabels[i++] = new JavaSwitchLabel(CompilerUtils.getKeyForSwitch(switchCase.value), new Label());
+			}
+		}
 
-        javaWriter.label(tryCatchStart);
-        //TODO Check for returns or breaks out of the try-catch and inject finally block before them
-        statement.content.accept(this);
-        javaWriter.label(tryFinish);
-        if (statement.finallyClause != null)
-            statement.finallyClause.accept(this);
-        javaWriter.goTo(tryCatchFinish);
+		JavaSwitchLabel[] sortedSwitchLabels = Arrays.copyOf(switchLabels, switchLabels.length);
+		Arrays.sort(sortedSwitchLabels, (a, b) -> a.key - b.key);
 
-        for (CatchClause catchClause : statement.catchClauses) {
-            final Label catchStart = new Label();
-            javaWriter.label(catchStart);
+		javaWriter.lookupSwitch(defaultLabel, sortedSwitchLabels);
 
-            //final Type exceptionType = Type.getType(RuntimeException.class);
-            final Type exceptionType = context.getType(catchClause.exceptionVariable.type);
-            final int local = javaWriter.local(exceptionType);
-            javaWriter.store(exceptionType, local);
+		i = 0;
+		for (final SwitchCase switchCase : cases) {
+			if (hasNoDefault || switchCase.value != null) {
+				javaWriter.label(switchLabels[i++].label);
+			} else {
+				javaWriter.label(defaultLabel);
+			}
+			for (Statement statement1 : switchCase.statements) {
+				out |= statement1.accept(this);
+			}
+		}
 
-            catchClause.content.accept(this);
-            final Label catchFinish = new Label();
-            javaWriter.label(catchFinish);
+		if (hasNoDefault)
+			javaWriter.label(defaultLabel);
 
-            if (statement.finallyClause != null) {
-                statement.finallyClause.accept(this);
-                javaWriter.tryCatch(catchStart, catchFinish, finallyStart, null);
-            }
+		javaWriter.label(end);
 
-            javaWriter.tryCatch(tryCatchStart, tryFinish, catchStart, exceptionType.getInternalName());
-            javaWriter.goTo(tryCatchFinish);
-        }
 
-        if (statement.finallyClause != null) {
-            javaWriter.label(finallyStart);
-            final int local = javaWriter.local(Object.class);
-            javaWriter.storeObject(local);
-            statement.finallyClause.accept(this);
-            javaWriter.loadObject(local);
-            javaWriter.aThrow();
-            javaWriter.tryCatch(tryCatchStart, tryFinish, finallyStart, null);
-        }
-        javaWriter.label(tryCatchFinish);
+		//throw new UnsupportedOperationException("Not yet implemented!");
+		return out;
+	}
 
-        return false;
-    }
+	private boolean hasNoDefault(SwitchStatement switchStatement) {
+		for (SwitchCase switchCase : switchStatement.cases)
+			if (switchCase.value == null) return false;
+		return true;
+	}
 
-    @Override
-    public Boolean visitVar(VarStatement statement) {
+	@Override
+	public Boolean visitThrow(ThrowStatement statement) {
+		statement.value.accept(expressionVisitor);
+		javaWriter.aThrow();
+		return false;
+	}
 
-        if (statement.initializer != null) {
-            statement.initializer.accept(expressionVisitor);
-        }
+	@Override
+	public Boolean visitTryCatch(TryCatchStatement statement) {
+		final Label tryCatchStart = new Label();
+		final Label tryFinish = new Label();
+		final Label tryCatchFinish = new Label();
+		final Label finallyStart = new Label();
 
-        Type type = context.getType(statement.type);
-        int local = javaWriter.local(type);
-        if (statement.initializer != null)
-            javaWriter.store(type, local);
-        final Label variableStart = new Label();
-        javaWriter.label(variableStart);
-        final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, local, variableStart, statement.name);
-        statement.setTag(JavaLocalVariableInfo.class, info);
-        javaWriter.addVariableInfo(info);
-        return false;
-    }
+		javaWriter.label(tryCatchStart);
+		//TODO Check for returns or breaks out of the try-catch and inject finally block before them
+		statement.content.accept(this);
+		javaWriter.label(tryFinish);
+		if (statement.finallyClause != null)
+			statement.finallyClause.accept(this);
+		javaWriter.goTo(tryCatchFinish);
 
-    @Override
-    public Boolean visitWhile(WhileStatement statement) {
-        Label start = new Label();
-        Label end = new Label();
+		for (CatchClause catchClause : statement.catchClauses) {
+			final Label catchStart = new Label();
+			javaWriter.label(catchStart);
 
-        if (statement.label == null) {
-            statement.label = javaWriter.createLabelName() + "WhileDo";
-        }
-        javaWriter.putNamedLabel(start, statement.label + "_start");
-        javaWriter.putNamedLabel(end, statement.label + "_end");
+			//final Type exceptionType = Type.getType(RuntimeException.class);
+			final Type exceptionType = context.getType(catchClause.exceptionVariable.type);
+			final int local = javaWriter.local(exceptionType);
+			javaWriter.store(exceptionType, local);
 
-        javaWriter.label(start);
-        statement.condition.accept(expressionVisitor);
-        javaWriter.ifEQ(end);
-        statement.content.accept(this);
-        javaWriter.goTo(start);
-        javaWriter.label(end);
-        return false;
-    }
+			catchClause.content.accept(this);
+			final Label catchFinish = new Label();
+			javaWriter.label(catchFinish);
 
-    public void start() {
-        javaWriter.start();
-    }
+			if (statement.finallyClause != null) {
+				statement.finallyClause.accept(this);
+				javaWriter.tryCatch(catchStart, catchFinish, finallyStart, null);
+			}
 
-    public void end() {
-        javaWriter.ret();
-        javaWriter.end();
-    }
+			javaWriter.tryCatch(tryCatchStart, tryFinish, catchStart, exceptionType.getInternalName());
+			javaWriter.goTo(tryCatchFinish);
+		}
 
-    public JavaWriter getJavaWriter() {
-        return javaWriter;
-    }
+		if (statement.finallyClause != null) {
+			javaWriter.label(finallyStart);
+			final int local = javaWriter.local(Object.class);
+			javaWriter.storeObject(local);
+			statement.finallyClause.accept(this);
+			javaWriter.loadObject(local);
+			javaWriter.aThrow();
+			javaWriter.tryCatch(tryCatchStart, tryFinish, finallyStart, null);
+		}
+		javaWriter.label(tryCatchFinish);
+
+		return false;
+	}
+
+	@Override
+	public Boolean visitVar(VarStatement statement) {
+		if (statement.initializer != null) {
+			statement.initializer.accept(expressionVisitor);
+		}
+
+		Type type = context.getType(statement.type);
+		int local = javaWriter.local(type);
+		if (statement.initializer != null)
+			javaWriter.store(type, local);
+		final Label variableStart = new Label();
+		javaWriter.label(variableStart);
+		final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, local, variableStart, statement.name);
+		statement.setTag(JavaLocalVariableInfo.class, info);
+		javaWriter.addVariableInfo(info);
+		return false;
+	}
+
+	@Override
+	public Boolean visitWhile(WhileStatement statement) {
+		Label start = new Label();
+		Label end = new Label();
+
+		if (statement.label == null) {
+			statement.label = javaWriter.createLabelName() + "WhileDo";
+		}
+		javaWriter.putNamedLabel(start, statement.label + "_start");
+		javaWriter.putNamedLabel(end, statement.label + "_end");
+
+		javaWriter.label(start);
+		statement.condition.accept(expressionVisitor);
+		javaWriter.ifEQ(end);
+		statement.content.accept(this);
+		javaWriter.goTo(start);
+		javaWriter.label(end);
+		return false;
+	}
+
+	public void start() {
+		javaWriter.start();
+	}
+
+	public void end() {
+		javaWriter.ret();
+		javaWriter.end();
+	}
+
+	public JavaWriter getJavaWriter() {
+		return javaWriter;
+	}
 }

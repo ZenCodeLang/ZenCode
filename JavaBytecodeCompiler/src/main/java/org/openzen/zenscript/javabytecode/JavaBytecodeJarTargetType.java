@@ -5,19 +5,20 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.io.File;
 import org.json.JSONObject;
 import org.openzen.zenscript.compiler.Target;
 import org.openzen.zenscript.compiler.TargetType;
 
+import java.io.File;
+
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaBytecodeJarTargetType implements TargetType {
 	public static final JavaBytecodeJarTargetType INSTANCE = new JavaBytecodeJarTargetType();
-	
-	private JavaBytecodeJarTargetType() {}
+
+	private JavaBytecodeJarTargetType() {
+	}
 
 	@Override
 	public Target create(File projectDir, JSONObject definition) {

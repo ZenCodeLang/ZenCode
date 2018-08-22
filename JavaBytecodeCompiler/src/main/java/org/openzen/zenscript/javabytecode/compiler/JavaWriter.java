@@ -830,6 +830,10 @@ public class JavaWriter {
         invokeSpecial(Type.getInternalName(owner), name, descriptor);
     }
 
+	public void invokeSpecial (JavaMethodInfo method) {
+		invokeSpecial(method.javaClass.internalName, method.name, method.descriptor);
+	}
+
     public void invokeVirtual(JavaMethodInfo method) {
         if (debug)
             System.out.println("invokeVirtual " + method.javaClass.internalName + '.' + method.name + method.descriptor);

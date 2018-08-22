@@ -5,7 +5,9 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,36 +15,35 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaModule {
 	public static final Map<String, byte[]> classes = new HashMap<>();
-	
+
 	public JavaModule() {
-		
+
 	}
-	
+
 	public void register(String classname, byte[] bytecode) {
-		if(bytecode == null) return;
+		if (bytecode == null) return;
 		classes.put(classname, bytecode);
-		try(FileOutputStream writer = new FileOutputStream(new File(classname + ".class"))) {
+		try (FileOutputStream writer = new FileOutputStream(new File(classname + ".class"))) {
 			writer.write(bytecode);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void execute() {
 		ScriptClassLoader classLoader = new ScriptClassLoader();
-		
+
 		try {
 			classLoader.loadClass("Scripts").getMethod("run").invoke(null);
 		} catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
 			Logger.getLogger(JavaModule.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
+
 	public class ScriptClassLoader extends ClassLoader {
 		private final Map<String, Class> customClasses = new HashMap<>();
 

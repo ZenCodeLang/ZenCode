@@ -11,7 +11,6 @@ import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.Target;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaBytecodeJarTarget implements Target {
@@ -19,14 +18,14 @@ public class JavaBytecodeJarTarget implements Target {
 	private final String name;
 	private final File file;
 	private final boolean debugCompiler;
-	
+
 	public JavaBytecodeJarTarget(JSONObject definition) {
 		module = definition.getString("module");
 		name = definition.getString("name");
 		file = new File(definition.getString("output"));
 		debugCompiler = definition.optBoolean("debugCompiler", false);
 	}
-	
+
 	@Override
 	public JavaCompiler createCompiler(SemanticModule module) {
 		return new JavaCompiler(debugCompiler, file);

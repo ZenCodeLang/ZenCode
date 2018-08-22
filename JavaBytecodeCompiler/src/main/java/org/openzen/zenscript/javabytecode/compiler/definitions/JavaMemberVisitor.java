@@ -49,8 +49,8 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         return null;
 	}
 
-    @Override
-    public Void visitField(FieldMember member) {
+	@Override
+	public Void visitField(FieldMember member) {
 
         //TODO calc signature
         String signature = null;
@@ -83,46 +83,45 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, constructorWriter);
         statementVisitor.start();
 
-        if (!member.isConstructorForwarded()) {
-            if (isEnum) {
-                System.out.println("Writing enum constructor");
-                constructorWriter.getVisitor().newLocal(Type.getType(String.class));
-                constructorWriter.getVisitor().newLocal(Type.getType(int.class));
-                constructorWriter.loadObject(0);
-                constructorWriter.loadObject(1);
-                constructorWriter.loadInt(2);
-                constructorWriter.invokeSpecial(Type.getInternalName(Enum.class), "<init>", "(Ljava/lang/String;I)V");
-            } else if (definition.getSuperType() == null) {
-                System.out.println("Writing regular constructor");
-                constructorWriter.load(Type.getType(Object.class), 0);
-                constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
-            }
+		if (!member.isConstructorForwarded()) {
+			if (isEnum) {
+				System.out.println("Writing enum constructor");
+				constructorWriter.getVisitor().newLocal(Type.getType(String.class));
+				constructorWriter.getVisitor().newLocal(Type.getType(int.class));
+				constructorWriter.loadObject(0);
+				constructorWriter.loadObject(1);
+				constructorWriter.loadInt(2);
+				constructorWriter.invokeSpecial(Type.getInternalName(Enum.class), "<init>", "(Ljava/lang/String;I)V");
+			} else if (definition.getSuperType() == null) {
+				System.out.println("Writing regular constructor");
+				constructorWriter.load(Type.getType(Object.class), 0);
+				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
+			}
 
-            CompilerUtils.writeDefaultFieldInitializers(context, constructorWriter, definition, false);
         }
 
-        member.body.accept(statementVisitor);
-        constructorWriter.label(constructorEnd);
-        statementVisitor.end();
-        return null;
-    }
-	
+		member.body.accept(statementVisitor);
+		constructorWriter.label(constructorEnd);
+		statementVisitor.end();
+		return null;
+	}
+
 	@Override
 	public Void visitDestructor(DestructorMember member) {
 		final JavaMethodInfo method = new JavaMethodInfo(toClass, "close", "()V", Opcodes.ACC_PUBLIC);
 
-        final Label constructorStart = new Label();
-        final Label constructorEnd = new Label();
-        final JavaWriter destructorWriter = new JavaWriter(writer, method, definition, null, null);
-        destructorWriter.label(constructorStart);
+		final Label constructorStart = new Label();
+		final Label constructorEnd = new Label();
+		final JavaWriter destructorWriter = new JavaWriter(writer, method, definition, null, null);
+		destructorWriter.label(constructorStart);
 
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, destructorWriter);
         statementVisitor.start();
 		// TODO: destruction of members (to be done when memory tags are implemented)
-        member.body.accept(statementVisitor);
-        destructorWriter.label(constructorEnd);
-        statementVisitor.end();
-        return null;
+		member.body.accept(statementVisitor);
+		destructorWriter.label(constructorEnd);
+		statementVisitor.end();
+		return null;
 	}
 
     @Override
@@ -151,66 +150,66 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, methodWriter);
 
-        if (!isAbstract) {
-            statementVisitor.start();
-            member.body.accept(statementVisitor);
-            methodWriter.label(methodEnd);
-            statementVisitor.end();
-        }
+		if (!isAbstract) {
+			statementVisitor.start();
+			member.body.accept(statementVisitor);
+			methodWriter.label(methodEnd);
+			statementVisitor.end();
+		}
 
-        member.setTag(JavaMethodInfo.class, method);
-        return null;
-    }
+		member.setTag(JavaMethodInfo.class, method);
+		return null;
+	}
 
-    @Override
-    public Void visitGetter(GetterMember member) {
-        return null;
-    }
+	@Override
+	public Void visitGetter(GetterMember member) {
+		return null;
+	}
 
-    @Override
-    public Void visitSetter(SetterMember member) {
-        return null;
-    }
+	@Override
+	public Void visitSetter(SetterMember member) {
+		return null;
+	}
 
-    @Override
-    public Void visitOperator(OperatorMember member) {
-        return null;
-    }
+	@Override
+	public Void visitOperator(OperatorMember member) {
+		return null;
+	}
 
-    @Override
-    public Void visitCaster(CasterMember member) {
-        return null;
-    }
+	@Override
+	public Void visitCaster(CasterMember member) {
+		return null;
+	}
 
-    @Override
-    public Void visitCustomIterator(CustomIteratorMember member) {
-        return null;
-    }
+	@Override
+	public Void visitCustomIterator(CustomIteratorMember member) {
+		return null;
+	}
 
-    @Override
-    public Void visitCaller(CallerMember member) {
-        return null;
-    }
+	@Override
+	public Void visitCaller(CallerMember member) {
+		return null;
+	}
 
-    @Override
-    public Void visitImplementation(ImplementationMember member) {
-        return null;
-    }
+	@Override
+	public Void visitImplementation(ImplementationMember member) {
+		return null;
+	}
 
-    @Override
-    public Void visitInnerDefinition(InnerDefinitionMember member) {
-        return null;
-    }
+	@Override
+	public Void visitInnerDefinition(InnerDefinitionMember member) {
+		return null;
+	}
 
-    @Override
-    public Void visitStaticInitializer(StaticInitializerMember member) {
-        member.body.accept(clinitStatementVisitor);
-        return null;
-    }
+	@Override
+	public Void visitStaticInitializer(StaticInitializerMember member) {
+		member.body.accept(clinitStatementVisitor);
+		return null;
+	}
 
-    public void end() {
+	public void end() {
 
-        if (enumDefinition != null) {
+		if (enumDefinition != null) {
 			for (EnumConstantMember constant : enumDefinition.enumConstants) {
 				writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_ENUM, constant.name, "L" + definition.name + ";", null, null).visitEnd();
 				final String internalName = context.getInternalName(constant.constructor.type);
@@ -225,25 +224,25 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 				clinitWriter.invokeSpecial(internalName, "<init>", context.getEnumConstructorDescriptor(constant.constructor.constructor.getHeader()));
 				clinitWriter.putStaticField(internalName, constant.name, "L" + internalName + ";");
-				
+
 				enumDefinition = (EnumDefinition) constant.definition;
 			}
-			
-            final JavaWriter clinitWriter = clinitStatementVisitor.getJavaWriter();
-            final List<EnumConstantMember> enumConstants = enumDefinition.enumConstants;
-            clinitWriter.constant(enumConstants.size());
-            clinitWriter.newArray(Type.getType("L" + definition.name + ";"));
 
-            for (EnumConstantMember enumConstant : enumConstants) {
-                clinitWriter.dup();
-                clinitWriter.constant(enumConstant.ordinal);
-                clinitWriter.getStaticField(definition.name, enumConstant.name, "L" + definition.name + ";");
-                clinitWriter.arrayStore(Type.getType("L" + definition.name + ";"));
-            }
-            clinitWriter.putStaticField(definition.name, "$VALUES", "[L" + definition.name + ";");
-        }
+			final JavaWriter clinitWriter = clinitStatementVisitor.getJavaWriter();
+			final List<EnumConstantMember> enumConstants = enumDefinition.enumConstants;
+			clinitWriter.constant(enumConstants.size());
+			clinitWriter.newArray(Type.getType("L" + definition.name + ";"));
+
+			for (EnumConstantMember enumConstant : enumConstants) {
+				clinitWriter.dup();
+				clinitWriter.constant(enumConstant.ordinal);
+				clinitWriter.getStaticField(definition.name, enumConstant.name, "L" + definition.name + ";");
+				clinitWriter.arrayStore(Type.getType("L" + definition.name + ";"));
+			}
+			clinitWriter.putStaticField(definition.name, "$VALUES", "[L" + definition.name + ";");
+		}
 
 
-        clinitStatementVisitor.end();
-    }
+		clinitStatementVisitor.end();
+	}
 }
