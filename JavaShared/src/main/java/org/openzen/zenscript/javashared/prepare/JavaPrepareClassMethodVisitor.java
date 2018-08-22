@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.javasource.prepare;
+package org.openzen.zenscript.javashared.prepare;
 
+import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
@@ -16,6 +17,7 @@ import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
@@ -26,34 +28,39 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
+import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.tags.JavaSourceField;
-import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
-import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
+import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaContext;
+import org.openzen.zenscript.javashared.JavaImplementation;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> {
+public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
 	
-	private final JavaSourcePrepareDefinitionVisitor definitionPreparer;
+	private final JavaContext context;
 	private final String filename;
 	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
+	private final JavaPrepareDefinitionMemberVisitor memberPreparer;
 	
-	public JavaSourcePrepareClassMethodVisitor(
-			JavaSourcePrepareDefinitionVisitor definitionPreparer,
+	public JavaPrepareClassMethodVisitor(
+			JavaContext context,
 			String filename,
 			JavaClass cls,
 			JavaNativeClass nativeClass,
+			JavaPrepareDefinitionMemberVisitor memberPreparer,
 			boolean startsEmpty) {
-		this.definitionPreparer = definitionPreparer;
+		this.context = context;
 		this.filename = filename;
 		this.cls = cls;
 		this.nativeClass = nativeClass;
+		this.memberPreparer = memberPreparer;
 		
 		cls.empty = startsEmpty;
 	}
@@ -64,13 +71,13 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 			System.out.println("Class " + cls.fullName + " not empty because of const " + member.name);
 		
 		cls.empty = false;
-		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
+		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
 		return null;
 	}
 	
 	@Override
 	public Void visitField(FieldMember member) {
-		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
+		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
 		if (member.hasAutoGetter())
 			visitGetter(member.autoGetter);
 		if (member.hasAutoSetter())
@@ -120,7 +127,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		visitFunctional(member, "to" + member.toType.accept(new JavaSourceTypeNameVisitor()));
+		visitFunctional(member, "to" + member.toType.accept(new JavaTypeNameVisitor()));
 		return null;
 	}
 
@@ -138,10 +145,10 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		definitionPreparer.prepare(member.type);
+		memberPreparer.prepare(member.type);
 		
 		if (canMergeImplementation(member)) {
-			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(true, cls));
+			member.setTag(JavaImplementation.class, new JavaImplementation(true, cls));
 			for (IDefinitionMember m : member.members)
 				m.accept(this);
 		} else {
@@ -150,10 +157,10 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 			
 			cls.empty = false;
 			
-			JavaClass implementationClass = new JavaClass(cls, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation", JavaClass.Kind.CLASS);
-			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
+			JavaClass implementationClass = new JavaClass(cls, member.type.accept(new JavaTypeNameVisitor()) + "Implementation", JavaClass.Kind.CLASS);
+			member.setTag(JavaImplementation.class, new JavaImplementation(false, implementationClass));
 			
-			JavaSourcePrepareClassMethodVisitor visitor = new JavaSourcePrepareClassMethodVisitor(definitionPreparer, filename, implementationClass, null, true);
+			JavaPrepareClassMethodVisitor visitor = new JavaPrepareClassMethodVisitor(context, filename, implementationClass, null, memberPreparer, true);
 			for (IDefinitionMember m : member.members)
 				m.accept(visitor);
 		}
@@ -166,7 +173,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		JavaSourcePrepareDefinitionVisitor innerDefinitionPrepare = new JavaSourcePrepareDefinitionVisitor(filename, cls);
+		JavaPrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaPrepareDefinitionMemberVisitor(context, filename);
 		member.innerDefinition.accept(innerDefinitionPrepare);
 		
 		if (DEBUG_EMPTY && cls.empty)
@@ -184,11 +191,11 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 		return null;
 	}
 	
-	private JavaSourceMethod.Kind getKind(DefinitionMember member) {
+	private JavaMethod.Kind getKind(DefinitionMember member) {
 		if (member instanceof ConstructorMember)
-			return JavaSourceMethod.Kind.CONSTRUCTOR;
+			return JavaMethod.Kind.CONSTRUCTOR;
 		
-		return member.isStatic() ? JavaSourceMethod.Kind.STATIC : JavaSourceMethod.Kind.INSTANCE;
+		return member.isStatic() ? JavaMethod.Kind.STATIC : JavaMethod.Kind.INSTANCE;
 	}
 	
 	private String getOperatorName(OperatorType operator) {
@@ -274,21 +281,21 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 		}
 	}
 	
-	private void visitFunctional(DefinitionMember member, String name) {
+	private void visitFunctional(FunctionalMember member, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
-		JavaSourceMethod method = null;
+		JavaMethod method = null;
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
 		
 		if (member.getOverrides() != null) {
 			DefinitionMemberRef base = member.getOverrides();
-			JavaSourceMethod baseMethod = base.getTarget().getTag(JavaSourceMethod.class);
+			JavaMethod baseMethod = base.getTarget().getTag(JavaMethod.class);
 			if (baseMethod == null)
 				throw new IllegalStateException("Base method not yet prepared!");
 			
-			method = new JavaSourceMethod(cls, baseMethod.kind, baseMethod.name, true);
+			method = new JavaMethod(cls, baseMethod.kind, baseMethod.name, true, context.getMethodDescriptor(member.header), JavaModifiers.getJavaModifiers(member.modifiers));
 		} else if (method == null) {
-			method = new JavaSourceMethod(cls, getKind(member), name, true);
+			method = new JavaMethod(cls, getKind(member), name, true, context.getMethodDescriptor(member.header), JavaModifiers.getJavaModifiers(member.modifiers));
 		}
 		
 		if (method.compile) {
@@ -298,6 +305,6 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 			cls.empty = false;
 		}
 		
-		member.setTag(JavaSourceMethod.class, method);
+		member.setTag(JavaMethod.class, method);
 	}
 }

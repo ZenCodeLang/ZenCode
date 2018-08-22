@@ -3,36 +3,41 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.javasource.tags;
-
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.JavaCallCompiler;
+package org.openzen.zenscript.javashared;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceMethod {
+public class JavaMethod {
 	public final JavaClass cls;
 	public final Kind kind;
 	public final String name;
 	public final boolean compile;
-	public final JavaCallCompiler compiler;
+	public final JavaNativeTranslation translation;
 	
-	public JavaSourceMethod(JavaClass cls, Kind kind, String name, boolean compile) {
+	public final String descriptor;
+	public final int modifiers;
+	
+	public JavaMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers) {
 		this.cls = cls;
 		this.kind = kind;
 		this.name = name;
 		this.compile = compile;
-		compiler = null;
+		translation = null;
+		
+		this.descriptor = descriptor;
+		this.modifiers = modifiers;
 	}
 	
-	public JavaSourceMethod(JavaCallCompiler compiler) {
+	public JavaMethod(JavaNativeTranslation<?> translation) {
 		this.cls = null;
 		this.kind = Kind.COMPILED;
 		this.name = null;
 		this.compile = false;
-		this.compiler = compiler;
+		this.translation = translation;
+		this.descriptor = "";
+		this.modifiers = 0;
 	}
 	
 	public enum Kind {

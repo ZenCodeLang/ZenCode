@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zenscript.javashared.JavaContext;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +24,7 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 
 /**
  *
@@ -67,11 +69,25 @@ public class JavaSourceFile {
 		modules.put(definition, module);
 	}
 	
+	public void prepare(JavaContext context) {
+		JavaPrepareDefinitionMemberVisitor visitor = new JavaPrepareDefinitionMemberVisitor(context, file.getName());
+		
+		if (mainDefinition != null)
+			mainDefinition.accept(visitor);
+		
+		for (ExpansionDefinition expansion : expansions)
+			expansion.accept(visitor);
+	}
+	
 	public void write() {
 		System.out.println("Calling write on " + file.getName());
 		
-		if (mainDefinition == null)
+		if (mainDefinition == null || mainDefinition.getTag(JavaClass.class).empty) {
+			if (expansions.isEmpty())
+				return;
+			
 			mainDefinition = expansions.remove(0);
+		}
 		
 		HighLevelDefinition definition = mainDefinition;
 		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(

@@ -94,15 +94,17 @@ import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.tags.JavaSourceField;
-import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
-import org.openzen.zenscript.javasource.tags.JavaSourceVariantOption;
+import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaNativeTranslation;
+import org.openzen.zenscript.javashared.JavaNativeTranslator;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaVariantOption;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceExpressionFormatter implements ExpressionVisitor<ExpressionString> {
+public class JavaSourceExpressionFormatter implements ExpressionVisitor<ExpressionString>, JavaNativeTranslator<ExpressionString> {
 	private static final JavaClass RESULT = new JavaClass("stdlib", "Result", JavaClass.Kind.CLASS);
 	private static final JavaClass RESULT_OK = new JavaClass("stdlib", "Result.Ok", JavaClass.Kind.CLASS);
 	private static final JavaClass RESULT_ERROR = new JavaClass("stdlib", "Result.Error", JavaClass.Kind.CLASS);
@@ -159,19 +161,19 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.member.getBuiltin() != null) {
 			return visitBuiltinCall(expression, expression.member.getBuiltin());
 		} else {
-			JavaSourceMethod method = expression.member.getTag(JavaSourceMethod.class);
+			JavaMethod method = expression.member.getTag(JavaMethod.class);
 			if (method == null)
 				throw new IllegalStateException("No source method tag for " + expression.member.getCanonicalName() + "!");
 			
-			if (method.kind == JavaSourceMethod.Kind.COMPILED) {
-				return method.compiler.call(this, expression);
+			if (method.kind == JavaMethod.Kind.COMPILED) {
+				return (ExpressionString) method.translation.translate(expression, this);
 			} else {
 				return compileCall(method, expression.target, expression.arguments);
 			}
 		}
 	}
 	
-	private ExpressionString compileCall(JavaSourceMethod method, Expression target, CallArguments arguments) {
+	private ExpressionString compileCall(JavaMethod method, Expression target, CallArguments arguments) {
 		switch (method.kind) {
 			case EXPANSION: {
 				StringBuilder output = new StringBuilder();
@@ -199,7 +201,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.member.getBuiltin() != null)
 			return visitBuiltinCallStatic(expression, expression.member.getBuiltin());
 		
-		JavaSourceMethod method = expression.member.getTag(JavaSourceMethod.class);
+		JavaMethod method = expression.member.getTag(JavaMethod.class);
 		if (method == null)
 			throw new IllegalStateException("No source method tag for " + expression.member.getCanonicalName() + "!");
 		
@@ -241,12 +243,12 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.member.member.builtin != null)
 			return visitBuiltinCast(expression);
 		
-		JavaSourceMethod method = expression.member.getTag(JavaSourceMethod.class);
+		JavaMethod method = expression.member.getTag(JavaMethod.class);
 		if (method == null)
 			throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "No tag for caster");
 		
-		if (method.kind == JavaSourceMethod.Kind.COMPILED) {
-			return method.compiler.call(this, expression);
+		if (method.kind == JavaMethod.Kind.COMPILED) {
+			return (ExpressionString)method.translation.translate(expression, this);
 		} else {
 			return compileCall(method, expression.target, CallArguments.EMPTY);
 		}
@@ -429,7 +431,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitGetStaticField(GetStaticFieldExpression expression) {
-		JavaSourceField field = expression.field.getTag(JavaSourceField.class);
+		JavaField field = expression.field.getTag(JavaField.class);
 		if (field == null)
 			throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Missing field tag");
 		
@@ -441,7 +443,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.getter.member.builtin != null)
 			return visitBuiltinGetter(expression, expression.getter.member.builtin);
 		
-		JavaSourceMethod method = expression.getter.getTag(JavaSourceMethod.class);
+		JavaMethod method = expression.getter.getTag(JavaMethod.class);
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(this));
 		result.append(".");
@@ -513,7 +515,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.constructor.getBuiltin() != null)
 			return visitBuiltinConstructor(expression);
 		
-		JavaSourceMethod method = expression.constructor.getTag(JavaSourceMethod.class);
+		JavaMethod method = expression.constructor.getTag(JavaMethod.class);
 		switch (method.kind) {
 			case EXPANSION: {
 				StringBuilder output = new StringBuilder();
@@ -596,7 +598,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitSetStaticField(SetStaticFieldExpression expression) {
-		JavaSourceField field = expression.field.getTag(JavaSourceField.class);
+		JavaField field = expression.field.getTag(JavaField.class);
 		if (field == null)
 			throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Missing field tag");
 		if (field.cls.fullName.equals(scope.fileScope.cls.fullName) && !scope.hasLocalVariable(field.name)) {
@@ -699,7 +701,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	
 	@Override
 	public ExpressionString visitVariantValue(VariantValueExpression expression) {
-		JavaSourceVariantOption option = expression.option.getTag(JavaSourceVariantOption.class);
+		JavaVariantOption option = expression.option.getTag(JavaVariantOption.class);
 		
 		StringBuilder result = new StringBuilder();
 		result.append("new ").append(scope.type(option.variantOptionClass));
@@ -738,15 +740,6 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		} else {
 			return new ExpressionString("new " + scope.type(elementType) + "[" + length.value + "]", JavaOperator.NEW);
 		}
-	}
-	
-	public ExpressionString listToArray(CastExpression expression) {
-		Expression target = duplicable(expression.target);
-		ExpressionString targetString = target.accept(this);
-		ArrayTypeID resultType = (ArrayTypeID)expression.type;
-		return new ExpressionString(
-				targetString.value + ".toArray(" + newArray(resultType.elementType, targetString.unaryPostfix(JavaOperator.CALL, ".size()")).value + ")",
-				JavaOperator.CALL);
 	}
 	
 	public ExpressionString unaryPrefix(Expression value, JavaOperator operator) {
@@ -1130,7 +1123,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				}
 			}
 			case ARRAY_CONTAINS: {
-				JavaSourceMethod method = scope.fileScope.helperGenerator.createArrayContains((ArrayTypeID)call.target.type);
+				JavaMethod method = scope.fileScope.helperGenerator.createArrayContains((ArrayTypeID)call.target.type);
 				return callAsStatic(scope.fileScope.importer.importType(method.cls) + '.' + method.name, call);
 			}
 			case ARRAY_EQUALS: return callAsStatic("Arrays.equals", call);
@@ -1771,5 +1764,69 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		}
 		
 		throw new UnsupportedOperationException("Unknown builtin constructor: " + expression.constructor.getBuiltin());
+	}
+
+	@Override
+	public ExpressionString isEmptyAsLengthZero(Expression value) {
+		return value.accept(this).unaryPostfix(JavaOperator.EQUALS, ".length() == 0");
+	}
+
+	@Override
+	public ExpressionString listToArray(CastExpression expression) {
+		Expression target = duplicable(expression.target);
+		ExpressionString targetString = target.accept(this);
+		ArrayTypeID resultType = (ArrayTypeID)expression.type;
+		return new ExpressionString(
+				targetString.value + ".toArray(" + newArray(resultType.elementType, targetString.unaryPostfix(JavaOperator.CALL, ".size()")).value + ")",
+				JavaOperator.CALL);
+	}
+
+	@Override
+	public ExpressionString containsAsIndexOf(Expression target, Expression value) {
+		return target.accept(this)
+				.unaryPostfix(JavaOperator.GREATER_EQUALS, ".indexOf(" + value.accept(this).value + ") >= 0");
+	}
+
+	@Override
+	public ExpressionString sorted(Expression value) {
+		Expression target = duplicable(value);
+		ExpressionString targetString = target.accept(this);
+		ExpressionString copy = new ExpressionString("Arrays.copyOf(" + targetString.value + ", " + targetString.value + ".length).sort()", JavaOperator.CALL);
+		ExpressionString source = hoist(copy, scope.type(target.type));
+		this.target.writeLine("Arrays.sort(" + source.value + ");");
+		return source;
+	}
+
+	@Override
+	public ExpressionString sortedWithComparator(Expression value, Expression comparator) {
+		Expression target = duplicable(value);
+		ExpressionString comparatorString = comparator.accept(this);
+		ExpressionString targetString = target.accept(this);
+		ExpressionString copy = new ExpressionString("Arrays.copyOf(" + targetString.value + ", " + targetString.value + ".length).sort()", JavaOperator.CALL);
+		ExpressionString source = hoist(copy, scope.type(target.type));
+		this.target.writeLine("Arrays.sort(" + source.value + ", " + comparatorString.value + ");");
+		return source;
+	}
+
+	@Override
+	public ExpressionString copy(Expression value) {
+		Expression target = duplicable(value);
+		ExpressionString source = target.accept(this);
+		return new ExpressionString("Arrays.copyOf(" + source.value + ", " + source.value + ".length)", JavaOperator.CALL);
+	}
+
+	@Override
+	public ExpressionString copyTo(CallExpression call) {
+		Expression source = call.target;
+		Expression target = call.arguments.arguments[0];
+		Expression sourceOffset = call.arguments.arguments[1];
+		Expression targetOffset = call.arguments.arguments[2];
+		Expression length = call.arguments.arguments[3];
+		return new ExpressionString("System.arraycopy("
+			+ source.accept(this) + ", "
+			+ sourceOffset.accept(this) + ", "
+			+ target.accept(this) + ", "
+			+ targetOffset.accept(this) + ", "
+			+ length.accept(this) + ")", JavaOperator.CALL);
 	}
 }

@@ -28,26 +28,30 @@ import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
+import org.openzen.zenscript.javashared.JavaContext;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class JavaSourceSyntheticHelperGenerator {
+	private final JavaContext context;
 	private final File directory;
 	private final JavaSourceFormattingSettings settings;
 	private final Map<String, List<String>> members = new HashMap<>();
 	private final JavaClass arrayHelpers = new JavaClass("zsynthetic", "ArrayHelpers", JavaClass.Kind.CLASS);
-	private final Map<ArrayKind, JavaSourceMethod> existingContains = new HashMap<>();
-	private final Map<ArrayKind, JavaSourceMethod> existingIndexOf = new HashMap<>();
+	private final Map<ArrayKind, JavaMethod> existingContains = new HashMap<>();
+	private final Map<ArrayKind, JavaMethod> existingIndexOf = new HashMap<>();
 	
-	public JavaSourceSyntheticHelperGenerator(File directory, JavaSourceFormattingSettings settings) {
+	public JavaSourceSyntheticHelperGenerator(JavaContext context, File directory, JavaSourceFormattingSettings settings) {
+		this.context = context;
 		this.directory = new File(directory, "zsynthetic");
 		this.settings = settings;
 	}
 	
-	public JavaSourceMethod createArrayContains(ArrayTypeID type) {
+	public JavaMethod createArrayContains(ArrayTypeID type) {
 		ArrayKind kind = type.accept(new ArrayKindVisitor());
 		if (existingContains.containsKey(kind))
 			return existingContains.get(kind);
@@ -55,12 +59,13 @@ public class JavaSourceSyntheticHelperGenerator {
 		String method = generateContains(kind);
 		addMember(arrayHelpers, method);
 		
-		JavaSourceMethod sourceMethod = new JavaSourceMethod(arrayHelpers, JavaSourceMethod.Kind.EXPANSION, kind.containsName, false);
+		String descriptor = "(" + context.getDescriptor(type) + context.getDescriptor(type.elementType) + ")Z";
+		JavaMethod sourceMethod = new JavaMethod(arrayHelpers, JavaMethod.Kind.EXPANSION, kind.containsName, false, descriptor, JavaModifiers.PUBLIC | JavaModifiers.STATIC);
 		existingContains.put(kind, sourceMethod);
 		return sourceMethod;
 	}
 	
-	public JavaSourceMethod createArrayIndexOf(ArrayTypeID type) {
+	public JavaMethod createArrayIndexOf(ArrayTypeID type) {
 		ArrayKind kind = type.accept(new ArrayKindVisitor());
 		if (existingContains.containsKey(kind))
 			return existingContains.get(kind);
@@ -68,7 +73,8 @@ public class JavaSourceSyntheticHelperGenerator {
 		String method = generateContains(kind);
 		addMember(arrayHelpers, method);
 		
-		JavaSourceMethod sourceMethod = new JavaSourceMethod(arrayHelpers, JavaSourceMethod.Kind.EXPANSION, kind.containsName, false);
+		String descriptor = "(" + context.getDescriptor(type) + ")I";
+		JavaMethod sourceMethod = new JavaMethod(arrayHelpers, JavaMethod.Kind.EXPANSION, kind.containsName, false, descriptor, JavaModifiers.PUBLIC | JavaModifiers.STATIC);
 		existingContains.put(kind, sourceMethod);
 		return sourceMethod;
 	}

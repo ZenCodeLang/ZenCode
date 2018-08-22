@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.javasource;
+package org.openzen.zenscript.javashared;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +32,7 @@ public class JavaSyntheticTypeSignatureConverter implements ITypeVisitor<String>
 	private static final String[] typeParameterNames = {"T", "U", "V", "W", "X", "Y", "Z"}; // if we have more than this, make it Tx with x the number
 	private final Map<TypeParameter, String> typeParameters = new HashMap<>();
 	public final List<TypeParameter> typeParameterList = new ArrayList<>();
-
+	
 	@Override
 	public String visitBasic(BasicTypeID basic) {
 		switch (basic) {

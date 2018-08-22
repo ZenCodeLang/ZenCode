@@ -9,24 +9,28 @@ import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
 
 public class JavaStatementVisitor implements StatementVisitor<Boolean> {
-	private final JavaWriter javaWriter;
-	public JavaExpressionVisitor expressionVisitor;
+    private final JavaWriter javaWriter;
+	private final JavaBytecodeContext context;
+    public JavaExpressionVisitor expressionVisitor;
 
-	/**
-	 * @param javaWriter the method writer that compiles the statement
-	 */
-	public JavaStatementVisitor(JavaWriter javaWriter) {
-		this.javaWriter = javaWriter;
-		this.expressionVisitor = new JavaExpressionVisitor(javaWriter);
-	}
+    /**
+     * @param javaWriter the method writer that compiles the statement
+     */
+    public JavaStatementVisitor(JavaBytecodeContext context, JavaWriter javaWriter) {
+        this.javaWriter = javaWriter;
+		this.context = context;
+        this.expressionVisitor = new JavaExpressionVisitor(context, javaWriter);
+    }
 
-	public JavaStatementVisitor(JavaExpressionVisitor expressionVisitor) {
-		this.javaWriter = expressionVisitor.getJavaWriter();
-		this.expressionVisitor = expressionVisitor;
-	}
+    public JavaStatementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionVisitor) {
+        this.javaWriter = expressionVisitor.getJavaWriter();
+		this.context = context;
+        this.expressionVisitor = expressionVisitor;
+    }
 
 	@Override
 	public Boolean visitBlock(BlockStatement statement) {
@@ -95,15 +99,15 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		//Compile Array/Collection
 		statement.list.accept(expressionVisitor);
 
-		//Create local variables
-		for (VarStatement variable : statement.loopVariables) {
-			final Type type = Type.getType(variable.type.accept(JavaTypeClassVisitor.INSTANCE));
-			final Label variableStart = new Label();
-			final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, javaWriter.local(type), variableStart, variable.name);
-			info.end = end;
-			variable.setTag(JavaLocalVariableInfo.class, info);
-			javaWriter.addVariableInfo(info);
-		}
+        //Create local variables
+        for (VarStatement variable : statement.loopVariables) {
+            final Type type = context.getType(variable.type);
+            final Label variableStart = new Label();
+            final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, javaWriter.local(type), variableStart, variable.name);
+            info.end = end;
+            variable.setTag(JavaLocalVariableInfo.class, info);
+            javaWriter.addVariableInfo(info);
+        }
 
 		//javaWriter.label(min);
 		statement.iterator.target.acceptForIterator(new JavaForeachVisitor(this, statement.loopVariables, statement.content, start, end));
@@ -142,7 +146,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	@Override
 	public Boolean visitReturn(ReturnStatement statement) {
 		statement.value.accept(expressionVisitor);
-		javaWriter.returnType(statement.value.type.accept(JavaTypeVisitor.INSTANCE));
+		javaWriter.returnType(context.getType(statement.value.type));
 		return true;
 	}
 
@@ -238,7 +242,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 			javaWriter.label(catchStart);
 
 			//final Type exceptionType = Type.getType(RuntimeException.class);
-			final Type exceptionType = Type.getType(catchClause.exceptionVariable.type.accept(JavaTypeClassVisitor.INSTANCE));
+			final Type exceptionType = context.getType(catchClause.exceptionVariable.type);
 			final int local = javaWriter.local(exceptionType);
 			javaWriter.store(exceptionType, local);
 
@@ -271,12 +275,11 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitVar(VarStatement statement) {
-
 		if (statement.initializer != null) {
 			statement.initializer.accept(expressionVisitor);
 		}
 
-		Type type = statement.type.accept(JavaTypeVisitor.INSTANCE);
+		Type type = context.getType(statement.type);
 		int local = javaWriter.local(type);
 		if (statement.initializer != null)
 			javaWriter.store(type, local);

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.javasource;
+package org.openzen.zenscript.javashared;
 
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
@@ -22,8 +22,8 @@ import org.openzen.zenscript.codemodel.type.RangeTypeID;
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceTypeNameVisitor implements ITypeVisitor<String> {
-	public JavaSourceTypeNameVisitor() {}
+public class JavaTypeNameVisitor implements ITypeVisitor<String> {
+	public JavaTypeNameVisitor() {}
 
 	@Override
 	public String visitBasic(BasicTypeID basic) {
