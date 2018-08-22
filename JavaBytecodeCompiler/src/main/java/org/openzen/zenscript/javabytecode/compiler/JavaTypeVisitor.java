@@ -35,7 +35,7 @@ public class JavaTypeVisitor implements ITypeVisitor<Type> {
 
 	@Override
 	public Type visitDefinition(DefinitionTypeID definition) {
-		return Type.getType("L" + definition + ";");
+		return Type.getType("L" + definition.definition.name + ";");
 	}
 
 	@Override

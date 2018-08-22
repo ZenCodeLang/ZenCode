@@ -366,6 +366,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			if (!checkAndExecuteMethodInfo(expression.member))
 				throw new IllegalStateException("Call target has no method info!");
 
+			if(expression.instancedHeader.returnType != BasicTypeID.VOID)
+				javaWriter.checkCast("java/lang/String");
 			return null;
 		}
 
@@ -1736,7 +1738,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		javaWriter.loadObject(0);
 		final ITypeID type = expression.value.option.getParameterType(expression.index);
-		javaWriter.getField(new JavaFieldInfo(expression.value.option.getTag(JavaClass.class), "Field" + expression.index, type.accept(JavaTypeVisitor.INSTANCE).getInternalName()));
+		final JavaClass tag = expression.value.option.getTag(JavaClass.class);
+		javaWriter.checkCast(tag.internalName);
+		javaWriter.getField(new JavaFieldInfo(tag, "Field" + expression.index, type.accept(JavaTypeVisitor.INSTANCE).getDescriptor()));
 		return null;
 		//throw new UnsupportedOperationException(); // TODO
 	}
@@ -2003,7 +2007,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		for (MatchExpression.Case aCase : expression.cases) {
 			if (aCase.key instanceof VariantOptionSwitchValue) {
 				VariantOptionSwitchValue variantOptionSwitchValue = (VariantOptionSwitchValue) aCase.key;
-				javaWriter.invokeVirtual(new JavaMethodInfo(new JavaClass("", variantOptionSwitchValue.option.getName(), JavaClass.Kind.CLASS), "getDenominator", "()I", 0));
+				final String className = variantOptionSwitchValue.option.getTag(JavaClass.class).internalName;
+				javaWriter.invokeVirtual(new JavaMethodInfo(new JavaClass("", className.substring(0, className.lastIndexOf('$')), JavaClass.Kind.CLASS), "getDenominator", "()I", 0));
 				break;
 			}
 		}
@@ -2345,7 +2350,26 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitVariantValue(VariantValueExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		final String internalName = expression.option.getTag(JavaClass.class).internalName;
+		javaWriter.newObject(internalName);
+		javaWriter.dup();
+
+		for (Expression argument : expression.arguments) {
+			argument.accept(this);
+		}
+
+		final StringBuilder builder = new StringBuilder("(");
+		for (ITypeID type : expression.option.getOption().types) {
+			builder.append(type.accept(JavaTypeVisitor.INSTANCE).getDescriptor());
+		}
+		builder.append(")V");
+
+
+		javaWriter.invokeSpecial(internalName, "<init>", builder.toString());
+
+
+
+		return null;
 	}
 
 	@Override

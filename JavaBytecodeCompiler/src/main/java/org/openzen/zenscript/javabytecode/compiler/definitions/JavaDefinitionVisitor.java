@@ -200,6 +200,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			final JavaClass optionClass = new JavaClass("", optionClassName, JavaClass.Kind.CLASS);
 			final JavaClassWriter optionWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
+			writer.visitInnerClass(optionClassName, variantName, option.name, Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL);
+
+
 			option.setTag(JavaClass.class, optionClass);
 
 
@@ -221,12 +224,36 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			optionWriter.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, optionClassName, signature, variantName, null);
 			final JavaMemberVisitor optionVisitor = new JavaMemberVisitor(optionWriter, optionClass, variant);
 
+
+			final StringBuilder optionInitDescBuilder = new StringBuilder("(");
+
 			ITypeID[] types = option.types;
 			for (int i = 0; i < types.length; ++i) {
-				final ITypeID type = types[i];
-				final String internalName = type.accept(JavaTypeVisitor.INSTANCE).getInternalName();
+				final Type type = types[i].accept(JavaTypeVisitor.INSTANCE);
+				final String internalName = type.getDescriptor();
+				optionInitDescBuilder.append(internalName);
 				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "Field" + i, internalName, "TT" + i + ";", null).visitEnd();
 			}
+			optionInitDescBuilder.append(")V");
+
+
+			final JavaWriter initWriter = new JavaWriter(optionWriter, new JavaMethodInfo(optionClass, "<init>", optionInitDescBuilder.toString(), Opcodes.ACC_PUBLIC), variant, optionInitDescBuilder.toString(), null);
+			initWriter.start();
+			initWriter.loadObject(0);
+			initWriter.dup();
+			initWriter.invokeSpecial(variantName, "<init>", "()V");
+			for (int i = 0; i < types.length; ++i) {
+				initWriter.dup();
+				initWriter.loadObject(i + 1);
+
+				final Type type = types[i].accept(JavaTypeVisitor.INSTANCE);
+				final String internalName = type.getDescriptor();
+
+				initWriter.putField(optionClassName, "Field" + i, internalName);
+			}
+			initWriter.pop();
+			initWriter.ret();
+			initWriter.end();
 
 
 			//Denominator for switch-cases
@@ -237,12 +264,14 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			getDenominator.end();
 
 
-			//Print the option files, won't be in production
 			optionVisitor.end();
 			optionWriter.visitEnd();
-			JavaModule.classes.put(optionClassName, optionWriter.toByteArray());
+			final byte[] byteArray = optionWriter.toByteArray();
+			JavaModule.classes.put(optionClassName, byteArray);
+
+			//Print the option files, won't be in production
 			try (FileOutputStream out = new FileOutputStream(optionClassName + ".class")) {
-				out.write(optionWriter.toByteArray());
+				out.write(byteArray);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -252,6 +281,13 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		for (final IDefinitionMember member : variant.members) {
 			member.accept(visitor);
 		}
+
+		final JavaWriter superInitWriter = new JavaWriter(writer, new JavaMethodInfo(toClass, "<init>", "()V", Opcodes.ACC_PUBLIC), variant, "()V", null);
+		superInitWriter.start();
+		superInitWriter.loadObject(0);
+		superInitWriter.invokeSpecial("java/lang/Object", "<init>", "()V");
+		superInitWriter.ret();
+		superInitWriter.end();
 
 		visitor.end();
 		writer.visitEnd();
