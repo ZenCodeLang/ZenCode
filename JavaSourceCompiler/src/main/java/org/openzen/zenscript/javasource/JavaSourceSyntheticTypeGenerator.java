@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zenscript.javashared.JavaSynthesizedClass;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,22 +13,22 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaSynthesizedClassNamer;
+import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceSyntheticTypeGenerator {
+public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGenerator {
 	private final Map<String, JavaSynthesizedClass> functions = new HashMap<>();
+	private final Map<String, JavaSynthesizedClass> ranges = new HashMap<>();
 	private final File directory;
 	private final JavaSourceFormattingSettings settings;
 	
@@ -36,24 +37,23 @@ public class JavaSourceSyntheticTypeGenerator {
 		this.settings = settings;
 	}
 	
-	public JavaSynthesizedClass createFunction(JavaSourceTypeVisitor typeFormatter, FunctionTypeID function) {
-		String signature = getFunctionSignature(function);
+	@Override
+	public JavaSynthesizedClass synthesizeFunction(FunctionTypeID function) {
+		String signature = JavaSynthesizedClassNamer.getFunctionSignature(function);
 		if (functions.containsKey(signature))
-			return functions.get(signature).withTypeParameters(extractTypeParameters(function));
+			return functions.get(signature).withTypeParameters(JavaSynthesizedClassNamer.extractTypeParameters(function));
 		
-		String className = "Function" + signature;
-		JavaClass cls = new JavaClass("zsynthetic", className, JavaClass.Kind.INTERFACE);
-		JavaSynthesizedClass result = new JavaSynthesizedClass(cls, extractTypeParameters(function));
+		JavaSynthesizedClass result = JavaSynthesizedClassNamer.createFunctionName(function);
 		functions.put(signature, result);
 		
-		JavaSourceImporter importer = new JavaSourceImporter(cls);
+		JavaSourceImporter importer = new JavaSourceImporter(result.cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, this);
 		
 		StringBuilder contents = new StringBuilder();
 		contents.append("@FunctionalInterface\n");
 		contents.append("public interface ");
-		contents.append(className);
-		JavaSourceUtils.formatTypeParameters(typeFormatter, contents, result.typeParameters, false);
+		contents.append(result.cls.getName());
+		JavaSourceUtils.formatTypeParameters(typeVisitor, contents, result.typeParameters, false);
 		contents.append(" {\n");
 		contents.append(settings.indent);
 		if (function.header.getNumberOfTypeParameters() > 0) {
@@ -82,10 +82,49 @@ public class JavaSourceSyntheticTypeGenerator {
 		contents.append(");\n");
 		contents.append("}\n");
 		
+		writeFile(result, importer, contents);
+		return result;
+	}
+	
+	@Override
+	public JavaSynthesizedClass synthesizeRange(RangeTypeID type) {
+		String signature = JavaSynthesizedClassNamer.getRangeSignature(type);
+		if (ranges.containsKey(signature))
+			return ranges.get(signature).withTypeParameters(JavaSynthesizedClassNamer.extractTypeParameters(type));
+		
+		JavaSynthesizedClass result = JavaSynthesizedClassNamer.createRangeName(type);
+		functions.put(signature, result);
+		
+		JavaSourceImporter importer = new JavaSourceImporter(result.cls);
+		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, this);
+		
+		StringBuilder contents = new StringBuilder();
+		contents.append("public final class ").append(result.cls.getName()).append(" {\n");
+		contents.append(settings.indent).append("public final ").append(type.from.accept(typeVisitor)).append(" from;\n");
+		contents.append(settings.indent).append("public final ").append(type.to.accept(typeVisitor)).append(" to;\n");
+		contents.append(settings.indent).append("\n");
+		contents.append(settings.indent)
+				.append("public ")
+				.append(result.cls.getName())
+				.append("(")
+				.append(type.from.accept(typeVisitor))
+				.append(", ")
+				.append(type.to.accept(typeVisitor))
+				.append(") {\n");
+		contents.append(settings.indent).append(settings.indent).append("this.from = from;\n");
+		contents.append(settings.indent).append(settings.indent).append("this.to = top;\n");
+		contents.append(settings.indent).append("}\n");
+		contents.append("}\n");
+		
+		writeFile(result, importer, contents);
+		return result;
+	}
+	
+	private void writeFile(JavaSynthesizedClass result, JavaSourceImporter importer, StringBuilder contents) {
 		if (!directory.exists())
 			directory.mkdirs();
 		
-		File file = new File(directory, className + ".java");
+		File file = new File(directory, result.cls.getName() + ".java");
 		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
 			writer.write("package zsynthetic;\n");
 			
@@ -108,22 +147,5 @@ public class JavaSourceSyntheticTypeGenerator {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-		return result;
-	}
-	
-	private TypeParameter[] extractTypeParameters(ITypeID type) {
-		List<TypeParameter> result = new ArrayList<>();
-		type.extractTypeParameters(result);
-		return result.toArray(new TypeParameter[result.size()]);
-	}
-	
-	private static String getFunctionSignature(FunctionTypeID type) {
-		return new JavaSyntheticTypeSignatureConverter().visitFunction(type);
-	}
-	
-	private TypeParameter[] getFunctionTypeParameters(FunctionTypeID type) {
-		JavaSyntheticTypeSignatureConverter converter = new JavaSyntheticTypeSignatureConverter();
-		converter.visitFunction(type);
-		return converter.typeParameterList.toArray(new TypeParameter[converter.typeParameterList.size()]);
 	}
 }

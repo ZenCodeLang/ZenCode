@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.expression.CallExpression;
 import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.formattershared.ExpressionString;
@@ -272,8 +273,6 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 		
 		JavaClass cls = new JavaClass(definition.pkg.fullName, filename, JavaClass.Kind.CLASS);
 		definition.setTag(JavaClass.class, cls);
-		JavaSourceMethod method = new JavaSourceMethod(cls, JavaSourceMethod.Kind.STATIC, definition.name, true);
-		definition.caller.setTag(JavaSourceMethod.class, method);
 		return cls;
 	}
 
@@ -283,14 +282,12 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 			return definition.getTag(JavaClass.class);
 		
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
-		JavaNativeClass nativeClass = null;
 		if (nativeTag != null) {
-			nativeClass = nativeClasses.get(nativeTag.value);
+			definition.setTag(JavaNativeClass.class, nativeClasses.get(nativeTag.value));
 		}
 		
 		JavaClass cls = new JavaClass(definition.pkg.fullName, filename, JavaClass.Kind.CLASS);
 		definition.setTag(JavaClass.class, cls);
-		visitExpansionMembers(definition, cls, nativeClass);
 		return cls;
 	}
 
@@ -313,7 +310,6 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 			option.setTag(JavaSourceVariantOption.class, new JavaSourceVariantOption(cls, variantCls));
 		}
 		
-		visitClassMembers(variant, cls, null, false);
 		return cls;
 	}
 	
@@ -323,36 +319,26 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 		
 		NativeTag nativeTag = definition.getTag(NativeTag.class);
 		JavaNativeClass nativeClass = nativeTag == null ? null : nativeClasses.get(nativeTag.value);
+		JavaClass cls;
 		if (nativeClass == null) {
-			JavaClass cls = outerClass == null ? new JavaClass(definition.pkg.fullName, definition.name, kind) : new JavaClass(outerClass, definition.name, kind);
+			cls = outerClass == null ? new JavaClass(definition.pkg.fullName, definition.name, kind) : new JavaClass(outerClass, definition.name, kind);
 			cls.destructible = definition.isDestructible();
 			definition.setTag(JavaClass.class, cls);
-			visitClassMembers(definition, cls, null, startsEmpty);
-			return cls;
 		} else {
-			JavaClass cls = outerClass == null ? new JavaClass(definition.pkg.fullName, filename, kind) : new JavaClass(outerClass, filename, kind);
+			cls = outerClass == null ? new JavaClass(definition.pkg.fullName, filename, kind) : new JavaClass(outerClass, filename, kind);
 			definition.setTag(JavaClass.class, nativeClass.cls);
 			definition.setTag(JavaNativeClass.class, nativeClass);
-			visitExpansionMembers(definition, cls, nativeClass);
 			
 			if (nativeClass.nonDestructible)
 				cls.destructible = false;
-			
-			return cls;
 		}
-	}
-	
-	private void visitClassMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
-		JavaSourcePrepareClassMethodVisitor methodVisitor = new JavaSourcePrepareClassMethodVisitor(this, filename, cls, nativeClass, startsEmpty);
+		
 		for (IDefinitionMember member : definition.members) {
-			member.accept(methodVisitor);
+			if (member instanceof InnerDefinitionMember) {
+				((InnerDefinitionMember) member).innerDefinition.accept(new JavaSourcePrepareDefinitionVisitor(filename, cls));
+			}
 		}
-	}
-	
-	private void visitExpansionMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass) {
-		JavaSourcePrepareExpansionMethodVisitor methodVisitor = new JavaSourcePrepareExpansionMethodVisitor(cls, nativeClass);
-		for (IDefinitionMember member : definition.members) {
-			member.accept(methodVisitor);
-		}
+		
+		return cls;
 	}
 }

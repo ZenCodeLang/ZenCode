@@ -94,7 +94,7 @@ import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.tags.JavaSourceField;
+import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 import org.openzen.zenscript.javasource.tags.JavaSourceVariantOption;
 
@@ -429,7 +429,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitGetStaticField(GetStaticFieldExpression expression) {
-		JavaSourceField field = expression.field.getTag(JavaSourceField.class);
+		JavaField field = expression.field.getTag(JavaField.class);
 		if (field == null)
 			throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Missing field tag");
 		
@@ -596,7 +596,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitSetStaticField(SetStaticFieldExpression expression) {
-		JavaSourceField field = expression.field.getTag(JavaSourceField.class);
+		JavaField field = expression.field.getTag(JavaField.class);
 		if (field == null)
 			throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Missing field tag");
 		if (field.cls.fullName.equals(scope.fileScope.cls.fullName) && !scope.hasLocalVariable(field.name)) {

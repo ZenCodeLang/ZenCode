@@ -48,8 +48,6 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 		String filename = getFilename(definition);
 		JavaSourcePrepareDefinitionVisitor prepare = new JavaSourcePrepareDefinitionVisitor(filename, null);
 		JavaClass cls = definition.accept(prepare);
-		if (cls.empty)
-			return;
 		
 		File file = new File(getDirectory(definition.pkg), cls.getName() + ".java");
 		System.out.println("Compiling " + definition.name + " as " + cls.fullName);
@@ -67,6 +65,11 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	
 	@Override
 	public void finish() {
+		JavaSourceContext context = new JavaSourceContext(typeGenerator);
+		for (JavaSourceFile sourceFile : sourceFiles.values()) {
+			sourceFile.prepare(context);
+		}
+		
 		for (JavaSourceFile sourceFile : sourceFiles.values())
 			sourceFile.write();
 		

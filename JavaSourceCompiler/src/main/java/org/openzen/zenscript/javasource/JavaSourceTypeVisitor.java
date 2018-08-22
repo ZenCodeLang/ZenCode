@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zenscript.javashared.JavaSynthesizedClass;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
@@ -101,7 +102,7 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 
 	@Override
 	public String visitFunction(FunctionTypeID function) {
-		JavaSynthesizedClass synthetic = typeGenerator.createFunction(this, function);
+		JavaSynthesizedClass synthetic = typeGenerator.synthesizeFunction(function);
 		StringBuilder result = new StringBuilder();
 		result.append(importer.importType(synthetic.cls));
 		if (synthetic.typeParameters.length > 0) {

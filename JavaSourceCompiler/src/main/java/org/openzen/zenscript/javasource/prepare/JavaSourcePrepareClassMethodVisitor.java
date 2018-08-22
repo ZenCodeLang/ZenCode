@@ -28,7 +28,8 @@ import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.tags.JavaSourceField;
+import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javasource.JavaSourceContext;
 import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
@@ -39,21 +40,24 @@ import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
 	
-	private final JavaSourcePrepareDefinitionVisitor definitionPreparer;
+	private final JavaSourceContext context;
 	private final String filename;
 	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
+	private final JavaSourcePrepareDefinitionMemberVisitor memberPreparer;
 	
 	public JavaSourcePrepareClassMethodVisitor(
-			JavaSourcePrepareDefinitionVisitor definitionPreparer,
+			JavaSourceContext context,
 			String filename,
 			JavaClass cls,
 			JavaNativeClass nativeClass,
+			JavaSourcePrepareDefinitionMemberVisitor memberPreparer,
 			boolean startsEmpty) {
-		this.definitionPreparer = definitionPreparer;
+		this.context = context;
 		this.filename = filename;
 		this.cls = cls;
 		this.nativeClass = nativeClass;
+		this.memberPreparer = memberPreparer;
 		
 		cls.empty = startsEmpty;
 	}
@@ -64,13 +68,13 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 			System.out.println("Class " + cls.fullName + " not empty because of const " + member.name);
 		
 		cls.empty = false;
-		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
+		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
 		return null;
 	}
 	
 	@Override
 	public Void visitField(FieldMember member) {
-		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
+		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
 		if (member.hasAutoGetter())
 			visitGetter(member.autoGetter);
 		if (member.hasAutoSetter())
@@ -138,7 +142,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		definitionPreparer.prepare(member.type);
+		memberPreparer.prepare(member.type);
 		
 		if (canMergeImplementation(member)) {
 			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(true, cls));
@@ -153,7 +157,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 			JavaClass implementationClass = new JavaClass(cls, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation", JavaClass.Kind.CLASS);
 			member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
 			
-			JavaSourcePrepareClassMethodVisitor visitor = new JavaSourcePrepareClassMethodVisitor(definitionPreparer, filename, implementationClass, null, true);
+			JavaSourcePrepareClassMethodVisitor visitor = new JavaSourcePrepareClassMethodVisitor(context, filename, implementationClass, null, memberPreparer, true);
 			for (IDefinitionMember m : member.members)
 				m.accept(visitor);
 		}
@@ -166,7 +170,7 @@ public class JavaSourcePrepareClassMethodVisitor implements MemberVisitor<Void> 
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		JavaSourcePrepareDefinitionVisitor innerDefinitionPrepare = new JavaSourcePrepareDefinitionVisitor(filename, cls);
+		JavaSourcePrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaSourcePrepareDefinitionMemberVisitor(context, filename);
 		member.innerDefinition.accept(innerDefinitionPrepare);
 		
 		if (DEBUG_EMPTY && cls.empty)

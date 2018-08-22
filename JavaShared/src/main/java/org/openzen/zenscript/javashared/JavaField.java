@@ -3,21 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.javabytecode;
-
-import org.openzen.zenscript.javashared.JavaClass;
+package org.openzen.zenscript.javashared;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaFieldInfo {
-	public final JavaClass javaClass;
+public class JavaField {
+	public final JavaClass cls;
 	public final String name;
 	public final String signature;
 	
-	public JavaFieldInfo(JavaClass javaClass, String name, String signature) {
-		this.javaClass = javaClass;
+	public JavaField(JavaClass cls, String name, String signature) {
+		this.cls = cls;
 		this.name = name;
 		this.signature = signature;
 	}

@@ -48,9 +48,9 @@ public class JavaModule {
 
 		@Override
 		public Class<?> loadClass(String name) throws ClassNotFoundException {
-			if(customClasses.containsKey(name))
+			if (customClasses.containsKey(name))
 				return customClasses.get(name);
-			if(classes.containsKey(name)) {
+			if (classes.containsKey(name)) {
 				final byte[] bytes = classes.get(name);
 				customClasses.put(name, defineClass(name, bytes, 0, bytes.length, null));
 				return customClasses.get(name);

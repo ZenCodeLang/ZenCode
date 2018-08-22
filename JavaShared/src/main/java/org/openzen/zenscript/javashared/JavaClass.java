@@ -21,6 +21,17 @@ public class JavaClass implements Comparable<JavaClass> {
 	public static final JavaClass MAP = new JavaClass("java.util", "Map", JavaClass.Kind.INTERFACE);
 	public static final JavaClass HASHMAP = new JavaClass("java.util", "HashMap", JavaClass.Kind.CLASS);
 	public static final JavaClass ITERATOR = new JavaClass("java.util", "Iterator", JavaClass.Kind.INTERFACE);
+	public static final JavaClass ARRAYS = new JavaClass("java.util", "Arrays", Kind.CLASS);
+	
+	public static final JavaClass BOOLEAN = new JavaClass("java.lang", "Boolean", Kind.CLASS);
+	public static final JavaClass BYTE = new JavaClass("java.lang", "Byte", Kind.CLASS);
+	public static final JavaClass SHORT = new JavaClass("java.lang", "Short", Kind.CLASS);
+	public static final JavaClass INTEGER = new JavaClass("java.lang", "Integer", Kind.CLASS);
+	public static final JavaClass LONG = new JavaClass("java.lang", "Long", Kind.CLASS);
+	public static final JavaClass FLOAT = new JavaClass("java.lang", "Float", Kind.CLASS);
+	public static final JavaClass DOUBLE = new JavaClass("java.lang", "Double", Kind.CLASS);
+	public static final JavaClass CHARACTER = new JavaClass("java.lang", "Character", Kind.CLASS);
+	public static final JavaClass COLLECTION = new JavaClass("java.util", "Collection", Kind.INTERFACE);
 	
 	public static JavaClass fromInternalName(String internalName, Kind kind) {
 		if (kind == Kind.ARRAY)
@@ -45,6 +56,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	
 	public boolean empty = false;
 	public boolean destructible = false;
+	public boolean membersPrepared = false;
 	
 	private final String[] classNameParts;
 	

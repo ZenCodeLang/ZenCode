@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.javasource;
+package org.openzen.zenscript.javashared;
 
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  *

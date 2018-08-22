@@ -35,8 +35,8 @@ public class JavaCompiler implements ZenCodeCompiler {
 	private final JavaClassWriter scriptsClassWriter;
 	private int generatedScriptBlockCounter = 0;
 	private boolean finished = false;
-	private JavaModule compiled = null;
 	private final File jarFile;
+	private final JavaContext context;
 	
 	public JavaCompiler(File jarFile) {
 		this(false, jarFile);
@@ -45,6 +45,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 	public JavaCompiler(boolean debug, File jarFile) {
 		target = new JavaModule();
 		this.jarFile = jarFile;
+		this.context = new JavaContext(target);
 		
 		scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
@@ -54,7 +55,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
 		String className = getClassName(definition.position.getFilename());
 		JavaScriptFile scriptFile = getScriptFile(className);
-		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(scriptFile.classWriter)));
+		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
 	}
 	
 	@Override
@@ -71,7 +72,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 		JavaMethodInfo method = new JavaMethodInfo(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		scriptFile.scriptMethods.add(method);
 		
-		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(new JavaWriter(visitor, method, null, null, null));
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, new JavaWriter(visitor, method, null, null, null));
 		statementVisitor.start();
 		for (Statement statement : script.statements) {
 			statement.accept(statementVisitor);
@@ -111,7 +112,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 	
 	@Override
 	public void run() {
-		if (compiled == null)
+		if (!finished)
 			throw new IllegalStateException("Not yet built!");
 		
 		// TODO: execute this
@@ -120,6 +121,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 	public JavaModule finishAndGetModule() {
 		if (finished)
 			throw new IllegalStateException("Already finished!");
+		
 		finished = true;
 		
 		JavaMethodInfo runMethod = new JavaMethodInfo(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
@@ -136,7 +138,6 @@ public class JavaCompiler implements ZenCodeCompiler {
 		runWriter.end();
 		
 		target.register("Scripts", scriptsClassWriter.toByteArray());
-		
 		return target;
 	}
 }

@@ -115,6 +115,9 @@ public class DirectoryModuleReference implements ModuleReference {
 	}
 	
 	private SourcePackage loadPackage(String name, File directory) {
+		if (!directory.exists())
+			throw new IllegalArgumentException("Directory does not exist: " + directory.getAbsolutePath());
+		
 		SourcePackage pkg = new SourcePackage(directory, name);
 		
 		for (File file : directory.listFiles()) {

@@ -27,7 +27,8 @@ import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.tags.JavaSourceField;
+import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javasource.JavaSourceContext;
 import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
 import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 
@@ -38,18 +39,20 @@ import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
 public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
 	
+	private final JavaSourceContext context;
 	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
 	
-	public JavaSourcePrepareExpansionMethodVisitor(JavaClass cls, JavaNativeClass nativeClass) {
+	public JavaSourcePrepareExpansionMethodVisitor(JavaSourceContext context, JavaClass cls, JavaNativeClass nativeClass) {
 		this.cls = cls;
 		this.nativeClass = nativeClass;
+		this.context = context;
 		cls.empty = true;
 	}
 	
 	@Override
 	public Void visitConst(ConstMember member) {
-		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
+		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
 		
 		if (DEBUG_EMPTY && cls.empty)
 			System.out.println("Class " + cls.fullName + " not empty because of const");
@@ -61,7 +64,7 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 	@Override
 	public Void visitField(FieldMember member) {
 		// TODO: expansion fields
-		member.setTag(JavaSourceField.class, new JavaSourceField(cls, member.name));
+		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
 		if (member.hasAutoGetter() || member.hasAutoSetter())
 			cls.empty = false;
 		return null;

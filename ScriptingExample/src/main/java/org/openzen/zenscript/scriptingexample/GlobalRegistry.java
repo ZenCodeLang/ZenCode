@@ -29,10 +29,10 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.javabytecode.JavaFieldInfo;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaField;
 
 /**
  *
@@ -50,7 +50,7 @@ public class GlobalRegistry {
 		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, printstreamPrintln);
 		
 		JavaClass jSystem = new JavaClass("java.lang", "System", JavaClass.Kind.CLASS);
-		SYSTEM_OUT.setTag(JavaFieldInfo.class, new JavaFieldInfo(jSystem, "out", "Ljava/io/PrintStream;"));
+		SYSTEM_OUT.setTag(JavaField.class, new JavaField(jSystem, "out", "Ljava/io/PrintStream;"));
 	}
 	
 	public ZSPackage collectPackages() {
