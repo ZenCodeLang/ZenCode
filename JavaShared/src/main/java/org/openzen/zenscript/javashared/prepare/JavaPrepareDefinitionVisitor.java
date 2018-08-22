@@ -3,9 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.javasource.prepare;
+package org.openzen.zenscript.javashared.prepare;
 
+import org.openzen.zenscript.javashared.JavaNativeClass;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
@@ -25,79 +27,78 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.formattershared.ExpressionString;
-import org.openzen.zenscript.javasource.JavaOperator;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
-import org.openzen.zenscript.javasource.tags.JavaSourceVariantOption;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
+import org.openzen.zenscript.javashared.JavaVariantOption;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<JavaClass> {
+public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass> {
 	private static final Map<String, JavaNativeClass> nativeClasses = new HashMap<>();
 	
 	static {
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.lang", "StringBuilder", JavaClass.Kind.CLASS));
-			cls.addConstructor("constructor", "");
-			cls.addConstructor("constructorWithCapacity", "");
-			cls.addConstructor("constructorWithValue", "");
-			cls.addMethod("isEmpty", new JavaSourceMethod((formatter, call) -> ((CallExpression)call).accept(formatter).unaryPostfix(JavaOperator.EQUALS, "length() == 0")));
-			cls.addInstanceMethod("length", "length");
-			cls.addInstanceMethod("appendBool", "append");
-			cls.addInstanceMethod("appendByte", "append");
-			cls.addInstanceMethod("appendSByte", "append");
-			cls.addInstanceMethod("appendShort", "append");
-			cls.addInstanceMethod("appendUShort", "append");
-			cls.addInstanceMethod("appendInt", "append");
-			cls.addInstanceMethod("appendUInt", "append");
-			cls.addInstanceMethod("appendLong", "append");
-			cls.addInstanceMethod("appendULong", "append");
-			cls.addInstanceMethod("appendFloat", "append");
-			cls.addInstanceMethod("appendDouble", "append");
-			cls.addInstanceMethod("appendChar", "append");
-			cls.addInstanceMethod("appendString", "append");
-			cls.addInstanceMethod("asString", "toString");
+			cls.addConstructor("constructor", "()V");
+			cls.addConstructor("constructorWithCapacity", "(I)V");
+			cls.addConstructor("constructorWithValue", "(Ljava/lang/String;)V");
+			cls.addMethod("isEmpty", new JavaMethod((expression, translator) -> translator.isEmptyAsLengthZero(((CallExpression)expression).target)));
+			cls.addInstanceMethod("length", "length", "()I");
+			cls.addInstanceMethod("appendBool", "append", "(Z)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendByte", "append", "(I)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendSByte", "append", "(B)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendShort", "append", "(S)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendUShort", "append", "(I)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendInt", "append", "(I)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendUInt", "append", "(I)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendLong", "append", "(J)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendULong", "append", "(J)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendFloat", "append", "(F)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendDouble", "append", "(D)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendChar", "append", "(C)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendString", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("asString", "toString", "()Ljava/lang/String;");
 			nativeClasses.put("stdlib::StringBuilder", cls);
 		}
 		
 		{
 			JavaNativeClass list = new JavaNativeClass(new JavaClass("java.util", "List", JavaClass.Kind.INTERFACE));
 			JavaClass arrayList = new JavaClass("java.util", "ArrayList", JavaClass.Kind.CLASS);
-			list.addMethod("constructor", new JavaSourceMethod(arrayList, JavaSourceMethod.Kind.CONSTRUCTOR, "", false));
-			list.addInstanceMethod("add", "add");
-			list.addInstanceMethod("insert", "add");
-			list.addInstanceMethod("remove", "remove");
-			list.addInstanceMethod("indexOf", "indexOf");
-			list.addInstanceMethod("lastIndexOf", "lastIndexOf");
-			list.addInstanceMethod("getAtIndex", "get");
-			list.addInstanceMethod("setAtIndex", "set");
-			list.addInstanceMethod("contains", "contains");
-			list.addMethod("toArray", new JavaSourceMethod((formatter, call) -> formatter.listToArray((CastExpression)call)));
-			list.addInstanceMethod("length", "size");
-			list.addInstanceMethod("isEmpty", "isEmpty");
-			list.addInstanceMethod("iterate", "iterator");
+			list.addMethod("constructor", new JavaMethod(arrayList, JavaMethod.Kind.CONSTRUCTOR, "", false, "()V", JavaModifiers.PUBLIC));
+			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z"); List<?> l;
+			list.addInstanceMethod("insert", "add", "(Ljava/lang/Object;I)V");
+			list.addInstanceMethod("remove", "remove", "(java/lang/Object;)Z");
+			list.addInstanceMethod("indexOf", "indexOf", "(java/lang/Object;)I");
+			list.addInstanceMethod("lastIndexOf", "lastIndexOf", "(Ljava/lang/Object;)I");
+			list.addInstanceMethod("getAtIndex", "get", "(I)Ljava/lang/Object;");
+			list.addInstanceMethod("setAtIndex", "set", "(ILjava/lang/Object;)Ljava/lang/Object;");
+			list.addInstanceMethod("contains", "contains", "(Ljava/lang/Object;)Z");
+			list.addMethod("toArray", new JavaMethod((expression, translator) -> translator.listToArray((CastExpression)expression)));
+			list.addInstanceMethod("length", "size", "()I");
+			list.addInstanceMethod("isEmpty", "isEmpty", "()Z");
+			list.addInstanceMethod("iterate", "iterator", "()Ljava/util/Iterator;");
 			nativeClasses.put("stdlib::List", list);
 		}
 		
 		{
 			JavaNativeClass iterable = new JavaNativeClass(new JavaClass("java.lang", "Iterable", JavaClass.Kind.INTERFACE));
-			iterable.addInstanceMethod("iterate", "iterator");
+			iterable.addInstanceMethod("iterate", "iterator", "()Ljava/util/Iterator;");
 			nativeClasses.put("stdlib::Iterable", iterable);
 		}
 		
 		{
 			JavaNativeClass iterator = new JavaNativeClass(JavaClass.ITERATOR);
-			iterator.addInstanceMethod("hasNext", "hasNext");
-			iterator.addInstanceMethod("next", "next");
+			iterator.addInstanceMethod("hasNext", "hasNext", "()Z");
+			iterator.addInstanceMethod("next", "next", "()Ljava/lang/Object;");
 			nativeClasses.put("stdlib::Iterator", iterator);
 		}
 		
 		{
 			JavaNativeClass comparable = new JavaNativeClass(new JavaClass("java.lang", "Comparable", JavaClass.Kind.INTERFACE));
-			comparable.addInstanceMethod("compareTo", "compareTo");
+			comparable.addInstanceMethod("compareTo", "compareTo", "(Ljava/lang/Object;)I");
 			nativeClasses.put("stdlib::Comparable", comparable);
 		}
 		
@@ -106,107 +107,86 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 			JavaClass math = new JavaClass("java.lang", "Math", JavaClass.Kind.CLASS);
 			
 			JavaNativeClass cls = new JavaNativeClass(integer);
-			cls.addMethod("min", new JavaSourceMethod(math, JavaSourceMethod.Kind.STATIC, "min", false));
-			cls.addMethod("max", new JavaSourceMethod(math, JavaSourceMethod.Kind.STATIC, "max", false));
-			cls.addMethod("toHexString", new JavaSourceMethod(integer, JavaSourceMethod.Kind.EXPANSION, "toHexString", false));
+			cls.addMethod("min", new JavaMethod(math, JavaMethod.Kind.STATIC, "min", false, "(II)I", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
+			cls.addMethod("max", new JavaMethod(math, JavaMethod.Kind.STATIC, "max", false, "(II)I", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
+			cls.addMethod("toHexString", new JavaMethod(integer, JavaMethod.Kind.EXPANSION, "toHexString", false, "()Ljava/lang/String;", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
 			nativeClasses.put("stdlib::Integer", cls);
 		}
 		
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.lang", "String", JavaClass.Kind.CLASS));
-			cls.addMethod("contains", new JavaSourceMethod((formatter, calle) -> {
-				CallExpression call = (CallExpression)calle;
-				ExpressionString str = call.arguments.arguments[0].accept(formatter);
-				ExpressionString character = call.arguments.arguments[1].accept(formatter);
-				return str.unaryPostfix(JavaOperator.GREATER_EQUALS, ".indexOf(" + character.value + ")");
+			cls.addMethod("contains", new JavaMethod((expression, translator) -> {
+				CallExpression call = (CallExpression)expression;
+				Expression str = call.target;
+				Expression character = call.arguments.arguments[0];
+				return translator.containsAsIndexOf(str, character);
 			}));
-			cls.addInstanceMethod("indexOf", "indexOf");
-			cls.addInstanceMethod("indexOfFrom", "indexOf");
-			cls.addInstanceMethod("lastIndexOf", "lastIndexOf");
-			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf");
-			cls.addInstanceMethod("trim", "trim");
+			cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
+			cls.addInstanceMethod("indexOfFrom", "indexOf", "(II)I");
+			cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
+			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
+			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
 			nativeClasses.put("stdlib::String", cls);
 		}
 		
 		{
 			JavaClass arrays = new JavaClass("java.lang", "Arrays", JavaClass.Kind.CLASS);
 			JavaNativeClass cls = new JavaNativeClass(arrays);
-			cls.addMethod("sort", new JavaSourceMethod(arrays, JavaSourceMethod.Kind.EXPANSION, "sort", false));
-			cls.addMethod("sorted", new JavaSourceMethod((formatter, calle) -> {
-				Expression target = formatter.duplicable(((CallExpression)calle).target);
-				ExpressionString targetString = target.accept(formatter);
-				ExpressionString copy = new ExpressionString("Arrays.copyOf(" + targetString.value + ", " + targetString.value + ".length).sort()", JavaOperator.CALL);
-				ExpressionString source = formatter.hoist(copy, formatter.scope.type(target.type));
-				formatter.target.writeLine("Arrays.sort(" + source.value + ");");
-				return source;
+			cls.addMethod("sort", new JavaMethod(arrays, JavaMethod.Kind.EXPANSION, "sort", false, "([Ljava/lang/Object;)[Ljava/lang/Object;", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
+			cls.addMethod("sorted", new JavaMethod((expression, translator) -> {
+				return translator.sorted(((CallExpression)expression).target);
 			}));
-			cls.addMethod("sortWithComparator", new JavaSourceMethod(arrays, JavaSourceMethod.Kind.EXPANSION, "sort", false));
-			cls.addMethod("sortedWithComparator", new JavaSourceMethod((formatter, calle) -> {
-				Expression target = formatter.duplicable(((CallExpression)calle).target);
-				ExpressionString comparator = ((CallExpression)calle).arguments.arguments[0].accept(formatter);
-				ExpressionString targetString = target.accept(formatter);
-				ExpressionString copy = new ExpressionString("Arrays.copyOf(" + targetString.value + ", " + targetString.value + ".length).sort()", JavaOperator.CALL);
-				ExpressionString source = formatter.hoist(copy, formatter.scope.type(target.type));
-				formatter.target.writeLine("Arrays.sort(" + source.value + ", " + comparator.value + ");");
-				return source;
+			cls.addMethod("sortWithComparator", new JavaMethod(arrays, JavaMethod.Kind.EXPANSION, "sort", false, "([Ljava/lang/Object;Ljava/lang/Comparator;)[Ljava/lang/Object;", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
+			cls.addMethod("sortedWithComparator", new JavaMethod((expression, translator) -> {
+				return translator.sortedWithComparator(
+						((CallExpression)expression).target,
+						((CallExpression)expression).arguments.arguments[0]);
 			}));
-			cls.addMethod("copy", new JavaSourceMethod((formatter, calle) -> {
-				Expression target = formatter.duplicable(((CallExpression)calle).target);
-				ExpressionString source = target.accept(formatter);
-				return new ExpressionString("Arrays.copyOf(" + source.value + ", " + source.value + ".length)", JavaOperator.CALL);
+			cls.addMethod("copy", new JavaMethod((expression, translator) -> {
+				return translator.copy(((CallExpression)expression).target);
 			}));
-			cls.addMethod("copyResize", new JavaSourceMethod(arrays, JavaSourceMethod.Kind.EXPANSION, "copyOf", false));
-			cls.addMethod("copyTo", new JavaSourceMethod((formatter, calle) -> {
-				CallExpression call = (CallExpression)calle;
-				Expression source = call.target;
-				Expression target = call.arguments.arguments[0];
-				Expression sourceOffset = call.arguments.arguments[1];
-				Expression targetOffset = call.arguments.arguments[2];
-				Expression length = call.arguments.arguments[3];
-				return new ExpressionString("System.arraycopy("
-					+ source.accept(formatter) + ", "
-					+ sourceOffset.accept(formatter) + ", "
-					+ target.accept(formatter) + ", "
-					+ targetOffset.accept(formatter) + ", "
-					+ length.accept(formatter) + ")", JavaOperator.CALL);
+			cls.addMethod("copyResize", new JavaMethod(arrays, JavaMethod.Kind.EXPANSION, "copyOf", false, "([Ljava/lang/Object;I)[Ljava/lang/Object;", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
+			cls.addMethod("copyTo", new JavaMethod((expression, translator) -> {
+				return translator.copyTo((CallExpression)expression);
 			}));
 			nativeClasses.put("stdlib::Arrays", cls);
 		}
 		
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.lang", "IllegalArgumentException", JavaClass.Kind.CLASS));
-			cls.addConstructor("constructor", "");
+			cls.addConstructor("constructor", "(Ljava/lang/String;)V");
 			nativeClasses.put("stdlib::IllegalArgumentException", cls);
 		}
 		
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.lang", "Exception", JavaClass.Kind.CLASS));
-			cls.addConstructor("constructor", "");
-			cls.addConstructor("constructorWithCause", "");
+			cls.addConstructor("constructor", "(Ljava/lang/String;)V");
+			cls.addConstructor("constructorWithCause", "(Ljava/lang/String;Ljava/lang/Throwable;)V");
 			nativeClasses.put("stdlib::Exception", cls);
 		}
 		
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.io", "IOException", JavaClass.Kind.CLASS));
-			cls.addConstructor("constructor", "");
+			cls.addConstructor("constructor", "(Ljava/lang/String;)V");
 			nativeClasses.put("io::IOException", cls);
 		}
 		
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.io", "Reader", JavaClass.Kind.INTERFACE));
-			cls.addInstanceMethod("destruct", "close");
-			cls.addInstanceMethod("readCharacter", "read");
-			cls.addInstanceMethod("readArray", "read");
-			cls.addInstanceMethod("readArraySlice", "read");
+			cls.addInstanceMethod("destruct", "close", "()V");
+			cls.addInstanceMethod("readCharacter", "read", "()C");
+			cls.addInstanceMethod("readArray", "read", "([C)I");
+			cls.addInstanceMethod("readArraySlice", "read", "([CII)I");
 			nativeClasses.put("io::Reader", cls);
 		}
 		
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.io", "StringReader", JavaClass.Kind.CLASS), true);
-			cls.addConstructor("constructor", "");
-			cls.addInstanceMethod("destructor", "close");
-			cls.addInstanceMethod("readCharacter", "read");
-			cls.addInstanceMethod("readSlice", "read");
+			cls.addConstructor("constructor", "(Ljava/lang/String;)V");
+			cls.addInstanceMethod("destructor", "close", "()V");
+			cls.addInstanceMethod("readCharacter", "read", "()C");
+			cls.addInstanceMethod("readArray", "read", "([C)I");
+			cls.addInstanceMethod("readSlice", "read", "([CII)I");
 			nativeClasses.put("io::StringReader", cls);
 		}
 	}
@@ -214,7 +194,7 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 	private final String filename;
 	private final JavaClass outerClass;
 	
-	public JavaSourcePrepareDefinitionVisitor(String filename, JavaClass outerClass) {
+	public JavaPrepareDefinitionVisitor(String filename, JavaClass outerClass) {
 		this.filename = filename;
 		this.outerClass = outerClass;
 	}
@@ -307,7 +287,7 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 		
 		for (VariantDefinition.Option option : variant.options) {
 			JavaClass variantCls = new JavaClass(cls.fullName, option.name, JavaClass.Kind.CLASS);
-			option.setTag(JavaSourceVariantOption.class, new JavaSourceVariantOption(cls, variantCls));
+			option.setTag(JavaVariantOption.class, new JavaVariantOption(cls, variantCls));
 		}
 		
 		return cls;
@@ -335,7 +315,7 @@ public class JavaSourcePrepareDefinitionVisitor implements DefinitionVisitor<Jav
 		
 		for (IDefinitionMember member : definition.members) {
 			if (member instanceof InnerDefinitionMember) {
-				((InnerDefinitionMember) member).innerDefinition.accept(new JavaSourcePrepareDefinitionVisitor(filename, cls));
+				((InnerDefinitionMember) member).innerDefinition.accept(new JavaPrepareDefinitionVisitor(filename, cls));
 			}
 		}
 		

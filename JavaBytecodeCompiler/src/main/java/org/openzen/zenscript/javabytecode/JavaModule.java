@@ -18,16 +18,19 @@ import java.util.logging.Logger;
  * @author Hoofdgebruiker
  */
 public class JavaModule {
-	public static final Map<String, byte[]> classes = new HashMap<>();
+	private final Map<String, byte[]> classes = new HashMap<>();
 
 	public JavaModule() {
 
 	}
 
 	public void register(String classname, byte[] bytecode) {
-		if (bytecode == null) return;
+		if (bytecode == null)
+			return;
+		
 		classes.put(classname, bytecode);
-		try (FileOutputStream writer = new FileOutputStream(new File(classname + ".class"))) {
+		
+		try (FileOutputStream writer = new FileOutputStream(new File(classname.replace('/', '_') + ".class"))) {
 			writer.write(bytecode);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -49,6 +52,8 @@ public class JavaModule {
 
 		@Override
 		public Class<?> loadClass(String name) throws ClassNotFoundException {
+			//System.out.println("LoadClass " + name);
+			
 			if (customClasses.containsKey(name))
 				return customClasses.get(name);
 			if (classes.containsKey(name)) {

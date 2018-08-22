@@ -6,19 +6,22 @@
 package org.openzen.zenscript.javasource;
 
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.javashared.JavaContext;
+import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceContext {
+public class JavaSourceContext extends JavaContext {
 	private final JavaTypeDescriptorVisitor typeDescriptorVisitor;
 	
-	public JavaSourceContext(JavaSourceSyntheticTypeGenerator generator) {
+	public JavaSourceContext(JavaSyntheticClassGenerator generator) {
 		typeDescriptorVisitor = new JavaTypeDescriptorVisitor(generator);
 	}
 	
+	@Override
 	public String getDescriptor(ITypeID type) {
 		return type.accept(typeDescriptorVisitor);
 	}

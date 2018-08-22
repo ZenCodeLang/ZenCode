@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
+import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaSynthesizedClass;
 import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
@@ -21,13 +22,13 @@ import org.openzen.zenscript.javashared.JavaTypeInternalNameVisitor;
  *
  * @author Hoofdgebruiker
  */
-public class JavaContext {
+public class JavaBytecodeContext extends JavaContext {
 	private final JavaModule module;
 	private final TypeGenerator typeGenerator;
 	private final JavaTypeInternalNameVisitor internalNameVisitor;
 	private final JavaTypeDescriptorVisitor descriptorVisitor;
 	
-	public JavaContext(JavaModule module) {
+	public JavaBytecodeContext(JavaModule module) {
 		this.module = module;
 		
 		typeGenerator = new TypeGenerator();
@@ -39,6 +40,7 @@ public class JavaContext {
 		return typeGenerator;
 	}
 	
+	@Override
 	public String getDescriptor(ITypeID type) {
 		return type.accept(descriptorVisitor);
 	}
@@ -51,36 +53,6 @@ public class JavaContext {
 		return Type.getType(getDescriptor(type));
 	}
 	
-	public String getMethodDescriptor(FunctionHeader header) {
-		return getMethodDescriptor(header, false);
-	}
-	
-    public String getMethodSignature(FunctionHeader header) {
-        StringBuilder signatureBuilder = new StringBuilder("(");
-        for (FunctionParameter parameter : header.parameters) {
-            signatureBuilder.append(getDescriptor(parameter.type));
-        }
-        signatureBuilder.append(")").append(getDescriptor(header.returnType));
-        return signatureBuilder.toString();
-    }
-	
-	public String getEnumConstructorDescriptor(FunctionHeader header) {
-		return getMethodDescriptor(header, true);
-	}
-	
-	private String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor) {
-        StringBuilder descBuilder = new StringBuilder("(");
-        if (isEnumConstructor)
-            descBuilder.append("Ljava/lang/String;I");
-		
-        for (FunctionParameter parameter : header.parameters) {
-			descBuilder.append(getDescriptor(parameter.type));
-        }
-        descBuilder.append(")");
-        descBuilder.append(getDescriptor(header.returnType));
-        return descBuilder.toString();
-    }
-	
 	public void register(String name, byte[] bytecode) {
 		module.register(name, bytecode);
 	}
@@ -89,7 +61,7 @@ public class JavaContext {
 
 		@Override
 		public JavaSynthesizedClass synthesizeFunction(FunctionTypeID type) {
-			return CompilerUtils.getLambdaInterface(JavaContext.this, type);
+			return CompilerUtils.getLambdaInterface(JavaBytecodeContext.this, type);
 		}
 
 		@Override

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.javabytecode.JavaContext;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaSynthesizedClass;
 import org.openzen.zenscript.javashared.JavaSynthesizedClassNamer;
@@ -70,7 +70,7 @@ public class CompilerUtils {
 		return position.getFilename().substring(0, position.getFilename().lastIndexOf('.')).replace("/", "_");
 	}
 
-    public static void tagMethodParameters(JavaContext context, FunctionHeader header, boolean isStatic) {
+    public static void tagMethodParameters(JavaBytecodeContext context, FunctionHeader header, boolean isStatic) {
         for (int i = 0; i < header.parameters.length; i++) {
             FunctionParameter parameter = header.parameters[i];
             Type parameterType = context.getType(parameter.type);
@@ -78,7 +78,7 @@ public class CompilerUtils {
         }
     }
 
-    public static void tagConstructorParameters(JavaContext context, FunctionHeader header, boolean isEnum) {
+    public static void tagConstructorParameters(JavaBytecodeContext context, FunctionHeader header, boolean isEnum) {
         for (int i = 0; i < header.parameters.length; i++) {
             FunctionParameter parameter = header.parameters[i];
             Type parameterType = context.getType(parameter.type);
@@ -86,7 +86,7 @@ public class CompilerUtils {
         }
     }
 
-    public static void writeDefaultFieldInitializers(JavaContext context, JavaWriter constructorWriter, HighLevelDefinition definition, boolean staticFields) {
+    public static void writeDefaultFieldInitializers(JavaBytecodeContext context, JavaWriter constructorWriter, HighLevelDefinition definition, boolean staticFields) {
         JavaExpressionVisitor expressionVisitor = new JavaExpressionVisitor(context, constructorWriter);
         for (final IDefinitionMember definitionMember : definition.members) {
             if (!(definitionMember instanceof FieldMember))
@@ -107,10 +107,12 @@ public class CompilerUtils {
 
 	private static final Map<String, JavaSynthesizedClass> functions = new HashMap<>();
 	
-    public static JavaSynthesizedClass getLambdaInterface(JavaContext context, FunctionTypeID function) {
+    public static JavaSynthesizedClass getLambdaInterface(JavaBytecodeContext context, FunctionTypeID function) {
 		String signature = JavaSynthesizedClassNamer.getFunctionSignature(function);
 		if (functions.containsKey(signature))
 			return functions.get(signature).withTypeParameters(JavaSynthesizedClassNamer.extractTypeParameters(function));
+		
+		System.out.println("Generating function " + signature);
 		
 		JavaSynthesizedClass result = JavaSynthesizedClassNamer.createFunctionName(function);
 		functions.put(signature, result);
@@ -119,10 +121,10 @@ public class CompilerUtils {
         return result;
     }
 
-    private static void createLambdaInterface(JavaContext context, FunctionHeader header, JavaClass cls) {
+    private static void createLambdaInterface(JavaBytecodeContext context, FunctionHeader header, JavaClass cls) {
         ClassWriter ifaceWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         ifaceWriter.visitAnnotation("java/lang/FunctionalInterface", true).visitEnd();
-        ifaceWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, cls.getClassName(), null, "java/lang/Object", null);
+        ifaceWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, cls.internalName, null, "java/lang/Object", null);
 
         ifaceWriter
 				.visitMethod(
@@ -133,7 +135,7 @@ public class CompilerUtils {
 					null)
 				.visitEnd();
 
-        context.register(cls.internalName, ifaceWriter.toByteArray());
+        context.register(cls.internalName.replace('/', '.'), ifaceWriter.toByteArray());
 
         try (FileOutputStream out = new FileOutputStream(cls.getClassName() + ".class")){
             out.write(ifaceWriter.toByteArray());

@@ -9,24 +9,24 @@ import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
 import java.util.Arrays;
 import java.util.List;
-import org.openzen.zenscript.javabytecode.JavaContext;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
 
 public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     private final JavaWriter javaWriter;
-	private final JavaContext context;
+	private final JavaBytecodeContext context;
     public JavaExpressionVisitor expressionVisitor;
 
     /**
      * @param javaWriter the method writer that compiles the statement
      */
-    public JavaStatementVisitor(JavaContext context, JavaWriter javaWriter) {
+    public JavaStatementVisitor(JavaBytecodeContext context, JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
 		this.context = context;
         this.expressionVisitor = new JavaExpressionVisitor(context, javaWriter);
     }
 
-    public JavaStatementVisitor(JavaContext context, JavaExpressionVisitor expressionVisitor) {
+    public JavaStatementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionVisitor) {
         this.javaWriter = expressionVisitor.getJavaWriter();
 		this.context = context;
         this.expressionVisitor = expressionVisitor;

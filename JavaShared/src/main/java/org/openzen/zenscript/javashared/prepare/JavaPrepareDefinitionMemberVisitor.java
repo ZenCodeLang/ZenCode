@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.javasource.prepare;
+package org.openzen.zenscript.javashared.prepare;
 
+import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
@@ -19,18 +20,19 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.JavaSourceContext;
-import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
+import org.openzen.zenscript.javashared.JavaContext;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourcePrepareDefinitionMemberVisitor implements DefinitionVisitor<JavaClass> {
-	private final JavaSourceContext context;
+public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<JavaClass> {
+	private final JavaContext context;
 	private final String filename;
 	
-	public JavaSourcePrepareDefinitionMemberVisitor(JavaSourceContext context, String filename) {
+	public JavaPrepareDefinitionMemberVisitor(JavaContext context, String filename) {
 		this.context = context;
 		this.filename = filename;
 	}
@@ -88,8 +90,8 @@ public class JavaSourcePrepareDefinitionMemberVisitor implements DefinitionVisit
 			return definition.getTag(JavaClass.class);
 		
 		JavaClass cls = definition.getTag(JavaClass.class);
-		JavaSourceMethod method = new JavaSourceMethod(cls, JavaSourceMethod.Kind.STATIC, definition.name, true);
-		definition.caller.setTag(JavaSourceMethod.class, method);
+		JavaMethod method = new JavaMethod(cls, JavaMethod.Kind.STATIC, definition.name, true, context.getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
+		definition.caller.setTag(JavaMethod.class, method);
 		return cls;
 	}
 
@@ -136,7 +138,7 @@ public class JavaSourcePrepareDefinitionMemberVisitor implements DefinitionVisit
 	
 	private void visitClassMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
 		System.out.println("Preparing " + cls.internalName);
-		JavaSourcePrepareClassMethodVisitor methodVisitor = new JavaSourcePrepareClassMethodVisitor(context, filename, cls, nativeClass, this, startsEmpty);
+		JavaPrepareClassMethodVisitor methodVisitor = new JavaPrepareClassMethodVisitor(context, filename, cls, nativeClass, this, startsEmpty);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
 		}
@@ -145,7 +147,7 @@ public class JavaSourcePrepareDefinitionMemberVisitor implements DefinitionVisit
 	
 	private void visitExpansionMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass) {
 		System.out.println("Preparing " + cls.internalName);
-		JavaSourcePrepareExpansionMethodVisitor methodVisitor = new JavaSourcePrepareExpansionMethodVisitor(context, cls, nativeClass);
+		JavaPrepareExpansionMethodVisitor methodVisitor = new JavaPrepareExpansionMethodVisitor(context, cls, nativeClass);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
 		}

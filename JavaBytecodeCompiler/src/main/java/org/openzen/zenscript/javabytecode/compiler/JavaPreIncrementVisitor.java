@@ -74,7 +74,7 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpressio
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
-import org.openzen.zenscript.javabytecode.JavaContext;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 
@@ -84,10 +84,10 @@ import org.openzen.zenscript.javabytecode.JavaParameterInfo;
  */
 public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 	private final JavaExpressionVisitor expressionCompiler;
-	private final JavaContext context;
+	private final JavaBytecodeContext context;
 	private final JavaWriter javaWriter;
 	
-	public JavaPreIncrementVisitor(JavaContext context, JavaExpressionVisitor expressionCompiler) {
+	public JavaPreIncrementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionCompiler) {
 		this.expressionCompiler = expressionCompiler;
 		this.context = context;
 		javaWriter = expressionCompiler.getJavaWriter();

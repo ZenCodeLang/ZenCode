@@ -15,19 +15,19 @@ import org.openzen.zenscript.javabytecode.JavaParameterInfo;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 import java.util.List;
-import org.openzen.zenscript.javabytecode.JavaContext;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 
 public class JavaMemberVisitor implements MemberVisitor<Void> {
     private final ClassWriter writer;
-	private final JavaContext context;
+	private final JavaBytecodeContext context;
     private final JavaClass toClass;
     private final HighLevelDefinition definition;
     private final JavaStatementVisitor clinitStatementVisitor;
     private EnumDefinition enumDefinition = null;
 
-    public JavaMemberVisitor(JavaContext context, ClassWriter writer, JavaClass toClass, HighLevelDefinition definition) {
+    public JavaMemberVisitor(JavaBytecodeContext context, ClassWriter writer, JavaClass toClass, HighLevelDefinition definition) {
         this.writer = writer;
         this.toClass = toClass;
         this.definition = definition;

@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,8 +38,8 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
-import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
+import org.openzen.zenscript.javashared.JavaImplementation;
+import org.openzen.zenscript.javashared.JavaMethod;
 
 /**
  *
@@ -72,7 +73,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	}
 	
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
-		JavaSourceMethod method = member.getTag(JavaSourceMethod.class);
+		JavaMethod method = member.getTag(JavaMethod.class);
 		if (method == null)
 			throw new AssertionError();
 		if (!method.compile)
@@ -221,13 +222,13 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		JavaSourceImplementation implementation = member.getTag(JavaSourceImplementation.class);
+		JavaImplementation implementation = member.getTag(JavaImplementation.class);
 		if (implementation.inline) {
 			for (IDefinitionMember m : member.members) {
 				m.accept(this);
 			}
 		} else {
-			String interfaceName = member.type.accept(new JavaSourceTypeNameVisitor());
+			String interfaceName = member.type.accept(new JavaTypeNameVisitor());
 			String implementationName = interfaceName + "Implementation";
 			
 			begin(ElementType.FIELD);

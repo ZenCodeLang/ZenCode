@@ -31,7 +31,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
-import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
+import org.openzen.zenscript.javashared.JavaMethod;
 
 /**
  *
@@ -56,7 +56,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	}
 	
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
-		JavaSourceMethod method = member.getTag(JavaSourceMethod.class);
+		JavaMethod method = member.getTag(JavaMethod.class);
 		if (method == null)
 			throw new AssertionError();
 		if (!method.compile)

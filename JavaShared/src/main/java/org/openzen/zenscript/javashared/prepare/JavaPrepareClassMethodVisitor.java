@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.javasource.prepare;
+package org.openzen.zenscript.javashared.prepare;
 
+import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
@@ -16,6 +17,7 @@ import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
@@ -25,63 +27,77 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
-import org.openzen.zenscript.javasource.JavaSourceTypeNameVisitor;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javasource.JavaSourceContext;
-import org.openzen.zenscript.javasource.tags.JavaSourceImplementation;
-import org.openzen.zenscript.javasource.tags.JavaSourceMethod;
+import org.openzen.zenscript.javashared.JavaContext;
+import org.openzen.zenscript.javashared.JavaImplementation;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Void> {
+public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
 	
-	private final JavaSourceContext context;
+	private final JavaContext context;
+	private final String filename;
 	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
+	private final JavaPrepareDefinitionMemberVisitor memberPreparer;
 	
-	public JavaSourcePrepareExpansionMethodVisitor(JavaSourceContext context, JavaClass cls, JavaNativeClass nativeClass) {
+	public JavaPrepareClassMethodVisitor(
+			JavaContext context,
+			String filename,
+			JavaClass cls,
+			JavaNativeClass nativeClass,
+			JavaPrepareDefinitionMemberVisitor memberPreparer,
+			boolean startsEmpty) {
+		this.context = context;
+		this.filename = filename;
 		this.cls = cls;
 		this.nativeClass = nativeClass;
-		this.context = context;
-		cls.empty = true;
+		this.memberPreparer = memberPreparer;
+		
+		cls.empty = startsEmpty;
 	}
 	
 	@Override
 	public Void visitConst(ConstMember member) {
-		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
-		
 		if (DEBUG_EMPTY && cls.empty)
-			System.out.println("Class " + cls.fullName + " not empty because of const");
+			System.out.println("Class " + cls.fullName + " not empty because of const " + member.name);
 		
 		cls.empty = false;
+		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
 		return null;
 	}
 	
 	@Override
 	public Void visitField(FieldMember member) {
-		// TODO: expansion fields
 		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
-		if (member.hasAutoGetter() || member.hasAutoSetter())
-			cls.empty = false;
+		if (member.hasAutoGetter())
+			visitGetter(member.autoGetter);
+		if (member.hasAutoSetter())
+			visitSetter(member.autoSetter);
+		
 		return null;
 	}
 
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
-		visitFunctional(member, "");
+		visitFunctional(member, "<init>");
 		return null;
 	}
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
-		if (nativeClass != null && nativeClass.nonDestructible)
-			return null;
+		if (DEBUG_EMPTY && cls.empty)
+			System.out.println("Class " + cls.fullName + " not empty because of destructor");
 		
-		visitFunctional(member, "");
+		cls.empty = false;
 		return null;
 	}
 
@@ -111,7 +127,7 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		visitFunctional(member, "to" + member.toType.accept(new JavaSourceTypeNameVisitor()));
+		visitFunctional(member, "to" + member.toType.accept(new JavaTypeNameVisitor()));
 		return null;
 	}
 
@@ -129,47 +145,57 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		JavaClass implementationClass = new JavaClass(cls, member.type.accept(new JavaSourceTypeNameVisitor()) + "Implementation", JavaClass.Kind.CLASS);
-		member.setTag(JavaSourceImplementation.class, new JavaSourceImplementation(false, implementationClass));
-		for (IDefinitionMember implementedMember : member.members)
-			implementedMember.accept(this);
+		memberPreparer.prepare(member.type);
 		
+		if (canMergeImplementation(member)) {
+			member.setTag(JavaImplementation.class, new JavaImplementation(true, cls));
+			for (IDefinitionMember m : member.members)
+				m.accept(this);
+		} else {
+			if (DEBUG_EMPTY && cls.empty)
+				System.out.println("Class " + cls.fullName + " not empty because of unmergeable implementation");
+			
+			cls.empty = false;
+			
+			JavaClass implementationClass = new JavaClass(cls, member.type.accept(new JavaTypeNameVisitor()) + "Implementation", JavaClass.Kind.CLASS);
+			member.setTag(JavaImplementation.class, new JavaImplementation(false, implementationClass));
+			
+			JavaPrepareClassMethodVisitor visitor = new JavaPrepareClassMethodVisitor(context, filename, implementationClass, null, memberPreparer, true);
+			for (IDefinitionMember m : member.members)
+				m.accept(visitor);
+		}
 		return null;
+	}
+	
+	private boolean canMergeImplementation(ImplementationMember member) {
+		return true; // TODO: implementation merge check
 	}
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		// TODO
+		JavaPrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaPrepareDefinitionMemberVisitor(context, filename);
+		member.innerDefinition.accept(innerDefinitionPrepare);
+		
+		if (DEBUG_EMPTY && cls.empty)
+			System.out.println("Class " + cls.fullName + " not empty because of inner definition " + member.innerDefinition.name);
 		cls.empty = false;
 		return null;
 	}
 
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
+		if (DEBUG_EMPTY && cls.empty)
+			System.out.println("Class " + cls.fullName + " not empty because of static initializer");
+		
 		cls.empty = false;
 		return null;
 	}
 	
-	private void visitFunctional(DefinitionMember member, String name) {
-		NativeTag nativeTag = member.getTag(NativeTag.class);
-		JavaSourceMethod method = null;
-		if (nativeTag != null && nativeClass != null)
-			method = nativeClass.getMethod(nativeTag.value);
-		if (method == null)
-			method = new JavaSourceMethod(cls, getKind(member), name, true); 
+	private JavaMethod.Kind getKind(DefinitionMember member) {
+		if (member instanceof ConstructorMember)
+			return JavaMethod.Kind.CONSTRUCTOR;
 		
-		if (method.compile) {
-			if (DEBUG_EMPTY && cls.empty)
-				System.out.println("Class " + cls.fullName + " not empty because of " + member.describe());
-			
-			cls.empty = false;
-		}
-		
-		member.setTag(JavaSourceMethod.class, method);
-	}
-	
-	private JavaSourceMethod.Kind getKind(DefinitionMember member) {
-		return member.isStatic() ? JavaSourceMethod.Kind.STATIC : JavaSourceMethod.Kind.EXPANSION;
+		return member.isStatic() ? JavaMethod.Kind.STATIC : JavaMethod.Kind.INSTANCE;
 	}
 	
 	private String getOperatorName(OperatorType operator) {
@@ -253,5 +279,32 @@ public class JavaSourcePrepareExpansionMethodVisitor implements MemberVisitor<Vo
 			default:
 				throw new IllegalArgumentException("Invalid operator: " + operator);
 		}
+	}
+	
+	private void visitFunctional(FunctionalMember member, String name) {
+		NativeTag nativeTag = member.getTag(NativeTag.class);
+		JavaMethod method = null;
+		if (nativeTag != null && nativeClass != null)
+			method = nativeClass.getMethod(nativeTag.value);
+		
+		if (member.getOverrides() != null) {
+			DefinitionMemberRef base = member.getOverrides();
+			JavaMethod baseMethod = base.getTarget().getTag(JavaMethod.class);
+			if (baseMethod == null)
+				throw new IllegalStateException("Base method not yet prepared!");
+			
+			method = new JavaMethod(cls, baseMethod.kind, baseMethod.name, true, context.getMethodDescriptor(member.header), JavaModifiers.getJavaModifiers(member.modifiers));
+		} else if (method == null) {
+			method = new JavaMethod(cls, getKind(member), name, true, context.getMethodDescriptor(member.header), JavaModifiers.getJavaModifiers(member.modifiers));
+		}
+		
+		if (method.compile) {
+			if (DEBUG_EMPTY && cls.empty)
+				System.out.println("Class " + cls.fullName + " not empty because of " + member.describe());
+			
+			cls.empty = false;
+		}
+		
+		member.setTag(JavaMethod.class, method);
 	}
 }

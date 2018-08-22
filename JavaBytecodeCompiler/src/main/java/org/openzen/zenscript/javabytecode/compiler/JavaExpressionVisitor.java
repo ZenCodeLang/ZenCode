@@ -149,9 +149,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	protected final JavaWriter javaWriter;
 	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
-	private final JavaContext context;
+	private final JavaBytecodeContext context;
 
-    public JavaExpressionVisitor(JavaContext context, JavaWriter javaWriter) {
+    public JavaExpressionVisitor(JavaBytecodeContext context, JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
 		this.context = context;
     }
@@ -1640,7 +1640,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		functionWriter.end();
 		lambdaCW.visitEnd();
 
-		JavaModule.classes.putIfAbsent(name, lambdaCW.toByteArray());
+		context.register(name, lambdaCW.toByteArray());
 
 		try (FileOutputStream out = new FileOutputStream(name + ".class")) {
 			out.write(lambdaCW.toByteArray());

@@ -6,6 +6,7 @@
 package org.openzen.zenscript.javabytecode;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,8 +25,11 @@ import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
+import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
 /**
  * @author Hoofdgebruiker
@@ -37,7 +41,10 @@ public class JavaCompiler implements ZenCodeCompiler {
 	private int generatedScriptBlockCounter = 0;
 	private boolean finished = false;
 	private final File jarFile;
-	private final JavaContext context;
+	private final JavaBytecodeContext context;
+	
+	private final List<HighLevelDefinition> definitions = new ArrayList<>();
+	private final List<ScriptBlock> scripts = new ArrayList<>();
 	
 	public JavaCompiler(File jarFile) {
 		this(false, jarFile);
@@ -46,7 +53,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 	public JavaCompiler(boolean debug, File jarFile) {
 		target = new JavaModule();
 		this.jarFile = jarFile;
-		this.context = new JavaContext(target);
+		this.context = new JavaBytecodeContext(target);
 		
 		scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
@@ -54,32 +61,15 @@ public class JavaCompiler implements ZenCodeCompiler {
 
 	@Override
 	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
-		String className = getClassName(definition.position.getFilename());
-		JavaScriptFile scriptFile = getScriptFile(className);
-		target.register(definition.name, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
+		JavaPrepareDefinitionVisitor preparer = new JavaPrepareDefinitionVisitor(definition.position.getFilename(), null);
+		definition.accept(preparer);
+		
+		definitions.add(definition);
 	}
 
 	@Override
 	public void addScriptBlock(ScriptBlock script) {
-		final SourceFile sourceFile = script.getTag(SourceFile.class);
-		final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
-		JavaScriptFile scriptFile = getScriptFile(className);
-
-		String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
-
-		// convert scripts into methods (add them to a Scripts class?)
-		// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
-		final JavaClassWriter visitor = scriptFile.classWriter;
-		JavaMethodInfo method = new JavaMethodInfo(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-		scriptFile.scriptMethods.add(method);
-
-		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, new JavaWriter(visitor, method, null, null, null));
-		statementVisitor.start();
-		for (Statement statement : script.statements) {
-			statement.accept(statementVisitor);
-		}
-		target.register("Scripts", scriptsClassWriter.toByteArray());
-		statementVisitor.end();
+		scripts.add(script);
 	}
 
 	private String getClassName(String filename) {
@@ -124,7 +114,40 @@ public class JavaCompiler implements ZenCodeCompiler {
 			throw new IllegalStateException("Already finished!");
 		
 		finished = true;
+		
+		for (HighLevelDefinition definition : definitions) {
+			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(context, definition.position.getFilename());
+			definition.accept(memberPreparer);
+		}
+		
+		for (HighLevelDefinition definition : definitions) {
+			String className = getClassName(definition.position.getFilename());
+			JavaScriptFile scriptFile = getScriptFile(className);
+			
+			target.register(definition.name, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
+		}
+ 
+		for (ScriptBlock script : scripts) {
+			final SourceFile sourceFile = script.getTag(SourceFile.class);
+			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
+			JavaScriptFile scriptFile = getScriptFile(className);
 
+			String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
+
+			// convert scripts into methods (add them to a Scripts class?)
+			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
+			final JavaClassWriter visitor = scriptFile.classWriter;
+			JavaMethodInfo method = new JavaMethodInfo(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+			scriptFile.scriptMethods.add(method);
+
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, new JavaWriter(visitor, method, null, null, null));
+			statementVisitor.start();
+			for (Statement statement : script.statements) {
+				statement.accept(statementVisitor);
+			}
+			statementVisitor.end();
+		}
+		
 		JavaMethodInfo runMethod = new JavaMethodInfo(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, runMethod, null, null, null);
 		runWriter.start();

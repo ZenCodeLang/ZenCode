@@ -8,7 +8,7 @@ import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.javabytecode.JavaContext;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.javabytecode.compiler.*;
@@ -34,9 +34,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 
 	private final JavaClassWriter outerWriter;
-	private final JavaContext context;
+	private final JavaBytecodeContext context;
 
-    public JavaDefinitionVisitor(JavaContext context, JavaClassWriter outerWriter) {
+    public JavaDefinitionVisitor(JavaBytecodeContext context, JavaClassWriter outerWriter) {
 		this.context = context;
 		this.outerWriter = outerWriter;
 	}
@@ -192,7 +192,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "getDenominator", "()I", null, null).visitEnd();
 
 
-		final JavaMemberVisitor visitor = new JavaMemberVisitor(writer, toClass, variant);
+		final JavaMemberVisitor visitor = new JavaMemberVisitor(context, writer, toClass, variant);
 
 		final List<VariantDefinition.Option> options = variant.options;
 		//Each option is one of the possible child classes
@@ -213,7 +213,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				StringBuilder builder = new StringBuilder();
 				for (int i = 0; i < option.types.length; ++i) {
 					builder.append("<T").append(i).append(":");
-					builder.append(option.types[i].accept(JavaTypeVisitor.INSTANCE).getDescriptor());
+					builder.append(context.getDescriptor(option.types[i]));
 				}
 				builder.append(">");
 				builder.append("L").append(variantName).append(";");
@@ -223,15 +223,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			}
 
 			optionWriter.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, optionClassName, signature, variantName, null);
-			final JavaMemberVisitor optionVisitor = new JavaMemberVisitor(optionWriter, optionClass, variant);
-
-
+			final JavaMemberVisitor optionVisitor = new JavaMemberVisitor(context, optionWriter, optionClass, variant);
 			final StringBuilder optionInitDescBuilder = new StringBuilder("(");
 
 			ITypeID[] types = option.types;
 			for (int i = 0; i < types.length; ++i) {
-				final Type type = types[i].accept(JavaTypeVisitor.INSTANCE);
-				final String internalName = type.getDescriptor();
+				final String internalName = context.getInternalName(types[i]);
 				optionInitDescBuilder.append(internalName);
 				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "Field" + i, internalName, "TT" + i + ";", null).visitEnd();
 			}
@@ -247,10 +244,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				initWriter.dup();
 				initWriter.loadObject(i + 1);
 
-				final Type type = types[i].accept(JavaTypeVisitor.INSTANCE);
-				final String internalName = type.getDescriptor();
-
-				initWriter.putField(optionClassName, "Field" + i, internalName);
+				final String descriptor = context.getDescriptor(types[i]);
+				initWriter.putField(optionClassName, "Field" + i, descriptor);
 			}
 			initWriter.pop();
 			initWriter.ret();
@@ -268,7 +263,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			optionVisitor.end();
 			optionWriter.visitEnd();
 			final byte[] byteArray = optionWriter.toByteArray();
-			JavaModule.classes.put(optionClassName, byteArray);
+			context.register(optionClassName, byteArray);
 
 			//Print the option files, won't be in production
 			try (FileOutputStream out = new FileOutputStream(optionClassName + ".class")) {

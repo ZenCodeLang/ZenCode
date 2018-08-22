@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zenscript.javashared.JavaContext;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,7 +24,7 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javasource.prepare.JavaSourcePrepareDefinitionMemberVisitor;
+import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 
 /**
  *
@@ -68,8 +69,8 @@ public class JavaSourceFile {
 		modules.put(definition, module);
 	}
 	
-	public void prepare(JavaSourceContext context) {
-		JavaSourcePrepareDefinitionMemberVisitor visitor = new JavaSourcePrepareDefinitionMemberVisitor(context, file.getName());
+	public void prepare(JavaContext context) {
+		JavaPrepareDefinitionMemberVisitor visitor = new JavaPrepareDefinitionMemberVisitor(context, file.getName());
 		
 		if (mainDefinition != null)
 			mainDefinition.accept(visitor);
