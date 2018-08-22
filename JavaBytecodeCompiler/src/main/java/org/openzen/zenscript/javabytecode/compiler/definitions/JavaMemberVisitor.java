@@ -138,7 +138,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
-		final JavaWriter methodWriter = new JavaWriter(writer, method, definition, CompilerUtils.calcSign(member.header, false), null);
+		final JavaWriter methodWriter = new JavaWriter(writer, method, definition, JavaTypeGenericVisitor.getGenericMethodSignature(member.header), null);
 		methodWriter.label(methodStart);
 		for (final FunctionParameter parameter : member.header.parameters) {
 			methodWriter.nameParameter(0, parameter.name);

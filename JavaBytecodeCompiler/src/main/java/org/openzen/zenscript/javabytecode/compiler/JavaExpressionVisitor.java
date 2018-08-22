@@ -2046,7 +2046,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		if (hasNoDefault) {
 			javaWriter.label(defaultLabel);
-			if (Object.class.isAssignableFrom(expression.type.accept(JavaTypeClassVisitor.INSTANCE)))
+			final Type type = expression.type.accept(JavaTypeVisitor.INSTANCE);
+			if (type == null || type.getOpcode(Opcodes.ISTORE) == Opcodes.ASTORE)
 				javaWriter.aConstNull();
 			else
 				javaWriter.iConst0();

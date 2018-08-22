@@ -5,8 +5,10 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javabytecode.JavaModule;
@@ -187,7 +189,11 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final JavaClass toClass = new JavaClass("", variantName, JavaClass.Kind.CLASS);
 		final JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-		writer.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, variantName, null, "java/lang/Object", null);
+
+		final String ss = "<" + JavaTypeGenericVisitor.getGenericSignature(variant.genericParameters) + ">Ljava/lang/Object;";
+
+
+		writer.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, variantName, ss, "java/lang/Object", null);
 		writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "getDenominator", "()I", null, null).visitEnd();
 
 
@@ -210,15 +216,30 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			final String signature;
 			{
 				StringBuilder builder = new StringBuilder();
-				for (int i = 0; i < option.types.length; ++i) {
-					builder.append("<T").append(i).append(":");
-					builder.append(option.types[i].accept(JavaTypeVisitor.INSTANCE).getDescriptor());
+				builder.append("<");
+				for (final ITypeID type : option.types) {
+					builder.append(JavaTypeGenericVisitor.getSignatureWithBound(type));
 				}
 				builder.append(">");
-				builder.append("L").append(variantName).append(";");
+				builder.append("L").append(variantName).append("<");
+
+				for (final TypeParameter genericParameter : variant.genericParameters) {
+					boolean t = true;
+					for (final ITypeID type : option.types)
+						if (type instanceof GenericTypeID) {
+							final GenericTypeID genericTypeID = (GenericTypeID) type;
+							if (genericParameter == genericTypeID.parameter) {
+								builder.append("T").append(genericParameter.name).append(";");
+								t = false;
+							}
+						}
+					if (t)
+						builder.append(JavaTypeGenericVisitor.getGenericBounds(genericParameter.bounds));
+
+				}
 
 
-				signature = builder.toString();
+				signature = builder.append(">;").toString();
 			}
 
 			optionWriter.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, optionClassName, signature, variantName, null);
@@ -226,18 +247,21 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 
 			final StringBuilder optionInitDescBuilder = new StringBuilder("(");
+			final StringBuilder optionInitSignatureBuilder = new StringBuilder("(");
 
 			ITypeID[] types = option.types;
 			for (int i = 0; i < types.length; ++i) {
 				final Type type = types[i].accept(JavaTypeVisitor.INSTANCE);
 				final String internalName = type.getDescriptor();
 				optionInitDescBuilder.append(internalName);
-				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "Field" + i, internalName, "TT" + i + ";", null).visitEnd();
+				optionInitSignatureBuilder.append("T").append(((GenericTypeID) types[i]).parameter.name).append(";");
+				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "Field" + i, internalName, "T" + ((GenericTypeID) types[i]).parameter.name + ";", null).visitEnd();
 			}
 			optionInitDescBuilder.append(")V");
+			optionInitSignatureBuilder.append(")V");
 
 
-			final JavaWriter initWriter = new JavaWriter(optionWriter, new JavaMethodInfo(optionClass, "<init>", optionInitDescBuilder.toString(), Opcodes.ACC_PUBLIC), variant, optionInitDescBuilder.toString(), null);
+			final JavaWriter initWriter = new JavaWriter(optionWriter, new JavaMethodInfo(optionClass, "<init>", optionInitDescBuilder.toString(), Opcodes.ACC_PUBLIC), variant, optionInitSignatureBuilder.toString(), null);
 			initWriter.start();
 			initWriter.loadObject(0);
 			initWriter.dup();
