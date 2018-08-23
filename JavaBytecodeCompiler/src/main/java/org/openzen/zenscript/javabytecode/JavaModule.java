@@ -27,6 +27,7 @@ public class JavaModule {
 	
 	public JavaModule(File debugOutput) {
 		this.debugOutput = debugOutput;
+		debugOutput.mkdirs();
 	}
 	
 	public void register(String classname, byte[] bytecode) {

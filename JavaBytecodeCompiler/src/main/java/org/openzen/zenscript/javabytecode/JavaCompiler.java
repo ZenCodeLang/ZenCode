@@ -50,7 +50,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 	}
 
 	public JavaCompiler(boolean debug, File jarFile) {
-		target = new JavaModule();
+		target = new JavaModule(new File("classes"));
 		this.jarFile = jarFile;
 		this.context = new JavaBytecodeContext(target);
 		

@@ -60,10 +60,6 @@ public class JavaWriter {
         this(visitor, true, method, forDefinition, signature, exceptions, annotations);
     }
 
-    private static String internal(Class aClass) {
-        return Type.getInternalName(aClass);
-    }
-
     public void enableDebug() {
         debug = true;
     }
