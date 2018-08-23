@@ -29,7 +29,6 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 /**
@@ -67,7 +66,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		{
 			JavaNativeClass list = new JavaNativeClass(new JavaClass("java.util", "List", JavaClass.Kind.INTERFACE));
 			JavaClass arrayList = new JavaClass("java.util", "ArrayList", JavaClass.Kind.CLASS);
-			list.addMethod("constructor", new JavaMethod(arrayList, JavaMethod.Kind.CONSTRUCTOR, "", false, "()V", JavaModifiers.PUBLIC));
+			list.addMethod("constructor", JavaMethod.getNativeConstructor(arrayList, "()V"));
 			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z"); List<?> l;
 			list.addInstanceMethod("insert", "add", "(Ljava/lang/Object;I)V");
 			list.addInstanceMethod("remove", "remove", "(java/lang/Object;)Z");
@@ -107,9 +106,9 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			JavaClass math = new JavaClass("java.lang", "Math", JavaClass.Kind.CLASS);
 			
 			JavaNativeClass cls = new JavaNativeClass(integer);
-			cls.addMethod("min", new JavaMethod(math, JavaMethod.Kind.STATIC, "min", false, "(II)I", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
-			cls.addMethod("max", new JavaMethod(math, JavaMethod.Kind.STATIC, "max", false, "(II)I", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
-			cls.addMethod("toHexString", new JavaMethod(integer, JavaMethod.Kind.EXPANSION, "toHexString", false, "()Ljava/lang/String;", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
+			cls.addMethod("min", JavaMethod.getNativeStatic(math, "min", "(II)I"));
+			cls.addMethod("max", JavaMethod.getNativeStatic(math, "max", "(II)I"));
+			cls.addMethod("toHexString", JavaMethod.getNativeExpansion(integer, "toHexString", "(I)Ljava/lang/String;"));
 			nativeClasses.put("stdlib::Integer", cls);
 		}
 		
@@ -132,11 +131,11 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		{
 			JavaClass arrays = new JavaClass("java.lang", "Arrays", JavaClass.Kind.CLASS);
 			JavaNativeClass cls = new JavaNativeClass(arrays);
-			cls.addMethod("sort", new JavaMethod(arrays, JavaMethod.Kind.EXPANSION, "sort", false, "([Ljava/lang/Object;)[Ljava/lang/Object;", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
+			cls.addMethod("sort", JavaMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;)[Ljava/lang/Object;"));
 			cls.addMethod("sorted", new JavaMethod((expression, translator) -> {
 				return translator.sorted(((CallExpression)expression).target);
 			}));
-			cls.addMethod("sortWithComparator", new JavaMethod(arrays, JavaMethod.Kind.EXPANSION, "sort", false, "([Ljava/lang/Object;Ljava/lang/Comparator;)[Ljava/lang/Object;", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
+			cls.addMethod("sortWithComparator", JavaMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;Ljava/lang/Comparator;)[Ljava/lang/Object;"));
 			cls.addMethod("sortedWithComparator", new JavaMethod((expression, translator) -> {
 				return translator.sortedWithComparator(
 						((CallExpression)expression).target,
@@ -145,7 +144,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addMethod("copy", new JavaMethod((expression, translator) -> {
 				return translator.copy(((CallExpression)expression).target);
 			}));
-			cls.addMethod("copyResize", new JavaMethod(arrays, JavaMethod.Kind.EXPANSION, "copyOf", false, "([Ljava/lang/Object;I)[Ljava/lang/Object;", JavaModifiers.PUBLIC | JavaModifiers.STATIC));
+			cls.addMethod("copyResize", JavaMethod.getNativeExpansion(arrays, "copyOf", "([Ljava/lang/Object;I)[Ljava/lang/Object;"));
 			cls.addMethod("copyTo", new JavaMethod((expression, translator) -> {
 				return translator.copyTo((CallExpression)expression);
 			}));
@@ -286,7 +285,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		variant.setTag(JavaClass.class, cls);
 		
 		for (VariantDefinition.Option option : variant.options) {
-			JavaClass variantCls = new JavaClass(cls.fullName, option.name, JavaClass.Kind.CLASS);
+			JavaClass variantCls = new JavaClass(cls, option.name, JavaClass.Kind.CLASS);
 			option.setTag(JavaVariantOption.class, new JavaVariantOption(cls, variantCls));
 		}
 		

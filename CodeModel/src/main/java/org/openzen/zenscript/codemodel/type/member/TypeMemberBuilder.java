@@ -399,7 +399,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		if (definition instanceof VariantDefinition) {
 			VariantDefinition variant = (VariantDefinition) definition;
 			for (VariantDefinition.Option option : variant.options)
-				members.addVariantOption(option.instance(mapper));
+				members.addVariantOption(option.instance(type, mapper));
 		}
 		
 		if (definition instanceof EnumDefinition) {

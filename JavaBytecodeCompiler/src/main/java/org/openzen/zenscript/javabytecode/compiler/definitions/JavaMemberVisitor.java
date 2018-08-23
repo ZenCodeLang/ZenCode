@@ -33,7 +33,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         this.definition = definition;
 		this.context = context;
 
-        final JavaWriter javaWriter = new JavaWriter(writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0), definition, null, null);
+        final JavaWriter javaWriter = new JavaWriter(writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
         this.clinitStatementVisitor = new JavaStatementVisitor(context, javaWriter);
         this.clinitStatementVisitor.start();
         CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -99,7 +99,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
-		final JavaMethod method = new JavaMethod(toClass, JavaMethod.Kind.INSTANCE, "close", true, "()V", Opcodes.ACC_PUBLIC);
+		final JavaMethod method = JavaMethod.getVirtual(toClass, "close", "()V", Opcodes.ACC_PUBLIC);
 
 		final Label constructorStart = new Label();
 		final Label constructorEnd = new Label();

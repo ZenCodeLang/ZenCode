@@ -274,7 +274,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					throw new UnsupportedOperationException("Unknown builtin comparator: " + expression.operator.getBuiltin());
 			}
 		} else {
-			if (!checkAndExecuteMethodInfo(expression.operator))
+			if (!checkAndExecuteMethodInfo(expression.operator, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
 
 			expression.left.accept(this);
@@ -358,7 +358,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				argument.accept(this);
 			}
 
-			if (!checkAndExecuteMethodInfo(expression.member))
+			if (!checkAndExecuteMethodInfo(expression.member, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
 			return null;
 		}
@@ -792,7 +792,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					}
 				} else {
 					javaWriter.invokeStatic(ARRAYS_COPY_OF_RANGE_OBJECTS);
-					javaWriter.checkCast(context.getDescriptor(type));
+					javaWriter.checkCast(context.getInternalName(type));
 				}
 				break;
 			}
@@ -870,7 +870,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		BuiltinID builtin = expression.member.getBuiltin();
 		if (builtin == null) {
-			if (!checkAndExecuteMethodInfo(expression.member))
+			if (!checkAndExecuteMethodInfo(expression.member, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
@@ -977,7 +977,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		BuiltinID builtin = expression.member.member.builtin;
 		if (builtin == null) {
-			if (!checkAndExecuteMethodInfo(expression.member))
+			if (!checkAndExecuteMethodInfo(expression.member, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
@@ -1719,9 +1719,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		javaWriter.loadObject(0);
 		final ITypeID type = expression.value.option.getParameterType(expression.index);
-		final JavaClass tag = expression.value.option.getTag(JavaClass.class);
-		javaWriter.checkCast("L" + tag.internalName + ";");
-		javaWriter.getField(new JavaField(tag, "field" + expression.index, context.getDescriptor(type)));
+		final JavaVariantOption tag = expression.value.option.getTag(JavaVariantOption.class);
+		javaWriter.checkCast(tag.variantOptionClass.internalName);
+		javaWriter.getField(new JavaField(tag.variantOptionClass, "field" + expression.index, context.getDescriptor(type)));
 		return null;
 	}
 
@@ -1738,7 +1738,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
-			if (!checkAndExecuteMethodInfo(expression.getter))
+			if (!checkAndExecuteMethodInfo(expression.getter, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
@@ -1940,14 +1940,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitInterfaceCast(InterfaceCastExpression expression) {
         expression.value.accept(this);
-        javaWriter.checkCast(context.getDescriptor(expression.type));
+        javaWriter.checkCast(context.getInternalName(expression.type));
         return null;
     }
 
     @Override
     public Void visitIs(IsExpression expression) {
         expression.value.accept(this);
-        javaWriter.instanceOf(context.getDescriptor(expression.isType));
+        javaWriter.instanceOf(context.getInternalName(expression.isType));
         return null;
     }
 
@@ -2108,7 +2108,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitPostCall(PostCallExpression expression) {
 		expression.target.accept(this);
 		javaWriter.dup(context.getType(expression.type));
-		if (!checkAndExecuteMethodInfo(expression.member))
+		if (!checkAndExecuteMethodInfo(expression.member, expression.type))
 			throw new IllegalStateException("Call target has no method info!");
 
 		return null;
@@ -2199,7 +2199,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitStaticGetter(StaticGetterExpression expression) {
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
-			if (!checkAndExecuteMethodInfo(expression.getter))
+			if (!checkAndExecuteMethodInfo(expression.getter, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
@@ -2325,7 +2325,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitVariantValue(VariantValueExpression expression) {
-		final String internalName = expression.option.getTag(JavaClass.class).internalName;
+		JavaVariantOption tag = expression.option.getTag(JavaVariantOption.class);
+		final String internalName = tag.variantOptionClass.internalName;
 		javaWriter.newObject(internalName);
 		javaWriter.dup();
 
@@ -2357,7 +2358,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
     //Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
-    private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member) {
+    private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, ITypeID resultType) {
         JavaMethod methodInfo = member.getTag(JavaMethod.class);
         if (methodInfo == null)
             return false;
@@ -2367,6 +2368,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         } else {
             getJavaWriter().invokeVirtual(methodInfo);
         }
+		if (methodInfo.genericResult)
+			getJavaWriter().checkCast(context.getInternalName(resultType));
+		
         return true;
     }
 

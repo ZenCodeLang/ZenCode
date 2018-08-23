@@ -7,7 +7,6 @@ package org.openzen.zenscript.javashared.prepare;
 
 import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
-import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.member.CallerMember;
@@ -29,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
@@ -291,9 +291,23 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			if (baseMethod == null)
 				throw new IllegalStateException("Base method not yet prepared!");
 			
-			method = new JavaMethod(cls, baseMethod.kind, baseMethod.name, true, context.getMethodDescriptor(member.header), JavaModifiers.getJavaModifiers(member.modifiers));
+			method = new JavaMethod(
+					cls,
+					baseMethod.kind,
+					baseMethod.name,
+					true,
+					context.getMethodDescriptor(member.header),
+					JavaModifiers.getJavaModifiers(member.modifiers),
+					member.header.returnType instanceof GenericTypeID);
 		} else if (method == null) {
-			method = new JavaMethod(cls, getKind(member), name, true, context.getMethodDescriptor(member.header), JavaModifiers.getJavaModifiers(member.modifiers));
+			method = new JavaMethod(
+					cls,
+					getKind(member),
+					name,
+					true,
+					context.getMethodDescriptor(member.header),
+					JavaModifiers.getJavaModifiers(member.modifiers),
+					member.header.returnType instanceof GenericTypeID);
 		}
 		
 		if (method.compile) {

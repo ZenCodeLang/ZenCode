@@ -41,8 +41,8 @@ public class VariantDefinition extends HighLevelDefinition {
 			this.types = types;
 		}
 		
-		public VariantOptionRef instance(GenericMapper mapper) {
-			return new VariantOptionRef(this, mapper.map(types));
+		public VariantOptionRef instance(ITypeID variantType, GenericMapper mapper) {
+			return new VariantOptionRef(this, variantType, mapper.map(types));
 		}
 	}
 }

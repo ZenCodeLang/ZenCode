@@ -27,6 +27,7 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
@@ -159,7 +160,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
 		if (method == null)
-			method = new JavaMethod(cls, getKind(member), name, true, context.getMethodDescriptor(member.header), JavaModifiers.getJavaModifiers(member.modifiers)); 
+			method = new JavaMethod(cls, getKind(member), name, true, context.getMethodDescriptor(member.header), JavaModifiers.getJavaModifiers(member.modifiers), member.header.returnType instanceof GenericTypeID); 
 		
 		if (method.compile) {
 			if (DEBUG_EMPTY && cls.empty)

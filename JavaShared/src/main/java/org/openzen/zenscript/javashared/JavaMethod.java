@@ -11,31 +11,35 @@ package org.openzen.zenscript.javashared;
  */
 public class JavaMethod {
 	public static JavaMethod getConstructor(JavaClass cls, String descriptor, int modifiers) {
-		return new JavaMethod(cls, Kind.CONSTRUCTOR, "<init>", true, descriptor, modifiers);
+		return new JavaMethod(cls, Kind.CONSTRUCTOR, "<init>", true, descriptor, modifiers, false);
 	}
 	
 	public static JavaMethod getNativeConstructor(JavaClass cls, String descriptor) {
-		return new JavaMethod(cls, Kind.CONSTRUCTOR, "<init>", false, descriptor, JavaModifiers.PUBLIC);
+		return new JavaMethod(cls, Kind.CONSTRUCTOR, "<init>", false, descriptor, JavaModifiers.PUBLIC, false);
 	}
 	
 	public static JavaMethod getDestructor(JavaClass cls, int modifiers) {
-		return new JavaMethod(cls, Kind.INSTANCE, "close", true, "()V", modifiers);
+		return new JavaMethod(cls, Kind.INSTANCE, "close", true, "()V", modifiers, false);
 	}
 	
 	public static JavaMethod getStatic(JavaClass cls, String name, String descriptor, int modifiers) {
-		return new JavaMethod(cls, Kind.STATIC, name, true, descriptor, modifiers | JavaModifiers.STATIC);
+		return new JavaMethod(cls, Kind.STATIC, name, true, descriptor, modifiers | JavaModifiers.STATIC, false);
 	}
 	
 	public static JavaMethod getNativeStatic(JavaClass cls, String name, String descriptor) {
-		return new JavaMethod(cls, Kind.STATIC, name, false, descriptor, JavaModifiers.STATIC | JavaModifiers.PUBLIC);
+		return new JavaMethod(cls, Kind.STATIC, name, false, descriptor, JavaModifiers.STATIC | JavaModifiers.PUBLIC, false);
 	}
 	
 	public static JavaMethod getVirtual(JavaClass cls, String name, String descriptor, int modifiers) {
-		return new JavaMethod(cls, Kind.INSTANCE, name, true, descriptor, modifiers);
+		return new JavaMethod(cls, Kind.INSTANCE, name, true, descriptor, modifiers, false);
 	}
 	
 	public static JavaMethod getNativeVirtual(JavaClass cls, String name, String descriptor) {
-		return new JavaMethod(cls, Kind.INSTANCE, name, false, descriptor, JavaModifiers.PUBLIC);
+		return new JavaMethod(cls, Kind.INSTANCE, name, false, descriptor, JavaModifiers.PUBLIC, false);
+	}
+
+	public static JavaMethod getNativeExpansion(JavaClass cls, String name, String descriptor) {
+		return new JavaMethod(cls, Kind.EXPANSION, name, false, descriptor, JavaModifiers.PUBLIC | JavaModifiers.STATIC, false);
 	}
 	
 	public final JavaClass cls;
@@ -46,8 +50,9 @@ public class JavaMethod {
 	
 	public final String descriptor;
 	public final int modifiers;
+	public final boolean genericResult;
 	
-	public JavaMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers) {
+	public JavaMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers, boolean genericResult) {
 		this.cls = cls;
 		this.kind = kind;
 		this.name = name;
@@ -56,6 +61,7 @@ public class JavaMethod {
 		
 		this.descriptor = descriptor;
 		this.modifiers = modifiers;
+		this.genericResult = genericResult;
 	}
 	
 	public JavaMethod(JavaNativeTranslation<?> translation) {
@@ -66,6 +72,7 @@ public class JavaMethod {
 		this.translation = translation;
 		this.descriptor = "";
 		this.modifiers = 0;
+		this.genericResult = false;
 	}
 	
 	public enum Kind {

@@ -136,7 +136,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 			// convert scripts into methods (add them to a Scripts class?)
 			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
 			final JavaClassWriter visitor = scriptFile.classWriter;
-			JavaMethod method = new JavaMethod(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), JavaMethod.Kind.STATIC, methodName, true, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+			JavaMethod method = JavaMethod.getStatic(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 			scriptFile.scriptMethods.add(method);
 
 			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, new JavaWriter(visitor, method, null, null, null));
@@ -147,7 +147,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 			statementVisitor.end();
 		}
 		
-		JavaMethod runMethod = new JavaMethod(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), JavaMethod.Kind.STATIC, "run", true, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+		JavaMethod runMethod = JavaMethod.getStatic(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, runMethod, null, null, null);
 		runWriter.start();
 		for (Map.Entry<String, JavaScriptFile> entry : scriptBlocks.entrySet()) {

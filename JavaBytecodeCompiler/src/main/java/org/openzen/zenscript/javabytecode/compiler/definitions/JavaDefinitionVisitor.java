@@ -101,7 +101,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
             member.accept(visitor);
         }
 		
-		JavaMethod valuesMethod = new JavaMethod(toClass, JavaMethod.Kind.STATIC, "values", true, "()[L" + toClass.internalName + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
+		JavaMethod valuesMethod = JavaMethod.getStatic(toClass, "values", "()[L" + toClass.internalName + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 		JavaWriter valuesWriter = new JavaWriter(writer, true, valuesMethod, definition, null, null);
 		valuesWriter.start();
 		valuesWriter.getStaticField(toClass.internalName, "$VALUES", "[L" + toClass.internalName + ";");
@@ -110,13 +110,13 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		valuesWriter.returnObject();
 		valuesWriter.end();
 
-		JavaMethod valueOfMethod = new JavaMethod(toClass, JavaMethod.Kind.STATIC, "valueOf", true, "(Ljava/lang/String;)L" + toClass.internalName + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
+		JavaMethod valueOfMethod = JavaMethod.getStatic(toClass, "valueOf", "(Ljava/lang/String;)L" + toClass.internalName + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 		JavaWriter valueOfWriter = new JavaWriter(writer, true, valueOfMethod, definition, null, null);
 		valueOfWriter.start();
 		valueOfWriter.invokeStatic(CLASS_FORNAME);
 		valueOfWriter.loadObject(0);
 		valueOfWriter.invokeStatic(ENUM_VALUEOF);
-		valueOfWriter.checkCast("L" + toClass.internalName + ";");
+		valueOfWriter.checkCast(toClass.internalName);
 		valueOfWriter.returnObject();
 		valueOfWriter.end();
 		
@@ -202,13 +202,13 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 			ITypeID[] types = option.types;
 			for (int i = 0; i < types.length; ++i) {
-				final String internalName = context.getInternalName(types[i]);
-				optionInitDescBuilder.append(internalName);
-				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "field" + i, internalName, "TT" + i + ";", null).visitEnd();
+				final String descriptor = context.getDescriptor(types[i]);
+				optionInitDescBuilder.append(descriptor);
+				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "field" + i, descriptor, "TT" + i + ";", null).visitEnd();
 			}
 			optionInitDescBuilder.append(")V");
 			
-			JavaMethod constructorMethod = new JavaMethod(optionTag.variantOptionClass, JavaMethod.Kind.CONSTRUCTOR, "<init>", true, optionInitDescBuilder.toString(), JavaModifiers.PUBLIC);
+			JavaMethod constructorMethod = JavaMethod.getConstructor(optionTag.variantOptionClass, optionInitDescBuilder.toString(), JavaModifiers.PUBLIC);
 			final JavaWriter initWriter = new JavaWriter(optionWriter, constructorMethod, variant, optionInitDescBuilder.toString(), null);
 			initWriter.start();
 			initWriter.loadObject(0);
@@ -226,7 +226,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			initWriter.end();
 			
 			//Denominator for switch-cases
-			JavaMethod denominator = new JavaMethod(optionTag.variantOptionClass, JavaMethod.Kind.INSTANCE, "getDenominator", true, "()I", JavaModifiers.PUBLIC);
+			JavaMethod denominator = JavaMethod.getVirtual(optionTag.variantOptionClass, "getDenominator", "()I", JavaModifiers.PUBLIC);
 			final JavaWriter getDenominator = new JavaWriter(optionWriter, denominator, null, null, null, "java/lang/Override");
 			getDenominator.start();
 			getDenominator.constant(option.ordinal);
@@ -251,7 +251,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			member.accept(visitor);
 		}
 
-		final JavaWriter superInitWriter = new JavaWriter(writer, new JavaMethod(toClass, JavaMethod.Kind.CONSTRUCTOR, "<init>", true, "()V", Opcodes.ACC_PUBLIC), variant, "()V", null);
+		final JavaWriter superInitWriter = new JavaWriter(writer, JavaMethod.getConstructor(toClass, "()V", Opcodes.ACC_PUBLIC), variant, "()V", null);
 		superInitWriter.start();
 		superInitWriter.loadObject(0);
 		superInitWriter.invokeSpecial("java/lang/Object", "<init>", "()V");

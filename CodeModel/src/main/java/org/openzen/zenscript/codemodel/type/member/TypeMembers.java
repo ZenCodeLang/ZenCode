@@ -39,6 +39,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialMemberGroupExpression;
 import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
+import org.openzen.zenscript.codemodel.partial.PartialVariantOptionExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
@@ -483,6 +484,8 @@ public final class TypeMembers {
 			return new PartialStaticMemberGroupExpression(position, scope, type, members.get(name.name), name.arguments);
 		if (innerTypes.containsKey(name.name))
 			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID)type), name.arguments);
+		if (variantOptions.containsKey(name.name))
+			return new PartialVariantOptionExpression(position, scope, variantOptions.get(name.name));
 		
 		return null;
 	}

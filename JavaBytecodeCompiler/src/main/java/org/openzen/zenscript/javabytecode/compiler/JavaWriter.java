@@ -349,11 +349,11 @@ public class JavaWriter {
         }
     }
 
-    public void checkCast(String descriptor) {
+    public void checkCast(String internalName) {
         if (debug)
-            System.out.println("checkCast " + descriptor);
+            System.out.println("checkCast " + internalName);
 
-        visitor.visitTypeInsn(CHECKCAST, descriptor);
+        visitor.visitTypeInsn(CHECKCAST, internalName);
     }
 
     public void checkCast(Type type) {

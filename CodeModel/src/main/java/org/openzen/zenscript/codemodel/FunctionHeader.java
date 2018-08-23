@@ -321,13 +321,13 @@ public class FunctionHeader {
 		return true;
 	}
 	
-	public FunctionHeader withGenericArguments(GenericMapper mapper) {
+	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, GenericMapper mapper) {
 		if (typeParameters.length > 0) {
 			Map<TypeParameter, ITypeID> innerMap = new HashMap<>();
 			for (TypeParameter parameter : typeParameters)
 				innerMap.put(parameter, mapper.registry.getGeneric(parameter));
 			
-			mapper = mapper.getInner(innerMap);
+			mapper = mapper.getInner(registry, innerMap);
 		}
 		
 		ITypeID returnType = this.returnType.instance(mapper);
@@ -345,7 +345,7 @@ public class FunctionHeader {
 		Map<TypeParameter, ITypeID> typeArguments = new HashMap<>();
 		for (int i = 0; i < typeParameters.length; i++)
 			typeArguments.put(typeParameters[i], arguments[i]);
-		GenericMapper mapper = typeParameterMapping.getInner(typeArguments);
+		GenericMapper mapper = typeParameterMapping.getInner(registry, typeArguments);
 		
 		ITypeID returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
@@ -410,7 +410,8 @@ public class FunctionHeader {
 				result.append(", ");
 			result.append(parameters[i].toString());
 		}
-		result.append(")");
+		result.append(") as ");
+		result.append(returnType.toString());
 		return result.toString();
 	}
 
