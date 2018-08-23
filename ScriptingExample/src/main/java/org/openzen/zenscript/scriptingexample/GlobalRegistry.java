@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.objectweb.asm.Opcodes;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -29,10 +28,10 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaMethod;
 
 /**
  *
@@ -46,8 +45,8 @@ public class GlobalRegistry {
 	
 	public GlobalRegistry(ZSPackage globals) {
 		JavaClass jPrintStream = new JavaClass("java.io", "PrintStream", JavaClass.Kind.CLASS);
-		JavaMethodInfo printstreamPrintln = new JavaMethodInfo(jPrintStream, "println", "(Ljava/lang/String;)V", Opcodes.ACC_PUBLIC);
-		PRINTSTREAM_PRINTLN.setTag(JavaMethodInfo.class, printstreamPrintln);
+		JavaMethod printstreamPrintln = JavaMethod.getNativeVirtual(jPrintStream, "println", "(Ljava/lang/String;)V");
+		PRINTSTREAM_PRINTLN.setTag(JavaMethod.class, printstreamPrintln);
 		
 		JavaClass jSystem = new JavaClass("java.lang", "System", JavaClass.Kind.CLASS);
 		SYSTEM_OUT.setTag(JavaField.class, new JavaField(jSystem, "out", "Ljava/io/PrintStream;"));
@@ -59,12 +58,12 @@ public class GlobalRegistry {
 		{
 			// eg. package my.package with a class MyClass with a single native method test() returning a string
 			// the visitors can then during compilation check if a method is an instance of NativeMethodMember and treat it accordingly
-			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("package");
+			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("test");
 			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, packageMyPackage, "MyClass", Modifiers.PUBLIC, null);
 			JavaClass myClassInfo = new JavaClass("my.test", "MyClass", JavaClass.Kind.CLASS);
 			
 			MethodMember member = new MethodMember(CodePosition.NATIVE, myClassDefinition, Modifiers.PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING), null);
-			member.setTag(JavaMethodInfo.class, new JavaMethodInfo(myClassInfo, "test", "()Ljava/lang/String;", Opcodes.ACC_PUBLIC));
+			member.setTag(JavaMethod.class, JavaMethod.getNativeVirtual(myClassInfo, "test", "()Ljava/lang/String;"));
 			myClassDefinition.addMember(member);
 			
 			packageMyPackage.register(myClassDefinition);

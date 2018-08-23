@@ -12,11 +12,12 @@ package org.openzen.zenscript.javashared;
 public class JavaField {
 	public final JavaClass cls;
 	public final String name;
-	public final String signature;
+	public final String descriptor;
+	public final String signature = null; // TODO: calculate signature too
 	
-	public JavaField(JavaClass cls, String name, String signature) {
+	public JavaField(JavaClass cls, String name, String descriptor) {
 		this.cls = cls;
 		this.name = name;
-		this.signature = signature;
+		this.descriptor = descriptor;
 	}
 }

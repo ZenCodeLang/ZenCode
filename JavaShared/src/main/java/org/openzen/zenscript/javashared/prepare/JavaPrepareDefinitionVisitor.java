@@ -251,7 +251,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		if (isPrepared(definition))
 			return definition.getTag(JavaClass.class);
 		
-		JavaClass cls = new JavaClass(definition.pkg.fullName, filename, JavaClass.Kind.CLASS);
+		JavaClass cls = new JavaClass(definition.pkg.fullName, JavaClass.getNameFromFile(filename), JavaClass.Kind.CLASS);
 		definition.setTag(JavaClass.class, cls);
 		return cls;
 	}
@@ -266,7 +266,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			definition.setTag(JavaNativeClass.class, nativeClasses.get(nativeTag.value));
 		}
 		
-		JavaClass cls = new JavaClass(definition.pkg.fullName, filename, JavaClass.Kind.CLASS);
+		JavaClass cls = new JavaClass(definition.pkg.fullName, JavaClass.getNameFromFile(filename), JavaClass.Kind.CLASS);
 		definition.setTag(JavaClass.class, cls);
 		return cls;
 	}

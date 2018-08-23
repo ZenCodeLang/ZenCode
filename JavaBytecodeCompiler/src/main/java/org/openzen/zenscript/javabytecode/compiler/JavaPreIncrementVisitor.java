@@ -76,7 +76,7 @@ import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
-import org.openzen.zenscript.javabytecode.JavaParameterInfo;
+import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 /**
  *

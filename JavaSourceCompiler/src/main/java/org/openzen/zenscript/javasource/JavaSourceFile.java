@@ -70,7 +70,7 @@ public class JavaSourceFile {
 	}
 	
 	public void prepare(JavaContext context) {
-		JavaPrepareDefinitionMemberVisitor visitor = new JavaPrepareDefinitionMemberVisitor(context, file.getName());
+		JavaPrepareDefinitionMemberVisitor visitor = new JavaPrepareDefinitionMemberVisitor(context);
 		
 		if (mainDefinition != null)
 			mainDefinition.accept(visitor);

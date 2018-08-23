@@ -7,6 +7,7 @@ package org.openzen.zenscript.javashared.prepare;
 
 import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.member.CallerMember;
@@ -44,20 +45,17 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
 	
 	private final JavaContext context;
-	private final String filename;
 	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
 	private final JavaPrepareDefinitionMemberVisitor memberPreparer;
 	
 	public JavaPrepareClassMethodVisitor(
 			JavaContext context,
-			String filename,
 			JavaClass cls,
 			JavaNativeClass nativeClass,
 			JavaPrepareDefinitionMemberVisitor memberPreparer,
 			boolean startsEmpty) {
 		this.context = context;
-		this.filename = filename;
 		this.cls = cls;
 		this.nativeClass = nativeClass;
 		this.memberPreparer = memberPreparer;
@@ -160,7 +158,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			JavaClass implementationClass = new JavaClass(cls, member.type.accept(new JavaTypeNameVisitor()) + "Implementation", JavaClass.Kind.CLASS);
 			member.setTag(JavaImplementation.class, new JavaImplementation(false, implementationClass));
 			
-			JavaPrepareClassMethodVisitor visitor = new JavaPrepareClassMethodVisitor(context, filename, implementationClass, null, memberPreparer, true);
+			JavaPrepareClassMethodVisitor visitor = new JavaPrepareClassMethodVisitor(context, implementationClass, null, memberPreparer, true);
 			for (IDefinitionMember m : member.members)
 				m.accept(visitor);
 		}
@@ -173,7 +171,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		JavaPrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaPrepareDefinitionMemberVisitor(context, filename);
+		JavaPrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaPrepareDefinitionMemberVisitor(context);
 		member.innerDefinition.accept(innerDefinitionPrepare);
 		
 		if (DEBUG_EMPTY && cls.empty)

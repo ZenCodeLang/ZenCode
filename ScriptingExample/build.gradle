@@ -16,6 +16,7 @@ if (!hasProperty('mainClass')) {
 dependencies {
 	compile project(':Parser')
 	compile project(':JavaBytecodeCompiler')
+	compile project(':JavaShared')
 	compile project(':CodeFormatter')
 	compile project(':Validator')
 	compile project(':Constructor')

@@ -7,8 +7,6 @@ package org.openzen.zenscript.javabytecode;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -28,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
@@ -116,7 +115,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 		finished = true;
 		
 		for (HighLevelDefinition definition : definitions) {
-			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(context, definition.position.getFilename());
+			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(context);
 			definition.accept(memberPreparer);
 		}
 		
@@ -137,7 +136,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 			// convert scripts into methods (add them to a Scripts class?)
 			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
 			final JavaClassWriter visitor = scriptFile.classWriter;
-			JavaMethodInfo method = new JavaMethodInfo(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+			JavaMethod method = new JavaMethod(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), JavaMethod.Kind.STATIC, methodName, true, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 			scriptFile.scriptMethods.add(method);
 
 			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, new JavaWriter(visitor, method, null, null, null));
@@ -148,11 +147,11 @@ public class JavaCompiler implements ZenCodeCompiler {
 			statementVisitor.end();
 		}
 		
-		JavaMethodInfo runMethod = new JavaMethodInfo(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+		JavaMethod runMethod = new JavaMethod(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), JavaMethod.Kind.STATIC, "run", true, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, runMethod, null, null, null);
 		runWriter.start();
 		for (Map.Entry<String, JavaScriptFile> entry : scriptBlocks.entrySet()) {
-			for (JavaMethodInfo method : entry.getValue().scriptMethods)
+			for (JavaMethod method : entry.getValue().scriptMethods)
 				runWriter.invokeStatic(method);
 
 			entry.getValue().classWriter.visitEnd();

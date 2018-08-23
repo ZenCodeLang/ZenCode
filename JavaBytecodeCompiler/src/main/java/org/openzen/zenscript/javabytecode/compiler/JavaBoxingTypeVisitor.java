@@ -1,10 +1,18 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaMethod;
 
-public class JavaBoxingTypeVisitor implements ITypeVisitor<JavaMethodInfo> {
+public class JavaBoxingTypeVisitor implements ITypeVisitor<Void> {
+	private static final JavaMethod BOOLEAN_VALUEOF = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "valueOf", "(Z)Ljava/lang/Boolean;");
+	private static final JavaMethod BYTE_VALUEOF = JavaMethod.getNativeStatic(JavaClass.BYTE, "valueOf", "(B)Ljava/lang/Byte;");
+	private static final JavaMethod SHORT_VALUEOF = JavaMethod.getNativeStatic(JavaClass.SHORT, "valueOf", "(S)Ljava/lang/Short;");
+	private static final JavaMethod INTEGER_VALUEOF = JavaMethod.getNativeStatic(JavaClass.INTEGER, "valueOf", "(I)Ljava/lang/Integer;");
+	private static final JavaMethod LONG_VALUEOF = JavaMethod.getNativeStatic(JavaClass.LONG, "valueOf", "(J)Ljava/lang/Long;");
+	private static final JavaMethod FLOAT_VALUEOF = JavaMethod.getNativeStatic(JavaClass.FLOAT, "valueOf", "(F)Ljava/lang/Float;");
+	private static final JavaMethod DOUBLE_VALUEOF = JavaMethod.getNativeStatic(JavaClass.DOUBLE, "valueOf", "(D)Ljava/lang/Double;");
+	private static final JavaMethod CHARACTER_VALUEOF = JavaMethod.getNativeStatic(JavaClass.CHARACTER, "valueOf", "(C)Ljava/lang/Character;");
 
 	private final JavaWriter writer;
 
@@ -13,102 +21,101 @@ public class JavaBoxingTypeVisitor implements ITypeVisitor<JavaMethodInfo> {
 	}
 
 	@Override
-	public JavaMethodInfo visitBasic(BasicTypeID basic) {
-		final JavaMethodInfo info;
+	public Void visitBasic(BasicTypeID basic) {
+		final JavaMethod method;
 		switch (basic) {
 			case BOOL:
-				writer.newObject(Boolean.class);
-				info = new JavaMethodInfo(new JavaClass("java.lang", "Boolean", JavaClass.Kind.CLASS), "<init>", "(Z)V", -1);
+				method = BOOLEAN_VALUEOF;
 				break;
 			case BYTE:
+				method = INTEGER_VALUEOF;
+				break;
 			case SBYTE:
-				writer.newObject(Byte.class);
-				info = new JavaMethodInfo(new JavaClass("java.lang", "Byte", JavaClass.Kind.CLASS), "<init>", "(B)V", -1);
+				method = BYTE_VALUEOF;
 				break;
 			case SHORT:
+				method = SHORT_VALUEOF;
+				break;
 			case USHORT:
-				writer.newObject(Short.class);
-				info = new JavaMethodInfo(new JavaClass("java.lang", "Short", JavaClass.Kind.CLASS), "<init>", "(S)V", -1);
+				method = INTEGER_VALUEOF;
 				break;
 			case INT:
 			case UINT:
-				writer.newObject(Byte.class);
-				info = new JavaMethodInfo(new JavaClass("java.lang", "Byte", JavaClass.Kind.CLASS), "<init>", "(B)V", -1);
+				method = INTEGER_VALUEOF;
 				break;
 			case LONG:
 			case ULONG:
-				writer.newObject(Long.class);
-				info = new JavaMethodInfo(new JavaClass("java.lang", "Long", JavaClass.Kind.CLASS), "<init>", "(S)V", -1);
+				method = LONG_VALUEOF;
 				break;
 			case FLOAT:
-				writer.newObject(Float.class);
-				info = new JavaMethodInfo(new JavaClass("java.lang", "Float", JavaClass.Kind.CLASS), "<init>", "(F)V", -1);
+				method = FLOAT_VALUEOF;
 				break;
 			case DOUBLE:
-				writer.newObject(Double.class);
-				info = new JavaMethodInfo(new JavaClass("java.lang", "Double", JavaClass.Kind.CLASS), "<init>", "(D)V", -1);
+				method = DOUBLE_VALUEOF;
 				break;
 			case CHAR:
-				writer.newObject(Character.class);
-				info = new JavaMethodInfo(new JavaClass("java.lang", "Character", JavaClass.Kind.CLASS), "<init>", "(C)V", -1);
+				method = CHARACTER_VALUEOF;
 				break;
 			default:
 				return null;
 		}
 		writer.dup();
-		return info;
+		
+		if (method != null)
+			writer.invokeStatic(method);
+		return null;
 	}
 
 	@Override
-	public JavaMethodInfo visitArray(ArrayTypeID array) {
+	public Void visitArray(ArrayTypeID array) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public JavaMethodInfo visitAssoc(AssocTypeID assoc) {
+	public Void visitAssoc(AssocTypeID assoc) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public JavaMethodInfo visitGenericMap(GenericMapTypeID map) {
+	public Void visitGenericMap(GenericMapTypeID map) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public JavaMethodInfo visitIterator(IteratorTypeID iterator) {
+	public Void visitIterator(IteratorTypeID iterator) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public JavaMethodInfo visitFunction(FunctionTypeID function) {
+	public Void visitFunction(FunctionTypeID function) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public JavaMethodInfo visitDefinition(DefinitionTypeID definition) {
+	public Void visitDefinition(DefinitionTypeID definition) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public JavaMethodInfo visitGeneric(GenericTypeID generic) {
+	public Void visitGeneric(GenericTypeID generic) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public JavaMethodInfo visitRange(RangeTypeID range) {
+	public Void visitRange(RangeTypeID range) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public JavaMethodInfo visitModified(ModifiedTypeID type) {
+	public Void visitModified(ModifiedTypeID type) {
 		//NO-OP
 		return null;
 	}

@@ -47,6 +47,13 @@ public class JavaClass implements Comparable<JavaClass> {
 		return new JavaClass(pkg, internalName, kind, nameParts);
 	}
 	
+	public static String getNameFromFile(String filename) {
+		if (filename.indexOf('.') > 0)
+			return filename.substring(0, filename.indexOf('.'));
+		else
+			return filename;
+	}
+	
 	public final JavaClass outer;
 	
 	public final String pkg;
