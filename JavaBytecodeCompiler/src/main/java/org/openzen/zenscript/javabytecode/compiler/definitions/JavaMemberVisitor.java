@@ -164,7 +164,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitCustomIterator(CustomIteratorMember member) {
+	public Void visitCustomIterator(IteratorMember member) {
 		return null;
 	}
 

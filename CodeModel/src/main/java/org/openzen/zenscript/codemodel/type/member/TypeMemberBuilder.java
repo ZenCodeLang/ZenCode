@@ -47,11 +47,6 @@ import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.member.builtin.ArrayIteratorKeyValues;
-import org.openzen.zenscript.codemodel.member.builtin.ArrayIteratorValues;
-import org.openzen.zenscript.codemodel.member.builtin.AssocIterator;
-import org.openzen.zenscript.codemodel.member.builtin.RangeIterator;
-import org.openzen.zenscript.codemodel.member.builtin.StringCharIterator;
 import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.TranslatedOperatorMemberRef;
@@ -74,6 +69,7 @@ import static org.openzen.zencode.shared.CodePosition.BUILTIN;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 
 /**
  *
@@ -286,8 +282,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 		getter(definition, ARRAY_ISEMPTY, "isEmpty", BOOL);
 		getter(definition, ARRAY_HASHCODE, "objectHashCode", INT);
-		new ArrayIteratorKeyValues(array).registerTo(members, TypeMemberPriority.SPECIFIED, null);
-		new ArrayIteratorValues(array).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+		iterator(definition, ITERATOR_ARRAY_VALUES, baseType);
+		iterator(definition, ITERATOR_ARRAY_KEY_VALUES, INT, baseType);
 		
 		equals(definition, ARRAY_EQUALS, array);
 		notequals(definition, ARRAY_NOTEQUALS, array);
@@ -324,7 +320,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		getter(builtin, BuiltinID.ASSOC_VALUES, "values", cache.getRegistry().getArray(valueType, 1));
 		getter(builtin, BuiltinID.ASSOC_HASHCODE, "objectHashCode", BasicTypeID.INT);
 		
-		new AssocIterator(assoc).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+		iterator(builtin, ITERATOR_ASSOC_KEYS, keyType);
+		iterator(builtin, ITERATOR_ASSOC_KEY_VALUES, keyType, valueType);
 		
 		equals(builtin, BuiltinID.ASSOC_EQUALS, assoc);
 		notequals(builtin, BuiltinID.ASSOC_NOTEQUALS, assoc);
@@ -499,7 +496,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		ClassDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
 		getter(definition, RANGE_FROM, "from", fromType);
 		getter(definition, RANGE_TO, "to", toType);
-		if (range.from == range.to && (range.from == BasicTypeID.BYTE
+		if (range.from == range.to && (
+				   range.from == BYTE
 				|| range.from == SBYTE
 				|| range.from == SHORT
 				|| range.from == USHORT
@@ -507,7 +505,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				|| range.from == UINT
 				|| range.from == LONG
 				|| range.from == ULONG)) {
-			new RangeIterator(range).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+			
+			iterator(definition, ITERATOR_INT_RANGE, range.from);
 		}
 		
 		processType(definition, range);
@@ -1116,7 +1115,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		method(builtin, STRING_TO_LOWER_CASE, "toLowerCase", STRING);
 		method(builtin, STRING_TO_UPPER_CASE, "toUpperCase", STRING);
 		
-		new StringCharIterator().registerTo(members, TypeMemberPriority.SPECIFIED, null);
+		iterator(builtin, ITERATOR_STRING_CHARS, CHAR);
 		
 		processType(builtin, STRING);
 	}
@@ -1556,5 +1555,10 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				OperatorType.NOTSAME,
 				new FunctionHeader(BOOL, new FunctionParameter(type)),
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	}
+	
+	private void iterator(HighLevelDefinition cls, BuiltinID builtin, ITypeID... types) {
+		new IteratorMember(BUILTIN, cls, Modifiers.PUBLIC, types, registry, builtin)
+				.registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 }

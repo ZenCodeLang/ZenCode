@@ -108,11 +108,11 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 				.append(result.cls.getName())
 				.append("(")
 				.append(type.from.accept(typeVisitor))
-				.append(", ")
+				.append(" from, ")
 				.append(type.to.accept(typeVisitor))
-				.append(") {\n");
+				.append(" to) {\n");
 		contents.append(settings.indent).append(settings.indent).append("this.from = from;\n");
-		contents.append(settings.indent).append(settings.indent).append("this.to = top;\n");
+		contents.append(settings.indent).append(settings.indent).append("this.to = to;\n");
 		contents.append(settings.indent).append("}\n");
 		contents.append("}\n");
 		

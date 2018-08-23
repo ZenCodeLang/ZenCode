@@ -152,7 +152,20 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 
 	@Override
 	public String visitRange(RangeTypeID range) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		JavaSynthesizedClass synthetic = typeGenerator.synthesizeRange(range);
+		StringBuilder result = new StringBuilder();
+		result.append(importer.importType(synthetic.cls));
+		if (synthetic.typeParameters.length > 0) {
+			result.append('<');
+			for (int i = 0; i < synthetic.typeParameters.length; i++) {
+				if (i > 0)
+					result.append(", ");
+				
+				result.append(synthetic.typeParameters[i].name);
+			}
+			result.append('>');
+		}
+		return result.toString();
 	}
 
 	@Override

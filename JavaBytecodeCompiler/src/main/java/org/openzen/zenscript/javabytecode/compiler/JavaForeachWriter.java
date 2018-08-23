@@ -1,12 +1,11 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
-import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 
-public class JavaForeachVisitor implements ForeachIteratorVisitor<Void> {
+public class JavaForeachWriter {
 
 	private final JavaWriter javaWriter;
 	private final VarStatement[] variables;
@@ -15,7 +14,7 @@ public class JavaForeachVisitor implements ForeachIteratorVisitor<Void> {
 	private final Label endLabel;
 	private final JavaStatementVisitor statementVisitor;
 
-	public JavaForeachVisitor(JavaStatementVisitor statementVisitor, VarStatement[] variables, Statement content, Label start, Label end) {
+	public JavaForeachWriter(JavaStatementVisitor statementVisitor, VarStatement[] variables, Statement content, Label start, Label end) {
 		this.statementVisitor = statementVisitor;
 		this.javaWriter = statementVisitor.getJavaWriter();
 		this.variables = variables;
@@ -23,9 +22,8 @@ public class JavaForeachVisitor implements ForeachIteratorVisitor<Void> {
 		this.startLabel = start;
 		this.endLabel = end;
 	}
-
-	@Override
-	public Void visitIntRange() {
+	
+	public void visitIntRange() {
 		javaWriter.dup();
 		javaWriter.getField("zsynthetic/IntRange", "to", "I");
 		javaWriter.swap();
@@ -40,26 +38,17 @@ public class JavaForeachVisitor implements ForeachIteratorVisitor<Void> {
 
 		content.accept(statementVisitor);
 		javaWriter.iinc(z);
-
-
-		return null;
 	}
 
-	@Override
-	public Void visitArrayValueIterator() {
+	public void visitArrayValueIterator() {
 		handleArray(javaWriter.local(int.class), variables[0].getTag(JavaLocalVariableInfo.class));
-		return null;
 	}
 
-	@Override
-	public Void visitArrayKeyValueIterator() {
+	public void visitArrayKeyValueIterator() {
 		handleArray(variables[0].getTag(JavaLocalVariableInfo.class).local, variables[1].getTag(JavaLocalVariableInfo.class));
-		return null;
 	}
 
-	@Override
-	public Void visitStringCharacterIterator() {
-		// TODO: implement this one
+	public void visitStringCharacterIterator() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
@@ -83,18 +72,15 @@ public class JavaForeachVisitor implements ForeachIteratorVisitor<Void> {
 		javaWriter.iinc(z);
 	}
 
-	@Override
-	public Void visitCustomIterator() {
-		return null;
-	}
-
-	@Override
-	public Void visitAssocKeyIterator() {
+	public void visitCustomIterator() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
-	@Override
-	public Void visitAssocKeyValueIterator() {
+	public void visitAssocKeyIterator() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	public void visitAssocKeyValueIterator() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }

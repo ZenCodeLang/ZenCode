@@ -18,7 +18,6 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValueVisitor;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.BreakStatement;
 import org.openzen.zenscript.codemodel.statement.CatchClause;
@@ -100,7 +99,33 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 
 	@Override
 	public void formatForeach(StatementFormattingTarget target, ForeachStatement statement) {
-		statement.iterator.target.acceptForIterator(new ForeachFormatter(scope, target, statement));
+		if (statement.iterator.target.getBuiltin() == null) {
+			iterateOverCustomIterator(target, statement);
+			return;
+		}
+		
+		switch (statement.iterator.target.getBuiltin()) {
+			case ITERATOR_INT_RANGE:
+				iterateOverIntRange(target, statement);
+				break;
+			case ITERATOR_ARRAY_VALUES:
+				iterateOverArrayValues(target, statement);
+				break;
+			case ITERATOR_ARRAY_KEY_VALUES:
+				iteratorOverArrayKeyValues(target, statement);
+				break;
+			case ITERATOR_ASSOC_KEYS:
+				iterateOverAssocKeys(target, statement);
+				break;
+			case ITERATOR_ASSOC_KEY_VALUES:
+				iterateOverAssocKeyValues(target, statement);
+				break;
+			case ITERATOR_STRING_CHARS:
+				iterateOverStringCharacters(target, statement);
+				break;
+			default:
+				throw new IllegalArgumentException("Invalid iterator: " + statement.iterator.target.getBuiltin());
+		}
 	}
 
 	@Override
@@ -230,108 +255,86 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 		return value.option.getName();
 	}
 	
-	private static class ForeachFormatter implements ForeachIteratorVisitor<Void> {
-		private final JavaSourceStatementScope scope;
-		private final StatementFormattingTarget target;
-		private final ForeachStatement statement;
-		
-		public ForeachFormatter(JavaSourceStatementScope scope, StatementFormattingTarget target, ForeachStatement statement) {
-			this.scope = scope;
-			this.target = target;
-			this.statement = statement;
-		}
+	private void iterateOverIntRange(StatementFormattingTarget target, ForeachStatement statement) {
+		String name = statement.loopVariables[0].name;
 
-		@Override
-		public Void visitIntRange() {
-			String name = statement.loopVariables[0].name;
-			
-			if (statement.list instanceof RangeExpression) {
-				String limitName = "limitFor" + StringExpansion.capitalize(name);
-				RangeExpression range = (RangeExpression)(statement.list);
-				target.writeLine("int " + limitName + " = " + scope.expression(target, range.to) + ";");
-				target.writeInner(
-						"for (int " + name + " = " + scope.expression(target, range.from) + "; " + name + " < " + limitName + "; " + name + "++)",
-						statement.content,
-						statement,
-						"");
-			} else {
-				target.writeLine("IntRange rangeFor" + name + " = " + scope.expression(target, statement.list) + ";");
-				target.writeInner(
-						"for (int " + name + " = rangeFor" + name + ".from; i < rangeFor" + name + ".to; " + name + "++)",
-						statement.content,
-						statement,
-						"");
-			}
-			return null;
-		}
-
-		@Override
-		public Void visitArrayValueIterator() {
+		if (statement.list instanceof RangeExpression) {
+			String limitName = "limitFor" + StringExpansion.capitalize(name);
+			RangeExpression range = (RangeExpression)(statement.list);
+			target.writeLine("int " + limitName + " = " + scope.expression(target, range.to) + ";");
 			target.writeInner(
+					"for (int " + name + " = " + scope.expression(target, range.from) + "; " + name + " < " + limitName + "; " + name + "++)",
+					statement.content,
+					statement,
+					"");
+		} else {
+			target.writeLine("IntRange rangeFor" + name + " = " + scope.expression(target, statement.list) + ";");
+			target.writeInner(
+					"for (int " + name + " = rangeFor" + name + ".from; i < rangeFor" + name + ".to; " + name + "++)",
+					statement.content,
+					statement,
+					"");
+		}
+	}
+
+	private void iterateOverArrayValues(StatementFormattingTarget target, ForeachStatement statement) {
+		target.writeInner(
+				"for (" + scope.type(statement.loopVariables[0].type) + " " + statement.loopVariables[0].name + " : " + scope.expression(target, statement.list) + ")",
+				statement.content,
+				statement,
+				"");
+	}
+
+	private void iteratorOverArrayKeyValues(StatementFormattingTarget target, ForeachStatement statement) {
+		ExpressionString list = scope.expression(target, scope.duplicable(target, statement.list));
+
+		target.writeInner(
+				"for (int " + statement.loopVariables[0].name + " = 0; i < " + list.value + ".length; i++) {",
+				new String[] {
+					scope.type(statement.loopVariables[1].type) + " " + statement.loopVariables[1].name + " = " + list.value + "[" + statement.loopVariables[0].name + "];"
+				},
+				statement.content,
+				statement,
+				"}");
+	}
+
+	private void iterateOverCustomIterator(StatementFormattingTarget target, ForeachStatement statement) {
+		target.writeInner(
 					"for (" + scope.type(statement.loopVariables[0].type) + " " + statement.loopVariables[0].name + " : " + scope.expression(target, statement.list) + ")",
 					statement.content,
 					statement,
 					"");
-			return null;
-		}
+	}
 
-		@Override
-		public Void visitArrayKeyValueIterator() {
-			ExpressionString list = scope.expression(target, scope.duplicable(target, statement.list));
-			
-			target.writeInner(
-					"for (int " + statement.loopVariables[0].name + " = 0; i < " + list.value + ".length; i++) {",
-					new String[] {
-						scope.type(statement.loopVariables[1].type) + " " + statement.loopVariables[1].name + " = " + list.value + "[" + statement.loopVariables[0].name + "];"
-					},
-					statement.content,
-					statement,
-					"}");
-			
-			return null;
-		}
+	private void iterateOverStringCharacters(StatementFormattingTarget target, ForeachStatement statement) {
+		target.writeInner(
+				"for (char " + statement.loopVariables[0].name + " : " + scope.expression(target, statement.list).value + ".toCharArray())",
+				statement.content,
+				statement,
+				"");
+	}
 
-		@Override
-		public Void visitCustomIterator() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
+	private void iterateOverAssocKeys(StatementFormattingTarget target, ForeachStatement statement) {
+		VarStatement key = statement.loopVariables[0];
+		target.writeInner(
+				"for (" + scope.type(key.type) + " " + key + " : " + scope.expression(target, statement.list).value + ".keySet())",
+				statement.content,
+				statement,
+				"");
+	}
 
-		@Override
-		public Void visitStringCharacterIterator() {
-			target.writeInner(
-					"for (char " + statement.loopVariables[0].name + " : " + scope.expression(target, statement.list).value + ".toCharArray())",
-					statement.content,
-					statement,
-					"");
-			return null;
-		}
-
-		@Override
-		public Void visitAssocKeyIterator() {
-			VarStatement key = statement.loopVariables[0];
-			target.writeInner(
-					"for (" + scope.type(key.type) + " " + key + " : " + scope.expression(target, statement.list).value + ".keySet())",
-					statement.content,
-					statement,
-					"");
-			return null;
-		}
-
-		@Override
-		public Void visitAssocKeyValueIterator() {
-			String temp = scope.createTempVariable();
-			VarStatement key = statement.loopVariables[0];
-			VarStatement value = statement.loopVariables[1];
-			target.writeInner(
-					"for (Map.Entry<" + scope.type(key.type) + ", " + scope.type(value.type) + "> " + temp + " : " + scope.expression(target, statement.list).value + ".entrySet()) {",
-					new String[] {
-						scope.type(key.type) + " " + key.name + " = " + temp + ".getKey();",
-						scope.type(value.type) + " " + value.name + " = " + temp + ".getValue();"
-					},
-					statement.content,
-					statement,
-					"}");
-			return null;
-		}
+	private void iterateOverAssocKeyValues(StatementFormattingTarget target, ForeachStatement statement) {
+		String temp = scope.createTempVariable();
+		VarStatement key = statement.loopVariables[0];
+		VarStatement value = statement.loopVariables[1];
+		target.writeInner(
+				"for (Map.Entry<" + scope.type(key.type) + ", " + scope.type(value.type) + "> " + temp + " : " + scope.expression(target, statement.list).value + ".entrySet()) {",
+				new String[] {
+					scope.type(key.type) + " " + key.name + " = " + temp + ".getKey();",
+					scope.type(value.type) + " " + value.name + " = " + temp + ".getValue();"
+				},
+				statement.content,
+				statement,
+				"}");
 	}
 }

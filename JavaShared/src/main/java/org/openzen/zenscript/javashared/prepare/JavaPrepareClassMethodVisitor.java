@@ -7,17 +7,17 @@ package org.openzen.zenscript.javashared.prepare;
 
 import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
@@ -28,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -86,7 +87,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
-		visitFunctional(member, "<init>");
+		visitFunctional(member, member.header, "<init>");
 		return null;
 	}
 
@@ -101,43 +102,43 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitMethod(MethodMember member) {
-		visitFunctional(member, member.name);
+		visitFunctional(member, member.header, member.name);
 		return null;
 	}
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		visitFunctional(member, "get" + StringExpansion.capitalize(member.name));
+		visitFunctional(member, new FunctionHeader(member.type), "get" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		visitFunctional(member, "set" + StringExpansion.capitalize(member.name));
+		visitFunctional(member, new FunctionHeader(BasicTypeID.VOID, member.type), "set" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		visitFunctional(member, getOperatorName(member.operator));
+		visitFunctional(member, member.header, getOperatorName(member.operator));
 		return null;
 	}
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		visitFunctional(member, "to" + member.toType.accept(new JavaTypeNameVisitor()));
+		visitFunctional(member, member.header, "to" + member.toType.accept(new JavaTypeNameVisitor()));
 		return null;
 	}
 
 	@Override
-	public Void visitCustomIterator(CustomIteratorMember member) {
-		visitFunctional(member, member.getLoopVariableCount() == 1 ? "iterator" : "iterator" + member.getLoopVariableCount());
+	public Void visitCustomIterator(IteratorMember member) {
+		visitFunctional(member, member.header, member.getLoopVariableCount() == 1 ? "iterator" : "iterator" + member.getLoopVariableCount());
 		return null;
 	}
 
 	@Override
 	public Void visitCaller(CallerMember member) {
-		visitFunctional(member, "call");
+		visitFunctional(member, member.header, "call");
 		return null;
 	}
 
@@ -279,7 +280,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		}
 	}
 	
-	private void visitFunctional(FunctionalMember member, String name) {
+	private void visitFunctional(DefinitionMember member, FunctionHeader header, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
 		JavaMethod method = null;
 		if (nativeTag != null && nativeClass != null)
@@ -296,18 +297,18 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					baseMethod.kind,
 					baseMethod.name,
 					true,
-					context.getMethodDescriptor(member.header),
+					context.getMethodDescriptor(header),
 					JavaModifiers.getJavaModifiers(member.modifiers),
-					member.header.returnType instanceof GenericTypeID);
+					header.returnType instanceof GenericTypeID);
 		} else if (method == null) {
 			method = new JavaMethod(
 					cls,
 					getKind(member),
 					name,
 					true,
-					context.getMethodDescriptor(member.header),
+					context.getMethodDescriptor(header),
 					JavaModifiers.getJavaModifiers(member.modifiers),
-					member.header.returnType instanceof GenericTypeID);
+					header.returnType instanceof GenericTypeID);
 		}
 		
 		if (method.compile) {

@@ -22,7 +22,7 @@ public class SetterMemberRef extends PropertyRef {
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
+	public SetterMemberRef getOverrides() {
 		return member.getOverrides();
 	}
 }

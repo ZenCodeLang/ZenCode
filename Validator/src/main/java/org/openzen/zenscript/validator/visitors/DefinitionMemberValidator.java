@@ -16,7 +16,8 @@ import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.DefinitionMember;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
@@ -28,9 +29,11 @@ import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.member.MemberVisitor;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
+import org.openzen.zenscript.codemodel.member.PropertyMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -117,7 +120,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		} else {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
 			member.body.accept(statementValidator);
-			validateThrow(member);
+			validateThrow(member, member.header, member.body);
 			
 			if (member.definition.getSuperType() != null && !statementValidator.constructorForwarded) {
 				validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_MISSING, member.position, "Constructor not forwarded to base type");
@@ -152,7 +155,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitGetter(GetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
 		member.type.accept(new TypeValidator(validator, member.position));
-		validateProperty(member, new MethodStatementScope(member.header));
+		validateGetter(member, new MethodStatementScope(new FunctionHeader(member.type)));
 		return null;
 	}
 
@@ -160,7 +163,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitSetter(SetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
 		member.type.accept(new TypeValidator(validator, member.position));
-		validateProperty(member, new MethodStatementScope(member.header));
+		validateSetter(member, new MethodStatementScope(new FunctionHeader(BasicTypeID.VOID, member.parameter)));
 		return null;
 	}
 	
@@ -191,7 +194,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 
 	@Override
-	public Void visitCustomIterator(CustomIteratorMember member) {
+	public Void visitCustomIterator(IteratorMember member) {
 		for (ITypeID type : member.getLoopVariableTypes())
 			type.accept(new TypeValidator(validator, member.position));
 		validateFunctional(member, new MethodStatementScope(new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes()))));
@@ -277,8 +280,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		return null;
 	}
 	
-	private void validateThrow(FunctionalMember member) {
-		if (member.body.thrownType != null && member.header.thrownType == null) // TODO: validate thrown type
+	private void validateThrow(DefinitionMember member, FunctionHeader header, Statement body) {
+		if (body.thrownType != null && header.thrownType == null) // TODO: validate thrown type
 			validator.logError(ValidationLogEntry.Code.THROW_WITHOUT_THROWS, member.position, "Method is throwing but doesn't declare throws type");
 	}
 	
@@ -294,11 +297,11 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, scope);
 			member.body.accept(statementValidator);
-			validateThrow(member);
+			validateThrow(member, member.header, member.body);
 		}
 	}
 	
-	private void validateProperty(FunctionalMember member, StatementScope scope) {
+	private void validateGetter(GetterMember member, StatementScope scope) {
 		if (Modifiers.isOverride(member.modifiers) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
 			if (member.getOverrides() == null) {
 				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
@@ -308,7 +311,22 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, scope);
 			member.body.accept(statementValidator);
-			validateThrow(member);
+			
+			validateThrow(member, new FunctionHeader(member.type), member.body);
+		}
+	}
+	
+	private void validateSetter(SetterMember member, StatementScope scope) {
+		if (Modifiers.isOverride(member.modifiers) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
+			if (member.getOverrides() == null) {
+				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
+			}
+		}
+		
+		if (member.body != null) {
+			StatementValidator statementValidator = new StatementValidator(validator, scope);
+			member.body.accept(statementValidator);
+			validateThrow(member, new FunctionHeader(BasicTypeID.VOID, member.type), member.body);
 		}
 	}
 	

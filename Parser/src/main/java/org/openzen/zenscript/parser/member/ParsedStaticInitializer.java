@@ -15,7 +15,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
 /**
@@ -31,7 +30,7 @@ public class ParsedStaticInitializer extends ParsedDefinitionMember {
 		super(definition, annotations);
 		
 		this.body = body;
-		compiled = new StaticInitializerMember(position);
+		compiled = new StaticInitializerMember(position, definition);
 	}
 
 	@Override

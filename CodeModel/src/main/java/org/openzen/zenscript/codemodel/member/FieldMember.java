@@ -77,7 +77,7 @@ public class FieldMember extends PropertyMember {
 					position,
 					new ThisExpression(position, thisType),
 					new FieldMemberRef(this, null),
-					new GetFunctionParameterExpression(position, this.autoSetter.header.parameters[0]))));
+					new GetFunctionParameterExpression(position, this.autoSetter.parameter))));
 		} else {
 			this.autoSetter = null;
 		}

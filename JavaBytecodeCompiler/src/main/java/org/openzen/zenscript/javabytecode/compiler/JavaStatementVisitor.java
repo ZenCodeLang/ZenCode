@@ -108,7 +108,34 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         }
 
 		//javaWriter.label(min);
-		statement.iterator.target.acceptForIterator(new JavaForeachVisitor(this, statement.loopVariables, statement.content, start, end));
+		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement.loopVariables, statement.content, start, end);
+		if (statement.iterator.target.getBuiltin() == null) {
+			iteratorWriter.visitCustomIterator();
+		} else {
+			switch (statement.iterator.target.getBuiltin()) {
+				case ITERATOR_INT_RANGE:
+					iteratorWriter.visitIntRange();
+					break;
+				case ITERATOR_ARRAY_VALUES:
+					iteratorWriter.visitArrayValueIterator();
+					break;
+				case ITERATOR_ARRAY_KEY_VALUES:
+					iteratorWriter.visitArrayKeyValueIterator();
+					break;
+				case ITERATOR_ASSOC_KEYS:
+					iteratorWriter.visitAssocKeyIterator();
+					break;
+				case ITERATOR_ASSOC_KEY_VALUES:
+					iteratorWriter.visitAssocKeyValueIterator();
+					break;
+				case ITERATOR_STRING_CHARS:
+					iteratorWriter.visitStringCharacterIterator();
+					break;
+				default:
+					throw new IllegalArgumentException("Invalid iterator: " + statement.iterator.target.getBuiltin());
+			}
+		}
+		
 		javaWriter.goTo(start);
 		javaWriter.label(end);
 		return false;
