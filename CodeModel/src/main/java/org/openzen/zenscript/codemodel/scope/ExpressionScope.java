@@ -61,13 +61,6 @@ public class ExpressionScope extends BaseScope {
 		this.genericInferenceMap = Collections.emptyMap();
 	}
 	
-	public ExpressionScope(BaseScope scope, List<ITypeID> hints, Function<CodePosition, Expression> dollar, Map<TypeParameter, ITypeID> genericInferenceMap) {
-		this.outer = scope;
-		this.hints = hints;
-		this.dollar = dollar;
-		this.genericInferenceMap = genericInferenceMap;
-	}
-	
 	private ExpressionScope(
 			BaseScope scope,
 			List<ITypeID> hints,

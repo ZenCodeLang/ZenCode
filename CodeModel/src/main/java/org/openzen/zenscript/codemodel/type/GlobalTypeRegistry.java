@@ -37,6 +37,7 @@ public class GlobalTypeRegistry {
 		arrayTypes.put(ArrayTypeID.CHAR, ArrayTypeID.CHAR);
 		
 		rangeTypes.put(RangeTypeID.INT, RangeTypeID.INT);
+		rangeTypes.put(RangeTypeID.USIZE, RangeTypeID.USIZE);
 	}
 	
 	public ArrayTypeID getArray(ITypeID baseType, int dimension) {
@@ -89,8 +90,8 @@ public class GlobalTypeRegistry {
 		}
 	}
 	
-	public RangeTypeID getRange(ITypeID from, ITypeID to) {
-		RangeTypeID id = new RangeTypeID(this, from, to);
+	public RangeTypeID getRange(ITypeID type) {
+		RangeTypeID id = new RangeTypeID(this, type);
 		if (rangeTypes.containsKey(id)) {
 			return rangeTypes.get(id);
 		} else {

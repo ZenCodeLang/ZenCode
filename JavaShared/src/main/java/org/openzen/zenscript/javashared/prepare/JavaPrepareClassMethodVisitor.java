@@ -30,6 +30,7 @@ import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
@@ -299,7 +300,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					true,
 					context.getMethodDescriptor(header),
 					JavaModifiers.getJavaModifiers(member.modifiers),
-					header.returnType instanceof GenericTypeID);
+					header.getReturnType() instanceof GenericTypeID);
 		} else if (method == null) {
 			method = new JavaMethod(
 					cls,
@@ -308,10 +309,10 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					true,
 					context.getMethodDescriptor(header),
 					JavaModifiers.getJavaModifiers(member.modifiers),
-					header.returnType instanceof GenericTypeID);
+					header.getReturnType() instanceof GenericTypeID);
 		}
 		
-		if (method.compile) {
+		if (method.compile && member.getBuiltin() != BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) {
 			if (DEBUG_EMPTY && cls.empty)
 				System.out.println("Class " + cls.fullName + " not empty because of " + member.describe());
 			

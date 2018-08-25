@@ -35,6 +35,7 @@ public interface IParsedType {
 	}
 	
 	public static IParsedType tryParse(ZSTokenParser tokens) {
+		CodePosition position = tokens.getPosition();
 		int modifiers = 0;
 		while (true) {
 			if (tokens.optional(ZSTokenType.K_CONST) != null) {
@@ -88,6 +89,10 @@ public interface IParsedType {
 				tokens.next();
 				result = ParsedTypeBasic.ULONG;
 				break;
+			case K_USIZE:
+				tokens.next();
+				result = ParsedTypeBasic.USIZE;
+				break;
 			case K_FLOAT:
 				tokens.next();
 				result = ParsedTypeBasic.FLOAT;
@@ -105,14 +110,12 @@ public interface IParsedType {
 				result = ParsedTypeBasic.STRING;
 				break;
 			case K_FUNCTION: {
-				CodePosition position = tokens.getPosition();
 				tokens.next();
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
 				result = new ParsedFunctionType(position, header);
 				break;
 			}
 			case T_IDENTIFIER: {
-				CodePosition position = tokens.getPosition();
 				List<ParsedNamedType.ParsedNamePart> name = new ArrayList<>();
 				do {
 					String namePart = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
@@ -132,7 +135,7 @@ public interface IParsedType {
 				case T_DOT2: {
 					tokens.next();
 					IParsedType to = parse(tokens);
-					result = new ParsedTypeRange(result, to);
+					result = new ParsedTypeRange(position, result, to);
 					break;
 				}
 				case T_SQOPEN:

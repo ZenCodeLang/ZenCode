@@ -44,6 +44,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 			return;
 			
 		HighLevelDefinition definition = ((DefinitionTypeID)type).definition;
+		System.out.println("Preparing " + definition.name);
 		definition.accept(this);
 	}
 	

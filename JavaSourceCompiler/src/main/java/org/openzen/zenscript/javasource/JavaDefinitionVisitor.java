@@ -190,8 +190,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				output.append(",\n");
 			}
 			output.append("\t").append(constant.name);
-			if (constant.constructor != null) {
-				
+			if (constant.constructor != null && constant.constructor.arguments.arguments.length > 0) {
 				output.append("(");
 				boolean first = true;
 				for (Expression argument : constant.constructor.arguments.arguments) {

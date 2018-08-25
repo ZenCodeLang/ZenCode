@@ -90,8 +90,7 @@ public class TypeValidator implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitRange(RangeTypeID range) {
-		range.from.accept(this);
-		range.to.accept(this);
+		range.baseType.accept(this);
 		return null;
 	}
 

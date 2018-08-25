@@ -61,6 +61,7 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 			case UINT: return "int";
 			case LONG: return "long";
 			case ULONG: return "long";
+			case USIZE: return "int";
 			case FLOAT: return "float";
 			case DOUBLE: return "double";
 			case CHAR: return "char";
@@ -73,7 +74,15 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 	@Override
 	public String visitArray(ArrayTypeID array) {
 		StringBuilder result = new StringBuilder();
-		result.append(array.elementType.accept(this));
+		
+		if (array.elementType == BasicTypeID.BYTE) {
+			result.append("byte");
+		} else if (array.elementType == BasicTypeID.USHORT) {
+			result.append("short");
+		} else {
+			result.append(array.elementType.accept(this));
+		}
+		
 		for (int i = 0; i < array.dimension; i++)
 			result.append("[]");
 		
@@ -170,6 +179,9 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 
 	@Override
 	public String visitModified(ModifiedTypeID optional) {
+		if (optional.isOptional() && optional.withoutOptional() == BasicTypeID.USIZE)
+			return "int"; // usize? is an int
+		
 		return optional.baseType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator));
 	}
 

@@ -5,12 +5,9 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -89,7 +86,7 @@ public class JavaBytecodeContext extends JavaContext {
 		JavaSynthesizedClass result = JavaSynthesizedClassNamer.createRangeName(type);
 		ranges.put(signature, result);
 		
-		createRangeClass(type.from, type.to, result.cls);
+		createRangeClass(type.baseType, result.cls);
 		return result;
 	}
 
@@ -110,22 +107,22 @@ public class JavaBytecodeContext extends JavaContext {
         register(cls.internalName, ifaceWriter.toByteArray());
     }
 	
-	private void createRangeClass(ITypeID from, ITypeID to, JavaClass cls) {
+	private void createRangeClass(ITypeID baseType, JavaClass cls) {
 		ClassWriter rangeWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		rangeWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, cls.internalName, null, "java/lang/Object", null);
-		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "from", getDescriptor(from), null, null).visitEnd();
-		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "to", getDescriptor(to), null, null).visitEnd();
+		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "from", getDescriptor(baseType), null, null).visitEnd();
+		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "to", getDescriptor(baseType), null, null).visitEnd();
 		
-		JavaMethod method = JavaMethod.getConstructor(cls, "(" + getDescriptor(from) + getDescriptor(to) + ")V", Opcodes.ACC_PUBLIC);
+		JavaMethod method = JavaMethod.getConstructor(cls, "(" + getDescriptor(baseType) + getDescriptor(baseType) + ")V", Opcodes.ACC_PUBLIC);
 		JavaWriter constructorWriter = new JavaWriter(rangeWriter, method, null, method.descriptor, null);
 		constructorWriter.loadObject(0);
 		constructorWriter.invokeSpecial("java/lang/Object", "<init>", "()V");
 		constructorWriter.loadObject(0);
-		constructorWriter.load(getType(from), 1);
-		constructorWriter.putField(cls.internalName, "from", getDescriptor(from));
+		constructorWriter.load(getType(baseType), 1);
+		constructorWriter.putField(cls.internalName, "from", getDescriptor(baseType));
 		constructorWriter.loadObject(0);
-		constructorWriter.load(getType(to), 2);
-		constructorWriter.putField(cls.internalName, "to", getDescriptor(from));
+		constructorWriter.load(getType(baseType), 2);
+		constructorWriter.putField(cls.internalName, "to", getDescriptor(baseType));
 		constructorWriter.ret();
 		constructorWriter.end();
 		

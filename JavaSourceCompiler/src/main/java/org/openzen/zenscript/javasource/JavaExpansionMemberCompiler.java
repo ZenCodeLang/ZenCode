@@ -71,7 +71,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 		else
 			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, expansionTypeParameters, header.typeParameters);
 		
-		output.append(header.returnType.accept(scope.typeVisitor));
+		output.append(header.getReturnType().accept(scope.typeVisitor));
 		output.append(" ");
 		output.append(method.name);
 		formatParameters(member.isStatic(), expansionTypeParameters, header);

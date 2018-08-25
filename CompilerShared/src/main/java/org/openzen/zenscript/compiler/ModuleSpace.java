@@ -3,20 +3,22 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.constructor.module;
+package org.openzen.zenscript.compiler;
 
 import org.openzen.zenscript.compiler.SemanticModule;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeAnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompilationUnit;
-import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 
 /**
@@ -45,7 +47,7 @@ public final class ModuleSpace {
 		
 		for (Map.Entry<String, ISymbol> globalEntry : dependency.globals.entrySet()) {
 			if (globals.containsKey(globalEntry.getKey()))
-				throw new ConstructorException("Duplicate global: " + globalEntry.getKey());
+				throw new CompileException(CodePosition.META, CompileExceptionCode.DUPLICATE_GLOBAL, "Duplicate global: " + globalEntry.getKey());
 			
 			globals.put(globalEntry.getKey(), globalEntry.getValue());
 		}

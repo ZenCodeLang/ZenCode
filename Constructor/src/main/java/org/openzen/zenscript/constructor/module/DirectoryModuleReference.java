@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.constructor.module;
 
+import org.openzen.zenscript.compiler.ModuleSpace;
 import org.openzen.zenscript.compiler.SemanticModule;
 import java.io.File;
 import java.io.IOException;
@@ -84,7 +85,7 @@ public class DirectoryModuleReference implements ModuleReference {
 			CompilingPackage compilingPackage = new CompilingPackage(pkg);
 			
 			ParsedFile[] parsedFiles = module.parse(compilingPackage);
-			SemanticModule result = Module.compileSyntaxToSemantic(module.name, dependencies, compilingPackage, parsedFiles, space, exceptionLogger);
+			SemanticModule result = ParsedFile.compileSyntaxToSemantic(module.name, dependencies, compilingPackage, parsedFiles, space, exceptionLogger);
 			
 			JSONObject globals = json.optJSONObject("globals");
 			if (globals != null) {

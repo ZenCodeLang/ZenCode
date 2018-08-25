@@ -36,6 +36,7 @@ import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
@@ -391,6 +392,11 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitConstantShort(ConstantShortExpression expression) {
 		return new ExpressionString(Integer.toString(expression.value) + " as short", ZenScriptOperator.CAST);
 	}
+	
+	@Override
+	public ExpressionString visitConstantUSize(ConstantUSizeExpression expression) {
+		return new ExpressionString(Long.toUnsignedString(expression.value) + " as usize", ZenScriptOperator.CAST);
+	}
 
 	@Override
 	public ExpressionString visitConstantString(ConstantStringExpression expression) {
@@ -402,17 +408,17 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitConstantUInt(ConstantUIntExpression expression) {
-		return new ExpressionString(Integer.toString(expression.value) + " as uint", ZenScriptOperator.CAST);
+		return new ExpressionString(Integer.toUnsignedString(expression.value) + " as uint", ZenScriptOperator.CAST);
 	}
 
 	@Override
 	public ExpressionString visitConstantULong(ConstantULongExpression expression) {
-		return new ExpressionString(Long.toString(expression.value) + " as ulong", ZenScriptOperator.CAST);
+		return new ExpressionString(Long.toUnsignedString(expression.value) + " as ulong", ZenScriptOperator.CAST);
 	}
 
 	@Override
 	public ExpressionString visitConstantUShort(ConstantUShortExpression expression) {
-		return new ExpressionString(Integer.toString(expression.value) + " as ushort", ZenScriptOperator.CAST);
+		return new ExpressionString(Integer.toUnsignedString(expression.value) + " as ushort", ZenScriptOperator.CAST);
 	}
 
 	@Override

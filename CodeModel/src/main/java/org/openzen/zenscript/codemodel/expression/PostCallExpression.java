@@ -22,7 +22,7 @@ public class PostCallExpression extends Expression {
 	public final FunctionHeader instancedHeader;
 	
 	public PostCallExpression(CodePosition position, Expression target, FunctionalMemberRef member, FunctionHeader instancedHeader) {
-		super(position, instancedHeader.returnType, binaryThrow(position, instancedHeader.thrownType, target.thrownType));
+		super(position, instancedHeader.getReturnType(), binaryThrow(position, instancedHeader.thrownType, target.thrownType));
 		
 		if (member.getOperator() != OperatorType.DECREMENT && member.getOperator() != OperatorType.INCREMENT)
 			throw new IllegalArgumentException("Operator must be increment or decrement");

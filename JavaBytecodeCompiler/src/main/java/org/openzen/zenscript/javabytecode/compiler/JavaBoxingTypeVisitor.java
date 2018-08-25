@@ -41,6 +41,7 @@ public class JavaBoxingTypeVisitor implements ITypeVisitor<Void> {
 				break;
 			case INT:
 			case UINT:
+			case USIZE:
 				method = INTEGER_VALUEOF;
 				break;
 			case LONG:

@@ -27,7 +27,7 @@ public class FunctionHeader {
 	private static final FunctionParameter[] NO_PARAMETERS = new FunctionParameter[0];
 	
 	public final TypeParameter[] typeParameters;
-	public ITypeID returnType;
+	private ITypeID returnType;
 	public final FunctionParameter[] parameters;
 	public final ITypeID thrownType;
 	
@@ -94,6 +94,17 @@ public class FunctionHeader {
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
 		hasUnknowns = hasUnknowns(parameters, returnType);
+	}
+	
+	public ITypeID getReturnType() {
+		return returnType;
+	}
+	
+	public void setReturnType(ITypeID returnType) {
+		if (returnType == null)
+			throw new NullPointerException();
+		
+		this.returnType = returnType;
 	}
 	
 	public boolean isDenormalized() {

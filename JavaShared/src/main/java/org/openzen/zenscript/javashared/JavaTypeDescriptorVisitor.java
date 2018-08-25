@@ -33,6 +33,7 @@ public class JavaTypeDescriptorVisitor implements ITypeVisitor<String> {
 				case UINT: return "Ljava/lang/Integer;";
 				case LONG: return "Ljava/lang/Long;";
 				case ULONG: return "Ljava/lang/Long;";
+				case USIZE: return "I"; // special case: optional usize fits in an int where null = -1
 				case FLOAT: return "Ljava/lang/Float;";
 				case DOUBLE: return "Ljava/lang/Double;";
 				case STRING: return "Ljava/lang/String;";
@@ -52,6 +53,7 @@ public class JavaTypeDescriptorVisitor implements ITypeVisitor<String> {
 				case UINT: return "I";
 				case LONG: return "J";
 				case ULONG: return "J";
+				case USIZE: return "I";
 				case FLOAT: return "F";
 				case DOUBLE: return "D";
 				case STRING: return "Ljava/lang/String;";
@@ -63,7 +65,12 @@ public class JavaTypeDescriptorVisitor implements ITypeVisitor<String> {
 
     @Override
     public String visitArray(ArrayTypeID array) {
-		return "[" + array.elementType.accept(this);
+		if (array.elementType == BasicTypeID.BYTE)
+			return "[B"; // instead of int[], save memory, save compatibility
+		else if (array.elementType == BasicTypeID.USHORT)
+			return "[S"; // instead of int[], save memory
+		else
+			return "[" + array.elementType.accept(this);
     }
 
     @Override

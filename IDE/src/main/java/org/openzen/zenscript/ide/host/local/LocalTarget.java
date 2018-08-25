@@ -138,7 +138,7 @@ public class LocalTarget implements IDETarget {
 			if (compiledModules.contains(dependency.name))
 				continue;
 			compiledModules.add(dependency.name);
-			System.out.println("== Compiling module " + dependency + " ==");
+			System.out.println("== Compiling module " + dependency.name + " ==");
 			
 			if (compilingModules.contains(dependency.name)) {
 				StringBuilder message = new StringBuilder("Circular dependency:\n");

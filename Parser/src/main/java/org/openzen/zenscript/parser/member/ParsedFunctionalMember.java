@@ -75,8 +75,14 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 		getCompiled().annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		getCompiled().setBody(body.compile(innerScope, getCompiled().header));
 		
-		if (getCompiled().header.returnType == BasicTypeID.UNDETERMINED)
-			getCompiled().header.returnType = getCompiled().body.getReturnType();
+		if (getCompiled().header.getReturnType() == BasicTypeID.UNDETERMINED) {
+			ITypeID returnType = getCompiled().body.getReturnType();
+			if (returnType == null) {
+				throw new CompileException(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Method return type could not be inferred");
+			} else {
+				getCompiled().header.setReturnType(returnType);
+			}
+		}
 	}
 	
 	protected abstract void fillOverride(TypeScope scope, ITypeID baseType);

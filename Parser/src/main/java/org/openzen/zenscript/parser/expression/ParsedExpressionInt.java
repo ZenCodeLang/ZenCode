@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.expression.ConstantShortExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -59,6 +60,8 @@ public class ParsedExpressionInt extends ParsedExpression {
 						return new ConstantLongExpression(position, value);
 					case ULONG:
 						return new ConstantULongExpression(position, value);
+					case USIZE:
+						return new ConstantUSizeExpression(position, value);
 					case CHAR:
 						return new ConstantCharExpression(position, (char) value);
 					default:

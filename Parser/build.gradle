@@ -16,4 +16,5 @@ if (!hasProperty('mainClass')) {
 dependencies {
     compile project(':Shared')
 	compile project(':CodeModel')
+	compile project(':CompilerShared')
 }

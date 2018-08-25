@@ -66,6 +66,8 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitConstantUShort(ConstantUShortExpression expression);
 	
+	public T visitConstantUSize(ConstantUSizeExpression expression);
+	
 	public T visitConstructorThisCall(ConstructorThisCallExpression expression);
 	
 	public T visitConstructorSuperCall(ConstructorSuperCallExpression expression);

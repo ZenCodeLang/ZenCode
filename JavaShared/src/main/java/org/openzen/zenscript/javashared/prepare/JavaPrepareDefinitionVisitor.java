@@ -55,6 +55,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("appendUInt", "append", "(I)Ljava/lang/StringBuilder;");
 			cls.addInstanceMethod("appendLong", "append", "(J)Ljava/lang/StringBuilder;");
 			cls.addInstanceMethod("appendULong", "append", "(J)Ljava/lang/StringBuilder;");
+			cls.addInstanceMethod("appendUSize", "append", "(I)Ljava/lang/StringBuilder;");
 			cls.addInstanceMethod("appendFloat", "append", "(F)Ljava/lang/StringBuilder;");
 			cls.addInstanceMethod("appendDouble", "append", "(D)Ljava/lang/StringBuilder;");
 			cls.addInstanceMethod("appendChar", "append", "(C)Ljava/lang/StringBuilder;");
@@ -110,6 +111,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addMethod("max", JavaMethod.getNativeStatic(math, "max", "(II)I"));
 			cls.addMethod("toHexString", JavaMethod.getNativeExpansion(integer, "toHexString", "(I)Ljava/lang/String;"));
 			nativeClasses.put("stdlib::Integer", cls);
+			nativeClasses.put("stdlib::USize", cls);
 		}
 		
 		{
@@ -187,6 +189,24 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("readArray", "read", "([C)I");
 			cls.addInstanceMethod("readSlice", "read", "([CII)I");
 			nativeClasses.put("io::StringReader", cls);
+		}
+		
+		{
+			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.io", "InputStream", JavaClass.Kind.INTERFACE), true);
+			cls.addInstanceMethod("destructor", "close", "()V");
+			cls.addInstanceMethod("read", "read", "()I");
+			cls.addInstanceMethod("readArray", "read", "([B)I");
+			cls.addInstanceMethod("readSlice", "read", "([BII)I");
+			nativeClasses.put("io::InputStream", cls);
+		}
+		
+		{
+			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.io", "OutputStream", JavaClass.Kind.INTERFACE), true);
+			cls.addInstanceMethod("destructor", "close", "()V");
+			cls.addInstanceMethod("write", "write", "()I");
+			cls.addInstanceMethod("writeArray", "write", "([B)V");
+			cls.addInstanceMethod("writeSlice", "write", "([BII)V");
+			nativeClasses.put("io::OutputStream", cls);
 		}
 	}
 	

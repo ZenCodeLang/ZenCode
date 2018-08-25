@@ -69,14 +69,14 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		StatementScope innerScope = new LambdaScope(scope, closure, header);
 		Statement statements = body.compile(innerScope, header);
 		
-		if (header.returnType == BasicTypeID.UNDETERMINED) {
-			header.returnType = statements.getReturnType();
+		if (header.getReturnType() == BasicTypeID.UNDETERMINED) {
+			header.setReturnType(statements.getReturnType());
 		}
 		if (!scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference
 			ITypeID returnType = statements.getReturnType();
 			Map<TypeParameter, ITypeID> inferredTypes = new HashMap<>();
-			if (!returnType.inferTypeParameters(scope.getMemberCache(), genericHeader.returnType, inferredTypes))
+			if (!returnType.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType(), inferredTypes))
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
 			
 			scope.genericInferenceMap.putAll(inferredTypes);

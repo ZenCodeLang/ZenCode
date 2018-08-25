@@ -33,6 +33,7 @@ public class JavaTypeInternalNameVisitor implements ITypeVisitor<String> {
 				case UINT: return "java/lang/Integer";
 				case LONG: return "java/lang/Long";
 				case ULONG: return "java/lang/Long";
+				case USIZE: return "java/lang/Integer";
 				case FLOAT: return "java/lang/Float";
 				case DOUBLE: return "java/lang/Double";
 				case STRING: return "java/lang/String";
@@ -52,6 +53,7 @@ public class JavaTypeInternalNameVisitor implements ITypeVisitor<String> {
 				case UINT: return "I";
 				case LONG: return "J";
 				case ULONG: return "J";
+				case USIZE: return "I";
 				case FLOAT: return "F";
 				case DOUBLE: return "D";
 				case STRING: return "java/lang/String";

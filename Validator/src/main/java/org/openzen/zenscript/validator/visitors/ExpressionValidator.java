@@ -227,6 +227,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	@Override
+	public Void visitConstantUSize(ConstantUSizeExpression expression) {
+		return null;
+	}
+
+	@Override
 	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
 		if (!scope.isConstructor()) {
 			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_OUTSIDE_CONSTRUCTOR, expression.position, "Can only forward constructors inside constructors");
@@ -485,11 +490,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.to.accept(this);
 		
 		RangeTypeID rangeType = (RangeTypeID) expression.type;
-		if (expression.from.type != rangeType.from) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "From operand is not a " + rangeType.from.toString());
+		if (expression.from.type != rangeType.baseType) {
+			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "From operand is not a " + rangeType.baseType.toString());
 		}
-		if (expression.to.type != rangeType.to) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "To operand is not a " + rangeType.to.toString());
+		if (expression.to.type != rangeType.baseType) {
+			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "To operand is not a " + rangeType.baseType.toString());
 		}
 		return null;
 	}

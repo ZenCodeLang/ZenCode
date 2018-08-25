@@ -63,7 +63,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 			}
 			contents.append("> ");
 		}
-		contents.append(function.header.returnType.accept(typeVisitor));
+		contents.append(function.header.getReturnType().accept(typeVisitor));
 		contents.append(' ');
 		contents.append("invoke(");
 		boolean first = true;
@@ -100,16 +100,16 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		
 		StringBuilder contents = new StringBuilder();
 		contents.append("public final class ").append(result.cls.getName()).append(" {\n");
-		contents.append(settings.indent).append("public final ").append(type.from.accept(typeVisitor)).append(" from;\n");
-		contents.append(settings.indent).append("public final ").append(type.to.accept(typeVisitor)).append(" to;\n");
+		contents.append(settings.indent).append("public final ").append(type.baseType.accept(typeVisitor)).append(" from;\n");
+		contents.append(settings.indent).append("public final ").append(type.baseType.accept(typeVisitor)).append(" to;\n");
 		contents.append(settings.indent).append("\n");
 		contents.append(settings.indent)
 				.append("public ")
 				.append(result.cls.getName())
 				.append("(")
-				.append(type.from.accept(typeVisitor))
+				.append(type.baseType.accept(typeVisitor))
 				.append(" from, ")
-				.append(type.to.accept(typeVisitor))
+				.append(type.baseType.accept(typeVisitor))
 				.append(" to) {\n");
 		contents.append(settings.indent).append(settings.indent).append("this.from = from;\n");
 		contents.append(settings.indent).append(settings.indent).append("this.to = to;\n");

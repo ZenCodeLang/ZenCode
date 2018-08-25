@@ -7,7 +7,6 @@ package org.openzen.zenscript.javasource;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
@@ -39,15 +38,15 @@ public class FormattingUtils {
 			
 			if (!settings.showAnyInFunctionHeaders || parameter.type != BasicTypeID.UNDETERMINED) {
 				result.append(" as ");
-				result.append(header.returnType.accept(typeFormatter));
+				result.append(header.getReturnType().accept(typeFormatter));
 			}
 			
 			parameterIndex++;
 		}
 		result.append(")");
-		if (!settings.showAnyInFunctionHeaders || header.returnType != BasicTypeID.UNDETERMINED) {
+		if (!settings.showAnyInFunctionHeaders || header.getReturnType() != BasicTypeID.UNDETERMINED) {
 			result.append(" as ");
-			result.append(header.returnType.accept(typeFormatter));
+			result.append(header.getReturnType().accept(typeFormatter));
 		}
 	}
 	

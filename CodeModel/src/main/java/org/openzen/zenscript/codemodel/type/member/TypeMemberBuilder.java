@@ -69,6 +69,7 @@ import static org.openzen.zencode.shared.CodePosition.BUILTIN;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
 
 /**
@@ -149,6 +150,9 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 			case ULONG:
 				visitULong();
 				break;
+			case USIZE:
+				visitUSize();
+				break;
 			case FLOAT:
 				visitFloat();
 				break;
@@ -174,7 +178,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 		FunctionParameter[] indexGetParameters = new FunctionParameter[dimension];
 		for (int i = 0; i < indexGetParameters.length; i++)
-			indexGetParameters[i] = new FunctionParameter(INT);
+			indexGetParameters[i] = new FunctionParameter(USIZE);
 		
 		operator(
 				definition,
@@ -183,7 +187,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				ARRAY_INDEXGET);
 		
 		if (dimension == 1) {
-			FunctionHeader sliceHeader = new FunctionHeader(array, new FunctionParameter(cache.getRegistry().getRange(INT, INT), "range"));
+			FunctionHeader sliceHeader = new FunctionHeader(array, new FunctionParameter(RangeTypeID.USIZE, "range"));
 			operator(
 					definition,
 					OperatorType.INDEXGET,
@@ -209,7 +213,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 		FunctionParameter[] initialValueConstructorParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
-			initialValueConstructorParameters[i] = new FunctionParameter(INT);
+			initialValueConstructorParameters[i] = new FunctionParameter(USIZE);
 		initialValueConstructorParameters[dimension] = new FunctionParameter(baseType);
 		FunctionHeader initialValueConstructorHeader = new FunctionHeader(VOID, initialValueConstructorParameters);
 		new ConstructorMember(
@@ -222,7 +226,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		
 		FunctionParameter[] lambdaConstructorParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
-			lambdaConstructorParameters[i] = new FunctionParameter(INT, null);
+			lambdaConstructorParameters[i] = new FunctionParameter(USIZE, null);
 		
 		FunctionHeader lambdaConstructorFunction = new FunctionHeader(baseType, indexGetParameters);
 		lambdaConstructorParameters[dimension] = new FunctionParameter(cache.getRegistry().getFunction(lambdaConstructorFunction), null);
@@ -255,7 +259,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 			TypeParameter mappedConstructorParameter = new TypeParameter(BUILTIN, "T");
 			FunctionParameter[] projectionParameters = new FunctionParameter[dimension + 1];
 			for (int i = 0; i < dimension; i++)
-				projectionParameters[i] = new FunctionParameter(INT);
+				projectionParameters[i] = new FunctionParameter(USIZE);
 			projectionParameters[dimension] = new FunctionParameter(registry.getGeneric(mappedConstructorParameter));
 			
 			FunctionHeader mappedConstructorHeaderWithIndex = new FunctionHeader(baseType, projectionParameters);
@@ -270,20 +274,20 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		
 		FunctionParameter[] indexSetParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
-			indexSetParameters[i] = new FunctionParameter(INT, null);
+			indexSetParameters[i] = new FunctionParameter(USIZE, null);
 		indexSetParameters[dimension] = new FunctionParameter(baseType, null);
 
 		FunctionHeader indexSetHeader = new FunctionHeader(VOID, indexSetParameters);
 		operator(definition, OperatorType.INDEXSET, indexSetHeader, ARRAY_INDEXSET);
 		
 		if (dimension == 1) {
-			getter(definition, ARRAY_LENGTH, "length", INT);
+			getter(definition, ARRAY_LENGTH, "length", USIZE);
 		}
 
 		getter(definition, ARRAY_ISEMPTY, "isEmpty", BOOL);
 		getter(definition, ARRAY_HASHCODE, "objectHashCode", INT);
 		iterator(definition, ITERATOR_ARRAY_VALUES, baseType);
-		iterator(definition, ITERATOR_ARRAY_KEY_VALUES, INT, baseType);
+		iterator(definition, ITERATOR_ARRAY_KEY_VALUES, USIZE, baseType);
 		
 		equals(definition, ARRAY_EQUALS, array);
 		notequals(definition, ARRAY_NOTEQUALS, array);
@@ -314,7 +318,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				new FunctionHeader(BOOL, new FunctionParameter(keyType, "key")),
 				ASSOC_CONTAINS);
 		
-		getter(builtin, BuiltinID.ASSOC_SIZE, "size", INT);
+		getter(builtin, BuiltinID.ASSOC_SIZE, "size", USIZE);
 		getter(builtin, BuiltinID.ASSOC_ISEMPTY, "isEmpty", BOOL);
 		getter(builtin, BuiltinID.ASSOC_KEYS, "keys", cache.getRegistry().getArray(keyType, 1));
 		getter(builtin, BuiltinID.ASSOC_VALUES, "values", cache.getRegistry().getArray(valueType, 1));
@@ -350,7 +354,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		method(builtin, "contains", containsHeader, GENERICMAP_CONTAINS);
 		method(builtin, "addAll", new FunctionHeader(VOID, map), GENERICMAP_ADDALL);
 		
-		getter(builtin, GENERICMAP_SIZE, "size", INT);
+		getter(builtin, GENERICMAP_SIZE, "size", USIZE);
 		getter(builtin, GENERICMAP_ISEMPTY, "isEmpty", BOOL);
 		getter(builtin, GENERICMAP_HASHCODE, "objectHashCode", INT);
 		
@@ -443,7 +447,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		
 		if (definition instanceof EnumDefinition) {
 			getter(definition, ENUM_NAME, "name", STRING);
-			getter(definition, ENUM_ORDINAL, "ordinal", INT);
+			getter(definition, ENUM_ORDINAL, "ordinal", USIZE);
 			
 			List<EnumConstantMember> enumConstants = ((EnumDefinition) definition).enumConstants;
 			Expression[] constValues = new Expression[enumConstants.size()];
@@ -490,23 +494,22 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitRange(RangeTypeID range) {
-		ITypeID fromType = range.from;
-		ITypeID toType = range.to;
+		ITypeID baseType = range.baseType;
 
 		ClassDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
-		getter(definition, RANGE_FROM, "from", fromType);
-		getter(definition, RANGE_TO, "to", toType);
-		if (range.from == range.to && (
-				   range.from == BYTE
-				|| range.from == SBYTE
-				|| range.from == SHORT
-				|| range.from == USHORT
-				|| range.from == INT
-				|| range.from == UINT
-				|| range.from == LONG
-				|| range.from == ULONG)) {
+		getter(definition, RANGE_FROM, "from", baseType);
+		getter(definition, RANGE_TO, "to", baseType);
+		if (baseType == BYTE
+				|| baseType == SBYTE
+				|| baseType == SHORT
+				|| baseType == USHORT
+				|| baseType == INT
+				|| baseType == UINT
+				|| baseType == LONG
+				|| baseType == ULONG
+				|| baseType == USIZE) {
 			
-			iterator(definition, ITERATOR_INT_RANGE, range.from);
+			iterator(definition, ITERATOR_INT_RANGE, baseType);
 		}
 		
 		processType(definition, range);
@@ -564,6 +567,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castImplicit(builtin, BYTE_TO_UINT, UINT);
 		castImplicit(builtin, BYTE_TO_LONG, LONG);
 		castImplicit(builtin, BYTE_TO_ULONG, ULONG);
+		castImplicit(builtin, BYTE_TO_USIZE, USIZE);
 		castImplicit(builtin, BYTE_TO_FLOAT, FLOAT);
 		castImplicit(builtin, BYTE_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, BYTE_TO_CHAR, CHAR);
@@ -602,6 +606,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castImplicit(builtin, SBYTE_TO_UINT, UINT);
 		castImplicit(builtin, SBYTE_TO_LONG, LONG);
 		castImplicit(builtin, SBYTE_TO_ULONG, ULONG);
+		castImplicit(builtin, SBYTE_TO_USIZE, USIZE);
 		castImplicit(builtin, SBYTE_TO_FLOAT, FLOAT);
 		castImplicit(builtin, SBYTE_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, SBYTE_TO_CHAR, CHAR);
@@ -640,6 +645,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castImplicit(builtin, SHORT_TO_UINT, UINT);
 		castImplicit(builtin, SHORT_TO_LONG, LONG);
 		castImplicit(builtin, SHORT_TO_ULONG, ULONG);
+		castImplicit(builtin, SHORT_TO_USIZE, USIZE);
 		castImplicit(builtin, SHORT_TO_FLOAT, FLOAT);
 		castImplicit(builtin, SHORT_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, SHORT_TO_CHAR, CHAR);
@@ -677,6 +683,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castImplicit(builtin, USHORT_TO_UINT, UINT);
 		castImplicit(builtin, USHORT_TO_LONG, LONG);
 		castImplicit(builtin, USHORT_TO_ULONG, ULONG);
+		castImplicit(builtin, USHORT_TO_USIZE, USIZE);
 		castImplicit(builtin, USHORT_TO_FLOAT, FLOAT);
 		castImplicit(builtin, USHORT_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, USHORT_TO_CHAR, CHAR);
@@ -748,6 +755,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castImplicit(builtin, INT_TO_UINT, UINT);
 		castImplicit(builtin, INT_TO_LONG, LONG);
 		castImplicit(builtin, INT_TO_ULONG, ULONG);
+		castImplicit(builtin, INT_TO_USIZE, USIZE);
 		castImplicit(builtin, INT_TO_FLOAT, FLOAT);
 		castImplicit(builtin, INT_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, INT_TO_CHAR, CHAR);
@@ -826,6 +834,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castImplicit(builtin, UINT_TO_INT, INT);
 		castImplicit(builtin, UINT_TO_LONG, LONG);
 		castImplicit(builtin, UINT_TO_ULONG, ULONG);
+		castImplicit(builtin, UINT_TO_USIZE, USIZE);
 		castImplicit(builtin, UINT_TO_FLOAT, FLOAT);
 		castImplicit(builtin, UINT_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, UINT_TO_CHAR, CHAR);
@@ -897,6 +906,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castExplicit(builtin, LONG_TO_INT, INT);
 		castExplicit(builtin, LONG_TO_UINT, UINT);
 		castImplicit(builtin, LONG_TO_ULONG, ULONG);
+		castExplicit(builtin, LONG_TO_USIZE, USIZE);
 		castImplicit(builtin, LONG_TO_FLOAT, FLOAT);
 		castImplicit(builtin, LONG_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, LONG_TO_CHAR, CHAR);
@@ -966,6 +976,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castExplicit(builtin, ULONG_TO_INT, INT);
 		castExplicit(builtin, ULONG_TO_UINT, UINT);
 		castImplicit(builtin, ULONG_TO_LONG, LONG);
+		castExplicit(builtin, ULONG_TO_USIZE, USIZE);
 		castImplicit(builtin, ULONG_TO_FLOAT, FLOAT);
 		castImplicit(builtin, ULONG_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, ULONG_TO_CHAR, CHAR);
@@ -987,6 +998,82 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		getter(builtin, ULONG_BIT_COUNT, "bitCount", INT);
 		
 		processType(builtin, ULONG);
+	}
+	
+	private void visitUSize() {
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "usize", Modifiers.EXPORT, null);
+		
+		invert(builtin, USIZE_NOT, USIZE);
+		inc(builtin, USIZE_DEC, USIZE);
+		dec(builtin, USIZE_INC, USIZE);
+
+		add(builtin, USIZE_ADD_USIZE, USIZE, USIZE);
+		add(builtin, ULONG_ADD_ULONG, ULONG, ULONG, USIZE_TO_ULONG);
+		add(builtin, FLOAT_ADD_FLOAT, FLOAT, FLOAT, USIZE_TO_FLOAT);
+		add(builtin, DOUBLE_ADD_DOUBLE, DOUBLE, DOUBLE, USIZE_TO_DOUBLE);
+		
+		sub(builtin, USIZE_SUB_USIZE, USIZE, USIZE);
+		sub(builtin, ULONG_SUB_ULONG, ULONG, ULONG, USIZE_TO_ULONG);
+		sub(builtin, FLOAT_SUB_FLOAT, FLOAT, FLOAT, USIZE_TO_FLOAT);
+		sub(builtin, DOUBLE_SUB_DOUBLE, DOUBLE, DOUBLE, USIZE_TO_DOUBLE);
+		
+		mul(builtin, USIZE_MUL_USIZE, USIZE, USIZE);
+		mul(builtin, ULONG_MUL_ULONG, ULONG, ULONG, USIZE_TO_ULONG);
+		mul(builtin, FLOAT_MUL_FLOAT, FLOAT, FLOAT, USIZE_TO_FLOAT);
+		mul(builtin, DOUBLE_MUL_DOUBLE, DOUBLE, DOUBLE, USIZE_TO_DOUBLE);
+		
+		div(builtin, USIZE_DIV_USIZE, USIZE, USIZE);
+		div(builtin, ULONG_DIV_ULONG, ULONG, ULONG, USIZE_TO_ULONG);
+		div(builtin, FLOAT_DIV_FLOAT, FLOAT, FLOAT, USIZE_TO_FLOAT);
+		div(builtin, DOUBLE_DIV_DOUBLE, DOUBLE, DOUBLE, USIZE_TO_DOUBLE);
+		
+		mod(builtin, USIZE_MOD_USIZE, USIZE, USIZE);
+		
+		or(builtin, USIZE_OR_USIZE, USIZE, USIZE);
+		and(builtin, USIZE_AND_USIZE, USIZE, USIZE);
+		xor(builtin, USIZE_XOR_USIZE, USIZE, USIZE);
+		
+		shl(builtin, USIZE_SHL, INT, USIZE);
+		shr(builtin, USIZE_SHR, INT, USIZE);
+		
+		compare(builtin, USIZE_COMPARE, USIZE);
+		compare(builtin, ULONG_COMPARE, ULONG, USIZE_TO_ULONG);
+		compare(builtin, FLOAT_COMPARE, FLOAT, USIZE_TO_FLOAT);
+		compare(builtin, DOUBLE_COMPARE, DOUBLE, USIZE_TO_DOUBLE);
+		
+		constant(builtin, USIZE_GET_MIN_VALUE, "MIN_VALUE", new ConstantUSizeExpression(BUILTIN, 0));
+		constant(builtin, USIZE_GET_MAX_VALUE, "MAX_VALUE", new ConstantUSizeExpression(BUILTIN, -2L));
+		constant(builtin, USIZE_BITS, "BITS", new ConstantUSizeExpression(BUILTIN, 32));
+		
+		castExplicit(builtin, USIZE_TO_BYTE, BYTE);
+		castExplicit(builtin, USIZE_TO_SBYTE, SBYTE);
+		castExplicit(builtin, USIZE_TO_SHORT, SHORT);
+		castExplicit(builtin, USIZE_TO_USHORT, USHORT);
+		castExplicit(builtin, USIZE_TO_INT, INT);
+		castExplicit(builtin, USIZE_TO_UINT, UINT);
+		castImplicit(builtin, USIZE_TO_LONG, LONG);
+		castImplicit(builtin, USIZE_TO_ULONG, ULONG);
+		castImplicit(builtin, USIZE_TO_FLOAT, FLOAT);
+		castImplicit(builtin, USIZE_TO_DOUBLE, DOUBLE);
+		castExplicit(builtin, USIZE_TO_CHAR, CHAR);
+		castImplicit(builtin, USIZE_TO_STRING, STRING);
+		
+		staticMethod(builtin, USIZE_PARSE, "parse", USIZE, STRING);
+		staticMethod(builtin, USIZE_PARSE_WITH_BASE, "parse", USIZE, STRING, INT);
+		
+		method(builtin, USIZE_COUNT_LOW_ZEROES, "countLowZeroes", INT);
+		method(builtin, USIZE_COUNT_HIGH_ZEROES, "countHighZeroes", INT);
+		method(builtin, USIZE_COUNT_LOW_ONES, "countLowOnes", INT);
+		method(builtin, USIZE_COUNT_HIGH_ONES, "countHighOnes", INT);
+		
+		ITypeID optionalInt = registry.getOptional(INT);
+		getter(builtin, USIZE_HIGHEST_ONE_BIT, "highestOneBit", optionalInt);
+		getter(builtin, USIZE_LOWEST_ONE_BIT, "lowestOneBit", optionalInt);
+		getter(builtin, USIZE_HIGHEST_ZERO_BIT, "highestZeroBit", optionalInt);
+		getter(builtin, USIZE_LOWEST_ZERO_BIT, "lowestZeroBit", optionalInt);
+		getter(builtin, USIZE_BIT_COUNT, "bitCount", INT);
+		
+		processType(builtin, USIZE);
 	}
 	
 	private void visitFloat() {
@@ -1020,15 +1107,16 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castExplicit(builtin, FLOAT_TO_USHORT, USHORT);
 		castExplicit(builtin, FLOAT_TO_INT, INT);
 		castExplicit(builtin, FLOAT_TO_UINT, UINT);
+		castExplicit(builtin, FLOAT_TO_LONG, LONG);
 		castExplicit(builtin, FLOAT_TO_ULONG, ULONG);
-		castExplicit(builtin, FLOAT_TO_ULONG, ULONG);
+		castExplicit(builtin, FLOAT_TO_USIZE, USIZE);
 		castImplicit(builtin, FLOAT_TO_DOUBLE, DOUBLE);
 		castImplicit(builtin, FLOAT_TO_STRING, STRING);
 		
 		staticMethod(builtin, FLOAT_PARSE, "parse", FLOAT, STRING);
-		staticMethod(builtin, FLOAT_FROM_BITS, "fromBits", FLOAT, INT);
+		staticMethod(builtin, FLOAT_FROM_BITS, "fromBits", FLOAT, UINT);
 		
-		getter(builtin, FLOAT_BITS, "bits", INT);
+		getter(builtin, FLOAT_BITS, "bits", UINT);
 		
 		processType(builtin, FLOAT);
 	}
@@ -1057,13 +1145,14 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castExplicit(builtin, DOUBLE_TO_UINT, UINT);
 		castExplicit(builtin, DOUBLE_TO_ULONG, ULONG);
 		castExplicit(builtin, DOUBLE_TO_ULONG, ULONG);
+		castExplicit(builtin, DOUBLE_TO_USIZE, USIZE);
 		castImplicit(builtin, DOUBLE_TO_FLOAT, FLOAT);
 		castImplicit(builtin, DOUBLE_TO_STRING, STRING);
 		
 		staticMethod(builtin, DOUBLE_PARSE, "parse", DOUBLE, STRING);
-		staticMethod(builtin, DOUBLE_FROM_BITS, "fromBits", DOUBLE, LONG);
+		staticMethod(builtin, DOUBLE_FROM_BITS, "fromBits", DOUBLE, ULONG);
 		
-		getter(builtin, DOUBLE_BITS, "bits", LONG);
+		getter(builtin, DOUBLE_BITS, "bits", ULONG);
 		
 		processType(builtin, DOUBLE);
 	}
@@ -1084,6 +1173,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castImplicit(builtin, CHAR_TO_UINT, UINT);
 		castImplicit(builtin, CHAR_TO_LONG, LONG);
 		castImplicit(builtin, CHAR_TO_ULONG, ULONG);
+		castImplicit(builtin, CHAR_TO_USIZE, USIZE);
 		castImplicit(builtin, CHAR_TO_STRING, STRING);
 		
 		getter(builtin, CHAR_GET_MIN_VALUE, "MIN_VALUE", CHAR);
@@ -1102,11 +1192,11 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, registry.getArray(CHAR, 1));
 		
 		add(builtin, STRING_ADD_STRING, STRING, STRING);
-		indexGet(builtin, STRING_INDEXGET, INT, CHAR);
-		indexGet(builtin, STRING_RANGEGET, registry.getRange(INT, INT), STRING);
+		indexGet(builtin, STRING_INDEXGET, USIZE, CHAR);
+		indexGet(builtin, STRING_RANGEGET, RangeTypeID.USIZE, STRING);
 		compare(builtin, STRING_COMPARE, STRING);
 		
-		getter(builtin, STRING_LENGTH, "length", INT);
+		getter(builtin, STRING_LENGTH, "length", USIZE);
 		getter(builtin, STRING_CHARACTERS, "characters", registry.getArray(CHAR, 1));
 		getter(builtin, STRING_ISEMPTY, "isEmpty", BOOL);
 

@@ -93,7 +93,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		
 		modifiers(member.modifiers);
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
-		output.append(header.returnType.accept(scope.typeVisitor));
+		output.append(header.getReturnType().accept(scope.typeVisitor));
 		output.append(" ");
 		output.append(method.name);
 		formatParameters(member.isStatic(), header);

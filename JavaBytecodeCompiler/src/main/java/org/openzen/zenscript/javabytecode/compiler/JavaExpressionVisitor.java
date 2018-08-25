@@ -402,6 +402,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case USHORT_NOT:
 			case INT_NOT:
 			case UINT_NOT:
+			case USIZE_NOT:
 				javaWriter.iNot();
 				break;
 			case SBYTE_NEG:
@@ -415,6 +416,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case USHORT_ADD_USHORT:
 			case INT_ADD_INT:
 			case UINT_ADD_UINT:
+			case USIZE_ADD_USIZE:
 				javaWriter.iAdd();
 				break;
 			case BYTE_SUB_BYTE:
@@ -423,6 +425,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case USHORT_SUB_USHORT:
 			case INT_SUB_INT:
 			case UINT_SUB_UINT:
+			case USIZE_SUB_USIZE:
 				javaWriter.iSub();
 				break;
 			case BYTE_MUL_BYTE:
@@ -431,16 +434,19 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case USHORT_MUL_USHORT:
 			case INT_MUL_INT:
 			case UINT_MUL_UINT:
+			case USIZE_MUL_USIZE:
 				javaWriter.iMul();
 				break;
 			case SBYTE_DIV_SBYTE:
 			case SHORT_DIV_SHORT:
 			case INT_DIV_INT:
+			case USIZE_DIV_USIZE:
 				javaWriter.iDiv();
 				break;
 			case SBYTE_MOD_SBYTE:
 			case SHORT_MOD_SHORT:
 			case INT_MOD_INT:
+			case USIZE_MOD_USIZE:
 				javaWriter.iRem();
 				break;
 			case BYTE_DIV_BYTE:
@@ -459,6 +465,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case USHORT_AND_USHORT:
 			case INT_AND_INT:
 			case UINT_AND_UINT:
+			case USIZE_AND_USIZE:
 				javaWriter.iAnd();
 				break;
 			case BYTE_OR_BYTE:
@@ -467,6 +474,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case USHORT_OR_USHORT:
 			case INT_OR_INT:
 			case UINT_OR_UINT:
+			case USIZE_OR_USIZE:
 				javaWriter.iOr();
 				break;
 			case BYTE_XOR_BYTE:
@@ -475,10 +483,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case USHORT_XOR_USHORT:
 			case INT_XOR_INT:
 			case UINT_XOR_UINT:
+			case USIZE_XOR_USIZE:
 				javaWriter.iXor();
 				break;
 			case INT_SHL:
 			case UINT_SHL:
+			case USIZE_SHL:
 				javaWriter.iShl();
 				break;
 			case INT_SHR:
@@ -486,23 +496,28 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case INT_USHR:
 			case UINT_SHR:
+			case USIZE_SHR:
 				javaWriter.iUShr();
 				break;
 			case INT_COUNT_LOW_ZEROES:
 			case UINT_COUNT_LOW_ZEROES:
+			case USIZE_COUNT_LOW_ZEROES:
 				javaWriter.invokeStatic(INTEGER_NUMBER_OF_TRAILING_ZEROS);
 				break;
 			case INT_COUNT_HIGH_ZEROES:
 			case UINT_COUNT_HIGH_ZEROES:
+			case USIZE_COUNT_HIGH_ZEROES:
 				javaWriter.invokeStatic(INTEGER_NUMBER_OF_LEADING_ZEROS);
 				break;
 			case INT_COUNT_LOW_ONES:
 			case UINT_COUNT_LOW_ONES:
+			case USIZE_COUNT_LOW_ONES:
 				javaWriter.iNot();
 				javaWriter.invokeStatic(INTEGER_NUMBER_OF_TRAILING_ZEROS);
 				break;
 			case INT_COUNT_HIGH_ONES:
 			case UINT_COUNT_HIGH_ONES:
+			case USIZE_COUNT_HIGH_ONES:
 				javaWriter.iNot();
 				javaWriter.invokeStatic(INTEGER_NUMBER_OF_LEADING_ZEROS);
 				break;
@@ -911,9 +926,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.invokeStatic(INTEGER_PARSE_WITH_BASE);
 				break;
 			case UINT_PARSE:
+			case USIZE_PARSE:
 				javaWriter.invokeStatic(INTEGER_PARSE_UNSIGNED);
 				break;
 			case UINT_PARSE_WITH_BASE:
+			case USIZE_PARSE_WITH_BASE:
 				javaWriter.invokeStatic(INTEGER_PARSE_UNSIGNED_WITH_BASE);
 				break;
 			case LONG_PARSE:
@@ -998,6 +1015,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case BYTE_TO_USHORT:
 			case BYTE_TO_INT:
 			case BYTE_TO_UINT:
+			case BYTE_TO_USIZE:
 				javaWriter.constant(0xFF);
 				javaWriter.iAnd();
 				break;
@@ -1031,6 +1049,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case SBYTE_TO_USHORT:
 			case SBYTE_TO_INT:
 			case SBYTE_TO_UINT:
+			case SBYTE_TO_USIZE:
 				break;
 			case SBYTE_TO_LONG:
 			case SBYTE_TO_ULONG:
@@ -1055,6 +1074,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case SHORT_TO_USHORT:
 			case SHORT_TO_INT:
 			case SHORT_TO_UINT:
+			case SHORT_TO_USIZE:
 				break;
 			case SHORT_TO_LONG:
 			case SHORT_TO_ULONG:
@@ -1081,6 +1101,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case USHORT_TO_INT:
 			case USHORT_TO_UINT:
+			case USHORT_TO_USIZE:
 				javaWriter.constant(0xFFFF);
 				javaWriter.iAnd();
 				break;
@@ -1119,6 +1140,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case INT_TO_USHORT:
 				break;
 			case INT_TO_UINT:
+			case INT_TO_USIZE:
 				break;
 			case INT_TO_LONG:
 			case INT_TO_ULONG:
@@ -1146,6 +1168,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case UINT_TO_USHORT:
 			case UINT_TO_INT:
+			case UINT_TO_USIZE:
 				break;
 			case UINT_TO_LONG:
 				javaWriter.i2l();
@@ -1187,6 +1210,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case LONG_TO_USHORT:
 			case LONG_TO_INT:
 			case LONG_TO_UINT:
+			case LONG_TO_USIZE:
 				javaWriter.l2i();
 				break;
 			case LONG_TO_ULONG:
@@ -1218,6 +1242,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case ULONG_TO_USHORT:
 			case ULONG_TO_INT:
 			case ULONG_TO_UINT:
+			case ULONG_TO_USIZE:
 				javaWriter.l2i();
 				break;
 			case ULONG_TO_LONG:
@@ -1248,6 +1273,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case FLOAT_TO_USHORT:
 			case FLOAT_TO_UINT:
 			case FLOAT_TO_INT:
+			case FLOAT_TO_USIZE:
 				javaWriter.f2i();
 				break;
 			case FLOAT_TO_LONG:
@@ -1274,6 +1300,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case DOUBLE_TO_USHORT:
 			case DOUBLE_TO_INT:
 			case DOUBLE_TO_UINT:
+			case DOUBLE_TO_USIZE:
 				javaWriter.d2i();
 				break;
 			case DOUBLE_TO_LONG:
@@ -1295,6 +1322,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case CHAR_TO_USHORT:
 			case CHAR_TO_INT:
 			case CHAR_TO_UINT:
+			case CHAR_TO_USIZE:
 				break;
 			case CHAR_TO_LONG:
 			case CHAR_TO_ULONG:
@@ -1415,6 +1443,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case ULONG_GET_MAX_VALUE:
 				javaWriter.constant(-1L);
 				break;
+			case USIZE_GET_MIN_VALUE:
+				javaWriter.iConst0();
+				break;
+			case USIZE_GET_MAX_VALUE:
+				javaWriter.getStaticField(INTEGER_MAX_VALUE);
+				break;
+			case USIZE_BITS:
+				javaWriter.constant(32);
+				break;
 			case FLOAT_GET_MIN_VALUE:
 				javaWriter.getStaticField(FLOAT_MIN_VALUE);
 				break;
@@ -1524,6 +1561,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitConstantUShort(ConstantUShortExpression expression) {
 		getJavaWriter().constant(expression.value);
+		return null;
+	}
+
+	@Override
+	public Void visitConstantUSize(ConstantUSizeExpression expression) {
+		getJavaWriter().constant((int)expression.value);
 		return null;
 	}
 
@@ -1747,24 +1790,29 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		switch (builtin) {
 			case INT_HIGHEST_ONE_BIT:
 			case UINT_HIGHEST_ONE_BIT:
+			case USIZE_HIGHEST_ONE_BIT:
 				javaWriter.invokeStatic(INTEGER_HIGHEST_ONE_BIT);
 				break;
 			case INT_LOWEST_ONE_BIT:
 			case UINT_LOWEST_ONE_BIT:
+			case USIZE_LOWEST_ONE_BIT:
 				javaWriter.invokeStatic(INTEGER_LOWEST_ONE_BIT);
 				break;
 			case INT_HIGHEST_ZERO_BIT:
 			case UINT_HIGHEST_ZERO_BIT:
+			case USIZE_HIGHEST_ZERO_BIT:
 				javaWriter.iNeg();
 				javaWriter.invokeStatic(INTEGER_HIGHEST_ONE_BIT);
 				break;
 			case INT_LOWEST_ZERO_BIT:
 			case UINT_LOWEST_ZERO_BIT:
+			case USIZE_LOWEST_ZERO_BIT:
 				javaWriter.iNeg();
 				javaWriter.invokeStatic(INTEGER_LOWEST_ONE_BIT);
 				break;
 			case INT_BIT_COUNT:
 			case UINT_BIT_COUNT:
+			case USIZE_BIT_COUNT:
 				javaWriter.invokeStatic(INTEGER_BIT_COUNT);
 				break;
 			case LONG_HIGHEST_ONE_BIT:
@@ -1914,13 +1962,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case RANGE_FROM: {
 				RangeTypeID type = (RangeTypeID)expression.target.type;
 				JavaClass cls = context.getTypeGenerator().synthesizeRange(type).cls;
-				javaWriter.getField(cls.internalName, "from", context.getDescriptor(type.from));
+				javaWriter.getField(cls.internalName, "from", context.getDescriptor(type.baseType));
 				break;
 			}
 			case RANGE_TO:
 				RangeTypeID type = (RangeTypeID)expression.target.type;
 				JavaClass cls = context.getTypeGenerator().synthesizeRange(type).cls;
-				javaWriter.getField(cls.internalName, "to", context.getDescriptor(type.to));
+				javaWriter.getField(cls.internalName, "to", context.getDescriptor(type.baseType));
 				break;
 		}
 
@@ -2065,7 +2113,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitNull(NullExpression expression) {
-		javaWriter.aConstNull();
+		if (expression.type.withoutOptional() == BasicTypeID.USIZE)
+			javaWriter.constant(-1); // special case: usize? null = -1
+		else
+			javaWriter.aConstNull();
 		return null;
 	}
 
@@ -2122,7 +2173,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.dup();
 		expression.from.accept(this);
 		expression.to.accept(this);
-		javaWriter.invokeSpecial(cls.cls.internalName, "<init>", "(" + context.getDescriptor(type.from) + context.getDescriptor(type.to) + ")V");
+		javaWriter.invokeSpecial(cls.cls.internalName, "<init>", "(" + context.getDescriptor(type.baseType) + context.getDescriptor(type.baseType) + ")V");
 
 		return null;
 	}

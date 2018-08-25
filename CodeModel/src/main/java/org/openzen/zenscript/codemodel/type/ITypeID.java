@@ -149,7 +149,7 @@ public interface ITypeID {
 				if (functionType.header.parameters.length != function.header.parameters.length)
 					return false;
 				
-				if (!match(functionType.header.returnType, function.header.returnType))
+				if (!match(functionType.header.getReturnType(), function.header.getReturnType()))
 					return false;
 				
 				for (int i = 0; i < function.header.parameters.length; i++) {
@@ -199,7 +199,7 @@ public interface ITypeID {
 		public Boolean visitRange(RangeTypeID range) {
 			if (type instanceof RangeTypeID) {
 				RangeTypeID rangeType = (RangeTypeID) type;
-				return match(rangeType.from, range.from) && match(rangeType.to, range.to);
+				return match(rangeType.baseType, range.baseType);
 			} else {
 				return false;
 			}

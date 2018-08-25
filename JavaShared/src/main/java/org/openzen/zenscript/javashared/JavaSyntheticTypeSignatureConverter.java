@@ -46,6 +46,7 @@ public class JavaSyntheticTypeSignatureConverter implements ITypeVisitor<String>
 			case UINT: return "UInt";
 			case LONG: return "Long";
 			case ULONG: return "ULong";
+			case USIZE: return "USize";
 			case FLOAT: return "Float";
 			case DOUBLE: return "Double";
 			case CHAR: return "Char";
@@ -94,7 +95,7 @@ public class JavaSyntheticTypeSignatureConverter implements ITypeVisitor<String>
 		for (FunctionParameter parameter : function.header.parameters)
 			result.append(parameter.type.accept(this));
 		result.append("To");
-		result.append(function.header.returnType.accept(this));
+		result.append(function.header.getReturnType().accept(this));
 		if (function.header.thrownType != null) {
 			result.append("Throwing");
 			result.append(function.header.thrownType.accept(this));
@@ -129,9 +130,7 @@ public class JavaSyntheticTypeSignatureConverter implements ITypeVisitor<String>
 	@Override
 	public String visitRange(RangeTypeID range) {
 		StringBuilder result = new StringBuilder();
-		result.append(range.from.accept(this));
-		if (range.from != range.to)
-			result.append(range.to.accept(this));
+		result.append(range.baseType.accept(this));
 		result.append("Range");
 		return result.toString();
 	}

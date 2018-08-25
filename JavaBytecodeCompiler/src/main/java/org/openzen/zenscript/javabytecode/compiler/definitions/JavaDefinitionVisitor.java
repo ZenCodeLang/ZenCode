@@ -142,7 +142,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         statementVisitor.start();
 		boolean returns = definition.statement.accept(statementVisitor);
 		if (!returns) {
-			ITypeID type = definition.header.returnType;
+			ITypeID type = definition.header.getReturnType();
 			if (CompilerUtils.isPrimitive(type))
 				writer.iConst0();
 			else if (type != BasicTypeID.VOID)

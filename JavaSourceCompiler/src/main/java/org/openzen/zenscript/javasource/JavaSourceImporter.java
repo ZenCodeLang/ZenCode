@@ -30,8 +30,6 @@ public class JavaSourceImporter {
 		JavaClass cls = definition.getTag(JavaClass.class);
 		if (cls == null)
 			throw new IllegalStateException("Missing source class tag on " + definition.name);
-		if (cls.pkg.equals(this.cls.pkg))
-			return cls.getClassName();
 		
 		return importType(cls);
 	}
@@ -42,6 +40,8 @@ public class JavaSourceImporter {
 			usedImports.add(imported);
 			return imported.fullName.equals(cls.outer.fullName) ? cls.getName() : cls.fullName;
 		}
+		if (cls.pkg.equals(this.cls.pkg))
+			return cls.getClassName();
 		
 		imports.put(cls.outer.getName(), cls.outer);
 		usedImports.add(cls.outer);

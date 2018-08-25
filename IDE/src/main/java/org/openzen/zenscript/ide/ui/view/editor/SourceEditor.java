@@ -887,6 +887,7 @@ public class SourceEditor implements DComponent {
 				case K_UINT:
 				case K_LONG:
 				case K_ULONG:
+				case K_USIZE:
 				case K_FLOAT:
 				case K_DOUBLE:
 				case K_CHAR:

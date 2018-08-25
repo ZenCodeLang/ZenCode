@@ -10,26 +10,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.PackageDefinitions;
-import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.constructor.module.ModuleSpace;
-import org.openzen.zenscript.compiler.SemanticModule;
-import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.ParsedFile;
-import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
  *
@@ -85,78 +74,5 @@ public class Module {
 				parse(files, innerPackage, bracketParser, file);
 			}
 		}
-	}
-	
-	public static SemanticModule compileSyntaxToSemantic(
-			String name,
-			SemanticModule[] dependencies,
-			CompilingPackage pkg,
-			ParsedFile[] files,
-			ModuleSpace registry,
-			Consumer<CompileException> exceptionLogger) {
-		// We are considering all these files to be in the same package, so make
-		// a single PackageDefinition instance. If these files were in multiple
-		// packages, we'd need an instance for every package.
-		PackageDefinitions definitions = new PackageDefinitions();
-		for (ParsedFile file : files) {
-			// listDefinitions will merely register all definitions (classes,
-			// interfaces, functions ...) so they can later be available to
-			// the other files as well. It doesn't yet compile anything.
-			file.listDefinitions(definitions);
-		}
-		
-		ZSPackage rootPackage = registry.collectPackages();
-		List<ExpansionDefinition> expansions = registry.collectExpansions();
-		definitions.registerExpansionsTo(expansions);
-		
-		Map<String, ISymbol> globals = registry.collectGlobals();
-		boolean failed = false;
-		
-		ModuleTypeResolutionContext moduleContext = new ModuleTypeResolutionContext(
-				registry.compilationUnit.globalTypeRegistry,
-				registry.getAnnotations(),
-				rootPackage,
-				pkg,
-				globals);
-		
-		for (ParsedFile file : files) {
-			file.registerTypes(moduleContext, rootPackage, pkg);
-		}
-		
-		for (ParsedFile file : files) {
-			// compileMembers will register all definition members to their
-			// respective definitions, such as fields, constructors, methods...
-			// It doesn't yet compile the method contents.
-			try {
-				file.compileTypes(moduleContext, rootPackage, pkg);
-			} catch (CompileException ex) {
-				exceptionLogger.accept(ex);
-				failed = true;
-			}
-		}
-		
-		if (failed)
-			return new SemanticModule(name, dependencies, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
-		
-		// scripts will store all the script blocks encountered in the files
-		PrecompilationState precompiler = new PrecompilationState();
-		for (ParsedFile file : files) {
-			file.registerMembers(moduleContext, precompiler, rootPackage, pkg, expansions, globals);
-		}
-		
-		List<ScriptBlock> scripts = new ArrayList<>();
-		for (ParsedFile file : files) {
-			// compileCode will convert the parsed statements and expressions
-			// into semantic code. This semantic code can then be compiled
-			// to various targets.
-			try {
-				file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals);
-			} catch (CompileException ex) {
-				exceptionLogger.accept(ex);
-				failed = true;
-			}
-		}
-		
-		return new SemanticModule(name, dependencies, SemanticModule.State.ASSEMBLED, rootPackage, pkg.getPackage(), definitions, scripts, registry.compilationUnit, expansions, registry.getAnnotations());
 	}
 }
