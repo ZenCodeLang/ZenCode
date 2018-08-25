@@ -1,6 +1,5 @@
 package listeners;
 
-import listeners.ListenerList;
 import zsynthetic.FunctionTToVoid;
 
 public final class ListenerList<T> {

@@ -1,6 +1,5 @@
 package live;
 
-
 public interface MutableLiveList<T> extends AutoCloseable, LiveList<T> {
     void add(T value);
     

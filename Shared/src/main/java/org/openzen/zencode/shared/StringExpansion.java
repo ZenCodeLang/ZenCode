@@ -2,12 +2,8 @@ package org.openzen.zencode.shared;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.openzen.zencode.shared.CharacterEntity;
-import org.openzen.zencode.shared.StringExpansion;
 import stdlib.Result;
 import stdlib.Result.Error;
-import stdlib.Result.Error;
-import stdlib.Result.Ok;
 import stdlib.Result.Ok;
 import stdlib.Strings;
 import zsynthetic.ArrayHelpers;

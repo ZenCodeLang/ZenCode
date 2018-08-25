@@ -2,7 +2,6 @@ package stdlib;
 
 import java.util.ArrayList;
 import java.util.List;
-import stdlib.Chars;
 
 public final class Strings {
     private Strings() {}

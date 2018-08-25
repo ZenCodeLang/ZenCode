@@ -2,7 +2,6 @@ package live;
 
 import listeners.DummyListenerHandle;
 import listeners.ListenerHandle;
-import live.ImmutableLiveBool;
 import zsynthetic.FunctionBoolBoolToVoid;
 
 public final class ImmutableLiveBool implements LiveBool {
