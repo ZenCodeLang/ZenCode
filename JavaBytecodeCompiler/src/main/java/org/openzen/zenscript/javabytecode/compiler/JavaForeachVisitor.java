@@ -59,8 +59,10 @@ public class JavaForeachVisitor implements ForeachIteratorVisitor<Void> {
 
 	@Override
 	public Void visitStringCharacterIterator() {
-		// TODO: implement this one
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		//TODO UNTESTED!
+		javaWriter.invokeSpecial("java/lang/String", "toCharArray()", "()[C");
+		handleArray(javaWriter.local(int.class), variables[0].getTag(JavaLocalVariableInfo.class));
+		return null;
 	}
 
 	private void handleArray(final int z, final JavaLocalVariableInfo arrayTypeInfo) {

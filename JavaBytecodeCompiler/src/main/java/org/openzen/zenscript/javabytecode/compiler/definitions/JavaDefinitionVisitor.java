@@ -37,10 +37,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	private final JavaClassWriter outerWriter;
 	private final JavaBytecodeContext context;
+	final JavaTypeGenericVisitor javaTypeGenericVisitor;
 
     public JavaDefinitionVisitor(JavaBytecodeContext context, JavaClassWriter outerWriter) {
 		this.context = context;
 		this.outerWriter = outerWriter;
+	    this.javaTypeGenericVisitor = new JavaTypeGenericVisitor(context);
 	}
 
 	@Override
@@ -73,7 +75,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	@Override
 	public byte[] visitInterface(InterfaceDefinition definition) {
 		JavaClass toClass = new JavaClass(definition.pkg.fullName, definition.name, JavaClass.Kind.INTERFACE);
-		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		ClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
 		//TODO: Calculate signature from generic parameters
 		//TODO: Extending Interfaces?
@@ -98,7 +100,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         else
             superType = context.getType(definition.getSuperType());
 
-		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		ClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
 		writer.visit(Opcodes.V1_8, Opcodes.ACC_ENUM | Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER | Opcodes.ACC_FINAL, definition.name, "Ljava/lang/Enum<L" + definition.name + ";>;", superType.getInternalName(), null);
 
@@ -191,8 +193,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
 
-		final String ss = "<" + JavaTypeGenericVisitor.getGenericSignature(variant.genericParameters) + ">Ljava/lang/Object;";
-
+		final String ss = "<" + javaTypeGenericVisitor.getGenericSignature(variant.genericParameters) + ">Ljava/lang/Object;";
+		JavaClassWriter.registerSuperClass(variantName, "java/lang/Object");
 
 		writer.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, variantName, ss, "java/lang/Object", null);
 		writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "getDenominator", "()I", null, null).visitEnd();
@@ -206,6 +208,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			final String optionClassName = variantName + "$" + option.name;
 			final JavaClass optionClass = new JavaClass("", optionClassName, JavaClass.Kind.CLASS);
 			final JavaClassWriter optionWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+			JavaClassWriter.registerSuperClass(optionClassName, variantName);
 
 			writer.visitInnerClass(optionClassName, variantName, option.name, Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL);
 
@@ -220,7 +223,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				//TODO check if this can be changed to what Stan was up to
 				builder.append("<");
 				for (final ITypeID type : option.types) {
-					builder.append(JavaTypeGenericVisitor.getSignatureWithBound(type));
+					builder.append(javaTypeGenericVisitor.getSignatureWithBound(type));
 				}
 				builder.append(">");
 				builder.append("L").append(variantName).append("<");
@@ -236,7 +239,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 							}
 						}
 					if (t)
-						builder.append(JavaTypeGenericVisitor.getGenericBounds(genericParameter.bounds));
+						builder.append(javaTypeGenericVisitor.getGenericBounds(genericParameter.bounds));
 
 				}
 
@@ -251,10 +254,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 			ITypeID[] types = option.types;
 			for (int i = 0; i < types.length; ++i) {
-				final String internalName = context.getInternalName(types[i]);
-				optionInitDescBuilder.append(internalName);
+				final String descriptor = context.getDescriptor(types[i]);
+				optionInitDescBuilder.append(descriptor);
 				optionInitSignatureBuilder.append("T").append(((GenericTypeID) types[i]).parameter.name).append(";");
-				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "Field" + i, internalName, "T" + ((GenericTypeID) types[i]).parameter.name + ";", null).visitEnd();
+				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "Field" + i, descriptor, "T" + ((GenericTypeID) types[i]).parameter.name + ";", null).visitEnd();
 			}
 			optionInitDescBuilder.append(")V");
 			optionInitSignatureBuilder.append(")V");

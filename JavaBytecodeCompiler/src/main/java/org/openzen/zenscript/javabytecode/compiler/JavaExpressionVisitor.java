@@ -357,6 +357,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 			if (!checkAndExecuteMethodInfo(expression.member))
 				throw new IllegalStateException("Call target has no method info!");
+			//if (expression.member.getHeader().returnType != expression.type)
+
+			//TODO see if the types differ (e.g. if a generic method was invoked) and only cast then
+			if(expression.type != BasicTypeID.VOID)
+				javaWriter.checkCast(context.getInternalName(expression.type));
 			return null;
 		}
 
@@ -1577,7 +1582,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		final String name = CompilerUtils.getLambdaCounter();
 
 		final JavaMethodInfo methodInfo = new JavaMethodInfo(javaWriter.method.javaClass, "accept", signature, Opcodes.ACC_PUBLIC);
-		final ClassWriter lambdaCW = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{JavaSynthesizedClassNamer.createFunctionName(new FunctionTypeID(null, expression.header)).cls.internalName});
 		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 
@@ -1721,7 +1726,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		javaWriter.checkCast(tag.internalName);
 		javaWriter.getField(new JavaField(tag, "Field" + expression.index, context.getDescriptor(type)));
 		return null;
-		//throw new UnsupportedOperationException(); // TODO
 	}
 
 	@Override

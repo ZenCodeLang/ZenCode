@@ -4,27 +4,32 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.generic.*;
 import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 
 import java.util.Collection;
 
 public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
 
-	public static final JavaTypeGenericVisitor INSTANCE = new JavaTypeGenericVisitor();
+	private final JavaBytecodeContext context;
+
+	public JavaTypeGenericVisitor(JavaBytecodeContext context) {
+		this.context = context;
+	}
 
 
-	public static String getGenericSignature(ITypeID... types) {
+	public String getGenericSignature(ITypeID... types) {
 		if (types == null || types.length == 0)
 			return "";
 		final StringBuilder builder = new StringBuilder();
 		for (ITypeID type : types) {
-			builder.append(type.accept(INSTANCE));
+			builder.append(type.accept(this));
 		}
 
 		return builder.toString();
 	}
 
 
-	public static String getGenericSignature(TypeParameter... parameters) {
+	public String getGenericSignature(TypeParameter... parameters) {
 		if (parameters == null || parameters.length == 0)
 			return "";
 
@@ -35,7 +40,7 @@ public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
 		return builder.toString();
 	}
 
-	public static String getSignatureWithBound(ITypeID type) {
+	public String getSignatureWithBound(ITypeID type) {
 		if(type instanceof GenericTypeID){
 			final TypeParameter parameter = ((GenericTypeID) type).parameter;
 			return parameter.name + ":" + getGenericBounds(parameter.bounds);
@@ -43,24 +48,24 @@ public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
 		throw new IllegalStateException("Type " + type + " is of the wrong class");
 	}
 
-	private static String getGenericSignature(FunctionParameter... parameters) {
+	private String getGenericSignature(FunctionParameter... parameters) {
 		if(parameters == null || parameters.length == 0)
 			return "";
 		final StringBuilder builder = new StringBuilder();
 		for (FunctionParameter parameter : parameters) {
-			builder.append(parameter.type.accept(INSTANCE));
+			builder.append(parameter.type.accept(this));
 		}
 		return builder.toString();
 	}
 
-	public static String getGenericMethodSignature(FunctionHeader header) {
+	public String getGenericMethodSignature(FunctionHeader header) {
 		return "(" + getGenericSignature(header.parameters) +
 				")" +
 				getGenericSignature(header.returnType);
 	}
 
 
-	public static String getGenericBounds(Collection<GenericParameterBound> collection) {
+	public String getGenericBounds(Collection<GenericParameterBound> collection) {
 		if (collection == null)
 			return "";
 		for (GenericParameterBound parameterBound : collection) {
@@ -72,7 +77,7 @@ public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
 
 				@Override
 				public String visitType(ParameterTypeBound bound) {
-					return bound.type.accept(INSTANCE);
+					return bound.type.accept(JavaTypeGenericVisitor.this);
 				}
 			});
 			if (s != null)
@@ -81,38 +86,34 @@ public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
 		return "Ljava/lang/Object;";
 	}
 
-
-	private JavaTypeGenericVisitor() {
-	}
-
 	@Override
 	public String visitBasic(BasicTypeID basic) {
-		return basic.accept(JavaTypeVisitor.INSTANCE).getDescriptor();
+		return context.getDescriptor(basic);
 	}
 
 	@Override
 	public String visitArray(ArrayTypeID array) {
-		return array.accept(JavaTypeVisitor.INSTANCE).getDescriptor();
+		return context.getDescriptor(array);
 	}
 
 	@Override
 	public String visitAssoc(AssocTypeID assoc) {
-		return assoc.accept(JavaTypeVisitor.INSTANCE).getDescriptor();
+		return context.getDescriptor(assoc);
 	}
 
 	@Override
 	public String visitGenericMap(GenericMapTypeID map) {
-		return map.accept(JavaTypeVisitor.INSTANCE).getDescriptor();
+		return context.getDescriptor(map);
 	}
 
 	@Override
 	public String visitIterator(IteratorTypeID iterator) {
-		return iterator.accept(JavaTypeVisitor.INSTANCE).getDescriptor();
+		return context.getDescriptor(iterator);
 	}
 
 	@Override
 	public String visitFunction(FunctionTypeID function) {
-		return function.accept(JavaTypeVisitor.INSTANCE).getDescriptor();
+		return context.getDescriptor(function);
 	}
 
 	@Override
@@ -138,7 +139,7 @@ public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
 
 	@Override
 	public String visitRange(RangeTypeID range) {
-		return range.accept(JavaTypeVisitor.INSTANCE).getDescriptor();
+		return context.getDescriptor(range);
 	}
 
 	@Override
