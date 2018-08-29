@@ -1,6 +1,5 @@
 package org.openzen.zencode.shared;
 
-import org.openzen.zencode.shared.ConcatMap;
 import stdlib.EqualsComparable;
 
 public final class ConcatMap<K extends EqualsComparable<K>, V> {

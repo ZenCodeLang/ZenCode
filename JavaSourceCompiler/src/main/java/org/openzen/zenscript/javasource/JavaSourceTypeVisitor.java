@@ -61,6 +61,7 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 			case UINT: return "int";
 			case LONG: return "long";
 			case ULONG: return "long";
+			case USIZE: return "int";
 			case FLOAT: return "float";
 			case DOUBLE: return "double";
 			case CHAR: return "char";
@@ -73,7 +74,15 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 	@Override
 	public String visitArray(ArrayTypeID array) {
 		StringBuilder result = new StringBuilder();
-		result.append(array.elementType.accept(this));
+		
+		if (array.elementType == BasicTypeID.BYTE) {
+			result.append("byte");
+		} else if (array.elementType == BasicTypeID.USHORT) {
+			result.append("short");
+		} else {
+			result.append(array.elementType.accept(this));
+		}
+		
 		for (int i = 0; i < array.dimension; i++)
 			result.append("[]");
 		
@@ -152,11 +161,27 @@ public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParam
 
 	@Override
 	public String visitRange(RangeTypeID range) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		JavaSynthesizedClass synthetic = typeGenerator.synthesizeRange(range);
+		StringBuilder result = new StringBuilder();
+		result.append(importer.importType(synthetic.cls));
+		if (synthetic.typeParameters.length > 0) {
+			result.append('<');
+			for (int i = 0; i < synthetic.typeParameters.length; i++) {
+				if (i > 0)
+					result.append(", ");
+				
+				result.append(synthetic.typeParameters[i].name);
+			}
+			result.append('>');
+		}
+		return result.toString();
 	}
 
 	@Override
 	public String visitModified(ModifiedTypeID optional) {
+		if (optional.isOptional() && optional.withoutOptional() == BasicTypeID.USIZE)
+			return "int"; // usize? is an int
+		
 		return optional.baseType.accept(new JavaSourceObjectTypeVisitor(importer, typeGenerator));
 	}
 

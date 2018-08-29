@@ -40,6 +40,7 @@ import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
@@ -95,7 +96,6 @@ import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaNativeTranslation;
 import org.openzen.zenscript.javashared.JavaNativeTranslator;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaVariantOption;
@@ -363,6 +363,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 
 	@Override
+	public ExpressionString visitConstantUSize(ConstantUSizeExpression expression) {
+		return new ExpressionString(Integer.toString((int)expression.value), JavaOperator.CAST);
+	}
+
+	@Override
 	public ExpressionString visitConstructorThisCall(ConstructorThisCallExpression expression) {
 		StringBuilder result = new StringBuilder();
 		result.append("this");
@@ -539,6 +544,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitNull(NullExpression expression) {
+		if (expression.type.withoutOptional() == BasicTypeID.USIZE)
+			return new ExpressionString("-1", JavaOperator.PRIMARY); // usize? null = -1
+		
 		return new ExpressionString("null", JavaOperator.PRIMARY);
 	}
 
@@ -1044,6 +1052,21 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case ULONG_COUNT_HIGH_ZEROES: return callAsStatic("Long.numberOfLeadingZeros", call);
 			case ULONG_COUNT_LOW_ONES: return new ExpressionString("Long.numberOfTrailingZeros(~" + call.target.accept(this).value + ")", JavaOperator.CALL);
 			case ULONG_COUNT_HIGH_ONES: return new ExpressionString("Long.numberOfLeadingZeros(~" + call.target.accept(this).value + ")", JavaOperator.CALL);
+			case USIZE_NOT: return unaryPrefix(call, JavaOperator.INVERT);
+			case USIZE_ADD_USIZE: return binary(call, JavaOperator.ADD);
+			case USIZE_SUB_USIZE: return binary(call, JavaOperator.SUB);
+			case USIZE_MUL_USIZE: return binary(call, JavaOperator.MUL);
+			case USIZE_DIV_USIZE: return binary(call, JavaOperator.DIV);
+			case USIZE_MOD_USIZE: return binary(call, JavaOperator.MOD);
+			case USIZE_AND_USIZE: return binary(call, JavaOperator.AND);
+			case USIZE_OR_USIZE: return binary(call, JavaOperator.OR);
+			case USIZE_XOR_USIZE: return binary(call, JavaOperator.XOR);
+			case USIZE_SHL: return binary(call, JavaOperator.SHL);
+			case USIZE_SHR: return binary(call, JavaOperator.USHR);
+			case USIZE_COUNT_LOW_ZEROES: return callAsStatic("Integer.numberOfTrailingZeros", call);
+			case USIZE_COUNT_HIGH_ZEROES: return callAsStatic("Integer.numberOfLeadingZeros", call);
+			case USIZE_COUNT_LOW_ONES: return new ExpressionString("Integer.numberOfTrailingZeros(~" + call.target.accept(this).value + ")", JavaOperator.CALL);
+			case USIZE_COUNT_HIGH_ONES: return new ExpressionString("Integer.numberOfLeadingZeros(~" + call.target.accept(this).value + ")", JavaOperator.CALL);
 			case FLOAT_NEG: return unaryPrefix(call, JavaOperator.NEG);
 			case FLOAT_ADD_FLOAT: return binary(call, JavaOperator.ADD);
 			case FLOAT_SUB_FLOAT: return binary(call, JavaOperator.SUB);
@@ -1148,8 +1171,12 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case FUNCTION_NOTSAME: return binary(call, JavaOperator.NOTEQUALS);
 			case OBJECT_SAME: return binary(call, JavaOperator.EQUALS);
 			case OBJECT_NOTSAME: return binary(call, JavaOperator.NOTEQUALS);
-			case OPTIONAL_IS_NULL: return call.target.accept(this).unaryPostfix(JavaOperator.EQUALS, " == null");
-			case OPTIONAL_IS_NOT_NULL: return call.target.accept(this).unaryPostfix(JavaOperator.NOTEQUALS, " != null");
+			case OPTIONAL_IS_NULL: return call.target.type.withoutOptional() == BasicTypeID.USIZE
+					? call.target.accept(this).unaryPostfix(JavaOperator.NOTEQUALS, " < 0")
+					: call.target.accept(this).unaryPostfix(JavaOperator.EQUALS, " == null");
+			case OPTIONAL_IS_NOT_NULL: return call.target.type.withoutOptional() == BasicTypeID.USIZE
+					? call.target.accept(this).unaryPostfix(JavaOperator.NOTEQUALS, " >= 0")
+					: call.target.accept(this).unaryPostfix(JavaOperator.NOTEQUALS, " != null");
 			case AUTOOP_NOTEQUALS:
 				throw new UnsupportedOperationException("Not yet supported!");
 		}
@@ -1168,8 +1195,12 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case SHORT_PARSE_WITH_BASE: return callStatic("Short.parseShort", call);
 			case USHORT_PARSE: return callStatic("Integer.parseShort", call);
 			case USHORT_PARSE_WITH_BASE: return callStatic("Integer.parseShort", call);
-			case INT_PARSE: return callStatic("Integer.parseInt", call);
-			case INT_PARSE_WITH_BASE: return callStatic("Integer.parseInt", call);
+			case INT_PARSE:
+			case USIZE_PARSE:
+				return callStatic("Integer.parseInt", call);
+			case INT_PARSE_WITH_BASE:
+			case USIZE_PARSE_WITH_BASE:
+				return callStatic("Integer.parseInt", call);
 			case UINT_PARSE: return callStatic("Integer.parseUnsignedInt", call);
 			case UINT_PARSE_WITH_BASE: return callStatic("Integer.parseUnsignedInt", call);
 			case LONG_PARSE: return callStatic("Long.parseLong", call);
@@ -1197,7 +1228,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 					call.left.accept(this).unaryPostfix(JavaOperator.AND_FFFF),
 					call.right.accept(this).unaryPostfix(JavaOperator.AND_FFFF),
 					call.comparison);
-			case INT_COMPARE: return compare(call.left, call.right, call.comparison);
+			case INT_COMPARE:
+			case USIZE_COMPARE:
+				return compare(call.left, call.right, call.comparison);
 			case UINT_COMPARE: return compare(callAsStatic("Integer.compareUnsigned", call.left, call.right), call.comparison);
 			case LONG_COMPARE: return compare(call.left, call.right, call.comparison);
 			case ULONG_COMPARE: return compare(callAsStatic("Long.compareUnsigned", call.left, call.right), call.comparison);
@@ -1221,18 +1254,23 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		switch (builtin) {
 			case INT_HIGHEST_ONE_BIT:
 			case UINT_HIGHEST_ONE_BIT:
+			case USIZE_HIGHEST_ONE_BIT:
 				return callAsStatic("Integer.highestOneBit", call);
 			case INT_LOWEST_ONE_BIT:
 			case UINT_LOWEST_ONE_BIT:
+			case USIZE_LOWEST_ONE_BIT:
 				return callAsStatic("Integer.lowestOneBit", call);
 			case INT_HIGHEST_ZERO_BIT:
 			case UINT_HIGHEST_ZERO_BIT:
+			case USIZE_HIGHEST_ZERO_BIT:
 				return new ExpressionString("Integer.highestOneBit(~" + call.target.accept(this).value + ")", JavaOperator.CALL);
 			case INT_LOWEST_ZERO_BIT:
 			case UINT_LOWEST_ZERO_BIT:
+			case USIZE_LOWEST_ZERO_BIT:
 				return new ExpressionString("Integer.lowestOneBit(~" + call.target.accept(this).value + ")", JavaOperator.CALL);
 			case INT_BIT_COUNT:
 			case UINT_BIT_COUNT:
+			case USIZE_BIT_COUNT:
 				return callAsStatic("Integer.bitCount", call);
 			case LONG_HIGHEST_ONE_BIT:
 			case ULONG_HIGHEST_ONE_BIT:
@@ -1321,6 +1359,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case LONG_GET_MAX_VALUE: return new ExpressionString("Long.MAX_VALUE", JavaOperator.MEMBER);
 			case ULONG_GET_MIN_VALUE: return new ExpressionString("0", JavaOperator.PRIMARY);
 			case ULONG_GET_MAX_VALUE: return new ExpressionString("-1", JavaOperator.PRIMARY);
+			case USIZE_GET_MIN_VALUE: return new ExpressionString("0", JavaOperator.PRIMARY);
+			case USIZE_GET_MAX_VALUE: return new ExpressionString("Integer.MAX_VALUE", JavaOperator.MEMBER);
+			case USIZE_BITS: return new ExpressionString("32", JavaOperator.PRIMARY);
 			case FLOAT_GET_MIN_VALUE: return new ExpressionString("Float.MIN_VALUE", JavaOperator.MEMBER);
 			case FLOAT_GET_MAX_VALUE: return new ExpressionString("Float.MAX_VALUE", JavaOperator.MEMBER);
 			case DOUBLE_GET_MIN_VALUE: return new ExpressionString("Double.MIN_VALUE", JavaOperator.MEMBER);
@@ -1342,6 +1383,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case BYTE_TO_USHORT: return castPostfix(cast, JavaOperator.AND_FF);
 			case BYTE_TO_INT: return castPostfix(cast, JavaOperator.AND_FF);
 			case BYTE_TO_UINT: return castPostfix(cast, JavaOperator.AND_FF);
+			case BYTE_TO_USIZE: return castPostfix(cast, JavaOperator.AND_FF);
 			case BYTE_TO_LONG: return castPostfix(cast, JavaOperator.AND_FFL);
 			case BYTE_TO_ULONG: return castPostfix(cast, JavaOperator.AND_FFL);
 			case BYTE_TO_FLOAT: cast(castPostfix(cast, JavaOperator.AND_FF), "float");
@@ -1353,6 +1395,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case SBYTE_TO_USHORT: return castImplicit(cast, "int");
 			case SBYTE_TO_INT: return castImplicit(cast, "int");
 			case SBYTE_TO_UINT: return castImplicit(cast, "int");
+			case SBYTE_TO_USIZE: return castImplicit(cast, "int");
 			case SBYTE_TO_LONG: return castImplicit(cast, "long");
 			case SBYTE_TO_ULONG: return castImplicit(cast, "long");
 			case SBYTE_TO_FLOAT: return castImplicit(cast, "float");
@@ -1364,6 +1407,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case SHORT_TO_USHORT: return castImplicit(cast, "int");
 			case SHORT_TO_INT: return castImplicit(cast, "int");
 			case SHORT_TO_UINT: return castImplicit(cast, "int");
+			case SHORT_TO_USIZE: return castImplicit(cast, "int");
 			case SHORT_TO_LONG: return castImplicit(cast, "long");
 			case SHORT_TO_ULONG: return castImplicit(cast, "long");
 			case SHORT_TO_FLOAT: return castImplicit(cast, "float");
@@ -1377,6 +1421,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case USHORT_TO_UINT: return castPostfix(cast, JavaOperator.AND_FFFF);
 			case USHORT_TO_LONG: return castPostfix(cast, JavaOperator.AND_FFFFL);
 			case USHORT_TO_ULONG: return castPostfix(cast, JavaOperator.AND_FFFFL);
+			case USHORT_TO_USIZE: return castPostfix(cast, JavaOperator.AND_FFFF);
 			case USHORT_TO_FLOAT: return cast.isImplicit ? cast.target.accept(this) : cast(castPostfix(cast, JavaOperator.AND_FFFF), "float");
 			case USHORT_TO_DOUBLE: return cast.isImplicit ? cast.target.accept(this) : cast(castPostfix(cast, JavaOperator.AND_FFFF), "double");
 			case USHORT_TO_CHAR: return castImplicit(cast, "char");
@@ -1392,6 +1437,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case INT_TO_DOUBLE: return castImplicit(cast, "double");
 			case INT_TO_CHAR: return cast(cast, "char");
 			case INT_TO_STRING: return callStatic("Integer.toString", cast.target);
+			case INT_TO_USIZE: return cast.target.accept(this);
 			case UINT_TO_BYTE: return cast.target.accept(this);
 			case UINT_TO_SBYTE: return cast(cast, "byte");
 			case UINT_TO_SHORT: return cast(cast, "short");
@@ -1399,6 +1445,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case UINT_TO_INT: return cast.target.accept(this);
 			case UINT_TO_LONG: return castImplicit(cast, "long");
 			case UINT_TO_ULONG: return castPostfix(cast, JavaOperator.AND_8FL);
+			case UINT_TO_USIZE: return cast.target.accept(this);
 			case UINT_TO_FLOAT: return cast(castPostfix(cast, JavaOperator.AND_8FL), "float");
 			case UINT_TO_DOUBLE: return cast(castPostfix(cast, JavaOperator.AND_8FL), "double");
 			case UINT_TO_CHAR: return cast(cast, "char");
@@ -1410,6 +1457,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case LONG_TO_INT: return cast(cast, "int");
 			case LONG_TO_UINT: return cast(cast, "int");
 			case LONG_TO_ULONG: return cast.target.accept(this);
+			case LONG_TO_USIZE: return cast(cast, "int");
 			case LONG_TO_FLOAT: return castImplicit(cast, "float");
 			case LONG_TO_DOUBLE: return castImplicit(cast, "double");
 			case LONG_TO_CHAR: return cast(cast, "char");
@@ -1421,6 +1469,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case ULONG_TO_INT: return cast(cast, "int");
 			case ULONG_TO_UINT: return cast(cast, "int");
 			case ULONG_TO_LONG: return cast.target.accept(this);
+			case ULONG_TO_USIZE: return cast(cast, "int");
 			case ULONG_TO_FLOAT: return castImplicit(cast, "float"); // TODO: this is incorrect!
 			case ULONG_TO_DOUBLE: return castImplicit(cast, "double"); // TODO: this is incorrect!
 			case ULONG_TO_CHAR: return cast(cast, "char");
@@ -1433,6 +1482,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case FLOAT_TO_UINT: return cast(cast, "int");
 			case FLOAT_TO_LONG: return cast(cast, "long");
 			case FLOAT_TO_ULONG: return cast(cast, "long");
+			case FLOAT_TO_USIZE: return cast(cast, "int");
 			case FLOAT_TO_DOUBLE: return castImplicit(cast, "double");
 			case FLOAT_TO_STRING: return callStatic("Float.toString", cast.target);
 			case DOUBLE_TO_BYTE: return cast(cast, "int");
@@ -1443,6 +1493,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case DOUBLE_TO_UINT: return cast(cast, "int");
 			case DOUBLE_TO_LONG: return cast(cast, "long");
 			case DOUBLE_TO_ULONG: return cast(cast, "long");
+			case DOUBLE_TO_USIZE: return cast(cast, "int");
 			case DOUBLE_TO_FLOAT: return cast(cast, "float");
 			case DOUBLE_TO_STRING: return callStatic("Double.toString", cast.target);
 			case CHAR_TO_BYTE: return cast.target.accept(this);
@@ -1453,6 +1504,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case CHAR_TO_UINT: return castImplicit(cast, "int");
 			case CHAR_TO_LONG: return castImplicit(cast, "long");
 			case CHAR_TO_ULONG: return castImplicit(cast, "long");
+			case CHAR_TO_USIZE: return castImplicit(cast, "int");
 			case CHAR_TO_STRING: return callStatic("Character.toString", cast.target);
 			case ENUM_TO_STRING: return cast.target.accept(this).unaryPostfix(JavaOperator.TOSTRING);
 		}

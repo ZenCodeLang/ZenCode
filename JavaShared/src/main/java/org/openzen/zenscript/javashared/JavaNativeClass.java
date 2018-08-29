@@ -31,11 +31,11 @@ public class JavaNativeClass {
 	}
 	
 	public void addConstructor(String key, String descriptor) {
-		methods.put(key, new JavaMethod(cls, JavaMethod.Kind.CONSTRUCTOR, "<init>", false, descriptor, JavaModifiers.PUBLIC));
+		methods.put(key, new JavaMethod(cls, JavaMethod.Kind.CONSTRUCTOR, "<init>", false, descriptor, JavaModifiers.PUBLIC, false));
 	}
 	
 	public void addInstanceMethod(String key, String name, String descriptor) {
-		methods.put(key, new JavaMethod(cls, JavaMethod.Kind.INSTANCE, name, false, descriptor, JavaModifiers.PUBLIC));
+		methods.put(key, new JavaMethod(cls, JavaMethod.Kind.INSTANCE, name, false, descriptor, JavaModifiers.PUBLIC, false));
 	}
 	
 	public JavaMethod getMethod(String name) {

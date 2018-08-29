@@ -19,21 +19,30 @@ import java.util.logging.Logger;
  */
 public class JavaModule {
 	private final Map<String, byte[]> classes = new HashMap<>();
-
+	private final File debugOutput;
+	
 	public JavaModule() {
-
+		debugOutput = null;
 	}
-
+	
+	public JavaModule(File debugOutput) {
+		this.debugOutput = debugOutput;
+		debugOutput.mkdirs();
+	}
+	
 	public void register(String classname, byte[] bytecode) {
 		if (bytecode == null)
 			return;
 		
+		classname = classname.replace('/', '.');
 		classes.put(classname, bytecode);
 		
-		try (FileOutputStream writer = new FileOutputStream(new File(classname.replace('/', '_') + ".class"))) {
-			writer.write(bytecode);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (debugOutput != null) {
+			try (FileOutputStream writer = new FileOutputStream(new File(debugOutput, classname + ".class"))) {
+				writer.write(bytecode);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

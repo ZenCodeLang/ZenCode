@@ -6,10 +6,13 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -21,10 +24,10 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  *
  * @author Hoofdgebruiker
  */
-public class GetterMember extends FunctionalMember implements IPropertyMember {
+public class GetterMember extends PropertyMember {
 	public final String name;
-	public ITypeID type;
 	private GetterMemberRef overrides;
+	public Statement body = null;
 	
 	public GetterMember(
 			CodePosition position,
@@ -33,33 +36,21 @@ public class GetterMember extends FunctionalMember implements IPropertyMember {
 			String name,
 			ITypeID type,
 			BuiltinID builtin) {
-		super(position, definition, modifiers, new FunctionHeader(type), builtin);
+		super(position, definition, modifiers, type, builtin);
 		
 		this.name = name;
-		this.type = type;
 	}
 	
-	@Override
 	public void setBody(Statement body) {
-		super.setBody(body);
+		this.body = body;
 		
 		if (type == BasicTypeID.UNDETERMINED)
 			type = body.getReturnType();
 	}
 	
 	@Override
-	public ITypeID getType() {
-		return type;
-	}
-	
-	@Override
-	public String getCanonicalName() {
-		return definition.getFullName() + ":getter:" + name;
-	}
-	
-	@Override
-	public FunctionalKind getKind() {
-		return FunctionalKind.GETTER;
+	public boolean isAbstract() {
+		return body == null && builtin == null;
 	}
 	
 	@Override
@@ -80,6 +71,12 @@ public class GetterMember extends FunctionalMember implements IPropertyMember {
 	@Override
 	public GetterMemberRef getOverrides() {
 		return overrides;
+	}
+
+	@Override
+	public void normalize(TypeScope scope) {
+		if (body != null)
+			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}
 	
 	public void setOverrides(GetterMemberRef override) {

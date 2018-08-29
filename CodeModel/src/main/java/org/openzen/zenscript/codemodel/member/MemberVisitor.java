@@ -28,7 +28,7 @@ public interface MemberVisitor<T> {
 	
 	public T visitCaster(CasterMember member);
 	
-	public T visitCustomIterator(CustomIteratorMember member);
+	public T visitCustomIterator(IteratorMember member);
 	
 	public T visitCaller(CallerMember member);
 	

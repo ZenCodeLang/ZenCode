@@ -30,11 +30,9 @@ import org.openzen.zenscript.javashared.JavaModifiers;
  */
 public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<JavaClass> {
 	private final JavaContext context;
-	private final String filename;
 	
-	public JavaPrepareDefinitionMemberVisitor(JavaContext context, String filename) {
+	public JavaPrepareDefinitionMemberVisitor(JavaContext context) {
 		this.context = context;
-		this.filename = filename;
 	}
 	
 	private boolean isPrepared(HighLevelDefinition definition) {
@@ -46,6 +44,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 			return;
 			
 		HighLevelDefinition definition = ((DefinitionTypeID)type).definition;
+		System.out.println("Preparing " + definition.name);
 		definition.accept(this);
 	}
 	
@@ -90,7 +89,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 			return definition.getTag(JavaClass.class);
 		
 		JavaClass cls = definition.getTag(JavaClass.class);
-		JavaMethod method = new JavaMethod(cls, JavaMethod.Kind.STATIC, definition.name, true, context.getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
+		JavaMethod method = JavaMethod.getStatic(cls, definition.name, context.getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
 		definition.caller.setTag(JavaMethod.class, method);
 		return cls;
 	}
@@ -138,7 +137,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	
 	private void visitClassMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
 		System.out.println("Preparing " + cls.internalName);
-		JavaPrepareClassMethodVisitor methodVisitor = new JavaPrepareClassMethodVisitor(context, filename, cls, nativeClass, this, startsEmpty);
+		JavaPrepareClassMethodVisitor methodVisitor = new JavaPrepareClassMethodVisitor(context, cls, nativeClass, this, startsEmpty);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
 		}

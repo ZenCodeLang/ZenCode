@@ -70,8 +70,8 @@ public class ParsedFunction extends ParsedDefinition {
 		FunctionScope innerScope = new FunctionScope(scope, compiled.header);
 		compiled.setCode(body.compile(innerScope, compiled.header));
 		
-		if (compiled.header.returnType == BasicTypeID.UNDETERMINED) {
-			compiled.header.returnType = compiled.statement.getReturnType();
+		if (compiled.header.getReturnType() == BasicTypeID.UNDETERMINED) {
+			compiled.header.setReturnType(compiled.statement.getReturnType());
 		}
 	}
 

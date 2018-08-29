@@ -26,6 +26,7 @@ public enum BasicTypeID implements ITypeID {
 	UINT("uint"),
 	LONG("long"),
 	ULONG("ulong"),
+	USIZE("usize"),
 	FLOAT("float"),
 	DOUBLE("double"),
 	CHAR("char"),

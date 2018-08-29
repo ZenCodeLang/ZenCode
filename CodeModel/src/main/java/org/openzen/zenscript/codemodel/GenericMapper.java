@@ -54,10 +54,10 @@ public class GenericMapper {
 	}
 	
 	public FunctionHeader map(FunctionHeader original) {
-		return mapping.isEmpty() ? original : original.withGenericArguments(this);
+		return mapping.isEmpty() ? original : original.withGenericArguments(registry, this);
 	}
 	
-	public GenericMapper getInner(Map<TypeParameter, ITypeID> mapping) {
+	public GenericMapper getInner(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
 		Map<TypeParameter, ITypeID> resultMap = new HashMap<>(this.mapping);
 		resultMap.putAll(mapping);
 		return new GenericMapper(registry, resultMap);

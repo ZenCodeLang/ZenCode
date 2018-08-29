@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.RangeTypeID;
 
 /**
  *
@@ -18,8 +19,8 @@ public class RangeExpression extends Expression {
 	public final Expression from;
 	public final Expression to;
 	
-	public RangeExpression(CodePosition position, GlobalTypeRegistry registry, Expression from, Expression to) {
-		super(position, registry.getRange(from.type, to.type), binaryThrow(position, from.thrownType, to.thrownType));
+	public RangeExpression(CodePosition position, RangeTypeID type, Expression from, Expression to) {
+		super(position, type, binaryThrow(position, from.thrownType, to.thrownType));
 	
 		this.from = from;
 		this.to = to;
@@ -46,6 +47,11 @@ public class RangeExpression extends Expression {
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		return new RangeExpression(position, scope.getTypeRegistry(), from.normalize(scope), to.normalize(scope));
+		RangeTypeID rangeType = (RangeTypeID)type;
+		return new RangeExpression(
+				position,
+				rangeType,
+				from.normalize(scope).castImplicit(position, scope, rangeType.baseType),
+				to.normalize(scope).castImplicit(position, scope, rangeType.baseType));
 	}
 }

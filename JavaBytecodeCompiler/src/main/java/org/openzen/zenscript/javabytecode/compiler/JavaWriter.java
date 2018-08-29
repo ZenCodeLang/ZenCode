@@ -12,19 +12,18 @@ import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
-import org.openzen.zenscript.javabytecode.JavaMethodInfo;
-import org.openzen.zenscript.javabytecode.JavaParameterInfo;
+import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaMethod;
 
 public class JavaWriter {
-    private static final JavaMethodInfo STRING_CONCAT = new JavaMethodInfo(
+    private static final JavaMethod STRING_CONCAT = JavaMethod.getNativeStatic(
             JavaClass.STRING,
             "concat",
-            "(Ljava/lang/String;)Ljava/lang/String;",
-            Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            "(Ljava/lang/String;)Ljava/lang/String;");
 
-    public final JavaMethodInfo method;
+    public final JavaMethod method;
     public final HighLevelDefinition forDefinition;
 
     private final LocalVariablesSorter visitor;
@@ -38,7 +37,7 @@ public class JavaWriter {
     public JavaWriter(
             ClassVisitor visitor,
             boolean nameVariables,
-            JavaMethodInfo method,
+            JavaMethod method,
             HighLevelDefinition forDefinition,
             String signature,
             String[] exceptions,
@@ -57,16 +56,8 @@ public class JavaWriter {
         this.nameVariables = nameVariables;
     }
 
-    public JavaWriter(ClassVisitor visitor, JavaMethodInfo method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
+    public JavaWriter(ClassVisitor visitor, JavaMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
         this(visitor, true, method, forDefinition, signature, exceptions, annotations);
-    }
-
-    private static String signature(Class aClass) {
-        return Type.getDescriptor(aClass);
-    }
-
-    private static String internal(Class aClass) {
-        return Type.getInternalName(aClass);
     }
 
     public void enableDebug() {
@@ -245,7 +236,7 @@ public class JavaWriter {
         if (debug)
             System.out.println("load " + parameter.index);
 
-        visitor.visitVarInsn(parameter.type.getOpcode(ILOAD), parameter.index);
+        visitor.visitVarInsn(Type.getType(parameter.typeDescriptor).getOpcode(ILOAD), parameter.index);
     }
 
     public void load(JavaLocalVariableInfo localVariable) {
@@ -259,7 +250,7 @@ public class JavaWriter {
         if (debug)
             System.out.println("store " + parameter.index);
 
-        visitor.visitVarInsn(parameter.type.getOpcode(ISTORE), parameter.index);
+        visitor.visitVarInsn(Type.getType(parameter.typeDescriptor).getOpcode(ISTORE), parameter.index);
     }
 
     public void store(JavaLocalVariableInfo localVariable) {
@@ -358,25 +349,11 @@ public class JavaWriter {
         }
     }
 
-    public void newArray(Class componentType) {
+    public void checkCast(String internalName) {
         if (debug)
-            System.out.println("newArray " + componentType.getName());
+            System.out.println("checkCast " + internalName);
 
-        visitor.visitTypeInsn(NEWARRAY, internal(componentType));
-    }
-
-    public void checkCast(Class newClass) {
-        if (debug)
-            System.out.println("checkCast " + newClass.getName());
-
-        visitor.visitTypeInsn(CHECKCAST, signature(newClass));
-    }
-
-    public void checkCast(String descriptor) {
-        if (debug)
-            System.out.println("checkCast " + descriptor);
-
-        visitor.visitTypeInsn(CHECKCAST, descriptor);
+        visitor.visitTypeInsn(CHECKCAST, internalName);
     }
 
     public void checkCast(Type type) {
@@ -810,10 +787,10 @@ public class JavaWriter {
         visitor.visitTypeInsn(INSTANCEOF, type.getDescriptor());
     }
 	
-	public void invokeStatic(JavaMethodInfo method) {
+	public void invokeStatic(JavaMethod method) {
 		visitor.visitMethodInsn(
 				INVOKESTATIC,
-				method.javaClass.internalName,
+				method.cls.internalName,
 				method.name,
 				method.descriptor,
 				false);
@@ -830,29 +807,22 @@ public class JavaWriter {
         invokeSpecial(Type.getInternalName(owner), name, descriptor);
     }
 
-	public void invokeSpecial (JavaMethodInfo method) {
-		invokeSpecial(method.javaClass.internalName, method.name, method.descriptor);
+	public void invokeSpecial(JavaMethod method) {
+		invokeSpecial(method.cls.internalName, method.name, method.descriptor);
 	}
 
-    public void invokeVirtual(JavaMethodInfo method) {
+    public void invokeVirtual(JavaMethod method) {
         if (debug)
-            System.out.println("invokeVirtual " + method.javaClass.internalName + '.' + method.name + method.descriptor);
+            System.out.println("invokeVirtual " + method.cls.internalName + '.' + method.name + method.descriptor);
 
-        visitor.visitMethodInsn(INVOKEVIRTUAL, method.javaClass.internalName, method.name, method.descriptor, false);
+        visitor.visitMethodInsn(INVOKEVIRTUAL, method.cls.internalName, method.name, method.descriptor, false);
     }
 
-    public void invokeInterface(JavaMethodInfo method) {
+    public void invokeInterface(JavaMethod method) {
         if (debug)
-            System.out.println("invokeInterface " + method.javaClass.internalName + '.' + method.name + method.descriptor);
+            System.out.println("invokeInterface " + method.cls.internalName + '.' + method.name + method.descriptor);
 
-        visitor.visitMethodInsn(INVOKEINTERFACE, method.javaClass.internalName, method.name, method.descriptor, true);
-    }
-
-    public void newObject(Class type) {
-        if (debug)
-            System.out.println("newObject " + type.getName());
-
-        visitor.visitTypeInsn(NEW, internal(type));
+        visitor.visitMethodInsn(INVOKEINTERFACE, method.cls.internalName, method.name, method.descriptor, true);
     }
 
     public void newObject(String internalName) {
@@ -860,34 +830,6 @@ public class JavaWriter {
             System.out.println("newObject " + internalName);
 
         visitor.visitTypeInsn(NEW, internalName);
-    }
-
-    public void construct(Class type, Class... arguments) {
-        StringBuilder descriptor = new StringBuilder();
-        descriptor.append('(');
-        for (Class argument : arguments) {
-            descriptor.append(signature(argument));
-        }
-        descriptor.append(")V");
-
-        if (debug)
-            System.out.println("invokeSpecial " + internal(type) + ".<init>" + descriptor);
-
-        visitor.visitMethodInsn(INVOKESPECIAL, internal(type), "<init>", descriptor.toString(), false);
-    }
-
-    public void construct(String type, String... arguments) {
-        StringBuilder descriptor = new StringBuilder();
-        descriptor.append('(');
-        for (String argument : arguments) {
-            descriptor.append(argument);
-        }
-        descriptor.append(")V");
-
-        if (debug)
-            System.out.println("invokeSpecial " + type + ".<init>" + descriptor);
-
-        visitor.visitMethodInsn(INVOKESPECIAL, type, "<init>", descriptor.toString(), false);
     }
 
     public void goTo(Label lbl) {
@@ -1048,19 +990,12 @@ public class JavaWriter {
 
         visitor.visitFieldInsn(GETFIELD, owner, name, descriptor);
     }
-
-    public void getField(Class owner, String name, Class descriptor) {
-        if (debug)
-            System.out.println("getField " + owner.getName() + '.' + name + ":" + descriptor.getName());
-
-        visitor.visitFieldInsn(GETFIELD, internal(owner), name, signature(descriptor));
-    }
 	
 	public void getField(JavaField field) {
         if (debug)
-            System.out.println("getField " + field.cls.internalName + '.' + field.name + ":" + field.signature);
+            System.out.println("getField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
 		
-		visitor.visitFieldInsn(GETFIELD, field.cls.internalName, field.name, field.signature);
+		visitor.visitFieldInsn(GETFIELD, field.cls.internalName, field.name, field.descriptor);
 	}
 
     public void putField(String owner, String name, String descriptor) {
@@ -1069,19 +1004,12 @@ public class JavaWriter {
 
         visitor.visitFieldInsn(PUTFIELD, owner, name, descriptor);
     }
-
-    public void putField(Class owner, String name, Class descriptor) {
-        if (debug)
-            System.out.println("putField " + owner.getName() + '.' + name + ":" + descriptor.getName());
-
-        visitor.visitFieldInsn(PUTFIELD, internal(owner), name, signature(descriptor));
-    }
 	
 	public void putField(JavaField field) {
         if (debug)
-            System.out.println("putField " + field.cls.internalName + '.' + field.name + ":" + field.signature);
+            System.out.println("putField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
 		
-		visitor.visitFieldInsn(PUTFIELD, field.cls.internalName, field.name, field.signature);
+		visitor.visitFieldInsn(PUTFIELD, field.cls.internalName, field.name, field.descriptor);
 	}
 
     public void getStaticField(String owner, String name, String descriptor) {
@@ -1093,9 +1021,9 @@ public class JavaWriter {
 	
 	public void getStaticField(JavaField field) {
         if (debug)
-            System.out.println("getStaticField " + field.cls.internalName + '.' + field.name + ":" + field.signature);
+            System.out.println("getStaticField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
 		
-		visitor.visitFieldInsn(GETSTATIC, field.cls.internalName, field.name, field.signature);
+		visitor.visitFieldInsn(GETSTATIC, field.cls.internalName, field.name, field.descriptor);
 	}
 
     public void putStaticField(String owner, String name, String descriptor) {
@@ -1104,19 +1032,12 @@ public class JavaWriter {
 
         visitor.visitFieldInsn(PUTSTATIC, owner, name, descriptor);
     }
-
-    public void putStaticField(Class owner, Field field) {
-        if (debug)
-            System.out.println("putStatic " + owner.getName() + '.' + field.getName() + ":" + signature(field.getType()));
-
-        visitor.visitFieldInsn(PUTSTATIC, internal(owner), field.getName(), signature(field.getType()));
-    }
 	
 	public void putStaticField(JavaField field) {
         if (debug)
-            System.out.println("putStaticField " + field.cls.internalName + '.' + field.name + ":" + field.signature);
+            System.out.println("putStaticField " + field.cls.internalName + '.' + field.name + ":" + field.descriptor);
 		
-		visitor.visitFieldInsn(PUTSTATIC, field.cls.internalName, field.name, field.signature);
+		visitor.visitFieldInsn(PUTSTATIC, field.cls.internalName, field.name, field.descriptor);
 	}
 
     public void aThrow() {

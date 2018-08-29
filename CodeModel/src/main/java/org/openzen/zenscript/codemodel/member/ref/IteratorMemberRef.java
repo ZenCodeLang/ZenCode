@@ -8,9 +8,8 @@ package org.openzen.zenscript.codemodel.member.ref;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
-import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.IIteratorMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -18,10 +17,10 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class IteratorMemberRef implements DefinitionMemberRef {
-	public final IIteratorMember target;
+	public final IteratorMember target;
 	public final ITypeID[] types;
 	
-	public IteratorMemberRef(IIteratorMember target, ITypeID... types) {
+	public IteratorMemberRef(IteratorMember target, ITypeID... types) {
 		this.target = target;
 		this.types = types;
 	}
@@ -57,8 +56,8 @@ public class IteratorMemberRef implements DefinitionMemberRef {
 
 	@Override
 	public MemberAnnotation[] getAnnotations() {
-		if (target instanceof CustomIteratorMember) {
-			return ((CustomIteratorMember)target).annotations;
+		if (target instanceof IteratorMember) {
+			return ((IteratorMember)target).annotations;
 		} else {
 			return null;
 		}

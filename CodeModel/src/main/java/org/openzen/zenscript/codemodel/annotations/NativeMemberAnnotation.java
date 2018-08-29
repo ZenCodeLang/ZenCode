@@ -6,7 +6,9 @@
 package org.openzen.zenscript.codemodel.annotations;
 
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 
 /**
@@ -27,6 +29,16 @@ public class NativeMemberAnnotation implements MemberAnnotation {
 
 	@Override
 	public void applyOnOverridingMethod(FunctionalMember member, BaseScope scope) {
+		// not inherited
+	}
+
+	@Override
+	public void applyOnOverridingGetter(GetterMember member, BaseScope scope) {
+		// not inherited
+	}
+
+	@Override
+	public void applyOnOverridingSetter(SetterMember member, BaseScope scope) {
 		// not inherited
 	}
 }

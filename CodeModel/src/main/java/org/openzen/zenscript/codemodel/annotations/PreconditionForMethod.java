@@ -12,7 +12,9 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.expression.PanicExpression;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
@@ -44,13 +46,33 @@ public class PreconditionForMethod implements MemberAnnotation {
 
 	@Override
 	public void apply(IDefinitionMember member, BaseScope scope) {
-		applyOnOverridingMethod((FunctionalMember)member, scope);
+		if (member instanceof GetterMember) {
+			applyOnOverridingGetter((GetterMember)member, scope);
+		} else if (member instanceof SetterMember) {
+			applyOnOverridingSetter((SetterMember)member, scope);
+		} else if (member instanceof FunctionalMember) {
+			applyOnOverridingMethod((FunctionalMember)member, scope);
+		}
 	}
 
 	@Override
 	public void applyOnOverridingMethod(FunctionalMember member, BaseScope scope) {
-		if (member.body == null)
-			return;
+		member.body = applyOnOverride(member.body, scope);
+	}
+
+	@Override
+	public void applyOnOverridingGetter(GetterMember member, BaseScope scope) {
+		member.body = applyOnOverride(member.body, scope);
+	}
+
+	@Override
+	public void applyOnOverridingSetter(SetterMember member, BaseScope scope) {
+		member.body = applyOnOverride(member.body, scope);
+	}
+	
+	private Statement applyOnOverride(Statement body, BaseScope scope) {
+		if (body == null)
+			return body;
 		
 		ExpressionScope expressionScope = new ExpressionScope(scope, BasicTypeID.BOOL);
 		List<Statement> statements = new ArrayList<>();
@@ -58,11 +80,12 @@ public class PreconditionForMethod implements MemberAnnotation {
 		Expression inverseCondition = expressionBuilder.not(condition);
 		Statement throwStatement = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID, message));
 		statements.add(new IfStatement(position, inverseCondition, throwStatement, null));
-		if (member.body instanceof BlockStatement) {
-			statements.addAll(((BlockStatement)member.body).statements);
+		
+		if (body instanceof BlockStatement) {
+			statements.addAll(((BlockStatement)body).statements);
 		} else {
-			statements.add(member.body);
+			statements.add(body);
 		}
-		member.body = new BlockStatement(position, statements);
+		return new BlockStatement(position, statements);
 	}
 }

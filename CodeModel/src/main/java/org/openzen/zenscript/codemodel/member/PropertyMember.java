@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
  *
  * @author Hoofdgebruiker
  */
-public abstract class PropertyMember extends DefinitionMember implements IPropertyMember {
+public abstract class PropertyMember extends DefinitionMember {
 	public ITypeID type;
 	public final BuiltinID builtin;
 	
@@ -25,8 +25,12 @@ public abstract class PropertyMember extends DefinitionMember implements IProper
 		this.builtin = builtin;
 	}
 	
-	@Override
 	public ITypeID getType() {
 		return type;
+	}
+	
+	@Override
+	public BuiltinID getBuiltin() {
+		return builtin;
 	}
 }

@@ -158,7 +158,7 @@ public class ParsedCallArguments {
 		}
 		
 		ITypeID[] typeParameters = genericParameters;
-		if (typeParameters == null) {
+		if (typeParameters == null || typeParameters.length == 0) {
 			for (FunctionHeader candidate : candidates) {
 				if (candidate.typeParameters != null) {
 					typeParameters = new ITypeID[candidate.typeParameters.length];

@@ -120,6 +120,7 @@ public enum ZSTokenType implements TokenType {
 	K_UINT(true, "uint"),
 	K_LONG(true, "long"),
 	K_ULONG(true, "ulong"),
+	K_USIZE(true, "usize"),
 	K_FLOAT(true, "float"),
 	K_DOUBLE(true, "double"),
 	K_CHAR(true, "char"),

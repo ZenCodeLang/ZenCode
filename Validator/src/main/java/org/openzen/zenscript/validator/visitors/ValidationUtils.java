@@ -51,7 +51,7 @@ public class ValidationUtils {
 	
 	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header) {
 		TypeValidator typeValidator = new TypeValidator(target, position);
-		header.returnType.accept(typeValidator);
+		header.getReturnType().accept(typeValidator);
 		
 		Set<String> parameterNames = new HashSet<>();
 		int i = 0;

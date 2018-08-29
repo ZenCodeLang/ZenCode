@@ -28,14 +28,14 @@ public class ParsedLambdaFunctionBody implements ParsedFunctionBody {
 	
 	@Override
 	public Statement compile(StatementScope scope, FunctionHeader header) {
-		if (header.returnType == BasicTypeID.VOID) {
+		if (header.getReturnType() == BasicTypeID.VOID) {
 			Expression value = this.value.compile(new ExpressionScope(scope)).eval();
 			return new ExpressionStatement(value.position, value);
 		} else {
 			Expression returnValue = value
-					.compile(new ExpressionScope(scope, header.returnType))
+					.compile(new ExpressionScope(scope, header.getReturnType()))
 					.eval()
-					.castImplicit(value.position, scope, header.returnType);
+					.castImplicit(value.position, scope, header.getReturnType());
 			return new ReturnStatement(value.position, returnValue);
 		}
 	}

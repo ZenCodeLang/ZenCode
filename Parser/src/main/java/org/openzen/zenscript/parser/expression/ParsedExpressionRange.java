@@ -38,16 +38,18 @@ public class ParsedExpressionRange extends ParsedExpression {
 		for (ITypeID hint : scope.hints) {
 			if (hint instanceof RangeTypeID) {
 				RangeTypeID rangeHint = (RangeTypeID) hint;
-				if (!fromHints.contains(rangeHint.from))
-					fromHints.add(rangeHint.from);
-				if (!toHints.contains(rangeHint.to))
-					toHints.add(rangeHint.to);
+				if (!fromHints.contains(rangeHint.baseType))
+					fromHints.add(rangeHint.baseType);
+				if (!toHints.contains(rangeHint.baseType))
+					toHints.add(rangeHint.baseType);
 			}
 		}
 		
 		Expression from = this.from.compile(scope.withHints(fromHints)).eval();
 		Expression to = this.to.compile(scope.withHints(toHints)).eval();
-		return new RangeExpression(position, scope.getTypeRegistry(), from, to);
+		
+		ITypeID baseType = scope.getTypeMembers(from.type).union(to.type);
+		return new RangeExpression(position, scope.getTypeRegistry().getRange(baseType), from, to);
 	}
 
 	@Override

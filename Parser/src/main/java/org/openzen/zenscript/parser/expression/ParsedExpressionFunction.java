@@ -24,6 +24,7 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LambdaScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -67,17 +68,21 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		LambdaClosure closure = new LambdaClosure();
 		StatementScope innerScope = new LambdaScope(scope, closure, header);
 		Statement statements = body.compile(innerScope, header);
+		
+		if (header.getReturnType() == BasicTypeID.UNDETERMINED) {
+			header.setReturnType(statements.getReturnType());
+		}
 		if (!scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference
 			ITypeID returnType = statements.getReturnType();
 			Map<TypeParameter, ITypeID> inferredTypes = new HashMap<>();
-			if (!genericHeader.returnType.inferTypeParameters(scope.getMemberCache(), returnType, inferredTypes))
+			if (!returnType.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType(), inferredTypes))
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
 			
 			scope.genericInferenceMap.putAll(inferredTypes);
 		}
 		
-		FunctionTypeID functionType = scope.getTypeRegistry().getFunction(genericHeader.withGenericArguments(new GenericMapper(scope.getTypeRegistry(), scope.genericInferenceMap)));
+		FunctionTypeID functionType = scope.getTypeRegistry().getFunction(genericHeader.withGenericArguments(scope.getTypeRegistry(), new GenericMapper(scope.getTypeRegistry(), scope.genericInferenceMap)));
 		return new FunctionExpression(position, functionType, closure, header, statements);
 	}
 	

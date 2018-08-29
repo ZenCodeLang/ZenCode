@@ -19,7 +19,7 @@ import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
@@ -93,7 +93,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		
 		modifiers(member.modifiers);
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
-		output.append(header.returnType.accept(scope.typeVisitor));
+		output.append(header.getReturnType().accept(scope.typeVisitor));
 		output.append(" ");
 		output.append(method.name);
 		formatParameters(member.isStatic(), header);
@@ -186,7 +186,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		compileMethod(member, member.header, member.body);
+		compileMethod(member, new FunctionHeader(member.type), member.body);
 		return null;
 	}
 
@@ -209,7 +209,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	}
 
 	@Override
-	public Void visitCustomIterator(CustomIteratorMember member) {
+	public Void visitCustomIterator(IteratorMember member) {
 		compileMethod(member, new FunctionHeader(scope.semanticScope.getTypeRegistry().getIterator(member.getLoopVariableTypes())), member.body);
 		return null;
 	}

@@ -10,7 +10,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.IPropertyMember;
+import org.openzen.zenscript.codemodel.member.PropertyMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
@@ -19,12 +19,12 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public abstract class PropertyRef implements DefinitionMemberRef {
-	private final IPropertyMember member;
+	private final PropertyMember member;
 	
 	private ITypeID type;
 	private GenericMapper mapper;
 	
-	public PropertyRef(IPropertyMember member, GenericMapper mapper) {
+	public PropertyRef(PropertyMember member, GenericMapper mapper) {
 		this.member = member;
 		
 		if (member.getType() == BasicTypeID.UNDETERMINED) {

@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -55,16 +56,9 @@ public class ExpressionScope extends BaseScope {
 	
 	public ExpressionScope(BaseScope scope, ITypeID hint) {
 		this.outer = scope;
-		this.hints = Collections.singletonList(hint);
+		this.hints = hint == BasicTypeID.UNDETERMINED ? Collections.emptyList() : Collections.singletonList(hint);
 		this.dollar = null;
 		this.genericInferenceMap = Collections.emptyMap();
-	}
-	
-	public ExpressionScope(BaseScope scope, List<ITypeID> hints, Function<CodePosition, Expression> dollar, Map<TypeParameter, ITypeID> genericInferenceMap) {
-		this.outer = scope;
-		this.hints = hints;
-		this.dollar = dollar;
-		this.genericInferenceMap = genericInferenceMap;
 	}
 	
 	private ExpressionScope(

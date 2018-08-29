@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -24,10 +25,11 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  *
  * @author Hoofdgebruiker
  */
-public class SetterMember extends FunctionalMember implements IPropertyMember {
-	public ITypeID type;
+public class SetterMember extends PropertyMember {
 	public final String name;
 	private SetterMemberRef overrides;
+	public Statement body;
+	public final FunctionParameter parameter;
 	
 	public SetterMember(
 			CodePosition position,
@@ -40,26 +42,15 @@ public class SetterMember extends FunctionalMember implements IPropertyMember {
 		super(position,
 				definition,
 				modifiers,
-				new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(type, "$")),
+				type,
 				builtin);
 		
-		this.type = type;
 		this.name = name;
+		this.parameter = new FunctionParameter(type, "value");
 	}
 	
-	@Override
-	public ITypeID getType() {
-		return type;
-	}
-	
-	@Override
-	public String getCanonicalName() {
-		return definition.getFullName() + ":setter:" + name;
-	}
-
-	@Override
-	public FunctionalKind getKind() {
-		return FunctionalKind.SETTER;
+	public void setBody(Statement body) {
+		this.body = body;
 	}
 
 	@Override
@@ -86,6 +77,11 @@ public class SetterMember extends FunctionalMember implements IPropertyMember {
 	public void normalize(TypeScope scope) {
 		if (body != null)
 			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
+	}
+	
+	@Override
+	public boolean isAbstract() {
+		return body == null && builtin == null;
 	}
 	
 	public void setOverrides(SetterMemberRef overrides) {

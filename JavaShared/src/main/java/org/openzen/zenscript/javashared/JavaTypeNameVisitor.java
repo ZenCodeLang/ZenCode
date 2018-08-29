@@ -76,7 +76,7 @@ public class JavaTypeNameVisitor implements ITypeVisitor<String> {
 		for (FunctionParameter parameter : function.header.parameters)
 			result.append(parameter.type.accept(this));
 		result.append("To");
-		result.append(function.header.returnType.accept(this));
+		result.append(function.header.getReturnType().accept(this));
 		result.append("Function");
 		return result.toString();
 	}
@@ -93,9 +93,7 @@ public class JavaTypeNameVisitor implements ITypeVisitor<String> {
 
 	@Override
 	public String visitRange(RangeTypeID range) {
-		return range.from == range.to
-				? range.from.accept(this) + "Range"
-				: range.from.accept(this) + range.to.accept(this) + "Range";
+		return range.baseType.accept(this) + "Range";
 	}
 
 	@Override

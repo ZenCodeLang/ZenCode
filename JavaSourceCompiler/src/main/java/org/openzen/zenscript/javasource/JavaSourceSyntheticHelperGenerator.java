@@ -30,7 +30,6 @@ import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
 
 /**
  *
@@ -60,7 +59,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		addMember(arrayHelpers, method);
 		
 		String descriptor = "(" + context.getDescriptor(type) + context.getDescriptor(type.elementType) + ")Z";
-		JavaMethod sourceMethod = new JavaMethod(arrayHelpers, JavaMethod.Kind.EXPANSION, kind.containsName, false, descriptor, JavaModifiers.PUBLIC | JavaModifiers.STATIC);
+		JavaMethod sourceMethod = JavaMethod.getNativeExpansion(arrayHelpers, kind.containsName, descriptor);
 		existingContains.put(kind, sourceMethod);
 		return sourceMethod;
 	}
@@ -74,7 +73,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		addMember(arrayHelpers, method);
 		
 		String descriptor = "(" + context.getDescriptor(type) + ")I";
-		JavaMethod sourceMethod = new JavaMethod(arrayHelpers, JavaMethod.Kind.EXPANSION, kind.containsName, false, descriptor, JavaModifiers.PUBLIC | JavaModifiers.STATIC);
+		JavaMethod sourceMethod = JavaMethod.getNativeExpansion(arrayHelpers, kind.containsName, descriptor);
 		existingContains.put(kind, sourceMethod);
 		return sourceMethod;
 	}

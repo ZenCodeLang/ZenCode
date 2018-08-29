@@ -9,7 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
@@ -29,7 +29,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 	private final ParsedFunctionHeader header;
 	private final ParsedFunctionBody body;
 	
-	private CustomIteratorMember compiled;
+	private IteratorMember compiled;
 	
 	public ParsedIterator(
 			CodePosition position,
@@ -53,11 +53,11 @@ public class ParsedIterator extends ParsedDefinitionMember {
 		for (int i = 0; i < loopVariableTypes.length; i++)
 			loopVariableTypes[i] = header.parameters.get(i).type.compile(context);
 		
-		compiled = new CustomIteratorMember(position, definition, modifiers, loopVariableTypes, context.getTypeRegistry(), null);
+		compiled = new IteratorMember(position, definition, modifiers, loopVariableTypes, context.getTypeRegistry(), null);
 	}
 
 	@Override
-	public CustomIteratorMember getCompiled() {
+	public IteratorMember getCompiled() {
 		return compiled;
 	}
 

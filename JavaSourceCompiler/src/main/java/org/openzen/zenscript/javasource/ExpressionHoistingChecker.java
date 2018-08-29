@@ -33,6 +33,7 @@ import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
@@ -220,6 +221,11 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 
 	@Override
 	public Boolean visitConstantUShort(ConstantUShortExpression expression) {
+		return false;
+	}
+
+	@Override
+	public Boolean visitConstantUSize(ConstantUSizeExpression expression) {
 		return false;
 	}
 

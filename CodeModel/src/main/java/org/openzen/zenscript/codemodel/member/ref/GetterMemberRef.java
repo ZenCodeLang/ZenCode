@@ -34,7 +34,7 @@ public class GetterMemberRef extends PropertyRef {
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
+	public GetterMemberRef getOverrides() {
 		return member.getOverrides();
 	}
 }

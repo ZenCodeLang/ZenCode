@@ -1,6 +1,5 @@
 package listeners;
 
-
 public final class DummyListenerHandle<T> implements ListenerHandle<T>, AutoCloseable {
     public final T listener;
     

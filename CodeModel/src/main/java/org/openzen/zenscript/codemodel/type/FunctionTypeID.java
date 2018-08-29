@@ -74,7 +74,7 @@ public class FunctionTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		header.returnType.extractTypeParameters(typeParameters);
+		header.getReturnType().extractTypeParameters(typeParameters);
 		for (FunctionParameter parameter : header.parameters)
 			parameter.type.extractTypeParameters(typeParameters);
 	}
@@ -82,7 +82,7 @@ public class FunctionTypeID implements ITypeID {
 	@Override
 	public int hashCode() {
 		int hash = 5;
-		hash = 71 * hash + header.returnType.hashCode();
+		hash = 71 * hash + header.getReturnType().hashCode();
 		hash = 71 * hash + Arrays.deepHashCode(header.parameters);
 		hash = 71 * hash + Arrays.deepHashCode(header.typeParameters);
 		return hash;
@@ -100,7 +100,7 @@ public class FunctionTypeID implements ITypeID {
 			return false;
 		}
 		final FunctionTypeID other = (FunctionTypeID) obj;
-		return this.header.returnType == other.header.returnType
+		return this.header.getReturnType() == other.header.getReturnType()
 				&& Arrays.deepEquals(this.header.parameters, other.header.parameters)
 				&& Arrays.deepEquals(this.header.typeParameters, other.header.typeParameters);
 	}
@@ -120,7 +120,7 @@ public class FunctionTypeID implements ITypeID {
 		}
 		result.append(')');
 		result.append(" as ");
-		result.append(header.returnType);
+		result.append(header.getReturnType());
 		return result.toString();
 	}
 }

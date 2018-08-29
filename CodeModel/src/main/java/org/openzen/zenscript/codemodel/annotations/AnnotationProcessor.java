@@ -18,7 +18,7 @@ import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.CustomIteratorMember;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
@@ -32,6 +32,8 @@ import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.DefinitionScope;
 import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
@@ -130,12 +132,12 @@ public class AnnotationProcessor implements ModuleProcessor {
 
 		@Override
 		public Void visitGetter(GetterMember member) {
-			return functional(member);
+			return getter(member);
 		}
 
 		@Override
 		public Void visitSetter(SetterMember member) {
-			return functional(member);
+			return setter(member);
 		}
 
 		@Override
@@ -149,7 +151,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 		}
 
 		@Override
-		public Void visitCustomIterator(CustomIteratorMember member) {
+		public Void visitCustomIterator(IteratorMember member) {
 			return functional(member);
 		}
 
@@ -199,12 +201,62 @@ public class AnnotationProcessor implements ModuleProcessor {
 			return null;
 		}
 		
+		private Void getter(GetterMember member) {
+			for (MemberAnnotation annotation : member.annotations)
+				annotation.apply(member, scope);
+			
+			if (member.getOverrides() != null) {
+				getter(member, member.getOverrides());
+			}
+			
+			if (member.body == null)
+				return null;
+			
+			StatementScope scope = new FunctionScope(this.scope, new FunctionHeader(member.type));
+			member.body = process(member.body, scope);
+			return null;
+		}
+		
+		private Void setter(SetterMember member) {
+			for (MemberAnnotation annotation : member.annotations)
+				annotation.apply(member, scope);
+			
+			if (member.getOverrides() != null) {
+				setter(member, member.getOverrides());
+			}
+			
+			if (member.body == null)
+				return null;
+			
+			StatementScope scope = new FunctionScope(this.scope, new FunctionHeader(BasicTypeID.VOID, member.parameter));
+			member.body = process(member.body, scope);
+			return null;
+		}
+		
 		private void functional(FunctionalMember member, DefinitionMemberRef overrides) {
 			for (MemberAnnotation annotation : overrides.getAnnotations())
 				annotation.applyOnOverridingMethod(member, scope);
 			
 			if (overrides.getOverrides() != null) {
 				functional(member, overrides.getOverrides());
+			}
+		}
+		
+		private void getter(GetterMember member, GetterMemberRef overrides) {
+			for (MemberAnnotation annotation : overrides.getAnnotations())
+				annotation.applyOnOverridingGetter(member, scope);
+			
+			if (overrides.getOverrides() != null) {
+				getter(member, overrides.getOverrides());
+			}
+		}
+		
+		private void setter(SetterMember member, SetterMemberRef overrides) {
+			for (MemberAnnotation annotation : overrides.getAnnotations())
+				annotation.applyOnOverridingSetter(member, scope);
+			
+			if (overrides.getOverrides() != null) {
+				setter(member, overrides.getOverrides());
 			}
 		}
 	}

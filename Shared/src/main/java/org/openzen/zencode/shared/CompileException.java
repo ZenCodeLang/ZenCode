@@ -1,8 +1,5 @@
 package org.openzen.zencode.shared;
 
-import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-
 public final class CompileException extends RuntimeException {
     public static CompileException internalError(String message) {
         return new CompileException(CodePosition.BUILTIN, CompileExceptionCode.INTERNAL_ERROR, message);

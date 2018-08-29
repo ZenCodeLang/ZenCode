@@ -14,10 +14,12 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class VariantOptionRef {
 	private final VariantDefinition.Option option;
+	public final ITypeID variant;
 	public final ITypeID[] types;
 	
-	public VariantOptionRef(VariantDefinition.Option option, ITypeID[] types) {
+	public VariantOptionRef(VariantDefinition.Option option, ITypeID variant, ITypeID[] types) {
 		this.option = option;
+		this.variant = variant;
 		this.types = types;
 	}
 	

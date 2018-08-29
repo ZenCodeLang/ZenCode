@@ -133,6 +133,8 @@ public class DefinitionTypeID implements ITypeID {
 			return this;
 		if (mapper.getMapping().isEmpty())
 			return this;
+		if (mapper.registry == null)
+			throw new NullPointerException();
 		
 		ITypeID[] instancedArguments = ITypeID.NONE;
 		if (hasTypeParameters()) {

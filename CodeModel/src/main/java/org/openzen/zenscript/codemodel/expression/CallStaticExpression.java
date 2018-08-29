@@ -22,7 +22,7 @@ public class CallStaticExpression extends Expression {
 	public final FunctionHeader instancedHeader;
 	
 	public CallStaticExpression(CodePosition position, ITypeID target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments) {
-		super(position, instancedHeader.returnType, multiThrow(position, arguments.arguments));
+		super(position, instancedHeader.getReturnType(), multiThrow(position, arguments.arguments));
 		
 		this.member = member;
 		this.target = target;

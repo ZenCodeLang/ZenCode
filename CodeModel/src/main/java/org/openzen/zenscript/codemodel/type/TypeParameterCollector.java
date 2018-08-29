@@ -52,7 +52,7 @@ public class TypeParameterCollector implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionTypeID function) {
-		function.header.returnType.accept(this);
+		function.header.getReturnType().accept(this);
 		for (FunctionParameter parameter : function.header.parameters)
 			parameter.type.accept(this);
 		return null;
@@ -75,8 +75,7 @@ public class TypeParameterCollector implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitRange(RangeTypeID range) {
-		range.from.accept(this);
-		range.to.accept(this);
+		range.baseType.accept(this);
 		return null;
 	}
 

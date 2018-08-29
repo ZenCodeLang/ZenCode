@@ -80,15 +80,15 @@ public class FormattingUtils {
 			
 			if (!settings.showAnyInFunctionHeaders || parameter.type != BasicTypeID.UNDETERMINED) {
 				result.append(" as ");
-				result.append(header.returnType.accept(typeFormatter));
+				result.append(header.getReturnType().accept(typeFormatter));
 			}
 			
 			parameterIndex++;
 		}
 		result.append(")");
-		if (!settings.showAnyInFunctionHeaders || header.returnType != BasicTypeID.UNDETERMINED) {
+		if (!settings.showAnyInFunctionHeaders || header.getReturnType() != BasicTypeID.UNDETERMINED) {
 			result.append(" as ");
-			result.append(header.returnType.accept(typeFormatter));
+			result.append(header.getReturnType().accept(typeFormatter));
 		}
 	}
 	

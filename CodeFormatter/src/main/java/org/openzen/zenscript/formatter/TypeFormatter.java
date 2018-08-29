@@ -97,7 +97,7 @@ public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoun
 
 	@Override
 	public String visitRange(RangeTypeID range) {
-		return range.from.accept(this) + " .. " + range.to.accept(this);
+		return range.baseType.accept(this) + " .. " + range.baseType.accept(this);
 	}
 
 	@Override

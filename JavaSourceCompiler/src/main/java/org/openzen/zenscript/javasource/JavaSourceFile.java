@@ -70,7 +70,7 @@ public class JavaSourceFile {
 	}
 	
 	public void prepare(JavaContext context) {
-		JavaPrepareDefinitionMemberVisitor visitor = new JavaPrepareDefinitionMemberVisitor(context, file.getName());
+		JavaPrepareDefinitionMemberVisitor visitor = new JavaPrepareDefinitionMemberVisitor(context);
 		
 		if (mainDefinition != null)
 			mainDefinition.accept(visitor);
@@ -108,19 +108,19 @@ public class JavaSourceFile {
 			writer.write(pkg.fullName);
 			writer.write(";\n\n");
 			
-			JavaClass[] imports = importer.getUsedImports();
-			if (imports.length > 0) {
-				for (JavaClass import_ : imports) {
-					if (import_.pkg.equals("java.lang"))
-						continue;
-					
-					writer.write("import ");
-					writer.write(import_.fullName);
-					writer.write(";\n");
-				}
+			boolean hasImports = false;
+			for (JavaClass import_ : importer.getUsedImports()) {
+				if (import_.pkg.equals("java.lang"))
+					continue;
 
-				writer.write("\n");
+				writer.write("import ");
+				writer.write(import_.fullName);
+				writer.write(";\n");
+				hasImports = true;
 			}
+
+			if (hasImports)
+				writer.write("\n");
 			
 			writer.write(contents.toString());
 		} catch (IOException ex) {

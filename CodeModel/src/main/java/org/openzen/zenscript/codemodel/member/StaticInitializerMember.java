@@ -7,8 +7,8 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
-import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -22,18 +22,11 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  *
  * @author Hoofdgebruiker
  */
-public class StaticInitializerMember extends Taggable implements IDefinitionMember {
-	public final CodePosition position;
+public class StaticInitializerMember extends DefinitionMember {
 	public Statement body;
-	public MemberAnnotation[] annotations = MemberAnnotation.NONE;
 	
-	public StaticInitializerMember(CodePosition position) {
-		this.position = position;
-	}
-	
-	@Override
-	public CodePosition getPosition() {
-		return position;
+	public StaticInitializerMember(CodePosition position, HighLevelDefinition definition) {
+		super(position, definition, 0);
 	}
 	
 	@Override

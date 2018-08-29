@@ -76,7 +76,7 @@ public class DefinitionScope extends BaseScope {
 		}
 		
 		members = withMembers ? outer.getMemberCache().get(type) : null;
-		typeParameterMap = outer.getLocalTypeParameters().getInner(typeParameters);
+		typeParameterMap = outer.getLocalTypeParameters().getInner(getTypeRegistry(), typeParameters);
 	}
 	
 	public void addInnerType(String name, Supplier<HighLevelDefinition> innerType) {

@@ -24,7 +24,6 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
@@ -263,8 +262,8 @@ public class DefinitionMemberGroup {
 			if (header.typeParameters != null) {
 				for (ITypeID resultHint : typeHints) {
 					Map<TypeParameter, ITypeID> mapping = new HashMap<>();
-					if (header.returnType.inferTypeParameters(scope.getMemberCache(), resultHint, mapping)) {
-						header = header.withGenericArguments(scope.getLocalTypeParameters().getInner(mapping));
+					if (header.getReturnType().inferTypeParameters(scope.getMemberCache(), resultHint, mapping)) {
+						header = header.withGenericArguments(scope.getTypeRegistry(), scope.getLocalTypeParameters().getInner(scope.getTypeRegistry(), mapping));
 						break;
 					}
 				}
@@ -361,7 +360,7 @@ public class DefinitionMemberGroup {
 				throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "This type has no " + name);
 			}
 			
-			outer: for (TypeMember<FunctionalMemberRef> method : methods) {
+			for (TypeMember<FunctionalMemberRef> method : methods) {
 				if (!(method.member.isStatic() ? allowStatic : allowNonStatic)) {
 					message.append(method.member.isStatic() ? "Method must not be static" : "Method must be static").append('\n');
 					continue;

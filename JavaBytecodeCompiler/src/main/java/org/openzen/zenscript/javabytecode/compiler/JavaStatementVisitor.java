@@ -5,12 +5,10 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
-import org.openzen.zenscript.javabytecode.JavaMethodInfo;
 
 import java.util.Arrays;
 import java.util.List;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
-import org.openzen.zenscript.javashared.JavaClass;
 
 public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     private final JavaWriter javaWriter;
@@ -110,7 +108,34 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         }
 
 		//javaWriter.label(min);
-		statement.iterator.target.acceptForIterator(new JavaForeachVisitor(this, statement.loopVariables, statement.content, start, end));
+		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement.loopVariables, statement.content, start, end);
+		if (statement.iterator.target.getBuiltin() == null) {
+			iteratorWriter.visitCustomIterator();
+		} else {
+			switch (statement.iterator.target.getBuiltin()) {
+				case ITERATOR_INT_RANGE:
+					iteratorWriter.visitIntRange();
+					break;
+				case ITERATOR_ARRAY_VALUES:
+					iteratorWriter.visitArrayValueIterator();
+					break;
+				case ITERATOR_ARRAY_KEY_VALUES:
+					iteratorWriter.visitArrayKeyValueIterator();
+					break;
+				case ITERATOR_ASSOC_KEYS:
+					iteratorWriter.visitAssocKeyIterator();
+					break;
+				case ITERATOR_ASSOC_KEY_VALUES:
+					iteratorWriter.visitAssocKeyValueIterator();
+					break;
+				case ITERATOR_STRING_CHARS:
+					iteratorWriter.visitStringCharacterIterator();
+					break;
+				default:
+					throw new IllegalArgumentException("Invalid iterator: " + statement.iterator.target.getBuiltin());
+			}
+		}
+		
 		javaWriter.goTo(start);
 		javaWriter.label(end);
 		return false;
@@ -166,7 +191,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		javaWriter.label(start);
 		statement.value.accept(expressionVisitor);
 		if (statement.value.type == BasicTypeID.STRING)
-			javaWriter.invokeVirtual(new JavaMethodInfo(JavaClass.OBJECT, "hashCode", "()I", 0));
+			javaWriter.invokeVirtual(JavaExpressionVisitor.OBJECT_HASHCODE);
 		boolean out = false;
 
 		final boolean hasNoDefault = hasNoDefault(statement);

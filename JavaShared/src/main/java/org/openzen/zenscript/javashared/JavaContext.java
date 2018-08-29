@@ -25,7 +25,7 @@ public abstract class JavaContext {
         for (FunctionParameter parameter : header.parameters) {
             signatureBuilder.append(getDescriptor(parameter.type));
         }
-        signatureBuilder.append(")").append(getDescriptor(header.returnType));
+        signatureBuilder.append(")").append(getDescriptor(header.getReturnType()));
         return signatureBuilder.toString();
     }
 	
@@ -42,7 +42,7 @@ public abstract class JavaContext {
 			descBuilder.append(getDescriptor(parameter.type));
         }
         descBuilder.append(")");
-        descBuilder.append(getDescriptor(header.returnType));
+        descBuilder.append(getDescriptor(header.getReturnType()));
         return descBuilder.toString();
     }
 }

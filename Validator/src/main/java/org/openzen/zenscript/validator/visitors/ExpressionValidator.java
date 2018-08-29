@@ -5,82 +5,21 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.expression.AndAndExpression;
-import org.openzen.zenscript.codemodel.expression.ArrayExpression;
-import org.openzen.zenscript.codemodel.expression.CompareExpression;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
-import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedClosureExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedDirectExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedParameterExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedThisExpression;
-import org.openzen.zenscript.codemodel.expression.CastExpression;
-import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
-import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
-import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
-import org.openzen.zenscript.codemodel.expression.ConstExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantLongExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantSByteExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantShortExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
-import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
-import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
-import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
-import org.openzen.zenscript.codemodel.expression.FunctionExpression;
-import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
-import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
-import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
-import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
-import org.openzen.zenscript.codemodel.expression.GetterExpression;
-import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
-import org.openzen.zenscript.codemodel.expression.GlobalExpression;
-import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
-import org.openzen.zenscript.codemodel.expression.IsExpression;
-import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
-import org.openzen.zenscript.codemodel.expression.MapExpression;
-import org.openzen.zenscript.codemodel.expression.MatchExpression;
-import org.openzen.zenscript.codemodel.expression.NewExpression;
-import org.openzen.zenscript.codemodel.expression.NullExpression;
-import org.openzen.zenscript.codemodel.expression.OrOrExpression;
-import org.openzen.zenscript.codemodel.expression.PanicExpression;
-import org.openzen.zenscript.codemodel.expression.PostCallExpression;
-import org.openzen.zenscript.codemodel.expression.RangeExpression;
-import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
-import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
-import org.openzen.zenscript.codemodel.expression.SetFunctionParameterExpression;
-import org.openzen.zenscript.codemodel.expression.SetLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
-import org.openzen.zenscript.codemodel.expression.SetterExpression;
-import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
-import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
-import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
-import org.openzen.zenscript.codemodel.expression.ThisExpression;
-import org.openzen.zenscript.codemodel.expression.ThrowExpression;
-import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
-import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
-import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
-import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
-import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
@@ -288,6 +227,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	@Override
+	public Void visitConstantUSize(ConstantUSizeExpression expression) {
+		return null;
+	}
+
+	@Override
 	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
 		if (!scope.isConstructor()) {
 			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_OUTSIDE_CONSTRUCTOR, expression.position, "Can only forward constructors inside constructors");
@@ -423,7 +367,77 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitMatch(MatchExpression expression) {
-		// TODO
+		expression.value.accept(this);
+		for (MatchExpression.Case case_ : expression.cases) {
+			case_.value.accept(this);
+		}
+		
+		boolean hasDefault = false;
+		if (expression.value.type.isVariant()) {
+			Set<VariantDefinition.Option> options = new HashSet<>();
+			for (MatchExpression.Case case_ : expression.cases) {
+				if (case_.key == null) {
+					if (hasDefault)
+						validator.logError(ValidationLogEntry.Code.DUPLICATE_DEFAULT_CASE, expression.position, "Duplicate default in match");
+					
+					hasDefault = true;
+				} else if (case_.key instanceof VariantOptionSwitchValue) {
+					VariantDefinition.Option option = ((VariantOptionSwitchValue)case_.key).option.getOption();
+					if (options.contains(option))
+						validator.logError(ValidationLogEntry.Code.DUPLICATE_CASE, expression.position, "Duplicate case in match: " + option.name);
+					
+					options.add(option);
+				} else {
+					validator.logError(ValidationLogEntry.Code.INVALID_CASE, expression.position, "Invalid case: must be default or option value");
+				}
+			}
+			
+			if (!hasDefault) {
+				VariantDefinition variant = (VariantDefinition)(((DefinitionTypeID)expression.value.type).definition);
+				for (VariantDefinition.Option option : variant.options) {
+					if (!options.contains(option))
+						validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: missing option for " + option.name);
+				}
+			}
+		} else if (expression.type.isEnum()) {
+			Set<EnumConstantMember> options = new HashSet<>();
+			for (MatchExpression.Case case_ : expression.cases) {
+				if (case_.key == null) {
+					if (hasDefault)
+						validator.logError(ValidationLogEntry.Code.DUPLICATE_DEFAULT_CASE, expression.position, "Duplicate default in match");
+					
+					hasDefault = true;
+				} else if (case_.key instanceof EnumConstantSwitchValue) {
+					EnumConstantMember option = ((EnumConstantSwitchValue)case_.key).constant;
+					if (options.contains(option))
+						validator.logError(ValidationLogEntry.Code.DUPLICATE_CASE, expression.position, "Duplicate case in match: " + option.name);
+					
+					options.add(option);
+				} else {
+					validator.logError(ValidationLogEntry.Code.INVALID_CASE, expression.position, "Invalid case: must be default or enum value");
+				}
+			}
+			
+			if (!hasDefault) {
+				EnumDefinition enum_ = (EnumDefinition)(((DefinitionTypeID)expression.value.type).definition);
+				for (EnumConstantMember option : enum_.enumConstants) {
+					if (!options.contains(option))
+						validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: missing option for " + option.name);
+				}
+			}
+		} else {
+			for (MatchExpression.Case case_ : expression.cases) {
+				if (case_.key == null) {
+					if (hasDefault)
+						validator.logError(ValidationLogEntry.Code.DUPLICATE_DEFAULT_CASE, expression.position, "Duplicate default in match");
+					
+					hasDefault = true;
+				}
+			}
+			
+			if (!hasDefault)
+				validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: must have a default option");
+		}
 		return null;
 	}
 
@@ -476,11 +490,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.to.accept(this);
 		
 		RangeTypeID rangeType = (RangeTypeID) expression.type;
-		if (expression.from.type != rangeType.from) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "From operand is not a " + rangeType.from.toString());
+		if (expression.from.type != rangeType.baseType) {
+			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "From operand is not a " + rangeType.baseType.toString());
 		}
-		if (expression.to.type != rangeType.to) {
-			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "To operand is not a " + rangeType.to.toString());
+		if (expression.to.type != rangeType.baseType) {
+			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "To operand is not a " + rangeType.baseType.toString());
 		}
 		return null;
 	}

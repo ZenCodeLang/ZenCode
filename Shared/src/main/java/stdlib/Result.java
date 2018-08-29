@@ -1,8 +1,5 @@
 package stdlib;
 
-import stdlib.Result;
-import stdlib.Result.Error;
-import stdlib.Result.Ok;
 import zsynthetic.FunctionTToResultWithUV;
 import zsynthetic.FunctionTToU;
 
@@ -16,7 +13,7 @@ public abstract class Result<T, E> {
                 break;
             case Error:
                 E error = ((Result.Error<T, E>)this).value;
-                temp1 = new Error(error);
+                temp1 = new Result.Error(error);
                 break;
             default:
                 throw new AssertionError("Missing case");
@@ -29,7 +26,7 @@ public abstract class Result<T, E> {
         switch (this.getDiscriminant()) {
             case Ok:
                 T result = ((Result.Ok<T, E>)this).value;
-                temp1 = new Ok(result);
+                temp1 = new Result.Ok(result);
                 break;
             case Error:
                 E error = ((Result.Error<T, E>)this).value;

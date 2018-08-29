@@ -22,8 +22,7 @@ import org.openzen.zenscript.formatter.FileFormatter;
 import org.openzen.zenscript.formatter.ScriptFormattingSettings;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
-import org.openzen.zenscript.constructor.Module;
-import org.openzen.zenscript.constructor.module.ModuleSpace;
+import org.openzen.zenscript.compiler.ModuleSpace;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -37,6 +36,7 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
+		
 		System.out.println();
 		File inputDirectory = new File("scripts");
 		File[] inputFiles = Optional.ofNullable(inputDirectory.listFiles((dir, name) -> name.endsWith(".zs"))).orElseGet(() -> new File[0]);
@@ -107,7 +107,7 @@ public class Main {
 		for (Map.Entry<String, ISymbol> global : registry.collectGlobals().entrySet()) {
 			space.addGlobal(global.getKey(), global.getValue());
 		}
-		SemanticModule result = Module.compileSyntaxToSemantic(
+		SemanticModule result = ParsedFile.compileSyntaxToSemantic(
 				"scripts",
 				new SemanticModule[0],
 				compiling,

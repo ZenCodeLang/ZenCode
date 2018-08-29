@@ -24,6 +24,7 @@ public enum ParsedTypeBasic implements IParsedType {
 	UINT(BasicTypeID.UINT),
 	LONG(BasicTypeID.LONG),
 	ULONG(BasicTypeID.ULONG),
+	USIZE(BasicTypeID.USIZE),
 	FLOAT(BasicTypeID.FLOAT),
 	DOUBLE(BasicTypeID.DOUBLE),
 	CHAR(BasicTypeID.CHAR),

@@ -9,7 +9,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.iterator.ForeachIteratorVisitor;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -23,12 +22,12 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  *
  * @author Hoofdgebruiker
  */
-public class CustomIteratorMember extends FunctionalMember implements IIteratorMember {
+public class IteratorMember extends FunctionalMember {
 	private final ITypeID[] iteratorTypes;
 	public Statement body;
 	public IteratorMemberRef overrides;
 	
-	public CustomIteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID[] iteratorTypes, GlobalTypeRegistry registry, BuiltinID builtin) {
+	public IteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID[] iteratorTypes, GlobalTypeRegistry registry, BuiltinID builtin) {
 		super(position, definition, modifiers, createIteratorHeader(registry, iteratorTypes), builtin);
 		
 		this.iteratorTypes = iteratorTypes;
@@ -42,25 +41,18 @@ public class CustomIteratorMember extends FunctionalMember implements IIteratorM
 	public String getCanonicalName() {
 		return definition.getFullName() + ":iterator:" + iteratorTypes.length;
 	}
-
-	@Override
+	
 	public int getLoopVariableCount() {
 		return iteratorTypes.length;
 	}
-
-	@Override
+	
 	public ITypeID[] getLoopVariableTypes() {
 		return iteratorTypes;
-	}
-	
-	@Override
-	public BuiltinID getBuiltin() {
-		return null;
 	}
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addIterator(new IteratorMemberRef(this, mapper.map(iteratorTypes)), priority);
+		type.addIterator(new IteratorMemberRef(this, mapper == null ? iteratorTypes : mapper.map(iteratorTypes)), priority);
 	}
 
 	@Override
@@ -71,11 +63,6 @@ public class CustomIteratorMember extends FunctionalMember implements IIteratorM
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitCustomIterator(this);
-	}
-
-	@Override
-	public <T> T acceptForIterator(ForeachIteratorVisitor<T> visitor) {
-		return visitor.visitCustomIterator();
 	}
 	
 	public void setOverrides(IteratorMemberRef overrides) {

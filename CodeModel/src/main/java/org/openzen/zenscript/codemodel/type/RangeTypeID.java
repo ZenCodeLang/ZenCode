@@ -14,20 +14,19 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  * @author Hoofdgebruiker
  */
 public class RangeTypeID implements ITypeID {
-	public static final RangeTypeID INT = new RangeTypeID(null, BasicTypeID.INT, BasicTypeID.INT);
+	public static final RangeTypeID INT = new RangeTypeID(null, BasicTypeID.INT);
+	public static final RangeTypeID USIZE = new RangeTypeID(null, BasicTypeID.USIZE);
 	
-	public final ITypeID from;
-	public final ITypeID to;
+	public final ITypeID baseType;
 	private final RangeTypeID normalized;
 	
-	public RangeTypeID(GlobalTypeRegistry registry, ITypeID from, ITypeID to) {
-		this.from = from;
-		this.to = to;
+	public RangeTypeID(GlobalTypeRegistry registry, ITypeID baseType) {
+		this.baseType = baseType;
 		
-		if (from.getNormalized() == from && to.getNormalized() == to) {
+		if (baseType.getNormalized() == baseType) {
 			normalized = this;
 		} else {
-			normalized = registry.getRange(from.getNormalized(), to.getNormalized());
+			normalized = registry.getRange(baseType.getNormalized());
 		}
 	}
 	
@@ -38,9 +37,7 @@ public class RangeTypeID implements ITypeID {
 	
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
-		return mapper.registry.getRange(
-				from.instance(mapper),
-				to.instance(mapper));
+		return mapper.registry.getRange(baseType.instance(mapper));
 	}
 
 	@Override
@@ -70,7 +67,7 @@ public class RangeTypeID implements ITypeID {
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		return from.hasInferenceBlockingTypeParameters(parameters) || to.hasInferenceBlockingTypeParameters(parameters);
+		return baseType.hasInferenceBlockingTypeParameters(parameters);
 	}
 
 	@Override
@@ -80,15 +77,13 @@ public class RangeTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		from.extractTypeParameters(typeParameters);
-		to.extractTypeParameters(typeParameters);
+		baseType.extractTypeParameters(typeParameters);
 	}
 
 	@Override
 	public int hashCode() {
 		int hash = 5;
-		hash = 89 * hash + from.hashCode();
-		hash = 89 * hash + to.hashCode();
+		hash = 89 * hash + baseType.hashCode();
 		return hash;
 	}
 
@@ -104,11 +99,11 @@ public class RangeTypeID implements ITypeID {
 			return false;
 		}
 		final RangeTypeID other = (RangeTypeID) obj;
-		return this.from == other.from && this.to == other.to;
+		return this.baseType == other.baseType;
 	}
 	
 	@Override
 	public String toString() {
-		return from.toString() + " .. " + to.toString();
+		return baseType.toString() + " .. " + baseType.toString();
 	}
 }
