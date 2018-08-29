@@ -21,6 +21,7 @@ import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.CallExpression;
+import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
 import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
@@ -127,11 +128,27 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
 			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
 			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
+			cls.addMethod("fromAsciiBytes", new JavaMethod((expression, translator) -> {
+				CallStaticExpression call = (CallStaticExpression)expression;
+				return translator.bytesAsciiToString(call.arguments.arguments[0]);
+			}));
+			cls.addMethod("fromUTF8Bytes", new JavaMethod((expression, translator) -> {
+				CallStaticExpression call = (CallStaticExpression)expression;
+				return translator.bytesUTF8ToString(call.arguments.arguments[0]);
+			}));
+			cls.addMethod("toAsciiBytes", new JavaMethod((expression, translator) -> {
+				CallExpression call = (CallExpression)expression;
+				return translator.stringToAscii(call.target);
+			}));
+			cls.addMethod("toUTF8Bytes", new JavaMethod((expression, translator) -> {
+				CallExpression call = (CallExpression)expression;
+				return translator.stringToUTF8(call.target);
+			}));
 			nativeClasses.put("stdlib::String", cls);
 		}
 		
 		{
-			JavaClass arrays = new JavaClass("java.lang", "Arrays", JavaClass.Kind.CLASS);
+			JavaClass arrays = JavaClass.ARRAYS;
 			JavaNativeClass cls = new JavaNativeClass(arrays);
 			cls.addMethod("sort", JavaMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;)[Ljava/lang/Object;"));
 			cls.addMethod("sorted", new JavaMethod((expression, translator) -> {

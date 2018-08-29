@@ -470,6 +470,11 @@ public class SourceEditor implements DComponent {
 		String extract = tokens.extract(
 				SourcePosition.min(cursorStart, cursorEnd),
 				SourcePosition.max(cursorStart, cursorEnd));
+		if (context.getUIContext() == null)
+			throw new NullPointerException("No context!");
+		if (context.getUIContext().getClipboard() == null)
+			throw new NullPointerException("No clipboard!");
+		
 		context.getUIContext().getClipboard().copyAsString(extract);
 	}
 	
@@ -816,6 +821,7 @@ public class SourceEditor implements DComponent {
 					return IDENTIFIER;
 				case T_FLOAT:
 				case T_INT:
+				case T_PREFIXED_INT:
 					return NUMBER;
 				case T_STRING_SQ:
 				case T_STRING_DQ:

@@ -120,7 +120,7 @@ public class TokenModel {
 			
 			for (int i = fromT.line + 1; i < toT.line; i++) {
 				result.append("\n");
-				for (ZSToken t : fromLine.getTokens()) {
+				for (ZSToken t : getLine(i).getTokens()) {
 					result.append(t.content);
 				}
 			}

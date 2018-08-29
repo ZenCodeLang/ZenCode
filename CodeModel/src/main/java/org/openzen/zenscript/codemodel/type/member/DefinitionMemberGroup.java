@@ -105,6 +105,15 @@ public class DefinitionMemberGroup {
 		return false;
 	}
 	
+	public FunctionalMemberRef getStaticMethod(int arguments, ITypeID returnType) {
+		for (TypeMember<FunctionalMemberRef> method : methods) {
+			if (method.member.isStatic() && method.member.getHeader().accepts(arguments) && method.member.getHeader().getReturnType() == returnType)
+				return method.member;
+		}
+		
+		return null;
+	}
+	
 	public List<TypeMember<FunctionalMemberRef>> getMethodMembers() {
 		return this.methods;
 	}
