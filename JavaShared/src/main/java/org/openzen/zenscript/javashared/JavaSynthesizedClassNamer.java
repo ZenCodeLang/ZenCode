@@ -29,8 +29,7 @@ public class JavaSynthesizedClassNamer {
 	
 	public static JavaSynthesizedClass createRangeName(RangeTypeID range) {
 		String signature = getRangeSignature(range);
-		String className = signature;
-		JavaClass cls = new JavaClass("zsynthetic", className, JavaClass.Kind.CLASS);
+		JavaClass cls = new JavaClass("zsynthetic", signature, JavaClass.Kind.CLASS);
 		return new JavaSynthesizedClass(cls, extractTypeParameters(range));
 	}
 	

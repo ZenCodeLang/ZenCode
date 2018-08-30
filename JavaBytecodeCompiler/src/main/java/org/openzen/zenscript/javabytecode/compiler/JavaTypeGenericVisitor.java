@@ -61,7 +61,7 @@ public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
 	public String getGenericMethodSignature(FunctionHeader header) {
 		return "(" + getGenericSignature(header.parameters) +
 				")" +
-				getGenericSignature(header.returnType);
+				getGenericSignature(header.getReturnType());
 	}
 
 

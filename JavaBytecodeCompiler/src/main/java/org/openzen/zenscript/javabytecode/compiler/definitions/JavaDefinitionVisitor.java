@@ -173,6 +173,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final JavaClass toClass = variant.getTag(JavaClass.class);
 		final JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
+		final String variantName = variant.name;
+
 
 		final String ss = "<" + javaTypeGenericVisitor.getGenericSignature(variant.genericParameters) + ">Ljava/lang/Object;";
 		JavaClassWriter.registerSuperClass(variantName, "java/lang/Object");
@@ -187,6 +189,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		for (final VariantDefinition.Option option : options) {
 			JavaVariantOption optionTag = option.getTag(JavaVariantOption.class);
 			final JavaClassWriter optionWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+			final String optionClassName = variantName + "$" + option.name;
 			JavaClassWriter.registerSuperClass(optionClassName, variantName);
 
 			writer.visitInnerClass(optionTag.variantOptionClass.internalName, optionTag.variantClass.internalName, option.name, Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL);
@@ -232,7 +235,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				final String descriptor = context.getDescriptor(types[i]);
 				optionInitDescBuilder.append(descriptor);
 				optionInitSignatureBuilder.append("T").append(((GenericTypeID) types[i]).parameter.name).append(";");
-				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "Field" + i, descriptor, "T" + ((GenericTypeID) types[i]).parameter.name + ";", null).visitEnd();
+				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "field" + i, descriptor, "T" + ((GenericTypeID) types[i]).parameter.name + ";", null).visitEnd();
 			}
 			optionInitDescBuilder.append(")V");
 			optionInitSignatureBuilder.append(")V");
