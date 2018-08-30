@@ -7,20 +7,19 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.Module;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ClassDefinition extends HighLevelDefinition {
-	public ClassDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers) {
-		this(position, pkg, name, modifiers, null);
+	public ClassDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers) {
+		this(position, module, pkg, name, modifiers, null);
 	}
 	
-	public ClassDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(position, pkg, name, modifiers, outerDefinition);
+	public ClassDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override

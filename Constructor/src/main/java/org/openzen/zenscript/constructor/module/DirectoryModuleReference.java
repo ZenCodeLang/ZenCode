@@ -16,12 +16,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.FileSourceFile;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.constructor.JSONUtils;
-import org.openzen.zenscript.constructor.Module;
+import org.openzen.zenscript.constructor.ParsedModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.codemodel.type.TypeSymbol;
 import org.openzen.zenscript.parser.ParsedFile;
@@ -80,12 +81,13 @@ public class DirectoryModuleReference implements ModuleReference {
 				space.addModule(dependencyName, module);
 			}
 
-			Module module = new Module(moduleName, directory, jsonFile, exceptionLogger);
-			ZSPackage pkg = isStdlib ? unit.globalTypeRegistry.stdlib : new ZSPackage(null, module.packageName);
-			CompilingPackage compilingPackage = new CompilingPackage(pkg);
+			ParsedModule parsedModule = new ParsedModule(moduleName, directory, jsonFile, exceptionLogger);
+			ZSPackage pkg = isStdlib ? unit.globalTypeRegistry.stdlib : new ZSPackage(null, parsedModule.packageName);
+			Module module = new Module(moduleName);
+			CompilingPackage compilingPackage = new CompilingPackage(pkg, module);
 			
-			ParsedFile[] parsedFiles = module.parse(compilingPackage);
-			SemanticModule result = ParsedFile.compileSyntaxToSemantic(module.name, dependencies, compilingPackage, parsedFiles, space, exceptionLogger);
+			ParsedFile[] parsedFiles = parsedModule.parse(compilingPackage);
+			SemanticModule result = ParsedFile.compileSyntaxToSemantic(parsedModule.name, dependencies, compilingPackage, parsedFiles, space, exceptionLogger);
 			
 			JSONObject globals = json.optJSONObject("globals");
 			if (globals != null) {

@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -26,13 +27,13 @@ public class FunctionDefinition extends HighLevelDefinition {
 	public CallerMember caller;
 	public final DefinitionMemberGroup callerGroup;
 	
-	public FunctionDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(position, pkg, name, modifiers, outerDefinition);
+	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(position, module, pkg, name, modifiers, outerDefinition);
 		callerGroup = new DefinitionMemberGroup(true, name);
 	}
 	
-	public FunctionDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, FunctionHeader header) {
-		this(position, pkg, name, modifiers, (HighLevelDefinition) null);
+	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, FunctionHeader header) {
+		this(position, module, pkg, name, modifiers, (HighLevelDefinition) null);
 		setHeader(header);
 	}
 	

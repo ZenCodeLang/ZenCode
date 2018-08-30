@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 
 /**
@@ -18,13 +19,21 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 public class EnumDefinition extends HighLevelDefinition {
 	public List<EnumConstantMember> enumConstants = new ArrayList<>();
 	
-	public EnumDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(position, pkg, name, modifiers, outerDefinition);
+	public EnumDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override
 	public <T> T accept(DefinitionVisitor<T> visitor) {
 		return visitor.visitEnum(this);
+	}
+	
+	@Override
+	public void collectMembers(MemberCollector collector) {
+		super.collectMembers(collector);
+		
+		for (EnumConstantMember member : enumConstants)
+			collector.enumConstant(member);
 	}
 	
 	public void addEnumConstant(EnumConstantMember constant) {

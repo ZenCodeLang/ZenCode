@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.javasource;
 
-import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
@@ -32,7 +32,7 @@ public class JavaSourceUtils {
 			output.append(typeParameter.name);
 			
 			if (typeParameter.bounds.size() > 0) {
-				for (GenericParameterBound bound : typeParameter.bounds)
+				for (TypeParameterBound bound : typeParameter.bounds)
 					bound.accept(boundVisitor);
 			}
 		}
@@ -59,7 +59,7 @@ public class JavaSourceUtils {
 				output.append(typeParameter.name);
 
 				if (typeParameter.bounds.size() > 0) {
-					for (GenericParameterBound bound : typeParameter.bounds)
+					for (TypeParameterBound bound : typeParameter.bounds)
 						bound.accept(boundVisitor);
 				}
 			}
@@ -75,7 +75,7 @@ public class JavaSourceUtils {
 				output.append(typeParameter.name);
 
 				if (typeParameter.bounds.size() > 0) {
-					for (GenericParameterBound bound : typeParameter.bounds)
+					for (TypeParameterBound bound : typeParameter.bounds)
 						bound.accept(boundVisitor);
 				}
 			}

@@ -24,7 +24,7 @@ import org.openzen.zenscript.parser.ParsedFile;
  *
  * @author Hoofdgebruiker
  */
-public class Module {
+public class ParsedModule {
 	public final String name;
 	public final String[] dependencies;
 	public final File sourceDirectory;
@@ -33,7 +33,7 @@ public class Module {
 	public final String host;
 	private final Consumer<CompileException> exceptionLogger;
 	
-	public Module(String name, File directory, File moduleFile, Consumer<CompileException> exceptionLogger) throws IOException {
+	public ParsedModule(String name, File directory, File moduleFile, Consumer<CompileException> exceptionLogger) throws IOException {
 		this.name = name;
 		this.sourceDirectory = new File(directory, "src");
 		this.exceptionLogger = exceptionLogger;

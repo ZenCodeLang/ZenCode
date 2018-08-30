@@ -50,7 +50,7 @@ public class ParsedAlias extends ParsedDefinition {
 		this.parameters = parameters;
 		this.type = type;
 		
-		compiled = new AliasDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
+		compiled = new AliasDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
 		
 		if (parameters != null && parameters.size() > 0) {
 			TypeParameter[] typeParameters = new TypeParameter[parameters.size()];

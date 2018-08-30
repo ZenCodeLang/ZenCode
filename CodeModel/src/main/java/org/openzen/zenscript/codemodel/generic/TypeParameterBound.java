@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  *
  * @author Hoofdgebruiker
  */
-public abstract class GenericParameterBound {
+public abstract class TypeParameterBound {
 	public abstract boolean isObjectType();
 	
 	public abstract <T> T accept(GenericParameterBoundVisitor<T> visitor);
@@ -23,7 +23,7 @@ public abstract class GenericParameterBound {
 	
 	public abstract boolean matches(LocalMemberCache cache, ITypeID type);
 	
-	public abstract GenericParameterBound instance(GenericMapper mapper);
+	public abstract TypeParameterBound instance(GenericMapper mapper);
 	
 	public abstract String getCanonical();
 }

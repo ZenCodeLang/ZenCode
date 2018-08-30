@@ -35,7 +35,7 @@ import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
@@ -68,6 +68,7 @@ import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
 import static org.openzen.zencode.shared.CodePosition.BUILTIN;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
@@ -172,7 +173,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitArray(ArrayTypeID array) {
-		HighLevelDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
+		HighLevelDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		ITypeID baseType = array.elementType;
 		int dimension = array.dimension;
 
@@ -320,7 +321,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		ITypeID keyType = assoc.keyType;
 		ITypeID valueType = assoc.valueType;
 		
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		
 		constructor(builtin, ASSOC_CONSTRUCTOR);
 
@@ -363,7 +364,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BasicTypeID.VOID, null, new FunctionParameter(valueType));
 		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BasicTypeID.BOOL, null, new FunctionParameter[0]);
 		
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		constructor(builtin, GENERICMAP_CONSTRUCTOR);
 		
 		method(builtin, "getOptional", getOptionalHeader, GENERICMAP_GETOPTIONAL);
@@ -391,7 +392,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionTypeID function) {
-		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, null, "", Modifiers.EXPORT, function.header);
+		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT, function.header);
 		new CallerMember(BUILTIN, builtin, 0, function.header, FUNCTION_CALL).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
 		same(builtin, FUNCTION_SAME, function);
@@ -502,7 +503,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	public Void visitGeneric(GenericTypeID generic) {
 		TypeParameter parameter = generic.parameter;
 
-		for (GenericParameterBound bound : parameter.bounds) {
+		for (TypeParameterBound bound : parameter.bounds) {
 			bound.registerMembers(cache, members);
 		}
 		
@@ -513,7 +514,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	public Void visitRange(RangeTypeID range) {
 		ITypeID baseType = range.baseType;
 
-		ClassDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
+		ClassDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		getter(definition, RANGE_FROM, "from", baseType);
 		getter(definition, RANGE_TO, "to", baseType);
 		if (baseType == BYTE
@@ -535,7 +536,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitModified(ModifiedTypeID modified) {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "modified", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "modified", Modifiers.EXPORT, null);
 		modified.baseType.accept(this);
 		
 		if (modified.isOptional()) {
@@ -547,7 +548,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitBool() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "bool", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "bool", Modifiers.EXPORT, null);
 		not(builtin, BOOL_NOT, BOOL);
 		and(builtin, BOOL_AND, BOOL, BOOL);
 		or(builtin, BOOL_OR, BOOL, BOOL);
@@ -562,7 +563,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitByte() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "byte", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "byte", Modifiers.EXPORT, null);
 		
 		invert(builtin, BYTE_NOT, BYTE);
 		inc(builtin, BYTE_INC, BYTE);
@@ -602,7 +603,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitSByte() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "sbyte", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "sbyte", Modifiers.EXPORT, null);
 		
 		invert(builtin, SBYTE_NOT, SBYTE);
 		neg(builtin, SBYTE_NEG, SBYTE);
@@ -644,7 +645,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitShort() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "short", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "short", Modifiers.EXPORT, null);
 		
 		invert(builtin, SHORT_NOT, SHORT);
 		neg(builtin, SHORT_NEG, SHORT);
@@ -686,7 +687,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitUShort() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "ushort", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "ushort", Modifiers.EXPORT, null);
 		
 		invert(builtin, USHORT_NOT, USHORT);
 		inc(builtin, USHORT_INC, USHORT);
@@ -726,7 +727,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitInt() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "int", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "int", Modifiers.EXPORT, null);
 		
 		invert(builtin, INT_NOT, INT);
 		neg(builtin, INT_NEG, INT);
@@ -807,7 +808,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 
 	private void visitUInt() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "uint", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "uint", Modifiers.EXPORT, null);
 		
 		invert(builtin, UINT_NOT, INT);
 		inc(builtin, UINT_DEC, INT);
@@ -886,7 +887,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitLong() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "long", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "long", Modifiers.EXPORT, null);
 		
 		invert(builtin, LONG_NOT, LONG);
 		neg(builtin, LONG_NEG, LONG);
@@ -959,7 +960,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitULong() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "ulong", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "ulong", Modifiers.EXPORT, null);
 		
 		invert(builtin, ULONG_NOT, ULONG);
 		inc(builtin, ULONG_DEC, ULONG);
@@ -1031,7 +1032,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitUSize() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "usize", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "usize", Modifiers.EXPORT, null);
 		
 		invert(builtin, USIZE_NOT, USIZE);
 		inc(builtin, USIZE_DEC, USIZE);
@@ -1108,7 +1109,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitFloat() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "float", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "float", Modifiers.EXPORT, null);
 		
 		neg(builtin, FLOAT_NEG, FLOAT);
 		inc(builtin, FLOAT_DEC, FLOAT);
@@ -1153,7 +1154,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitDouble() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "double", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "double", Modifiers.EXPORT, null);
 		
 		neg(builtin, DOUBLE_NEG, DOUBLE);
 		inc(builtin, DOUBLE_DEC, DOUBLE);
@@ -1189,7 +1190,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 
 	private void visitChar() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "char", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "char", Modifiers.EXPORT, null);
 		
 		add(builtin, CHAR_ADD_INT, INT, CHAR);
 		sub(builtin, CHAR_SUB_INT, INT, CHAR);
@@ -1218,7 +1219,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 
 	private void visitString() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "string", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "string", Modifiers.EXPORT, null);
 		
 		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, registry.getArray(CHAR, 1));
 		

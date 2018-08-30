@@ -1,6 +1,6 @@
 package org.openzen.zenscript.javashared;
 
-import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.type.*;
 
@@ -90,7 +90,7 @@ public class JavaTypeInternalNameVisitor implements ITypeVisitor<String> {
 
     @Override
     public String visitGeneric(GenericTypeID generic) {
-		for (GenericParameterBound bound : generic.parameter.bounds) {
+		for (TypeParameterBound bound : generic.parameter.bounds) {
 			if (bound instanceof ParameterTypeBound) {
 				return ((ParameterTypeBound) bound).type.accept(this);
 			}

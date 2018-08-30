@@ -51,7 +51,7 @@ public class ParsedClass extends BaseParsedDefinition {
 		this.parameters = parameters;
 		this.superclass = superclass;
 		
-		compiled = new ClassDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
+		compiled = new ClassDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
 		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
 	}
 

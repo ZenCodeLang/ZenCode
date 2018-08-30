@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
@@ -19,12 +20,14 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class CompilingPackage {
+	public final Module module;
 	private final ZSPackage pkg;
 	private final Map<String, CompilingPackage> packages = new HashMap<>();
 	private final Map<String, CompilingType> types = new HashMap<>();
 	
-	public CompilingPackage(ZSPackage pkg) {
+	public CompilingPackage(ZSPackage pkg, Module module) {
 		this.pkg = pkg;
+		this.module = module;
 	}
 	
 	public ZSPackage getPackage() {
@@ -35,7 +38,7 @@ public class CompilingPackage {
 		if (packages.containsKey(name))
 			return packages.get(name);
 		
-		CompilingPackage newPackage = new CompilingPackage(pkg.getOrCreatePackage(name));
+		CompilingPackage newPackage = new CompilingPackage(pkg.getOrCreatePackage(name), module);
 		packages.put(name, newPackage);
 		return newPackage;
 	}

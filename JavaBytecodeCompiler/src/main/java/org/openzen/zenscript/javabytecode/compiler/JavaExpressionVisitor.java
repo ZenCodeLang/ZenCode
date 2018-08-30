@@ -1647,7 +1647,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", signature);
 		final ClassWriter lambdaCW = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{JavaSynthesizedClassNamer.createFunctionName(new FunctionTypeID(null, expression.header)).cls.internalName});
+		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header))});
 		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 		
 		javaWriter.newObject(name);

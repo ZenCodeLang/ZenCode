@@ -43,7 +43,7 @@ public class ParsedStruct extends BaseParsedDefinition {
 		
 		this.parameters = genericParameters;
 		
-		compiled = new StructDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
+		compiled = new StructDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
 		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(genericParameters));
 	}
 

@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  *
  * @author Hoofdgebruiker
  */
-public class ParameterTypeBound extends GenericParameterBound {
+public class ParameterTypeBound extends TypeParameterBound {
 	public final CodePosition position;
 	public final ITypeID type;
 	
@@ -41,7 +41,7 @@ public class ParameterTypeBound extends GenericParameterBound {
 	}
 
 	@Override
-	public GenericParameterBound instance(GenericMapper mapper) {
+	public TypeParameterBound instance(GenericMapper mapper) {
 		return new ParameterTypeBound(position, type.instance(mapper));
 	}
 

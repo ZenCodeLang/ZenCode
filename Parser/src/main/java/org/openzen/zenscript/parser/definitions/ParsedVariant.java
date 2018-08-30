@@ -65,7 +65,7 @@ public class ParsedVariant extends BaseParsedDefinition {
 		super(position, modifiers, pkg, annotations);
 		
 		this.typeParameters = typeParameters;
-		compiled = new VariantDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
+		compiled = new VariantDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
 		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(typeParameters));
 	}
 	

@@ -11,6 +11,7 @@ import java.util.Optional;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Module;
 
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
@@ -42,17 +43,18 @@ public class Main {
 		File[] inputFiles = Optional.ofNullable(inputDirectory.listFiles((dir, name) -> name.endsWith(".zs"))).orElseGet(() -> new File[0]);
 		
 		ZSPackage pkg = new ZSPackage(null, "");
-		CompilingPackage compilingPkg = new CompilingPackage(pkg);
+		Module module = new Module("scripts");
+		CompilingPackage compilingPkg = new CompilingPackage(pkg, module);
 		ParsedFile[] parsedFiles = parse(compilingPkg, inputFiles);
 		
 		ZSPackage global = new ZSPackage(null, "");
 		GlobalRegistry registry = new GlobalRegistry(global);
-		SemanticModule module = compileSyntaxToSemantic(compilingPkg, parsedFiles, registry);
+		SemanticModule semantic = compileSyntaxToSemantic(compilingPkg, parsedFiles, registry);
 		
 		//formatFiles(pkg, module);
 		
-		if (module.isValid()) {
-			JavaModule javaModule = compileSemanticToJava(module);
+		if (semantic.isValid()) {
+			JavaModule javaModule = compileSemanticToJava(semantic);
 			javaModule.execute();
 		} else {
 			System.out.println("There were compilation errors");

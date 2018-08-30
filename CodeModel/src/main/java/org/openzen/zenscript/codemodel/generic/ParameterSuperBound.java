@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  *
  * @author Hoofdgebruiker
  */
-public class ParameterSuperBound extends GenericParameterBound {
+public class ParameterSuperBound extends TypeParameterBound {
 	public final ITypeID type;
 	
 	public ParameterSuperBound(ITypeID type) {
@@ -37,7 +37,7 @@ public class ParameterSuperBound extends GenericParameterBound {
 	}
 
 	@Override
-	public GenericParameterBound instance(GenericMapper mapper) {
+	public TypeParameterBound instance(GenericMapper mapper) {
 		ITypeID translated = type.instance(mapper);
 		if (translated == type)
 			return this;
