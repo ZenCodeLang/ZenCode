@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.annotations.AnnotationProcessor;
@@ -32,6 +33,7 @@ public class SemanticModule {
 	public final SemanticModule[] dependencies;
 	
 	private State state;
+	public final Module module;
 	public final ZSPackage rootPackage;
 	public final ZSPackage modulePackage;
 	public final PackageDefinitions definitions;
@@ -44,6 +46,7 @@ public class SemanticModule {
 	
 	public SemanticModule(
 			String name,
+			Module module,
 			SemanticModule[] dependencies,
 			State state,
 			ZSPackage rootPackage,
@@ -55,6 +58,7 @@ public class SemanticModule {
 			AnnotationDefinition[] annotations)
 	{
 		this.name = name;
+		this.module = module;
 		this.dependencies = dependencies;
 		
 		this.state = state;
@@ -90,6 +94,7 @@ public class SemanticModule {
 		
 		return new SemanticModule(
 				name,
+				module,
 				dependencies,
 				State.NORMALIZED,
 				rootPackage,

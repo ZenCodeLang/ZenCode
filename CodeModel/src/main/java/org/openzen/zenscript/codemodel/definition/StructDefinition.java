@@ -7,14 +7,15 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Module;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class StructDefinition extends HighLevelDefinition {
-	public StructDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
-		super(position, pkg, name, modifiers, outerDefinition);
+	public StructDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 
 	@Override

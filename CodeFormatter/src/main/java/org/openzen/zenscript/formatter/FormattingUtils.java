@@ -10,7 +10,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.BreakStatement;
@@ -103,7 +103,7 @@ public class FormattingUtils {
 				result.append(parameter.name);
 				
 				if (parameter.bounds.size() > 0) {
-					for (GenericParameterBound bound : parameter.bounds) {
+					for (TypeParameterBound bound : parameter.bounds) {
 						result.append(": ");
 						result.append(bound.accept(typeFormatter));
 					}

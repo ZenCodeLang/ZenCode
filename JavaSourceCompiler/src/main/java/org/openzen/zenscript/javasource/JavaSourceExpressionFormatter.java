@@ -108,6 +108,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	private static final JavaClass RESULT = new JavaClass("stdlib", "Result", JavaClass.Kind.CLASS);
 	private static final JavaClass RESULT_OK = new JavaClass("stdlib", "Result.Ok", JavaClass.Kind.CLASS);
 	private static final JavaClass RESULT_ERROR = new JavaClass("stdlib", "Result.Error", JavaClass.Kind.CLASS);
+	private static final JavaClass STANDARD_CHARSETS = new JavaClass("java.nio.charset", "StandardCharsets", JavaClass.Kind.CLASS);
 	
 	public final JavaSourceStatementScope scope;
 	public final StatementFormattingTarget target;
@@ -204,6 +205,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		JavaMethod method = expression.member.getTag(JavaMethod.class);
 		if (method == null)
 			throw new IllegalStateException("No source method tag for " + expression.member.getCanonicalName() + "!");
+		
+		if (method.kind == JavaMethod.Kind.COMPILED)
+			return (ExpressionString) method.translation.translate(expression, this);
 		
 		StringBuilder result = new StringBuilder();
 		result.append(scope.type(method.cls));
@@ -327,7 +331,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitConstantLong(ConstantLongExpression expression) {
-		return new ExpressionString(Long.toString(expression.value), JavaOperator.PRIMARY);
+		return new ExpressionString(Long.toString(expression.value) + "L", JavaOperator.PRIMARY);
 	}
 
 	@Override
@@ -354,7 +358,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitConstantULong(ConstantULongExpression expression) {
-		return new ExpressionString(Long.toString(expression.value), JavaOperator.CAST);
+		return new ExpressionString(Long.toString(expression.value) + "L", JavaOperator.CAST);
 	}
 
 	@Override
@@ -745,6 +749,14 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			GenericTypeID generic = (GenericTypeID)elementType;
 			String array = scope.type(new JavaClass("java.lang.reflect", "Array", JavaClass.Kind.CLASS));
 			return new ExpressionString("(" + generic.parameter.name + "[])(" + array + ".newInstance(typeOf" + generic.parameter.name + ", " + length.value + "))", JavaOperator.CAST);
+		} else if (elementType == BasicTypeID.BYTE) {
+			return new ExpressionString("new byte[" + length.value + "]", JavaOperator.NEW);
+		} else if (elementType == BasicTypeID.USHORT) {
+			return new ExpressionString("new short[" + length.value + "]", JavaOperator.NEW);
+		} else if (elementType == BasicTypeID.UINT) {
+			return new ExpressionString("new int[" + length.value + "]", JavaOperator.NEW);
+		} else if (elementType == BasicTypeID.ULONG) {
+			return new ExpressionString("new long[" + length.value + "]", JavaOperator.NEW);
 		} else {
 			return new ExpressionString("new " + scope.type(elementType) + "[" + length.value + "]", JavaOperator.NEW);
 		}
@@ -874,6 +886,18 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		return new ExpressionString(output.toString(), JavaOperator.CALL);
 	}
 	
+	public ExpressionString callAsStaticTruncated(String target, CallExpression expression, JavaOperator truncator) {
+		StringBuilder output = new StringBuilder();
+		output.append(target).append("(");
+		output.append(expression.target.accept(this).value);
+		for (Expression argument : expression.arguments.arguments) {
+			output.append(", ");
+			output.append(argument.accept(this).unaryPostfix(truncator).value);
+		}
+		output.append(")");
+		return new ExpressionString(output.toString(), JavaOperator.CALL);
+	}
+	
 	public ExpressionString callAsStatic(String target, Expression left, Expression right) {
 		StringBuilder output = new StringBuilder();
 		output.append(target).append("(");
@@ -897,21 +921,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 	
 	private ExpressionString cast(CastExpression cast, String type) {
-		StringBuilder output = new StringBuilder();
-		output.append('(');
-		output.append(type);
-		output.append(')');
-		output.append(cast.target.accept(this).value);
-		return new ExpressionString(output.toString(), JavaOperator.CAST);
+		return cast.target.accept(this).unaryPrefix(JavaOperator.CAST, "(" + type + ")");
 	}
 	
 	private ExpressionString cast(ExpressionString value, String type) {
-		StringBuilder output = new StringBuilder();
-		output.append('(');
-		output.append(type);
-		output.append(')');
-		output.append(value.value);
-		return new ExpressionString(output.toString(), JavaOperator.CAST);
+		return value.unaryPrefix(JavaOperator.CALL, "(" + type + ")");
 	}
 	
 	private ExpressionString castPostfix(CastExpression cast, JavaOperator operator) {
@@ -954,11 +968,13 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case BYTE_ADD_BYTE: return binary(call, JavaOperator.ADD);
 			case BYTE_SUB_BYTE: return binary(call, JavaOperator.SUB);
 			case BYTE_MUL_BYTE: return binary(call, JavaOperator.MUL);
-			case BYTE_DIV_BYTE: return callAsStatic("Integer.divideUnsigned", call);
-			case BYTE_MOD_BYTE: return callAsStatic("Integer.remainderUnsigned", call);
+			case BYTE_DIV_BYTE: return callAsStaticTruncated("Integer.divideUnsigned", call, JavaOperator.AND_FF);
+			case BYTE_MOD_BYTE: return callAsStaticTruncated("Integer.remainderUnsigned", call, JavaOperator.AND_FF);
 			case BYTE_AND_BYTE: return binary(call, JavaOperator.AND);
 			case BYTE_OR_BYTE: return binary(call, JavaOperator.OR);
 			case BYTE_XOR_BYTE: return binary(call, JavaOperator.XOR);
+			case BYTE_SHL: return binary(call, JavaOperator.SHL);
+			case BYTE_SHR: return binary(call, JavaOperator.SHR);
 			case SBYTE_NOT: return unaryPrefix(call, JavaOperator.INVERT);
 			case SBYTE_NEG: return unaryPrefix(call, JavaOperator.NEG);
 			case SBYTE_ADD_SBYTE: return binary(call, JavaOperator.ADD);
@@ -969,6 +985,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case SBYTE_AND_SBYTE: return binary(call, JavaOperator.AND);
 			case SBYTE_OR_SBYTE: return binary(call, JavaOperator.OR);
 			case SBYTE_XOR_SBYTE: return binary(call, JavaOperator.XOR);
+			case SBYTE_SHL: return binary(call, JavaOperator.SHL);
+			case SBYTE_SHR: return binary(call, JavaOperator.SHR);
+			case SBYTE_USHR: return binary(call, JavaOperator.USHR);
 			case SHORT_NOT: return unaryPrefix(call, JavaOperator.INVERT);
 			case SHORT_NEG: return unaryPrefix(call, JavaOperator.NEG);
 			case SHORT_ADD_SHORT: return binary(call, JavaOperator.ADD);
@@ -979,15 +998,19 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case SHORT_AND_SHORT: return binary(call, JavaOperator.AND);
 			case SHORT_OR_SHORT: return binary(call, JavaOperator.OR);
 			case SHORT_XOR_SHORT: return binary(call, JavaOperator.XOR);
+			case SHORT_SHL: return binary(call, JavaOperator.SHL);
+			case SHORT_SHR: return binary(call, JavaOperator.SHR);
 			case USHORT_NOT: return unaryPrefix(call, JavaOperator.INVERT);
 			case USHORT_ADD_USHORT: return binary(call, JavaOperator.ADD);
 			case USHORT_SUB_USHORT: return binary(call, JavaOperator.SUB);
 			case USHORT_MUL_USHORT: return binary(call, JavaOperator.MUL);
-			case USHORT_DIV_USHORT: return binary(call, JavaOperator.DIV);
-			case USHORT_MOD_USHORT: return binary(call, JavaOperator.MOD);
+			case USHORT_DIV_USHORT: return callAsStaticTruncated("Integer.divideUnsigned", call, JavaOperator.AND_FFFF);
+			case USHORT_MOD_USHORT: return callAsStaticTruncated("Integer.remainderUnsigned", call, JavaOperator.AND_FFFF);
 			case USHORT_AND_USHORT: return binary(call, JavaOperator.AND);
 			case USHORT_OR_USHORT: return binary(call, JavaOperator.OR);
 			case USHORT_XOR_USHORT: return binary(call, JavaOperator.XOR);
+			case USHORT_SHL: return binary(call, JavaOperator.SHL);
+			case USHORT_SHR: return binary(call, JavaOperator.SHR);
 			case INT_NOT: return unaryPrefix(call, JavaOperator.INVERT);
 			case INT_NEG: return unaryPrefix(call, JavaOperator.NEG);
 			case INT_ADD_INT: return binary(call, JavaOperator.ADD);
@@ -1128,11 +1151,29 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case GENERICMAP_SAME: return binary(call, JavaOperator.EQUALS);
 			case GENERICMAP_NOTSAME: return binary(call, JavaOperator.NOTEQUALS);
 			case ARRAY_INDEXGET: return new ExpressionString(call.target.accept(this) + "[" + call.arguments.arguments[0].accept(this) + "]", JavaOperator.INDEX);
-			case ARRAY_INDEXSET: return new ExpressionString(
+			case ARRAY_INDEXSET: {
+				ExpressionString value = call.arguments.arguments[1].accept(this);
+				ITypeID baseType = ((ArrayTypeID)(call.target.type)).elementType;
+				String asType = "";
+				if (baseType == BasicTypeID.BYTE) {
+					asType = "(byte)";
+				} else if (baseType == BasicTypeID.USHORT) {
+					asType = "(short)";
+				}
+				
+				if (!asType.isEmpty()) {
+					if (value.priority == JavaOperator.CAST && value.value.startsWith("(int)"))
+						value = new ExpressionString(asType + value.value.substring(5), value.priority);
+					else
+						value = value.unaryPrefix(JavaOperator.CAST, asType);
+				}
+				
+				return new ExpressionString(
 					call.target.accept(this)
 							+ "[" + call.arguments.arguments[0].accept(this)
 							+ "] = "
-							+ call.arguments.arguments[1].accept(this), JavaOperator.INDEX);
+							+ value.value, JavaOperator.INDEX);
+			}
 			case ARRAY_INDEXGETRANGE: {
 				ExpressionString left = call.target.accept(this);
 				Expression argument = call.arguments.arguments[0];
@@ -1140,7 +1181,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 					RangeExpression rangeArgument = (RangeExpression)argument;
 					ExpressionString from = rangeArgument.from.accept(this);
 					ExpressionString to = rangeArgument.to.accept(this);
-					return new ExpressionString("Arrays.copyOfRange(" + left.value + ", " + from.value + ", " + to.value + ")", JavaOperator.CALL);
+					return new ExpressionString(scope.type(JavaClass.ARRAYS) + ".copyOfRange(" + left.value + ", " + from.value + ", " + to.value + ")", JavaOperator.CALL);
 				} else {
 					throw new UnsupportedOperationException("Not yet supported!");
 				}
@@ -1149,8 +1190,8 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				JavaMethod method = scope.fileScope.helperGenerator.createArrayContains((ArrayTypeID)call.target.type);
 				return callAsStatic(scope.fileScope.importer.importType(method.cls) + '.' + method.name, call);
 			}
-			case ARRAY_EQUALS: return callAsStatic("Arrays.equals", call);
-			case ARRAY_NOTEQUALS: return callAsStatic("!Arrays.equals", call);
+			case ARRAY_EQUALS: return callAsStatic(scope.type(JavaClass.ARRAYS) + ".equals", call);
+			case ARRAY_NOTEQUALS: return callAsStatic("!" + scope.type(JavaClass.ARRAYS) + ".equals", call);
 			case ARRAY_SAME: return binary(call, JavaOperator.EQUALS);
 			case ARRAY_NOTSAME: return binary(call, JavaOperator.NOTEQUALS);
 			case FUNCTION_CALL: {
@@ -1231,9 +1272,15 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case INT_COMPARE:
 			case USIZE_COMPARE:
 				return compare(call.left, call.right, call.comparison);
-			case UINT_COMPARE: return compare(callAsStatic("Integer.compareUnsigned", call.left, call.right), call.comparison);
-			case LONG_COMPARE: return compare(call.left, call.right, call.comparison);
-			case ULONG_COMPARE: return compare(callAsStatic("Long.compareUnsigned", call.left, call.right), call.comparison);
+			case UINT_COMPARE:
+			case USIZE_COMPARE_UINT:
+				return compare(callAsStatic("Integer.compareUnsigned", call.left, call.right), call.comparison);
+			case LONG_COMPARE:
+			case LONG_COMPARE_INT:
+				return compare(call.left, call.right, call.comparison);
+			case ULONG_COMPARE:
+			case ULONG_COMPARE_UINT:
+				return compare(callAsStatic("Long.compareUnsigned", call.left, call.right), call.comparison);
 			case FLOAT_COMPARE: return compare(call.left, call.right, call.comparison);
 			case DOUBLE_COMPARE: return compare(call.left, call.right, call.comparison);
 			case CHAR_COMPARE: return compare(call.left, call.right, call.comparison);
@@ -1323,7 +1370,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case ARRAY_LENGTH:
 				return call.target.accept(this).unaryPostfix(JavaOperator.MEMBER, ".length");
 			case ARRAY_HASHCODE:
-				return callAsStatic("Arrays.deepHashCode", call);
+				return callAsStatic(scope.type(JavaClass.ARRAYS) + ".deepHashCode", call);
 			case ARRAY_ISEMPTY:
 				return call.target.accept(this).unaryPostfix(JavaOperator.EQUALS, ".length == 0");
 			case ENUM_NAME:
@@ -1474,6 +1521,16 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case ULONG_TO_DOUBLE: return castImplicit(cast, "double"); // TODO: this is incorrect!
 			case ULONG_TO_CHAR: return cast(cast, "char");
 			case ULONG_TO_STRING: return callStatic("Long.toUnsignedString", cast.target);
+			case USIZE_TO_BYTE: return cast.target.accept(this);
+			case USIZE_TO_SBYTE: return cast(cast, "byte");
+			case USIZE_TO_SHORT: return cast(cast, "short");
+			case USIZE_TO_USHORT: return cast.target.accept(this);
+			case USIZE_TO_INT: return cast.target.accept(this);
+			case USIZE_TO_UINT: return cast.target.accept(this);
+			case USIZE_TO_LONG: return castImplicit(cast, "long");
+			case USIZE_TO_ULONG: return castImplicit(cast, "long");
+			case USIZE_TO_FLOAT: return castImplicit(cast, "float");
+			case USIZE_TO_DOUBLE: return castImplicit(cast, "double");
 			case FLOAT_TO_BYTE: return cast(cast, "int");
 			case FLOAT_TO_SBYTE: return cast(cast, "byte");
 			case FLOAT_TO_SHORT: return cast(cast, "short");
@@ -1507,6 +1564,15 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case CHAR_TO_USIZE: return castImplicit(cast, "int");
 			case CHAR_TO_STRING: return callStatic("Character.toString", cast.target);
 			case ENUM_TO_STRING: return cast.target.accept(this).unaryPostfix(JavaOperator.TOSTRING);
+			case BYTE_ARRAY_AS_SBYTE_ARRAY:
+			case SBYTE_ARRAY_AS_BYTE_ARRAY:
+			case SHORT_ARRAY_AS_USHORT_ARRAY:
+			case USHORT_ARRAY_AS_SHORT_ARRAY:
+			case INT_ARRAY_AS_UINT_ARRAY:
+			case UINT_ARRAY_AS_INT_ARRAY:
+			case LONG_ARRAY_AS_ULONG_ARRAY:
+			case ULONG_ARRAY_AS_LONG_ARRAY:
+				return cast.target.accept(this);
 		}
 		
 		throw new UnsupportedOperationException("Unknown builtin cast: " + cast.member.member.builtin);
@@ -1843,9 +1909,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString sorted(Expression value) {
 		Expression target = duplicable(value);
 		ExpressionString targetString = target.accept(this);
-		ExpressionString copy = new ExpressionString("Arrays.copyOf(" + targetString.value + ", " + targetString.value + ".length).sort()", JavaOperator.CALL);
+		ExpressionString copy = new ExpressionString(scope.type(JavaClass.ARRAYS) + ".copyOf(" + targetString.value + ", " + targetString.value + ".length).sort()", JavaOperator.CALL);
 		ExpressionString source = hoist(copy, scope.type(target.type));
-		this.target.writeLine("Arrays.sort(" + source.value + ");");
+		this.target.writeLine(scope.type(JavaClass.ARRAYS) + ".sort(" + source.value + ");");
 		return source;
 	}
 
@@ -1854,9 +1920,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		Expression target = duplicable(value);
 		ExpressionString comparatorString = comparator.accept(this);
 		ExpressionString targetString = target.accept(this);
-		ExpressionString copy = new ExpressionString("Arrays.copyOf(" + targetString.value + ", " + targetString.value + ".length).sort()", JavaOperator.CALL);
+		ExpressionString copy = new ExpressionString(scope.type(JavaClass.ARRAYS) + ".copyOf(" + targetString.value + ", " + targetString.value + ".length).sort()", JavaOperator.CALL);
 		ExpressionString source = hoist(copy, scope.type(target.type));
-		this.target.writeLine("Arrays.sort(" + source.value + ", " + comparatorString.value + ");");
+		this.target.writeLine(scope.type(JavaClass.ARRAYS) + ".sort(" + source.value + ", " + comparatorString.value + ");");
 		return source;
 	}
 
@@ -1864,7 +1930,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString copy(Expression value) {
 		Expression target = duplicable(value);
 		ExpressionString source = target.accept(this);
-		return new ExpressionString("Arrays.copyOf(" + source.value + ", " + source.value + ".length)", JavaOperator.CALL);
+		return new ExpressionString(scope.type(JavaClass.ARRAYS) + ".copyOf(" + source.value + ", " + source.value + ".length)", JavaOperator.CALL);
 	}
 
 	@Override
@@ -1880,5 +1946,33 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			+ target.accept(this) + ", "
 			+ targetOffset.accept(this) + ", "
 			+ length.accept(this) + ")", JavaOperator.CALL);
+	}
+
+	@Override
+	public ExpressionString stringToAscii(Expression value) {
+		String standardCharsets = scope.type(STANDARD_CHARSETS);
+		return value.accept(this).unaryPostfix(JavaOperator.CALL, ".getBytes(" + standardCharsets + ".US_ASCII)");
+	}
+
+	@Override
+	public ExpressionString stringToUTF8(Expression value) {
+		String standardCharsets = scope.type(STANDARD_CHARSETS);
+		return value.accept(this).unaryPostfix(JavaOperator.CALL, ".getBytes(" + standardCharsets + ".UTF_8)");
+	}
+
+	@Override
+	public ExpressionString bytesAsciiToString(Expression value) {
+		String standardCharsets = scope.type(STANDARD_CHARSETS);
+		return new ExpressionString(
+				"new String(" + value.accept(this).value + ", " + standardCharsets + ".US_ASCII)",
+				JavaOperator.NEW);
+	}
+
+	@Override
+	public ExpressionString bytesUTF8ToString(Expression value) {
+		String standardCharsets = scope.type(STANDARD_CHARSETS);
+		return new ExpressionString(
+				"new String(" + value.accept(this).value + ", " + standardCharsets + ".UTF_8)",
+				JavaOperator.NEW);
 	}
 }

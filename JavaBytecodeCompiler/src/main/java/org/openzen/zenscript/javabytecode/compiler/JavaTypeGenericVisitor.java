@@ -65,10 +65,10 @@ public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
 	}
 
 
-	public String getGenericBounds(Collection<GenericParameterBound> collection) {
+	public String getGenericBounds(Collection<TypeParameterBound> collection) {
 		if (collection == null)
 			return "";
-		for (GenericParameterBound parameterBound : collection) {
+		for (TypeParameterBound parameterBound : collection) {
 			String s = parameterBound.accept(new GenericParameterBoundVisitor<String>() {
 				@Override
 				public String visitSuper(ParameterSuperBound bound) {

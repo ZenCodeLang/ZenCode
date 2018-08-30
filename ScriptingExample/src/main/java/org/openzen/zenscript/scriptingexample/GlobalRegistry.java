@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
@@ -59,7 +60,7 @@ public class GlobalRegistry {
 			// eg. package my.package with a class MyClass with a single native method test() returning a string
 			// the visitors can then during compilation check if a method is an instance of NativeMethodMember and treat it accordingly
 			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("test");
-			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, packageMyPackage, "MyClass", Modifiers.PUBLIC, null);
+			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, MODULE, packageMyPackage, "MyClass", Modifiers.PUBLIC, null);
 			JavaClass myClassInfo = new JavaClass("my.test", "MyClass", JavaClass.Kind.CLASS);
 			
 			MethodMember member = new MethodMember(CodePosition.NATIVE, myClassDefinition, Modifiers.PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING), null);
@@ -87,8 +88,9 @@ public class GlobalRegistry {
 		return globals;
 	}
 	
-	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, javaIo, "PrintStream", Modifiers.EXPORT);
-	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, javaLang, "System", Modifiers.EXPORT);
+	private final Module MODULE = new Module("scriptingExample");
+	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaIo, "PrintStream", Modifiers.EXPORT);
+	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaLang, "System", Modifiers.EXPORT);
 	private final MethodMember PRINTSTREAM_PRINTLN = new MethodMember(
 			CodePosition.NATIVE,
 			PRINTSTREAM,

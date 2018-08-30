@@ -426,17 +426,18 @@ public abstract class ParsedExpression {
 	private static ParsedExpression readPrimaryExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) {
 		switch (parser.peek().getType()) {
 			case T_INT:
-				return new ParsedExpressionInt(position, Long.parseLong(parser.next().content));
+				return new ParsedExpressionInt(position, parser.next().content);
+			case T_PREFIXED_INT:
+				return ParsedExpressionInt.parsePrefixed(position, parser.next().content);
 			case T_FLOAT:
 				return new ParsedExpressionFloat(
 						position,
-						Double.parseDouble(parser.next().content));
+						parser.next().content);
 			case T_STRING_SQ:
 			case T_STRING_DQ:
 				return new ParsedExpressionString(
 						position,
 						StringExpansion.unescape(parser.next().content).orElse(error -> {
-							
 							return "INVALID_STRING";
 						}));
 			case T_IDENTIFIER: {

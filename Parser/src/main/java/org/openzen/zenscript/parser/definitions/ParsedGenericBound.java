@@ -6,12 +6,12 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public abstract class ParsedGenericBound {
-	public abstract GenericParameterBound compile(TypeResolutionContext context);
+	public abstract TypeParameterBound compile(TypeResolutionContext context);
 }

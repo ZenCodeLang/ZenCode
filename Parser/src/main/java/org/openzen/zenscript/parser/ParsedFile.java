@@ -93,7 +93,7 @@ public class ParsedFile {
 		}
 		
 		if (failed)
-			return new SemanticModule(name, dependencies, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
+			return new SemanticModule(name, pkg.module, dependencies, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
 		
 		// scripts will store all the script blocks encountered in the files
 		PrecompilationState precompiler = new PrecompilationState();
@@ -114,7 +114,7 @@ public class ParsedFile {
 			}
 		}
 		
-		return new SemanticModule(name, dependencies, SemanticModule.State.ASSEMBLED, rootPackage, pkg.getPackage(), definitions, scripts, registry.compilationUnit, expansions, registry.getAnnotations());
+		return new SemanticModule(name, pkg.module, dependencies, SemanticModule.State.ASSEMBLED, rootPackage, pkg.getPackage(), definitions, scripts, registry.compilationUnit, expansions, registry.getAnnotations());
 	}
 	
 	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File file) throws IOException {

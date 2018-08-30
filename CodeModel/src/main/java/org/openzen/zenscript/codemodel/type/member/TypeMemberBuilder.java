@@ -35,7 +35,7 @@ import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
@@ -68,6 +68,7 @@ import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
 import static org.openzen.zencode.shared.CodePosition.BUILTIN;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
@@ -172,7 +173,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitArray(ArrayTypeID array) {
-		HighLevelDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
+		HighLevelDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		ITypeID baseType = array.elementType;
 		int dimension = array.dimension;
 
@@ -193,6 +194,23 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 					OperatorType.INDEXGET,
 					sliceHeader,
 					ARRAY_INDEXGETRANGE);
+			
+			if (baseType == BYTE)
+				castImplicit(definition, BYTE_ARRAY_AS_SBYTE_ARRAY, registry.getArray(SBYTE, 1));
+			if (baseType == SBYTE)
+				castImplicit(definition, SBYTE_ARRAY_AS_BYTE_ARRAY, registry.getArray(BYTE, 1));
+			if (baseType == SHORT)
+				castImplicit(definition, SHORT_ARRAY_AS_USHORT_ARRAY, registry.getArray(USHORT, 1));
+			if (baseType == USHORT)
+				castImplicit(definition, USHORT_ARRAY_AS_SHORT_ARRAY, registry.getArray(SHORT, 1));
+			if (baseType == INT)
+				castImplicit(definition, INT_ARRAY_AS_UINT_ARRAY, registry.getArray(UINT, 1));
+			if (baseType == UINT)
+				castImplicit(definition, UINT_ARRAY_AS_INT_ARRAY, registry.getArray(INT, 1));
+			if (baseType == LONG)
+				castImplicit(definition, LONG_ARRAY_AS_ULONG_ARRAY, registry.getArray(ULONG, 1));
+			if (baseType == ULONG)
+				castImplicit(definition, ULONG_ARRAY_AS_LONG_ARRAY, registry.getArray(LONG, 1));
 		}
 
 		FunctionHeader containsHeader = new FunctionHeader(BOOL, new FunctionParameter(baseType, "value"));
@@ -303,7 +321,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		ITypeID keyType = assoc.keyType;
 		ITypeID valueType = assoc.valueType;
 		
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		
 		constructor(builtin, ASSOC_CONSTRUCTOR);
 
@@ -346,7 +364,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BasicTypeID.VOID, null, new FunctionParameter(valueType));
 		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BasicTypeID.BOOL, null, new FunctionParameter[0]);
 		
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		constructor(builtin, GENERICMAP_CONSTRUCTOR);
 		
 		method(builtin, "getOptional", getOptionalHeader, GENERICMAP_GETOPTIONAL);
@@ -374,7 +392,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionTypeID function) {
-		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, null, "", Modifiers.EXPORT, function.header);
+		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT, function.header);
 		new CallerMember(BUILTIN, builtin, 0, function.header, FUNCTION_CALL).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
 		same(builtin, FUNCTION_SAME, function);
@@ -485,7 +503,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	public Void visitGeneric(GenericTypeID generic) {
 		TypeParameter parameter = generic.parameter;
 
-		for (GenericParameterBound bound : parameter.bounds) {
+		for (TypeParameterBound bound : parameter.bounds) {
 			bound.registerMembers(cache, members);
 		}
 		
@@ -496,7 +514,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	public Void visitRange(RangeTypeID range) {
 		ITypeID baseType = range.baseType;
 
-		ClassDefinition definition = new ClassDefinition(BUILTIN, null, "", Modifiers.EXPORT);
+		ClassDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		getter(definition, RANGE_FROM, "from", baseType);
 		getter(definition, RANGE_TO, "to", baseType);
 		if (baseType == BYTE
@@ -518,7 +536,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitModified(ModifiedTypeID modified) {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "modified", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "modified", Modifiers.EXPORT, null);
 		modified.baseType.accept(this);
 		
 		if (modified.isOptional()) {
@@ -530,7 +548,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitBool() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "bool", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "bool", Modifiers.EXPORT, null);
 		not(builtin, BOOL_NOT, BOOL);
 		and(builtin, BOOL_AND, BOOL, BOOL);
 		or(builtin, BOOL_OR, BOOL, BOOL);
@@ -545,7 +563,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitByte() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "byte", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "byte", Modifiers.EXPORT, null);
 		
 		invert(builtin, BYTE_NOT, BYTE);
 		inc(builtin, BYTE_INC, BYTE);
@@ -558,6 +576,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		and(builtin, BYTE_AND_BYTE, BYTE, BYTE);
 		or(builtin, BYTE_OR_BYTE, BYTE, BYTE);
 		xor(builtin, BYTE_XOR_BYTE, BYTE, BYTE);
+		shl(builtin, BYTE_SHL, USIZE, BYTE);
+		shr(builtin, BYTE_SHR, USIZE, BYTE);
 		compare(builtin, BYTE_COMPARE, BYTE);
 		
 		castImplicit(builtin, BYTE_TO_SBYTE, SBYTE);
@@ -583,7 +603,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitSByte() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "sbyte", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "sbyte", Modifiers.EXPORT, null);
 		
 		invert(builtin, SBYTE_NOT, SBYTE);
 		neg(builtin, SBYTE_NEG, SBYTE);
@@ -597,6 +617,9 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		and(builtin, SBYTE_AND_SBYTE, SBYTE, SBYTE);
 		or(builtin, SBYTE_OR_SBYTE, SBYTE, SBYTE);
 		xor(builtin, SBYTE_XOR_SBYTE, SBYTE, SBYTE);
+		shl(builtin, SBYTE_SHL, USIZE, SBYTE);
+		shr(builtin, SBYTE_SHR, USIZE, SBYTE);
+		ushr(builtin, SBYTE_USHR, USIZE, SBYTE);
 		compare(builtin, SBYTE_COMPARE, SBYTE);
 		
 		castImplicit(builtin, SBYTE_TO_BYTE, BYTE);
@@ -622,7 +645,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitShort() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "short", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "short", Modifiers.EXPORT, null);
 		
 		invert(builtin, SHORT_NOT, SHORT);
 		neg(builtin, SHORT_NEG, SHORT);
@@ -636,6 +659,9 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		and(builtin, SHORT_AND_SHORT, SHORT, SHORT);
 		or(builtin, SHORT_OR_SHORT, SHORT, SHORT);
 		xor(builtin, SHORT_XOR_SHORT, SHORT, SHORT);
+		shl(builtin, SHORT_SHL, USIZE, SHORT);
+		shr(builtin, SHORT_SHR, USIZE, SHORT);
+		ushr(builtin, SHORT_USHR, USIZE, SHORT);
 		compare(builtin, SHORT_COMPARE, SHORT);
 		
 		castExplicit(builtin, SHORT_TO_BYTE, BYTE);
@@ -661,7 +687,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitUShort() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "ushort", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "ushort", Modifiers.EXPORT, null);
 		
 		invert(builtin, USHORT_NOT, USHORT);
 		inc(builtin, USHORT_INC, USHORT);
@@ -674,6 +700,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		and(builtin, USHORT_AND_USHORT, USHORT, USHORT);
 		or(builtin, USHORT_OR_USHORT, USHORT, USHORT);
 		xor(builtin, USHORT_XOR_USHORT, USHORT, USHORT);
+		shl(builtin, USHORT_SHL, USIZE, USHORT);
+		shr(builtin, USHORT_SHR, USIZE, USHORT);
 		compare(builtin, USHORT_COMPARE, USHORT);
 		
 		castExplicit(builtin, USHORT_TO_BYTE, BYTE);
@@ -699,7 +727,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitInt() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "int", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "int", Modifiers.EXPORT, null);
 		
 		invert(builtin, INT_NOT, INT);
 		neg(builtin, INT_NEG, INT);
@@ -736,9 +764,9 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		xor(builtin, INT_XOR_INT, INT, INT);
 		xor(builtin, LONG_XOR_LONG, LONG, LONG, INT_TO_LONG);
 		
-		shl(builtin, INT_SHL, INT, INT);
-		shr(builtin, INT_SHR, INT, INT);
-		ushr(builtin, INT_USHR, INT, INT);
+		shl(builtin, INT_SHL, USIZE, INT);
+		shr(builtin, INT_SHR, USIZE, INT);
+		ushr(builtin, INT_USHR, USIZE, INT);
 		
 		compare(builtin, INT_COMPARE, INT);
 		compare(builtin, LONG_COMPARE, LONG, INT_TO_LONG);
@@ -780,7 +808,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 
 	private void visitUInt() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "uint", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "uint", Modifiers.EXPORT, null);
 		
 		invert(builtin, UINT_NOT, INT);
 		inc(builtin, UINT_DEC, INT);
@@ -816,8 +844,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		xor(builtin, UINT_XOR_UINT, UINT, UINT);
 		xor(builtin, ULONG_XOR_ULONG, ULONG, ULONG, UINT_TO_ULONG);
 		
-		shl(builtin, UINT_SHL, UINT, UINT);
-		shr(builtin, UINT_SHR, UINT, UINT);
+		shl(builtin, UINT_SHL, USIZE, UINT);
+		shr(builtin, UINT_SHR, USIZE, UINT);
 		
 		compare(builtin, UINT_COMPARE, UINT);
 		compare(builtin, ULONG_COMPARE, ULONG, UINT_TO_LONG);
@@ -859,7 +887,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitLong() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "long", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "long", Modifiers.EXPORT, null);
 		
 		invert(builtin, LONG_NOT, LONG);
 		neg(builtin, LONG_NEG, LONG);
@@ -888,10 +916,11 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		and(builtin, LONG_AND_LONG, LONG, LONG);
 		xor(builtin, LONG_XOR_LONG, LONG, LONG);
 		
-		shl(builtin, LONG_SHL, INT, LONG);
-		shr(builtin, LONG_SHR, INT, LONG);
-		ushr(builtin, LONG_USHR, INT, LONG);
+		shl(builtin, LONG_SHL, USIZE, LONG);
+		shr(builtin, LONG_SHR, USIZE, LONG);
+		ushr(builtin, LONG_USHR, USIZE, LONG);
 		
+		compare(builtin, LONG_COMPARE_INT, INT);
 		compare(builtin, LONG_COMPARE, LONG);
 		compare(builtin, FLOAT_COMPARE, FLOAT, LONG_TO_FLOAT);
 		compare(builtin, DOUBLE_COMPARE, DOUBLE, LONG_TO_DOUBLE);
@@ -931,7 +960,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitULong() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "ulong", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "ulong", Modifiers.EXPORT, null);
 		
 		invert(builtin, ULONG_NOT, ULONG);
 		inc(builtin, ULONG_DEC, ULONG);
@@ -959,9 +988,11 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		and(builtin, ULONG_AND_ULONG, ULONG, ULONG);
 		xor(builtin, ULONG_XOR_ULONG, ULONG, ULONG);
 		
-		shl(builtin, ULONG_SHL, INT, ULONG);
-		shr(builtin, ULONG_SHR, INT, ULONG);
+		shl(builtin, ULONG_SHL, USIZE, ULONG);
+		shr(builtin, ULONG_SHR, USIZE, ULONG);
 		
+		compare(builtin, ULONG_COMPARE_UINT, UINT);
+		compare(builtin, ULONG_COMPARE_USIZE, USIZE);
 		compare(builtin, ULONG_COMPARE, ULONG);
 		compare(builtin, FLOAT_COMPARE, FLOAT, ULONG_TO_FLOAT);
 		compare(builtin, DOUBLE_COMPARE, DOUBLE, ULONG_TO_DOUBLE);
@@ -1001,7 +1032,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitUSize() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "usize", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "usize", Modifiers.EXPORT, null);
 		
 		invert(builtin, USIZE_NOT, USIZE);
 		inc(builtin, USIZE_DEC, USIZE);
@@ -1033,9 +1064,10 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		and(builtin, USIZE_AND_USIZE, USIZE, USIZE);
 		xor(builtin, USIZE_XOR_USIZE, USIZE, USIZE);
 		
-		shl(builtin, USIZE_SHL, INT, USIZE);
-		shr(builtin, USIZE_SHR, INT, USIZE);
+		shl(builtin, USIZE_SHL, USIZE, USIZE);
+		shr(builtin, USIZE_SHR, USIZE, USIZE);
 		
+		compare(builtin, USIZE_COMPARE_UINT, UINT);
 		compare(builtin, USIZE_COMPARE, USIZE);
 		compare(builtin, ULONG_COMPARE, ULONG, USIZE_TO_ULONG);
 		compare(builtin, FLOAT_COMPARE, FLOAT, USIZE_TO_FLOAT);
@@ -1077,7 +1109,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitFloat() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "float", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "float", Modifiers.EXPORT, null);
 		
 		neg(builtin, FLOAT_NEG, FLOAT);
 		inc(builtin, FLOAT_DEC, FLOAT);
@@ -1122,7 +1154,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void visitDouble() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "double", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "double", Modifiers.EXPORT, null);
 		
 		neg(builtin, DOUBLE_NEG, DOUBLE);
 		inc(builtin, DOUBLE_DEC, DOUBLE);
@@ -1143,7 +1175,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		castExplicit(builtin, DOUBLE_TO_USHORT, USHORT);
 		castExplicit(builtin, DOUBLE_TO_INT, INT);
 		castExplicit(builtin, DOUBLE_TO_UINT, UINT);
-		castExplicit(builtin, DOUBLE_TO_ULONG, ULONG);
+		castExplicit(builtin, DOUBLE_TO_LONG, LONG);
 		castExplicit(builtin, DOUBLE_TO_ULONG, ULONG);
 		castExplicit(builtin, DOUBLE_TO_USIZE, USIZE);
 		castImplicit(builtin, DOUBLE_TO_FLOAT, FLOAT);
@@ -1158,7 +1190,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 
 	private void visitChar() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "char", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "char", Modifiers.EXPORT, null);
 		
 		add(builtin, CHAR_ADD_INT, INT, CHAR);
 		sub(builtin, CHAR_SUB_INT, INT, CHAR);
@@ -1187,7 +1219,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 
 	private void visitString() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, null, "string", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "string", Modifiers.EXPORT, null);
 		
 		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, registry.getArray(CHAR, 1));
 		
@@ -1210,8 +1242,8 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 		processType(builtin, STRING);
 	}
 	
-	private void castedTargetCall(OperatorMember member, BuiltinID casterBuiltin) {
-		CasterMemberRef caster = castImplicitRef(member.definition, casterBuiltin, member.header.parameters[0].type);
+	private void castedTargetCall(OperatorMember member, ITypeID toType, BuiltinID casterBuiltin) {
+		CasterMemberRef caster = castImplicitRef(member.definition, casterBuiltin, toType);
 		TranslatedOperatorMemberRef method = new TranslatedOperatorMemberRef(member, GenericMapper.EMPTY, call -> member.ref(null).call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope));
 		members.getOrCreateGroup(member.operator).addMethod(method, TypeMemberPriority.SPECIFIED);
 	}
@@ -1269,7 +1301,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void add(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(addOp(definition, id, operand, result), caster);
+		castedTargetCall(addOp(definition, id, operand, result), result, caster);
 	}
 	
 	private OperatorMember subOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1287,7 +1319,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void sub(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(subOp(definition, id, operand, result), caster);
+		castedTargetCall(subOp(definition, id, operand, result), result, caster);
 	}
 	
 	private OperatorMember mulOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1305,7 +1337,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void mul(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(mulOp(definition, id, operand, result), caster);
+		castedTargetCall(mulOp(definition, id, operand, result), result, caster);
 	}
 	
 	private OperatorMember divOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1323,7 +1355,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void div(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(divOp(definition, id, operand, result), caster);
+		castedTargetCall(divOp(definition, id, operand, result), result, caster);
 	}
 	
 	private OperatorMember modOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1341,7 +1373,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void mod(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(modOp(definition, id, operand, result), caster);
+		castedTargetCall(modOp(definition, id, operand, result), result, caster);
 	}
 	
 	private OperatorMember shlOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1359,7 +1391,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void shl(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(shlOp(definition, id, operand, result), caster);
+		castedTargetCall(shlOp(definition, id, operand, result), result, caster);
 	}
 	
 	private OperatorMember shrOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1377,7 +1409,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void shr(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(shrOp(definition, id, operand, result), caster);
+		castedTargetCall(shrOp(definition, id, operand, result), result, caster);
 	}
 	
 	private OperatorMember ushrOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1395,7 +1427,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void ushr(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(ushrOp(definition, id, operand, result), caster);
+		castedTargetCall(ushrOp(definition, id, operand, result), result, caster);
 	}
 	
 	private OperatorMember orOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1431,7 +1463,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void and(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(andOp(definition, id, operand, result), caster);
+		castedTargetCall(andOp(definition, id, operand, result), result, caster);
 	}
 	
 	private OperatorMember xorOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1449,7 +1481,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void xor(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(xorOp(definition, id, operand, result), caster);
+		castedTargetCall(xorOp(definition, id, operand, result), result, caster);
 	}
 	
 	private void indexGet(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
@@ -1487,7 +1519,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	}
 	
 	private void compare(HighLevelDefinition definition, BuiltinID id, ITypeID operand, BuiltinID caster) {
-		castedTargetCall(compareOp(definition, id, operand), caster);
+		castedTargetCall(compareOp(definition, id, operand), operand, caster);
 	}
 	
 	private void getter(HighLevelDefinition cls, BuiltinID id, String name, ITypeID type) {

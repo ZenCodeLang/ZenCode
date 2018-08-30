@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.generic.GenericParameterBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
@@ -178,7 +178,7 @@ public class ValidationUtils {
 		
 		for (int i = 0; i < typeParameters.length; i++) {
 			TypeParameter typeParameter = typeParameters[i];
-			for (GenericParameterBound bound : typeParameter.bounds) {
+			for (TypeParameterBound bound : typeParameter.bounds) {
 				// TODO - obtain member cache for validation
 				/*if (!bound.matches(typeArguments[i])) {
 					target.logError(

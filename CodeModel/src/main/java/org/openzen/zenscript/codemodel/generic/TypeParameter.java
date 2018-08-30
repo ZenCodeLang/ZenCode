@@ -22,25 +22,25 @@ public class TypeParameter {
 	
 	public final CodePosition position;
 	public final String name;
-	public final List<GenericParameterBound> bounds = new ArrayList<>();
+	public final List<TypeParameterBound> bounds = new ArrayList<>();
 	
 	public TypeParameter(CodePosition position, String name) {
 		this.position = position;
 		this.name = name;
 	}
 	
-	private TypeParameter(CodePosition position, String name, List<GenericParameterBound> bounds) {
+	private TypeParameter(CodePosition position, String name, List<TypeParameterBound> bounds) {
 		this.position = position;
 		this.name = name;
 		bounds.addAll(bounds);
 	}
 	
-	public void addBound(GenericParameterBound bound) {
+	public void addBound(TypeParameterBound bound) {
 		bounds.add(bound);
 	}
 	
 	public boolean isObjectType() {
-		for (GenericParameterBound bound : bounds)
+		for (TypeParameterBound bound : bounds)
 			if (bound.isObjectType())
 				return true;
 		
@@ -48,7 +48,7 @@ public class TypeParameter {
 	}
 	
 	public boolean matches(LocalMemberCache cache, ITypeID type) {
-		for (GenericParameterBound bound : bounds) {
+		for (TypeParameterBound bound : bounds) {
 			if (!bound.matches(cache, type))
 				return false;
 		}
@@ -68,7 +68,7 @@ public class TypeParameter {
 	public String getCanonical() {
 		StringBuilder result = new StringBuilder();
 		result.append(name);
-		for(GenericParameterBound bound : bounds) {
+		for(TypeParameterBound bound : bounds) {
 			result.append(':');
 			result.append(bound.getCanonical());
 		}

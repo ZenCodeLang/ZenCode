@@ -27,4 +27,12 @@ public interface JavaNativeTranslator<T> {
 	T copy(Expression value);
 	
 	T copyTo(CallExpression call);
+	
+	T stringToAscii(Expression value);
+	
+	T stringToUTF8(Expression value);
+	
+	T bytesAsciiToString(Expression value);
+	
+	T bytesUTF8ToString(Expression value);
 }

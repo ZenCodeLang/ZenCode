@@ -31,10 +31,6 @@ import org.openzen.zenscript.javashared.JavaSynthesizedClassNamer;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
-	private static final int PUBLIC = Opcodes.ACC_PUBLIC;
-	private static final int STATIC = Opcodes.ACC_STATIC;
-	private static final int PUBLIC_STATIC = PUBLIC | STATIC;
-
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
 	private static final JavaMethod BOOLEAN_TO_STRING = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "toString", "(Z)Ljava/lang/String;");
 	private static final JavaMethod BYTE_PARSE = JavaMethod.getNativeStatic(JavaClass.BYTE, "parseByte", "(Ljava/lang/String;)B");
@@ -224,11 +220,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				case SHORT_COMPARE:
 				case INT_COMPARE:
 				case CHAR_COMPARE:
+				case USIZE_COMPARE:
 					expression.left.accept(this);
 					expression.right.accept(this);
 					compareInt(expression.comparison);
 					break;
 				case UINT_COMPARE:
+				case USIZE_COMPARE_UINT:
 					expression.left.accept(this);
 					expression.right.accept(this);
 					javaWriter.invokeStatic(INTEGER_COMPARE_UNSIGNED);
@@ -243,6 +241,22 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				case ULONG_COMPARE:
 					expression.left.accept(this);
 					expression.right.accept(this);
+					javaWriter.invokeStatic(LONG_COMPARE_UNSIGNED);
+					compareGeneric(expression.comparison);
+					break;
+				case ULONG_COMPARE_UINT:
+					expression.left.accept(this);
+					expression.right.accept(this);
+					javaWriter.i2l();
+					javaWriter.constant(0xFFFF_FFFFL);
+					javaWriter.lAnd();
+					javaWriter.invokeStatic(LONG_COMPARE_UNSIGNED);
+					compareGeneric(expression.comparison);
+					break;
+				case ULONG_COMPARE_USIZE:
+					expression.left.accept(this);
+					expression.right.accept(this);
+					javaWriter.i2l();
 					javaWriter.invokeStatic(LONG_COMPARE_UNSIGNED);
 					compareGeneric(expression.comparison);
 					break;
@@ -491,14 +505,24 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case USIZE_XOR_USIZE:
 				javaWriter.iXor();
 				break;
+			case BYTE_SHL:
+			case SBYTE_SHL:
+			case SHORT_SHL:
+			case USHORT_SHL:
 			case INT_SHL:
 			case UINT_SHL:
 			case USIZE_SHL:
 				javaWriter.iShl();
 				break;
+			case SBYTE_SHR:
+			case SHORT_SHR:
 			case INT_SHR:
 				javaWriter.iShr();
 				break;
+			case BYTE_SHR:
+			case SBYTE_USHR:
+			case USHORT_SHR:
+			case SHORT_USHR:
 			case INT_USHR:
 			case UINT_SHR:
 			case USIZE_SHR:
@@ -1628,7 +1652,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", signature);
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
-		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{JavaSynthesizedClassNamer.createFunctionName(new FunctionTypeID(null, expression.header)).cls.internalName});
+		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header))});
 		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 
 		javaWriter.newObject(name);

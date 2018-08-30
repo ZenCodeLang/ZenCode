@@ -55,7 +55,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 	public ParsedEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, HighLevelDefinition outerDefinition) {
 		super(position, modifiers, pkg, annotations);
 		
-		compiled = new EnumDefinition(position, pkg.getPackage(), name, modifiers, outerDefinition);
+		compiled = new EnumDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
 	}
 	
 	public void addEnumValue(ParsedEnumConstant value) {

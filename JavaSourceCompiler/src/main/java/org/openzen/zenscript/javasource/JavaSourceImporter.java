@@ -35,7 +35,10 @@ public class JavaSourceImporter {
 	}
 	
 	public String importType(JavaClass cls) {
-		if (imports.containsKey(cls.outer.getName())) {
+		if (cls == null)
+			throw new NullPointerException();
+		
+		if (cls.outer != null && imports.containsKey(cls.outer.getName())) {
 			JavaClass imported = imports.get(cls.outer.getName());
 			usedImports.add(imported);
 			return imported.fullName.equals(cls.outer.fullName) ? cls.getName() : cls.fullName;

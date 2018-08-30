@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
@@ -16,8 +17,8 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class ExpansionDefinition extends HighLevelDefinition {
 	public ITypeID target;
 	
-	public ExpansionDefinition(CodePosition position, ZSPackage pkg, int modifiers, HighLevelDefinition outerDefinition) {
-		super(position, pkg, null, modifiers, outerDefinition);
+	public ExpansionDefinition(CodePosition position, Module module, ZSPackage pkg, int modifiers, HighLevelDefinition outerDefinition) {
+		super(position, module, pkg, null, modifiers, outerDefinition);
 	}
 
 	@Override

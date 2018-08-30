@@ -462,4 +462,8 @@ public class FunctionHeader {
 		
 		return false;
 	}
+
+	public boolean accepts(int arguments) {
+		return arguments >= this.minParameters && arguments <= this.maxParameters;
+	}
 }

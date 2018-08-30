@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.definition.MemberCollector;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
@@ -31,6 +32,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public abstract class HighLevelDefinition extends Taggable {
 	public final CodePosition position;
+	public final Module module;
 	public final ZSPackage pkg;
 	public final String name;
 	public final int modifiers;
@@ -43,8 +45,12 @@ public abstract class HighLevelDefinition extends Taggable {
 	
 	private boolean isDestructible = false;
 	
-	public HighLevelDefinition(CodePosition position, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+	public HighLevelDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+		if (module == null)
+			throw new NullPointerException();
+		
 		this.position = position;
+		this.module = module;
 		this.pkg = pkg;
 		this.name = name;
 		this.modifiers = modifiers;
@@ -98,6 +104,11 @@ public abstract class HighLevelDefinition extends Taggable {
 	public void addMember(IDefinitionMember member) {
 		if (!members.contains(member))
 			members.add(member);
+	}
+	
+	public void collectMembers(MemberCollector collector) {
+		for (IDefinitionMember member : members)
+			collector.member(member);
 	}
 	
 	public boolean isDestructible() {
