@@ -373,6 +373,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
+			//if (expression.member.getHeader().returnType != expression.type)
+
+			//TODO see if the types differ (e.g. if a generic method was invoked) and only cast then
+			if(expression.type != BasicTypeID.VOID)
+				javaWriter.checkCast(context.getInternalName(expression.type));
 			return null;
 		}
 
@@ -1622,7 +1627,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				context.getInternalName(expression.objectType),
 				"<init>",
 				context.getMethodDescriptor(expression.constructor.getHeader()));
-			
+
         CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, javaWriter.forDefinition, false);
         return null;
     }
@@ -1645,10 +1650,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		final String name = context.getLambdaCounter();
 
 		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", signature);
-		final ClassWriter lambdaCW = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header))});
 		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
-		
+
 		javaWriter.newObject(name);
 		javaWriter.dup();
 
@@ -1666,7 +1671,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			constructorWriter.dup();
 			Type type = context.getType(capture.type);
 			lambdaCW.visitField(Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE, "captured" + ++i, type.getDescriptor(), null, null).visitEnd();
-			
+
 			capture.accept(this);
 
 			constructorWriter.load(type, i);
@@ -1701,9 +1706,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				return null;
 			}
 		});
-		
+
 		expression.body.accept(CSV);
-		
+
         functionWriter.ret();
 		functionWriter.end();
 		lambdaCW.visitEnd();
@@ -2116,7 +2121,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     public Void visitNew(NewExpression expression) {
 		// TODO: this code is incorrect!
 		JavaMethod method = expression.constructor.getTag(JavaMethod.class);
-		
+
         final String type;
         if (expression.type instanceof DefinitionTypeID)
             type = ((DefinitionTypeID) expression.type).definition.name;
@@ -2125,11 +2130,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
         javaWriter.newObject(type);
         javaWriter.dup();
-		
+
 		for (Expression argument : expression.arguments.arguments) {
 			argument.accept(this);
 		}
-		
+
         javaWriter.invokeSpecial(method);
 		return null;
 	}
@@ -2444,7 +2449,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         }
 		if (methodInfo.genericResult)
 			getJavaWriter().checkCast(context.getInternalName(resultType));
-		
+
         return true;
     }
 

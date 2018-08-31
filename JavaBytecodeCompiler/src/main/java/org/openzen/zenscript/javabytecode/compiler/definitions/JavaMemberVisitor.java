@@ -1,5 +1,6 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
+import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -38,7 +39,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         this.clinitStatementVisitor.start();
         CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
     }
-	
+
 	@Override
 	public Void visitConst(ConstMember member) {
 		JavaField field = member.getTag(JavaField.class);
@@ -122,15 +123,15 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.modifiers);
         final JavaMethod method = member.getTag(JavaMethod.class);
 
-        final Label methodStart = new Label();
-        final Label methodEnd = new Label();
-        final JavaWriter methodWriter = new JavaWriter(writer, method, definition, context.getMethodSignature(member.header), null);
-        methodWriter.label(methodStart);
-        for (final FunctionParameter parameter : member.header.parameters) {
-            methodWriter.nameParameter(0, parameter.name);
-            if (!isAbstract)
-                methodWriter.nameVariable(parameter.getTag(JavaParameterInfo.class).index, parameter.name, methodStart, methodEnd, context.getType(parameter.type));
-        }
+		final Label methodStart = new Label();
+		final Label methodEnd = new Label();
+	    final JavaWriter methodWriter = new JavaWriter(writer, method, definition, context.getMethodSignature(member.header), null);
+		methodWriter.label(methodStart);
+		for (final FunctionParameter parameter : member.header.parameters) {
+			methodWriter.nameParameter(0, parameter.name);
+			if (!isAbstract)
+				methodWriter.nameVariable(parameter.getTag(JavaParameterInfo.class).index, parameter.name, methodStart, methodEnd, context.getType(parameter.type));
+		}
 
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, methodWriter);
 

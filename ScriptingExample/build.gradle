@@ -18,5 +18,5 @@ dependencies {
 	compile project(':JavaBytecodeCompiler')
 	compile project(':JavaShared')
 	compile project(':CodeFormatter')
-	//compile project(':ScriptingHost')
+    //compile project(':ScriptingHost')
 }
