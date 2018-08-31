@@ -5,21 +5,16 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.type.FunctionTypeID;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
-import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaSynthesizedClass;
-import org.openzen.zenscript.javashared.JavaSynthesizedClassNamer;
+import org.openzen.zenscript.javashared.JavaSynthesizedFunction;
+import org.openzen.zenscript.javashared.JavaSynthesizedRange;
 import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
 import org.openzen.zenscript.javashared.JavaTypeInternalNameVisitor;
@@ -33,19 +28,20 @@ public class JavaBytecodeContext extends JavaContext {
 	private final TypeGenerator typeGenerator;
 	private final JavaTypeInternalNameVisitor internalNameVisitor;
 	private final JavaTypeDescriptorVisitor descriptorVisitor;
-	private final Map<String, JavaSynthesizedClass> functions = new HashMap<>();
-	private final Map<String, JavaSynthesizedClass> ranges = new HashMap<>();
 	private int lambdaCounter = 0;
 	
-	public JavaBytecodeContext(JavaModule module) {
+	public JavaBytecodeContext(GlobalTypeRegistry registry, JavaModule module) {
+		super(registry);
+		
 		this.module = module;
 		
 		typeGenerator = new TypeGenerator();
-		internalNameVisitor = new JavaTypeInternalNameVisitor(typeGenerator);
-		descriptorVisitor = new JavaTypeDescriptorVisitor(typeGenerator);
+		internalNameVisitor = new JavaTypeInternalNameVisitor(this);
+		descriptorVisitor = new JavaTypeDescriptorVisitor(this);
 	}
 	
-	public JavaSyntheticClassGenerator getTypeGenerator() {
+	@Override
+	protected JavaSyntheticClassGenerator getTypeGenerator() {
 		return typeGenerator;
 	}
 	
@@ -66,69 +62,45 @@ public class JavaBytecodeContext extends JavaContext {
 		module.register(name, bytecode);
 	}
 
-    private JavaSynthesizedClass getLambdaInterface(FunctionTypeID function) {
-		String signature = JavaSynthesizedClassNamer.getFunctionSignature(function);
-		if (functions.containsKey(signature))
-			return functions.get(signature).withTypeParameters(JavaSynthesizedClassNamer.extractTypeParameters(function));
-		
-		JavaSynthesizedClass result = JavaSynthesizedClassNamer.createFunctionName(function);
-		functions.put(signature, result);
-		
-        createLambdaInterface(function.header, result.cls);
-        return result;
-    }
-	
-	private JavaSynthesizedClass getRangeType(RangeTypeID type) {
-		String signature = JavaSynthesizedClassNamer.getRangeSignature(type);
-		if (ranges.containsKey(signature))
-			return ranges.get(signature).withTypeParameters(JavaSynthesizedClassNamer.extractTypeParameters(type));
-		
-		JavaSynthesizedClass result = JavaSynthesizedClassNamer.createRangeName(type);
-		ranges.put(signature, result);
-		
-		createRangeClass(type.baseType, result.cls);
-		return result;
-	}
-
-    private void createLambdaInterface(FunctionHeader header, JavaClass cls) {
+    private void createLambdaInterface(JavaSynthesizedFunction function) {
         ClassWriter ifaceWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         ifaceWriter.visitAnnotation("java/lang/FunctionalInterface", true).visitEnd();
-        ifaceWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, cls.internalName, null, "java/lang/Object", null);
+        ifaceWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, function.cls.internalName, null, "java/lang/Object", null);
 
         ifaceWriter
 				.visitMethod(
 					Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT,
 					"accept",
-					getMethodDescriptor(header),
-					getMethodSignature(header),
+					getMethodDescriptor(function.header),
+					getMethodSignature(function.header),
 					null)
 				.visitEnd();
 
-        register(cls.internalName, ifaceWriter.toByteArray());
+        register(function.cls.internalName, ifaceWriter.toByteArray());
     }
 	
-	private void createRangeClass(ITypeID baseType, JavaClass cls) {
+	private void createRangeClass(JavaSynthesizedRange range) {
 		ClassWriter rangeWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		rangeWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, cls.internalName, null, "java/lang/Object", null);
-		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "from", getDescriptor(baseType), null, null).visitEnd();
-		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "to", getDescriptor(baseType), null, null).visitEnd();
+		rangeWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, range.cls.internalName, null, "java/lang/Object", null);
+		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "from", getDescriptor(range.baseType), null, null).visitEnd();
+		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "to", getDescriptor(range.baseType), null, null).visitEnd();
 		
-		JavaMethod method = JavaMethod.getConstructor(cls, "(" + getDescriptor(baseType) + getDescriptor(baseType) + ")V", Opcodes.ACC_PUBLIC);
+		JavaMethod method = JavaMethod.getConstructor(range.cls, "(" + getDescriptor(range.baseType) + getDescriptor(range.baseType) + ")V", Opcodes.ACC_PUBLIC);
 		JavaWriter constructorWriter = new JavaWriter(rangeWriter, method, null, method.descriptor, null);
 		constructorWriter.loadObject(0);
 		constructorWriter.invokeSpecial("java/lang/Object", "<init>", "()V");
 		constructorWriter.loadObject(0);
-		constructorWriter.load(getType(baseType), 1);
-		constructorWriter.putField(cls.internalName, "from", getDescriptor(baseType));
+		constructorWriter.load(getType(range.baseType), 1);
+		constructorWriter.putField(range.cls.internalName, "from", getDescriptor(range.baseType));
 		constructorWriter.loadObject(0);
-		constructorWriter.load(getType(baseType), 2);
-		constructorWriter.putField(cls.internalName, "to", getDescriptor(baseType));
+		constructorWriter.load(getType(range.baseType), 2);
+		constructorWriter.putField(range.cls.internalName, "to", getDescriptor(range.baseType));
 		constructorWriter.ret();
 		constructorWriter.end();
 		
 		rangeWriter.visitEnd();
 		
-		register(cls.internalName, rangeWriter.toByteArray());
+		register(range.cls.internalName, rangeWriter.toByteArray());
 	}
 
     public String getLambdaCounter() {
@@ -138,13 +110,13 @@ public class JavaBytecodeContext extends JavaContext {
 	private class TypeGenerator implements JavaSyntheticClassGenerator {
 
 		@Override
-		public JavaSynthesizedClass synthesizeFunction(FunctionTypeID type) {
-			return getLambdaInterface(type);
+		public void synthesizeFunction(JavaSynthesizedFunction function) {
+			createLambdaInterface(function);
 		}
 
 		@Override
-		public JavaSynthesizedClass synthesizeRange(RangeTypeID type) {
-			return getRangeType(type);
+		public void synthesizeRange(JavaSynthesizedRange range) {
+			createRangeClass(range);
 		}
 	}
 }

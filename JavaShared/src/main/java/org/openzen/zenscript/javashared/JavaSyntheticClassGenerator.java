@@ -5,15 +5,12 @@
  */
 package org.openzen.zenscript.javashared;
 
-import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
-
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface JavaSyntheticClassGenerator {
-	JavaSynthesizedClass synthesizeFunction(FunctionTypeID type);
+	void synthesizeFunction(JavaSynthesizedFunction function);
 	
-	JavaSynthesizedClass synthesizeRange(RangeTypeID type);
+	void synthesizeRange(JavaSynthesizedRange range);
 }

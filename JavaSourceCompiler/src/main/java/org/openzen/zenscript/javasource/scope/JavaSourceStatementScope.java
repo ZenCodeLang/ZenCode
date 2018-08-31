@@ -21,6 +21,7 @@ import org.openzen.zenscript.javasource.JavaSourceFormattingSettings;
 import org.openzen.zenscript.javasource.JavaSourceExpressionFormatter;
 import org.openzen.zenscript.javasource.JavaSourceStatementFormatter;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javasource.JavaSourceContext;
 
 /**
  *
@@ -33,6 +34,7 @@ public class JavaSourceStatementScope {
 	public final LoopStatement innerLoop;
 	public final boolean isExpansion;
 	public final ITypeID thisType;
+	public final JavaSourceContext context;
 	
 	private final JavaSourceStatementScope outer;
 	private final Set<String> localVariables = new HashSet<>();
@@ -53,6 +55,7 @@ public class JavaSourceStatementScope {
 		this.outer = outer;
 		this.isExpansion = isExpansion;
 		this.thisType = fileScope.thisType;
+		this.context = fileScope.context;
 		
 		if (header != null) {
 			for (FunctionParameter parameter : header.parameters)

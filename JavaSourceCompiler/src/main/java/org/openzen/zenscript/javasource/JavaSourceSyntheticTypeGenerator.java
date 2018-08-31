@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.javasource;
 
-import org.openzen.zenscript.javashared.JavaSynthesizedClass;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,13 +12,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaSynthesizedClassNamer;
+import org.openzen.zenscript.javashared.JavaSynthesizedFunction;
+import org.openzen.zenscript.javashared.JavaSynthesizedRange;
 import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 
 /**
@@ -27,42 +23,28 @@ import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
  * @author Hoofdgebruiker
  */
 public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGenerator {
-	private final Map<String, JavaSynthesizedClass> functions = new HashMap<>();
-	private final Map<String, JavaSynthesizedClass> ranges = new HashMap<>();
 	private final File directory;
 	private final JavaSourceFormattingSettings settings;
+	private final JavaSourceContext context;
 	
-	public JavaSourceSyntheticTypeGenerator(File directory, JavaSourceFormattingSettings settings) {
+	public JavaSourceSyntheticTypeGenerator(File directory, JavaSourceFormattingSettings settings, JavaSourceContext context) {
 		this.directory = new File(directory, "zsynthetic");
 		this.settings = settings;
+		this.context = context;
 	}
 	
 	@Override
-	public JavaSynthesizedClass synthesizeFunction(FunctionTypeID function) {
-		String signature = JavaSynthesizedClassNamer.getFunctionSignature(function);
-		if (functions.containsKey(signature))
-			return functions.get(signature).withTypeParameters(JavaSynthesizedClassNamer.extractTypeParameters(function));
-		
-		JavaSynthesizedClass result = JavaSynthesizedClassNamer.createFunctionName(function);
-		functions.put(signature, result);
-		
-		JavaSourceImporter importer = new JavaSourceImporter(result.cls);
-		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, this);
+	public void synthesizeFunction(JavaSynthesizedFunction function) {
+		JavaSourceImporter importer = new JavaSourceImporter(function.cls);
+		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, context);
 		
 		StringBuilder contents = new StringBuilder();
 		contents.append("@FunctionalInterface\n");
 		contents.append("public interface ");
-		contents.append(result.cls.getName());
-		JavaSourceUtils.formatTypeParameters(typeVisitor, contents, result.typeParameters, false);
+		contents.append(function.cls.getName());
+		JavaSourceUtils.formatTypeParameters(typeVisitor, contents, function.typeParameters, false);
 		contents.append(" {\n");
 		contents.append(settings.indent);
-		if (function.header.getNumberOfTypeParameters() > 0) {
-			contents.append('<');
-			for (int i = 0; i < function.header.getNumberOfTypeParameters(); i++) {
-				
-			}
-			contents.append("> ");
-		}
 		contents.append(function.header.getReturnType().accept(typeVisitor));
 		contents.append(' ');
 		contents.append("invoke(");
@@ -82,49 +64,40 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		contents.append(");\n");
 		contents.append("}\n");
 		
-		writeFile(result, importer, contents);
-		return result;
+		writeFile(function.cls, importer, contents);
 	}
 	
 	@Override
-	public JavaSynthesizedClass synthesizeRange(RangeTypeID type) {
-		String signature = JavaSynthesizedClassNamer.getRangeSignature(type);
-		if (ranges.containsKey(signature))
-			return ranges.get(signature).withTypeParameters(JavaSynthesizedClassNamer.extractTypeParameters(type));
-		
-		JavaSynthesizedClass result = JavaSynthesizedClassNamer.createRangeName(type);
-		functions.put(signature, result);
-		
-		JavaSourceImporter importer = new JavaSourceImporter(result.cls);
-		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, this);
+	public void synthesizeRange(JavaSynthesizedRange range) {
+		JavaSourceImporter importer = new JavaSourceImporter(range.cls);
+		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, context);
 		
 		StringBuilder contents = new StringBuilder();
-		contents.append("public final class ").append(result.cls.getName()).append(" {\n");
-		contents.append(settings.indent).append("public final ").append(type.baseType.accept(typeVisitor)).append(" from;\n");
-		contents.append(settings.indent).append("public final ").append(type.baseType.accept(typeVisitor)).append(" to;\n");
+		contents.append("public final class ").append(range.cls.getName()).append(" {\n");
+		contents.append(settings.indent).append("public final ").append(range.baseType.accept(typeVisitor)).append(" from;\n");
+		contents.append(settings.indent).append("public final ").append(range.baseType.accept(typeVisitor)).append(" to;\n");
 		contents.append(settings.indent).append("\n");
 		contents.append(settings.indent)
 				.append("public ")
-				.append(result.cls.getName())
+				.append(range.cls.getName())
 				.append("(")
-				.append(type.baseType.accept(typeVisitor))
+				.append(range.baseType.accept(typeVisitor))
 				.append(" from, ")
-				.append(type.baseType.accept(typeVisitor))
+				.append(range.baseType.accept(typeVisitor))
 				.append(" to) {\n");
 		contents.append(settings.indent).append(settings.indent).append("this.from = from;\n");
 		contents.append(settings.indent).append(settings.indent).append("this.to = to;\n");
 		contents.append(settings.indent).append("}\n");
 		contents.append("}\n");
 		
-		writeFile(result, importer, contents);
-		return result;
+		writeFile(range.cls, importer, contents);
 	}
 	
-	private void writeFile(JavaSynthesizedClass result, JavaSourceImporter importer, StringBuilder contents) {
+	private void writeFile(JavaClass cls, JavaSourceImporter importer, StringBuilder contents) {
 		if (!directory.exists())
 			directory.mkdirs();
 		
-		File file = new File(directory, result.cls.getName() + ".java");
+		File file = new File(directory, cls.getName() + ".java");
 		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
 			writer.write("package zsynthetic;\n");
 			

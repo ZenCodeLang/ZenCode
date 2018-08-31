@@ -27,7 +27,6 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaSynthesizedClass;
-import org.openzen.zenscript.javashared.JavaSynthesizedClassNamer;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
@@ -1985,13 +1984,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case RANGE_FROM: {
 				RangeTypeID type = (RangeTypeID)expression.target.type;
-				JavaClass cls = context.getTypeGenerator().synthesizeRange(type).cls;
+				JavaClass cls = context.getRange(type).cls;
 				javaWriter.getField(cls.internalName, "from", context.getDescriptor(type.baseType));
 				break;
 			}
 			case RANGE_TO:
 				RangeTypeID type = (RangeTypeID)expression.target.type;
-				JavaClass cls = context.getTypeGenerator().synthesizeRange(type).cls;
+				JavaClass cls = context.getRange(type).cls;
 				javaWriter.getField(cls.internalName, "to", context.getDescriptor(type.baseType));
 				break;
 		}
@@ -2192,7 +2191,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitRange(RangeExpression expression) {
 		RangeTypeID type = (RangeTypeID)expression.type;
-		JavaSynthesizedClass cls = context.getTypeGenerator().synthesizeRange(type);
+		JavaSynthesizedClass cls = context.getRange(type);
 		javaWriter.newObject(cls.cls.internalName);
 		javaWriter.dup();
 		expression.from.accept(this);

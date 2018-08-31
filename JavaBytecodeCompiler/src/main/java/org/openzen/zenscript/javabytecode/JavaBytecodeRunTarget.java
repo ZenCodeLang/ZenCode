@@ -25,7 +25,7 @@ public class JavaBytecodeRunTarget implements Target {
 
 	@Override
 	public JavaCompiler createCompiler(SemanticModule module) {
-		return new JavaCompiler(debugCompiler, null);
+		return new JavaCompiler(module.compilationUnit.globalTypeRegistry, debugCompiler, null);
 	}
 
 	@Override

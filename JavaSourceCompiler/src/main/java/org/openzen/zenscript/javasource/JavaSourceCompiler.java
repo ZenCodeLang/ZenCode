@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.javasource;
 
-import org.openzen.zenscript.javashared.JavaContext;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,22 +24,18 @@ import org.openzen.zenscript.javashared.JavaClass;
  */
 public class JavaSourceCompiler implements ZenCodeCompiler {
 	public final JavaSourceFormattingSettings settings;
-	public final JavaSourceSyntheticTypeGenerator typeGenerator;
 	public final JavaSourceSyntheticHelperGenerator helperGenerator;
 	
 	private final File directory;
 	private final Map<File, JavaSourceFile> sourceFiles = new HashMap<>();
-	
-	private final Map<String, Integer> classNameCounters = new HashMap<>();
+	public final JavaSourceContext context;
 	
 	public JavaSourceCompiler(File directory, CompilationUnit compilationUnit) {
 		if (!directory.exists())
 			directory.mkdirs();
 		
 		settings = new JavaSourceFormattingSettings.Builder().build();
-		typeGenerator = new JavaSourceSyntheticTypeGenerator(directory, settings);
-		
-		JavaSourceContext context = new JavaSourceContext(typeGenerator);
+		context = new JavaSourceContext(compilationUnit.globalTypeRegistry, directory, settings);
 		helperGenerator = new JavaSourceSyntheticHelperGenerator(context, directory, settings);
 		
 		this.directory = directory;
@@ -68,7 +63,6 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	
 	@Override
 	public void finish() {
-		JavaSourceContext context = new JavaSourceContext(typeGenerator);
 		for (JavaSourceFile sourceFile : sourceFiles.values()) {
 			sourceFile.prepare(context);
 		}

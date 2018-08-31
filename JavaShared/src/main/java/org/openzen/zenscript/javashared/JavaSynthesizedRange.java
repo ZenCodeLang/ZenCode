@@ -5,18 +5,21 @@
  */
 package org.openzen.zenscript.javashared;
 
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSynthesizedClass {
+public class JavaSynthesizedRange {
 	public final JavaClass cls;
-	public final ITypeID[] typeArguments;
+	public final TypeParameter[] typeParameters;
+	public final ITypeID baseType;
 	
-	public JavaSynthesizedClass(JavaClass cls, ITypeID[] typeArguments) {
+	public JavaSynthesizedRange(JavaClass cls, TypeParameter[] typeParameters, ITypeID baseType) {
 		this.cls = cls;
-		this.typeArguments = typeArguments;
+		this.typeParameters = typeParameters;
+		this.baseType = baseType;
 	}
 }

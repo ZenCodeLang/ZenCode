@@ -25,6 +25,7 @@ import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVis
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
@@ -45,14 +46,14 @@ public class JavaCompiler implements ZenCodeCompiler {
 	private final List<HighLevelDefinition> definitions = new ArrayList<>();
 	private final List<ScriptBlock> scripts = new ArrayList<>();
 	
-	public JavaCompiler(File jarFile) {
-		this(false, jarFile);
+	public JavaCompiler(GlobalTypeRegistry registry, File jarFile) {
+		this(registry, false, jarFile);
 	}
 
-	public JavaCompiler(boolean debug, File jarFile) {
+	public JavaCompiler(GlobalTypeRegistry registry, boolean debug, File jarFile) {
 		target = new JavaModule(new File("classes"));
 		this.jarFile = jarFile;
-		this.context = new JavaBytecodeContext(target);
+		this.context = new JavaBytecodeContext(registry, target);
 		
 		scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);

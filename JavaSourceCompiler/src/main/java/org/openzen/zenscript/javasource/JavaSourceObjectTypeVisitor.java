@@ -12,8 +12,8 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
  * @author Hoofdgebruiker
  */
 public class JavaSourceObjectTypeVisitor extends JavaSourceTypeVisitor {
-	public JavaSourceObjectTypeVisitor(JavaSourceImporter importer, JavaSourceSyntheticTypeGenerator typeGenerator) {
-		super(importer, typeGenerator);
+	public JavaSourceObjectTypeVisitor(JavaSourceImporter importer, JavaSourceContext context) {
+		super(importer, context);
 	}
 	
 	@Override
