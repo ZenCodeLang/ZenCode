@@ -14,15 +14,15 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaTypeNameVisitor implements ITypeVisitor<String> {
+public class JavaTypeNameVisitor implements TypeVisitor<String> {
 	public JavaTypeNameVisitor() {}
 
 	@Override

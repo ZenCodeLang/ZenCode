@@ -69,8 +69,8 @@ public class ParsedAlias extends ParsedDefinition {
 		
 		compiled.setType(type.compile(context));
 		
-		for (int i = 0; i < compiled.genericParameters.length; i++) {
-			TypeParameter output = compiled.genericParameters[i];
+		for (int i = 0; i < compiled.typeParameters.length; i++) {
+			TypeParameter output = compiled.typeParameters[i];
 			ParsedTypeParameter input = this.parameters.get(i);
 			for (ParsedGenericBound bound : input.bounds) {
 				output.addBound(bound.compile(context));
@@ -102,7 +102,7 @@ public class ParsedAlias extends ParsedDefinition {
 		private final TypeResolutionContext context;
 		
 		public Compiling(TypeResolutionContext context) {
-			this.context = new LocalTypeResolutionContext(context, this, compiled.genericParameters);
+			this.context = new LocalTypeResolutionContext(context, this, compiled.typeParameters);
 		}
 		
 		@Override

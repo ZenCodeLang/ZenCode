@@ -41,8 +41,13 @@ public class AssocTypeID implements ITypeID {
 	}
 	
 	@Override
-	public <T> T accept(ITypeVisitor<T> visitor) {
+	public <T> T accept(TypeVisitor<T> visitor) {
 		return visitor.visitAssoc(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+		return visitor.visitAssoc(context, this);
 	}
 	
 	@Override

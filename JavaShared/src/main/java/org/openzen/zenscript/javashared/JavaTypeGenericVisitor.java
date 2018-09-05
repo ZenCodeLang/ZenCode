@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.Collection;
 
-public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
+public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 
 	private final JavaContext context;
 

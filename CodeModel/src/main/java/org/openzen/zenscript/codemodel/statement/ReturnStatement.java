@@ -45,6 +45,11 @@ public class ReturnStatement extends Statement {
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitReturn(this);
 	}
+	
+	@Override
+	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
+		return visitor.visitReturn(context, this);
+	}
 
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {

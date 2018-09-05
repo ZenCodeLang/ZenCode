@@ -28,6 +28,11 @@ public class ConstantStringExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitConstantString(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}

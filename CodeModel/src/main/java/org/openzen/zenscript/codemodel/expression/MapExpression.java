@@ -34,6 +34,11 @@ public class MapExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitMap(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression[] tKeys = Expression.transform(keys, transformer);
 		Expression[] tValues = Expression.transform(values, transformer);

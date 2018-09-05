@@ -29,6 +29,11 @@ public class GlobalExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitGlobal(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tResolution = resolution.transform(transformer);
 		return resolution == tResolution ? this : new GlobalExpression(position, name, resolution);

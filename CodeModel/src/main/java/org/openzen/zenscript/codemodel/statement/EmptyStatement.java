@@ -26,6 +26,11 @@ public class EmptyStatement extends Statement {
 	}
 	
 	@Override
+	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
+		return visitor.visitEmpty(context, this);
+	}
+	
+	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
 	}

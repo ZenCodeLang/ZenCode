@@ -13,10 +13,10 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
  *
@@ -41,7 +41,7 @@ public class JavaTypeInfo {
 		this.primitive = primitive;
 	}
 	
-	private static class JavaTypeInfoVisitor implements ITypeVisitor<JavaTypeInfo> {
+	private static class JavaTypeInfoVisitor implements TypeVisitor<JavaTypeInfo> {
 
 		@Override
 		public JavaTypeInfo visitBasic(BasicTypeID basic) {

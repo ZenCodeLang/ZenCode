@@ -48,6 +48,11 @@ public class VariantValueExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitVariantValue(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression[] tArguments = Expression.transform(arguments, transformer);
 		return tArguments == arguments ? this : new VariantValueExpression(position, type, option, tArguments);

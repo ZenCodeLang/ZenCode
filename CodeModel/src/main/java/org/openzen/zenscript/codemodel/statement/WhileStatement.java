@@ -32,6 +32,11 @@ public class WhileStatement extends LoopStatement {
 	}
 	
 	@Override
+	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
+		return visitor.visitWhile(context, this);
+	}
+	
+	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
 		content.forEachStatement(consumer);

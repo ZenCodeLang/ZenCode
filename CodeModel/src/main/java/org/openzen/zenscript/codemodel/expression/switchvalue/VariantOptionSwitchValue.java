@@ -24,4 +24,9 @@ public class VariantOptionSwitchValue implements SwitchValue {
 	public <T> T accept(SwitchValueVisitor<T> visitor) {
 		return visitor.acceptVariantOption(this);
 	}
+	
+	@Override
+	public <C, R> R accept(C context, SwitchValueVisitorWithContext<C, R> visitor) {
+		return visitor.acceptVariantOption(context, this);
+	}
 }

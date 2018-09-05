@@ -7,7 +7,6 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
@@ -66,6 +65,11 @@ public class GetterMember extends PropertyMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitGetter(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitGetter(context, this);
 	}
 
 	@Override

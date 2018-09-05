@@ -37,6 +37,11 @@ public class ConstructorThisCallExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitConstructorThisCall(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
 		return tArguments == arguments ? this : new ConstructorThisCallExpression(position, objectType, constructor, tArguments);

@@ -41,6 +41,11 @@ public class MatchExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitMatch(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		Case[] tCases = new Case[cases.length];

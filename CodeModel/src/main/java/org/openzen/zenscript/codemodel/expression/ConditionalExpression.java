@@ -40,6 +40,11 @@ public class ConditionalExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitConditional(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tCondition = transformer.transform(condition);
 		Expression tIfThen = transformer.transform(ifThen);

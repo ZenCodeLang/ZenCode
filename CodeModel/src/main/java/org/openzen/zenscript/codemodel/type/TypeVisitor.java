@@ -9,7 +9,7 @@ package org.openzen.zenscript.codemodel.type;
  *
  * @author Hoofdgebruiker
  */
-public interface ITypeVisitor<T> {
+public interface TypeVisitor<T> {
 	public T visitBasic(BasicTypeID basic);
 	
 	public T visitArray(ArrayTypeID array);

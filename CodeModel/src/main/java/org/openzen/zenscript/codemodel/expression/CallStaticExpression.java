@@ -36,6 +36,11 @@ public class CallStaticExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitCallStatic(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
 		return arguments == tArguments ? this : new CallStaticExpression(position, target, member, instancedHeader, tArguments);

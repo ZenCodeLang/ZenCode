@@ -51,7 +51,7 @@ public class ZSPackage {
 			return new PartialPackageExpression(position, subPackages.get(name.name));
 		
 		if (types.containsKey(name.name)) {
-			if (types.get(name.name).genericParameters.length != name.getNumberOfArguments())
+			if (types.get(name.name).typeParameters.length != name.getNumberOfArguments())
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments");
 			
 			return new PartialTypeExpression(position, registry.getForDefinition(types.get(name.name), name.arguments), name.arguments);

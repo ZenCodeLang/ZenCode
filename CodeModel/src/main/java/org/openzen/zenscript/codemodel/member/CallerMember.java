@@ -45,7 +45,7 @@ public class CallerMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addCaller(ref(mapper), priority);
+		type.addCaller(ref(type.type, mapper), priority);
 	}
 
 	@Override
@@ -56,6 +56,11 @@ public class CallerMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitCaller(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitCaller(context, this);
 	}
 	
 	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {

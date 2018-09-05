@@ -31,6 +31,11 @@ public class ExpressionStatement extends Statement {
 	}
 	
 	@Override
+	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
+		return visitor.visitExpression(context, this);
+	}
+	
+	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
 		expression.forEachStatement(consumer);

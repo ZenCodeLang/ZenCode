@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
  *
@@ -20,6 +21,8 @@ public interface DefinitionMemberRef {
 	String describe();
 	
 	<T> T getTag(Class<T> type);
+	
+	ITypeID getType();
 	
 	DefinitionMemberRef getOverrides();
 	

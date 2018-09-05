@@ -4,7 +4,7 @@ import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 
-public class JavaBoxingTypeVisitor implements ITypeVisitor<Void> {
+public class JavaBoxingTypeVisitor implements TypeVisitor<Void> {
 	private static final JavaMethod BOOLEAN_VALUEOF = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "valueOf", "(Z)Ljava/lang/Boolean;");
 	private static final JavaMethod BYTE_VALUEOF = JavaMethod.getNativeStatic(JavaClass.BYTE, "valueOf", "(B)Ljava/lang/Byte;");
 	private static final JavaMethod SHORT_VALUEOF = JavaMethod.getNativeStatic(JavaClass.SHORT, "valueOf", "(S)Ljava/lang/Short;");

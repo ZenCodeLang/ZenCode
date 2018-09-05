@@ -24,12 +24,12 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
  *
@@ -127,7 +127,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		members.get(className.getName()).add(content);
 	}
 	
-	private static class ArrayKindVisitor implements ITypeVisitor<ArrayKind> {
+	private static class ArrayKindVisitor implements TypeVisitor<ArrayKind> {
 		
 		@Override
 		public ArrayKind visitBasic(BasicTypeID basic) {

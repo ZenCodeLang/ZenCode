@@ -28,6 +28,11 @@ public class ConstantSByteExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitConstantSByte(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}

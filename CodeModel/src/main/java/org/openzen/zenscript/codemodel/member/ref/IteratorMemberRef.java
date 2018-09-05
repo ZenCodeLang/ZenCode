@@ -18,16 +18,23 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class IteratorMemberRef implements DefinitionMemberRef {
 	public final IteratorMember target;
+	private final ITypeID type;
 	public final ITypeID[] types;
 	
-	public IteratorMemberRef(IteratorMember target, ITypeID... types) {
+	public IteratorMemberRef(IteratorMember target, ITypeID type, ITypeID... types) {
 		this.target = target;
+		this.type = type;
 		this.types = types;
 	}
 
 	@Override
 	public CodePosition getPosition() {
 		return target.getPosition();
+	}
+	
+	@Override
+	public ITypeID getType() {
+		return type;
 	}
 
 	@Override

@@ -28,6 +28,11 @@ public class TryRethrowAsResultExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitTryRethrowAsResult(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new TryRethrowAsResultExpression(position, type, tValue);

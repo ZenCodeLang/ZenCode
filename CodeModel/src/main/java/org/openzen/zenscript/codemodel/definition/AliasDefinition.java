@@ -40,6 +40,11 @@ public class AliasDefinition extends HighLevelDefinition {
 	}
 
 	@Override
+	public <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor) {
+		return visitor.visitAlias(context, this);
+	}
+
+	@Override
 	public void normalize(TypeScope scope) {
 		// nothing to do
 	}

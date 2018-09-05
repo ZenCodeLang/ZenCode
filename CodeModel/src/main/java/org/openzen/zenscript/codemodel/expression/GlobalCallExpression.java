@@ -31,6 +31,11 @@ public class GlobalCallExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitGlobalCall(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
 		Expression tResolution = resolution.transform(transformer);

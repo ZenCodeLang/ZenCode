@@ -45,4 +45,9 @@ public class InterfaceDefinition extends HighLevelDefinition {
 	public <T> T accept(DefinitionVisitor<T> visitor) {
 		return visitor.visitInterface(this);
 	}
+
+	@Override
+	public <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor) {
+		return visitor.visitInterface(context, this);
+	}
 }

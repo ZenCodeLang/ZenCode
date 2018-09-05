@@ -30,6 +30,11 @@ public class ArrayExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitArray(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression[] tExpressions = Expression.transform(expressions, transformer);
 		return tExpressions == expressions ? this : new ArrayExpression(position, tExpressions, (ArrayTypeID)type);

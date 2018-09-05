@@ -33,6 +33,11 @@ public class LockStatement extends Statement {
 	}
 	
 	@Override
+	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
+		return visitor.visitLock(context, this);
+	}
+	
+	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
 		content.forEachStatement(consumer);

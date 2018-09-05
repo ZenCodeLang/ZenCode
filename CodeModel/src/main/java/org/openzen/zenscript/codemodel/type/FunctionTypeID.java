@@ -38,8 +38,13 @@ public class FunctionTypeID implements ITypeID {
 	}
 	
 	@Override
-	public <T> T accept(ITypeVisitor<T> visitor) {
+	public <T> T accept(TypeVisitor<T> visitor) {
 		return visitor.visitFunction(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+		return visitor.visitFunction(context, this);
 	}
 	
 	@Override

@@ -56,10 +56,10 @@ public class FieldMember extends PropertyMember {
 		this.autoSetterAccess = autoSetterAccess;
 		
 		ITypeID[] parameters = null;
-		if (definition.genericParameters != null) {
-			parameters = new ITypeID[definition.genericParameters.length];
+		if (definition.typeParameters != null) {
+			parameters = new ITypeID[definition.typeParameters.length];
 			for (int i = 0; i < parameters.length; i++)
-				parameters[i] = registry.getGeneric(definition.genericParameters[i]);
+				parameters[i] = registry.getGeneric(definition.typeParameters[i]);
 		}
 		
 		if (autoGetterAccess != 0) {
@@ -134,6 +134,11 @@ public class FieldMember extends PropertyMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitField(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitField(context, this);
 	}
 
 	@Override

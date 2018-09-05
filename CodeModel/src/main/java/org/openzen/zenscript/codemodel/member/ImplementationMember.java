@@ -39,7 +39,7 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
 		ITypeID instancedType = mapper == null ? type : mapper.map(type);
-		members.addImplementation(new ImplementationMemberRef(this, instancedType), priority);
+		members.addImplementation(new ImplementationMemberRef(this, members.type, instancedType), priority);
 		
 		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType);
 		interfaceTypeMembers.copyMembersTo(position, members, TypeMemberPriority.INTERFACE);
@@ -58,6 +58,11 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitImplementation(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitImplementation(context, this);
 	}
 
 	@Override

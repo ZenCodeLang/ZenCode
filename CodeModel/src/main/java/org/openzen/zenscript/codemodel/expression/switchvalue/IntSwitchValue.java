@@ -20,4 +20,9 @@ public class IntSwitchValue implements SwitchValue {
 	public <T> T accept(SwitchValueVisitor<T> visitor) {
 		return visitor.acceptInt(this);
 	}
+	
+	@Override
+	public <C, R> R accept(C context, SwitchValueVisitorWithContext<C, R> visitor) {
+		return visitor.acceptInt(context, this);
+	}
 }

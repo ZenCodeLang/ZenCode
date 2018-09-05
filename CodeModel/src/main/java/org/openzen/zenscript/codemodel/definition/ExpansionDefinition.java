@@ -25,4 +25,9 @@ public class ExpansionDefinition extends HighLevelDefinition {
 	public <T> T accept(DefinitionVisitor<T> visitor) {
 		return visitor.visitExpansion(this);
 	}
+
+	@Override
+	public <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor) {
+		return visitor.visitExpansion(context, this);
+	}
 }

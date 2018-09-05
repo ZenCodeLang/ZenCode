@@ -28,6 +28,11 @@ public class StaticGetterExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitStaticGetter(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}

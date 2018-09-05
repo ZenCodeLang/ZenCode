@@ -52,6 +52,11 @@ public class ConstMember extends PropertyMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitConst(this);
 	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitConst(context, this);
+	}
 
 	@Override
 	public DefinitionMemberRef getOverrides() {

@@ -49,6 +49,8 @@ public abstract class Expression implements IPartialExpression {
 	
 	public abstract <T> T accept(ExpressionVisitor<T> visitor);
 	
+	public abstract <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor);
+	
 	public abstract Expression transform(ExpressionTransformer transformer);
 	
 	public final Expression transform(StatementTransformer transformer) {

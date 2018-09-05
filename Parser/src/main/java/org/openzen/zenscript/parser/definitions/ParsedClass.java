@@ -62,7 +62,7 @@ public class ParsedClass extends BaseParsedDefinition {
 
 	@Override
 	protected void linkTypesLocal(TypeResolutionContext context) {
-		ParsedTypeParameter.compile(context, compiled.genericParameters, this.parameters);
+		ParsedTypeParameter.compile(context, compiled.typeParameters, this.parameters);
 		
 		if (superclass != null)
 			compiled.setSuperType(superclass.compile(context));

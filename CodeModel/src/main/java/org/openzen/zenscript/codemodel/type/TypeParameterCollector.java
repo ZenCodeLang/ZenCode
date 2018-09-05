@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  *
  * @author Hoofdgebruiker
  */
-public class TypeParameterCollector implements ITypeVisitor<Void> {
+public class TypeParameterCollector implements TypeVisitor<Void> {
 	private final Map<TypeParameter, ITypeID> map;
 	
 	public TypeParameterCollector(Map<TypeParameter, ITypeID> map) {

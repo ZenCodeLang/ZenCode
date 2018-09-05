@@ -42,7 +42,7 @@ public class MethodMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addMethod(name, ref(mapper), priority);
+		type.addMethod(name, ref(type.type, mapper), priority);
 	}
 
 	@Override
@@ -53,6 +53,11 @@ public class MethodMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitMethod(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitMethod(context, this);
 	}
 
 	@Override

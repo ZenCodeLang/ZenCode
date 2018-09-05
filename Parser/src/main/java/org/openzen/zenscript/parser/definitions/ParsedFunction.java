@@ -57,7 +57,7 @@ public class ParsedFunction extends ParsedDefinition {
 	@Override
 	public void linkTypes(TypeResolutionContext context) {
 		if (compiled.header == null)
-			compiled.setHeader(header.compile(context));
+			compiled.setHeader(context.getTypeRegistry(), header.compile(context));
 	}
 	
 	@Override

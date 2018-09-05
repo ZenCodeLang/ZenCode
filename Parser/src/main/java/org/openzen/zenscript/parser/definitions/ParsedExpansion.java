@@ -57,7 +57,7 @@ public class ParsedExpansion extends BaseParsedDefinition {
 
 	@Override
 	public void linkTypesLocal(TypeResolutionContext context) {
-		ParsedTypeParameter.compile(context, compiled.genericParameters, this.parameters);
+		ParsedTypeParameter.compile(context, compiled.typeParameters, this.parameters);
 		compiled.target = target.compile(context);
 		if (compiled.target == null)
 			throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Could not compile expansion target: " + target);

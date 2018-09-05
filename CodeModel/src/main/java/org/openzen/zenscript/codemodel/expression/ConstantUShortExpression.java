@@ -28,6 +28,11 @@ public class ConstantUShortExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitConstantUShort(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}

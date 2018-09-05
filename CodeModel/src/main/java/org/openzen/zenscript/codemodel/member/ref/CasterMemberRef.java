@@ -21,16 +21,23 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class CasterMemberRef implements DefinitionMemberRef {
 	public final CasterMember member;
+	public final ITypeID type;
 	public final ITypeID toType;
 	
-	public CasterMemberRef(CasterMember member, ITypeID toType) {
+	public CasterMemberRef(CasterMember member, ITypeID type, ITypeID toType) {
 		this.member = member;
+		this.type = type;
 		this.toType = toType;
 	}
 
 	@Override
 	public CodePosition getPosition() {
 		return member.position;
+	}
+	
+	@Override
+	public ITypeID getType() {
+		return type;
 	}
 
 	@Override

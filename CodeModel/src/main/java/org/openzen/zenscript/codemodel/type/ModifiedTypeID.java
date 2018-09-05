@@ -44,8 +44,13 @@ public class ModifiedTypeID implements ITypeID {
 	}
 	
 	@Override
-	public <T> T accept(ITypeVisitor<T> visitor) {
+	public <T> T accept(TypeVisitor<T> visitor) {
 		return visitor.visitModified(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+		return visitor.visitModified(context, this);
 	}
 	
 	@Override

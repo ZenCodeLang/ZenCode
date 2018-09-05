@@ -30,6 +30,11 @@ public class VariantDefinition extends HighLevelDefinition {
 	public <T> T accept(DefinitionVisitor<T> visitor) {
 		return visitor.visitVariant(this);
 	}
+
+	@Override
+	public <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor) {
+		return visitor.visitVariant(context, this);
+	}
 	
 	@Override
 	public void collectMembers(MemberCollector collector) {
@@ -40,11 +45,13 @@ public class VariantDefinition extends HighLevelDefinition {
 	}
 	
 	public static class Option extends Taggable {
+		public final VariantDefinition variant;
 		public final String name;
 		public final int ordinal;
 		public final ITypeID[] types;
 		
-		public Option(String name, int ordinal, ITypeID[] types) {
+		public Option(VariantDefinition variant, String name, int ordinal, ITypeID[] types) {
+			this.variant = variant;
 			this.name = name;
 			this.ordinal = ordinal;
 			this.types = types;

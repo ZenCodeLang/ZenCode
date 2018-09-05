@@ -32,10 +32,12 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	private final FunctionalMember target;
 	
 	private FunctionHeader header;
+	private final ITypeID type;
 	private GenericMapper mapper;
 	
-	public FunctionalMemberRef(FunctionalMember target, GenericMapper mapper) {
+	public FunctionalMemberRef(FunctionalMember target, ITypeID type, GenericMapper mapper) {
 		this.target = target;
+		this.type = type;
 		
 		if (target.header.hasUnknowns) {
 			header = null;
@@ -68,6 +70,12 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 		return target.position;
 	}
 	
+	@Override
+	public ITypeID getType() {
+		return type;
+	}
+	
+	@Override
 	public FunctionalMember getTarget() {
 		return target;
 	}

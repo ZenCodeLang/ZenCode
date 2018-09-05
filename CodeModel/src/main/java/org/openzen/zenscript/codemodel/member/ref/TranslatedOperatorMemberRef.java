@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.expression.CallTranslator;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 
 /**
  *
@@ -21,8 +22,8 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class TranslatedOperatorMemberRef extends FunctionalMemberRef {
 	private final CallTranslator translator;
 	
-	public TranslatedOperatorMemberRef(OperatorMember member, GenericMapper mapper, CallTranslator translator) {
-		super(member, mapper);
+	public TranslatedOperatorMemberRef(OperatorMember member, ITypeID type, GenericMapper mapper, CallTranslator translator) {
+		super(member, type, mapper);
 		
 		this.translator = translator;
 	}

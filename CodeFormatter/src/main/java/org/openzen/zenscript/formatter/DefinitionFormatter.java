@@ -40,7 +40,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		FormattingUtils.formatModifiers(output, definition.modifiers);
 		output.append("class ");
 		output.append(definition.name);
-		FormattingUtils.formatTypeParameters(output, definition.genericParameters, typeFormatter);
+		FormattingUtils.formatTypeParameters(output, definition.typeParameters, typeFormatter);
 		output.append(" ");
 		if (definition.getSuperType() != null) {
 			output.append("extends ");
@@ -69,7 +69,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		FormattingUtils.formatModifiers(output, definition.modifiers);
 		output.append("class ");
 		output.append(definition.name);
-		FormattingUtils.formatTypeParameters(output, definition.genericParameters, typeFormatter);
+		FormattingUtils.formatTypeParameters(output, definition.typeParameters, typeFormatter);
 		output.append(" ");
 		
 		if (settings.classBracketOnSameLine) {
@@ -94,7 +94,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		FormattingUtils.formatModifiers(output, definition.modifiers);
 		output.append("enum ");
 		output.append(definition.name);
-		FormattingUtils.formatTypeParameters(output, definition.genericParameters, typeFormatter);
+		FormattingUtils.formatTypeParameters(output, definition.typeParameters, typeFormatter);
 		output.append(" ");
 		
 		if (settings.classBracketOnSameLine) {
@@ -170,7 +170,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		FormattingUtils.formatModifiers(output, variant.modifiers);
 		output.append("variant ");
 		output.append(variant.name);
-		FormattingUtils.formatTypeParameters(output, variant.genericParameters, typeFormatter);
+		FormattingUtils.formatTypeParameters(output, variant.typeParameters, typeFormatter);
 		output.append(" ");
 		
 		if (settings.classBracketOnSameLine) {

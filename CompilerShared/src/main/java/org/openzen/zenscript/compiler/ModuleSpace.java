@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.compiler;
 
-import org.openzen.zenscript.compiler.SemanticModule;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +17,6 @@ import org.openzen.zenscript.codemodel.annotations.NativeAnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 
 /**

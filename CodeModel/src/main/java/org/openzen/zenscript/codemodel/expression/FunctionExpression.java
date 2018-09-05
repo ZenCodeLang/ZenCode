@@ -47,6 +47,11 @@ public class FunctionExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitFunction(context, this);
+	}
+
+	@Override
 	public FunctionExpression transform(ExpressionTransformer transformer) {
 		Statement tBody = body.transform(transformer, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 		return tBody == body ? this : new FunctionExpression(position, (FunctionTypeID)type, closure, header, tBody);

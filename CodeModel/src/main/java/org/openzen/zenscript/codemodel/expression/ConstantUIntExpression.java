@@ -28,6 +28,11 @@ public class ConstantUIntExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitConstantUInt(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}

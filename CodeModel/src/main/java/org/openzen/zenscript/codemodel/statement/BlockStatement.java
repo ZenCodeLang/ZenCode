@@ -34,6 +34,11 @@ public class BlockStatement extends Statement {
 	}
 	
 	@Override
+	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
+		return visitor.visitBlock(context, this);
+	}
+	
+	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
 		for (Statement s : statements) {

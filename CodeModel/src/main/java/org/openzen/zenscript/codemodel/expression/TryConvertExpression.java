@@ -28,6 +28,11 @@ public class TryConvertExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitTryConvert(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new TryConvertExpression(position, type, tValue);

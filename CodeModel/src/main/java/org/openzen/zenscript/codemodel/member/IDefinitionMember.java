@@ -6,8 +6,8 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -21,6 +21,10 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public interface IDefinitionMember {
 	public CodePosition getPosition();
 	
+	public int getModifiers();
+	
+	public HighLevelDefinition getDefinition();
+	
 	public String describe();
 	
 	public BuiltinID getBuiltin();
@@ -28,6 +32,8 @@ public interface IDefinitionMember {
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper);
 	
 	public <T> T accept(MemberVisitor<T> visitor);
+	
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor);
 	
 	public <T> T getTag(Class<T> tag);
 	

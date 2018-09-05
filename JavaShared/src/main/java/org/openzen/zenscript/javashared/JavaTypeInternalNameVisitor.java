@@ -4,7 +4,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.type.*;
 
-public class JavaTypeInternalNameVisitor implements ITypeVisitor<String> {
+public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
 	private final JavaTypeInternalNameVisitor forOptional;
 	private final JavaContext context;
 	private final boolean optional;

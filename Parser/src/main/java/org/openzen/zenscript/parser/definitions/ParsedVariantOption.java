@@ -26,11 +26,11 @@ public class ParsedVariantOption {
 		this.types = types;
 	}
 	
-	public VariantDefinition.Option compile(TypeResolutionContext context) {
+	public VariantDefinition.Option compile(VariantDefinition variant, TypeResolutionContext context) {
 		ITypeID[] cTypes = new ITypeID[types.size()];
 		for (int i = 0; i < cTypes.length; i++)
 			cTypes[i] = types.get(i).compile(context);
 		
-		return new VariantDefinition.Option(name, ordinal, cTypes);
+		return new VariantDefinition.Option(variant, name, ordinal, cTypes);
 	}
 }

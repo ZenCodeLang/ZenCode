@@ -38,6 +38,11 @@ public class PostCallExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitPostCall(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tTarget = target.transform(transformer);
 		return target == tTarget ? this : new PostCallExpression(position, tTarget, member, instancedHeader);
