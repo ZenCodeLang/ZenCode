@@ -52,6 +52,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 			case CHAR: output.writeUInt(TypeEncoding.TYPE_CHAR); break;
 			case STRING: output.writeUInt(TypeEncoding.TYPE_STRING); break;
 			case UNDETERMINED: output.writeUInt(TypeEncoding.TYPE_UNDETERMINED); break;
+			case NULL: output.writeUInt(TypeEncoding.TYPE_NULL); break;
 			default: throw new IllegalArgumentException("Unknown basic type: " + basic);
 		}
 		return null;
@@ -81,7 +82,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 	public Void visitGenericMap(TypeContext context, GenericMapTypeID map) {
 		output.writeUInt(TypeEncoding.TYPE_GENERIC_MAP);
 		output.serialize(context, map.key);
-		map.value.accept(new TypeContext(context, new TypeParameter[] { map.key }), this);
+		map.value.accept(new TypeContext(context, context.thisType, new TypeParameter[] { map.key }), this);
 		return null;
 	}
 
@@ -113,7 +114,10 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 	@Override
 	public Void visitGeneric(TypeContext context, GenericTypeID generic) {
 		output.writeUInt(TypeEncoding.TYPE_GENERIC);
-		output.writeUInt(context.getId(generic.parameter));
+		int id = context.getId(generic.parameter);
+		if (id < 0)
+			throw new IllegalStateException("Type parameter not in scope: " + generic.parameter);
+		output.writeUInt(id);
 		return null;
 	}
 

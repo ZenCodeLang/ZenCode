@@ -5,12 +5,15 @@
  */
 package org.openzen.zenscript.moduleserializer.encoder;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
-import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
+import org.openzen.zenscript.codemodel.definition.DefinitionVisitorWithContext;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
@@ -18,16 +21,17 @@ import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
-import org.openzen.zenscript.moduleserialization.TypeParameterEncoding;
 import org.openzen.zenscript.moduleserializer.SerializationOptions;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class DefinitionSerializer implements DefinitionVisitor<Void> {
+public class DefinitionSerializer implements DefinitionVisitorWithContext<ModuleContext, Void> {
 	private final SerializationOptions options;
 	private final CodeSerializationOutput output;
 	
@@ -36,7 +40,7 @@ public class DefinitionSerializer implements DefinitionVisitor<Void> {
 		this.output = output;
 	}
 	
-	private void visit(HighLevelDefinition definition) {
+	private void visit(ModuleContext context, HighLevelDefinition definition) {
 		int flags = 0;
 		if (definition.position != null && options.positions)
 			flags |= DefinitionEncoding.FLAG_POSITION;
@@ -54,90 +58,88 @@ public class DefinitionSerializer implements DefinitionVisitor<Void> {
 			output.writeString(definition.name);
 		if (definition.typeParameters.length > 0) {
 			output.writeUInt(definition.typeParameters.length);
-			for (TypeParameter parameter : definition.typeParameters) {
-				int typeParameterFlags = 0;
-				if (parameter.position != CodePosition.UNKNOWN && options.positions)
-					typeParameterFlags |= TypeParameterEncoding.FLAG_POSITION;
-				if (parameter.name != null && options.typeParameterNames)
-					typeParameterFlags |= TypeParameterEncoding.FLAG_NAME;
-				
-				output.writeUInt(typeParameterFlags);
-				if ((typeParameterFlags & TypeParameterEncoding.FLAG_POSITION) > 0)
-					output.serialize(parameter.position);
-				if ((typeParameterFlags & TypeParameterEncoding.FLAG_NAME) > 0)
-					output.writeString(parameter.name);
-			}
+			TypeContext typeContext = new TypeContext(context, TypeParameter.NONE, null);
+			output.serialize(typeContext, definition.typeParameters);
 		}
 	}
 	
-	private void queueEncodeMembers(HighLevelDefinition definition) {
+	private void encodeMembers(ModuleContext moduleContext, HighLevelDefinition definition) {
+		List<InnerDefinitionMember> innerDefinitions = new ArrayList<>();
+		for (IDefinitionMember member : definition.members)
+			if ((member instanceof InnerDefinitionMember))
+				innerDefinitions.add((InnerDefinitionMember)member);
+		
 		output.enqueueMembers(output -> {
 			DefinitionMemberSerializer memberEncoder = new DefinitionMemberSerializer(options, output);
-			TypeContext context = new TypeContext(definition.typeParameters);
+			TypeContext context = new TypeContext(moduleContext, definition.typeParameters, moduleContext.registry.getForMyDefinition(definition));
 			definition.accept(context, memberEncoder);
 		});
+		
+		output.writeUInt(innerDefinitions.size());
+		for (InnerDefinitionMember innerDefinition : innerDefinitions)
+			innerDefinition.innerDefinition.accept(moduleContext, this);
 	}
 	
 	@Override
-	public Void visitClass(ClassDefinition definition) {
+	public Void visitClass(ModuleContext context, ClassDefinition definition) {
 		output.writeUInt(DefinitionEncoding.TYPE_CLASS);
-		visit(definition);
-		queueEncodeMembers(definition);
+		visit(context, definition);
+		encodeMembers(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitInterface(InterfaceDefinition definition) {
+	public Void visitInterface(ModuleContext context, InterfaceDefinition definition) {
 		output.writeUInt(DefinitionEncoding.TYPE_INTERFACE);
-		visit(definition);
-		queueEncodeMembers(definition);
+		visit(context, definition);
+		encodeMembers(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitEnum(EnumDefinition definition) {
+	public Void visitEnum(ModuleContext context, EnumDefinition definition) {
 		output.writeUInt(DefinitionEncoding.TYPE_ENUM);
-		visit(definition);
-		queueEncodeMembers(definition);
+		visit(context, definition);
+		encodeMembers(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitStruct(StructDefinition definition) {
+	public Void visitStruct(ModuleContext context, StructDefinition definition) {
 		output.writeUInt(DefinitionEncoding.TYPE_STRUCT);
-		visit(definition);
-		queueEncodeMembers(definition);
+		visit(context, definition);
+		encodeMembers(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitFunction(FunctionDefinition definition) {
+	public Void visitFunction(ModuleContext context, FunctionDefinition definition) {
 		output.writeUInt(DefinitionEncoding.TYPE_FUNCTION);
-		visit(definition);
-		queueEncodeMembers(definition);
+		visit(context, definition);
+		encodeMembers(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitExpansion(ExpansionDefinition definition) {
+	public Void visitExpansion(ModuleContext context, ExpansionDefinition definition) {
 		output.writeUInt(DefinitionEncoding.TYPE_EXPANSION);
-		visit(definition);
-		queueEncodeMembers(definition);
+		visit(context, definition);
+		encodeMembers(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitAlias(AliasDefinition definition) {
+	public Void visitAlias(ModuleContext context, AliasDefinition definition) {
 		output.writeUInt(DefinitionEncoding.TYPE_ALIAS);
-		visit(definition);
+		visit(context, definition);
 		return null;
 	}
 
 	@Override
-	public Void visitVariant(VariantDefinition variant) {
+	public Void visitVariant(ModuleContext context, VariantDefinition variant) {
 		output.writeUInt(DefinitionEncoding.TYPE_VARIANT);
-		visit(variant);
-		queueEncodeMembers(variant);
+		visit(context, variant);
+		encodeMembers(context, variant);
 		return null;
 	}
 }

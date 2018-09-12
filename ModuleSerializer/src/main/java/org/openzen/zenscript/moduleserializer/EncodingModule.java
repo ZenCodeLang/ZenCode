@@ -8,6 +8,7 @@ package org.openzen.zenscript.moduleserializer;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.context.ModuleContext;
 
 /**
  *
@@ -15,11 +16,13 @@ import org.openzen.zenscript.codemodel.Module;
  */
 public class EncodingModule {
 	private final Module module;
+	public final ModuleContext context;
 	public final List<EncodingDefinition> definitions = new ArrayList<>();
 	public final boolean withCode;
 	
-	public EncodingModule(Module module, boolean withCode) {
+	public EncodingModule(Module module, ModuleContext context, boolean withCode) {
 		this.module = module;
+		this.context = context;
 		this.withCode = withCode;
 	}
 	

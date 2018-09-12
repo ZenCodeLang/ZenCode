@@ -22,7 +22,7 @@ public interface DefinitionMemberRef {
 	
 	<T> T getTag(Class<T> type);
 	
-	ITypeID getType();
+	ITypeID getOwnerType();
 	
 	DefinitionMemberRef getOverrides();
 	

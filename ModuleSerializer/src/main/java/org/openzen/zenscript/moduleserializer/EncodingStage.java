@@ -17,7 +17,7 @@ public class EncodingStage {
 	private final List<EncodingOperation> operations = new ArrayList<>();
 	private boolean locked = false;
 	
-	public void encode(ModuleEncoder encoder) {
+	public void encode(CodeWriter encoder) {
 		locked = true;
 		for (EncodingOperation operation : operations) {
 			operation.encode(encoder);

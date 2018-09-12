@@ -29,7 +29,8 @@ public class Main {
 				true,
 				false,
 				false,
-				true));
+				true,
+				false));
 		byte[] encoded = serializer.serialize(Collections.singletonList(module));
 		System.out.println("stdlib encoded as " + encoded.length + " bytes");
 		Files.write(new File("stdlib.bzm").toPath(), encoded);

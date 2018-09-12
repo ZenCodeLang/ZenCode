@@ -67,7 +67,7 @@ public class FieldMember extends PropertyMember {
 			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(
 					position,
 					new ThisExpression(position, thisType),
-					new FieldMemberRef(this, null))));
+					new FieldMemberRef(thisType, this, null))));
 		} else {
 			this.autoGetter = null;
 		}
@@ -76,7 +76,7 @@ public class FieldMember extends PropertyMember {
 			this.autoSetter.setBody(new ExpressionStatement(position, new SetFieldExpression(
 					position,
 					new ThisExpression(position, thisType),
-					new FieldMemberRef(this, null),
+					new FieldMemberRef(thisType, this, null),
 					new GetFunctionParameterExpression(position, this.autoSetter.parameter))));
 		} else {
 			this.autoSetter = null;
@@ -118,7 +118,7 @@ public class FieldMember extends PropertyMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addField(new FieldMemberRef(this, mapper), priority);
+		members.addField(new FieldMemberRef(members.type, this, mapper), priority);
 	}
 	
 	@Override
@@ -156,5 +156,10 @@ public class FieldMember extends PropertyMember {
 	@Override
 	public boolean isAbstract() {
 		return false;
+	}
+
+	@Override
+	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+		return new FieldMemberRef(type, this, mapper);
 	}
 }

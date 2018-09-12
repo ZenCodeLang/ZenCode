@@ -25,8 +25,6 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 import org.openzen.zenscript.moduleserializer.EncodingDefinition;
-import org.openzen.zenscript.moduleserializer.EncodingModule;
-import org.openzen.zenscript.moduleserializer.ModuleEncoder;
 import org.openzen.zenscript.moduleserializer.SerializationOptions;
 
 /**

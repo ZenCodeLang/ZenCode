@@ -80,4 +80,9 @@ public class ImplementationMember extends DefinitionMember {
 	public boolean isAbstract() {
 		return false;
 	}
+
+	@Override
+	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+		throw new UnsupportedOperationException("Cannot create an implementation reference");
+	}
 }

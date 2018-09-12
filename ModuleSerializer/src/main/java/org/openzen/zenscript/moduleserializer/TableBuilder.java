@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -32,9 +33,7 @@ import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.serialization.EncodingOperation;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.moduleserialization.FunctionHeaderEncoding;
 import org.openzen.zenscript.moduleserialization.TypeParameterEncoding;
 import org.openzen.zenscript.moduleserializer.encoder.DefinitionMemberSerializer;
 import org.openzen.zenscript.moduleserializer.encoder.DefinitionSerializer;
@@ -73,16 +72,16 @@ public class TableBuilder implements CodeSerializationOutput {
 		definitionSerializer = new DefinitionSerializer(options, this);
 		definitionMemberSerializer = new DefinitionMemberSerializer(options, this);
 		memberSerializer = new MemberSerializer(this, options);
-		switchValues = new SwitchValueSerializer(this);
-		statements = new StatementSerializer(this, true);
-		expressions = new ExpressionSerializer(this, true);
+		switchValues = new SwitchValueSerializer(this, options.localVariableNames);
+		statements = new StatementSerializer(this, options.positions, options.localVariableNames);
+		expressions = new ExpressionSerializer(this, options.positions, options.localVariableNames);
 		typeSerializer = new TypeSerializer(this);
 		typeParameterBoundSerializer = new TypeParameterBoundSerializer(this);
 	}
 	
-	public EncodingModule register(Module module) {
+	public EncodingModule register(Module module, ModuleContext context) {
 		if (moduleSet.add(module)) {
-			EncodingModule encodedModule = new EncodingModule(module, true);
+			EncodingModule encodedModule = new EncodingModule(module, context, true);
 			module.setTag(EncodingModule.class, encodedModule);
 			modules.add(encodedModule);
 			return encodedModule;
@@ -106,7 +105,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 	
 	private EncodingDefinition prepare(HighLevelDefinition definition) {
-		register(definition.module);
+		register(definition.module, null);
 		
 		if (definitions.add(definition)) {
 			EncodingDefinition result = new EncodingDefinition(definition);
@@ -120,9 +119,10 @@ public class TableBuilder implements CodeSerializationOutput {
 		}
 	}
 	
-	public void serialize(HighLevelDefinition definition) {
-		definition.accept(definitionSerializer);
-		definition.accept(new TypeContext(definition.typeParameters), definitionMemberSerializer);
+	public void serialize(ModuleContext context, HighLevelDefinition definition) {
+		definition.accept(context, definitionSerializer);
+		ITypeID thisType = context.registry.getForMyDefinition(definition);
+		definition.accept(new TypeContext(context, definition.typeParameters, thisType), definitionMemberSerializer);
 	}
 
 	@Override
@@ -206,14 +206,23 @@ public class TableBuilder implements CodeSerializationOutput {
 			typeParameterFlags |= TypeParameterEncoding.FLAG_POSITION;
 		if (parameter.name != null && options.typeParameterNames)
 			typeParameterFlags |= TypeParameterEncoding.FLAG_NAME;
+		if (!parameter.bounds.isEmpty())
+			typeParameterFlags |= TypeParameterEncoding.FLAG_BOUNDS;
 
 		if ((typeParameterFlags & TypeParameterEncoding.FLAG_POSITION) > 0)
 			serialize(parameter.position);
 		if ((typeParameterFlags & TypeParameterEncoding.FLAG_NAME) > 0)
 			writeString(parameter.name);
-		
-		for (TypeParameterBound bound : parameter.bounds)
-			bound.accept(context, typeParameterBoundSerializer);
+		if ((typeParameterFlags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {
+			for (TypeParameterBound bound : parameter.bounds)
+				bound.accept(context, typeParameterBoundSerializer);
+		}
+	}
+	
+	@Override
+	public void serialize(TypeContext context, TypeParameter[] parameters) {
+		for (TypeParameter parameter : parameters)
+			serialize(context, parameter);
 	}
 
 	@Override
@@ -223,12 +232,10 @@ public class TableBuilder implements CodeSerializationOutput {
 
 	@Override
 	public void serialize(TypeContext context, FunctionHeader header) {
-		for (TypeParameter parameter : header.typeParameters)
-			serialize(context, parameter);
-			
+		serialize(context, header.typeParameters);
 		serialize(context, header.getReturnType());
 		
-		StatementContext statementContext = new StatementContext(header);
+		StatementContext statementContext = new StatementContext(context, header);
 		for (FunctionParameter parameter : header.parameters) {
 			// TODO: annotations
 			serialize(context, parameter.type);

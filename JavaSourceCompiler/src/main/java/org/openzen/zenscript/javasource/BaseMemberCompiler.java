@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.javasource;
 
-import java.util.Collections;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -94,7 +93,7 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 			output.append(";\n");
 		} else {
 			if (!(body instanceof BlockStatement))
-				body = new BlockStatement(body.position, Collections.singletonList(body));
+				body = new BlockStatement(body.position, new Statement[] { body });
 			
 			JavaSourceStatementScope scope = new JavaSourceStatementScope(this.scope, settings, header, indent + settings.indent, null, null, expansionTarget != null);
 			body.accept(new JavaSourceStatementCompiler(scope, output, true, false));

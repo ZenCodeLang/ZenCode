@@ -48,8 +48,8 @@ public class ConstructorMember extends FunctionalMember {
 			firstExpression = (ExpressionStatement) body;
 		} else if (body instanceof BlockStatement) {
 			BlockStatement blockBody = (BlockStatement) body;
-			if (blockBody.statements.size() > 0 && blockBody.statements.get(0) instanceof ExpressionStatement)
-				firstExpression = (ExpressionStatement) blockBody.statements.get(0);
+			if (blockBody.statements.length > 0 && blockBody.statements[0] instanceof ExpressionStatement)
+				firstExpression = (ExpressionStatement) blockBody.statements[0];
 		}
 		
 		return firstExpression != null && (

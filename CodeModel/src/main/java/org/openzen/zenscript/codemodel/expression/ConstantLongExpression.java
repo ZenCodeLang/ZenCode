@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 /**
  *
  * @author Hoofdgebruiker
+ * 
  */
 public class ConstantLongExpression extends Expression {
 	public final long value;

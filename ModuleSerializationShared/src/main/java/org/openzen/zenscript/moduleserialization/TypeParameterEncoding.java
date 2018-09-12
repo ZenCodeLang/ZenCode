@@ -14,6 +14,7 @@ public class TypeParameterEncoding {
 	
 	public static final int FLAG_POSITION = 1;
 	public static final int FLAG_NAME = 2;
+	public static final int FLAG_BOUNDS = 4;
 	
 	public static final int TYPE_TYPE_BOUND = 1;
 	public static final int TYPE_SUPER_BOUND = 2;

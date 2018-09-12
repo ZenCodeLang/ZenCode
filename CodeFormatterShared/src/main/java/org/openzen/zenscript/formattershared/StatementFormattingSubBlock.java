@@ -15,9 +15,9 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 public class StatementFormattingSubBlock {
 	public final String header;
 	public final List<String> literalStatements;
-	public final List<Statement> statements;
+	public final Statement[] statements;
 	
-	public StatementFormattingSubBlock(String header, List<String> literalStatements, List<Statement> statements) {
+	public StatementFormattingSubBlock(String header, List<String> literalStatements, Statement[] statements) {
 		this.header = header;
 		this.literalStatements = literalStatements;
 		this.statements = statements;

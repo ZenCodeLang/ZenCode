@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
@@ -54,7 +55,7 @@ public class SetterMember extends PropertyMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addSetter(new SetterMemberRef(this, mapper), priority);
+		members.addSetter(new SetterMemberRef(members.type, this, mapper), priority);
 	}
 
 	@Override
@@ -93,5 +94,10 @@ public class SetterMember extends PropertyMember {
 		
 		if (type == BasicTypeID.UNDETERMINED)
 			type = overrides.getType();
+	}
+
+	@Override
+	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+		return new SetterMemberRef(type, this, mapper);
 	}
 }

@@ -102,10 +102,12 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		
 		int flags = getFlags(member);
 		serialize(flags, member);
-		output.serialize(context, member.header);
+		
+		StatementContext inner = new StatementContext(context, member.header);
+		output.serialize(inner, member.header);
 		
 		output.enqueueCode(encoder -> {
-			encoder.serialize(new StatementContext(context, member.header), member.body);
+			encoder.serialize(inner, member.body);
 		});
 		return null;
 	}
@@ -128,11 +130,13 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		output.writeUInt(MemberEncoding.TYPE_METHOD);
 		int flags = getFlags(member);
 		serialize(flags, member);
-		output.serialize(context, member.header);
+		
+		StatementContext inner = new StatementContext(context, member.header);
+		output.serialize(inner, member.header);
 		
 		output.enqueueCode(encoder -> {
-			encoder.write(context, member.getOverrides());
-			encoder.serialize(new StatementContext(context, member.header), member.body);
+			encoder.write(inner, member.getOverrides());
+			encoder.serialize(inner, member.body);
 		});
 		return null;
 	}
@@ -174,11 +178,13 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		int flags = getFlags(member);
 		serialize(flags, member);
 		output.writeUInt(getId(member.operator));
-		output.serialize(context, member.header);
+		
+		StatementContext inner = new StatementContext(context, member.header);
+		output.serialize(inner, member.header);
 		
 		output.enqueueCode(encoder -> {
-			encoder.write(context, member.getOverrides());
-			encoder.serialize(new StatementContext(context, member.header), member.body);
+			encoder.write(inner, member.getOverrides());
+			encoder.serialize(inner, member.body);
 		});
 		return null;
 	}
@@ -222,11 +228,13 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		output.writeUInt(MemberEncoding.TYPE_CALLER);
 		int flags = getFlags(member);
 		serialize(flags, member);
-		output.serialize(context, member.header);
+		
+		StatementContext inner = new StatementContext(context, member.header);
+		output.serialize(inner, member.header);
 		
 		output.enqueueCode(encoder -> {
-			encoder.write(context, member.getOverrides());
-			encoder.serialize(new StatementContext(context, member.header), member.body);
+			encoder.write(inner, member.getOverrides());
+			encoder.serialize(inner, member.body);
 		});
 		return null;
 	}
@@ -247,14 +255,7 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 
 	@Override
 	public Void visitInnerDefinition(TypeContext context, InnerDefinitionMember member) {
-		output.writeUInt(MemberEncoding.TYPE_INNER_DEFINITION);
-		int flags = getFlags(member);
-		serialize(flags, member);
-		
-		output.writeUInt(member.innerDefinition.members.size());
-		for (IDefinitionMember innerMember : member.innerDefinition.members) {
-			innerMember.accept(context, this);
-		}
+		// already serialized
 		return null;
 	}
 

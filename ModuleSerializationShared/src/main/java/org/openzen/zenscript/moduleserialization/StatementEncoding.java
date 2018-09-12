@@ -15,6 +15,8 @@ public class StatementEncoding {
 	public static final int FLAG_POSITION = 1;
 	public static final int FLAG_ANNOTATIONS = 2;
 	public static final int FLAG_FINAL = 4;
+	public static final int FLAG_NAME = 8;
+	public static final int FLAG_LABEL = 16;
 	
 	public static final int TYPE_NULL = 0;
 	public static final int TYPE_BLOCK = 1;

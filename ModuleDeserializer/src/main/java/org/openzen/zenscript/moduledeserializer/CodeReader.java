@@ -1,0 +1,969 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.openzen.zenscript.moduledeserializer;
+
+import org.openzen.zenscript.codemodel.serialization.DecodingOperation;
+import compactio.CompactDataInput;
+import java.util.ArrayList;
+import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.codemodel.CompareType;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.StatementContext;
+import org.openzen.zenscript.codemodel.context.TypeContext;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
+import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
+import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
+import org.openzen.zenscript.codemodel.statement.BlockStatement;
+import org.openzen.zenscript.codemodel.statement.BreakStatement;
+import org.openzen.zenscript.codemodel.statement.ContinueStatement;
+import org.openzen.zenscript.codemodel.statement.DoWhileStatement;
+import org.openzen.zenscript.codemodel.statement.EmptyStatement;
+import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
+import org.openzen.zenscript.codemodel.statement.ForeachStatement;
+import org.openzen.zenscript.codemodel.statement.IfStatement;
+import org.openzen.zenscript.codemodel.statement.LockStatement;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
+import org.openzen.zenscript.codemodel.statement.ReturnStatement;
+import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.statement.SwitchCase;
+import org.openzen.zenscript.codemodel.statement.SwitchStatement;
+import org.openzen.zenscript.codemodel.statement.ThrowStatement;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.WhileStatement;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.moduleserialization.CodePositionEncoding;
+import org.openzen.zenscript.moduleserialization.ExpressionEncoding;
+import org.openzen.zenscript.moduleserialization.FunctionHeaderEncoding;
+import org.openzen.zenscript.moduleserialization.StatementEncoding;
+import org.openzen.zenscript.moduleserialization.SwitchValueEncoding;
+import org.openzen.zenscript.moduleserialization.TypeEncoding;
+import org.openzen.zenscript.moduleserialization.TypeParameterEncoding;
+
+/**
+ *
+ * @author Hoofdgebruiker
+ */
+public class CodeReader implements CodeSerializationInput {
+	private final CompactDataInput input;
+	
+	public final DecodingStage classes = new DecodingStage();
+	public final DecodingStage members = new DecodingStage();
+	public final DecodingStage code = new DecodingStage();
+	
+	private DecodingStage currentStage = null;
+	private CodePosition lastPosition = CodePosition.UNKNOWN;
+	
+	private final String[] strings;
+	private final SourceFile[] sourceFiles;
+	private final List<HighLevelDefinition> definitions = new ArrayList<>();
+	private final List<IDefinitionMember> memberList = new ArrayList<>();
+	private final List<EnumConstantMember> enumConstantMembers = new ArrayList<>();
+	private final List<VariantDefinition.Option> variantOptions = new ArrayList<>();
+	
+	private final GlobalTypeRegistry registry;
+	
+	public CodeReader(
+			CompactDataInput input,
+			String[] strings,
+			SourceFile[] sourceFiles,
+			GlobalTypeRegistry registry)
+	{
+		this.input = input;
+		
+		this.strings = strings;
+		this.sourceFiles = sourceFiles;
+		this.registry = registry;
+	}
+	
+	public void add(HighLevelDefinition definition) {
+		definitions.add(definition);
+	}
+	
+	public void add(IDefinitionMember member) {
+		memberList.add(member);
+	}
+	
+	public void startClasses() {
+		currentStage = classes;
+	}
+	
+	public void startMembers() {
+		currentStage = members;
+	}
+	
+	public void startCode() {
+		currentStage = code;
+	}
+
+	@Override
+	public boolean readBool() {
+		return input.readBool();
+	}
+
+	@Override
+	public int readByte() {
+		return input.readByte();
+	}
+
+	@Override
+	public byte readSByte() {
+		return input.readSByte();
+	}
+
+	@Override
+	public short readShort() {
+		return input.readShort();
+	}
+
+	@Override
+	public int readUShort() {
+		return input.readUShort();
+	}
+
+	@Override
+	public int readInt() {
+		return input.readInt();
+	}
+
+	@Override
+	public int readUInt() {
+		return input.readUInt();
+	}
+
+	@Override
+	public long readLong() {
+		return input.readLong();
+	}
+
+	@Override
+	public long readULong() {
+		return input.readULong();
+	}
+	
+	@Override
+	public float readFloat() {
+		return input.readFloat();
+	}
+	
+	@Override
+	public double readDouble() {
+		return input.readDouble();
+	}
+
+	@Override
+	public char readChar() {
+		return input.readChar();
+	}
+
+	@Override
+	public String readString() {
+		return strings[input.readUInt()];
+	}
+
+	@Override
+	public HighLevelDefinition readDefinition() {
+		return definitions.get(input.readUInt());
+	}
+
+	@Override
+	public DefinitionMemberRef readMember(TypeContext context, ITypeID type) {
+		int memberId = input.readVarUInt();
+		if (memberId == 0) {
+			return null;
+		} else if (memberId == 1) {
+			BuiltinID builtin = BuiltinID.get(input.readVarUInt());
+			TypeMembers members = context.getTypeMembers(type);
+			DefinitionMemberRef result = members.getBuiltin(builtin);
+			if (result == null)
+				throw new IllegalArgumentException("Could not find builtin member for " + builtin);
+			
+			return result;
+		} else {
+			return memberList.get(memberId - 2).ref(type, context.getMapper());
+		}
+	}
+	
+	@Override
+	public EnumConstantMember readEnumConstant(TypeContext context) {
+		return enumConstantMembers.get(readUInt());
+	}
+	
+	@Override
+	public VariantOptionRef readVariantOption(TypeContext context, ITypeID type) {
+		return variantOptions.get(readUInt()).instance(type, context.getMapper());
+	}
+
+	@Override
+	public ITypeID deserializeType(TypeContext context) {
+		int type = input.readVarUInt();
+		switch (type) {
+			case TypeEncoding.TYPE_NONE:
+				return null;
+			case TypeEncoding.TYPE_VOID:
+				return BasicTypeID.VOID;
+			case TypeEncoding.TYPE_BOOL:
+				return BasicTypeID.BOOL;
+			case TypeEncoding.TYPE_BYTE:
+				return BasicTypeID.BYTE;
+			case TypeEncoding.TYPE_SBYTE:
+				return BasicTypeID.SBYTE;
+			case TypeEncoding.TYPE_SHORT:
+				return BasicTypeID.SHORT;
+			case TypeEncoding.TYPE_USHORT:
+				return BasicTypeID.USHORT;
+			case TypeEncoding.TYPE_INT:
+				return BasicTypeID.INT;
+			case TypeEncoding.TYPE_UINT:
+				return BasicTypeID.UINT;
+			case TypeEncoding.TYPE_LONG:
+				return BasicTypeID.LONG;
+			case TypeEncoding.TYPE_ULONG:
+				return BasicTypeID.ULONG;
+			case TypeEncoding.TYPE_USIZE:
+				return BasicTypeID.USIZE;
+			case TypeEncoding.TYPE_FLOAT:
+				return BasicTypeID.FLOAT;
+			case TypeEncoding.TYPE_DOUBLE:
+				return BasicTypeID.DOUBLE;
+			case TypeEncoding.TYPE_CHAR:
+				return BasicTypeID.CHAR;
+			case TypeEncoding.TYPE_STRING:
+				return BasicTypeID.STRING;
+			case TypeEncoding.TYPE_UNDETERMINED:
+				return BasicTypeID.UNDETERMINED;
+			case TypeEncoding.TYPE_DEFINITION: {
+				HighLevelDefinition definition = readDefinition();
+				ITypeID[] arguments = new ITypeID[definition.typeParameters.length];
+				for (int i = 0; i < arguments.length; i++)
+					arguments[i] = deserializeType(context);
+				return registry.getForDefinition(definition, arguments);
+			}
+			case TypeEncoding.TYPE_DEFINITION_INNER: {
+				DefinitionTypeID outer = (DefinitionTypeID)deserializeType(context);
+				HighLevelDefinition definition = readDefinition();
+				ITypeID[] arguments = new ITypeID[definition.typeParameters.length];
+				for (int i = 0; i < arguments.length; i++)
+					arguments[i] = deserializeType(context);
+				return registry.getForDefinition(definition, arguments, outer);
+			}
+			case TypeEncoding.TYPE_GENERIC:
+				return registry.getGeneric(context.getTypeParameter(input.readVarUInt()));
+			case TypeEncoding.TYPE_FUNCTION:
+				return registry.getFunction(deserializeHeader(context));
+			case TypeEncoding.TYPE_ARRAY:
+				return registry.getArray(deserializeType(context), 1);
+			case TypeEncoding.TYPE_ARRAY_MULTIDIMENSIONAL: {
+				ITypeID baseType = deserializeType(context);
+				int dimension = input.readVarUInt();
+				return registry.getArray(baseType, dimension);
+			}
+			case TypeEncoding.TYPE_ASSOC: {
+				ITypeID key = deserializeType(context);
+				ITypeID value = deserializeType(context);
+				return registry.getAssociative(key, value);
+			}
+			case TypeEncoding.TYPE_GENERIC_MAP: {
+				TypeParameter parameter = deserializeTypeParameter(context);
+				TypeContext inner = new TypeContext(context, context.thisType, parameter);
+				ITypeID value = deserializeType(inner);
+				return registry.getGenericMap(value, parameter);
+			}
+			case TypeEncoding.TYPE_RANGE:
+				return registry.getRange(deserializeType(context));
+			case TypeEncoding.TYPE_ITERATOR: {
+				ITypeID[] values = new ITypeID[input.readVarUInt()];
+				for (int i = 0; i < values.length; i++)
+					values[i] = deserializeType(context);
+				return registry.getIterator(values);
+			}
+			case TypeEncoding.TYPE_OPTIONAL:
+				return registry.getOptional(deserializeType(context));
+			case TypeEncoding.TYPE_CONST:
+				return registry.getModified(ModifiedTypeID.MODIFIER_CONST, deserializeType(context));
+			case TypeEncoding.TYPE_IMMUTABLE:
+				return registry.getModified(ModifiedTypeID.MODIFIER_IMMUTABLE, deserializeType(context));
+			default:
+				throw new IllegalArgumentException("Unknown type: " + type);
+		}
+	}
+
+	@Override
+	public CodePosition deserializePosition() {
+		int flags = input.readVarUInt();
+		SourceFile file = lastPosition.file;
+		int fromLine = lastPosition.fromLine;
+		int fromLineOffset = lastPosition.fromLineOffset;
+		if ((flags & CodePositionEncoding.FLAG_FILE) > 0)
+			file = sourceFiles[input.readVarUInt()];
+		if ((flags & CodePositionEncoding.FLAG_FROM_LINE) > 0)
+			fromLine = input.readVarUInt();
+		if ((flags & CodePositionEncoding.FLAG_FROM_OFFSET) > 0)
+			fromLineOffset = input.readVarUInt();
+		int toLine = (flags & CodePositionEncoding.FLAG_TO_LINE) == 0 ? lastPosition.toLine : fromLine + input.readVarUInt();
+		int toLineOffset = (flags & CodePositionEncoding.FLAG_TO_OFFSET) == 0 ? lastPosition.toLineOffset : input.readVarUInt();
+		return lastPosition = new CodePosition(file, fromLine, fromLineOffset, toLine, toLineOffset);
+	}
+
+	@Override
+	public FunctionHeader deserializeHeader(TypeContext context) {
+		TypeParameter[] typeParameters = TypeParameter.NONE;
+		
+		int flags = input.readVarUInt();
+		TypeContext inner;
+		if ((flags & FunctionHeaderEncoding.FLAG_TYPE_PARAMETERS) > 0) {
+			typeParameters = deserializeTypeParameters(context);
+			inner = new TypeContext(context, context.thisType, typeParameters);
+		} else {
+			inner = context;
+		}
+		
+		ITypeID returnType = BasicTypeID.VOID;
+		if ((flags & FunctionHeaderEncoding.FLAG_RETURN_TYPE) > 0)
+			returnType = deserializeType(inner);
+		
+		ITypeID thrownType = null;
+		if ((flags & FunctionHeaderEncoding.FLAG_THROWS) > 0)
+			thrownType = deserializeType(inner);
+		
+		FunctionParameter[] parameters = FunctionParameter.NONE;
+		if ((flags & FunctionHeaderEncoding.FLAG_PARAMETERS) > 0) {
+			parameters = new FunctionParameter[readUInt()];
+			StatementContext statementContext = new StatementContext(context);
+			for (int i = 0; i < parameters.length; i++) {
+				ITypeID type = deserializeType(inner);
+				String name = readString();
+				FunctionParameter parameter = new FunctionParameter(type, name, null, (i == parameters.length - 1) && ((flags & FunctionHeaderEncoding.FLAG_VARIADIC) > 0));
+				parameters[i] = parameter;
+				
+				if ((flags & FunctionHeaderEncoding.FLAG_DEFAULT_VALUES) > 0) {
+					if (currentStage == code) {
+						parameters[i].defaultValue = deserializeExpression(statementContext);
+					} else {
+						enqueueCode(decoder -> parameter.defaultValue = deserializeExpression(statementContext));
+					}
+				}
+			}
+		}
+		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
+	}
+	
+	@Override
+	public TypeParameter deserializeTypeParameter(TypeContext context) {
+		int flags = readUInt();
+		CodePosition position = CodePosition.UNKNOWN;
+		String name = null;
+		if ((flags & TypeParameterEncoding.FLAG_POSITION) > 0)
+			position = deserializePosition();
+		if ((flags & TypeParameterEncoding.FLAG_NAME) > 0)
+			name = readString();
+		
+		TypeParameter result = new TypeParameter(position, name);
+		TypeContext inner = new TypeContext(context, context.thisType, result);
+		if ((flags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {
+			int bounds = readUInt();
+			for (int i = 0; i < bounds; i++)
+				result.bounds.add(deserializeTypeParameterBound(inner));
+		}
+		
+		return result;
+	}
+	
+	@Override
+	public TypeParameter[] deserializeTypeParameters(TypeContext context) {
+		TypeParameter[] result = new TypeParameter[readUInt()];
+		int[] allflags = new int[result.length];
+		for (int i = 0; i < result.length; i++) {
+			int flags = readUInt();
+			allflags[i] = flags;
+			
+			CodePosition position = CodePosition.UNKNOWN;
+			String name = null;
+			if ((flags & TypeParameterEncoding.FLAG_POSITION) > 0)
+				position = deserializePosition();
+			if ((flags & TypeParameterEncoding.FLAG_NAME) > 0)
+				name = readString();
+
+			result[i] = new TypeParameter(position, name);
+		}
+		
+		TypeContext inner = new TypeContext(context, context.thisType, result);
+		for (int i = 0; i < result.length; i++) {
+			int flags = allflags[i];
+			if ((flags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {
+				int bounds = readUInt();
+				for (int j = 0; j < bounds; j++)
+					result[i].bounds.add(deserializeTypeParameterBound(inner));
+			}
+		}
+		
+		return result;
+	}
+
+	@Override
+	public CallArguments deserializeArguments(StatementContext context) {
+		ITypeID[] typeArguments = new ITypeID[readUInt()];
+		for (int i = 0; i < typeArguments.length; i++)
+			typeArguments[i] = deserializeType(context);
+		
+		Expression[] arguments = new Expression[readUInt()];
+		for (int i = 0; i < arguments.length; i++)
+			arguments[i] = deserializeExpression(context);
+		
+		return new CallArguments(typeArguments, arguments);
+	}
+
+	@Override
+	public Statement deserializeStatement(StatementContext context) {
+		int type = readUInt();
+		int flags = type == StatementEncoding.TYPE_NULL ? 0 :  readUInt();
+		CodePosition position = (flags & StatementEncoding.FLAG_POSITION) > 0 ? deserializePosition() : CodePosition.UNKNOWN;
+		switch (type) {
+			case StatementEncoding.TYPE_NULL:
+				return null;
+			case StatementEncoding.TYPE_BLOCK: {
+				Statement[] statements = new Statement[readUInt()];
+				StatementContext inner = new StatementContext(context);
+				for (int i = 0; i < statements.length; i++)
+					statements[i] = deserializeStatement(inner);
+				return new BlockStatement(position, statements);
+			}
+			case StatementEncoding.TYPE_BREAK: {
+				LoopStatement loop = context.getLoop(readUInt());
+				return new BreakStatement(position, loop);
+			}
+			case StatementEncoding.TYPE_CONTINUE: {
+				LoopStatement loop = context.getLoop(readUInt());
+				return new ContinueStatement(position, loop);
+			}
+			case StatementEncoding.TYPE_DO_WHILE: {
+				Expression condition = deserializeExpression(context);
+				String label = null;
+				if ((flags & StatementEncoding.FLAG_LABEL) > 0)
+					label = readString();
+				DoWhileStatement loop = new DoWhileStatement(position, label, condition);
+				StatementContext inner = new StatementContext(context, loop);
+				loop.content = deserializeStatement(inner);
+				return loop;
+			}
+			case StatementEncoding.TYPE_EMPTY:
+				return new EmptyStatement(position);
+			case StatementEncoding.TYPE_EXPRESSION: {
+				Expression expression = deserializeExpression(context);
+				return new ExpressionStatement(position, expression);
+			}
+			case StatementEncoding.TYPE_FOREACH: {
+				Expression list = deserializeExpression(context);
+				IteratorMemberRef iterator = (IteratorMemberRef)readMember(context, list.type);
+				VarStatement[] loopVariables = new VarStatement[iterator.getLoopVariableCount()];
+				for (int i = 0; i < loopVariables.length; i++) {
+					String name = ((flags & StatementEncoding.FLAG_NAME) > 0) ? readString() : null;
+					loopVariables[i] = new VarStatement(position, name, iterator.types[i], null, true);
+				}
+				ForeachStatement loop = new ForeachStatement(position, loopVariables, iterator, list);
+				StatementContext inner = new StatementContext(context, loop);
+				for (VarStatement variable : loopVariables)
+					inner.add(variable);
+				
+				loop.content = deserializeStatement(inner);
+				return loop;
+			}
+			case StatementEncoding.TYPE_IF: {
+				Expression condition = deserializeExpression(context);
+				Statement onThen = deserializeStatement(context);
+				Statement onElse = deserializeStatement(context);
+				return new IfStatement(position, condition, onThen, onElse);
+			}
+			case StatementEncoding.TYPE_LOCK: {
+				Expression object = deserializeExpression(context);
+				Statement content = deserializeStatement(context);
+				return new LockStatement(position, object, content);
+			}
+			case StatementEncoding.TYPE_RETURN: {
+				Expression value = deserializeExpression(context);
+				return new ReturnStatement(position, value);
+			}
+			case StatementEncoding.TYPE_SWITCH: {
+				Expression value = deserializeExpression(context);
+				String label = ((flags & StatementEncoding.FLAG_LABEL) > 0) ? readString() : null;
+				SwitchStatement statement = new SwitchStatement(position, label, value);
+				StatementContext inner = new StatementContext(context, statement);
+				
+				int numberOfCases = readUInt();
+				for (int i = 0; i < numberOfCases; i++) {
+					SwitchValue switchValue = deserializeSwitchValue(inner, (flags & StatementEncoding.FLAG_NAME) > 0);
+					if (switchValue instanceof VariantOptionSwitchValue)
+						context.variantOptionSwitchValue = (VariantOptionSwitchValue)switchValue;
+					
+					Statement[] statements = new Statement[readUInt()];
+					for (int j = 0; j < statements.length; j++)
+						statements[j] = deserializeStatement(inner);
+					statement.cases.add(new SwitchCase(switchValue, statements));
+				}
+				
+				return statement;
+			}
+			case StatementEncoding.TYPE_THROW: {
+				Expression value = deserializeExpression(context);
+				return new ThrowStatement(position, value);
+			}
+			case StatementEncoding.TYPE_TRY_CATCH:
+				throw new UnsupportedOperationException("Not supported yet");
+			case StatementEncoding.TYPE_VAR: {
+				ITypeID varType = deserializeType(context);
+				String name = (flags & StatementEncoding.FLAG_NAME) > 0 ? readString() : null;
+				Expression initializer = deserializeExpression(context);
+				VarStatement result = new VarStatement(position, name, varType, initializer, (flags & StatementEncoding.FLAG_FINAL) > 0);
+				context.add(result);
+				return result;
+			}
+			case StatementEncoding.TYPE_WHILE: {
+				Expression condition = deserializeExpression(context);
+				String label = (flags & StatementEncoding.FLAG_LABEL) > 0 ? readString() : null;
+				WhileStatement loop = new WhileStatement(position, label, condition);
+				StatementContext inner = new StatementContext(context, loop);
+				loop.content = deserializeStatement(inner);
+				return loop;
+			}
+			default:
+				throw new IllegalArgumentException("Unknown statement type: " + type);
+		}
+	}
+
+	@Override
+	public Expression deserializeExpression(StatementContext context) {
+		int kind = readUInt();
+		int flags = kind == ExpressionEncoding.TYPE_NONE ? 0 : readUInt();
+		CodePosition position = (flags & ExpressionEncoding.FLAG_POSITION) > 0 ? deserializePosition() : CodePosition.UNKNOWN;
+		switch (kind) {
+			case ExpressionEncoding.TYPE_NONE:
+				return null;
+			case ExpressionEncoding.TYPE_AND_AND: {
+				Expression left = deserializeExpression(context);
+				Expression right = deserializeExpression(context);
+				return new AndAndExpression(position, left, right);
+			}
+			case ExpressionEncoding.TYPE_ARRAY: {
+				ITypeID type = deserializeType(context);
+				Expression[] expressions = new Expression[readUInt()];
+				return new ArrayExpression(position, expressions, (ArrayTypeID)type);
+			}
+			case ExpressionEncoding.TYPE_COMPARE: {
+				CompareType comparison = readComparator();
+				Expression left = deserializeExpression(context);
+				Expression right = deserializeExpression(context);
+				FunctionalMemberRef operator = (FunctionalMemberRef)readMember(context, left.type);
+				return new CompareExpression(position, left, right, operator, comparison);
+			}
+			case ExpressionEncoding.TYPE_CALL: {
+				Expression target = deserializeExpression(context);
+				FunctionalMemberRef member = (FunctionalMemberRef)readMember(context, target.type);
+				CallArguments arguments = deserializeArguments(context);
+				FunctionHeader instancedHeader = member.getHeader().instanceForCall(registry, arguments);
+				return new CallExpression(position, target, member, instancedHeader, arguments);
+			}
+			case ExpressionEncoding.TYPE_CALL_STATIC: {
+				ITypeID type = deserializeType(context);
+				FunctionalMemberRef member = (FunctionalMemberRef)readMember(context, type);
+				CallArguments arguments = deserializeArguments(context);
+				FunctionHeader instancedHeader = member.getHeader().instanceForCall(registry, arguments);
+				return new CallStaticExpression(position, type, member, instancedHeader, arguments);
+			}
+			case ExpressionEncoding.TYPE_CAPTURED_CLOSURE: {
+				Expression value = deserializeExpression(context.getLambdaOuter());
+				return new CapturedClosureExpression(position, (CapturedExpression)value, context.getLambdaClosure());
+			}
+			case ExpressionEncoding.TYPE_CAPTURED_DIRECT: {
+				Expression value = deserializeExpression(context.getLambdaOuter());
+				return new CapturedDirectExpression(position, context.getLambdaClosure(), value);
+			}
+			case ExpressionEncoding.TYPE_CAPTURED_LOCAL_VARIABLE: {
+				VarStatement var = context.getLambdaOuter().getVariable(readUInt());
+				return new CapturedLocalVariableExpression(position, var, context.getLambdaClosure());
+			}
+			case ExpressionEncoding.TYPE_CAPTURED_PARAMETER: {
+				FunctionParameter parameter = context.getLambdaOuter().getParameter(readUInt());
+				return new CapturedParameterExpression(position, parameter, context.getLambdaClosure());
+			}
+			case ExpressionEncoding.TYPE_CAPTURED_THIS: {
+				return new CapturedThisExpression(position, context.thisType, context.getLambdaClosure());
+			}
+			case ExpressionEncoding.TYPE_CAST: {
+				ITypeID toType = deserializeType(context);
+				Expression value = deserializeExpression(context);
+				CasterMemberRef member = (CasterMemberRef)readMember(context, toType);
+				return new CastExpression(position, value, member, (flags & ExpressionEncoding.FLAG_IMPLICIT) > 0);
+			}
+			case ExpressionEncoding.TYPE_CHECKNULL: {
+				Expression value = deserializeExpression(context);
+				return new CheckNullExpression(position, value);
+			}
+			case ExpressionEncoding.TYPE_COALESCE: {
+				Expression left = deserializeExpression(context);
+				Expression right = deserializeExpression(context);
+				return new CoalesceExpression(position, left, right);
+			}
+			case ExpressionEncoding.TYPE_CONDITIONAL: {
+				Expression condition = deserializeExpression(context);
+				ITypeID type = deserializeType(context);
+				Expression onThen = deserializeExpression(context);
+				Expression onElse = deserializeExpression(context);
+				return new ConditionalExpression(position, condition, onThen, onElse, type);
+			}
+			case ExpressionEncoding.TYPE_CONST: {
+				ITypeID type = deserializeType(context);
+				ConstMemberRef member = (ConstMemberRef)readMember(context, type);
+				return new ConstExpression(position, member);
+			}
+			case ExpressionEncoding.TYPE_CONSTANT_BOOL_TRUE:
+				return new ConstantBoolExpression(position, true);
+			case ExpressionEncoding.TYPE_CONSTANT_BOOL_FALSE:
+				return new ConstantBoolExpression(position, false);
+			case ExpressionEncoding.TYPE_CONSTANT_BYTE:
+				return new ConstantByteExpression(position, readByte());
+			case ExpressionEncoding.TYPE_CONSTANT_CHAR:
+				return new ConstantCharExpression(position, readChar());
+			case ExpressionEncoding.TYPE_CONSTANT_DOUBLE:
+				return new ConstantDoubleExpression(position, readDouble());
+			case ExpressionEncoding.TYPE_CONSTANT_FLOAT:
+				return new ConstantFloatExpression(position, readFloat());
+			case ExpressionEncoding.TYPE_CONSTANT_INT:
+				return new ConstantIntExpression(position, readInt());
+			case ExpressionEncoding.TYPE_CONSTANT_LONG:
+				return new ConstantLongExpression(position, readLong());
+			case ExpressionEncoding.TYPE_CONSTANT_SBYTE:
+				return new ConstantSByteExpression(position, readSByte());
+			case ExpressionEncoding.TYPE_CONSTANT_SHORT:
+				return new ConstantShortExpression(position, readShort());
+			case ExpressionEncoding.TYPE_CONSTANT_STRING:
+				return new ConstantStringExpression(position, readString());
+			case ExpressionEncoding.TYPE_CONSTANT_UINT:
+				return new ConstantUIntExpression(position, readUInt());
+			case ExpressionEncoding.TYPE_CONSTANT_ULONG:
+				return new ConstantULongExpression(position, readULong());
+			case ExpressionEncoding.TYPE_CONSTANT_USHORT:
+				return new ConstantUShortExpression(position, readUShort());
+			case ExpressionEncoding.TYPE_CONSTANT_USIZE:
+				return new ConstantUSizeExpression(position, readULong());
+			case ExpressionEncoding.TYPE_CONSTRUCTOR_THIS_CALL: {
+				FunctionalMemberRef constructor = (FunctionalMemberRef)readMember(context, context.thisType);
+				CallArguments arguments = deserializeArguments(context);
+				return new ConstructorThisCallExpression(position, context.thisType, constructor, arguments);
+			}
+			case ExpressionEncoding.TYPE_CONSTRUCTOR_SUPER_CALL: {
+				ITypeID superType = context.thisType.getSuperType(registry);
+				FunctionalMemberRef constructor = (FunctionalMemberRef)readMember(context, superType);
+				CallArguments arguments = deserializeArguments(context);
+				return new ConstructorSuperCallExpression(position, superType, constructor, arguments);
+			}
+			case ExpressionEncoding.TYPE_ENUM_CONSTANT: {
+				EnumConstantMember constant = readEnumConstant(context);
+				return new EnumConstantExpression(position, registry.getForDefinition(constant.definition), constant);
+			}
+			case ExpressionEncoding.TYPE_FUNCTION: {
+				FunctionHeader header = deserializeHeader(context);
+				LambdaClosure closure = new LambdaClosure();
+				StatementContext inner = new StatementContext(context, header, closure);
+				Statement body = deserializeStatement(inner);
+				return new FunctionExpression(position, registry.getFunction(header), closure, header, body);
+			}
+			case ExpressionEncoding.TYPE_GET_FIELD: {
+				Expression target = deserializeExpression(context);
+				FieldMemberRef field = (FieldMemberRef)readMember(context, target.type);
+				return new GetFieldExpression(position, target, field);
+			}
+			case ExpressionEncoding.TYPE_GET_FUNCTION_PARAMETER: {
+				FunctionParameter parameter = context.getParameter(readUInt());
+				return new GetFunctionParameterExpression(position, parameter);
+			}
+			case ExpressionEncoding.TYPE_GET_LOCAL_VARIABLE: {
+				VarStatement variable = context.getVariable(readUInt());
+				return new GetLocalVariableExpression(position, variable);
+			}
+			case ExpressionEncoding.TYPE_GET_MATCHING_VARIANT_FIELD: {
+				return new GetMatchingVariantField(position, context.variantOptionSwitchValue, kind);
+			}
+			case ExpressionEncoding.TYPE_GET_STATIC_FIELD: {
+				ITypeID type = deserializeType(context);
+				FieldMemberRef field = (FieldMemberRef)readMember(context, type);
+				return new GetStaticFieldExpression(position, field);
+			}
+			case ExpressionEncoding.TYPE_GETTER: {
+				Expression target = deserializeExpression(context);
+				GetterMemberRef getter = (GetterMemberRef)readMember(context, target.type);
+				return new GetterExpression(position, target, getter);
+			}
+			case ExpressionEncoding.TYPE_GLOBAL: {
+				String name = readString();
+				Expression resolution = deserializeExpression(context);
+				return new GlobalExpression(position, name, resolution);
+			}
+			case ExpressionEncoding.TYPE_GLOBAL_CALL: {
+				String name = readString();
+				CallArguments arguments = deserializeArguments(context);
+				Expression resolution = deserializeExpression(context);
+				return new GlobalCallExpression(position, name, arguments, resolution);
+			}
+			case ExpressionEncoding.TYPE_INTERFACE_CAST: {
+				Expression value = deserializeExpression(context);
+				ITypeID toType = deserializeType(context);
+				return new InterfaceCastExpression(position, value, toType);
+			}
+			case ExpressionEncoding.TYPE_IS: {
+				Expression value = deserializeExpression(context);
+				ITypeID type = deserializeType(context);
+				return new IsExpression(position, value, type);
+			}
+			case ExpressionEncoding.TYPE_MAKE_CONST: {
+				Expression value = deserializeExpression(context);
+				ITypeID constType = registry.getModified(ModifiedTypeID.MODIFIER_CONST, value.type);
+				return new MakeConstExpression(position, value, constType);
+			}
+			case ExpressionEncoding.TYPE_MAP: {
+				ITypeID type = deserializeType(context);
+				Expression[] keys = new Expression[readUInt()];
+				Expression[] values = new Expression[keys.length];
+				for (int i = 0; i < keys.length; i++) {
+					keys[i] = deserializeExpression(context);
+					values[i] = deserializeExpression(context);
+				}
+				return new MapExpression(position, keys, values, type);
+			}
+			case ExpressionEncoding.TYPE_MATCH: {
+				boolean localVariableNames = (flags & ExpressionEncoding.FLAG_NAMES) > 0;
+				
+				Expression value = deserializeExpression(context);
+				ITypeID type = deserializeType(context);
+				MatchExpression.Case[] cases = new MatchExpression.Case[readUInt()];
+				for (int i = 0; i < cases.length; i++) {
+					SwitchValue key = deserializeSwitchValue(context, localVariableNames);
+					Expression caseValue = deserializeExpression(context);
+					cases[i] = new MatchExpression.Case(key, caseValue);
+				}
+				return new MatchExpression(position, value, type, cases);
+			}
+			case ExpressionEncoding.TYPE_NEW: {
+				ITypeID type = deserializeType(context);
+				FunctionalMemberRef member = (FunctionalMemberRef)readMember(context, type);
+				CallArguments arguments = deserializeArguments(context);
+				return new NewExpression(position, type, member, arguments);
+			}
+			case ExpressionEncoding.TYPE_NULL: {
+				ITypeID type = deserializeType(context);
+				return new NullExpression(position, type);
+			}
+			case ExpressionEncoding.TYPE_OR_OR: {
+				Expression left = deserializeExpression(context);
+				Expression right = deserializeExpression(context);
+				return new OrOrExpression(position, left, right);
+			}
+			case ExpressionEncoding.TYPE_PANIC: {
+				Expression value = deserializeExpression(context);
+				ITypeID type = deserializeType(context);
+				return new PanicExpression(position, type, value);
+			}
+			case ExpressionEncoding.TYPE_POST_CALL: {
+				Expression target = deserializeExpression(context);
+				FunctionalMemberRef member = (FunctionalMemberRef)readMember(context, target.type);
+				return new PostCallExpression(position, target, member, member.getHeader());
+			}
+			case ExpressionEncoding.TYPE_RANGE: {
+				Expression from = deserializeExpression(context);
+				Expression to = deserializeExpression(context);
+				return new RangeExpression(position, registry.getRange(from.type), from, to);
+			}
+			case ExpressionEncoding.TYPE_SAME_OBJECT: {
+				Expression left = deserializeExpression(context);
+				Expression right = deserializeExpression(context);
+				boolean inverted = (flags & ExpressionEncoding.FLAG_INVERTED) > 0;
+				return new SameObjectExpression(position, left, right, inverted);
+			}
+			case ExpressionEncoding.TYPE_SET_FIELD: {
+				Expression target = deserializeExpression(context);
+				FieldMemberRef field = (FieldMemberRef)readMember(context, target.type);
+				Expression value = deserializeExpression(context);
+				return new SetFieldExpression(position, target, field, value);
+			}
+			case ExpressionEncoding.TYPE_SET_FUNCTION_PARAMETER: {
+				FunctionParameter parameter = context.getParameter(readUInt());
+				Expression value = deserializeExpression(context);
+				return new SetFunctionParameterExpression(position, parameter, value);
+			}
+			case ExpressionEncoding.TYPE_SET_LOCAL_VARIABLE: {
+				VarStatement variable = context.getVariable(readUInt());
+				Expression value = deserializeExpression(context);
+				return new SetLocalVariableExpression(position, variable, value);
+			}
+			case ExpressionEncoding.TYPE_SET_STATIC_FIELD: {
+				ITypeID type = deserializeType(context);
+				FieldMemberRef member = (FieldMemberRef)readMember(context, type);
+				Expression value = deserializeExpression(context);
+				return new SetStaticFieldExpression(position, member, value);
+			}
+			case ExpressionEncoding.TYPE_SETTER: {
+				Expression target = deserializeExpression(context);
+				SetterMemberRef setter = (SetterMemberRef)readMember(context, target.type);
+				Expression value = deserializeExpression(context);
+				return new SetterExpression(position, target, setter, value);
+			}
+			case ExpressionEncoding.TYPE_STATIC_GETTER: {
+				ITypeID target = deserializeType(context);
+				GetterMemberRef getter = (GetterMemberRef)readMember(context, target);
+				return new StaticGetterExpression(position, getter);
+			}
+			case ExpressionEncoding.TYPE_STATIC_SETTER: {
+				ITypeID target = deserializeType(context);
+				SetterMemberRef setter = (SetterMemberRef)readMember(context, target);
+				Expression value = deserializeExpression(context);
+				return new StaticSetterExpression(position, setter, value);
+			}
+			case ExpressionEncoding.TYPE_SUPERTYPE_CAST: {
+				ITypeID type = deserializeType(context);
+				Expression value = deserializeExpression(context);
+				return new SupertypeCastExpression(position, value, type);
+			}
+			case ExpressionEncoding.TYPE_THIS:
+				return new ThisExpression(position, context.thisType);
+			case ExpressionEncoding.TYPE_THROW: {
+				ITypeID type = deserializeType(context);
+				Expression value = deserializeExpression(context);
+				return new ThrowExpression(position, type, value);
+			}
+			case ExpressionEncoding.TYPE_TRY_CONVERT: {
+				ITypeID type = deserializeType(context);
+				Expression value = deserializeExpression(context);
+				return new TryConvertExpression(position, type, value);
+			}
+			case ExpressionEncoding.TYPE_TRY_RETHROW_AS_EXCEPTION: {
+				ITypeID type = deserializeType(context);
+				ITypeID thrownType = deserializeType(context);
+				Expression value = deserializeExpression(context);
+				return new TryRethrowAsExceptionExpression(position, type, value, thrownType);
+			}
+			case ExpressionEncoding.TYPE_TRY_RETHROW_AS_RESULT: {
+				ITypeID type = deserializeType(context);
+				Expression value = deserializeExpression(context);
+				return new TryRethrowAsResultExpression(position, type, value);
+			}
+			case ExpressionEncoding.TYPE_VARIANT_VALUE: {
+				ITypeID type = deserializeType(context);
+				VariantOptionRef option = readVariantOption(context, type);
+				Expression[] arguments = new Expression[option.types.length];
+				for (int i = 0; i < arguments.length; i++)
+					arguments[i] = deserializeExpression(context);
+				return new VariantValueExpression(position, type, option, arguments);
+			}
+			case ExpressionEncoding.TYPE_WRAP_OPTIONAL: {
+				Expression value = deserializeExpression(context);
+				ITypeID optionalType = registry.getOptional(value.type);
+				return new WrapOptionalExpression(position, value, optionalType);
+			}
+			default:
+				throw new IllegalArgumentException("Not a valid expression type: " + kind);
+		}
+	}
+	
+	private CompareType readComparator() {
+		int type = readUInt();
+		switch (type) {
+			case ExpressionEncoding.COMPARATOR_LT:
+				return CompareType.LT;
+			case ExpressionEncoding.COMPARATOR_GT:
+				return CompareType.GT;
+			case ExpressionEncoding.COMPARATOR_EQ:
+				return CompareType.EQ;
+			case ExpressionEncoding.COMPARATOR_NE:
+				return CompareType.NE;
+			case ExpressionEncoding.COMPARATOR_LE:
+				return CompareType.LE;
+			case ExpressionEncoding.COMPARATOR_GE:
+				return CompareType.GE;
+			default:
+				throw new IllegalArgumentException("Invalid comparator: " + type);
+		}
+	}
+	
+	private SwitchValue deserializeSwitchValue(StatementContext context, boolean localVariableNames) {
+		int type = readUInt();
+		switch (type) {
+			case SwitchValueEncoding.TYPE_NULL:
+				return null;
+			case SwitchValueEncoding.TYPE_INT:
+				return new IntSwitchValue(readInt());
+			case SwitchValueEncoding.TYPE_CHAR:
+				return new CharSwitchValue(readChar());
+			case SwitchValueEncoding.TYPE_STRING:
+				return new StringSwitchValue(readString());
+			case SwitchValueEncoding.TYPE_ENUM:
+				return new EnumConstantSwitchValue(readEnumConstant(context));
+			case SwitchValueEncoding.TYPE_VARIANT_OPTION: {
+				ITypeID t = deserializeType(context);
+				VariantOptionRef option = readVariantOption(context, t);
+				String[] names = new String[option.types.length];
+				if (localVariableNames)
+					for (int i = 0; i < names.length; i++)
+						names[i] = readString();
+				return new VariantOptionSwitchValue(option, names);
+			}
+			default:
+				throw new IllegalArgumentException("Unknown switch value type: " + type);
+		}
+	}
+	
+	@Override
+	public void enqueueMembers(DecodingOperation operation) {
+		members.enqueue(operation);
+	}
+	
+	@Override
+	public void enqueueCode(DecodingOperation operation) {
+		code.enqueue(operation);
+	}
+	
+	private TypeParameterBound deserializeTypeParameterBound(TypeContext context) {
+		int type = readUInt();
+		switch (type) {
+			case TypeParameterEncoding.TYPE_SUPER_BOUND:
+				return new ParameterSuperBound(deserializeType(context));
+			case TypeParameterEncoding.TYPE_TYPE_BOUND:
+				return new ParameterTypeBound(CodePosition.UNKNOWN, deserializeType(context));
+			default:
+				throw new IllegalArgumentException("Not a valid parameter bound type: " + type);
+		}
+	}
+}

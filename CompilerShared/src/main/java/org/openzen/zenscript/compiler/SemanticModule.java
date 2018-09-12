@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.annotations.AnnotationProcessor;
+import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -135,6 +136,10 @@ public class SemanticModule {
 		for (ScriptBlock script : scripts) {
 			compiler.addScriptBlock(script);
 		}
+	}
+	
+	public ModuleContext getContext() {
+		return new ModuleContext(compilationUnit.globalTypeRegistry, module, expansions, rootPackage);
 	}
 	
 	public enum State {

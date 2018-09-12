@@ -66,6 +66,8 @@ public interface CodeSerializationOutput {
 	
 	void serialize(TypeContext context, TypeParameter parameter);
 	
+	void serialize(TypeContext context, TypeParameter[] parameters);
+	
 	void serialize(CodePosition position);
 	
 	void serialize(TypeContext context, FunctionHeader header);

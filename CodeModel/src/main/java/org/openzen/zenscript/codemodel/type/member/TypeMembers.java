@@ -28,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinition;
 import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
@@ -130,6 +131,34 @@ public final class TypeMembers {
 			other.innerTypes.put(entry.getKey(), entry.getValue());
 		for (Map.Entry<OperatorType, DefinitionMemberGroup> entry : operators.entrySet())
 			other.getOrCreateGroup(entry.getKey()).merge(position, entry.getValue(), priority);
+	}
+	
+	public DefinitionMemberRef getBuiltin(BuiltinID builtin) {
+		for (DefinitionMemberGroup group : members.values()) {
+			if (group.getConstant() != null && group.getConstant().member.builtin == builtin)
+				return group.getConstant();
+			if (group.getField() != null && group.getField().member.builtin == builtin)
+				return group.getField();
+			
+			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers()) {
+				if (member.member.getBuiltin() == builtin)
+					return member.member;
+			}
+		}
+		
+		for (DefinitionMemberGroup group : operators.values()) {
+			if (group.getConstant() != null && group.getConstant().member.builtin == builtin)
+				return group.getConstant();
+			if (group.getField() != null && group.getField().member.builtin == builtin)
+				return group.getField();
+			
+			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers()) {
+				if (member.member.getBuiltin() == builtin)
+					return member.member;
+			}
+		}
+		
+		return null;
 	}
 	
 	public ITypeID union(ITypeID other) {

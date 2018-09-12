@@ -24,13 +24,11 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public class ConstMember extends PropertyMember {
 	public final String name;
 	public Expression value;
-	public final BuiltinID builtin;
 	
 	public ConstMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, ITypeID type, BuiltinID builtin) {
-		super(position, definition, modifiers, type, null);
+		super(position, definition, modifiers, type, builtin);
 		
 		this.name = name;
-		this.builtin = builtin;
 	}
 
 	@Override
@@ -39,13 +37,8 @@ public class ConstMember extends PropertyMember {
 	}
 
 	@Override
-	public BuiltinID getBuiltin() {
-		return builtin;
-	}
-
-	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addConst(new ConstMemberRef(this, mapper));
+		members.addConst(new ConstMemberRef(members.type, this, mapper));
 	}
 
 	@Override
@@ -72,5 +65,10 @@ public class ConstMember extends PropertyMember {
 	@Override
 	public boolean isAbstract() {
 		return false;
+	}
+
+	@Override
+	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+		return new ConstMemberRef(type, this, mapper);
 	}
 }

@@ -19,10 +19,16 @@ import org.openzen.zenscript.moduleserialization.ExpressionEncoding;
 public class ExpressionSerializer implements ExpressionVisitorWithContext<StatementContext, Void> {
 	private final CodeSerializationOutput output;
 	private final boolean positions;
+	private final boolean localVariableNames;
 	
-	public ExpressionSerializer(CodeSerializationOutput output, boolean positions) {
+	public ExpressionSerializer(
+			CodeSerializationOutput output,
+			boolean positions,
+			boolean localVariableNames)
+	{
 		this.output = output;
 		this.positions = positions;
+		this.localVariableNames = localVariableNames;
 	}
 	
 	private int getFlags(Expression expression) {
@@ -71,6 +77,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		output.writeUInt(getCompareType(expression.comparison));
 		output.serialize(context, expression.left);
 		output.serialize(context, expression.right);
+		output.write(context, expression.operator);
 		return null;
 	}
 
@@ -80,8 +87,8 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
-		output.write(context, expression.member);
 		output.serialize(context, expression.target);
+		output.write(context, expression.member);
 		output.serialize(context, expression.arguments);
 		return null;
 	}
@@ -92,24 +99,30 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
-		output.write(context, expression.member);
 		output.serialize(context, expression.target);
+		output.write(context, expression.member);
 		output.serialize(context, expression.arguments);
 		return null;
 	}
 
 	@Override
 	public Void visitCapturedClosure(StatementContext context, CapturedClosureExpression expression) {
+		if (expression.closure != context.getLambdaClosure())
+			throw new AssertionError("Closure invalid");
+		
 		output.writeUInt(ExpressionEncoding.TYPE_CAPTURED_CLOSURE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
-		output.serialize(context, expression.value);
+		output.serialize(context.getLambdaOuter(), expression.value);
 		return null;
 	}
 
 	@Override
 	public Void visitCapturedDirect(StatementContext context, CapturedDirectExpression expression) {
+		if (expression.closure != context.getLambdaClosure())
+			throw new AssertionError("Closure invalid");
+		
 		output.writeUInt(ExpressionEncoding.TYPE_CAPTURED_DIRECT);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -120,16 +133,22 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 
 	@Override
 	public Void visitCapturedLocalVariable(StatementContext context, CapturedLocalVariableExpression expression) {
+		if (expression.closure != context.getLambdaClosure())
+			throw new AssertionError("Closure invalid");
+		
 		output.writeUInt(ExpressionEncoding.TYPE_CAPTURED_LOCAL_VARIABLE);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
-		output.writeUInt(context.getVariableId(expression.variable));
+		output.writeUInt(context.getLambdaOuter().getVariableId(expression.variable));
 		return null;
 	}
 
 	@Override
 	public Void visitCapturedParameter(StatementContext context, CapturedParameterExpression expression) {
+		if (expression.closure != context.getLambdaClosure())
+			throw new AssertionError("Closure invalid");
+		
 		output.writeUInt(ExpressionEncoding.TYPE_CAPTURED_PARAMETER);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -140,6 +159,9 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 
 	@Override
 	public Void visitCapturedThis(StatementContext context, CapturedThisExpression expression) {
+		if (expression.closure != context.getLambdaClosure())
+			throw new AssertionError("Closure invalid");
+		
 		output.writeUInt(ExpressionEncoding.TYPE_CAPTURED_THIS);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
@@ -188,6 +210,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		serialize(flags, expression);
 		
 		output.serialize(context, expression.condition);
+		output.serialize(context, expression.type);
 		output.serialize(context, expression.ifThen);
 		output.serialize(context, expression.ifElse);
 		return null;
@@ -199,6 +222,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
+		output.serialize(context, expression.constant.getType());
 		output.write(context, expression.constant);
 		return null;
 	}
@@ -432,6 +456,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
+		output.serialize(context, expression.field.getType());
 		output.write(context, expression.field);
 		return null;
 	}
@@ -454,6 +479,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		serialize(flags, expression);
 		
 		output.writeString(expression.name);
+		output.serialize(context, expression.resolution);
 		return null;
 	}
 
@@ -465,6 +491,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		
 		output.writeString(expression.name);
 		output.serialize(context, expression.arguments);
+		output.serialize(context, expression.resolution);
 		return null;
 	}
 
@@ -519,9 +546,12 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	public Void visitMatch(StatementContext context, MatchExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_MATCH);
 		int flags = getFlags(expression);
+		if (localVariableNames)
+			flags |= ExpressionEncoding.FLAG_NAMES;
 		serialize(flags, expression);
 		
 		output.serialize(context, expression.value);
+		output.serialize(context, expression.type);
 		output.writeUInt(expression.cases.length);
 		for (MatchExpression.Case case_ : expression.cases) {
 			output.serialize(context, case_.key);
@@ -536,6 +566,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
+		output.serialize(context, expression.constructor.getOwnerType());
 		output.write(context, expression.constructor);
 		output.serialize(context, expression.arguments);
 		return null;
@@ -546,6 +577,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		output.writeUInt(ExpressionEncoding.TYPE_NULL);
 		int flags = getFlags(expression);
 		serialize(flags, expression);
+		output.serialize(context, expression.type);
 		return null;
 	}
 
@@ -567,6 +599,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		serialize(flags, expression);
 		
 		output.serialize(context, expression.value);
+		output.serialize(context, expression.type);
 		return null;
 	}
 
@@ -596,6 +629,8 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	public Void visitSameObject(StatementContext context, SameObjectExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_SAME_OBJECT);
 		int flags = getFlags(expression);
+		if (expression.inverted)
+			flags |= ExpressionEncoding.FLAG_INVERTED;
 		serialize(flags, expression);
 		
 		output.serialize(context, expression.left);
@@ -687,8 +722,8 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
-		output.serialize(context, expression.value);
 		output.serialize(context, expression.type);
+		output.serialize(context, expression.value);
 		return null;
 	}
 
@@ -706,6 +741,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
+		output.serialize(context, expression.type);
 		output.serialize(context, expression.value);
 		return null;
 	}
@@ -716,6 +752,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
+		output.serialize(context, expression.type);
 		output.serialize(context, expression.value);
 		return null;
 	}
@@ -726,6 +763,8 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
+		output.serialize(context, expression.type);
+		output.serialize(context, expression.thrownType);
 		output.serialize(context, expression.value);
 		return null;
 	}
@@ -736,6 +775,7 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
+		output.serialize(context, expression.type);
 		output.serialize(context, expression.value);
 		return null;
 	}
@@ -746,8 +786,8 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		int flags = getFlags(expression);
 		serialize(flags, expression);
 		
+		output.serialize(context, expression.option.variant);
 		output.write(expression.option);
-		output.writeUInt(expression.arguments.length);
 		for (Expression argument : expression.arguments)
 			output.serialize(context, argument);
 		return null;

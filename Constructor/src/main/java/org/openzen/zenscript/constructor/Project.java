@@ -9,10 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.compiler.Target;
@@ -38,9 +36,9 @@ public class Project {
 		if (!directory.isDirectory())
 			throw new ConstructorException("Project directory isn't a directory");
 		
-		File projectFile = new File(directory, "project.json");
+		File projectFile = new File(directory, "project.zcp");
 		if (!projectFile.exists())
-			throw new ConstructorException("Missing project.json file in project directory");
+			throw new ConstructorException("Missing project.zcp file in project directory");
 		
 		JSONObject json = JSONUtils.load(projectFile);
 		

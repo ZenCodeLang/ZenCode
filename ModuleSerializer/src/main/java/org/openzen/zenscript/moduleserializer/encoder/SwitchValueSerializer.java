@@ -21,9 +21,11 @@ import org.openzen.zenscript.moduleserialization.SwitchValueEncoding;
  */
 public class SwitchValueSerializer implements SwitchValueVisitorWithContext<TypeContext, Void> {
 	private final CodeSerializationOutput output;
+	private final boolean localVariableNames;
 	
-	public SwitchValueSerializer(CodeSerializationOutput output) {
+	public SwitchValueSerializer(CodeSerializationOutput output, boolean localVariableNames) {
 		this.output = output;
+		this.localVariableNames = localVariableNames;
 	}
 
 	@Override
@@ -58,9 +60,10 @@ public class SwitchValueSerializer implements SwitchValueVisitorWithContext<Type
 	public Void acceptVariantOption(TypeContext context, VariantOptionSwitchValue value) {
 		output.writeUInt(SwitchValueEncoding.TYPE_VARIANT_OPTION);
 		output.write(value.option);
-		output.writeUInt(value.parameters.length);
-		for (String parameter : value.parameters)
-			output.writeString(parameter);
+		if (localVariableNames) {
+			for (String parameter : value.parameters)
+				output.writeString(parameter);
+		}
 		return null;
 	}
 }

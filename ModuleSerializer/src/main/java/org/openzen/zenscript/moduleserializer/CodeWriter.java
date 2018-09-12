@@ -47,7 +47,7 @@ import org.openzen.zenscript.moduleserializer.encoder.TypeSerializer;
  *
  * @author Hoofdgebruiker
  */
-public class ModuleEncoder implements CodeSerializationOutput {
+public class CodeWriter implements CodeSerializationOutput {
 	private final Map<String, Integer> stringMap = new HashMap<>();
 	private final Map<SourceFile, Integer> sourceFileMap = new HashMap<>();
 	
@@ -71,7 +71,7 @@ public class ModuleEncoder implements CodeSerializationOutput {
 	
 	private CodePosition lastPosition = CodePosition.UNKNOWN;
 	
-	public ModuleEncoder(
+	public CodeWriter(
 			CompactDataOutput output,
 			SerializationOptions options,
 			String[] strings,
@@ -82,9 +82,9 @@ public class ModuleEncoder implements CodeSerializationOutput {
 		typeParameterEncoder = new TypeParameterBoundSerializer(this);
 		memberSerializer = new MemberSerializer(this, options);
 		typeSerializer = new TypeSerializer(this);
-		statementSerializer = new StatementSerializer(this, options.positions);
-		expressionSerializer = new ExpressionSerializer(this, options.expressionPositions);
-		switchValueSerializer = new SwitchValueSerializer(this);
+		statementSerializer = new StatementSerializer(this, options.positions, options.localVariableNames);
+		expressionSerializer = new ExpressionSerializer(this, options.expressionPositions, options.localVariableNames);
+		switchValueSerializer = new SwitchValueSerializer(this, options.localVariableNames);
 		
 		for (String string : strings)
 			stringMap.put(string, stringMap.size());
@@ -206,13 +206,11 @@ public class ModuleEncoder implements CodeSerializationOutput {
 			return;
 		} else if (member.getTarget().getBuiltin() != null) {
 			writeUInt(1);
-			serialize(context, member.getType());
 			writeUInt(member.getTarget().getBuiltin().ordinal()); // TODO: use something else?
 			return;
 		}
 		
 		IDefinitionMember member_ = member.getTarget();
-		write(member_.getDefinition());
 		EncodingDefinition definition = member_.getDefinition().getTag(EncodingDefinition.class);
 		
 		int index = definition.members.indexOf(member_);
@@ -246,18 +244,37 @@ public class ModuleEncoder implements CodeSerializationOutput {
 	
 	@Override
 	public void serialize(TypeContext context, TypeParameter parameter) {
-		int typeParameterFlags = 0;
+		int flags = serializeInitial(parameter);
+		serializeRemaining(flags, context, parameter);
+	}
+	
+	@Override
+	public void serialize(TypeContext context, TypeParameter[] parameters) {
+		output.writeVarUInt(parameters.length);
+		int[] flags = new int[parameters.length];
+		for (int i = 0; i < parameters.length; i++)
+			flags[i] = serializeInitial(parameters[i]);
+		for (int i = 0; i < parameters.length; i++)
+			serializeRemaining(flags[i], context, parameters[i]);
+	}
+	
+	private int serializeInitial(TypeParameter parameter) {
+		int flags = 0;
 		if (parameter.position != CodePosition.UNKNOWN && options.positions)
-			typeParameterFlags |= TypeParameterEncoding.FLAG_POSITION;
+			flags |= TypeParameterEncoding.FLAG_POSITION;
 		if (parameter.name != null && options.typeParameterNames)
-			typeParameterFlags |= TypeParameterEncoding.FLAG_NAME;
+			flags |= TypeParameterEncoding.FLAG_NAME;
 
-		output.writeVarUInt(typeParameterFlags);
-		if ((typeParameterFlags & TypeParameterEncoding.FLAG_POSITION) > 0)
+		output.writeVarUInt(flags);
+		if ((flags & TypeParameterEncoding.FLAG_POSITION) > 0)
 			serialize(parameter.position);
-		if ((typeParameterFlags & TypeParameterEncoding.FLAG_NAME) > 0)
+		if ((flags & TypeParameterEncoding.FLAG_NAME) > 0)
 			output.writeString(parameter.name);
 		
+		return flags;
+	}
+	
+	private void serializeRemaining(int flags, TypeContext context, TypeParameter parameter) {
 		if (currentStage == code || currentStage == members) {
 			output.writeVarUInt(parameter.bounds.size());
 			for (TypeParameterBound bound : parameter.bounds)
@@ -335,24 +352,25 @@ public class ModuleEncoder implements CodeSerializationOutput {
 		if (header.getReturnType() != BasicTypeID.VOID)
 			flags |= FunctionHeaderEncoding.FLAG_RETURN_TYPE;
 		if (header.parameters.length > 0)
+			flags |= FunctionHeaderEncoding.FLAG_THROWS;
+		if (header.hasAnyDefaultValues())
 			flags |= FunctionHeaderEncoding.FLAG_PARAMETERS;
 		if (header.parameters.length > 0 && header.parameters[header.parameters.length - 1].variadic)
 			flags |= FunctionHeaderEncoding.FLAG_VARIADIC;
-		if (header.hasAnyDefaultValues())
+		if (header.thrownType != null)
 			flags |= FunctionHeaderEncoding.FLAG_DEFAULT_VALUES;
 		
 		writeUInt(flags);
-		if ((flags & FunctionHeaderEncoding.FLAG_TYPE_PARAMETERS) > 0) {
-			writeUInt(header.typeParameters.length);
-			for (TypeParameter parameter : header.typeParameters) {
-				serialize(context, parameter);
-			}
-		}
+		if ((flags & FunctionHeaderEncoding.FLAG_TYPE_PARAMETERS) > 0)
+			serialize(context, header.typeParameters);
 		if ((flags & FunctionHeaderEncoding.FLAG_RETURN_TYPE) > 0)
 			serialize(context, header.getReturnType());
+		if ((flags & FunctionHeaderEncoding.FLAG_THROWS) > 0)
+			serialize(context, header.thrownType);
 		
 		if ((flags & FunctionHeaderEncoding.FLAG_PARAMETERS) > 0) {
-			StatementContext statementContext = new StatementContext(header);
+			StatementContext statementContext = new StatementContext(context);
+			writeUInt(header.parameters.length);
 			for (FunctionParameter parameter : header.parameters) {
 				// TODO: annotations
 				serialize(context, parameter.type);

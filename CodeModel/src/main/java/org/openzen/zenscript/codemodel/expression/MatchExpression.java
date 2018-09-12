@@ -6,7 +6,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -82,14 +81,15 @@ public class MatchExpression extends Expression {
 			statements.add(new ExpressionStatement(matchCase.value.position, caseExpression));
 			if (reachable)
 				statements.add(new BreakStatement(matchCase.value.position, switchStatement));
-			SwitchCase switchCase = new SwitchCase(matchCase.key, statements);
+			SwitchCase switchCase = new SwitchCase(matchCase.key, statements.toArray(new Statement[statements.size()]));
 			switchStatement.cases.add(switchCase);
 			
 			if (matchCase.key == null)
 				hasDefault = true;
 		}
 		if (!hasDefault) {
-			switchStatement.cases.add(new SwitchCase(null, Collections.singletonList(new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID, new ConstantStringExpression(position, "Missing case"))))));
+			Statement defaultCase = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID, new ConstantStringExpression(position, "Missing case")));
+			switchStatement.cases.add(new SwitchCase(null, new Statement[] { defaultCase }));
 		}
 		return new SwitchedMatch(result, switchStatement);
 	}

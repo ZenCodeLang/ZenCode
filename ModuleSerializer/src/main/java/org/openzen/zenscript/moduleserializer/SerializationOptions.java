@@ -14,15 +14,18 @@ public class SerializationOptions {
 	public final boolean expressionPositions;
 	public final boolean positionOffsets;
 	public final boolean typeParameterNames;
+	public final boolean localVariableNames;
 	
 	public SerializationOptions(
 			boolean positions,
 			boolean expressionPositions,
 			boolean positionOffsets,
-			boolean typeParameterNames) {
+			boolean typeParameterNames,
+			boolean localVariableNames) {
 		this.positions = positions;
 		this.expressionPositions = expressionPositions;
 		this.positionOffsets = positionOffsets;
 		this.typeParameterNames = typeParameterNames;
+		this.localVariableNames = localVariableNames;
 	}
 }

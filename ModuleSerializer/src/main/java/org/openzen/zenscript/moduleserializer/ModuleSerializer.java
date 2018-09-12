@@ -12,6 +12,7 @@ import java.util.List;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
+import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.moduleserialization.ModuleEncoding;
@@ -36,7 +37,7 @@ public class ModuleSerializer {
 		
 		List<EncodingModule> encodingModules = new ArrayList<>();
 		for (SemanticModule module : modules) {
-			encodingModules.add(tableBuilder.register(module.module));
+			encodingModules.add(tableBuilder.register(module.module, module.getContext()));
 			
 			tableBuilder.writeString(module.name);
 			for (String part : getPackageName(module.modulePackage))
@@ -44,14 +45,15 @@ public class ModuleSerializer {
 		}
 		
 		for (SemanticModule module : modules) {
-			EncodingModule encodedModule = tableBuilder.register(module.module);
+			EncodingModule encodedModule = tableBuilder.register(module.module, module.getContext());
+			ModuleContext moduleContext = new ModuleContext(module.compilationUnit.globalTypeRegistry, module.expansions, module.rootPackage);
 			for (HighLevelDefinition definition : module.definitions.getAll()) {
 				encodedModule.add(EncodingDefinition.complete(definition));
-				tableBuilder.serialize(definition);
+				tableBuilder.serialize(moduleContext, definition);
 			}
 			
 			for (ScriptBlock script : module.scripts) {
-				StatementContext context = new StatementContext();
+				StatementContext context = new StatementContext(moduleContext, null);
 				for (Statement statement : script.statements) {
 					tableBuilder.serialize(context, statement);
 				}
@@ -62,7 +64,7 @@ public class ModuleSerializer {
 		String[] strings = tableBuilder.getStrings();
 		
 		CompactBytesDataOutput output = new CompactBytesDataOutput();
-		ModuleEncoder encoder = new ModuleEncoder(
+		CodeWriter encoder = new CodeWriter(
 				output,
 				options,
 				strings,
@@ -91,7 +93,11 @@ public class ModuleSerializer {
 			for (SemanticModule dependency : module.dependencies)
 				output.writeString(dependency.name);
 			
-			encoder.code.enqueue(new ModuleEncodeScriptsOperation(module.scripts));
+			ModuleContext moduleContext = new ModuleContext(
+					module.compilationUnit.globalTypeRegistry,
+					module.expansions,
+					module.rootPackage);
+			encoder.code.enqueue(new ModuleEncodeScriptsOperation(moduleContext, module.scripts));
 			encoder.classes.enqueue(new ModuleEncodeClassesOperation(options, encodingModule, encoder));
 		}
 		
@@ -133,12 +139,12 @@ public class ModuleSerializer {
 	private static class ModuleEncodeClassesOperation implements EncodingOperation {
 		private final SerializationOptions options;
 		private final EncodingModule module;
-		private final ModuleEncoder encoder;
+		private final CodeWriter encoder;
 		
 		public ModuleEncodeClassesOperation(
 				SerializationOptions options,
 				EncodingModule module,
-				ModuleEncoder encoder)
+				CodeWriter encoder)
 		{
 			this.options = options;
 			this.module = module;
@@ -152,16 +158,18 @@ public class ModuleSerializer {
 			DefinitionSerializer definitionEncoder = new DefinitionSerializer(options, output);
 			for (EncodingDefinition definition : module.definitions) {
 				System.out.println("Encoding definition " + definition.definition.name);
-				definition.definition.accept(definitionEncoder);
+				definition.definition.accept(module.context, definitionEncoder);
 				encoder.add(definition.definition);
 			}
 		}
 	}
 	
 	private static class ModuleEncodeScriptsOperation implements EncodingOperation {
+		private final ModuleContext module;
 		private final List<ScriptBlock> scripts;
 		
-		public ModuleEncodeScriptsOperation(List<ScriptBlock> scripts) {
+		public ModuleEncodeScriptsOperation(ModuleContext module, List<ScriptBlock> scripts) {
+			this.module = module;
 			this.scripts = scripts;
 		}
 
@@ -170,7 +178,7 @@ public class ModuleSerializer {
 			output.writeUInt(scripts.size());
 			for (ScriptBlock script : scripts) {
 				output.writeUInt(script.statements.size());
-				StatementContext context = new StatementContext();
+				StatementContext context = new StatementContext(module, null);
 				for (Statement statement : script.statements) {
 					output.serialize(context, statement);
 				}

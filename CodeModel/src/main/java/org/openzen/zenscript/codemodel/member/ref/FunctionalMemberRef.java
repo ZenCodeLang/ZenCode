@@ -71,7 +71,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public ITypeID getType() {
+	public ITypeID getOwnerType() {
 		return type;
 	}
 	
@@ -142,7 +142,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	public Expression callWithComparator(CodePosition position, CompareType comparison, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return new CompareExpression(position, target, arguments.arguments[0], this, comparison, scope);
+		return new CompareExpression(position, target, arguments.arguments[0], this, comparison);
 	}
 	
 	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {

@@ -6,7 +6,6 @@
 package org.openzen.zenscript.javasource;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
@@ -27,6 +26,7 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -385,7 +385,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			
 			if (definition.isDestructible() && !memberCompiler.hasDestructor) {
 				DestructorMember emptyDestructor = new DestructorMember(CodePosition.BUILTIN, definition, 0);
-				emptyDestructor.body = new BlockStatement(CodePosition.BUILTIN, Collections.emptyList());
+				emptyDestructor.body = new BlockStatement(CodePosition.BUILTIN, new Statement[0]);
 				memberCompiler.visitDestructor(emptyDestructor);
 			}
 			

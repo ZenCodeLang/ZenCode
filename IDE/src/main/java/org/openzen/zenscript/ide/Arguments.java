@@ -28,6 +28,9 @@ public class Arguments {
 			positional++;
 		}
 		
+		if (projectDir.isFile()) // means we're opening a project file instead of a directory
+			projectDir = projectDir.getParentFile();
+		
 		this.projectDirectory = projectDir;
 	}
 }

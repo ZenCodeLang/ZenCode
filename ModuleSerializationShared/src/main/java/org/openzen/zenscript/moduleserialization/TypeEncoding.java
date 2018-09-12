@@ -31,15 +31,16 @@ public class TypeEncoding {
 	public static final int TYPE_STRING = 16;
 	public static final int TYPE_UNDETERMINED = 17;
 	public static final int TYPE_DEFINITION = 18;
-	public static final int TYPE_GENERIC = 19;
-	public static final int TYPE_FUNCTION = 20;
-	public static final int TYPE_ARRAY = 21;
-	public static final int TYPE_ARRAY_MULTIDIMENSIONAL = 22;
-	public static final int TYPE_ASSOC = 23;
-	public static final int TYPE_GENERIC_MAP = 24;
-	public static final int TYPE_RANGE = 25;
-	public static final int TYPE_ITERATOR = 26;
-	public static final int TYPE_OPTIONAL = 27;
-	public static final int TYPE_CONST = 28;
-	public static final int TYPE_IMMUTABLE = 29;
+	public static final int TYPE_DEFINITION_INNER = 19;
+	public static final int TYPE_GENERIC = 20;
+	public static final int TYPE_FUNCTION = 21;
+	public static final int TYPE_ARRAY = 22;
+	public static final int TYPE_ARRAY_MULTIDIMENSIONAL = 23;
+	public static final int TYPE_ASSOC = 24;
+	public static final int TYPE_GENERIC_MAP = 25;
+	public static final int TYPE_RANGE = 26;
+	public static final int TYPE_ITERATOR = 27;
+	public static final int TYPE_OPTIONAL = 28;
+	public static final int TYPE_CONST = 29;
+	public static final int TYPE_IMMUTABLE = 30;
 }

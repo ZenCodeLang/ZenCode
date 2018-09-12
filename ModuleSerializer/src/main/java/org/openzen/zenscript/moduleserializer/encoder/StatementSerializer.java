@@ -35,10 +35,16 @@ import org.openzen.zenscript.moduleserialization.StatementEncoding;
 public class StatementSerializer implements StatementVisitorWithContext<StatementContext, Void> {
 	private final CodeSerializationOutput output;
 	private final boolean positions;
+	private final boolean localVariableNames;
 	
-	public StatementSerializer(CodeSerializationOutput output, boolean positions) {
+	public StatementSerializer(
+			CodeSerializationOutput output,
+			boolean positions,
+			boolean localVariableNames)
+	{
 		this.output = output;
 		this.positions = positions;
+		this.localVariableNames = localVariableNames;
 	}
 	
 	private int getFlags(Statement statement) {
@@ -60,7 +66,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		int flags = getFlags(statement);
 		encode(flags, statement);
 		
-		output.writeUInt(statement.statements.size());
+		output.writeUInt(statement.statements.length);
 		StatementContext inner = new StatementContext(context);
 		for (Statement s : statement.statements)
 			output.serialize(inner, s);
@@ -91,9 +97,13 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	public Void visitDoWhile(StatementContext context, DoWhileStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_DO_WHILE);
 		int flags = getFlags(statement);
+		if (statement.label != null)
+			flags |= StatementEncoding.FLAG_LABEL;
 		encode(flags, statement);
 		
 		output.serialize(context, statement.condition);
+		if ((flags & StatementEncoding.FLAG_LABEL) > 0)
+			output.writeString(statement.label);
 		StatementContext inner = new StatementContext(context, statement);
 		output.serialize(inner, statement.content);
 		return null;
@@ -120,13 +130,19 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	public Void visitForeach(StatementContext context, ForeachStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_FOREACH);
 		int flags = getFlags(statement);
+		if (localVariableNames)
+			flags |= StatementEncoding.FLAG_NAME;
 		encode(flags, statement);
 		output.serialize(context, statement.list);
 		output.write(context, statement.iterator);
-		output.writeUInt(statement.loopVariables.length);
-		for (VarStatement loopVariable : statement.loopVariables)
-			output.writeString(loopVariable.name);
+		if ((flags & StatementEncoding.FLAG_NAME) > 0) {
+			for (VarStatement loopVariable : statement.loopVariables)
+				output.writeString(loopVariable.name);
+		}
 		StatementContext inner = new StatementContext(context, statement);
+		for (VarStatement variable : statement.loopVariables)
+			inner.add(variable);
+		
 		output.serialize(inner, statement.content);
 		return null;
 	}
@@ -165,14 +181,21 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	public Void visitSwitch(StatementContext context, SwitchStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_RETURN);
 		int flags = getFlags(statement);
+		if (statement.label != null)
+			flags |= StatementEncoding.FLAG_LABEL;
+		if (localVariableNames)
+			flags |= StatementEncoding.FLAG_NAME;
 		encode(flags, statement);
+		
 		output.serialize(context, statement.value);
+		if ((flags & StatementEncoding.FLAG_LABEL) > 0)
+			output.writeString(statement.label);
 		output.writeUInt(statement.cases.size());
 		
 		StatementContext inner = new StatementContext(context, statement);
 		for (SwitchCase case_ : statement.cases) {
 			output.serialize(context, case_.value);
-			output.writeUInt(case_.statements.size());
+			output.writeUInt(case_.statements.length);
 			for (Statement s : case_.statements) {
 				output.serialize(inner, s);
 			}
@@ -204,10 +227,13 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		int flags = getFlags(statement);
 		if (statement.isFinal)
 			flags |= StatementEncoding.FLAG_FINAL;
+		if (statement.name != null && localVariableNames)
+			flags |= StatementEncoding.FLAG_NAME;
 		encode(flags, statement);
 		
 		output.serialize(context, statement.type);
-		output.writeString(statement.name);
+		if ((flags & StatementEncoding.FLAG_NAME) > 0)
+			output.writeString(statement.name);
 		output.serialize(context, statement.initializer);
 		
 		context.add(statement);
@@ -218,9 +244,13 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 	public Void visitWhile(StatementContext context, WhileStatement statement) {
 		output.writeUInt(StatementEncoding.TYPE_WHILE);
 		int flags = getFlags(statement);
+		if (statement.label != null)
+			flags |= StatementEncoding.FLAG_LABEL;
 		encode(flags, statement);
 		
 		output.serialize(context, statement.condition);
+		if ((flags & StatementEncoding.FLAG_LABEL) > 0)
+			output.writeString(statement.label);
 		output.serialize(new StatementContext(context, statement), statement.content);
 		return null;
 	}

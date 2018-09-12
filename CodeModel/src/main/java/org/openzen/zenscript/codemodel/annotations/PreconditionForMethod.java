@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.annotations;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -82,10 +83,10 @@ public class PreconditionForMethod implements MemberAnnotation {
 		statements.add(new IfStatement(position, inverseCondition, throwStatement, null));
 		
 		if (body instanceof BlockStatement) {
-			statements.addAll(((BlockStatement)body).statements);
+			statements.addAll(Arrays.asList(((BlockStatement)body).statements));
 		} else {
 			statements.add(body);
 		}
-		return new BlockStatement(position, statements);
+		return new BlockStatement(position, statements.toArray(new Statement[statements.size()]));
 	}
 }

@@ -21,9 +21,9 @@ public class ImplementationMemberRef implements DefinitionMemberRef {
 	private final ITypeID type;
 	public final ITypeID implementsType;
 	
-	public ImplementationMemberRef(ImplementationMember member, ITypeID type, ITypeID implementsType) {
+	public ImplementationMemberRef(ImplementationMember member, ITypeID owner, ITypeID implementsType) {
 		this.member = member;
-		this.type = type;
+		this.type = owner;
 		this.implementsType = implementsType;
 	}
 
@@ -33,7 +33,7 @@ public class ImplementationMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public ITypeID getType() {
+	public ITypeID getOwnerType() {
 		return type;
 	}
 

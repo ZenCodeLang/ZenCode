@@ -118,6 +118,10 @@ public class DefinitionMemberGroup {
 		return this.methods;
 	}
 	
+	public ConstMemberRef getConstant() {
+		return constant.member;
+	}
+	
 	public void setConst(ConstMemberRef constant, TypeMemberPriority priority) {
 		if (this.constant != null) {
 			this.constant = this.constant.resolve(new TypeMember<>(priority, constant));

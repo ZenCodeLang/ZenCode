@@ -172,7 +172,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		
 		Statement body = member.body;
 		if ((body == null || body instanceof EmptyStatement) && !(definition instanceof InterfaceDefinition))
-			body = new BlockStatement(member.position, Collections.emptyList());
+			body = new BlockStatement(member.position, new Statement[0]);
 		
 		compileBody(body, member.header);
 		return null;

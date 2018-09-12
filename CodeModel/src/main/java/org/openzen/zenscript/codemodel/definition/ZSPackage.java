@@ -26,6 +26,10 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class ZSPackage {
+	public static ZSPackage createRoot() {
+		return new ZSPackage(null, "");
+	}
+	
 	public final String name;
 	public final String fullName;
 	public final ZSPackage parent;
@@ -107,6 +111,14 @@ public class ZSPackage {
 		}
 		
 		return null;
+	}
+	
+	public ZSPackage getRecursive(String name) {
+		int dot = name.indexOf('.');
+		if (dot < 0)
+			return getOrCreatePackage(name);
+		else
+			return getOrCreatePackage(name.substring(0, dot)).getRecursive(name.substring(dot + 1));
 	}
 	
 	public ZSPackage getOrCreatePackage(String name) {

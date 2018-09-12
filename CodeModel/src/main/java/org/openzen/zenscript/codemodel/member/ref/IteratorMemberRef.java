@@ -33,7 +33,7 @@ public class IteratorMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public ITypeID getType() {
+	public ITypeID getOwnerType() {
 		return type;
 	}
 

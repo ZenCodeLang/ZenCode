@@ -339,6 +339,20 @@ public class FunctionHeader {
 		return true;
 	}
 	
+	public FunctionHeader instanceForCall(GlobalTypeRegistry registry, CallArguments arguments) {
+		if (arguments.getNumberOfTypeArguments() > 0) {
+			Map<TypeParameter, ITypeID> typeParameters = new HashMap<>();
+			for (int i = 0; i < this.typeParameters.length; i++) {
+				typeParameters.put(this.typeParameters[i], arguments.typeArguments[i]);
+			}
+			return withGenericArguments(
+					registry,
+					new GenericMapper(registry, typeParameters));
+		} else {
+			return this;
+		}
+	}
+	
 	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, GenericMapper mapper) {
 		if (typeParameters.length > 0) {
 			Map<TypeParameter, ITypeID> innerMap = new HashMap<>();

@@ -14,6 +14,8 @@ public class ExpressionEncoding {
 	
 	public static final int FLAG_POSITION = 1;
 	public static final int FLAG_IMPLICIT = 2; // for cast expressions
+	public static final int FLAG_NAMES = 4;
+	public static final int FLAG_INVERTED = 8;
 	
 	public static final int TYPE_NONE = 0;
 	public static final int TYPE_AND_AND = 1;

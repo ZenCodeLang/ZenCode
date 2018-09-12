@@ -1,6 +1,5 @@
 package org.openzen.zenscript.parser.statements;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
@@ -10,7 +9,6 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.BlockScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 
 public class ParsedStatementBlock extends ParsedStatement {
 	private final List<ParsedStatement> statements;
@@ -26,9 +24,10 @@ public class ParsedStatementBlock extends ParsedStatement {
 	@Override
 	public Statement compile(StatementScope scope) {
 		StatementScope blockScope = new BlockScope(scope);
-		List<Statement> compiled = new ArrayList<>();
+		Statement[] compiled = new Statement[statements.size()];
+		int i = 0;
 		for (ParsedStatement statement : statements) {
-			compiled.add(statement.compile(blockScope));
+			compiled[i++] = statement.compile(blockScope);
 		}
 		BlockStatement block = new BlockStatement(position, compiled);
 		result(block, scope);
