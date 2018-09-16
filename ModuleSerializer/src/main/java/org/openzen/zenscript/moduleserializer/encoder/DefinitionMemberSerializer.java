@@ -58,14 +58,12 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 
 	@Override
 	public Void visitClass(TypeContext context, ClassDefinition definition) {
-		output.writeUInt(DefinitionEncoding.TYPE_CLASS);
 		visit(context, definition);
 		return null;
 	}
 
 	@Override
 	public Void visitInterface(TypeContext context, InterfaceDefinition definition) {
-		output.writeUInt(DefinitionEncoding.TYPE_INTERFACE);
 		visit(context, definition);
 		
 		output.writeUInt(definition.baseInterfaces.size());
@@ -77,7 +75,6 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 
 	@Override
 	public Void visitEnum(TypeContext context, EnumDefinition definition) {
-		output.writeUInt(DefinitionEncoding.TYPE_ENUM);
 		visit(context, definition);
 		
 		output.writeUInt(definition.enumConstants.size());
@@ -102,29 +99,25 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 
 	@Override
 	public Void visitStruct(TypeContext context, StructDefinition definition) {
-		output.writeUInt(DefinitionEncoding.TYPE_STRUCT);
 		visit(context, definition);
 		return null;
 	}
 
 	@Override
 	public Void visitFunction(TypeContext context, FunctionDefinition definition) {
-		output.writeUInt(DefinitionEncoding.TYPE_FUNCTION);
 		visit(context, definition);
 		return null;
 	}
 
 	@Override
 	public Void visitExpansion(TypeContext context, ExpansionDefinition definition) {
-		output.writeUInt(DefinitionEncoding.TYPE_EXPANSION);
 		visit(context, definition);
+		output.serialize(context, definition.target);
 		return null;
 	}
 
 	@Override
 	public Void visitAlias(TypeContext context, AliasDefinition definition) {
-		output.writeUInt(DefinitionEncoding.TYPE_ALIAS);
-		
 		EncodingDefinition encoding = definition.getTag(EncodingDefinition.class);
 		for (DefinitionAnnotation annotation : definition.annotations) {
 			// TODO: how to serialize annotations?
@@ -136,7 +129,6 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 
 	@Override
 	public Void visitVariant(TypeContext context, VariantDefinition variant) {
-		output.writeUInt(DefinitionEncoding.TYPE_VARIANT);
 		visit(context, variant);
 		
 		output.writeUInt(variant.options.size());

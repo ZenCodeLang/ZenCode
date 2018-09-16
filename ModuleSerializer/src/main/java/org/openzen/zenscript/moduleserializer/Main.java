@@ -28,7 +28,7 @@ public class Main {
 		ModuleSerializer serializer = new ModuleSerializer(new SerializationOptions(
 				true,
 				false,
-				false,
+				true,
 				true,
 				false));
 		byte[] encoded = serializer.serialize(Collections.singletonList(module));

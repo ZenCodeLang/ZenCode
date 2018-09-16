@@ -8,6 +8,7 @@ package org.openzen.zenscript.moduledeserializer;
 import org.openzen.zenscript.codemodel.serialization.DecodingOperation;
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.serialization.DeserializationException;
 
 /**
  *
@@ -17,7 +18,7 @@ public class DecodingStage {
 	private final List<DecodingOperation> operations = new ArrayList<>();
 	private boolean locked = false;
 	
-	public void decode(CodeReader encoder) {
+	public void decode(CodeReader encoder) throws DeserializationException {
 		locked = true;
 		for (DecodingOperation operation : operations) {
 			operation.decode(encoder);

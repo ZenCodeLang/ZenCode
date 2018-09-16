@@ -43,9 +43,13 @@ public class EncodingDefinition {
 		this.definition = definition;
 	}
 	
-	public void mark(IDefinitionMember member) {
-		if (memberSet.add(member))
+	public boolean mark(IDefinitionMember member) {
+		if (memberSet.add(member)) {
 			members.add(member);
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	public void mark(EnumConstantMember member) {

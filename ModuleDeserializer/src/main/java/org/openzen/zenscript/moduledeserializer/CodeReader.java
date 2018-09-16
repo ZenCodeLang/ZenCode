@@ -158,22 +158,22 @@ public class CodeReader implements CodeSerializationInput {
 
 	@Override
 	public int readInt() {
-		return input.readInt();
+		return input.readVarInt();
 	}
 
 	@Override
 	public int readUInt() {
-		return input.readUInt();
+		return input.readVarUInt();
 	}
 
 	@Override
 	public long readLong() {
-		return input.readLong();
+		return input.readVarLong();
 	}
 
 	@Override
 	public long readULong() {
-		return input.readULong();
+		return input.readVarULong();
 	}
 	
 	@Override
@@ -193,12 +193,16 @@ public class CodeReader implements CodeSerializationInput {
 
 	@Override
 	public String readString() {
-		return strings[input.readUInt()];
+		int index = input.readVarUInt();
+		if (index >= strings.length)
+			throw new RuntimeException("Invalid string id");
+		
+		return strings[index];
 	}
 
 	@Override
 	public HighLevelDefinition readDefinition() {
-		return definitions.get(input.readUInt());
+		return definitions.get(input.readVarUInt());
 	}
 
 	@Override
@@ -325,21 +329,30 @@ public class CodeReader implements CodeSerializationInput {
 
 	@Override
 	public CodePosition deserializePosition() {
-		int flags = input.readVarUInt();
+		int flags = readUInt();
 		SourceFile file = lastPosition.file;
 		int fromLine = lastPosition.fromLine;
 		int fromLineOffset = lastPosition.fromLineOffset;
-		if ((flags & CodePositionEncoding.FLAG_FILE) > 0)
-			file = sourceFiles[input.readVarUInt()];
+		if ((flags & CodePositionEncoding.FLAG_FILE) > 0) {
+			int fileIndex = input.readVarUInt();
+			if (fileIndex >= sourceFiles.length)
+				throw new IllegalArgumentException("Invalid file index: " + fileIndex);
+			
+			file = sourceFiles[fileIndex];
+		}
 		if ((flags & CodePositionEncoding.FLAG_FROM_LINE) > 0)
 			fromLine = input.readVarUInt();
 		if ((flags & CodePositionEncoding.FLAG_FROM_OFFSET) > 0)
 			fromLineOffset = input.readVarUInt();
-		int toLine = (flags & CodePositionEncoding.FLAG_TO_LINE) == 0 ? lastPosition.toLine : fromLine + input.readVarUInt();
-		int toLineOffset = (flags & CodePositionEncoding.FLAG_TO_OFFSET) == 0 ? lastPosition.toLineOffset : input.readVarUInt();
+		int toLine = lastPosition.toLine;
+		if ((flags & CodePositionEncoding.FLAG_TO_LINE) > 0)
+			toLine = fromLine + input.readVarUInt();
+		int toLineOffset = lastPosition.toLineOffset;
+		if ((flags & CodePositionEncoding.FLAG_TO_OFFSET) > 0)
+			toLineOffset = input.readVarUInt();
 		return lastPosition = new CodePosition(file, fromLine, fromLineOffset, toLine, toLineOffset);
 	}
-
+	
 	@Override
 	public FunctionHeader deserializeHeader(TypeContext context) {
 		TypeParameter[] typeParameters = TypeParameter.NONE;
@@ -422,17 +435,25 @@ public class CodeReader implements CodeSerializationInput {
 			result[i] = new TypeParameter(position, name);
 		}
 		
+		if (currentStage == code || currentStage == members) {
+			readTypeParameterBounds(context, allflags, result);
+		} else {
+			members.enqueue(input -> readTypeParameterBounds(context, allflags, result));
+		}
+		
+		return result;
+	}
+	
+	private void readTypeParameterBounds(TypeContext context, int[] allFlags, TypeParameter[] result) {
 		TypeContext inner = new TypeContext(context, context.thisType, result);
 		for (int i = 0; i < result.length; i++) {
-			int flags = allflags[i];
+			int flags = allFlags[i];
 			if ((flags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {
 				int bounds = readUInt();
 				for (int j = 0; j < bounds; j++)
 					result[i].bounds.add(deserializeTypeParameterBound(inner));
 			}
 		}
-		
-		return result;
 	}
 
 	@Override

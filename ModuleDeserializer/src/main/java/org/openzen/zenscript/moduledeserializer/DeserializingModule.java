@@ -7,6 +7,7 @@ package org.openzen.zenscript.moduledeserializer;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.ScriptBlock;
@@ -55,7 +56,7 @@ public class DeserializingModule {
 		this.annotations = annotations;
 		
 		expansions = new ArrayList<>();
-		context = new ModuleContext(registry, expansions, rootPackage);
+		context = new ModuleContext(registry, module, expansions, rootPackage);
 	}
 	
 	public DeserializingModule(SemanticModule module) 
@@ -95,5 +96,13 @@ public class DeserializingModule {
 				compilationUnit,
 				expansions,
 				annotations);
+	}
+	
+	public void add(HighLevelDefinition definition) {
+		definitions.add(definition);
+	}
+	
+	public void add(ScriptBlock script) {
+		scripts.add(script);
 	}
 }

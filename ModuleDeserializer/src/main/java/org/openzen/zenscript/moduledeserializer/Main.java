@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.moduledeserializer;
 
+import org.openzen.zenscript.codemodel.serialization.DeserializationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -2,14 +2,11 @@ package org.openzen.zenscript.ide;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import javax.swing.JFrame;
 import org.openzen.drawablegui.DUIWindow;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.local.LocalProjectDevelopmentHost;
 import org.openzen.drawablegui.swing.SwingWindow;
-import org.openzen.zenscript.compiler.CompilationUnit;
-import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.Project;
 import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.host.IDEPropertyStore;

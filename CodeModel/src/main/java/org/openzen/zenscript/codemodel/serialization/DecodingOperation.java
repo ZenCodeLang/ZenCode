@@ -10,5 +10,5 @@ package org.openzen.zenscript.codemodel.serialization;
  * @author Hoofdgebruiker
  */
 public interface DecodingOperation {
-	void decode(CodeSerializationInput input);
+	void decode(CodeSerializationInput input) throws DeserializationException;
 }

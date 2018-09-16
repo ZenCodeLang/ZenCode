@@ -19,6 +19,7 @@ import org.openzen.zenscript.moduleserialization.ModuleEncoding;
 import org.openzen.zenscript.moduleserializer.encoder.DefinitionSerializer;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 
 /**
@@ -46,7 +47,7 @@ public class ModuleSerializer {
 		
 		for (SemanticModule module : modules) {
 			EncodingModule encodedModule = tableBuilder.register(module.module, module.getContext());
-			ModuleContext moduleContext = new ModuleContext(module.compilationUnit.globalTypeRegistry, module.expansions, module.rootPackage);
+			ModuleContext moduleContext = module.getContext();
 			for (HighLevelDefinition definition : module.definitions.getAll()) {
 				encodedModule.add(EncodingDefinition.complete(definition));
 				tableBuilder.serialize(moduleContext, definition);
@@ -62,13 +63,15 @@ public class ModuleSerializer {
 		
 		SourceFile[] sourceFiles = tableBuilder.getSourceFileList();
 		String[] strings = tableBuilder.getStrings();
+		List<IDefinitionMember> members = tableBuilder.getMembers();
 		
 		CompactBytesDataOutput output = new CompactBytesDataOutput();
 		CodeWriter encoder = new CodeWriter(
 				output,
 				options,
 				strings,
-				sourceFiles);
+				sourceFiles,
+				members);
 		
 		output.writeInt(0x5A43424D); // 'ZCBM' = ZenCode Binary Module
 		output.writeVarUInt(0); // version
@@ -77,37 +80,36 @@ public class ModuleSerializer {
 		for (SourceFile file : sourceFiles)
 			output.writeString(file.getFilename());
 		
-		output.writeVarUInt(encodingModules.size());
+		encoder.writeUInt(encodingModules.size());
 		System.out.println("Encoding list of modules");
 		for (int i = 0; i < encodingModules.size(); i++) {
 			EncodingModule encodingModule = encodingModules.get(i);
 			SemanticModule module = modules.get(i);
 			
 			int flags = ModuleEncoding.FLAG_CODE;
-			output.writeVarUInt(flags);
-			output.writeString(encodingModule.getName());
+			encoder.writeUInt(flags);
+			encoder.writeString(encodingModule.getName());
 			String[] packageName = getPackageName(module.modulePackage);
-			output.writeStringArray(packageName);
+			encoder.writeUInt(packageName.length);
+			for (String element : packageName)
+				encoder.writeString(element);
 			
-			output.writeVarUInt(module.dependencies.length);
+			encoder.writeUInt(module.dependencies.length);
 			for (SemanticModule dependency : module.dependencies)
-				output.writeString(dependency.name);
+				encoder.writeString(dependency.name);
 			
-			ModuleContext moduleContext = new ModuleContext(
-					module.compilationUnit.globalTypeRegistry,
-					module.expansions,
-					module.rootPackage);
+			ModuleContext moduleContext = module.getContext();
 			encoder.code.enqueue(new ModuleEncodeScriptsOperation(moduleContext, module.scripts));
 			encoder.classes.enqueue(new ModuleEncodeClassesOperation(options, encodingModule, encoder));
 		}
 		
-		output.writeVarUInt(tableBuilder.modules.size() - encodingModules.size()); // number of modules defined (first is always the current module)
+		encoder.writeUInt(tableBuilder.modules.size() - encodingModules.size()); // number of modules defined (first is always the current module)
 		for (int i = encodingModules.size(); i < tableBuilder.modules.size(); i++) {
 			EncodingModule encodingModule = tableBuilder.modules.get(i);
 			System.out.println("Encoding dependency module " + encodingModule.getName());
 			
-			output.writeVarUInt(0);
-			output.writeString(encodingModule.getName());
+			encoder.writeUInt(0);
+			encoder.writeString(encodingModule.getName());
 			encoder.classes.enqueue(new ModuleEncodeClassesOperation(options, encodingModule, encoder));
 		}
 		
@@ -120,6 +122,7 @@ public class ModuleSerializer {
 		System.out.println("Encoding code");
 		encoder.startCode();
 		encoder.code.encode(encoder);
+		
 		return output.asByteArray();
 	}
 	

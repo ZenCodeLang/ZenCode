@@ -57,7 +57,6 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 		if (definition.name != null)
 			output.writeString(definition.name);
 		if (definition.typeParameters.length > 0) {
-			output.writeUInt(definition.typeParameters.length);
 			TypeContext typeContext = new TypeContext(context, TypeParameter.NONE, null);
 			output.serialize(typeContext, definition.typeParameters);
 		}
@@ -69,15 +68,19 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 			if ((member instanceof InnerDefinitionMember))
 				innerDefinitions.add((InnerDefinitionMember)member);
 		
+		output.writeUInt(innerDefinitions.size());
+		for (InnerDefinitionMember innerDefinition : innerDefinitions) {
+			System.out.println("Inner definition: " + innerDefinition.definition.name);
+			output.serialize(innerDefinition.position);
+			output.writeUInt(innerDefinition.modifiers);
+			innerDefinition.innerDefinition.accept(moduleContext, this);
+		}
+		
 		output.enqueueMembers(output -> {
 			DefinitionMemberSerializer memberEncoder = new DefinitionMemberSerializer(options, output);
 			TypeContext context = new TypeContext(moduleContext, definition.typeParameters, moduleContext.registry.getForMyDefinition(definition));
 			definition.accept(context, memberEncoder);
 		});
-		
-		output.writeUInt(innerDefinitions.size());
-		for (InnerDefinitionMember innerDefinition : innerDefinitions)
-			innerDefinition.innerDefinition.accept(moduleContext, this);
 	}
 	
 	@Override

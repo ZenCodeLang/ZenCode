@@ -54,6 +54,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	private final Set<Module> moduleSet = new HashSet<>();
 	private final Set<SourceFile> sourceFiles = new HashSet<>();
 	public final List<EncodingModule> modules = new ArrayList<>();
+	private final List<IDefinitionMember> members = new ArrayList<>();
 	
 	private final SerializationOptions options;
 	
@@ -102,6 +103,10 @@ public class TableBuilder implements CodeSerializationOutput {
 		for (int i = 0; i < result.length; i++)
 			result[i] = entries[i].getKey();
 		return result;
+	}
+	
+	public List<IDefinitionMember> getMembers() {
+		return members;
 	}
 	
 	private EncodingDefinition prepare(HighLevelDefinition definition) {
@@ -184,8 +189,10 @@ public class TableBuilder implements CodeSerializationOutput {
 
 	@Override
 	public void write(TypeContext context, DefinitionMemberRef member) {
-		if (member != null)
-			prepare(member.getTarget().getDefinition()).mark(member.getTarget());
+		if (member != null && member.getTarget().getBuiltin() == null) {
+			if (prepare(member.getTarget().getDefinition()).mark(member.getTarget()))
+				members.add(member.getTarget());
+		}
 	}
 
 	@Override
@@ -221,8 +228,9 @@ public class TableBuilder implements CodeSerializationOutput {
 	
 	@Override
 	public void serialize(TypeContext context, TypeParameter[] parameters) {
+		TypeContext inner = new TypeContext(context, context.thisType, parameters);
 		for (TypeParameter parameter : parameters)
-			serialize(context, parameter);
+			serialize(inner, parameter);
 	}
 
 	@Override

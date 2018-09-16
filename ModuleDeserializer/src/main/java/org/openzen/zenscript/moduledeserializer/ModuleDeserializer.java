@@ -5,21 +5,35 @@
  */
 package org.openzen.zenscript.moduledeserializer;
 
+import org.openzen.zenscript.codemodel.serialization.DeserializationException;
 import compactio.CompactBytesDataInput;
 import compactio.CompactDataInput;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zencode.shared.VirtualSourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
+import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
+import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.serialization.DecodingOperation;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.ModuleRegistry;
 import org.openzen.zenscript.compiler.SemanticModule;
@@ -67,22 +81,22 @@ public class ModuleDeserializer {
 				sourceFiles,
 				compilationUnit.globalTypeRegistry);
 		
-		DeserializingModule[] packagedModules = new DeserializingModule[input.readVarUInt()];
+		DeserializingModule[] packagedModules = new DeserializingModule[decoder.readUInt()];
 		String[][] dependencyNames = new String[packagedModules.length][];
 		for (int i = 0; i < packagedModules.length; i++) {
-			int flags = input.readVarUInt();
-			String name = input.readString();
+			int flags = decoder.readUInt();
+			String name = decoder.readString();
 			
 			ZSPackage modulePackage = rootPackage;
-			int packageNameParts = input.readVarUInt();
+			int packageNameParts = decoder.readUInt();
 			for (int j = 0; j < packageNameParts; j++)
-				modulePackage = modulePackage.getOrCreatePackage(input.readString());
+				modulePackage = modulePackage.getOrCreatePackage(decoder.readString());
 
-			DeserializingModule[] dependencies = new DeserializingModule[input.readVarUInt()];
+			DeserializingModule[] dependencies = new DeserializingModule[decoder.readUInt()];
 			String[] dependencyNames2 = new String[dependencies.length];
 			dependencyNames[i] = dependencyNames2;
 			for (int j = 0; j < dependencyNames2.length; j++)
-				dependencyNames2[j] = input.readString();
+				dependencyNames2[j] = decoder.readString();
 			
 			packagedModules[i] = new DeserializingModule(
 					name,
@@ -95,7 +109,7 @@ public class ModuleDeserializer {
 			decoder.classes.enqueue(new ModuleDecodeClassesOperation(packagedModules[i], decoder));
 		}
 		
-		DeserializingModule[] allModules = Arrays.copyOf(packagedModules, input.readVarUInt());
+		DeserializingModule[] allModules = Arrays.copyOf(packagedModules, packagedModules.length + input.readVarUInt());
 		for (int i = packagedModules.length; i < allModules.length; i++) {
 			int flags = input.readVarUInt();
 			String name = input.readString();
@@ -131,61 +145,89 @@ public class ModuleDeserializer {
 		}
 
 		@Override
-		public void decode(CodeSerializationInput input) {
+		public void decode(CodeSerializationInput input) throws DeserializationException {
 			int numDefinitions = input.readUInt();
 			DefinitionMemberDeserializer memberDeserializer = new DefinitionMemberDeserializer(reader);
 			for (int i = 0; i < numDefinitions; i++) {
-				HighLevelDefinition definition = deserializeDefinition(reader, module.context);
+				HighLevelDefinition definition = deserializeDefinition(reader, module.context, null);
 				reader.add(definition);
+				module.add(definition);
 				
 				TypeContext typeContext = new TypeContext(module.context, definition.typeParameters, module.context.registry.getForMyDefinition(definition));
 				reader.members.enqueue(in -> definition.accept(typeContext, memberDeserializer));
 			}
 		}
+	}
 		
-		private HighLevelDefinition deserializeDefinition(CodeReader reader, ModuleContext context) {
-			int type = reader.readUInt();
-			int flags = reader.readUInt();
-			CodePosition position = CodePosition.UNKNOWN;
-			String name = null;
-			TypeParameter[] typeParameters = TypeParameter.NONE;
-			if ((flags & DefinitionEncoding.FLAG_POSITION) > 0)
-				position = reader.deserializePosition();
-			ZSPackage pkg = context.root.getRecursive(reader.readString());
-			if ((flags & DefinitionEncoding.FLAG_NAME) > 0)
-				name = reader.readString();
-			if ((flags & DefinitionEncoding.FLAG_TYPE_PARAMETERS) > 0)
-				typeParameters = reader.deserializeTypeParameters(new TypeContext(context, TypeParameter.NONE, null));
-			
-			switch (type) { 
-				case DefinitionEncoding.TYPE_CLASS: {
-					ClassDefinition result = new ClassDefinition(position, context.module, pkg, name, flags);
-					decodeMembers(reader, context, result);
-					return result;
-				}
-				case DefinitionEncoding.TYPE_STRUCT:
-				case DefinitionEncoding.TYPE_INTERFACE:
-				case DefinitionEncoding.TYPE_ENUM:
-				case DefinitionEncoding.TYPE_VARIANT:
-				case DefinitionEncoding.TYPE_FUNCTION:
-				case DefinitionEncoding.TYPE_ALIAS:
-				case DefinitionEncoding.TYPE_EXPANSION:
-			}
+	private HighLevelDefinition deserializeDefinition(CodeReader reader, ModuleContext context, HighLevelDefinition outer) throws DeserializationException {
+		int type = reader.readUInt();
+		int flags = reader.readUInt();
+		CodePosition position = CodePosition.UNKNOWN;
+		String name = null;
+		TypeParameter[] typeParameters = TypeParameter.NONE;
+		int modifiers = reader.readUInt();
+		if ((flags & DefinitionEncoding.FLAG_POSITION) > 0)
+			position = reader.deserializePosition();
+		ZSPackage pkg = context.root.getRecursive(reader.readString());
+		if ((flags & DefinitionEncoding.FLAG_NAME) > 0)
+			name = reader.readString();
+		if ((flags & DefinitionEncoding.FLAG_TYPE_PARAMETERS) > 0)
+			typeParameters = reader.deserializeTypeParameters(new TypeContext(context, TypeParameter.NONE, null));
+
+		HighLevelDefinition result;
+		switch (type) { 
+			case DefinitionEncoding.TYPE_CLASS:
+				result = new ClassDefinition(position, context.module, pkg, name, modifiers, outer);
+				break;
+			case DefinitionEncoding.TYPE_STRUCT:
+				result = new StructDefinition(position, context.module, pkg, name, modifiers, outer);
+				break;
+			case DefinitionEncoding.TYPE_INTERFACE:
+				result = new InterfaceDefinition(position, context.module, pkg, name, modifiers, outer);
+				break;
+			case DefinitionEncoding.TYPE_ENUM:
+				result = new EnumDefinition(position, context.module, pkg, name, modifiers, outer);
+				break;
+			case DefinitionEncoding.TYPE_VARIANT:
+				result = new VariantDefinition(position, context.module, pkg, name, modifiers, outer);
+				break;
+			case DefinitionEncoding.TYPE_FUNCTION:
+				result = new FunctionDefinition(position, context.module, pkg, name, modifiers, outer);
+				break;
+			case DefinitionEncoding.TYPE_ALIAS:
+				result = new AliasDefinition(position, context.module, pkg, name, modifiers, outer);
+				break;
+			case DefinitionEncoding.TYPE_EXPANSION:
+				result = new ExpansionDefinition(position, context.module, pkg, modifiers, outer);
+				break;
+			default:
+				throw new DeserializationException("Invalid definition type: " + type);
 		}
+		
+		result.typeParameters = typeParameters;
+		decodeMembers(reader, context, result);
+		reader.add(result);
+		return result;
 	}
 	
 	private void decodeMembers(
 			CodeReader reader,
 			ModuleContext moduleContext,
-			HighLevelDefinition definition)
+			HighLevelDefinition definition) throws DeserializationException
 	{
+		int innerClasses = reader.readUInt();
+		for (int i = 0; i < innerClasses; i++) {
+			CodePosition position = reader.deserializePosition();
+			int modifiers = reader.readUInt();
+			HighLevelDefinition inner = deserializeDefinition(reader, moduleContext, definition);
+			definition.addMember(new InnerDefinitionMember(position, inner, modifiers, definition));
+		}
+		
 		reader.enqueueMembers(input -> {
 			TypeContext context = new TypeContext(moduleContext, definition.typeParameters, moduleContext.registry.getForMyDefinition(definition));
-			definition.addMember(reader.deserializeMember(context));
+			DefinitionMemberDeserializer memberDeserializer = new DefinitionMemberDeserializer(reader);
+			definition.accept(context, memberDeserializer);
 		});
-		
-		int innerMembers = reader.readUInt();
-		
 	}
 	
 	private class ModuleDecodeScriptsOperation implements DecodingOperation {
@@ -197,7 +239,16 @@ public class ModuleDeserializer {
 
 		@Override
 		public void decode(CodeSerializationInput input) {
-			
+			int numberOfScripts = input.readUInt();
+			for (int i = 0; i < numberOfScripts; i++) {
+				List<Statement> statements = new ArrayList<>();
+				StatementContext context = new StatementContext(module.context, null);
+				int numStatements = input.readUInt();
+				for (int j = 0; j < numStatements; j++)
+					statements.add(input.deserializeStatement(context));
+				
+				module.add(new ScriptBlock(rootPackage, statements));
+			}
 		}
 	}
 }

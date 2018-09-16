@@ -54,6 +54,8 @@ public class CodeWriter implements CodeSerializationOutput {
 	private final List<HighLevelDefinition> definitions = new ArrayList<>();
 	private final Map<HighLevelDefinition, Integer> definitionsMap = new HashMap<>();
 	
+	private final Map<IDefinitionMember, Integer> memberMap = new HashMap<>();
+	
 	public final EncodingStage classes = new EncodingStage();
 	public final EncodingStage members = new EncodingStage();
 	public final EncodingStage code = new EncodingStage();
@@ -75,7 +77,8 @@ public class CodeWriter implements CodeSerializationOutput {
 			CompactDataOutput output,
 			SerializationOptions options,
 			String[] strings,
-			SourceFile[] sourceFiles)
+			SourceFile[] sourceFiles,
+			List<IDefinitionMember> members)
 	{
 		this.output = output;
 		this.options = options;
@@ -90,6 +93,8 @@ public class CodeWriter implements CodeSerializationOutput {
 			stringMap.put(string, stringMap.size());
 		for (SourceFile sourceFile : sourceFiles)
 			sourceFileMap.put(sourceFile, sourceFileMap.size());
+		for (IDefinitionMember member : members)
+			memberMap.put(member, memberMap.size());
 	}
 	
 	public void startClasses() {
@@ -202,21 +207,18 @@ public class CodeWriter implements CodeSerializationOutput {
 			throw new IllegalStateException("members not yet available!");
 		
 		if (member == null) {
-			writeUInt(0);
+			writeInt(0);
 			return;
 		} else if (member.getTarget().getBuiltin() != null) {
-			writeUInt(1);
-			writeUInt(member.getTarget().getBuiltin().ordinal()); // TODO: use something else?
+			writeInt(-member.getTarget().getBuiltin().ordinal() - 1); // TODO: use something else?
 			return;
 		}
 		
 		IDefinitionMember member_ = member.getTarget();
-		EncodingDefinition definition = member_.getDefinition().getTag(EncodingDefinition.class);
-		
-		int index = definition.members.indexOf(member_);
-		if (index < 0)
+		Integer index = memberMap.get(member_);
+		if (index == null)
 			throw new IllegalStateException("Member not registered!");
-		output.writeVarUInt(index);
+		writeInt(index + 1);
 	}
 	
 	@Override
@@ -250,12 +252,14 @@ public class CodeWriter implements CodeSerializationOutput {
 	
 	@Override
 	public void serialize(TypeContext context, TypeParameter[] parameters) {
-		output.writeVarUInt(parameters.length);
+		writeUInt(parameters.length);
 		int[] flags = new int[parameters.length];
 		for (int i = 0; i < parameters.length; i++)
 			flags[i] = serializeInitial(parameters[i]);
+		
+		TypeContext inner = new TypeContext(context, context.thisType, parameters);
 		for (int i = 0; i < parameters.length; i++)
-			serializeRemaining(flags[i], context, parameters[i]);
+			serializeRemaining(flags[i], inner, parameters[i]);
 	}
 	
 	private int serializeInitial(TypeParameter parameter) {
@@ -269,7 +273,7 @@ public class CodeWriter implements CodeSerializationOutput {
 		if ((flags & TypeParameterEncoding.FLAG_POSITION) > 0)
 			serialize(parameter.position);
 		if ((flags & TypeParameterEncoding.FLAG_NAME) > 0)
-			output.writeString(parameter.name);
+			writeString(parameter.name);
 		
 		return flags;
 	}
@@ -280,10 +284,12 @@ public class CodeWriter implements CodeSerializationOutput {
 			for (TypeParameterBound bound : parameter.bounds)
 				bound.accept(context, typeParameterEncoder);
 		} else {
-			code.enqueue(encoder -> {
-				output.writeVarUInt(parameter.bounds.size());
-				for (TypeParameterBound bound : parameter.bounds)
-					bound.accept(context, typeParameterEncoder);
+			members.enqueue(encoder -> {
+				if ((flags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {
+					output.writeVarUInt(parameter.bounds.size());
+					for (TypeParameterBound bound : parameter.bounds)
+						bound.accept(context, typeParameterEncoder);
+				}
 			});
 		}
 	}
@@ -351,13 +357,13 @@ public class CodeWriter implements CodeSerializationOutput {
 			flags |= FunctionHeaderEncoding.FLAG_TYPE_PARAMETERS;
 		if (header.getReturnType() != BasicTypeID.VOID)
 			flags |= FunctionHeaderEncoding.FLAG_RETURN_TYPE;
-		if (header.parameters.length > 0)
+		if (header.thrownType != null)
 			flags |= FunctionHeaderEncoding.FLAG_THROWS;
-		if (header.hasAnyDefaultValues())
+		if (header.parameters.length > 0)
 			flags |= FunctionHeaderEncoding.FLAG_PARAMETERS;
 		if (header.parameters.length > 0 && header.parameters[header.parameters.length - 1].variadic)
 			flags |= FunctionHeaderEncoding.FLAG_VARIADIC;
-		if (header.thrownType != null)
+		if (header.hasAnyDefaultValues())
 			flags |= FunctionHeaderEncoding.FLAG_DEFAULT_VALUES;
 		
 		writeUInt(flags);
