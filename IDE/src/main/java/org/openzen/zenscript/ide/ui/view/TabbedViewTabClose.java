@@ -47,7 +47,7 @@ public class TabbedViewTabClose implements DComponent {
 		context = parent.getChildContext("tabclose", DStyleClass.EMPTY);
 		style = context.getStyle(TabbedViewTabCloseStyle::new);
 		sizing.setValue(new DSizing(style.size, style.size));
-		icon = new ScalableCloseIcon(style.size / 24);
+		icon = new ScalableCloseIcon(style.size / 24 * parent.getScale() / 1.75f);
 		
 		if (background != null)
 			background.close();
