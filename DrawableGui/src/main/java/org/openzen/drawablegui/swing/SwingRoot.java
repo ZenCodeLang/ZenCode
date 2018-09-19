@@ -88,6 +88,7 @@ public final class SwingRoot extends Component implements ComponentListener, Mou
 		Rectangle clipBounds = g.getClipBounds();
 		DIRectangle clipBounds2 = clipBounds == null ? null : new DIRectangle(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 		Graphics2D g2d = (Graphics2D) g;
+		//System.out.println("Transform: " + g2d.getTransform().getTranslateX() + ", " + g2d.getTransform().getTranslateY());
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
 		surface.paint(g2d, clipBounds2);

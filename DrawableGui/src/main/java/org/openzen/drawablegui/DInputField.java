@@ -96,7 +96,7 @@ public class DInputField implements DComponent {
 		
 		if (cursor != null)
 			cursor.close();
-		cursor = parent.fillRect(2, DIRectangle.EMPTY, cursorBlink ? style.cursorColor : 0);
+		cursor = parent.fillRect(3, DIRectangle.EMPTY, cursorBlink ? style.cursorColor : 0);
 		
 		if (selection != null)
 			selection.close();
@@ -152,6 +152,7 @@ public class DInputField implements DComponent {
 		text.setPosition(
 				bounds.x + style.margin.left + style.border.getPaddingLeft(),
 				bounds.y + style.margin.top + style.border.getPaddingTop() + fontMetrics.getAscent());
+		
 		style.border.update(context, bounds);
 	}
 	

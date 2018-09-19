@@ -28,10 +28,10 @@ public class DFormStyle {
 	public final int minimumFieldSize;
 	
 	public DFormStyle(DStyleDefinition style) {
-		paddingLeft = style.getDimension("paddingLeft", new DDpDimension(16));
-		paddingTop = style.getDimension("paddingTop", new DDpDimension(16));
-		paddingRight = style.getDimension("paddingRight", new DDpDimension(16));
-		paddingBottom = style.getDimension("paddingBottom", new DDpDimension(16));
+		paddingLeft = style.getDimension("paddingLeft", DPxDimension.ZERO);
+		paddingTop = style.getDimension("paddingTop", DPxDimension.ZERO);
+		paddingRight = style.getDimension("paddingRight", DPxDimension.ZERO);
+		paddingBottom = style.getDimension("paddingBottom", DPxDimension.ZERO);
 		spacing = style.getDimension("spacing", new DDpDimension(8));
 		
 		labelColor = style.getColor("labelColor", 0xFF000000);
