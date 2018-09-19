@@ -6,7 +6,9 @@
 package org.openzen.zenscript.codemodel.annotations;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 
 /**
  *
@@ -15,7 +17,11 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 public interface DefinitionAnnotation {
 	public static final DefinitionAnnotation[] NONE = new DefinitionAnnotation[0];
 	
+	public AnnotationDefinition getDefinition();
+	
 	public void apply(HighLevelDefinition definition, BaseScope scope);
 	
 	public void applyOnSubtype(HighLevelDefinition definition, BaseScope scope);
+	
+	public void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeContext context);
 }

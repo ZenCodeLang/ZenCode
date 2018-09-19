@@ -51,6 +51,11 @@ public class ParameterSuperBound extends TypeParameterBound {
 	}
 
 	@Override
+	public <C, R> R accept(C context, GenericParameterBoundVisitorWithContext<C, R> visitor) {
+		return visitor.visitSuper(context, this);
+	}
+
+	@Override
 	public boolean isObjectType() {
 		return true;
 	}

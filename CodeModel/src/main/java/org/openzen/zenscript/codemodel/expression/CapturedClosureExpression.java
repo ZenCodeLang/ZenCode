@@ -32,6 +32,11 @@ public class CapturedClosureExpression extends CapturedExpression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitCapturedClosure(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = transformer.transform(value);
 		if (!(tValue instanceof CapturedExpression)) {

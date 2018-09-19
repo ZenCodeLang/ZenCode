@@ -18,16 +18,23 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class ImplementationMemberRef implements DefinitionMemberRef {
 	public final ImplementationMember member;
+	private final ITypeID type;
 	public final ITypeID implementsType;
 	
-	public ImplementationMemberRef(ImplementationMember member, ITypeID implementsType) {
+	public ImplementationMemberRef(ImplementationMember member, ITypeID owner, ITypeID implementsType) {
 		this.member = member;
+		this.type = owner;
 		this.implementsType = implementsType;
 	}
 
 	@Override
 	public CodePosition getPosition() {
 		return member.position;
+	}
+	
+	@Override
+	public ITypeID getOwnerType() {
+		return type;
 	}
 
 	@Override

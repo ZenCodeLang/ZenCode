@@ -1,5 +1,6 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
+import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zenscript.codemodel.definition.*;
@@ -176,7 +177,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final String variantName = variant.name;
 
 
-		final String ss = "<" + javaTypeGenericVisitor.getGenericSignature(variant.genericParameters) + ">Ljava/lang/Object;";
+		final String ss = "<" + javaTypeGenericVisitor.getGenericSignature(variant.typeParameters) + ">Ljava/lang/Object;";
 		JavaClassWriter.registerSuperClass(variantName, "java/lang/Object");
 
 		writer.visit(Opcodes.V1_8, Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC, toClass.internalName, ss, "java/lang/Object", null);
@@ -206,7 +207,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				builder.append(">");
 				builder.append("L").append(toClass.internalName).append("<");
 
-				for (final TypeParameter genericParameter : variant.genericParameters) {
+				for (final TypeParameter genericParameter : variant.typeParameters) {
 					boolean t = true;
 					for (final ITypeID type : option.types)
 						if (type instanceof GenericTypeID) {

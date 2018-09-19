@@ -17,3 +17,23 @@ dependencies {
 	compile project(':DrawableGui')
 	compile project(':Constructor')
 }
+
+task fatJar(type: Jar) {
+	manifest {
+        attributes 'Implementation-Title': 'ZenCode IDE',
+			'Class-Path': '.',
+        	'Main-Class': 'org.openzen.zenscript.ide.Main'
+    }
+    baseName = project.name + '-all'
+    from {
+		configurations.compile.collect {
+			it.isDirectory() ? it : zipTree(it)
+		}
+	} {
+		exclude "META-INF/INDEX.LIST"
+		exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+	}
+    with jar
+}

@@ -114,9 +114,9 @@ public class GlobalRegistry {
 			return new PartialMemberGroupExpression(
 					position,
 					scope,
-					new GetStaticFieldExpression(position, new FieldMemberRef(SYSTEM_OUT, GenericMapper.EMPTY)),
+					new GetStaticFieldExpression(position, new FieldMemberRef(scope.getTypeRegistry().getForMyDefinition(SYSTEM), SYSTEM_OUT, GenericMapper.EMPTY)),
 					"println",
-					PRINTSTREAM_PRINTLN.ref(GenericMapper.EMPTY),
+					PRINTSTREAM_PRINTLN.ref(scope.getTypeRegistry().getForDefinition(PRINTSTREAM), GenericMapper.EMPTY),
 					null,
 					false);
 		}

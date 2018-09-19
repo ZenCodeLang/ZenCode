@@ -40,6 +40,8 @@ public abstract class Statement extends Taggable {
 	
 	public abstract <T> T accept(StatementVisitor<T> visitor);
 	
+	public abstract <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor);
+	
 	public abstract void forEachStatement(Consumer<Statement> consumer);
 	
 	public abstract Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified);

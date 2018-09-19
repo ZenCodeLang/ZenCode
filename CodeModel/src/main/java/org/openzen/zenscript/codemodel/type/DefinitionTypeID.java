@@ -23,7 +23,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  */
 public class DefinitionTypeID implements ITypeID {
 	public static DefinitionTypeID forType(HighLevelDefinition definition) {
-		if (definition.genericParameters != null && definition.genericParameters.length > 0)
+		if (definition.typeParameters != null && definition.typeParameters.length > 0)
 			throw new IllegalArgumentException("Definition has type arguments!");
 		
 		return new DefinitionTypeID(null, definition, ITypeID.NONE);
@@ -80,8 +80,8 @@ public class DefinitionTypeID implements ITypeID {
 				throw new IllegalStateException("Alias type not yet initialized!");
 			
 			Map<TypeParameter, ITypeID> typeMapping = new HashMap<>();
-			for (int i = 0; i < definition.genericParameters.length; i++)
-				typeMapping.put(definition.genericParameters[i], typeParameters[i].getNormalized());
+			for (int i = 0; i < definition.typeParameters.length; i++)
+				typeMapping.put(definition.typeParameters[i], typeParameters[i].getNormalized());
 			GenericMapper mapper = new GenericMapper(typeRegistry, typeMapping);
 			ITypeID result = alias.type.instance(mapper).getNormalized();
 			return result;
@@ -103,11 +103,11 @@ public class DefinitionTypeID implements ITypeID {
 		DefinitionTypeID current = this;
 		do {
 			if (current.typeParameters != null) {
-				if (current.definition.genericParameters == null)
+				if (current.definition.typeParameters == null)
 					System.out.println("Type parameters but no generic parameters");
 				else
 					for (int i = 0; i < current.typeParameters.length; i++)
-						mapping.put(current.definition.genericParameters[i], current.typeParameters[i]);
+						mapping.put(current.definition.typeParameters[i], current.typeParameters[i]);
 			}
 
 			current = current.outer;
@@ -154,8 +154,13 @@ public class DefinitionTypeID implements ITypeID {
 	}
 	
 	@Override
-	public <T> T accept(ITypeVisitor<T> visitor) {
+	public <T> T accept(TypeVisitor<T> visitor) {
 		return visitor.visitDefinition(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+		return visitor.visitDefinition(context, this);
 	}
 	
 	@Override

@@ -21,10 +21,12 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public abstract class PropertyRef implements DefinitionMemberRef {
 	private final PropertyMember member;
 	
+	private final ITypeID owner;
 	private ITypeID type;
 	private GenericMapper mapper;
 	
-	public PropertyRef(PropertyMember member, GenericMapper mapper) {
+	public PropertyRef(ITypeID owner, PropertyMember member, GenericMapper mapper) {
+		this.owner = owner;
 		this.member = member;
 		
 		if (member.getType() == BasicTypeID.UNDETERMINED) {
@@ -34,6 +36,11 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 			type = mapper == null ? member.getType() : member.getType().instance(mapper);
 			this.mapper = null;
 		}
+	}
+	
+	@Override
+	public final ITypeID getOwnerType() {
+		return owner;
 	}
 	
 	public final ITypeID getType() {

@@ -19,16 +19,16 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSyntheticTypeSignatureConverter implements ITypeVisitor<String> {
+public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> {
 	private static final String[] typeParameterNames = {"T", "U", "V", "W", "X", "Y", "Z"}; // if we have more than this, make it Tx with x the number
 	private final Map<TypeParameter, String> typeParameters = new HashMap<>();
 	public final List<TypeParameter> typeParameterList = new ArrayList<>();

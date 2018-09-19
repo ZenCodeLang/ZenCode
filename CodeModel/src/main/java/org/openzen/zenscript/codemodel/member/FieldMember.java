@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -56,10 +57,10 @@ public class FieldMember extends PropertyMember {
 		this.autoSetterAccess = autoSetterAccess;
 		
 		ITypeID[] parameters = null;
-		if (definition.genericParameters != null) {
-			parameters = new ITypeID[definition.genericParameters.length];
+		if (definition.typeParameters != null) {
+			parameters = new ITypeID[definition.typeParameters.length];
 			for (int i = 0; i < parameters.length; i++)
-				parameters[i] = registry.getGeneric(definition.genericParameters[i]);
+				parameters[i] = registry.getGeneric(definition.typeParameters[i]);
 		}
 		
 		if (autoGetterAccess != 0) {
@@ -67,7 +68,7 @@ public class FieldMember extends PropertyMember {
 			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(
 					position,
 					new ThisExpression(position, thisType),
-					new FieldMemberRef(this, null))));
+					new FieldMemberRef(thisType, this, null))));
 		} else {
 			this.autoGetter = null;
 		}
@@ -76,7 +77,7 @@ public class FieldMember extends PropertyMember {
 			this.autoSetter.setBody(new ExpressionStatement(position, new SetFieldExpression(
 					position,
 					new ThisExpression(position, thisType),
-					new FieldMemberRef(this, null),
+					new FieldMemberRef(thisType, this, null),
 					new GetFunctionParameterExpression(position, this.autoSetter.parameter))));
 		} else {
 			this.autoSetter = null;
@@ -118,7 +119,7 @@ public class FieldMember extends PropertyMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addField(new FieldMemberRef(this, mapper), priority);
+		members.addField(new FieldMemberRef(members.type, this, mapper), priority);
 	}
 	
 	@Override
@@ -134,6 +135,11 @@ public class FieldMember extends PropertyMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitField(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitField(context, this);
 	}
 
 	@Override
@@ -151,5 +157,15 @@ public class FieldMember extends PropertyMember {
 	@Override
 	public boolean isAbstract() {
 		return false;
+	}
+
+	@Override
+	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+		return new FieldMemberRef(type, this, mapper);
+	}
+	
+	@Override
+	public FunctionHeader getHeader() {
+		return null;
 	}
 }

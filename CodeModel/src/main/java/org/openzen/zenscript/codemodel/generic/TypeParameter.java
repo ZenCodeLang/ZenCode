@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -17,7 +18,7 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  *
  * @author Hoofdgebruiker
  */
-public class TypeParameter {
+public class TypeParameter extends Taggable {
 	public static final TypeParameter[] NONE = new TypeParameter[0];
 	
 	public final CodePosition position;

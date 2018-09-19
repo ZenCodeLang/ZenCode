@@ -31,6 +31,11 @@ public class CapturedDirectExpression extends CapturedExpression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitCapturedDirect(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = transformer.transform(value);
 		return tValue == value ? this : new CapturedDirectExpression(position, closure, tValue);

@@ -49,6 +49,11 @@ public class NewExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitNew(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
 		return tArguments == arguments ? this : new NewExpression(position, type, constructor, tArguments, instancedHeader);

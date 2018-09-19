@@ -89,7 +89,7 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 		private final TypeResolutionContext context;
 		
 		public Compiling(TypeResolutionContext context) {
-			this.context = new LocalTypeResolutionContext(context, this, getCompiled().genericParameters);
+			this.context = new LocalTypeResolutionContext(context, this, getCompiled().typeParameters);
 		}
 		
 		@Override

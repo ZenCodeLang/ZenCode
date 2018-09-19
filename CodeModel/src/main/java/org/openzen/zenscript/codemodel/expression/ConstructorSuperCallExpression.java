@@ -34,6 +34,11 @@ public class ConstructorSuperCallExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitConstructorSuperCall(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
 		return tArguments == arguments ? this : new ConstructorSuperCallExpression(position, type, constructor, tArguments);

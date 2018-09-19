@@ -114,8 +114,8 @@ public class GlobalTypeRegistry {
 		ITypeID[] typeArguments = ITypeID.NONE;
 		if (definition.getNumberOfGenericParameters() > 0) {
 			typeArguments = new ITypeID[definition.getNumberOfGenericParameters()];
-			for (int i = 0; i < definition.genericParameters.length; i++)
-				typeArguments[i] = getGeneric(definition.genericParameters[i]);
+			for (int i = 0; i < definition.typeParameters.length; i++)
+				typeArguments[i] = getGeneric(definition.typeParameters[i]);
 		}
 		DefinitionTypeID outer = null;
 		if (definition.outerDefinition != null)

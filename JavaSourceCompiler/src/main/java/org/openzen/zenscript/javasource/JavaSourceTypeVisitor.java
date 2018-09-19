@@ -17,17 +17,17 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaSynthesizedFunctionInstance;
+import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceTypeVisitor implements ITypeVisitor<String>, GenericParameterBoundVisitor<String> {
+public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParameterBoundVisitor<String> {
 	public final JavaSourceImporter importer;
 	public final JavaSourceContext context;
 	public final JavaSourceObjectTypeVisitor objectTypeVisitor;

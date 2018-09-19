@@ -32,10 +32,12 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	private final FunctionalMember target;
 	
 	private FunctionHeader header;
+	private final ITypeID type;
 	private GenericMapper mapper;
 	
-	public FunctionalMemberRef(FunctionalMember target, GenericMapper mapper) {
+	public FunctionalMemberRef(FunctionalMember target, ITypeID type, GenericMapper mapper) {
 		this.target = target;
+		this.type = type;
 		
 		if (target.header.hasUnknowns) {
 			header = null;
@@ -68,6 +70,12 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 		return target.position;
 	}
 	
+	@Override
+	public ITypeID getOwnerType() {
+		return type;
+	}
+	
+	@Override
 	public FunctionalMember getTarget() {
 		return target;
 	}
@@ -134,7 +142,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	public Expression callWithComparator(CodePosition position, CompareType comparison, Expression target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
-		return new CompareExpression(position, target, arguments.arguments[0], this, comparison, scope);
+		return new CompareExpression(position, target, arguments.arguments[0], this, comparison);
 	}
 	
 	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {

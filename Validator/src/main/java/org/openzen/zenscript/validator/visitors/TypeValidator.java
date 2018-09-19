@@ -15,17 +15,17 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
+import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class TypeValidator implements ITypeVisitor<Void> {
+public class TypeValidator implements TypeVisitor<Void> {
 	private final Validator validator;
 	private final CodePosition position;
 	
@@ -79,7 +79,7 @@ public class TypeValidator implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitDefinition(DefinitionTypeID definition) {
-		ValidationUtils.validateTypeArguments(validator, position, definition.definition.genericParameters, definition.typeParameters);
+		ValidationUtils.validateTypeArguments(validator, position, definition.definition.typeParameters, definition.typeParameters);
 		return null;
 	}
 

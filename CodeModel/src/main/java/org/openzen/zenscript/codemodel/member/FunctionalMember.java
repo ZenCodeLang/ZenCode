@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 /**
@@ -45,8 +46,8 @@ public abstract class FunctionalMember extends DefinitionMember {
 	
 	public abstract FunctionalKind getKind();
 	
-	public FunctionalMemberRef ref(GenericMapper mapper) {
-		return new FunctionalMemberRef(this, mapper);
+	public FunctionalMemberRef ref(ITypeID type, GenericMapper mapper) {
+		return new FunctionalMemberRef(this, type, mapper);
 	}
 	
 	@Override
@@ -64,5 +65,10 @@ public abstract class FunctionalMember extends DefinitionMember {
 	@Override
 	public boolean isAbstract() {
 		return body == null && builtin == null;
+	}
+	
+	@Override
+	public FunctionHeader getHeader() {
+		return header;
 	}
 }

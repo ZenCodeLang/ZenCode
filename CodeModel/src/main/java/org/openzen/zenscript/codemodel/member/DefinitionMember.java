@@ -32,6 +32,16 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 		return position;
 	}
 	
+	@Override
+	public int getModifiers() {
+		return modifiers;
+	}
+	
+	@Override
+	public final HighLevelDefinition getDefinition() {
+		return definition;
+	}
+	
 	public MemberAnnotation[] getAnnotations() {
 		return annotations;
 	}

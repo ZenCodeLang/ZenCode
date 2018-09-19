@@ -58,7 +58,7 @@ public class DefinitionScope extends BaseScope {
 			ExpansionDefinition expansion = (ExpansionDefinition)definition;
 			type = expansion.target;
 			
-			for (TypeParameter parameter : expansion.genericParameters) {
+			for (TypeParameter parameter : expansion.typeParameters) {
 				genericParameters.put(parameter.name, parameter);
 				typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter));
 			}
@@ -67,7 +67,7 @@ public class DefinitionScope extends BaseScope {
 			type = definitionType;
 			
 			while (definitionType != null) {
-				for (TypeParameter parameter : definitionType.definition.genericParameters) {
+				for (TypeParameter parameter : definitionType.definition.typeParameters) {
 					genericParameters.put(parameter.name, parameter);
 					typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter));
 				}

@@ -11,12 +11,15 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.StatementContext;
+import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
@@ -83,6 +86,28 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 
 	@Override
 	public Annotation createForParameter(CodePosition position, CallArguments arguments) {
+		throw new UnsupportedOperationException("Not supported");
+	}
+
+	@Override
+	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member) {
+		String name = input.readString();
+		return new NativeMemberAnnotation(name);
+	}
+
+	@Override
+	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeContext context) {
+		String name = input.readString();
+		return new NativeDefinitionAnnotation(name);
+	}
+
+	@Override
+	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context) {
+		throw new UnsupportedOperationException("Not supported");
+	}
+
+	@Override
+	public Annotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 }

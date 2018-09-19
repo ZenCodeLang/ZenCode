@@ -77,12 +77,7 @@ public abstract class JavaContext {
 	}
 	
     public String getMethodSignature(FunctionHeader header) {
-        StringBuilder signatureBuilder = new StringBuilder("(");
-        for (FunctionParameter parameter : header.parameters) {
-            signatureBuilder.append(getDescriptor(parameter.type));
-        }
-        signatureBuilder.append(")").append(getDescriptor(header.getReturnType()));
-        return signatureBuilder.toString();
+        return new JavaTypeGenericVisitor(this).getGenericMethodSignature(header);
     }
 	
 	public String getEnumConstructorDescriptor(FunctionHeader header) {

@@ -23,11 +23,11 @@ public class CompareExpression extends Expression {
 	public final FunctionalMemberRef operator;
 	public final CompareType comparison;
 	
-	public CompareExpression(CodePosition position, Expression left, Expression right, FunctionalMemberRef operator, CompareType comparison, TypeScope scope) {
+	public CompareExpression(CodePosition position, Expression left, Expression right, FunctionalMemberRef operator, CompareType comparison) {
 		super(position, BasicTypeID.BOOL, binaryThrow(position, left.thrownType, right.thrownType));
 		
 		this.left = left;
-		this.right = scope == null ? right : right.castImplicit(position, scope, operator.getHeader().parameters[0].type);
+		this.right = right;
 		this.operator = operator;
 		this.comparison = comparison;
 	}
@@ -38,14 +38,24 @@ public class CompareExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitCompare(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tLeft = left.transform(transformer);
 		Expression tRight = right.transform(transformer);
-		return left == tLeft && right == tRight ? this : new CompareExpression(position, tLeft, tRight, operator, comparison, null);
+		return left == tLeft && right == tRight ? this : new CompareExpression(position, tLeft, tRight, operator, comparison);
 	}
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		return new CompareExpression(position, left.normalize(scope), right.normalize(scope), operator, comparison, scope);
+		return new CompareExpression(
+				position,
+				left.normalize(scope),
+				right.normalize(scope).castImplicit(position, scope, operator.getHeader().parameters[0].type),
+				operator,
+				comparison);
 	}
 }

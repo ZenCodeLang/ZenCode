@@ -16,17 +16,17 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
+import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class SupertypeValidator implements ITypeVisitor<Void> {
+public class SupertypeValidator implements TypeVisitor<Void> {
 	private final Validator validator;
 	private final CodePosition position;
 	private final HighLevelDefinition subtype;

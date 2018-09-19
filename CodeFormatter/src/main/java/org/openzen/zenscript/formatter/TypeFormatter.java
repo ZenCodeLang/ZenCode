@@ -19,16 +19,16 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import stdlib.Chars;
+import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class TypeFormatter implements ITypeVisitor<String>, GenericParameterBoundVisitor<String> {
+public class TypeFormatter implements TypeVisitor<String>, GenericParameterBoundVisitor<String> {
 	private final ScriptFormattingSettings settings;
 	private final Importer importer;
 	

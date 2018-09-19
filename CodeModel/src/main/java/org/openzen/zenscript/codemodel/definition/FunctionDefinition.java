@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
@@ -32,15 +33,15 @@ public class FunctionDefinition extends HighLevelDefinition {
 		callerGroup = new DefinitionMemberGroup(true, name);
 	}
 	
-	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, FunctionHeader header) {
+	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, FunctionHeader header, GlobalTypeRegistry registry) {
 		this(position, module, pkg, name, modifiers, (HighLevelDefinition) null);
-		setHeader(header);
+		setHeader(registry, header);
 	}
 	
-	public void setHeader(FunctionHeader header) {
+	public void setHeader(GlobalTypeRegistry registry, FunctionHeader header) {
 		this.header = header;
 		addMember(caller = new CallerMember(position, this, modifiers | Modifiers.STATIC, header, null));
-		callerGroup.addMethod(new FunctionalMemberRef(caller, GenericMapper.EMPTY), TypeMemberPriority.SPECIFIED);
+		callerGroup.addMethod(new FunctionalMemberRef(caller, registry.getFunction(header), GenericMapper.EMPTY), TypeMemberPriority.SPECIFIED);
 	}
 	
 	public void setCode(Statement statement) {
@@ -51,5 +52,10 @@ public class FunctionDefinition extends HighLevelDefinition {
 	@Override
 	public <T> T accept(DefinitionVisitor<T> visitor) {
 		return visitor.visitFunction(this);
+	}
+
+	@Override
+	public <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor) {
+		return visitor.visitFunction(context, this);
 	}
 }

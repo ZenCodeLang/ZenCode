@@ -30,6 +30,11 @@ public class AndAndExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitAndAnd(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tLeft = left.transform(transformer);
 		Expression tRight = right.transform(transformer);

@@ -19,6 +19,8 @@ public abstract class TypeParameterBound {
 	
 	public abstract <T> T accept(GenericParameterBoundVisitor<T> visitor);
 	
+	public abstract <C, R> R accept(C context, GenericParameterBoundVisitorWithContext<C, R> visitor);
+	
 	public abstract void registerMembers(LocalMemberCache cache, TypeMembers type);
 	
 	public abstract boolean matches(LocalMemberCache cache, ITypeID type);

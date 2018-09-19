@@ -6,7 +6,6 @@
 package org.openzen.zenscript.javasource;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
@@ -27,6 +26,7 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
@@ -87,7 +87,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		output.append(indent);
 		convertModifiers(definition.modifiers);
 		output.append("class ").append(cls.getName());
-		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.genericParameters, false);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.typeParameters, false);
 		if (definition.getSuperType() != null) {
 			output.append(" extends ");
 			output.append(scope.type(definition.getSuperType()));
@@ -138,7 +138,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		output.append(indent);
 		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
 		output.append("interface ").append(cls.getName());
-		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.genericParameters, false);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.typeParameters, false);
 		
 		boolean firstExtends = true;
 		if (definition.isDestructible()) {
@@ -224,7 +224,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		output.append(indent);
 		convertModifiers(definition.modifiers | Modifiers.FINAL);
 		output.append("class ").append(definition.name);
-		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.genericParameters, false);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.typeParameters, false);
 		output.append(" {\n");
 		compileMembers(scope, definition);
 		compileExpansions();
@@ -252,7 +252,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		output.append(" {\n");
 		output.append(indent).append(settings.indent).append("private ").append(cls.getName()).append("() {}\n");
 		
-		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.genericParameters, "\t", output, scope, definition);
+		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.typeParameters, "\t", output, scope, definition);
 		for (IDefinitionMember member : definition.members)
 			member.accept(memberCompiler);
 		memberCompiler.finish();
@@ -274,7 +274,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		
 		convertModifiers(variant.modifiers | Modifiers.VIRTUAL | Modifiers.ABSTRACT);
 		output.append(indent).append("class ").append(variant.name);
-		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, variant.genericParameters, false);
+		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, variant.typeParameters, false);
 		output.append(" {\n");
 		compileMembers(scope, variant);
 		output.append(indent).append(settings.indent).append("public abstract Discriminant getDiscriminant();\n");
@@ -289,15 +289,15 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		for (VariantDefinition.Option option : variant.options) {
 			output.append(indent).append(settings.indent).append("\n");
 			output.append(indent).append(settings.indent).append("public static class ").append(option.name);
-			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, variant.genericParameters, false);
+			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, variant.typeParameters, false);
 			output.append(" extends ");
 			output.append(variant.name);
-			if (variant.genericParameters != null && variant.genericParameters.length > 0) {
+			if (variant.typeParameters != null && variant.typeParameters.length > 0) {
 				output.append('<');
-				for (int i = 0; i < variant.genericParameters.length; i++) {
+				for (int i = 0; i < variant.typeParameters.length; i++) {
 					if (i > 0)
 						output.append(", ");
-					output.append(variant.genericParameters[i].name);
+					output.append(variant.typeParameters[i].name);
 				}
 				output.append('>');
 			}
@@ -341,7 +341,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	private void compileExpansions() {
 		for (ExpansionDefinition definition : expansions) {
 			JavaSourceFileScope scope = createScope(definition);
-			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.genericParameters, indent + settings.indent, output, scope, definition);
+			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.typeParameters, indent + settings.indent, output, scope, definition);
 			for (IDefinitionMember member : definition.members)
 				member.accept(memberCompiler);
 			memberCompiler.finish();
@@ -371,10 +371,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		if (definition.hasTag(JavaNativeClass.class)) {
 			ITypeID[] typeParameters = new ITypeID[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < typeParameters.length; i++)
-				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.genericParameters[i]);
+				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]);
 			ITypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, typeParameters);
 			
-			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.genericParameters, indent + settings.indent, output, scope, definition);
+			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.typeParameters, indent + settings.indent, output, scope, definition);
 			for (IDefinitionMember member : definition.members)
 				member.accept(memberCompiler);
 			memberCompiler.finish();
@@ -385,7 +385,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			
 			if (definition.isDestructible() && !memberCompiler.hasDestructor) {
 				DestructorMember emptyDestructor = new DestructorMember(CodePosition.BUILTIN, definition, 0);
-				emptyDestructor.body = new BlockStatement(CodePosition.BUILTIN, Collections.emptyList());
+				emptyDestructor.body = new BlockStatement(CodePosition.BUILTIN, new Statement[0]);
 				memberCompiler.visitDestructor(emptyDestructor);
 			}
 			

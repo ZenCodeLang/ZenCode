@@ -1,5 +1,6 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
+import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -124,8 +125,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
-		//TODO see if this can be changed to Stan's changes (context call maybe?)
-	    final JavaWriter methodWriter = new JavaWriter(writer, method, definition, new JavaTypeGenericVisitor(context).getGenericMethodSignature(member.header), null);
+	    final JavaWriter methodWriter = new JavaWriter(writer, method, definition, context.getMethodSignature(member.header), null);
 		methodWriter.label(methodStart);
 		for (final FunctionParameter parameter : member.header.parameters) {
 			methodWriter.nameParameter(0, parameter.name);

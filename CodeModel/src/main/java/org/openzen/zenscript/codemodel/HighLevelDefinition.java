@@ -12,6 +12,7 @@ import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
+import org.openzen.zenscript.codemodel.definition.DefinitionVisitorWithContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.MemberCollector;
@@ -37,7 +38,7 @@ public abstract class HighLevelDefinition extends Taggable {
 	public final String name;
 	public final int modifiers;
 	public final List<IDefinitionMember> members = new ArrayList<>();
-	public TypeParameter[] genericParameters = TypeParameter.NONE;
+	public TypeParameter[] typeParameters = TypeParameter.NONE;
 	public DefinitionAnnotation[] annotations = DefinitionAnnotation.NONE;
 	
 	public HighLevelDefinition outerDefinition;
@@ -82,7 +83,7 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 	
 	public int getNumberOfGenericParameters() {
-		return genericParameters == null ? 0 : genericParameters.length;
+		return typeParameters == null ? 0 : typeParameters.length;
 	}
 	
 	public void setOuterDefinition(HighLevelDefinition outerDefinition) {
@@ -125,7 +126,7 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 	
 	public void setTypeParameters(TypeParameter[] typeParameters) {
-		this.genericParameters = typeParameters;
+		this.typeParameters = typeParameters;
 	}
 	
 	public List<FieldMember> getFields() {
@@ -180,7 +181,9 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 	
 	public abstract <T> T accept(DefinitionVisitor<T> visitor);
-
+	
+	public abstract <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor);
+	
 	public HighLevelDefinition getInnerType(String name) {
 		for (IDefinitionMember member : members) {
 			if (member instanceof InnerDefinitionMember) {

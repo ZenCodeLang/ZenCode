@@ -40,7 +40,7 @@ public class DestructorMember extends FunctionalMember {
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
 		if (priority == TypeMemberPriority.SPECIFIED)
-			type.addDestructor(ref(mapper), priority);
+			type.addDestructor(ref(type.type, mapper), priority);
 	}
 
 	@Override
@@ -51,6 +51,11 @@ public class DestructorMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitDestructor(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitDestructor(context, this);
 	}
 
 	@Override

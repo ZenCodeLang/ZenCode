@@ -27,6 +27,11 @@ public class EnumDefinition extends HighLevelDefinition {
 	public <T> T accept(DefinitionVisitor<T> visitor) {
 		return visitor.visitEnum(this);
 	}
+
+	@Override
+	public <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor) {
+		return visitor.visitEnum(context, this);
+	}
 	
 	@Override
 	public void collectMembers(MemberCollector collector) {

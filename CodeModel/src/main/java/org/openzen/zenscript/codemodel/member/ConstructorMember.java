@@ -6,7 +6,6 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -18,7 +17,6 @@ import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -50,8 +48,8 @@ public class ConstructorMember extends FunctionalMember {
 			firstExpression = (ExpressionStatement) body;
 		} else if (body instanceof BlockStatement) {
 			BlockStatement blockBody = (BlockStatement) body;
-			if (blockBody.statements.size() > 0 && blockBody.statements.get(0) instanceof ExpressionStatement)
-				firstExpression = (ExpressionStatement) blockBody.statements.get(0);
+			if (blockBody.statements.length > 0 && blockBody.statements[0] instanceof ExpressionStatement)
+				firstExpression = (ExpressionStatement) blockBody.statements[0];
 		}
 		
 		return firstExpression != null && (
@@ -72,7 +70,7 @@ public class ConstructorMember extends FunctionalMember {
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
 		if (priority == TypeMemberPriority.SPECIFIED)
-			type.addConstructor(ref(mapper), priority);
+			type.addConstructor(ref(type.type, mapper), priority);
 	}
 
 	@Override
@@ -83,6 +81,11 @@ public class ConstructorMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitConstructor(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitConstructor(context, this);
 	}
 
 	@Override

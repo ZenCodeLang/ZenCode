@@ -10,11 +10,14 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.context.StatementContext;
+import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.statement.Statement;
 
 /**
@@ -41,4 +44,12 @@ public interface AnnotationDefinition {
 	public StatementAnnotation createForStatement(CodePosition position, CallArguments arguments);
 	
 	public Annotation createForParameter(CodePosition position, CallArguments arguments);
+	
+	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member);
+	
+	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeContext context);
+	
+	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context);
+	
+	public Annotation deserializeForParameter(CodeSerializationInput input, TypeContext context);
 }

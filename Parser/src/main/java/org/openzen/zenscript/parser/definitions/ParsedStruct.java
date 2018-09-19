@@ -54,7 +54,7 @@ public class ParsedStruct extends BaseParsedDefinition {
 
 	@Override
 	protected void linkTypesLocal(TypeResolutionContext context) {
-		ParsedTypeParameter.compile(context, compiled.genericParameters, parameters);
+		ParsedTypeParameter.compile(context, compiled.typeParameters, parameters);
 		super.linkTypesLocal(context);
 	}
 }

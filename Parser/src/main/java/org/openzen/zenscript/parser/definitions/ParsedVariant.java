@@ -80,9 +80,9 @@ public class ParsedVariant extends BaseParsedDefinition {
 	
 	@Override
 	public void linkTypesLocal(TypeResolutionContext context) {
-		ParsedTypeParameter.compile(context, compiled.genericParameters, typeParameters);
+		ParsedTypeParameter.compile(context, compiled.typeParameters, typeParameters);
 		for (ParsedVariantOption variant : variants) {
-			compiled.options.add(variant.compile(context));
+			compiled.options.add(variant.compile(compiled, context));
 		}
 		
 		super.linkTypesLocal(context);

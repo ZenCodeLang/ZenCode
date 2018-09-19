@@ -52,7 +52,7 @@ public class IteratorMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addIterator(new IteratorMemberRef(this, mapper == null ? iteratorTypes : mapper.map(iteratorTypes)), priority);
+		type.addIterator(new IteratorMemberRef(this, type.type, mapper == null ? iteratorTypes : mapper.map(iteratorTypes)), priority);
 	}
 
 	@Override
@@ -63,6 +63,11 @@ public class IteratorMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitCustomIterator(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitIterator(context, this);
 	}
 	
 	public void setOverrides(IteratorMemberRef overrides) {

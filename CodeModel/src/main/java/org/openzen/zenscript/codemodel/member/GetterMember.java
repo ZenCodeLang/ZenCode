@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
@@ -55,7 +56,7 @@ public class GetterMember extends PropertyMember {
 	
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addGetter(new GetterMemberRef(this, mapper), priority);
+		members.addGetter(new GetterMemberRef(members.type, this, mapper), priority);
 	}
 
 	@Override
@@ -66,6 +67,11 @@ public class GetterMember extends PropertyMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitGetter(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitGetter(context, this);
 	}
 
 	@Override
@@ -84,5 +90,15 @@ public class GetterMember extends PropertyMember {
 		
 		if (type == BasicTypeID.UNDETERMINED)
 			type = override.getType();
+	}
+
+	@Override
+	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+		return new GetterMemberRef(type, this, mapper);
+	}
+	
+	@Override
+	public FunctionHeader getHeader() {
+		return new FunctionHeader(type);
 	}
 }

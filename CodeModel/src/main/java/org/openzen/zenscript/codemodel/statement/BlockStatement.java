@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.statement;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
@@ -20,9 +18,9 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  * @author Hoofdgebruiker
  */
 public class BlockStatement extends Statement {
-	public final List<Statement> statements;
+	public final Statement[] statements;
 	
-	public BlockStatement(CodePosition position, List<Statement> statements) {
+	public BlockStatement(CodePosition position, Statement[] statements) {
 		super(position, getThrownType(statements));
 		
 		this.statements = statements;
@@ -31,6 +29,11 @@ public class BlockStatement extends Statement {
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitBlock(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
+		return visitor.visitBlock(context, this);
 	}
 	
 	@Override
@@ -43,29 +46,30 @@ public class BlockStatement extends Statement {
 	
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		List<Statement> tStatements = new ArrayList<>();
+		Statement[] tStatements = new Statement[statements.length];
 		boolean unchanged = true;
-		for (Statement statement : statements) {
+		for (int i = 0; i < statements.length; i++) {
+			Statement statement = statements[i];
 			Statement tStatement = statement.transform(transformer, modified);
 			unchanged &= statement == tStatement;
-			tStatements.add(statement);
+			tStatements[i] = statement;
 		}
 		return unchanged ? this : new BlockStatement(position, tStatements);
 	}
 
 	@Override
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		List<Statement> tStatements = new ArrayList<>();
+		Statement[] tStatements = new Statement[statements.length];
 		boolean unchanged = true;
-		for (Statement statement : statements) {
-			Statement tStatement = statement.transform(transformer, modified);
-			unchanged &= statement == tStatement;
-			tStatements.add(statement);
+		for (int i = 0; i < tStatements.length; i++) {
+			Statement tStatement = statements[i].transform(transformer, modified);
+			unchanged &= statements[i] == tStatement;
+			tStatements[i] = tStatement;
 		}
 		return unchanged ? this : new BlockStatement(position, tStatements);
 	}
 	
-	private static ITypeID getThrownType(List<Statement> statements) {
+	private static ITypeID getThrownType(Statement[] statements) {
 		ITypeID result = null;
 		for (Statement statement : statements)
 			result = Expression.binaryThrow(statement.position, result, statement.thrownType);
@@ -74,9 +78,10 @@ public class BlockStatement extends Statement {
 
 	@Override
 	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		List<Statement> normalized = new ArrayList<>();
+		Statement[] normalized = new Statement[statements.length];
+		int i = 0;
 		for (Statement statement : statements)
-			normalized.add(statement.normalize(scope, modified));
+			normalized[i++] = statement.normalize(scope, modified);
 		return new BlockStatement(position, normalized);
 	}
 }

@@ -3,9 +3,9 @@ package compactio;
 public interface CompactDataInput extends AutoCloseable {
     boolean readBool();
     
-    byte readByte();
+    int readByte();
     
-    int readSByte();
+    byte readSByte();
     
     short readShort();
     

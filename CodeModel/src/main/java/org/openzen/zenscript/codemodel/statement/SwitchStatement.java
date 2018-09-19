@@ -34,6 +34,11 @@ public class SwitchStatement extends LoopStatement {
 	}
 	
 	@Override
+	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
+		return visitor.visitSwitch(context, this);
+	}
+	
+	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
 		for (SwitchCase switchCase : cases) {

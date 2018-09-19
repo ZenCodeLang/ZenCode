@@ -1,18 +1,17 @@
-package org.openzen.zenscript.javabytecode.compiler;
+package org.openzen.zenscript.javashared;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.generic.*;
 import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 
 import java.util.Collection;
 
-public class JavaTypeGenericVisitor implements ITypeVisitor<String> {
+public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 
-	private final JavaBytecodeContext context;
+	private final JavaContext context;
 
-	public JavaTypeGenericVisitor(JavaBytecodeContext context) {
+	public JavaTypeGenericVisitor(JavaContext context) {
 		this.context = context;
 	}
 

@@ -61,7 +61,6 @@ import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.ITypeVisitor;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
@@ -72,12 +71,13 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
+import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class TypeMemberBuilder implements ITypeVisitor<Void> {
+public class TypeMemberBuilder implements TypeVisitor<Void> {
 	private final GlobalTypeRegistry registry;
 	private final TypeMembers members;
 	private final LocalMemberCache cache;
@@ -226,7 +226,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 					definition,
 					0,
 					new FunctionHeader(VOID, indexGetParameters),
-					ARRAY_CONSTRUCTOR_SIZED).ref(null));
+					ARRAY_CONSTRUCTOR_SIZED).ref(array, null));
 		}
 
 		FunctionParameter[] initialValueConstructorParameters = new FunctionParameter[dimension + 1];
@@ -254,7 +254,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				definition,
 				0,
 				lambdaConstructorHeader,
-				ARRAY_CONSTRUCTOR_LAMBDA).ref(null));
+				ARRAY_CONSTRUCTOR_LAMBDA).ref(array, null));
 		
 		{
 			TypeParameter mappedConstructorParameter = new TypeParameter(BUILTIN, "T");
@@ -270,7 +270,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 					definition,
 					Modifiers.PUBLIC,
 					mappedConstructorFunctionWithoutIndex,
-					ARRAY_CONSTRUCTOR_PROJECTED).ref(null));
+					ARRAY_CONSTRUCTOR_PROJECTED).ref(array, null));
 		}
 		
 		{
@@ -392,7 +392,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionTypeID function) {
-		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT, function.header);
+		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT, function.header, registry);
 		new CallerMember(BUILTIN, builtin, 0, function.header, FUNCTION_CALL).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
 		same(builtin, FUNCTION_SAME, function);
@@ -450,7 +450,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 							definition,
 							Modifiers.PUBLIC,
 							new FunctionHeader(VOID, parameters),
-							STRUCT_VALUE_CONSTRUCTOR).ref(null), TypeMemberPriority.SPECIFIED);
+							STRUCT_VALUE_CONSTRUCTOR).ref(type, null), TypeMemberPriority.SPECIFIED);
 				}
 			} else if (definition instanceof EnumDefinition) {
 				// add default constructor
@@ -459,7 +459,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 						definition,
 						Modifiers.PRIVATE,
 						new FunctionHeader(VOID),
-						ENUM_EMPTY_CONSTRUCTOR).ref(null), TypeMemberPriority.SPECIFIED);
+						ENUM_EMPTY_CONSTRUCTOR).ref(type, null), TypeMemberPriority.SPECIFIED);
 			}
 		}
 		
@@ -1244,7 +1244,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 	
 	private void castedTargetCall(OperatorMember member, ITypeID toType, BuiltinID casterBuiltin) {
 		CasterMemberRef caster = castImplicitRef(member.definition, casterBuiltin, toType);
-		TranslatedOperatorMemberRef method = new TranslatedOperatorMemberRef(member, GenericMapper.EMPTY, call -> member.ref(null).call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope));
+		TranslatedOperatorMemberRef method = new TranslatedOperatorMemberRef(member, members.type, GenericMapper.EMPTY, call -> member.ref(members.type, null).call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope));
 		members.getOrCreateGroup(member.operator).addMethod(method, TypeMemberPriority.SPECIFIED);
 	}
 	
@@ -1263,7 +1263,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				Modifiers.PUBLIC,
 				operator,
 				header,
-				builtin).ref(null));
+				builtin).ref(members.type, null));
 	}
 	
 	private void not(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
@@ -1636,7 +1636,7 @@ public class TypeMemberBuilder implements ITypeVisitor<Void> {
 				definition,
 				Modifiers.PUBLIC | Modifiers.IMPLICIT,
 				result,
-				id), result);
+				id), members.type, result);
 	}
 	
 	private void equals(HighLevelDefinition cls, BuiltinID id, ITypeID type) {

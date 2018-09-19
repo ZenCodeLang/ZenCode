@@ -30,6 +30,11 @@ public class SetStaticFieldExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitSetStaticField(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return value == tValue ? this : new SetStaticFieldExpression(position, field, tValue);

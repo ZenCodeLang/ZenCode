@@ -33,6 +33,11 @@ public class PanicExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitPanic(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return new PanicExpression(position, type, transformer.transform(value));
 	}

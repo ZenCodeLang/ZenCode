@@ -23,7 +23,9 @@ public interface ITypeID {
 	
 	public ITypeID getNormalized();
 	
-	public <T> T accept(ITypeVisitor<T> visitor);
+	public <T> T accept(TypeVisitor<T> visitor);
+	
+	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor);
 	
 	public default ITypeID getSuperType(GlobalTypeRegistry registry) {
 		return null;
@@ -85,7 +87,7 @@ public interface ITypeID {
 		return false;
 	}
 	
-	public static class MatchingTypeVisitor implements ITypeVisitor<Boolean> {
+	public static class MatchingTypeVisitor implements TypeVisitor<Boolean> {
 		private final ITypeID type;
 		private final Map<TypeParameter, ITypeID> mapping;
 		private final LocalMemberCache cache;

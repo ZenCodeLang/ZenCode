@@ -58,8 +58,13 @@ public enum BasicTypeID implements ITypeID {
 	}
 
 	@Override
-	public <T> T accept(ITypeVisitor<T> visitor) {
+	public <T> T accept(TypeVisitor<T> visitor) {
 		return visitor.visitBasic(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+		return visitor.visitBasic(context, this);
 	}
 	
 	@Override

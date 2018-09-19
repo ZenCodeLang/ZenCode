@@ -43,12 +43,12 @@ public final class CompactBytesDataInput implements CompactDataInput, AutoClosea
     }
     
     @Override
-    public byte readByte() {
-        return (byte)(data[offset++]);
+    public int readByte() {
+        return (data[offset++]) & 0xFF;
     }
     
     @Override
-    public int readSByte() {
+    public byte readSByte() {
         return data[offset++];
     }
     
@@ -187,7 +187,7 @@ public final class CompactBytesDataInput implements CompactDataInput, AutoClosea
         boolean[] result = new boolean[size];
         int limitForI = (size + 7) / 8;
         for (int i = 0; i < limitForI; i++) {
-            byte bvalue = this.readByte();
+            int bvalue = this.readByte();
             int remainingBits = result.length - 8 * i;
             if (remainingBits > 0)
                 result[i * 8 + 0] = (bvalue & (byte)1) > (byte)0;

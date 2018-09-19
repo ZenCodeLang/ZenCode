@@ -168,7 +168,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 					for (int i = 0; i < switchValue.parameters.length; i++) {
 						StringBuilder statementOutput = new StringBuilder();
 						statementOutput.append(scope.type(switchValue.option.types[i])).append(" ").append(switchValue.parameters[i]).append(" = ((").append(variantTypeName).append(".").append(switchValue.option.getName());
-						if (variant.genericParameters != null && variant.genericParameters.length > 0) {
+						if (variant.typeParameters != null && variant.typeParameters.length > 0) {
 							statementOutput.append("<");
 							for (int j = 0; j < variantType.typeParameters.length; j++) {
 								if (j > 0)

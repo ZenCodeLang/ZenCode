@@ -50,7 +50,7 @@ public class CasterMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addCaster(new CasterMemberRef(this, mapper == null ? toType : mapper.map(toType)), priority);
+		type.addCaster(new CasterMemberRef(this, type.type, mapper == null ? toType : mapper.map(toType)), priority);
 	}
 
 	@Override
@@ -69,6 +69,11 @@ public class CasterMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitCaster(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitCaster(context, this);
 	}
 	
 	public void setOverrides(GlobalTypeRegistry registry, CasterMemberRef overrides) {

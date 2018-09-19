@@ -7,13 +7,15 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -48,6 +50,11 @@ public class StaticInitializerMember extends DefinitionMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitStaticInitializer(this);
 	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitStaticInitializer(context, this);
+	}
 
 	@Override
 	public DefinitionMemberRef getOverrides() {
@@ -62,5 +69,15 @@ public class StaticInitializerMember extends DefinitionMember {
 	@Override
 	public boolean isAbstract() {
 		return false;
+	}
+
+	@Override
+	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+		throw new UnsupportedOperationException("Cannot reference a static initializer");
+	}
+	
+	@Override
+	public FunctionHeader getHeader() {
+		return new FunctionHeader(BasicTypeID.VOID);
 	}
 }

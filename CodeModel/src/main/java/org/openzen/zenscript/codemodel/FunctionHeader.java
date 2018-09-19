@@ -6,7 +6,6 @@
 package org.openzen.zenscript.codemodel;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +128,14 @@ public class FunctionHeader {
 	
 	public int getNumberOfTypeParameters() {
 		return typeParameters.length;
+	}
+	
+	public boolean hasAnyDefaultValues() {
+		for (FunctionParameter parameter : parameters)
+			if (parameter.defaultValue != null)
+				return true;
+		
+		return false;
 	}
 	
 	public FunctionHeader withReturnType(ITypeID returnType) {
@@ -330,6 +337,20 @@ public class FunctionHeader {
 		}
 		
 		return true;
+	}
+	
+	public FunctionHeader instanceForCall(GlobalTypeRegistry registry, CallArguments arguments) {
+		if (arguments.getNumberOfTypeArguments() > 0) {
+			Map<TypeParameter, ITypeID> typeParameters = new HashMap<>();
+			for (int i = 0; i < this.typeParameters.length; i++) {
+				typeParameters.put(this.typeParameters[i], arguments.typeArguments[i]);
+			}
+			return withGenericArguments(
+					registry,
+					new GenericMapper(registry, typeParameters));
+		} else {
+			return this;
+		}
 	}
 	
 	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, GenericMapper mapper) {

@@ -49,7 +49,7 @@ public class OperatorMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addOperator(operator, ref(mapper), priority);
+		type.addOperator(operator, ref(type.type, mapper), priority);
 	}
 
 	@Override
@@ -60,6 +60,11 @@ public class OperatorMember extends FunctionalMember {
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitOperator(this);
+	}
+	
+	@Override
+	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
+		return visitor.visitOperator(context, this);
 	}
 
 	@Override

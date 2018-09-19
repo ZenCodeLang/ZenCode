@@ -6,8 +6,11 @@
 package org.openzen.zenscript.codemodel.annotations;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.context.StatementContext;
+import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionBuilder;
 import org.openzen.zenscript.codemodel.expression.PanicExpression;
@@ -17,6 +20,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.IfStatement;
@@ -42,6 +46,11 @@ public class PreconditionForMethod implements MemberAnnotation {
 		this.enforcement = enforcement;
 		this.condition = condition;
 		this.message = message;
+	}
+	
+	@Override
+	public AnnotationDefinition getDefinition() {
+		return PreconditionAnnotationDefinition.INSTANCE;
 	}
 
 	@Override
@@ -82,10 +91,19 @@ public class PreconditionForMethod implements MemberAnnotation {
 		statements.add(new IfStatement(position, inverseCondition, throwStatement, null));
 		
 		if (body instanceof BlockStatement) {
-			statements.addAll(((BlockStatement)body).statements);
+			statements.addAll(Arrays.asList(((BlockStatement)body).statements));
 		} else {
 			statements.add(body);
 		}
-		return new BlockStatement(position, statements);
+		return new BlockStatement(position, statements.toArray(new Statement[statements.size()]));
+	}
+
+	@Override
+	public void serialize(CodeSerializationOutput output, IDefinitionMember member, TypeContext context) {
+		output.serialize(position);
+		output.writeString(enforcement);
+		StatementContext statementContext = new StatementContext(context, member.getHeader());
+		output.serialize(statementContext, condition);
+		output.serialize(statementContext, message);
 	}
 }

@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 /**
  *
  * @author Hoofdgebruiker
+ * 
  */
 public class ConstantLongExpression extends Expression {
 	public final long value;
@@ -25,6 +26,11 @@ public class ConstantLongExpression extends Expression {
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitConstantLong(this);
+	}
+
+	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitConstantLong(context, this);
 	}
 
 	@Override

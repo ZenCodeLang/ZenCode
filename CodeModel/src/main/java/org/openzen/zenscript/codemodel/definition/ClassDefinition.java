@@ -26,4 +26,9 @@ public class ClassDefinition extends HighLevelDefinition {
 	public <T> T accept(DefinitionVisitor<T> visitor) {
 		return visitor.visitClass(this);
 	}
+
+	@Override
+	public <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor) {
+		return visitor.visitClass(context, this);
+	}
 }

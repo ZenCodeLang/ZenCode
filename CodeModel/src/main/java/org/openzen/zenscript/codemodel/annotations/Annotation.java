@@ -12,5 +12,7 @@ package org.openzen.zenscript.codemodel.annotations;
 public interface Annotation {
 	public static final Annotation[] NONE = new Annotation[0];
 	
+	public AnnotationDefinition getDefinition();
+	
 	public void apply();
 }

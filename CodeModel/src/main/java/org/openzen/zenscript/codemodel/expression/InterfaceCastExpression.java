@@ -28,6 +28,11 @@ public class InterfaceCastExpression extends Expression {
 	}
 
 	@Override
+	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
+		return visitor.visitInterfaceCast(context, this);
+	}
+
+	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return value == tValue ? this : new InterfaceCastExpression(position, tValue, type);
