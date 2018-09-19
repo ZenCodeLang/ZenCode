@@ -53,5 +53,6 @@ public class SwingDrawnRectangle extends SwingDrawnElement implements DDrawnRect
 	public void paint(Graphics2D g, DIRectangle clip) {
 		g.setColor(awtColor);
 		g.fillRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+		g.fillRect(clip.x, clip.y, 3, 3);
 	}
 }

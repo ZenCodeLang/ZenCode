@@ -23,7 +23,9 @@ import org.openzen.drawablegui.live.ImmutableLiveBool;
 import org.openzen.drawablegui.live.ImmutableLiveString;
 import org.openzen.drawablegui.live.SimpleLiveString;
 import org.openzen.drawablegui.style.DDpDimension;
+import org.openzen.drawablegui.style.DSimpleStylesheet;
 import org.openzen.drawablegui.style.DStyleClass;
+import org.openzen.drawablegui.style.DStylesheetBuilder;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEPackage;
 import org.openzen.zenscript.ide.host.IDESourceFile;
@@ -64,14 +66,18 @@ public class CreateSourceFileDialog {
 		DButton ok = new DButton(DStyleClass.EMPTY, new SimpleLiveString("Create"), ImmutableLiveBool.FALSE, this::ok);
 		DButton cancel = new DButton(DStyleClass.EMPTY, new SimpleLiveString("Cancel"), ImmutableLiveBool.FALSE, this::cancel);
 		DLinearLayout buttons = new DLinearLayout(
-				DStyleClass.EMPTY,
+				DStyleClass.inline(new DStylesheetBuilder()
+					.dimensionDp("spacing", 8)
+					.build()),
 				Orientation.HORIZONTAL,
 				Alignment.RIGHT,
 				new Element(cancel, 0, 0, ElementAlignment.TOP),
 				new Element(ok, 0, 0, ElementAlignment.TOP));
 
 		root = new DLinearLayout(
-				DStyleClass.EMPTY,
+				DStyleClass.inline(new DStylesheetBuilder()
+						.marginDp("margin", 16)
+						.build()),
 				Orientation.VERTICAL,
 				Alignment.MIDDLE,
 				new Element(form, 1, 1, ElementAlignment.CENTER),

@@ -9,6 +9,7 @@ import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
 import org.openzen.drawablegui.DLabel;
+import org.openzen.drawablegui.DScalableSize;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.border.DEmptyBorder;
 import org.openzen.drawablegui.border.DPaddedBorder;
@@ -24,6 +25,7 @@ import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveString;
 import org.openzen.drawablegui.scroll.DScrollPane;
+import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.style.DRoundedRectangleShape;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
@@ -107,6 +109,8 @@ public class ProjectBrowser {
 				ExpandedArrow.INSTANCE,
 				CollapsedArrow.INSTANCE,
 				new RootTreeNode(this, host), false);
+		
+		DScalableSize treeSize = new DScalableSize(new DDpDimension(280), new DDpDimension(280));
 		DScrollPane treeScrollPane = new DScrollPane(
 				DStyleClass.inline("projectView", new DStylesheetBuilder()
 						.shape("shape", context -> new DRoundedRectangleShape(0, 0, context.dp(2), context.dp(2)))
@@ -114,7 +118,7 @@ public class ProjectBrowser {
 						.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
 						.build()),
 				projectTree,
-				new SimpleLiveObject<>(new DSizing(500, 500)));
+				new SimpleLiveObject<>(treeSize));
 		
 		view = new DLinearLayout(
 				DStyleClass.inline(new DStylesheetBuilder()

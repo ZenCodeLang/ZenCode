@@ -10,6 +10,7 @@ import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
+import org.openzen.drawablegui.DScalableSize;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveInt;
@@ -17,6 +18,7 @@ import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.drawablegui.live.SimpleLiveInt;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DSubSurface;
+import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
@@ -37,7 +39,8 @@ public class DScrollPane implements DComponent, DScrollContext {
 	private final LiveInt offsetX;
 	private final LiveInt offsetY;
 	
-	private final LiveObject<DSizing> sizing;
+	private final SimpleLiveObject<DSizing> sizing = new SimpleLiveObject<>(DSizing.EMPTY);
+	private final LiveObject<DScalableSize> size;
 	
 	private final ListenerHandle<LiveInt.Listener> contentsHeightListener;
 	private final ListenerHandle<LiveInt.Listener> offsetXListener;
@@ -48,8 +51,8 @@ public class DScrollPane implements DComponent, DScrollContext {
 	
 	private DSubSurface subSurface;
 	
-	public DScrollPane(DStyleClass styleClass, DComponent contents, LiveObject<DSizing> sizing) {
-		this.sizing = sizing;
+	public DScrollPane(DStyleClass styleClass, DComponent contents, LiveObject<DScalableSize> size) {
+		this.size = size;
 		this.styleClass = styleClass;
 		this.contents = contents;
 		
@@ -81,6 +84,10 @@ public class DScrollPane implements DComponent, DScrollContext {
 		DComponentContext newContext = new DComponentContext(this, context.path, 0, subSurface);
 		contents.mount(newContext);
 		scrollBar.mount(context);
+		
+		sizing.setValue(new DSizing(
+				size.getValue().width.evalInt(parent.getUIContext()),
+				size.getValue().height.evalInt(parent.getUIContext())));
 	}
 	
 	@Override
