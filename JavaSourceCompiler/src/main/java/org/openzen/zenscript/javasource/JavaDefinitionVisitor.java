@@ -76,7 +76,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		DefinitionTypeID thisType = typeRegistry.getForMyDefinition(definition);
 		
 		CompileScope scope = new CompileScope(module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
-		return new JavaSourceFileScope(file.importer, compiler.typeGenerator, compiler.helperGenerator, cls, scope, definition instanceof InterfaceDefinition, thisType);
+		return new JavaSourceFileScope(file.importer, compiler.helperGenerator, cls, scope, definition instanceof InterfaceDefinition, thisType, compiler.context);
 	}
 
 	@Override

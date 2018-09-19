@@ -125,7 +125,7 @@ public class Main {
 	}
 	
 	private static JavaModule compileSemanticToJava(SemanticModule module) {
-		JavaCompiler compiler = new JavaCompiler(false, null);
+		JavaCompiler compiler = new JavaCompiler(module.compilationUnit.globalTypeRegistry, false, null);
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			compiler.addDefinition(definition, module);
 		}

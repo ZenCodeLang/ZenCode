@@ -10,9 +10,9 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javasource.JavaSourceImporter;
 import org.openzen.zenscript.javasource.JavaSourceObjectTypeVisitor;
 import org.openzen.zenscript.javasource.JavaSourceSyntheticHelperGenerator;
-import org.openzen.zenscript.javasource.JavaSourceSyntheticTypeGenerator;
 import org.openzen.zenscript.javasource.JavaSourceTypeVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javasource.JavaSourceContext;
 
 /**
  *
@@ -20,7 +20,6 @@ import org.openzen.zenscript.javashared.JavaClass;
  */
 public class JavaSourceFileScope {
 	public final JavaSourceImporter importer;
-	public final JavaSourceSyntheticTypeGenerator typeGenerator;
 	public final JavaSourceSyntheticHelperGenerator helperGenerator;
 	public final JavaClass cls;
 	public final JavaSourceTypeVisitor typeVisitor;
@@ -28,25 +27,26 @@ public class JavaSourceFileScope {
 	public final TypeScope semanticScope;
 	public final boolean isInterface;
 	public final ITypeID thisType;
+	public final JavaSourceContext context;
 	
 	public JavaSourceFileScope(
 			JavaSourceImporter importer, 
-			JavaSourceSyntheticTypeGenerator typeGenerator,
 			JavaSourceSyntheticHelperGenerator helperGenerator,
 			JavaClass cls,
 			TypeScope semanticScope,
 			boolean isInterface,
-			ITypeID thisType)
+			ITypeID thisType,
+			JavaSourceContext context)
 	{
 		this.importer = importer;
-		this.typeGenerator = typeGenerator;
 		this.helperGenerator = helperGenerator;
 		this.cls = cls;
 		this.semanticScope = semanticScope;
 		this.isInterface = isInterface;
 		this.thisType = thisType;
+		this.context = context;
 		
-		typeVisitor = new JavaSourceTypeVisitor(importer, typeGenerator);
+		typeVisitor = new JavaSourceTypeVisitor(importer, context);
 		objectTypeVisitor = typeVisitor.objectTypeVisitor;
 	}
 	
@@ -55,6 +55,6 @@ public class JavaSourceFileScope {
 	}
 	
 	public String type(ITypeID type, JavaClass rename) {
-		return type.accept(new JavaSourceTypeVisitor(importer, typeGenerator, rename));
+		return type.accept(new JavaSourceTypeVisitor(importer, context, rename));
 	}
 }

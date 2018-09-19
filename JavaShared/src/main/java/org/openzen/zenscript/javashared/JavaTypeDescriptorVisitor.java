@@ -6,17 +6,17 @@ import org.openzen.zenscript.codemodel.type.*;
 
 public class JavaTypeDescriptorVisitor implements ITypeVisitor<String> {
 	private final JavaTypeDescriptorVisitor forOptional;
-	private final JavaSyntheticClassGenerator generator;
+	private final JavaContext context;
 	private final boolean optional;
 	
-	public JavaTypeDescriptorVisitor(JavaSyntheticClassGenerator generator) {
-		this(generator, false);
+	public JavaTypeDescriptorVisitor(JavaContext context) {
+		this(context, false);
 	}
 	
-	private JavaTypeDescriptorVisitor(JavaSyntheticClassGenerator generator, boolean optional) {
+	private JavaTypeDescriptorVisitor(JavaContext context, boolean optional) {
 		this.optional = optional;
-		this.generator = generator;
-		forOptional = optional ? this : new JavaTypeDescriptorVisitor(generator, true);
+		this.context = context;
+		forOptional = optional ? this : new JavaTypeDescriptorVisitor(context, true);
 	}
 	
     @Override
@@ -85,7 +85,7 @@ public class JavaTypeDescriptorVisitor implements ITypeVisitor<String> {
 
     @Override
     public String visitFunction(FunctionTypeID function) {
-        return "L" + generator.synthesizeFunction(function).cls.internalName + ";";
+        return "L" + context.getFunction(function).getCls().internalName + ";";
     }
 
     @Override
@@ -110,7 +110,7 @@ public class JavaTypeDescriptorVisitor implements ITypeVisitor<String> {
 
     @Override
     public String visitRange(RangeTypeID range) {
-		return "L" + generator.synthesizeRange(range).cls.internalName + ";";
+		return "L" + context.getRange(range).cls.internalName + ";";
     }
 
     @Override

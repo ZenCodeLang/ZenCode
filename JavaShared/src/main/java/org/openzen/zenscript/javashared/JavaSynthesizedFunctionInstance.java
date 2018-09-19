@@ -11,12 +11,20 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  *
  * @author Hoofdgebruiker
  */
-public class JavaSynthesizedClass {
-	public final JavaClass cls;
+public class JavaSynthesizedFunctionInstance {
+	private final JavaSynthesizedFunction function;
 	public final ITypeID[] typeArguments;
 	
-	public JavaSynthesizedClass(JavaClass cls, ITypeID[] typeArguments) {
-		this.cls = cls;
+	public JavaSynthesizedFunctionInstance(JavaSynthesizedFunction function, ITypeID[] typeArguments) {
+		this.function = function;
 		this.typeArguments = typeArguments;
+	}
+	
+	public JavaClass getCls() {
+		return function.cls;
+	}
+	
+	public String getMethod() {
+		return function.method;
 	}
 }

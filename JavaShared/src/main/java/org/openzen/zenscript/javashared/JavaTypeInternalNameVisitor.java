@@ -6,17 +6,17 @@ import org.openzen.zenscript.codemodel.type.*;
 
 public class JavaTypeInternalNameVisitor implements ITypeVisitor<String> {
 	private final JavaTypeInternalNameVisitor forOptional;
-	private final JavaSyntheticClassGenerator generator;
+	private final JavaContext context;
 	private final boolean optional;
 	
-	public JavaTypeInternalNameVisitor(JavaSyntheticClassGenerator generator) {
-		this(generator, false);
+	public JavaTypeInternalNameVisitor(JavaContext context) {
+		this(context, false);
 	}
 	
-	private JavaTypeInternalNameVisitor(JavaSyntheticClassGenerator generator, boolean optional) {
+	private JavaTypeInternalNameVisitor(JavaContext context, boolean optional) {
 		this.optional = optional;
-		this.generator = generator;
-		forOptional = optional ? this : new JavaTypeInternalNameVisitor(generator, true);
+		this.context = context;
+		forOptional = optional ? this : new JavaTypeInternalNameVisitor(context, true);
 	}
 	
     @Override
@@ -80,7 +80,7 @@ public class JavaTypeInternalNameVisitor implements ITypeVisitor<String> {
 
     @Override
     public String visitFunction(FunctionTypeID function) {
-        return generator.synthesizeFunction(function).cls.internalName;
+        return context.getFunction(function).getCls().internalName;
     }
 
     @Override
@@ -101,7 +101,7 @@ public class JavaTypeInternalNameVisitor implements ITypeVisitor<String> {
 
     @Override
     public String visitRange(RangeTypeID range) {
-		return generator.synthesizeRange(range).cls.internalName;
+		return context.getRange(range).cls.internalName;
     }
 
     @Override

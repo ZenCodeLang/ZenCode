@@ -87,6 +87,7 @@ import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -98,6 +99,7 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaNativeTranslator;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaSynthesizedFunctionInstance;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 /**
@@ -1196,8 +1198,9 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case ARRAY_NOTSAME: return binary(call, JavaOperator.NOTEQUALS);
 			case FUNCTION_CALL: {
 				StringBuilder output = new StringBuilder();
+				JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)call.target.type);
 				output.append(call.target.accept(this).value);
-				output.append(".invoke(");
+				output.append(".").append(function.getMethod()).append("(");
 				int i = 0;
 				for (Expression argument : call.arguments.arguments) {
 					if (i > 0)
@@ -1702,6 +1705,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							throw new UnsupportedOperationException("Not yet supported!");
 						}
 					} else {
+						JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)lambda.type);
 						target.writeLine(new StringBuilder()
 								.append(scope.settings.indent)
 								.append(temp)
@@ -1709,7 +1713,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 								.append(tempI.name)
 								.append("] = ")
 								.append(lambdaString.value)
-								.append(".invoke(")
+								.append(".").append(function.getMethod()).append("(")
 								.append(tempI.name)
 								.append(");")
 								.toString());
@@ -1776,6 +1780,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							throw new UnsupportedOperationException("Not yet supported!");
 						}
 					} else {
+						JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)lambda.type);
 						target.writeLine(new StringBuilder()
 								.append(scope.settings.indent)
 								.append(temp)
@@ -1783,7 +1788,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 								.append(tempI.name)
 								.append("] = ")
 								.append(lambdaString.value)
-								.append(".invoke(")
+								.append(".").append(function.getMethod()).append("(")
 								.append(originalString.value)
 								.append("[")
 								.append(tempI.name)
@@ -1854,6 +1859,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							throw new UnsupportedOperationException("Not yet supported!");
 						}
 					} else {
+						JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)lambda.type);
 						target.writeLine(new StringBuilder()
 								.append(scope.settings.indent)
 								.append(temp)
@@ -1861,7 +1867,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 								.append(tempI.name)
 								.append("] = ")
 								.append(lambdaString.value)
-								.append(".invoke(")
+								.append(".").append(function.getMethod()).append("(")
 								.append(tempI.name)
 								.append(", ")
 								.append(originalString.value)

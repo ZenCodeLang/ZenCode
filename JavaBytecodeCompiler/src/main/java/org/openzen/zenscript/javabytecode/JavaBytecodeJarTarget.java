@@ -28,7 +28,7 @@ public class JavaBytecodeJarTarget implements Target {
 
 	@Override
 	public JavaCompiler createCompiler(SemanticModule module) {
-		return new JavaCompiler(debugCompiler, file);
+		return new JavaCompiler(module.compilationUnit.globalTypeRegistry, debugCompiler, file);
 	}
 
 	@Override
