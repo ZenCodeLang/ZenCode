@@ -7,6 +7,7 @@ package org.openzen.drawablegui.tree;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DColorableIconInstance;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
@@ -20,7 +21,6 @@ import org.openzen.drawablegui.DDrawableInstance;
 import org.openzen.drawablegui.Destructible;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveList;
@@ -38,6 +38,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	
 	private DComponentContext context;
 	private DIRectangle bounds = DIRectangle.EMPTY;
+	private float iconScale;
 	
 	private int selectedRow = -1;
 	private N selectedNode = null;
@@ -76,6 +77,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		context = parent.getChildContext("tree", styleClass);
 		style = context.getStyle(DTreeViewStyle::new);
 		fontMetrics = context.getFontMetrics(style.font);
+		iconScale = context.getUIContext().getScale() / 1.75f;
 		
 		background = context.fillRect(0, DIRectangle.EMPTY, style.backgroundColor);
 		selectedBackground = context.fillRect(1, DIRectangle.EMPTY, 0);
@@ -123,7 +125,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		int rowIndex = yToRow(e.y);
 		if (rowIndex >= 0 && rowIndex < rows.size()) {
 			Row rowEntry = rows.get(rowIndex);
-			if (e.x >= rowEntry.x && e.x < (rowEntry.x + nodeOpenedIcon.getNominalWidth())) {
+			if (e.x >= rowEntry.x && e.x < (rowEntry.x + getIconWidth(nodeOpenedIcon))) {
 				if (!rowEntry.node.isLeaf())
 					rowEntry.node.isCollapsed().toggle();
 				return;
@@ -142,15 +144,15 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 				int selectionY = bounds.y + style.padding + rowIndex * (style.rowSpacing + fontMetrics.getAscent() + fontMetrics.getDescent()) - style.selectedPaddingTop;
 				int selectionWidth = (int)(fontMetrics.getWidth(row.node.getTitle())
 						+ style.iconTextSpacing
-						+ row.icon.getNominalWidth()
+						+ getIconWidth(row.icon)
 						+ style.iconTextSpacing
-						+ row.node.getIcon().getNominalWidth()
+						+ getIconWidth(row.node.getIcon())
 						+ style.selectedPaddingLeft
 						+ style.selectedPaddingRight);
 				int selectionHeight = fontMetrics.getAscent() + fontMetrics.getDescent() + style.selectedPaddingTop + style.selectedPaddingBottom;
 				
 				if (row.node.isLeaf()) {
-					int delta = (int)(row.icon.getNominalWidth() + style.iconTextSpacing);
+					int delta = (int)(getIconWidth(row.icon) + style.iconTextSpacing);
 					selectionX += delta;
 					selectionWidth -= delta;
 				}
@@ -179,6 +181,22 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	
 	private int yToRow(int y) {
 		return (y - bounds.y - style.padding) / (style.rowSpacing + fontMetrics.getAscent() + fontMetrics.getDescent());
+	}
+	
+	private float getIconWidth(DDrawable drawable) {
+		return drawable.getNominalWidth() * iconScale;
+	}
+	
+	private float getIconHeight(DDrawable drawable) {
+		return drawable.getNominalHeight() * iconScale; 
+	}
+	
+	private float getIconWidth(DColorableIcon icon) {
+		return icon.getNominalWidth() * iconScale;
+	}
+	
+	private float getIconHeight(DColorableIcon icon) {
+		return icon.getNominalHeight() * iconScale; 
 	}
 	
 	private void updateLayout() {
@@ -264,7 +282,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 					context.surface,
 					context.z + 2,
 					node.getIcon(),
-					DTransform2D.translate(baseX + icon.getNominalWidth() + style.iconTextSpacing, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()),
+					DTransform2D.scaleAndTranslate(baseX + getIconWidth(icon) + style.iconTextSpacing, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - getIconHeight(icon), iconScale),
 					node == selectedNode ? style.selectedNodeTextColor : style.nodeTextColor);
 			
 			if (!node.isLeaf())
@@ -272,13 +290,13 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 						context.surface, 
 						context.z + 2,
 						icon,
-						DTransform2D.translate(baseX, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
+						DTransform2D.scaleAndTranslate(baseX, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - getIconHeight(icon), iconScale));
 			
 			text = context.drawText(
 					2,
 					style.font,
 					node == selectedNode ? style.selectedNodeTextColor : style.nodeTextColor,
-					baseX + style.iconTextSpacing + icon.getNominalWidth() + style.iconTextSpacing + node.getIcon().getNominalWidth(),
+					baseX + style.iconTextSpacing + getIconWidth(icon) + style.iconTextSpacing + getIconWidth(node.getIcon()),
 					baseY + fontMetrics.getAscent(),
 					node.getTitle());
 		}
@@ -288,15 +306,17 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			int baseY = (int)(bounds.y + style.padding + index * (fontMetrics.getAscent() + fontMetrics.getDescent() + style.rowSpacing));
 			
 			if (collapseIcon != null) {
-				collapseIcon.setTransform(DTransform2D.translate(
+				collapseIcon.setTransform(DTransform2D.scaleAndTranslate(
 						baseX,
-						baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
+						baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - getIconHeight(icon),
+						iconScale));
 			}
-			nodeIcon.setTransform(DTransform2D.translate(
-					baseX + icon.getNominalWidth() + style.iconTextSpacing,
-					baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
+			nodeIcon.setTransform(DTransform2D.scaleAndTranslate(
+					baseX + getIconWidth(icon) + style.iconTextSpacing,
+					baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - getIconHeight(icon),
+					iconScale));
 			text.setPosition(
-					baseX + style.iconTextSpacing + icon.getNominalWidth() + style.iconTextSpacing + node.getIcon().getNominalWidth(),
+					baseX + style.iconTextSpacing + getIconWidth(icon) + style.iconTextSpacing + getIconWidth(node.getIcon()),
 					baseY + fontMetrics.getAscent());
 		}
 

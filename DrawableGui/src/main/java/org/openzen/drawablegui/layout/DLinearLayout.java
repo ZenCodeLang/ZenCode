@@ -244,7 +244,7 @@ public class DLinearLayout extends BaseComponentGroup {
 				DSizing preferences = element.component.getSizing().getValue();
 				int newX = x + preferences.preferredWidth;
 				layoutHorizontal(element, x, newX - x);
-				x = newX;
+				x = newX + style.spacing;
 			}
 		} else {
 			float deltaScaled = delta / totalGrow;
@@ -269,7 +269,7 @@ public class DLinearLayout extends BaseComponentGroup {
 				DSizing preferences = element.component.getSizing().getValue();
 				int newY = y + preferences.preferredHeight;
 				layoutVertical(element, y, newY - y);
-				y = newY;
+				y = newY + style.spacing;
 			}
 		} else {
 			float deltaScaled = delta / totalGrow;

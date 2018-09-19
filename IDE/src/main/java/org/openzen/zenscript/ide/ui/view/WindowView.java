@@ -6,16 +6,15 @@
 package org.openzen.zenscript.ide.ui.view;
 
 import org.openzen.drawablegui.DEmptyView;
+import org.openzen.drawablegui.DScalableSize;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.border.DLineBorder;
 import org.openzen.drawablegui.scroll.DScrollPane;
 import org.openzen.drawablegui.layout.DSideLayout;
-import org.openzen.drawablegui.live.LiveArrayList;
 import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.MutableLiveList;
-import org.openzen.drawablegui.live.SimpleLiveInt;
 import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.live.SimpleLiveString;
+import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylesheetBuilder;
@@ -25,7 +24,6 @@ import org.openzen.zenscript.ide.ui.IDEDockWindow;
 import org.openzen.zenscript.ide.ui.IDEWindow;
 import org.openzen.zenscript.ide.ui.view.aspectbar.AspectBarView;
 import org.openzen.zenscript.ide.ui.view.editor.SourceEditor;
-import org.openzen.zenscript.ide.ui.view.output.OutputLine;
 import org.openzen.zenscript.ide.ui.view.output.OutputView;
 import org.openzen.zenscript.ide.ui.view.project.ProjectBrowser;
 
@@ -49,12 +47,12 @@ public final class WindowView extends DSideLayout {
 		
 		OutputView output = new OutputView(DStyleClass.EMPTY, window.output);
 		
+		DScalableSize outputSize = new DScalableSize(new DDpDimension(250), new DDpDimension(250));
 		DScrollPane scrollOutput = new DScrollPane(DStyleClass.inline(new DStylesheetBuilder()
-							//.border("border", context -> new DLineBorder(0xFF888888, 1))
 							.marginDp("margin", 3)
 							.color("backgroundColor", 0xFFFFFFFF)
 							.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
-							.build()), output, new SimpleLiveObject<>(new DSizing(400, 400)));
+							.build()), output, new SimpleLiveObject<>(outputSize));
 		
 		setMain(tabs = new TabbedView(DStyleClass.inline(new DStylesheetBuilder()
 				.marginDp("margin", 3)
@@ -71,13 +69,14 @@ public final class WindowView extends DSideLayout {
 		@Override
 		public void onOpen(IDESourceFile sourceFile) {
 			SourceEditor editor = new SourceEditor(DStyleClass.EMPTY, window, sourceFile);
+			DScalableSize size = new DScalableSize(new DDpDimension(280), new DDpDimension(280));
 			TabbedViewComponent tab = new TabbedViewComponent(
 					sourceFile.getName(),
 					null,
 					new DScrollPane(DStyleClass.inline(new DStylesheetBuilder()
 							.border("border", context -> new DLineBorder(0xFF888888, 1))
 							//.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
-							.build()), editor, new SimpleLiveObject<>(new DSizing(500, 500))),
+							.build()), editor, new SimpleLiveObject<>(size)),
 					editor.isUpdated());
 			tabs.tabs.add(tab);
 			tabs.currentTab.setValue(tab);
