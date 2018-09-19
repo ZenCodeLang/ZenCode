@@ -78,6 +78,7 @@ public enum ZSTokenType implements TokenType {
 	T_NOTEQUAL("!=", "!="),
 	T_NOT("!", "!"),
 	T_DOLLAR("$", "$"),
+	T_BACKTICK("`", "`"),
 	
 	K_IMPORT(true, "import"),
 	K_ALIAS(true, "alias"),

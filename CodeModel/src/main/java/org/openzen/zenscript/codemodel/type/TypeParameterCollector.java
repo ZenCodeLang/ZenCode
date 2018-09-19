@@ -24,6 +24,11 @@ public class TypeParameterCollector implements TypeVisitor<Void> {
 	public Void visitBasic(BasicTypeID basic) {
 		return null;
 	}
+	
+	@Override
+	public Void visitString(StringTypeID string) {
+		return null;
+	}
 
 	@Override
 	public Void visitArray(ArrayTypeID array) {

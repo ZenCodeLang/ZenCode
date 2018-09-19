@@ -105,14 +105,17 @@ public interface IParsedType {
 				tokens.next();
 				result = ParsedTypeBasic.CHAR;
 				break;
-			case K_STRING:
+			case K_STRING: {
 				tokens.next();
-				result = ParsedTypeBasic.STRING;
+				ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
+				result = new ParsedString(modifiers, storage);
 				break;
+			}
 			case K_FUNCTION: {
 				tokens.next();
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
-				result = new ParsedFunctionType(position, header);
+				ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
+				result = new ParsedFunctionType(position, header, storage);
 				break;
 			}
 			case T_IDENTIFIER: {
@@ -122,8 +125,8 @@ public interface IParsedType {
 					List<IParsedType> generic = parseGenericParameters(tokens);
 					name.add(new ParsedNamedType.ParsedNamePart(namePart, generic));
 				} while (tokens.optional(ZSTokenType.T_DOT) != null);
-				
-				result = new ParsedNamedType(position, name);
+				ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
+				result = new ParsedNamedType(position, name, storage);
 				break;
 			}
 			default:
@@ -145,17 +148,20 @@ public interface IParsedType {
 						dimension++;
 					
 					if (tokens.optional(ZSTokenType.T_SQCLOSE) != null) {
-						result = new ParsedTypeArray(result, dimension);
+						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
+						result = new ParsedTypeArray(result, dimension, storage);
 					} else if (tokens.isNext(T_LESS)) {
 						tokens.next();
 						ParsedTypeParameter parameter = ParsedTypeParameter.parse(tokens);
 						tokens.required(T_GREATER, "> expected");
-						result = new ParsedTypeGenericMap(parameter, result, modifiers);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
+						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
+						result = new ParsedTypeGenericMap(parameter, result, modifiers, storage);
 					} else {
 						IParsedType keyType = parse(tokens);
-						result = new ParsedTypeAssociative(keyType, result);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
+						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
+						result = new ParsedTypeAssociative(keyType, result, storage);
 					}
 					break;
 				case T_QUEST:

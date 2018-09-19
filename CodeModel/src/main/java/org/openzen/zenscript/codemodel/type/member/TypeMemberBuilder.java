@@ -71,6 +71,7 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
@@ -163,11 +164,34 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 			case CHAR:
 				visitChar();
 				break;
-			case STRING:
-				visitString();
-				break;
 		}
 		
+		return null;
+	}
+	
+	@Override
+	public Void visitString(StringTypeID string) {
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "string", Modifiers.EXPORT, null);
+		
+		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, registry.getArray(CHAR, 1));
+		
+		add(builtin, STRING_ADD_STRING, StringTypeID.BORROW, StringTypeID.UNIQUE);
+		indexGet(builtin, STRING_INDEXGET, USIZE, CHAR);
+		indexGet(builtin, STRING_RANGEGET, RangeTypeID.USIZE, StringTypeID.UNIQUE);
+		compare(builtin, STRING_COMPARE, StringTypeID.BORROW);
+		
+		getter(builtin, STRING_LENGTH, "length", USIZE);
+		getter(builtin, STRING_CHARACTERS, "characters", registry.getArray(CHAR, 1));
+		getter(builtin, STRING_ISEMPTY, "isEmpty", BOOL);
+
+		method(builtin, STRING_REMOVE_DIACRITICS, "removeDiacritics", StringTypeID.BORROW);
+		method(builtin, STRING_TRIM, "trim", StringTypeID.BORROW, StringTypeID.UNIQUE);
+		method(builtin, STRING_TO_LOWER_CASE, "toLowerCase", StringTypeID.UNIQUE);
+		method(builtin, STRING_TO_UPPER_CASE, "toUpperCase", StringTypeID.UNIQUE);
+		
+		iterator(builtin, ITERATOR_STRING_CHARS, CHAR);
+		
+		processType(builtin, string);
 		return null;
 	}
 
@@ -464,7 +488,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		}
 		
 		if (definition instanceof EnumDefinition) {
-			getter(definition, ENUM_NAME, "name", STRING);
+			getter(definition, ENUM_NAME, "name", StringTypeID.STATIC);
 			getter(definition, ENUM_ORDINAL, "ordinal", USIZE);
 			
 			List<EnumConstantMember> enumConstants = ((EnumDefinition) definition).enumConstants;
@@ -475,8 +499,8 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 			constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(type, 1)));
 			compare(definition, ENUM_COMPARE, type);
 			
-			if (!members.canCast(BasicTypeID.STRING)) {
-				castImplicit(definition, ENUM_TO_STRING, STRING);
+			if (!members.canCast(StringTypeID.STATIC)) {
+				castImplicit(definition, ENUM_TO_STRING, StringTypeID.STATIC);
 			}
 		}
 		
@@ -556,8 +580,8 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		equals(builtin, BOOL_EQUALS, BOOL);
 		notequals(builtin, BOOL_NOTEQUALS, BOOL);
 		
-		castExplicit(builtin, BOOL_TO_STRING, STRING);
-		staticMethod(builtin, BOOL_PARSE, "parse", BOOL, STRING);
+		castExplicit(builtin, BOOL_TO_STRING, StringTypeID.STATIC);
+		staticMethod(builtin, BOOL_PARSE, "parse", BOOL, StringTypeID.BORROW);
 		
 		processType(builtin, BOOL);
 	}
@@ -591,10 +615,10 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, BYTE_TO_FLOAT, FLOAT);
 		castImplicit(builtin, BYTE_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, BYTE_TO_CHAR, CHAR);
-		castImplicit(builtin, BYTE_TO_STRING, STRING);
+		castImplicit(builtin, BYTE_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, BYTE_PARSE, "parse", BYTE, STRING);
-		staticMethod(builtin, BYTE_PARSE_WITH_BASE, "parse", BYTE, STRING, INT);
+		staticMethod(builtin, BYTE_PARSE, "parse", BYTE, StringTypeID.BORROW);
+		staticMethod(builtin, BYTE_PARSE_WITH_BASE, "parse", BYTE, StringTypeID.BORROW, INT);
 		
 		constant(builtin, BYTE_GET_MIN_VALUE, "MIN_VALUE", new ConstantByteExpression(BUILTIN, 0));
 		constant(builtin, BYTE_GET_MAX_VALUE, "MAX_VALUE", new ConstantByteExpression(BUILTIN, 255));
@@ -633,10 +657,10 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, SBYTE_TO_FLOAT, FLOAT);
 		castImplicit(builtin, SBYTE_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, SBYTE_TO_CHAR, CHAR);
-		castImplicit(builtin, SBYTE_TO_STRING, STRING);
+		castImplicit(builtin, SBYTE_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, SBYTE_PARSE, "parse", SBYTE, STRING);
-		staticMethod(builtin, SBYTE_PARSE_WITH_BASE, "parse", SBYTE, STRING, INT);
+		staticMethod(builtin, SBYTE_PARSE, "parse", SBYTE, StringTypeID.BORROW);
+		staticMethod(builtin, SBYTE_PARSE_WITH_BASE, "parse", SBYTE, StringTypeID.BORROW, INT);
 		
 		constant(builtin, SBYTE_GET_MIN_VALUE, "MIN_VALUE", new ConstantSByteExpression(BUILTIN, Byte.MIN_VALUE));
 		constant(builtin, SBYTE_GET_MAX_VALUE, "MAX_VALUE", new ConstantSByteExpression(BUILTIN, Byte.MAX_VALUE));
@@ -675,10 +699,10 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, SHORT_TO_FLOAT, FLOAT);
 		castImplicit(builtin, SHORT_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, SHORT_TO_CHAR, CHAR);
-		castImplicit(builtin, SHORT_TO_STRING, STRING);
+		castImplicit(builtin, SHORT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, SHORT_PARSE, "parse", SHORT, STRING);
-		staticMethod(builtin, SHORT_PARSE_WITH_BASE, "parse", SHORT, STRING, INT);
+		staticMethod(builtin, SHORT_PARSE, "parse", SHORT, StringTypeID.BORROW);
+		staticMethod(builtin, SHORT_PARSE_WITH_BASE, "parse", SHORT, StringTypeID.BORROW, INT);
 		
 		constant(builtin, SHORT_GET_MIN_VALUE, "MIN_VALUE", new ConstantShortExpression(BUILTIN, Short.MIN_VALUE));
 		constant(builtin, SHORT_GET_MAX_VALUE, "MAX_VALUE", new ConstantShortExpression(BUILTIN, Short.MAX_VALUE));
@@ -715,10 +739,10 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, USHORT_TO_FLOAT, FLOAT);
 		castImplicit(builtin, USHORT_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, USHORT_TO_CHAR, CHAR);
-		castImplicit(builtin, USHORT_TO_STRING, STRING);
+		castImplicit(builtin, USHORT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, USHORT_PARSE, "parse", USHORT, STRING);
-		staticMethod(builtin, USHORT_PARSE_WITH_BASE, "parse", USHORT, STRING, INT);
+		staticMethod(builtin, USHORT_PARSE, "parse", USHORT, StringTypeID.BORROW);
+		staticMethod(builtin, USHORT_PARSE_WITH_BASE, "parse", USHORT, StringTypeID.BORROW, INT);
 		
 		constant(builtin, USHORT_GET_MIN_VALUE, "MIN_VALUE", new ConstantUShortExpression(BUILTIN, 0));
 		constant(builtin, USHORT_GET_MAX_VALUE, "MAX_VALUE", new ConstantUShortExpression(BUILTIN, 65535));
@@ -787,10 +811,10 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, INT_TO_FLOAT, FLOAT);
 		castImplicit(builtin, INT_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, INT_TO_CHAR, CHAR);
-		castImplicit(builtin, INT_TO_STRING, STRING);
+		castImplicit(builtin, INT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, INT_PARSE, "parse", INT, STRING);
-		staticMethod(builtin, INT_PARSE_WITH_BASE, "parse", INT, STRING, INT);
+		staticMethod(builtin, INT_PARSE, "parse", INT, StringTypeID.BORROW);
+		staticMethod(builtin, INT_PARSE_WITH_BASE, "parse", INT, StringTypeID.BORROW, INT);
 		
 		method(builtin, INT_COUNT_LOW_ZEROES, "countLowZeroes", INT);
 		method(builtin, INT_COUNT_HIGH_ZEROES, "countHighZeroes", INT);
@@ -866,10 +890,10 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, UINT_TO_FLOAT, FLOAT);
 		castImplicit(builtin, UINT_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, UINT_TO_CHAR, CHAR);
-		castImplicit(builtin, UINT_TO_STRING, STRING);
+		castImplicit(builtin, UINT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, UINT_PARSE, "parse", UINT, STRING);
-		staticMethod(builtin, UINT_PARSE_WITH_BASE, "parse", UINT, STRING, INT);
+		staticMethod(builtin, UINT_PARSE, "parse", UINT, StringTypeID.BORROW);
+		staticMethod(builtin, UINT_PARSE_WITH_BASE, "parse", UINT, StringTypeID.BORROW, INT);
 		
 		method(builtin, UINT_COUNT_LOW_ZEROES, "countLowZeroes", UINT);
 		method(builtin, UINT_COUNT_HIGH_ZEROES, "countHighZeroes", UINT);
@@ -939,10 +963,10 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, LONG_TO_FLOAT, FLOAT);
 		castImplicit(builtin, LONG_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, LONG_TO_CHAR, CHAR);
-		castImplicit(builtin, LONG_TO_STRING, STRING);
+		castImplicit(builtin, LONG_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, LONG_PARSE, "parse", LONG, STRING);
-		staticMethod(builtin, LONG_PARSE_WITH_BASE, "parse", LONG, STRING, INT);
+		staticMethod(builtin, LONG_PARSE, "parse", LONG, StringTypeID.BORROW);
+		staticMethod(builtin, LONG_PARSE_WITH_BASE, "parse", LONG, StringTypeID.BORROW, INT);
 		
 		method(builtin, LONG_COUNT_LOW_ZEROES, "countLowZeroes", INT);
 		method(builtin, LONG_COUNT_HIGH_ZEROES, "countHighZeroes", INT);
@@ -1011,10 +1035,10 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, ULONG_TO_FLOAT, FLOAT);
 		castImplicit(builtin, ULONG_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, ULONG_TO_CHAR, CHAR);
-		castImplicit(builtin, ULONG_TO_STRING, STRING);
+		castImplicit(builtin, ULONG_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, ULONG_PARSE, "parse", ULONG, STRING);
-		staticMethod(builtin, ULONG_PARSE_WITH_BASE, "parse", ULONG, STRING, INT);
+		staticMethod(builtin, ULONG_PARSE, "parse", ULONG, StringTypeID.BORROW);
+		staticMethod(builtin, ULONG_PARSE_WITH_BASE, "parse", ULONG, StringTypeID.BORROW, INT);
 		
 		method(builtin, ULONG_COUNT_LOW_ZEROES, "countLowZeroes", INT);
 		method(builtin, ULONG_COUNT_HIGH_ZEROES, "countHighZeroes", INT);
@@ -1088,10 +1112,10 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, USIZE_TO_FLOAT, FLOAT);
 		castImplicit(builtin, USIZE_TO_DOUBLE, DOUBLE);
 		castExplicit(builtin, USIZE_TO_CHAR, CHAR);
-		castImplicit(builtin, USIZE_TO_STRING, STRING);
+		castImplicit(builtin, USIZE_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, USIZE_PARSE, "parse", USIZE, STRING);
-		staticMethod(builtin, USIZE_PARSE_WITH_BASE, "parse", USIZE, STRING, INT);
+		staticMethod(builtin, USIZE_PARSE, "parse", USIZE, StringTypeID.BORROW);
+		staticMethod(builtin, USIZE_PARSE_WITH_BASE, "parse", USIZE, StringTypeID.BORROW, INT);
 		
 		method(builtin, USIZE_COUNT_LOW_ZEROES, "countLowZeroes", INT);
 		method(builtin, USIZE_COUNT_HIGH_ZEROES, "countHighZeroes", INT);
@@ -1143,9 +1167,9 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, FLOAT_TO_ULONG, ULONG);
 		castExplicit(builtin, FLOAT_TO_USIZE, USIZE);
 		castImplicit(builtin, FLOAT_TO_DOUBLE, DOUBLE);
-		castImplicit(builtin, FLOAT_TO_STRING, STRING);
+		castImplicit(builtin, FLOAT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, FLOAT_PARSE, "parse", FLOAT, STRING);
+		staticMethod(builtin, FLOAT_PARSE, "parse", FLOAT, StringTypeID.BORROW);
 		staticMethod(builtin, FLOAT_FROM_BITS, "fromBits", FLOAT, UINT);
 		
 		getter(builtin, FLOAT_BITS, "bits", UINT);
@@ -1179,9 +1203,9 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, DOUBLE_TO_ULONG, ULONG);
 		castExplicit(builtin, DOUBLE_TO_USIZE, USIZE);
 		castImplicit(builtin, DOUBLE_TO_FLOAT, FLOAT);
-		castImplicit(builtin, DOUBLE_TO_STRING, STRING);
+		castImplicit(builtin, DOUBLE_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, DOUBLE_PARSE, "parse", DOUBLE, STRING);
+		staticMethod(builtin, DOUBLE_PARSE, "parse", DOUBLE, StringTypeID.BORROW);
 		staticMethod(builtin, DOUBLE_FROM_BITS, "fromBits", DOUBLE, ULONG);
 		
 		getter(builtin, DOUBLE_BITS, "bits", ULONG);
@@ -1206,7 +1230,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, CHAR_TO_LONG, LONG);
 		castImplicit(builtin, CHAR_TO_ULONG, ULONG);
 		castImplicit(builtin, CHAR_TO_USIZE, USIZE);
-		castImplicit(builtin, CHAR_TO_STRING, STRING);
+		castImplicit(builtin, CHAR_TO_STRING, StringTypeID.UNIQUE);
 		
 		getter(builtin, CHAR_GET_MIN_VALUE, "MIN_VALUE", CHAR);
 		getter(builtin, CHAR_GET_MAX_VALUE, "MAX_VALUE", CHAR);
@@ -1216,30 +1240,6 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		method(builtin, CHAR_TO_UPPER_CASE, "toUpperCase", CHAR);
 		
 		processType(builtin, CHAR);
-	}
-
-	private void visitString() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "string", Modifiers.EXPORT, null);
-		
-		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, registry.getArray(CHAR, 1));
-		
-		add(builtin, STRING_ADD_STRING, STRING, STRING);
-		indexGet(builtin, STRING_INDEXGET, USIZE, CHAR);
-		indexGet(builtin, STRING_RANGEGET, RangeTypeID.USIZE, STRING);
-		compare(builtin, STRING_COMPARE, STRING);
-		
-		getter(builtin, STRING_LENGTH, "length", USIZE);
-		getter(builtin, STRING_CHARACTERS, "characters", registry.getArray(CHAR, 1));
-		getter(builtin, STRING_ISEMPTY, "isEmpty", BOOL);
-
-		method(builtin, STRING_REMOVE_DIACRITICS, "removeDiacritics", STRING);
-		method(builtin, STRING_TRIM, "trim", STRING, STRING);
-		method(builtin, STRING_TO_LOWER_CASE, "toLowerCase", STRING);
-		method(builtin, STRING_TO_UPPER_CASE, "toUpperCase", STRING);
-		
-		iterator(builtin, ITERATOR_STRING_CHARS, CHAR);
-		
-		processType(builtin, STRING);
 	}
 	
 	private void castedTargetCall(OperatorMember member, ITypeID toType, BuiltinID casterBuiltin) {

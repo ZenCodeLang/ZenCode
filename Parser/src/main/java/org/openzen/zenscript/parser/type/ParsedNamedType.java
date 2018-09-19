@@ -25,17 +25,20 @@ public class ParsedNamedType implements IParsedType {
 	private final CodePosition position;
 	private final int modifiers;
 	public final List<ParsedNamePart> name;
+	private final ParsedStorageTag storage;
 	
-	public ParsedNamedType(CodePosition position, List<ParsedNamePart> name) {
+	public ParsedNamedType(CodePosition position, List<ParsedNamePart> name, ParsedStorageTag storage) {
 		this.position = position;
 		this.modifiers = 0;
 		this.name = name;
+		this.storage = storage;
 	}
 	
-	private ParsedNamedType(CodePosition position, int modifiers, List<ParsedNamePart> name) {
+	private ParsedNamedType(CodePosition position, int modifiers, List<ParsedNamePart> name, ParsedStorageTag storage) {
 		this.position = position;
 		this.modifiers = modifiers;
 		this.name = name;
+		this.storage = storage;
 	}
 	
 	@Override
@@ -60,12 +63,12 @@ public class ParsedNamedType implements IParsedType {
 	
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedNamedType(position, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, name);
+		return new ParsedNamedType(position, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, name, storage);
 	}
 	
 	@Override
 	public IParsedType withModifiers(int modifiers) {
-		return new ParsedNamedType(position, this.modifiers | modifiers, name);
+		return new ParsedNamedType(position, this.modifiers | modifiers, name, storage);
 	}
 	
 	@Override

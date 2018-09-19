@@ -28,7 +28,6 @@ public enum ParsedTypeBasic implements IParsedType {
 	FLOAT(BasicTypeID.FLOAT),
 	DOUBLE(BasicTypeID.DOUBLE),
 	CHAR(BasicTypeID.CHAR),
-	STRING(BasicTypeID.STRING),
 	
 	UNDETERMINED(BasicTypeID.UNDETERMINED);
 	

@@ -8,8 +8,6 @@ package org.openzen.zenscript.parser.type;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 
 /**
@@ -20,27 +18,30 @@ public class ParsedTypeAssociative implements IParsedType {
 	public final IParsedType key;
 	public final IParsedType value;
 	public final int modifiers;
+	private final ParsedStorageTag storage;
 	
-	public ParsedTypeAssociative(IParsedType key, IParsedType value) {
+	public ParsedTypeAssociative(IParsedType key, IParsedType value, ParsedStorageTag storage) {
 		this.key = key;
 		this.value = value;
 		this.modifiers = 0;
+		this.storage = storage;
 	}
 
-	private ParsedTypeAssociative(IParsedType key, IParsedType value, int modifiers) {
+	private ParsedTypeAssociative(IParsedType key, IParsedType value, int modifiers, ParsedStorageTag storage) {
 		this.key = key;
 		this.value = value;
 		this.modifiers = modifiers;
+		this.storage = storage;
 	}
 	
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedTypeAssociative(key, value, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL);
+		return new ParsedTypeAssociative(key, value, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storage);
 	}
 
 	@Override
 	public IParsedType withModifiers(int modifiers) {
-		return new ParsedTypeAssociative(key, value, this.modifiers | modifiers);
+		return new ParsedTypeAssociative(key, value, this.modifiers | modifiers, storage);
 	}
 
 	@Override

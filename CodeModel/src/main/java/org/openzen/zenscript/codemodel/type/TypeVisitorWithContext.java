@@ -12,6 +12,8 @@ package org.openzen.zenscript.codemodel.type;
 public interface TypeVisitorWithContext<C, R> {
 	R visitBasic(C context, BasicTypeID basic);
 	
+	R visitString(C context, StringTypeID string);
+	
 	R visitArray(C context, ArrayTypeID array);
 	
 	R visitAssoc(C context, AssocTypeID assoc);

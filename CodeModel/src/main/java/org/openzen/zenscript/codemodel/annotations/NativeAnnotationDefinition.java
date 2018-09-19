@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 
 /**
  *
@@ -31,7 +32,7 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	public static final NativeAnnotationDefinition INSTANCE = new NativeAnnotationDefinition();
 	
 	private static final List<FunctionHeader> INITIALIZERS = Collections.singletonList(
-			new FunctionHeader(BasicTypeID.VOID, BasicTypeID.STRING));
+			new FunctionHeader(BasicTypeID.VOID, StringTypeID.UNIQUE));
 	
 	private NativeAnnotationDefinition() {}
 

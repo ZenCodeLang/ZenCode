@@ -27,6 +27,7 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 
 /**
  *
@@ -52,7 +53,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 				BasicTypeID.VOID,
 				scope.getType(CodePosition.BUILTIN, enforcementLevelName),
 				BasicTypeID.BOOL,
-				BasicTypeID.STRING));
+				StringTypeID.UNIQUE));
 	}
 
 	@Override

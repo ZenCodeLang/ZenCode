@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 
 /**
@@ -25,21 +24,23 @@ public class ParsedTypeGenericMap implements IParsedType {
 	private final ParsedTypeParameter key;
 	private final IParsedType value;
 	private final int modifiers;
+	private final ParsedStorageTag storage;
 	
-	public ParsedTypeGenericMap(ParsedTypeParameter key, IParsedType value, int modifiers) {
+	public ParsedTypeGenericMap(ParsedTypeParameter key, IParsedType value, int modifiers, ParsedStorageTag storage) {
 		this.key = key;
 		this.value = value;
 		this.modifiers = modifiers;
+		this.storage = storage;
 	}
 
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedTypeGenericMap(key, value, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL);
+		return new ParsedTypeGenericMap(key, value, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storage);
 	}
 
 	@Override
 	public IParsedType withModifiers(int modifiers) {
-		return new ParsedTypeGenericMap(key, value, modifiers | this.modifiers);
+		return new ParsedTypeGenericMap(key, value, modifiers | this.modifiers, storage);
 	}
 
 	@Override

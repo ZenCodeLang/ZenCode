@@ -30,7 +30,6 @@ public enum BasicTypeID implements ITypeID {
 	FLOAT("float"),
 	DOUBLE("double"),
 	CHAR("char"),
-	STRING("string"),
 	
 	UNDETERMINED("undetermined");
 	
@@ -84,7 +83,7 @@ public enum BasicTypeID implements ITypeID {
 	
 	@Override
 	public boolean isObjectType() {
-		return this == STRING;
+		return false;
 	}
 
 	@Override

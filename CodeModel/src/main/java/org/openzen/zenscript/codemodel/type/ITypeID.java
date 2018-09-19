@@ -102,6 +102,11 @@ public interface ITypeID {
 		public Boolean visitBasic(BasicTypeID basic) {
 			return basic == type;
 		}
+		
+		@Override
+		public Boolean visitString(StringTypeID string) {
+			return string == type || (type instanceof StringTypeID && ((StringTypeID)type).storage == null);
+		}
 
 		@Override
 		public Boolean visitArray(ArrayTypeID array) {
