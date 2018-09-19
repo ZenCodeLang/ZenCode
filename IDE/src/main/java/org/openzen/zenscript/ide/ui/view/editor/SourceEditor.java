@@ -52,7 +52,6 @@ import org.openzen.zenscript.ide.ui.view.IconButtonControl;
  */
 public class SourceEditor implements DComponent {
 	private final DStyleClass styleClass;
-	private final DFont font = new DFont(DFontFamily.CODE, false, false, false, 24);
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final String tab = "    ";
 	private final IDESourceFile sourceFile;
@@ -65,6 +64,7 @@ public class SourceEditor implements DComponent {
 	private SourceEditorStyle style;
 	private DTimerHandle blinkTimer;
 	
+	private DFont font;
 	private DFontMetrics fontMetrics;
 	private int textLineHeight;
 	private int fullLineHeight;
@@ -140,6 +140,7 @@ public class SourceEditor implements DComponent {
 		
 		context = parent.getChildContext("sourceeditor", styleClass);
 		style = context.getStyle(SourceEditorStyle::new);
+		font = new DFont(DFontFamily.CODE, false, false, false, (int)(context.getScale() * 13.7 + 0.5f));
 		
 		fontMetrics = context.getFontMetrics(font);
 		textLineHeight = fontMetrics.getAscent() + fontMetrics.getDescent();

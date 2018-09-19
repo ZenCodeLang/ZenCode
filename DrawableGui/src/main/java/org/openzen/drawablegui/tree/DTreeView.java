@@ -20,7 +20,6 @@ import org.openzen.drawablegui.DDrawableInstance;
 import org.openzen.drawablegui.Destructible;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.live.LiveList;
