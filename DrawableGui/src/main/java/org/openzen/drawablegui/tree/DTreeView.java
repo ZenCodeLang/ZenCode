@@ -37,6 +37,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 	
 	private DComponentContext context;
 	private DIRectangle bounds = DIRectangle.EMPTY;
+	private float iconScale;
 	
 	private int selectedRow = -1;
 	private N selectedNode = null;
@@ -75,6 +76,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		context = parent.getChildContext("tree", styleClass);
 		style = context.getStyle(DTreeViewStyle::new);
 		fontMetrics = context.getFontMetrics(style.font);
+		iconScale = context.getUIContext().getScale() / 1.75f;
 		
 		background = context.fillRect(0, DIRectangle.EMPTY, style.backgroundColor);
 		selectedBackground = context.fillRect(1, DIRectangle.EMPTY, 0);
@@ -263,7 +265,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 					context.surface,
 					context.z + 2,
 					node.getIcon(),
-					DTransform2D.translate(baseX + icon.getNominalWidth() + style.iconTextSpacing, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()),
+					DTransform2D.scaleAndTranslate(baseX + icon.getNominalWidth() + style.iconTextSpacing, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight(), iconScale),
 					node == selectedNode ? style.selectedNodeTextColor : style.nodeTextColor);
 			
 			if (!node.isLeaf())
@@ -271,7 +273,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 						context.surface, 
 						context.z + 2,
 						icon,
-						DTransform2D.translate(baseX, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
+						DTransform2D.scaleAndTranslate(baseX, baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight(), iconScale));
 			
 			text = context.drawText(
 					2,
