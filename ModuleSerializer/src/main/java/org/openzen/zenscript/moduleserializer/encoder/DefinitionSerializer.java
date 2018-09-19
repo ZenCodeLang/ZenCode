@@ -10,6 +10,7 @@ import java.util.List;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
@@ -20,7 +21,6 @@ import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
@@ -48,6 +48,8 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 			flags |= DefinitionEncoding.FLAG_NAME;
 		if (definition.typeParameters.length > 0)
 			flags |= DefinitionEncoding.FLAG_TYPE_PARAMETERS;
+		if (definition.annotations.length > 0)
+			flags |= DefinitionEncoding.FLAG_ANNOTATIONS;
 		
 		output.writeUInt(flags);
 		output.writeUInt(definition.modifiers);
@@ -56,9 +58,19 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 		output.writeString(definition.pkg.fullName);
 		if (definition.name != null)
 			output.writeString(definition.name);
-		if (definition.typeParameters.length > 0) {
-			TypeContext typeContext = new TypeContext(context, TypeParameter.NONE, null);
+		
+		TypeContext typeContext = new TypeContext(context, definition.typeParameters, null);
+		if (definition.typeParameters.length > 0)
 			output.serialize(typeContext, definition.typeParameters);
+		
+		if (definition.annotations.length > 0) {
+			output.enqueueCode(output -> {
+				output.writeUInt(definition.annotations.length);
+				for (DefinitionAnnotation annotation : definition.annotations) {
+					output.write(annotation.getDefinition());
+					annotation.serialize(output, definition, typeContext);
+				}
+			});
 		}
 	}
 	

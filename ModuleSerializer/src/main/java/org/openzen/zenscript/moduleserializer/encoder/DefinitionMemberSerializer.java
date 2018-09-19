@@ -43,10 +43,6 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 	private EncodingDefinition visit(TypeContext context, HighLevelDefinition definition) {
 		EncodingDefinition encoding = definition.getTag(EncodingDefinition.class);
 		
-		for (DefinitionAnnotation annotation : definition.annotations) {
-			// TODO: how to serialize annotations?
-		}
-		
 		output.serialize(context, definition.getSuperType());
 		
 		output.writeUInt(encoding.members.size());

@@ -16,6 +16,7 @@ public class MemberEncoding {
 	public static final int FLAG_NAME = 2;
 	public static final int FLAG_AUTO_GETTER = 4;
 	public static final int FLAG_AUTO_SETTER = 8;
+	public static final int FLAG_ANNOTATIONS = 16;
 	
 	public static final int TYPE_BUILTIN = 1;
 	public static final int TYPE_CONST = 2;

@@ -6,10 +6,10 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -78,5 +78,10 @@ public class InnerDefinitionMember extends DefinitionMember {
 	@Override
 	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
 		throw new UnsupportedOperationException("Cannot create an inner definition reference");
+	}
+	
+	@Override
+	public FunctionHeader getHeader() {
+		return null;
 	}
 }

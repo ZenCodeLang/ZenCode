@@ -8,7 +8,7 @@ package org.openzen.zenscript.codemodel.serialization;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.context.ModuleContext;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -58,6 +58,8 @@ public interface CodeSerializationInput {
 	EnumConstantMember readEnumConstant(TypeContext context);
 	
 	VariantOptionRef readVariantOption(TypeContext context, ITypeID type);
+	
+	AnnotationDefinition readAnnotationType();
 	
 	ITypeID deserializeType(TypeContext context);
 	

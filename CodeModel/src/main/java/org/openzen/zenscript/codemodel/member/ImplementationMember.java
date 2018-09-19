@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.member;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -84,5 +85,10 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
 		throw new UnsupportedOperationException("Cannot create an implementation reference");
+	}
+
+	@Override
+	public FunctionHeader getHeader() {
+		return null;
 	}
 }

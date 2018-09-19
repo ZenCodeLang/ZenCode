@@ -75,10 +75,22 @@ public class ModuleDeserializer {
 		for (int i = 0; i < sourceFiles.length; i++)
 			sourceFiles[i] = new VirtualSourceFile(input.readString());
 		
+		AnnotationDefinition[] annotations = new AnnotationDefinition[input.readVarUInt()];
+		for (int i = 0; i < annotations.length; i++) {
+			String name = stringTable[input.readVarUInt()];
+			for (AnnotationDefinition annotation : this.annotations)
+				if (annotation.getAnnotationName().equals(name))
+					annotations[i] = annotation;
+			
+			if (annotations[i] == null)
+				throw new DeserializationException("Annotation type not found: " + name);
+		}
+		
 		CodeReader decoder = new CodeReader(
 				input,
 				stringTable,
 				sourceFiles,
+				annotations,
 				compilationUnit.globalTypeRegistry);
 		
 		DeserializingModule[] packagedModules = new DeserializingModule[decoder.readUInt()];
@@ -147,18 +159,14 @@ public class ModuleDeserializer {
 		@Override
 		public void decode(CodeSerializationInput input) throws DeserializationException {
 			int numDefinitions = input.readUInt();
-			DefinitionMemberDeserializer memberDeserializer = new DefinitionMemberDeserializer(reader);
 			for (int i = 0; i < numDefinitions; i++) {
 				HighLevelDefinition definition = deserializeDefinition(reader, module.context, null);
 				reader.add(definition);
 				module.add(definition);
-				
-				TypeContext typeContext = new TypeContext(module.context, definition.typeParameters, module.context.registry.getForMyDefinition(definition));
-				reader.members.enqueue(in -> definition.accept(typeContext, memberDeserializer));
 			}
 		}
 	}
-		
+	
 	private HighLevelDefinition deserializeDefinition(CodeReader reader, ModuleContext context, HighLevelDefinition outer) throws DeserializationException {
 		int type = reader.readUInt();
 		int flags = reader.readUInt();

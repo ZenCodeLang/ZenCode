@@ -16,6 +16,7 @@ import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -50,8 +51,7 @@ import org.openzen.zenscript.moduleserializer.encoder.TypeSerializer;
 public class CodeWriter implements CodeSerializationOutput {
 	private final Map<String, Integer> stringMap = new HashMap<>();
 	private final Map<SourceFile, Integer> sourceFileMap = new HashMap<>();
-	
-	private final List<HighLevelDefinition> definitions = new ArrayList<>();
+	private final Map<AnnotationDefinition, Integer> annotationMap = new HashMap<>();
 	private final Map<HighLevelDefinition, Integer> definitionsMap = new HashMap<>();
 	
 	private final Map<IDefinitionMember, Integer> memberMap = new HashMap<>();
@@ -78,7 +78,9 @@ public class CodeWriter implements CodeSerializationOutput {
 			SerializationOptions options,
 			String[] strings,
 			SourceFile[] sourceFiles,
-			List<IDefinitionMember> members)
+			HighLevelDefinition[] definitions,
+			List<IDefinitionMember> members,
+			AnnotationDefinition[] annotations)
 	{
 		this.output = output;
 		this.options = options;
@@ -93,8 +95,12 @@ public class CodeWriter implements CodeSerializationOutput {
 			stringMap.put(string, stringMap.size());
 		for (SourceFile sourceFile : sourceFiles)
 			sourceFileMap.put(sourceFile, sourceFileMap.size());
+		for (HighLevelDefinition definition : definitions)
+			definitionsMap.put(definition, definitionsMap.size());
 		for (IDefinitionMember member : members)
 			memberMap.put(member, memberMap.size());
+		for (AnnotationDefinition annotation : annotations)
+			annotationMap.put(annotation, annotationMap.size());
 	}
 	
 	public void startClasses() {
@@ -107,11 +113,6 @@ public class CodeWriter implements CodeSerializationOutput {
 	
 	public void startCode() {
 		currentStage = code;
-	}
-	
-	public void add(HighLevelDefinition definition) {
-		definitions.add(definition);
-		definitionsMap.put(definition, definitions.size());
 	}
 	
 	public void add(SourceFile file) {
@@ -198,7 +199,8 @@ public class CodeWriter implements CodeSerializationOutput {
 		if (!definitionsMap.containsKey(definition))
 			throw new IllegalStateException("Definition not yet prepared: " + definition.name);
 		
-		output.writeVarUInt(definitionsMap.get(definition) + 1);
+		int id = definitionsMap.get(definition) + 1;
+		output.writeVarUInt(id);
 	}
 	
 	@Override
@@ -233,6 +235,11 @@ public class CodeWriter implements CodeSerializationOutput {
 		HighLevelDefinition definition = option.getOption().variant;
 		write(definition);
 		writeUInt(definition.getTag(EncodingDefinition.class).variantOptions.indexOf(option));
+	}
+	
+	@Override
+	public void write(AnnotationDefinition annotationType) {
+		writeUInt(annotationMap.get(annotationType));
 	}
 	
 	@Override
@@ -280,9 +287,11 @@ public class CodeWriter implements CodeSerializationOutput {
 	
 	private void serializeRemaining(int flags, TypeContext context, TypeParameter parameter) {
 		if (currentStage == code || currentStage == members) {
-			output.writeVarUInt(parameter.bounds.size());
-			for (TypeParameterBound bound : parameter.bounds)
-				bound.accept(context, typeParameterEncoder);
+			if ((flags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {
+				writeUInt(parameter.bounds.size());
+				for (TypeParameterBound bound : parameter.bounds)
+					bound.accept(context, typeParameterEncoder);
+			}
 		} else {
 			members.enqueue(encoder -> {
 				if ((flags & TypeParameterEncoding.FLAG_BOUNDS) > 0) {

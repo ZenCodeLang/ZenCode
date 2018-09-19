@@ -21,7 +21,7 @@ public class JavaBytecodeMain {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
-		Arguments arguments = new Arguments(args);
+		Arguments arguments = new Arguments(args, new File("../../ZenCode")); // TODO: remove this and open a project chooser/creator instead
 		File directory = arguments.projectDirectory;
 		
 		Project project = new Project(directory);

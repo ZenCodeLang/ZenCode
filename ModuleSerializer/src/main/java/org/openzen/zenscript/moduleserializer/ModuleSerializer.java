@@ -12,6 +12,7 @@ import java.util.List;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.compiler.SemanticModule;
@@ -61,9 +62,19 @@ public class ModuleSerializer {
 			}
 		}
 		
+		List<HighLevelDefinition> definitions = new ArrayList<>();
+		for (EncodingModule module : tableBuilder.modules) {
+			for (EncodingDefinition definition : module.definitions)
+				definitions.add(definition.definition);
+		}
+		
+		for (AnnotationDefinition annotation : tableBuilder.getAnnotations())
+			tableBuilder.writeString(annotation.getAnnotationName());
+		
 		SourceFile[] sourceFiles = tableBuilder.getSourceFileList();
 		String[] strings = tableBuilder.getStrings();
 		List<IDefinitionMember> members = tableBuilder.getMembers();
+		AnnotationDefinition[] annotations = tableBuilder.getAnnotations();
 		
 		CompactBytesDataOutput output = new CompactBytesDataOutput();
 		CodeWriter encoder = new CodeWriter(
@@ -71,7 +82,9 @@ public class ModuleSerializer {
 				options,
 				strings,
 				sourceFiles,
-				members);
+				definitions.toArray(new HighLevelDefinition[definitions.size()]),
+				members,
+				annotations);
 		
 		output.writeInt(0x5A43424D); // 'ZCBM' = ZenCode Binary Module
 		output.writeVarUInt(0); // version
@@ -79,6 +92,9 @@ public class ModuleSerializer {
 		output.writeVarUInt(sourceFiles.length);
 		for (SourceFile file : sourceFiles)
 			output.writeString(file.getFilename());
+		output.writeVarUInt(annotations.length);
+		for (AnnotationDefinition annotation : annotations)
+			encoder.writeString(annotation.getAnnotationName());
 		
 		encoder.writeUInt(encodingModules.size());
 		System.out.println("Encoding list of modules");
@@ -162,7 +178,6 @@ public class ModuleSerializer {
 			for (EncodingDefinition definition : module.definitions) {
 				System.out.println("Encoding definition " + definition.definition.name);
 				definition.definition.accept(module.context, definitionEncoder);
-				encoder.add(definition.definition);
 			}
 		}
 	}

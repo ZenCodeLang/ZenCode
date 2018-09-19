@@ -15,5 +15,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 public interface StatementAnnotation {
 	public static final StatementAnnotation[] NONE = new StatementAnnotation[0];
 	
+	public AnnotationDefinition getDefinition();
+	
 	public Statement apply(Statement statement, StatementScope scope);
 }

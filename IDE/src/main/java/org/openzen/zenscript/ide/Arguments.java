@@ -14,8 +14,8 @@ import java.io.File;
 public class Arguments {
 	public final File projectDirectory;
 	
-	public Arguments(String[] arguments) {
-		File projectDir = new File("../../ZenCode"); // TODO: remove this and open a project chooser/creator instead
+	public Arguments(String[] arguments, File defaultProjectDir) {
+		File projectDir = defaultProjectDir;
 		int positional = 0;
 		for (int i = 0; i < arguments.length; i++) {
 			switch (positional) {

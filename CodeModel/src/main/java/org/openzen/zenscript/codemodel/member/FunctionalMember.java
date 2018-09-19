@@ -66,4 +66,9 @@ public abstract class FunctionalMember extends DefinitionMember {
 	public boolean isAbstract() {
 		return body == null && builtin == null;
 	}
+	
+	@Override
+	public FunctionHeader getHeader() {
+		return header;
+	}
 }

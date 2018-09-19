@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
@@ -55,6 +56,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	private final Set<SourceFile> sourceFiles = new HashSet<>();
 	public final List<EncodingModule> modules = new ArrayList<>();
 	private final List<IDefinitionMember> members = new ArrayList<>();
+	private final Set<AnnotationDefinition> annotations = new HashSet<>();
 	
 	private final SerializationOptions options;
 	
@@ -107,6 +109,10 @@ public class TableBuilder implements CodeSerializationOutput {
 	
 	public List<IDefinitionMember> getMembers() {
 		return members;
+	}
+	
+	public AnnotationDefinition[] getAnnotations() {
+		return annotations.toArray(new AnnotationDefinition[annotations.size()]);
 	}
 	
 	private EncodingDefinition prepare(HighLevelDefinition definition) {
@@ -193,6 +199,11 @@ public class TableBuilder implements CodeSerializationOutput {
 			if (prepare(member.getTarget().getDefinition()).mark(member.getTarget()))
 				members.add(member.getTarget());
 		}
+	}
+	
+	@Override
+	public void write(AnnotationDefinition annotationType) {
+		annotations.add(annotationType);
 	}
 
 	@Override

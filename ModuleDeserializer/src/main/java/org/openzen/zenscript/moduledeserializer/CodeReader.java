@@ -14,8 +14,8 @@ import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
@@ -91,6 +91,7 @@ public class CodeReader implements CodeSerializationInput {
 	
 	private final String[] strings;
 	private final SourceFile[] sourceFiles;
+	private final AnnotationDefinition[] annotations;
 	private final List<HighLevelDefinition> definitions = new ArrayList<>();
 	private final List<IDefinitionMember> memberList = new ArrayList<>();
 	private final List<EnumConstantMember> enumConstantMembers = new ArrayList<>();
@@ -102,12 +103,14 @@ public class CodeReader implements CodeSerializationInput {
 			CompactDataInput input,
 			String[] strings,
 			SourceFile[] sourceFiles,
+			AnnotationDefinition[] annotations,
 			GlobalTypeRegistry registry)
 	{
 		this.input = input;
 		
 		this.strings = strings;
 		this.sourceFiles = sourceFiles;
+		this.annotations = annotations;
 		this.registry = registry;
 	}
 	
@@ -202,7 +205,12 @@ public class CodeReader implements CodeSerializationInput {
 
 	@Override
 	public HighLevelDefinition readDefinition() {
-		return definitions.get(input.readVarUInt());
+		int id = input.readVarUInt();
+		if (id == 0)
+			return null;
+		
+		HighLevelDefinition definition = definitions.get(id - 1);
+		return definition;
 	}
 
 	@Override
@@ -231,6 +239,11 @@ public class CodeReader implements CodeSerializationInput {
 	@Override
 	public VariantOptionRef readVariantOption(TypeContext context, ITypeID type) {
 		return variantOptions.get(readUInt()).instance(type, context.getMapper());
+	}
+	
+	@Override
+	public AnnotationDefinition readAnnotationType() {
+		return annotations[readUInt()];
 	}
 
 	@Override
@@ -344,7 +357,7 @@ public class CodeReader implements CodeSerializationInput {
 			fromLine = input.readVarUInt();
 		if ((flags & CodePositionEncoding.FLAG_FROM_OFFSET) > 0)
 			fromLineOffset = input.readVarUInt();
-		int toLine = lastPosition.toLine;
+		int toLine = fromLine;
 		if ((flags & CodePositionEncoding.FLAG_TO_LINE) > 0)
 			toLine = fromLine + input.readVarUInt();
 		int toLineOffset = lastPosition.toLineOffset;

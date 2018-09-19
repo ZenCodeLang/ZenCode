@@ -15,6 +15,7 @@ public class DefinitionEncoding {
 	public static final int FLAG_POSITION = 1;
 	public static final int FLAG_NAME = 2;
 	public static final int FLAG_TYPE_PARAMETERS = 4;
+	public static final int FLAG_ANNOTATIONS = 8;
 	
 	public static final int TYPE_CLASS = 1;
 	public static final int TYPE_STRUCT = 2;

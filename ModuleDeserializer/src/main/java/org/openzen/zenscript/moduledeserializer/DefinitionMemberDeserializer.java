@@ -9,6 +9,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
@@ -26,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
@@ -99,6 +102,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 			modifiers = reader.readUInt();
 		}
 		
+		DefinitionMember member;
 		switch (kind) {
 			case MemberEncoding.TYPE_CONST: {
 				String name = readName(flags);
@@ -106,7 +110,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				
 				ConstMember result = new ConstMember(position, definition, modifiers, name, type, null);
 				reader.enqueueCode(reader -> result.value = reader.deserializeExpression(new StatementContext(context)));
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_FIELD: {
 				String name = readName(flags);
@@ -116,7 +121,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				
 				FieldMember result = new FieldMember(position, definition, flags, name, context.thisType, type, context.moduleContext.registry, autoGetterAccess, autoSetterAccess, null);
 				reader.enqueueCode(reader -> result.initializer = reader.deserializeExpression(new StatementContext(context)));
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_CONSTRUCTOR: {
 				FunctionHeader header = reader.deserializeHeader(context);
@@ -124,7 +130,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				reader.enqueueCode(reader -> {
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_DESTRUCTOR: {
 				DestructorMember result = new DestructorMember(position, definition, modifiers);
@@ -132,7 +139,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 					result.overrides = (FunctionalMemberRef)reader.readMember(context, supertype);
 					result.setBody(reader.deserializeStatement(new StatementContext(context, result.header)));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_METHOD: {
 				String name = readName(flags);
@@ -142,7 +150,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_GETTER: {
 				ITypeID type = reader.deserializeType(context);
@@ -154,7 +163,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 					FunctionHeader header = new FunctionHeader(type);
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_SETTER: {
 				ITypeID type = reader.deserializeType(context);
@@ -166,7 +176,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 					FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, result.parameter);
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_OPERATOR: {
 				OperatorType operator = readOperator();
@@ -177,7 +188,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_CASTER: {
 				ITypeID toType = reader.deserializeType(context);
@@ -187,7 +199,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 					result.setOverrides(context.moduleContext.registry, (CasterMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, new FunctionHeader(toType))));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_ITERATOR: {
 				ITypeID[] types = new ITypeID[reader.readUInt()];
@@ -199,7 +212,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 					result.setOverrides((IteratorMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, result.header)));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_CALLER: {
 				FunctionHeader header = reader.deserializeHeader(context);
@@ -209,7 +223,8 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_IMPLEMENTATION: {
 				ITypeID type = reader.deserializeType(context);
@@ -217,12 +232,13 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				
 				int members = reader.readUInt();
 				for (int i = 0; i < members; i++) {
-					IDefinitionMember member = deserializeMember(context, definition, type);
-					result.addMember(member);
-					reader.add(member);
+					IDefinitionMember imember = deserializeMember(context, definition, type);
+					result.addMember(imember);
+					reader.add(imember);
 				}
 				
-				return result;
+				member = result;
+				break;
 			}
 			case MemberEncoding.TYPE_INNER_DEFINITION:
 				return null;
@@ -231,11 +247,25 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				reader.enqueueCode(reader -> {
 					result.body = reader.deserializeStatement(new StatementContext(context, new FunctionHeader(BasicTypeID.VOID)));
 				});
-				return result;
+				member = result;
+				break;
 			}
 			default:
 				throw new RuntimeException("Invalid member type: " + kind);
 		}
+		
+		if ((flags & MemberEncoding.FLAG_ANNOTATIONS) > 0) {
+			reader.enqueueCode(input -> {
+				MemberAnnotation[] annotations = new MemberAnnotation[input.readUInt()];
+				for (int i = 0; i < annotations.length; i++) {
+					AnnotationDefinition type = input.readAnnotationType();
+					annotations[i] = type.deserializeForMember(input, context, member);
+				}
+				member.annotations = annotations;
+			});
+			
+		}
+		return member;
 	}
 	
 	private OperatorType readOperator() {

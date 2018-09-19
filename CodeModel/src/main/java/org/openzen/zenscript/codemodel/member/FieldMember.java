@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -161,5 +162,10 @@ public class FieldMember extends PropertyMember {
 	@Override
 	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
 		return new FieldMemberRef(type, this, mapper);
+	}
+	
+	@Override
+	public FunctionHeader getHeader() {
+		return null;
 	}
 }
