@@ -289,13 +289,15 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			int baseY = (int)(bounds.y + style.padding + index * (fontMetrics.getAscent() + fontMetrics.getDescent() + style.rowSpacing));
 			
 			if (collapseIcon != null) {
-				collapseIcon.setTransform(DTransform2D.translate(
+				collapseIcon.setTransform(DTransform2D.scaleAndTranslate(
 						baseX,
-						baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
+						baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight(),
+						iconScale));
 			}
-			nodeIcon.setTransform(DTransform2D.translate(
+			nodeIcon.setTransform(DTransform2D.scaleAndTranslate(
 					baseX + icon.getNominalWidth() + style.iconTextSpacing,
-					baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight()));
+					baseY + fontMetrics.getAscent() + fontMetrics.getDescent() - icon.getNominalHeight(),
+					iconScale));
 			text.setPosition(
 					baseX + style.iconTextSpacing + icon.getNominalWidth() + style.iconTextSpacing + node.getIcon().getNominalWidth(),
 					baseY + fontMetrics.getAscent());
