@@ -65,7 +65,7 @@ public class TypeParameterCollector implements TypeVisitor<Void> {
 
 	@Override
 	public Void visitDefinition(DefinitionTypeID definition) {
-		for (ITypeID argument : definition.typeParameters)
+		for (ITypeID argument : definition.typeArguments)
 			argument.accept(this);
 		if (definition.outer != null)
 			visitDefinition(definition.outer);

@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
@@ -472,7 +473,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitPanic(PanicExpression expression) {
 		expression.value.accept(this);
-		if (expression.value.type != BasicTypeID.STRING)
+		if (!(expression.value.type instanceof StringTypeID))
 			validator.logError(ValidationLogEntry.Code.PANIC_ARGUMENT_NO_STRING, expression.position, "Argument to a panic must be a string");
 		return null;
 	}
@@ -598,6 +599,17 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 					expression.position,
 					"Trying to set a static property of type " + expression.setter.getType() + " to a value of type " + expression.value.type);
 		}
+		return null;
+	}
+	
+	@Override
+	public Void visitStorageCast(StorageCastExpression expression) {
+		if (expression.value.type.withoutStorage() != expression.type.withoutStorage())
+			validator.logError(ValidationLogEntry.Code.INVALID_STORAGE_CAST, expression.position, "Invalid storage cast");
+		if (!expression.value.type.getStorage().canCastTo(expression.type.getStorage()) && !expression.type.getStorage().canCastFrom(expression.value.type.getStorage()))
+			validator.logError(ValidationLogEntry.Code.INVALID_STORAGE_CAST, expression.position, "Invalid storage cast");
+		
+		expression.value.accept(this);
 		return null;
 	}
 

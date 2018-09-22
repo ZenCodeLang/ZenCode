@@ -50,7 +50,7 @@ public class GenericMapper {
 		if (!mapping.containsKey(type.parameter))
 			throw new IllegalStateException("No mapping found for type " + type);
 		
-		return mapping.containsKey(type.parameter) ? mapping.get(type.parameter) : type;
+		return mapping.containsKey(type.parameter) ? mapping.get(type.parameter).withStorage(registry, type.storage) : type;
 	}
 	
 	public FunctionHeader map(FunctionHeader original) {
@@ -66,7 +66,7 @@ public class GenericMapper {
 	public GenericMapper getInner(GlobalTypeRegistry registry, TypeParameter[] parameters) {
 		Map<TypeParameter, ITypeID> resultMap = new HashMap<>(this.mapping);
 		for (TypeParameter parameter : parameters)
-			resultMap.put(parameter, registry.getGeneric(parameter));
+			resultMap.put(parameter, registry.getGeneric(parameter, null));
 		return new GenericMapper(registry, resultMap);
 	}
 	

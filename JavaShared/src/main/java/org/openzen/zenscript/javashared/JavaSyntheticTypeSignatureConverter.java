@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
@@ -29,7 +30,7 @@ import org.openzen.zenscript.codemodel.type.TypeVisitor;
  * @author Hoofdgebruiker
  */
 public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> {
-	private static final String[] typeParameterNames = {"T", "U", "V", "W", "X", "Y", "Z"}; // if we have more than this, make it Tx with x the number
+	private static final String[] TYPE_PARAMETER_NAMES = {"T", "U", "V", "W", "X", "Y", "Z"}; // if we have more than this, make it Tx with x the number
 	private final Map<TypeParameter, String> typeParameters = new HashMap<>();
 	public final List<TypeParameter> typeParameterList = new ArrayList<>();
 	
@@ -50,10 +51,14 @@ public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> 
 			case FLOAT: return "Float";
 			case DOUBLE: return "Double";
 			case CHAR: return "Char";
-			case STRING: return "String";
 			default:
 				throw new IllegalArgumentException("Invalid type: " + basic);
 		}
+	}
+	
+	@Override
+	public String visitString(StringTypeID string) {
+		return "String";
 	}
 
 	@Override
@@ -107,10 +112,10 @@ public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> 
 	public String visitDefinition(DefinitionTypeID definition) {
 		StringBuilder result = new StringBuilder();
 		result.append(definition.definition.name);
-		if (definition.typeParameters.length > 0) {
+		if (definition.typeArguments.length > 0) {
 			result.append("With");
-			for (int i = 0; i < definition.typeParameters.length; i++) {
-				result.append(definition.typeParameters[i].accept(this));
+			for (int i = 0; i < definition.typeArguments.length; i++) {
+				result.append(definition.typeArguments[i].accept(this));
 			}
 		}
 		return result.toString();
@@ -121,7 +126,7 @@ public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> 
 		if (typeParameters.containsKey(generic.parameter))
 			return typeParameters.get(generic.parameter);
 		
-		String name = typeParameters.size() < typeParameterNames.length ? typeParameterNames[typeParameters.size()] : "T" + typeParameters.size();
+		String name = typeParameters.size() < TYPE_PARAMETER_NAMES.length ? TYPE_PARAMETER_NAMES[typeParameters.size()] : "T" + typeParameters.size();
 		typeParameters.put(generic.parameter, name);
 		typeParameterList.add(generic.parameter);
 		return name;

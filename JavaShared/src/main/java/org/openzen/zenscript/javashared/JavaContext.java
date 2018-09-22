@@ -39,31 +39,31 @@ public abstract class JavaContext {
 			functions.put("TToU", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "Function", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t, u },
-					new FunctionHeader(registry.getGeneric(u), registry.getGeneric(t)),
+					new FunctionHeader(registry.getGeneric(u, null), registry.getGeneric(t, null)),
 					"apply"));
 			
 			functions.put("TUToV", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "BiFunction", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t, u, v },
-					new FunctionHeader(registry.getGeneric(v), registry.getGeneric(t), registry.getGeneric(u)),
+					new FunctionHeader(registry.getGeneric(v, null), registry.getGeneric(t, null), registry.getGeneric(u, null)),
 					"apply"));
 			
 			functions.put("TToVoid", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "Consumer", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t },
-					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t)),
+					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t, null)),
 					"accept"));
 			
 			functions.put("TUToVoid", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "BiConsumer", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t, u },
-					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t), registry.getGeneric(u)),
+					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t, null), registry.getGeneric(u, null)),
 					"accept"));
 			
 			functions.put("TToBool", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "Predicate", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t },
-					new FunctionHeader(BasicTypeID.BOOL, registry.getGeneric(t)),
+					new FunctionHeader(BasicTypeID.BOOL, registry.getGeneric(t, null)),
 					"test"));
 		}
 	}
@@ -98,7 +98,7 @@ public abstract class JavaContext {
 				} else {
 					TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, getTypeParameter(typeParameters.size()));
 					typeParameters.add(typeParameter);
-					parameters.add(new FunctionParameter(registry.getGeneric(typeParameter), Character.toString((char)('a' + parameters.size()))));
+					parameters.add(new FunctionParameter(registry.getGeneric(typeParameter, null), Character.toString((char)('a' + parameters.size()))));
 				}
 			}
 			ITypeID returnType;
@@ -109,7 +109,7 @@ public abstract class JavaContext {
 				} else {
 					TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, getTypeParameter(typeParameters.size()));
 					typeParameters.add(typeParameter);
-					returnType = registry.getGeneric(typeParameter);
+					returnType = registry.getGeneric(typeParameter, null);
 				}
 			}
 			function = new JavaSynthesizedFunction(
@@ -177,7 +177,7 @@ public abstract class JavaContext {
 				range = new JavaSynthesizedRange(cls, TypeParameter.NONE, type.baseType);
 			} else {
 				TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, "T");
-				range = new JavaSynthesizedRange(cls, new TypeParameter[] { typeParameter }, registry.getGeneric(typeParameter));
+				range = new JavaSynthesizedRange(cls, new TypeParameter[] { typeParameter }, registry.getGeneric(typeParameter, null));
 			}
 			ranges.put(id, range);
 			getTypeGenerator().synthesizeRange(range);

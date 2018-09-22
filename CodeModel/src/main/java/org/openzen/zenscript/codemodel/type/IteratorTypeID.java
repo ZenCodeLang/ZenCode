@@ -7,9 +7,10 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -17,12 +18,16 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  */
 public class IteratorTypeID implements ITypeID {
 	public final ITypeID[] iteratorTypes;
+	public final StorageTag storage;
 	private final IteratorTypeID normalized;
+	private final IteratorTypeID withoutStorage;
 	
-	public IteratorTypeID(GlobalTypeRegistry registry, ITypeID[] iteratorTypes) {
+	public IteratorTypeID(GlobalTypeRegistry registry, ITypeID[] iteratorTypes, StorageTag storage) {
 		this.iteratorTypes = iteratorTypes;
+		this.storage = storage;
 		
 		normalized = isDenormalized() ? normalize(registry) : this;
+		withoutStorage = storage == null ? this : registry.getIterator(iteratorTypes, null);
 	}
 	
 	@Override
@@ -42,7 +47,7 @@ public class IteratorTypeID implements ITypeID {
 		ITypeID[] normalizedTypes = new ITypeID[iteratorTypes.length];
 		for (int i = 0; i < normalizedTypes.length; i++)
 			normalizedTypes[i] = iteratorTypes[i].getNormalized();
-		return registry.getIterator(normalizedTypes);
+		return registry.getIterator(normalizedTypes, storage);
 	}
 
 	@Override
@@ -80,7 +85,12 @@ public class IteratorTypeID implements ITypeID {
 		ITypeID[] instanced = new ITypeID[iteratorTypes.length];
 		for (int i = 0; i < iteratorTypes.length; i++)
 			instanced[i] = iteratorTypes[i].instance(mapper);
-		return mapper.registry.getIterator(instanced);
+		return mapper.registry.getIterator(instanced, storage);
+	}
+	
+	@Override
+	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
+		return registry.getIterator(iteratorTypes, storage);
 	}
 
 	@Override
@@ -107,6 +117,7 @@ public class IteratorTypeID implements ITypeID {
 	public int hashCode() {
 		int hash = 5;
 		hash = 13 * hash + Arrays.deepHashCode(this.iteratorTypes);
+		hash = 13 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -122,9 +133,17 @@ public class IteratorTypeID implements ITypeID {
 			return false;
 		}
 		final IteratorTypeID other = (IteratorTypeID) obj;
-		if (!Arrays.deepEquals(this.iteratorTypes, other.iteratorTypes)) {
-			return false;
-		}
-		return true;
+		return Arrays.deepEquals(this.iteratorTypes, other.iteratorTypes)
+				&& Objects.equals(this.storage, other.storage);
+	}
+
+	@Override
+	public StorageTag getStorage() {
+		return storage;
+	}
+
+	@Override
+	public ITypeID withoutStorage() {
+		return withoutStorage;
 	}
 }

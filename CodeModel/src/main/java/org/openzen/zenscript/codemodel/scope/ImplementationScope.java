@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -47,7 +48,7 @@ public class ImplementationScope extends BaseScope {
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		if (members.hasInnerType(name.name))
-			return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
+			return new PartialTypeExpression(position, members.getInnerType(position, name, null), name.arguments);
 		if (members.hasMember(name.name))
 			return members.getMemberExpression(position, this, new ThisExpression(position, outer.getThisType()), name, true);
 		
@@ -55,16 +56,21 @@ public class ImplementationScope extends BaseScope {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
+	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
 		if (members.hasInnerType(name.get(0).name)) {
-			ITypeID result = members.getInnerType(position, name.get(0));
+			ITypeID result = members.getInnerType(position, name.get(0), storage);
 			for (int i = 1; i < name.size(); i++) {
-				result = getTypeMembers(result).getInnerType(position, name.get(i));
+				result = getTypeMembers(result).getInnerType(position, name.get(i), storage);
 			}
 			return result;
 		}
 		
-		return outer.getType(position, name);
+		return outer.getType(position, name, storage);
+	}
+
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return outer.getStorageTag(position, name, parameters);
 	}
 
 	@Override

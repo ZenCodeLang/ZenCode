@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
@@ -45,13 +46,12 @@ public class JavaTypeInfo {
 
 		@Override
 		public JavaTypeInfo visitBasic(BasicTypeID basic) {
-			switch (basic) {
-				case STRING:
-				case NULL:
-					return OBJECT;
-				default:
-					return PRIMITIVE;
-			}
+			return basic == BasicTypeID.NULL ? OBJECT : PRIMITIVE;
+		}
+		
+		@Override
+		public JavaTypeInfo visitString(StringTypeID string) {
+			return OBJECT;
 		}
 
 		@Override

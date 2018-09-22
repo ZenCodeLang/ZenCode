@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.moduleserialization.TypeEncoding;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 
@@ -50,11 +51,16 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 			case FLOAT: output.writeUInt(TypeEncoding.TYPE_FLOAT); break;
 			case DOUBLE: output.writeUInt(TypeEncoding.TYPE_DOUBLE); break;
 			case CHAR: output.writeUInt(TypeEncoding.TYPE_CHAR); break;
-			case STRING: output.writeUInt(TypeEncoding.TYPE_STRING); break;
 			case UNDETERMINED: output.writeUInt(TypeEncoding.TYPE_UNDETERMINED); break;
 			case NULL: output.writeUInt(TypeEncoding.TYPE_NULL); break;
 			default: throw new IllegalArgumentException("Unknown basic type: " + basic);
 		}
+		return null;
+	}
+	
+	@Override
+	public Void visitString(TypeContext context, StringTypeID string) {
+		output.writeUInt(TypeEncoding.TYPE_STRING);
 		return null;
 	}
 
@@ -106,7 +112,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 	public Void visitDefinition(TypeContext context, DefinitionTypeID definition) {
 		output.writeUInt(TypeEncoding.TYPE_DEFINITION);
 		output.write(definition.definition);
-		for (ITypeID type : definition.typeParameters)
+		for (ITypeID type : definition.typeArguments)
 			type.accept(context, this);
 		return null;
 	}

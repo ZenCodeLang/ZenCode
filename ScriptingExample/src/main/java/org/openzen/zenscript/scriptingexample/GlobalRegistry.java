@@ -28,8 +28,13 @@ import org.openzen.zenscript.codemodel.partial.PartialMemberGroupExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -44,7 +49,23 @@ public class GlobalRegistry {
 	private final ZSPackage javaIo = rootPackage.getOrCreatePackage("java").getOrCreatePackage("io");
 	private final ZSPackage javaLang = rootPackage.getOrCreatePackage("java").getOrCreatePackage("lang");
 	
-	public GlobalRegistry(ZSPackage globals) {
+	public GlobalRegistry(GlobalTypeRegistry registry, ZSPackage globals) {
+		PRINTSTREAM_PRINTLN = new MethodMember(
+			CodePosition.NATIVE,
+			PRINTSTREAM,
+			Modifiers.EXPORT,
+			"println",
+			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(StringTypeID.BORROW)),
+			null);
+		
+		SYSTEM_OUT = new FieldMember(
+			CodePosition.NATIVE,
+			SYSTEM,
+			Modifiers.EXPORT | Modifiers.FINAL,
+			"out",
+			null,
+			DefinitionTypeID.forType(registry, SYSTEM, SharedStorageTag.INSTANCE), null, 0, 0, null);
+		
 		JavaClass jPrintStream = new JavaClass("java.io", "PrintStream", JavaClass.Kind.CLASS);
 		JavaMethod printstreamPrintln = JavaMethod.getNativeVirtual(jPrintStream, "println", "(Ljava/lang/String;)V");
 		PRINTSTREAM_PRINTLN.setTag(JavaMethod.class, printstreamPrintln);
@@ -63,7 +84,7 @@ public class GlobalRegistry {
 			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, MODULE, packageMyPackage, "MyClass", Modifiers.PUBLIC, null);
 			JavaClass myClassInfo = new JavaClass("my.test", "MyClass", JavaClass.Kind.CLASS);
 			
-			MethodMember member = new MethodMember(CodePosition.NATIVE, myClassDefinition, Modifiers.PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING), null);
+			MethodMember member = new MethodMember(CodePosition.NATIVE, myClassDefinition, Modifiers.PUBLIC, "test", new FunctionHeader(StringTypeID.UNIQUE), null);
 			member.setTag(JavaMethod.class, JavaMethod.getNativeVirtual(myClassInfo, "test", "()Ljava/lang/String;"));
 			myClassDefinition.addMember(member);
 			
@@ -91,21 +112,8 @@ public class GlobalRegistry {
 	private final Module MODULE = new Module("scriptingExample");
 	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaIo, "PrintStream", Modifiers.EXPORT);
 	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaLang, "System", Modifiers.EXPORT);
-	private final MethodMember PRINTSTREAM_PRINTLN = new MethodMember(
-			CodePosition.NATIVE,
-			PRINTSTREAM,
-			Modifiers.EXPORT,
-			"println",
-			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(BasicTypeID.STRING)),
-			null);
-	
-	private final FieldMember SYSTEM_OUT = new FieldMember(
-			CodePosition.NATIVE,
-			SYSTEM,
-			Modifiers.EXPORT | Modifiers.FINAL,
-			"out",
-			null,
-			DefinitionTypeID.forType(SYSTEM), null, 0, 0, null);
+	private final MethodMember PRINTSTREAM_PRINTLN;
+	private final FieldMember SYSTEM_OUT;
 	
 	private class PrintlnSymbol implements ISymbol {
 
@@ -116,13 +124,13 @@ public class GlobalRegistry {
 					scope,
 					new GetStaticFieldExpression(position, new FieldMemberRef(scope.getTypeRegistry().getForMyDefinition(SYSTEM), SYSTEM_OUT, GenericMapper.EMPTY)),
 					"println",
-					PRINTSTREAM_PRINTLN.ref(scope.getTypeRegistry().getForDefinition(PRINTSTREAM), GenericMapper.EMPTY),
+					PRINTSTREAM_PRINTLN.ref(scope.getTypeRegistry().getForDefinition(PRINTSTREAM, BorrowStorageTag.INVOCATION), GenericMapper.EMPTY),
 					null,
 					false);
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, TypeResolutionContext context, ITypeID[] typeArguments) {
+		public ITypeID getType(CodePosition position, TypeResolutionContext context, ITypeID[] typeArguments, StorageTag storage) {
 			return null; // not a type
 		}
 	}

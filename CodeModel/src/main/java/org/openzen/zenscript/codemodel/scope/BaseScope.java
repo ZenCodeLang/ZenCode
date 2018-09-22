@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *

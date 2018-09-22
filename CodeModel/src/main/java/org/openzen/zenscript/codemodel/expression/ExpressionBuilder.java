@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import stdlib.Strings;
 
 /**
@@ -37,7 +38,7 @@ public class ExpressionBuilder {
 		List<GenericName> name = new ArrayList<>();
 		for (String namePart : nameParts)
 			name.add(new GenericName(namePart));
-		ITypeID type = scope.getType(position, name);
+		ITypeID type = scope.getType(position, name, UniqueStorageTag.INSTANCE);
 		if (type == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "No such type: " + typename);
 		

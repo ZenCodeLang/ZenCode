@@ -114,11 +114,6 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 
 	@Override
 	public Void visitAlias(TypeContext context, AliasDefinition definition) {
-		EncodingDefinition encoding = definition.getTag(EncodingDefinition.class);
-		for (DefinitionAnnotation annotation : definition.annotations) {
-			// TODO: how to serialize annotations?
-		}
-		
 		output.serialize(context, definition.type);
 		return null;
 	}

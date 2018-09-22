@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -42,7 +43,7 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 				return new TryRethrowAsExceptionExpression(position, cSource.type, cSource, cSource.thrownType);
 			} else {
 				// rethrow as result
-				ITypeID resultType = scope.getTypeRegistry().getForDefinition(result, cSource.type, cSource.thrownType);
+				ITypeID resultType = scope.getTypeRegistry().getForDefinition(result, UniqueStorageTag.INSTANCE, cSource.type, cSource.thrownType);
 				return new TryRethrowAsResultExpression(position, resultType, cSource);
 			}
 		} else {
@@ -50,7 +51,7 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 			if (cSource.type instanceof DefinitionTypeID) {
 				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type;
 				if (sourceType.definition == result) {
-					return new TryRethrowAsResultExpression(position, sourceType.typeParameters[0], cSource);
+					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0], cSource);
 				}
 			}
 			

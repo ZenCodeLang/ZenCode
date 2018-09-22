@@ -33,7 +33,7 @@ public class SimpleBracketSubParser implements BracketExpressionParser {
 			throw new IllegalArgumentException("Method cannot have type parameters");
 		
 		this.method = method;
-		this.targetType = registry.getForDefinition(method.getTarget().definition);
+		this.targetType = registry.getForDefinition(method.getTarget().definition, null);
 	}
 
 	@Override

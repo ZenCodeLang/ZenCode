@@ -5,6 +5,10 @@
  */
 package org.openzen.zenscript.codemodel.type.storage;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -13,4 +17,17 @@ public class StaticStorageType implements StorageType {
 	public static final StaticStorageType INSTANCE = new StaticStorageType();
 	
 	private StaticStorageType() {}
+
+	@Override
+	public String getName() {
+		return "static";
+	}
+
+	@Override
+	public StorageTag instance(CodePosition position, String[] arguments) {
+		if (arguments != null)
+			throw new CompileException(position, CompileExceptionCode.INVALID_STORAGE_TYPE_ARGUMENTS, "static storage type doesn't take arguments");
+		
+		return StaticStorageTag.INSTANCE;
+	}
 }

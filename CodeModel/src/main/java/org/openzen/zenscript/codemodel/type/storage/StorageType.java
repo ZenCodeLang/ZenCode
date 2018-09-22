@@ -5,10 +5,24 @@
  */
 package org.openzen.zenscript.codemodel.type.storage;
 
+import org.openzen.zencode.shared.CodePosition;
+
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface StorageType {
+	public static StorageType[] getStandard() {
+		return new StorageType[] {
+			AnyStorageType.INSTANCE,
+			BorrowStorageType.INSTANCE,
+			SharedStorageType.INSTANCE,
+			StaticStorageType.INSTANCE,
+			UniqueStorageType.INSTANCE
+		};
+	}
 	
+	String getName();
+	
+	StorageTag instance(CodePosition position, String[] arguments);
 }

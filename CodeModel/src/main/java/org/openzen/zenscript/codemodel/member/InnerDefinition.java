@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -31,7 +32,7 @@ public class InnerDefinition {
 		this.outerTypeArguments = outerTypeArguments;
 	}
 	
-	public DefinitionTypeID instance(GlobalTypeRegistry registry, ITypeID[] typeArguments, DefinitionTypeID outer) {
-		return registry.getForDefinition(definition, typeArguments, outer);
+	public DefinitionTypeID instance(GlobalTypeRegistry registry, ITypeID[] typeArguments, DefinitionTypeID outer, StorageTag storage) {
+		return registry.getForDefinition(definition, typeArguments, outer, storage);
 	}
 }

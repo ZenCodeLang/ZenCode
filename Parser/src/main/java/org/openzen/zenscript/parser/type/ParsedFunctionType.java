@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 
 /**
@@ -19,34 +20,35 @@ public class ParsedFunctionType implements IParsedType {
 	private final CodePosition position;
 	private final int modifiers;
 	private final ParsedFunctionHeader header;
-	private final ParsedStorageTag storageTag;
+	private final ParsedStorageTag storage;
 	
-	public ParsedFunctionType(CodePosition position, ParsedFunctionHeader header, ParsedStorageTag storageTag) {
+	public ParsedFunctionType(CodePosition position, ParsedFunctionHeader header, ParsedStorageTag storage) {
 		this.position = position;
 		this.header = header;
 		this.modifiers = 0;
-		this.storageTag = storageTag;
+		this.storage = storage;
 	}
 	
 	private ParsedFunctionType(CodePosition position, ParsedFunctionHeader header, int modifiers, ParsedStorageTag storageTag) {
 		this.position = position;
 		this.header = header;
 		this.modifiers = modifiers;
-		this.storageTag = storageTag;
+		this.storage = storageTag;
 	}
 	
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedFunctionType(position, header, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storageTag);
+		return new ParsedFunctionType(position, header, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storage);
 	}
 
 	@Override
 	public IParsedType withModifiers(int modifiers) {
-		return new ParsedFunctionType(position, header, modifiers | this.modifiers, storageTag);
+		return new ParsedFunctionType(position, header, modifiers | this.modifiers, storage);
 	}
 
 	@Override
 	public ITypeID compile(TypeResolutionContext context) {
-		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getFunction(header.compile(context)));
+		StorageTag storage = this.storage.resolve(position, context);
+		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getFunction(header.compile(context), storage));
 	}
 }

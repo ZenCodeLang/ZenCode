@@ -130,6 +130,8 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitStaticSetter(StaticSetterExpression expression);
 	
+	public T visitStorageCast(StorageCastExpression expression);
+	
 	public T visitSupertypeCast(SupertypeCastExpression expression);
 	
 	public T visitThis(ThisExpression expression);

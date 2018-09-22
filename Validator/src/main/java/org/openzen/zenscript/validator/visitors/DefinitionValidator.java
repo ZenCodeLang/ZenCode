@@ -31,6 +31,7 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
@@ -220,7 +221,12 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name) {
+		public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
 			throw new UnsupportedOperationException();
 		}
 

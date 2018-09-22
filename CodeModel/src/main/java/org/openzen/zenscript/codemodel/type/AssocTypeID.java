@@ -6,8 +6,10 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -16,23 +18,34 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 public class AssocTypeID implements ITypeID {
 	public final ITypeID keyType;
 	public final ITypeID valueType;
+	public final StorageTag storage;
 	private final AssocTypeID normalized;
+	private final AssocTypeID withoutStorage;
 	
-	public AssocTypeID(GlobalTypeRegistry typeRegistry, ITypeID keyType, ITypeID valueType) {
+	public AssocTypeID(GlobalTypeRegistry typeRegistry, ITypeID keyType, ITypeID valueType, StorageTag storage) {
 		this.keyType = keyType;
 		this.valueType = valueType;
+		this.storage = storage;
 		
 		if (keyType != keyType.getNormalized() || valueType != valueType.getNormalized())
-			normalized = typeRegistry.getAssociative(keyType.getNormalized(), valueType.getNormalized());
+			normalized = typeRegistry.getAssociative(keyType.getNormalized(), valueType.getNormalized(), storage);
 		else
 			normalized = this;
+		
+		withoutStorage = storage == null ? this : typeRegistry.getAssociative(normalized.keyType, normalized.valueType, null);
 	}
 	
 	@Override
 	public AssocTypeID instance(GenericMapper mapper) {
 		return mapper.registry.getAssociative(
 				keyType.instance(mapper),
-				valueType.instance(mapper));
+				valueType.instance(mapper),
+				storage);
+	}
+	
+	@Override
+	public AssocTypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
+		return registry.getAssociative(keyType, valueType, storage);
 	}
 	
 	@Override
@@ -91,6 +104,7 @@ public class AssocTypeID implements ITypeID {
 		int hash = 7;
 		hash = 29 * hash + keyType.hashCode();
 		hash = 29 * hash + valueType.hashCode();
+		hash = 29 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -106,7 +120,9 @@ public class AssocTypeID implements ITypeID {
 			return false;
 		}
 		final AssocTypeID other = (AssocTypeID) obj;
-		return this.keyType == other.keyType && this.valueType == other.valueType;
+		return this.keyType == other.keyType
+				&& this.valueType == other.valueType
+				&& Objects.equals(this.storage, other.storage);
 	}
 	
 	@Override
@@ -117,5 +133,15 @@ public class AssocTypeID implements ITypeID {
 		result.append(keyType.toString());
 		result.append(']');
 		return result.toString();
+	}
+
+	@Override
+	public StorageTag getStorage() {
+		return storage;
+	}
+
+	@Override
+	public ITypeID withoutStorage() {
+		return withoutStorage;
 	}
 }

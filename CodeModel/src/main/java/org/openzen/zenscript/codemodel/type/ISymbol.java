@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -17,5 +18,5 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 public interface ISymbol {
 	public IPartialExpression getExpression(CodePosition position, BaseScope scope, ITypeID[] typeArguments);
 	
-	public ITypeID getType(CodePosition position, TypeResolutionContext context, ITypeID[] typeArguments);
+	public ITypeID getType(CodePosition position, TypeResolutionContext context, ITypeID[] typeArguments, StorageTag storage);
 }

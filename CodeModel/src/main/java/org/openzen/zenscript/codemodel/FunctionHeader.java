@@ -23,8 +23,6 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  * @author Hoofdgebruiker
  */
 public class FunctionHeader {
-	private static final FunctionParameter[] NO_PARAMETERS = new FunctionParameter[0];
-	
 	public final TypeParameter[] typeParameters;
 	private ITypeID returnType;
 	public final FunctionParameter[] parameters;
@@ -40,7 +38,7 @@ public class FunctionHeader {
 		
 		this.typeParameters = TypeParameter.NONE;
 		this.returnType = returnType;
-		this.parameters = NO_PARAMETERS;
+		this.parameters = FunctionParameter.NONE;
 		this.thrownType = null;
 		
 		minParameters = 0;
@@ -357,7 +355,7 @@ public class FunctionHeader {
 		if (typeParameters.length > 0) {
 			Map<TypeParameter, ITypeID> innerMap = new HashMap<>();
 			for (TypeParameter parameter : typeParameters)
-				innerMap.put(parameter, mapper.registry.getGeneric(parameter));
+				innerMap.put(parameter, mapper.registry.getGeneric(parameter, null));
 			
 			mapper = mapper.getInner(registry, innerMap);
 		}

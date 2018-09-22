@@ -66,6 +66,12 @@ public class JavaBoxingTypeVisitor implements TypeVisitor<Void> {
 			writer.invokeStatic(method);
 		return null;
 	}
+	
+	@Override
+	public Void visitString(StringTypeID string) {
+		//NO-OP
+		return null;
+	}
 
 	@Override
 	public Void visitArray(ArrayTypeID array) {

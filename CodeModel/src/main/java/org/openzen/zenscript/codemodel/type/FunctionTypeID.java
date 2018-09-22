@@ -7,10 +7,12 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -18,13 +20,17 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  */
 public class FunctionTypeID implements ITypeID {
 	public final FunctionHeader header;
+	public final StorageTag storage;
 	private final FunctionTypeID normalized;
+	private final FunctionTypeID withoutStorage;
 	
-	public FunctionTypeID(GlobalTypeRegistry registry, FunctionHeader header) {
+	public FunctionTypeID(GlobalTypeRegistry registry, FunctionHeader header, StorageTag storage) {
 		this.header = header;
+		this.storage = storage;
 		
 		FunctionHeader normalizedHeader = header.normalize(registry);
-		normalized = header == normalizedHeader ? this : registry.getFunction(normalizedHeader);
+		normalized = header == normalizedHeader ? this : registry.getFunction(normalizedHeader, storage);
+		withoutStorage = storage == null ? this : registry.getFunction(header, null);
 	}
 	
 	@Override
@@ -34,7 +40,12 @@ public class FunctionTypeID implements ITypeID {
 	
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
-		return mapper.registry.getFunction(mapper.map(header));
+		return mapper.registry.getFunction(mapper.map(header), storage);
+	}
+
+	@Override
+	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
+		return registry.getFunction(header, storage);
 	}
 	
 	@Override
@@ -90,6 +101,7 @@ public class FunctionTypeID implements ITypeID {
 		hash = 71 * hash + header.getReturnType().hashCode();
 		hash = 71 * hash + Arrays.deepHashCode(header.parameters);
 		hash = 71 * hash + Arrays.deepHashCode(header.typeParameters);
+		hash = 71 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -107,7 +119,8 @@ public class FunctionTypeID implements ITypeID {
 		final FunctionTypeID other = (FunctionTypeID) obj;
 		return this.header.getReturnType() == other.header.getReturnType()
 				&& Arrays.deepEquals(this.header.parameters, other.header.parameters)
-				&& Arrays.deepEquals(this.header.typeParameters, other.header.typeParameters);
+				&& Arrays.deepEquals(this.header.typeParameters, other.header.typeParameters)
+				&& Objects.equals(this.storage, other.storage);
 	}
 	
 	@Override
@@ -127,5 +140,15 @@ public class FunctionTypeID implements ITypeID {
 		result.append(" as ");
 		result.append(header.getReturnType());
 		return result.toString();
+	}
+
+	@Override
+	public StorageTag getStorage() {
+		return storage;
+	}
+
+	@Override
+	public ITypeID withoutStorage() {
+		return withoutStorage;
 	}
 }

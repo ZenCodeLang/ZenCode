@@ -84,7 +84,7 @@ public class CompilingPackage {
 		
 		if (types.containsKey(name.get(index).name)) {
 			CompilingType type = types.get(name.get(index).name);
-			DefinitionTypeID result = context.getTypeRegistry().getForDefinition(type.load(), name.get(index).arguments);
+			DefinitionTypeID result = context.getTypeRegistry().getForDefinition(type.load(), null, name.get(index).arguments);
 			return getInner(context, name, index + 1, type, result);
 		}
 		
@@ -99,7 +99,7 @@ public class CompilingPackage {
 		if (innerType == null)
 			return null;
 		
-		DefinitionTypeID innerResult = context.getTypeRegistry().getForDefinition(innerType.load(), name.get(index).arguments, result);
+		DefinitionTypeID innerResult = context.getTypeRegistry().getForDefinition(innerType.load(), name.get(index).arguments, result, null);
 		return getInner(context, name, index + 1, innerType, innerResult);
 	}
 }

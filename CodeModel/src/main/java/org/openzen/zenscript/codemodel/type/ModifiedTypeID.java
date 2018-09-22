@@ -10,6 +10,7 @@ import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -24,6 +25,7 @@ public class ModifiedTypeID implements ITypeID {
 	public final ITypeID baseType;
 	private final ITypeID normalized;
 	private final GlobalTypeRegistry registry;
+	private final ITypeID withoutStorage;
 	
 	public ModifiedTypeID(GlobalTypeRegistry registry, int modifiers, ITypeID baseType) {
 		this.modifiers = modifiers;
@@ -31,6 +33,7 @@ public class ModifiedTypeID implements ITypeID {
 		this.registry = registry;
 		
 		normalized = baseType.getNormalized() == baseType ? this : registry.getModified(modifiers, baseType.getNormalized());
+		withoutStorage = baseType.withoutStorage() == baseType ? this : registry.getModified(modifiers, baseType.withoutStorage());
 	}
 	
 	@Override
@@ -41,6 +44,11 @@ public class ModifiedTypeID implements ITypeID {
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
 		return mapper.registry.getModified(modifiers, baseType.instance(mapper));
+	}
+	
+	@Override
+	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
+		return registry.getModified(modifiers, baseType.withStorage(registry, storage));
 	}
 	
 	@Override
@@ -122,22 +130,21 @@ public class ModifiedTypeID implements ITypeID {
 	public int hashCode() {
 		int hash = 3;
 		hash = 79 * hash + Objects.hashCode(this.baseType);
+		hash = 79 * hash + modifiers;
 		return hash;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		final ModifiedTypeID other = (ModifiedTypeID) obj;
-		return this.baseType == other.baseType;
+		return this.baseType == other.baseType
+				&& this.modifiers == other.modifiers;
 	}
 	
 	@Override
@@ -151,5 +158,15 @@ public class ModifiedTypeID implements ITypeID {
 		if ((modifiers & MODIFIER_OPTIONAL) > 0)
 			result.append("?");
 		return result.toString();
+	}
+
+	@Override
+	public StorageTag getStorage() {
+		return baseType.getStorage();
+	}
+
+	@Override
+	public ITypeID withoutStorage() {
+		return withoutStorage;
 	}
 }

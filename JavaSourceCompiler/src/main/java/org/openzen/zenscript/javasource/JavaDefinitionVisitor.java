@@ -75,7 +75,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		GlobalTypeRegistry typeRegistry = module.compilationUnit.globalTypeRegistry;
 		DefinitionTypeID thisType = typeRegistry.getForMyDefinition(definition);
 		
-		CompileScope scope = new CompileScope(module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
+		CompileScope scope = new CompileScope(module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations, module.storageTypes);
 		return new JavaSourceFileScope(file.importer, compiler.helperGenerator, cls, scope, definition instanceof InterfaceDefinition, thisType, compiler.context);
 	}
 
@@ -371,8 +371,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		if (definition.hasTag(JavaNativeClass.class)) {
 			ITypeID[] typeParameters = new ITypeID[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < typeParameters.length; i++)
-				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]);
-			ITypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, typeParameters);
+				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i], null);
+			ITypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, null, typeParameters);
 			
 			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.typeParameters, indent + settings.indent, output, scope, definition);
 			for (IDefinitionMember member : definition.members)

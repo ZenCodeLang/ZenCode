@@ -27,6 +27,7 @@ import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -57,7 +58,7 @@ public class FileScope extends BaseScope {
 
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
-		ITypeID type = context.getType(position, Collections.singletonList(name));
+		ITypeID type = context.getType(position, Collections.singletonList(name), null);
 		if (type != null)
 			return new PartialTypeExpression(position, type, name.arguments);
 		
@@ -70,15 +71,15 @@ public class FileScope extends BaseScope {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
-		ITypeID type = context.getType(position, name);
+	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+		ITypeID type = context.getType(position, name, storage);
 		if (type != null)
 			return type;
 		
 		if (globals.containsKey(name.get(0).name)) {
-			type = globals.get(name.get(0).name).getType(position, context, name.get(0).arguments);
+			type = globals.get(name.get(0).name).getType(position, context, name.get(0).arguments, storage);
 			for (int i = 1; i < name.size(); i++) {
-				type = getTypeMembers(type).getInnerType(position, name.get(i));
+				type = getTypeMembers(type).getInnerType(position, name.get(i), storage);
 				if (type == null)
 					break;
 			}
@@ -88,6 +89,11 @@ public class FileScope extends BaseScope {
 		}
 		
 		return null;
+	}
+
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return context.getStorageTag(position, name, parameters);
 	}
 
 	@Override

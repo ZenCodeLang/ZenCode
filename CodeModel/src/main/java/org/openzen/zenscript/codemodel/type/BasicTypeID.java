@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -48,6 +50,11 @@ public enum BasicTypeID implements ITypeID {
 	
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
+		return this;
+	}
+
+	@Override
+	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
 		return this;
 	}
 	
@@ -99,5 +106,15 @@ public enum BasicTypeID implements ITypeID {
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
 		
+	}
+
+	@Override
+	public StorageTag getStorage() {
+		return ValueStorageTag.INSTANCE;
+	}
+
+	@Override
+	public ITypeID withoutStorage() {
+		return this;
 	}
 }

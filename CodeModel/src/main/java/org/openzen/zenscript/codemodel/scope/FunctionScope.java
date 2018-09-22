@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -75,7 +76,7 @@ public class FunctionScope extends StatementScope {
 			if (header.typeParameters != null) {
 				for (TypeParameter parameter : header.typeParameters) {
 					if (parameter.name.equals(name.name))
-						return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameter), name.arguments);
+						return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameter, null), name.arguments);
 				}
 			}
 		}
@@ -84,17 +85,22 @@ public class FunctionScope extends StatementScope {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
+	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
 		if (name.size() == 1 && name.get(0).hasNoArguments()) {
 			if (header.typeParameters != null) {
 				for (TypeParameter parameter : header.typeParameters) {
 					if (parameter.name.equals(name.get(0).name))
-						return getTypeRegistry().getGeneric(parameter);
+						return getTypeRegistry().getGeneric(parameter, null);
 				}
 			}
 		}
 		
-		return outer.getType(position, name);
+		return outer.getType(position, name, storage);
+	}
+
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return outer.getStorageTag(position, name, parameters);
 	}
 
 	@Override

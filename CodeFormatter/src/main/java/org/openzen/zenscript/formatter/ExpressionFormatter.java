@@ -70,6 +70,7 @@ import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
+import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.expression.ThrowExpression;
@@ -658,6 +659,11 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		return new ExpressionString(
 				expression.type.accept(typeFormatter) + "." + expression.setter.member.name + " = " + expression.setter.member.name,
 				ZenScriptOperator.ASSIGN);
+	}
+	
+	@Override
+	public ExpressionString visitStorageCast(StorageCastExpression expression) {
+		return expression.value.accept(this);
 	}
 	
 	@Override

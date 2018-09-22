@@ -73,6 +73,10 @@ import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
+import org.openzen.zenscript.codemodel.type.storage.AnyStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -173,7 +177,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 	public Void visitString(StringTypeID string) {
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "string", Modifiers.EXPORT, null);
 		
-		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, registry.getArray(CHAR, 1));
+		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, registry.getModified(ModifiedTypeID.MODIFIER_CONST, registry.getArray(CHAR, 1, BorrowStorageTag.INVOCATION)));
 		
 		add(builtin, STRING_ADD_STRING, StringTypeID.BORROW, StringTypeID.UNIQUE);
 		indexGet(builtin, STRING_INDEXGET, USIZE, CHAR);
@@ -181,7 +185,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		compare(builtin, STRING_COMPARE, StringTypeID.BORROW);
 		
 		getter(builtin, STRING_LENGTH, "length", USIZE);
-		getter(builtin, STRING_CHARACTERS, "characters", registry.getArray(CHAR, 1));
+		getter(builtin, STRING_CHARACTERS, "characters", registry.getArray(CHAR, 1, UniqueStorageTag.INSTANCE)); // TODO: can this be const borrowed / immutable borrowed?
 		getter(builtin, STRING_ISEMPTY, "isEmpty", BOOL);
 
 		method(builtin, STRING_REMOVE_DIACRITICS, "removeDiacritics", StringTypeID.BORROW);
@@ -220,21 +224,21 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 					ARRAY_INDEXGETRANGE);
 			
 			if (baseType == BYTE)
-				castImplicit(definition, BYTE_ARRAY_AS_SBYTE_ARRAY, registry.getArray(SBYTE, 1));
+				castImplicit(definition, BYTE_ARRAY_AS_SBYTE_ARRAY, registry.getArray(SBYTE, 1, array.storage));
 			if (baseType == SBYTE)
-				castImplicit(definition, SBYTE_ARRAY_AS_BYTE_ARRAY, registry.getArray(BYTE, 1));
+				castImplicit(definition, SBYTE_ARRAY_AS_BYTE_ARRAY, registry.getArray(BYTE, 1, array.storage));
 			if (baseType == SHORT)
-				castImplicit(definition, SHORT_ARRAY_AS_USHORT_ARRAY, registry.getArray(USHORT, 1));
+				castImplicit(definition, SHORT_ARRAY_AS_USHORT_ARRAY, registry.getArray(USHORT, 1, array.storage));
 			if (baseType == USHORT)
-				castImplicit(definition, USHORT_ARRAY_AS_SHORT_ARRAY, registry.getArray(SHORT, 1));
+				castImplicit(definition, USHORT_ARRAY_AS_SHORT_ARRAY, registry.getArray(SHORT, 1, array.storage));
 			if (baseType == INT)
-				castImplicit(definition, INT_ARRAY_AS_UINT_ARRAY, registry.getArray(UINT, 1));
+				castImplicit(definition, INT_ARRAY_AS_UINT_ARRAY, registry.getArray(UINT, 1, array.storage));
 			if (baseType == UINT)
-				castImplicit(definition, UINT_ARRAY_AS_INT_ARRAY, registry.getArray(INT, 1));
+				castImplicit(definition, UINT_ARRAY_AS_INT_ARRAY, registry.getArray(INT, 1, array.storage));
 			if (baseType == LONG)
-				castImplicit(definition, LONG_ARRAY_AS_ULONG_ARRAY, registry.getArray(ULONG, 1));
+				castImplicit(definition, LONG_ARRAY_AS_ULONG_ARRAY, registry.getArray(ULONG, 1, array.storage));
 			if (baseType == ULONG)
-				castImplicit(definition, ULONG_ARRAY_AS_LONG_ARRAY, registry.getArray(LONG, 1));
+				castImplicit(definition, ULONG_ARRAY_AS_LONG_ARRAY, registry.getArray(LONG, 1, array.storage));
 		}
 
 		FunctionHeader containsHeader = new FunctionHeader(BOOL, new FunctionParameter(baseType, "value"));
@@ -271,7 +275,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 			lambdaConstructorParameters[i] = new FunctionParameter(USIZE, null);
 		
 		FunctionHeader lambdaConstructorFunction = new FunctionHeader(baseType, indexGetParameters);
-		lambdaConstructorParameters[dimension] = new FunctionParameter(cache.getRegistry().getFunction(lambdaConstructorFunction), null);
+		lambdaConstructorParameters[dimension] = new FunctionParameter(cache.getRegistry().getFunction(lambdaConstructorFunction, BorrowStorageTag.INVOCATION), null);
 		FunctionHeader lambdaConstructorHeader = new FunctionHeader(VOID, lambdaConstructorParameters);
 		members.addConstructor(new ConstructorMember(
 				BUILTIN,
@@ -282,13 +286,13 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		
 		{
 			TypeParameter mappedConstructorParameter = new TypeParameter(BUILTIN, "T");
-			FunctionHeader mappedConstructorHeaderWithoutIndex = new FunctionHeader(baseType, registry.getGeneric(mappedConstructorParameter));
+			FunctionHeader mappedConstructorHeaderWithoutIndex = new FunctionHeader(baseType, registry.getGeneric(mappedConstructorParameter, BorrowStorageTag.INVOCATION));
 			FunctionHeader mappedConstructorFunctionWithoutIndex = new FunctionHeader(
 					new TypeParameter[] { mappedConstructorParameter },
 					VOID,
 					null,
-					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter), dimension), "original"),
-					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithoutIndex), "projection"));
+					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter, BorrowStorageTag.INVOCATION), dimension, BorrowStorageTag.INVOCATION), "original"),
+					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithoutIndex, BorrowStorageTag.INVOCATION), "projection"));
 			members.addConstructor(new ConstructorMember(
 					BUILTIN,
 					definition,
@@ -302,15 +306,15 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 			FunctionParameter[] projectionParameters = new FunctionParameter[dimension + 1];
 			for (int i = 0; i < dimension; i++)
 				projectionParameters[i] = new FunctionParameter(USIZE);
-			projectionParameters[dimension] = new FunctionParameter(registry.getGeneric(mappedConstructorParameter));
+			projectionParameters[dimension] = new FunctionParameter(registry.getGeneric(mappedConstructorParameter, BorrowStorageTag.INVOCATION));
 			
 			FunctionHeader mappedConstructorHeaderWithIndex = new FunctionHeader(baseType, projectionParameters);
 			FunctionHeader mappedConstructorFunctionWithIndex = new FunctionHeader(
 					new TypeParameter[] { mappedConstructorParameter },
 					VOID,
 					null,
-					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter), dimension), "original"),
-					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithIndex), "projection"));
+					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter, BorrowStorageTag.INVOCATION), dimension, BorrowStorageTag.INVOCATION), "original"),
+					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithIndex, BorrowStorageTag.INVOCATION), "projection"));
 			constructor(definition, ARRAY_CONSTRUCTOR_PROJECTED_INDEXED, mappedConstructorFunctionWithIndex);
 		}
 		
@@ -362,8 +366,8 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		
 		getter(builtin, BuiltinID.ASSOC_SIZE, "size", USIZE);
 		getter(builtin, BuiltinID.ASSOC_ISEMPTY, "isEmpty", BOOL);
-		getter(builtin, BuiltinID.ASSOC_KEYS, "keys", cache.getRegistry().getArray(keyType, 1));
-		getter(builtin, BuiltinID.ASSOC_VALUES, "values", cache.getRegistry().getArray(valueType, 1));
+		getter(builtin, BuiltinID.ASSOC_KEYS, "keys", cache.getRegistry().getArray(keyType, 1, UniqueStorageTag.INSTANCE));
+		getter(builtin, BuiltinID.ASSOC_VALUES, "values", cache.getRegistry().getArray(valueType, 1, UniqueStorageTag.INSTANCE));
 		getter(builtin, BuiltinID.ASSOC_HASHCODE, "objectHashCode", BasicTypeID.INT);
 		
 		iterator(builtin, ITERATOR_ASSOC_KEYS, keyType);
@@ -381,7 +385,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 	@Override
 	public Void visitGenericMap(GenericMapTypeID map) {
 		TypeParameter functionParameter = new TypeParameter(BUILTIN, "T");
-		Map<TypeParameter, ITypeID> parameterFilled = Collections.singletonMap(map.key, registry.getGeneric(functionParameter));
+		Map<TypeParameter, ITypeID> parameterFilled = Collections.singletonMap(map.key, registry.getGeneric(functionParameter, null));
 		ITypeID valueType = map.value.instance(new GenericMapper(registry, parameterFilled));
 		
 		FunctionHeader getOptionalHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, registry.getOptional(valueType), null, new FunctionParameter[0]);
@@ -496,7 +500,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 			for (int i = 0; i < constValues.length; i++)
 				constValues[i] = new EnumConstantExpression(BUILTIN, type, enumConstants.get(i));
 			
-			constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(type, 1)));
+			constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(type, 1, StaticStorageTag.INSTANCE)));
 			compare(definition, ENUM_COMPARE, type);
 			
 			if (!members.canCast(StringTypeID.STATIC)) {

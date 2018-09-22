@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -50,7 +51,8 @@ public class ParsedNamedType implements IParsedType {
 		for (ParsedNamePart namePart : name)
 			genericNames.add(namePart.compile(context));
 		
-		ITypeID baseType = context.getType(position, genericNames);
+		StorageTag storage = this.storage.resolve(position, context);
+		ITypeID baseType = context.getType(position, genericNames, storage);
 		if (baseType == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString());
 		
@@ -102,7 +104,8 @@ public class ParsedNamedType implements IParsedType {
 		for (int i = 0; i < genericTypes.size(); i++)
 			iteratorTypes[i] = genericTypes.get(i).compile(context);
 
-		ITypeID type = context.getTypeRegistry().getIterator(iteratorTypes);
+		StorageTag storage = this.storage.resolve(position, context);
+		ITypeID type = context.getTypeRegistry().getIterator(iteratorTypes, storage);
 		return context.getTypeRegistry().getModified(modifiers, type);
 	}
 	

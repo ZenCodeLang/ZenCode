@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -37,7 +38,7 @@ public class ParsedTryConvertExpression extends ParsedExpression {
 		HighLevelDefinition result = scope.getTypeRegistry().stdlib.getDefinition("Result");
 		if (cValue.thrownType != null) {
 			// this function throws
-			DefinitionTypeID resultType = scope.getTypeRegistry().getForDefinition(result, cValue.type, cValue.thrownType);
+			DefinitionTypeID resultType = scope.getTypeRegistry().getForDefinition(result, UniqueStorageTag.INSTANCE, cValue.type, cValue.thrownType);
 			return new TryConvertExpression(position, resultType, cValue);
 		} else {
 			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_ILLEGAL_TARGET, "try? can only be used on expressions that throw");

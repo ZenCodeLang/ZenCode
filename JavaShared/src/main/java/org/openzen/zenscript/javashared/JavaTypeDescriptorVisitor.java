@@ -36,7 +36,6 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 				case USIZE: return "I"; // special case: optional usize fits in an int where null = -1
 				case FLOAT: return "Ljava/lang/Float;";
 				case DOUBLE: return "Ljava/lang/Double;";
-				case STRING: return "Ljava/lang/String;";
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}
@@ -56,12 +55,16 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 				case USIZE: return "I";
 				case FLOAT: return "F";
 				case DOUBLE: return "D";
-				case STRING: return "Ljava/lang/String;";
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}
 		}
     }
+	
+	@Override
+	public String visitString(StringTypeID string) {
+		return "Ljava/lang/String;";
+	}
 
     @Override
     public String visitArray(ArrayTypeID array) {

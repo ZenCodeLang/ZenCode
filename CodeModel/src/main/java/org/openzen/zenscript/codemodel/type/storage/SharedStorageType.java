@@ -5,6 +5,10 @@
  */
 package org.openzen.zenscript.codemodel.type.storage;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -13,4 +17,17 @@ public class SharedStorageType implements StorageType {
 	public static final SharedStorageType INSTANCE = new SharedStorageType();
 	
 	private SharedStorageType() {}
+
+	@Override
+	public String getName() {
+		return "shared";
+	}
+
+	@Override
+	public StorageTag instance(CodePosition position, String[] arguments) {
+		if (arguments != null)
+			throw new CompileException(position, CompileExceptionCode.INVALID_STORAGE_TYPE_ARGUMENTS, "shared storage type doesn't take arguments");
+		
+		return SharedStorageTag.INSTANCE;
+	}
 }

@@ -65,6 +65,7 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.moduleserialization.CodePositionEncoding;
@@ -281,7 +282,7 @@ public class CodeReader implements CodeSerializationInput {
 			case TypeEncoding.TYPE_CHAR:
 				return BasicTypeID.CHAR;
 			case TypeEncoding.TYPE_STRING:
-				return BasicTypeID.STRING;
+				return new StringTypeID(storageTag);
 			case TypeEncoding.TYPE_UNDETERMINED:
 				return BasicTypeID.UNDETERMINED;
 			case TypeEncoding.TYPE_DEFINITION: {

@@ -62,7 +62,7 @@ public class TypeContext {
 	public GenericMapper getMapper() {
 		Map<TypeParameter, ITypeID> mapper = new HashMap<>();
 		for (TypeParameter parameter : typeParameters)
-			mapper.put(parameter, moduleContext.registry.getGeneric(parameter));
+			mapper.put(parameter, moduleContext.registry.getGeneric(parameter, null));
 		return new GenericMapper(moduleContext.registry, mapper);
 	}
 	

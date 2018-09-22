@@ -170,10 +170,10 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 						statementOutput.append(scope.type(switchValue.option.types[i])).append(" ").append(switchValue.parameters[i]).append(" = ((").append(variantTypeName).append(".").append(switchValue.option.getName());
 						if (variant.typeParameters != null && variant.typeParameters.length > 0) {
 							statementOutput.append("<");
-							for (int j = 0; j < variantType.typeParameters.length; j++) {
+							for (int j = 0; j < variantType.typeArguments.length; j++) {
 								if (j > 0)
 									statementOutput.append(", ");
-								statementOutput.append(scope.type(variantType.typeParameters[j]));
+								statementOutput.append(scope.type(variantType.typeArguments[j]));
 							}
 							statementOutput.append(">");
 						}

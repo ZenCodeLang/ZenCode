@@ -25,6 +25,7 @@ import org.openzen.zenscript.constructor.JSONUtils;
 import org.openzen.zenscript.constructor.ParsedModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.codemodel.type.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.parser.ParsedFile;
 
 /**
@@ -72,7 +73,7 @@ public class DirectoryModuleReference implements ModuleReference {
 			}
 
 			// TODO: annotation type registration
-			ModuleSpace space = new ModuleSpace(unit, new ArrayList<>());
+			ModuleSpace space = new ModuleSpace(unit, new ArrayList<>(), StorageType.getStandard());
 			SemanticModule[] dependencies = new SemanticModule[dependencyNames.size()];
 			for (int i = 0; i < dependencies.length; i++) {
 				String dependencyName = dependencyNames.get(i);

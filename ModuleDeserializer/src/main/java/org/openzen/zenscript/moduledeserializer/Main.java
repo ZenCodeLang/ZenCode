@@ -13,6 +13,12 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeAnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.type.storage.AnyStorageType;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageType;
+import org.openzen.zenscript.codemodel.type.storage.SharedStorageType;
+import org.openzen.zenscript.codemodel.type.storage.StaticStorageType;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageType;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.ModuleRegistry;
 import org.openzen.zenscript.compiler.SemanticModule;
@@ -30,9 +36,10 @@ public class Main {
 			NativeAnnotationDefinition.INSTANCE,
 			PreconditionAnnotationDefinition.INSTANCE
 		};
+		StorageType[] storageTypes = StorageType.getStandard();
 		CompilationUnit compilationUnit = new CompilationUnit();
 		ModuleRegistry modules = new ModuleRegistry();
-		ModuleDeserializer deserializer = new ModuleDeserializer(modules, compilationUnit, annotations, rootPackage);
+		ModuleDeserializer deserializer = new ModuleDeserializer(modules, compilationUnit, annotations, storageTypes, rootPackage);
 		SemanticModule[] libs = deserializer.deserialize(data);
 		
 	}

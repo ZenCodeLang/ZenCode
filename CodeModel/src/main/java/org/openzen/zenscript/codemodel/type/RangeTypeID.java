@@ -8,6 +8,8 @@ package org.openzen.zenscript.codemodel.type;
 import java.util.List;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -38,6 +40,11 @@ public class RangeTypeID implements ITypeID {
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
 		return mapper.registry.getRange(baseType.instance(mapper));
+	}
+	
+	@Override
+	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
+		return registry.getRange(baseType.withStorage(registry, storage));
 	}
 
 	@Override
@@ -110,5 +117,15 @@ public class RangeTypeID implements ITypeID {
 	@Override
 	public String toString() {
 		return baseType.toString() + " .. " + baseType.toString();
+	}
+
+	@Override
+	public StorageTag getStorage() {
+		return ValueStorageTag.INSTANCE;
+	}
+
+	@Override
+	public ITypeID withoutStorage() {
+		return this;
 	}
 }

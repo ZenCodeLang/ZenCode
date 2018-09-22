@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -17,13 +18,17 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 public class GenericMapTypeID implements ITypeID {
 	public final ITypeID value;
 	public final TypeParameter key;
+	public final StorageTag storage;
 	private final GenericMapTypeID normalized;
+	private final GenericMapTypeID withoutStorage;
 	
-	public GenericMapTypeID(GlobalTypeRegistry registry, ITypeID value, TypeParameter key) {
+	public GenericMapTypeID(GlobalTypeRegistry registry, ITypeID value, TypeParameter key, StorageTag storage) {
 		this.value = value;
 		this.key = key;
+		this.storage = storage;
 		
-		normalized = value.getNormalized() == value ? this : registry.getGenericMap(value.getNormalized(), key);
+		normalized = value.getNormalized() == value ? this : registry.getGenericMap(value.getNormalized(), key, storage);
+		withoutStorage = storage == null ? this : registry.getGenericMap(value, key, null);
 	}
 	
 	@Override
@@ -58,7 +63,12 @@ public class GenericMapTypeID implements ITypeID {
 
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
-		return mapper.registry.getGenericMap(value.instance(mapper), key);
+		return mapper.registry.getGenericMap(value.instance(mapper), key, storage);
+	}
+
+	@Override
+	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
+		return registry.getGenericMap(value, key, storage);
 	}
 
 	@Override
@@ -97,27 +107,32 @@ public class GenericMapTypeID implements ITypeID {
 		int hash = 5;
 		hash = 97 * hash + this.value.hashCode();
 		hash = 97 * hash + this.key.hashCode();
+		hash = 97 * hash + Objects.hashCode(this.storage);
 		return hash;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
+		
 		final GenericMapTypeID other = (GenericMapTypeID) obj;
-		if (!Objects.equals(this.value, other.value)) {
-			return false;
-		}
-		if (!Objects.equals(this.key, other.key)) {
-			return false;
-		}
-		return true;
+		return Objects.equals(this.value, other.value)
+				&& Objects.equals(this.key, other.key)
+				&& Objects.equals(this.storage, other.storage);
+	}
+
+	@Override
+	public StorageTag getStorage() {
+		return storage;
+	}
+
+	@Override
+	public ITypeID withoutStorage() {
+		return withoutStorage;
 	}
 }

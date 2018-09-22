@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.formatter.FileFormatter;
@@ -47,9 +48,10 @@ public class Main {
 		CompilingPackage compilingPkg = new CompilingPackage(pkg, module);
 		ParsedFile[] parsedFiles = parse(compilingPkg, inputFiles);
 		
+		CompilationUnit compileUnit = new CompilationUnit();
 		ZSPackage global = new ZSPackage(null, "");
-		GlobalRegistry registry = new GlobalRegistry(global);
-		SemanticModule semantic = compileSyntaxToSemantic(compilingPkg, parsedFiles, registry);
+		GlobalRegistry registry = new GlobalRegistry(compileUnit.globalTypeRegistry, global);
+		SemanticModule semantic = compileSyntaxToSemantic(compileUnit, compilingPkg, parsedFiles, registry);
 		
 		//formatFiles(pkg, module);
 		
@@ -104,8 +106,8 @@ public class Main {
 		}
 	}
 	
-	private static SemanticModule compileSyntaxToSemantic(CompilingPackage compiling, ParsedFile[] files, GlobalRegistry registry) {
-		ModuleSpace space = new ModuleSpace(new CompilationUnit(), new ArrayList<>());
+	private static SemanticModule compileSyntaxToSemantic(CompilationUnit compileUnit, CompilingPackage compiling, ParsedFile[] files, GlobalRegistry registry) {
+		ModuleSpace space = new ModuleSpace(compileUnit, new ArrayList<>(), StorageType.getStandard());
 		for (Map.Entry<String, ISymbol> global : registry.collectGlobals().entrySet()) {
 			space.addGlobal(global.getKey(), global.getValue());
 		}

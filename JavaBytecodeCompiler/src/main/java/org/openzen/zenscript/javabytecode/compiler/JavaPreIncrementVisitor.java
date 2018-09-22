@@ -361,6 +361,11 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 	}
 	
 	@Override
+	public Void visitStorageCast(StorageCastExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+	
+	@Override
 	public Void visitSupertypeCast(SupertypeCastExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}

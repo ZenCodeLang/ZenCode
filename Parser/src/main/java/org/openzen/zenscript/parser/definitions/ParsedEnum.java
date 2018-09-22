@@ -18,6 +18,7 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 
@@ -80,7 +81,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 	public void compile(BaseScope scope) {
 		super.compile(scope);
 		
-		DefinitionTypeID type = scope.getTypeRegistry().getForDefinition(compiled, ITypeID.NONE);
+		DefinitionTypeID type = scope.getTypeRegistry().getForDefinition(compiled, BorrowStorageTag.INVOCATION, ITypeID.NONE);
 		ExpressionScope evalScope = new ExpressionScope(scope);
 		for (ParsedEnumConstant constant : enumValues) {
 			constant.compileCode(type, evalScope);

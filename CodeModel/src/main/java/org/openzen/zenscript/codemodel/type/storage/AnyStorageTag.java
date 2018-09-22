@@ -18,4 +18,19 @@ public class AnyStorageTag implements StorageTag {
 	public StorageType getType() {
 		return AnyStorageType.INSTANCE;
 	}
+	
+	@Override
+	public String toString() {
+		return "any";
+	}
+
+	@Override
+	public boolean canCastTo(StorageTag other) {
+		return other == BorrowStorageTag.INVOCATION;
+	}
+
+	@Override
+	public boolean canCastFrom(StorageTag other) {
+		return true;
+	}
 }

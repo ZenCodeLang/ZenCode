@@ -35,6 +35,7 @@ import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -210,7 +211,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
-		compileMethod(member, new FunctionHeader(scope.semanticScope.getTypeRegistry().getIterator(member.getLoopVariableTypes())), member.body);
+		compileMethod(member, new FunctionHeader(scope.semanticScope.getTypeRegistry().getIterator(member.getLoopVariableTypes(), UniqueStorageTag.INSTANCE)), member.body);
 		return null;
 	}
 

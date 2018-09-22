@@ -3,16 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.codemodel.type.storage;
+package org.openzen.zenscript.codemodel.type;
+
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface StorageTag {
-	StorageType getType();
-	
-	boolean canCastTo(StorageTag other);
-	
-	boolean canCastFrom(StorageTag other);
+public interface UnstoredTypeID {
+	ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage);
 }

@@ -5,49 +5,55 @@
  */
 package org.openzen.zenscript.parser.type;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ParsedTypeArray implements IParsedType {
+	private final CodePosition position;
 	public final IParsedType baseType;
 	public final int dimension;
 	public final int modifiers;
-	public final ParsedStorageTag storageTag;
+	public final ParsedStorageTag storage;
 	
-	public ParsedTypeArray(IParsedType baseType, int dimension, ParsedStorageTag storageTag) {
+	public ParsedTypeArray(CodePosition position, IParsedType baseType, int dimension, ParsedStorageTag storage) {
+		this.position = position;
 		this.baseType = baseType;
 		this.dimension = dimension;
 		this.modifiers = 0;
-		this.storageTag = storageTag;
+		this.storage = storage;
 	}
 
-	private ParsedTypeArray(IParsedType baseType, int dimension, int modifiers, ParsedStorageTag storageTag) {
+	private ParsedTypeArray(CodePosition position, IParsedType baseType, int dimension, int modifiers, ParsedStorageTag storage) {
+		this.position = position;
 		this.baseType = baseType;
 		this.dimension = dimension;
 		this.modifiers = modifiers;
-		this.storageTag = storageTag;
+		this.storage = storage;
 	}
 	
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedTypeArray(baseType, dimension, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storageTag);
+		return new ParsedTypeArray(position, baseType, dimension, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storage);
 	}
 
 	@Override
 	public IParsedType withModifiers(int modifiers) {
-		return new ParsedTypeArray(baseType, dimension, this.modifiers | modifiers, storageTag);
+		return new ParsedTypeArray(position, baseType, dimension, this.modifiers | modifiers, storage);
 	}
 
 	@Override
 	public ITypeID compile(TypeResolutionContext context) {
 		ITypeID baseType = this.baseType.compile(context);
+		StorageTag storage = this.storage.resolve(position, context);
 		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return registry.getModified(modifiers, registry.getArray(baseType, dimension));
+		return registry.getModified(modifiers, registry.getArray(baseType, dimension, storage));
 	}
 }

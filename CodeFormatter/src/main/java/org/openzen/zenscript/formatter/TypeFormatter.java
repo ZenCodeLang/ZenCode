@@ -21,6 +21,7 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import stdlib.Chars;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
@@ -41,20 +42,37 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 	public String visitBasic(BasicTypeID basic) {
 		return basic.name;
 	}
+	
+	@Override
+	public String visitString(StringTypeID string) {
+		if (string.storage == null)
+			return "string";
+		else
+			return "string`" + string.storage.toString();
+	}
 
 	@Override
 	public String visitArray(ArrayTypeID array) {
 		String element = array.elementType.accept(this);
+		String result;
 		if (array.dimension == 1) {
-			return element + "[]";
+			result = element + "[]";
 		} else {
-			return element + "[" + Chars.times(',', array.dimension - 1) + "]";
+			result = element + "[" + Chars.times(',', array.dimension - 1) + "]";
 		}
+		if (array.storage == null)
+			return result;
+		
+		return result + '`' + array.storage.toString();
 	}
 
 	@Override
 	public String visitAssoc(AssocTypeID assoc) {
-		return assoc.valueType.accept(this) + "[" + assoc.keyType.accept(this) + "]";
+		String result = assoc.valueType.accept(this) + "[" + assoc.keyType.accept(this) + "]";
+		if (assoc.storage == null)
+			return result;
+		
+		return result + '`' + assoc.storage.toString();
 	}
 
 	@Override
@@ -67,32 +85,47 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		StringBuilder result = new StringBuilder();
 		result.append("function");
 		FormattingUtils.formatHeader(result, settings, function.header, this);
+		
+		if (function.storage != null) {
+			result.append('`');
+			result.append(function.storage.toString());
+		}
+		
 		return result.toString();
 	}
 
 	@Override
 	public String visitDefinition(DefinitionTypeID definition) {
 		String importedName = importer.importDefinition(definition.definition);
-		if (definition.typeParameters == null)
+		if (definition.typeArguments == null)
 			return importedName;
 		
 		StringBuilder result = new StringBuilder();
 		result.append(importedName);
 		result.append("<");
 		int index = 0;
-		for (ITypeID typeParameter : definition.typeParameters) {
+		for (ITypeID typeParameter : definition.typeArguments) {
 			if (index > 0)
 				result.append(", ");
 			
 			result.append(typeParameter.accept(this));
 		}
 		result.append(">");
+		
+		if (definition.storage != null) {
+			result.append('`');
+			result.append(definition.storage.toString());
+		}
+		
 		return result.toString();
 	}
 
 	@Override
 	public String visitGeneric(GenericTypeID generic) {
-		return generic.parameter.name;
+		if (generic.storage == null)
+			return generic.parameter.name;
+		
+		return generic.parameter.name + '`' + generic.storage.toString();
 	}
 
 	@Override
@@ -131,6 +164,12 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		result.append("[<");
 		FormattingUtils.formatTypeParameters(result, new TypeParameter[] { map.key }, this);
 		result.append("]>");
+		
+		if (map.storage != null) {
+			result.append('`');
+			result.append(map.storage.toString());
+		}
+		
 		return result.toString();
 	}
 }

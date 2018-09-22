@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
@@ -40,10 +41,14 @@ public class JavaTypeNameVisitor implements TypeVisitor<String> {
 			case ULONG: return "ULong";
 			case FLOAT: return "Float";
 			case DOUBLE: return "Double";
-			case STRING: return "String";
 			case CHAR: return "Char";
 			default: throw new IllegalArgumentException("Invalid type: " + basic);
 		}
+	}
+	
+	@Override
+	public String visitString(StringTypeID string) {
+		return "String";
 	}
 
 	@Override

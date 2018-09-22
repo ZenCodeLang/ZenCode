@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.SemanticModule;
 
@@ -35,6 +36,7 @@ public class DeserializingModule {
 	private final PackageDefinitions definitions = new PackageDefinitions();
 	private final List<ScriptBlock> scripts = new ArrayList<>();
 	private final AnnotationDefinition[] annotations;
+	private final StorageType[] storageTypes;
 	
 	private final List<ExpansionDefinition> expansions;
 	public final ModuleContext context;
@@ -45,7 +47,8 @@ public class DeserializingModule {
 			DeserializingModule[] dependencies,
 			ZSPackage rootPackage,
 			ZSPackage modulePackage,
-			AnnotationDefinition[] annotations)
+			AnnotationDefinition[] annotations,
+			StorageType[] storageTypes)
 	{
 		this.name = name;
 		this.module = new Module(name);
@@ -54,6 +57,7 @@ public class DeserializingModule {
 		this.rootPackage = rootPackage;
 		this.modulePackage = modulePackage;
 		this.annotations = annotations;
+		this.storageTypes = storageTypes;
 		
 		expansions = new ArrayList<>();
 		context = new ModuleContext(registry, module, expansions, rootPackage);
@@ -68,6 +72,7 @@ public class DeserializingModule {
 		this.rootPackage = module.rootPackage;
 		this.modulePackage = module.modulePackage;
 		this.annotations = module.annotations;
+		this.storageTypes = module.storageTypes;
 		
 		expansions = module.expansions;
 		context = module.getContext();
@@ -95,7 +100,8 @@ public class DeserializingModule {
 				scripts,
 				compilationUnit,
 				expansions,
-				annotations);
+				annotations,
+				storageTypes);
 	}
 	
 	public void add(HighLevelDefinition definition) {

@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.storage.AnyStorageTag;
@@ -25,6 +26,7 @@ public class StringTypeID implements ITypeID {
 	public static final StringTypeID UNIQUE = new StringTypeID(UniqueStorageTag.INSTANCE);
 	public static final StringTypeID BORROW = new StringTypeID(BorrowStorageTag.INVOCATION);
 	public static final StringTypeID SHARED = new StringTypeID(SharedStorageTag.INSTANCE);
+	public static final StringTypeID NOSTORAGE = new StringTypeID(null);
 	
 	public final StorageTag storage;
 	
@@ -64,16 +66,59 @@ public class StringTypeID implements ITypeID {
 
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return this;
+	}
+	
+	@Override
+	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
+		return registry.getString(storage);
 	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return false;
 	}
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		
+	}
+	
+	@Override
+	public String toString() {
+		if (storage == null)
+			return "string";
+		
+		return "string`" + storage.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 5;
+		hash = 97 * hash + Objects.hashCode(this.storage);
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		
+		final StringTypeID other = (StringTypeID) obj;
+		return Objects.equals(this.storage, other.storage);
+	}
+
+	@Override
+	public StorageTag getStorage() {
+		return storage;
+	}
+
+	@Override
+	public ITypeID withoutStorage() {
+		return NOSTORAGE;
 	}
 }

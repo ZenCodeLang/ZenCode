@@ -21,6 +21,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -70,8 +71,13 @@ public class LambdaScope extends StatementScope {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
-		return outer.getType(position, name);
+	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+		return outer.getType(position, name, storage);
+	}
+
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return outer.getStorageTag(position, name, parameters);
 	}
 
 	@Override

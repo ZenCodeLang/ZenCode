@@ -23,6 +23,11 @@ import org.openzen.zenscript.javabytecode.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -144,7 +149,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public static final JavaMethod OBJECT_HASHCODE = JavaMethod.getNativeVirtual(JavaClass.OBJECT, "hashCode", "()I");
 	private static final JavaMethod COLLECTION_SIZE = JavaMethod.getNativeVirtual(JavaClass.COLLECTION, "size", "()I");
 	private static final JavaMethod COLLECTION_TOARRAY = JavaMethod.getNativeVirtual(JavaClass.COLLECTION, "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;");
-
+	
+	private static final JavaMethod SHARED_INIT = JavaMethod.getConstructor(JavaClass.SHARED, "(Ljava/lang/Object;)V", Modifier.PUBLIC);
+	private static final JavaMethod SHARED_GET = JavaMethod.getNativeVirtual(JavaClass.SHARED, "get", "()Ljava/lang/Object;");
+	private static final JavaMethod SHARED_ADDREF = JavaMethod.getNativeVirtual(JavaClass.SHARED, "addRef", "()V");
+	private static final JavaMethod SHARED_RELEASE = JavaMethod.getNativeVirtual(JavaClass.SHARED, "release", "()V");
+	
 	protected final JavaWriter javaWriter;
 	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
 	private final JavaBytecodeContext context;
@@ -826,10 +836,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 						case CHAR:
 							javaWriter.invokeStatic(ARRAYS_COPY_OF_RANGE_CHARS);
 							break;
-						case STRING:
-							javaWriter.invokeStatic(ARRAYS_COPY_OF_RANGE_OBJECTS);
-							javaWriter.checkCast("[Ljava/lang/String;");
-							break;
 						default:
 							throw new IllegalArgumentException("Unknown basic type: " + type.elementType);
 					}
@@ -873,9 +879,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 							break;
 						case CHAR:
 							javaWriter.invokeStatic(ARRAYS_EQUALS_CHARS);
-							break;
-						case STRING:
-							javaWriter.invokeStatic(ARRAYS_EQUALS_OBJECTS);
 							break;
 						default:
 							throw new IllegalArgumentException("Unknown basic type: " + type.elementType);
@@ -1651,7 +1654,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", signature);
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
-		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header))});
+		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header, null))});
 		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 
 		javaWriter.newObject(name);
@@ -1888,7 +1891,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case ASSOC_KEYS: {
 				AssocTypeID type = (AssocTypeID) expression.target.type;
-				ArrayTypeID result = new ArrayTypeID(null, type.keyType, 1);
+				ArrayTypeID result = new ArrayTypeID(null, type.keyType, 1, UniqueStorageTag.INSTANCE);
 				Type resultType = context.getType(result);
 
 				javaWriter.invokeVirtual(MAP_KEYS);
@@ -1901,7 +1904,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			}
 			case ASSOC_VALUES: {
 				AssocTypeID type = (AssocTypeID) expression.target.type;
-				ArrayTypeID result = new ArrayTypeID(null, type.valueType, 1);
+				ArrayTypeID result = new ArrayTypeID(null, type.valueType, 1, UniqueStorageTag.INSTANCE);
 				Type resultType = context.getType(result);
 
 				javaWriter.invokeVirtual(MAP_VALUES);
@@ -1954,9 +1957,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 							break;
 						case CHAR:
 							javaWriter.invokeStatic(ARRAYS_HASHCODE_CHARS);
-							break;
-						case STRING:
-							javaWriter.invokeStatic(ARRAYS_DEEPHASHCODE);
 							break;
 						default:
 							throw new IllegalArgumentException("Unknown basic type: " + type.elementType);
@@ -2056,7 +2056,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 
 		//TODO replace beforeSwitch visitor or similar
-		if (expression.value.type == BasicTypeID.STRING)
+		if (expression.value.type instanceof StringTypeID)
 			javaWriter.invokeVirtual(OBJECT_HASHCODE);
 
 		//TODO replace with beforeSwitch visitor or similar
@@ -2366,6 +2366,27 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitStaticSetter(StaticSetterExpression expression) {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+	
+	@Override
+	public Void visitStorageCast(StorageCastExpression expression) {
+		expression.value.accept(this);
+		
+		if (expression.type.isDestructible()) { // only destructible types matter here; nondestructible types never need conversion
+			StorageTag fromTag = expression.value.type.getStorage();
+			StorageTag toTag = expression.type.getStorage();
+			if (fromTag == SharedStorageTag.INSTANCE && toTag == BorrowStorageTag.INVOCATION) {
+				// Shared<T>.get()
+				javaWriter.invokeVirtual(SHARED_GET);
+			} else if (fromTag == UniqueStorageTag.INSTANCE && toTag == SharedStorageTag.INSTANCE) {
+				// new Shared<T>(value)
+				javaWriter.newObject("zsynthetic/Shared");
+				javaWriter.dup();
+				javaWriter.invokeSpecial(SHARED_INIT);
+			}
+		}
+		
 		return null;
 	}
 

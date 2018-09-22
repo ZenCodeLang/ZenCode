@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -39,10 +40,10 @@ public class GenericName {
 		return arguments.length == 0;
 	}
 	
-	public static ITypeID getInnerType(GlobalTypeRegistry registry, DefinitionTypeID type, List<GenericName> name, int index) {
+	public static ITypeID getInnerType(GlobalTypeRegistry registry, DefinitionTypeID type, List<GenericName> name, int index, StorageTag storage) {
 		while (index < name.size()) {
 			GenericName innerName = name.get(index++);
-			type = type.getInnerType(innerName, registry);
+			type = type.getInnerType(innerName, registry, storage);
 			if (type == null)
 				return null;
 		}

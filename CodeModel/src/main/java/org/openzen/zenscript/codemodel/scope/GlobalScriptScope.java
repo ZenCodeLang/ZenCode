@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -45,8 +46,13 @@ public class GlobalScriptScope extends StatementScope {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
-		return file.getType(position, name);
+	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+		return file.getType(position, name, storage);
+	}
+
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return file.getStorageTag(position, name, parameters);
 	}
 
 	@Override

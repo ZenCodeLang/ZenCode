@@ -17,7 +17,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.parser.PrecompilationState;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 
 /**
  *
@@ -37,9 +37,12 @@ public class ParsedExpressionString extends ParsedExpression {
 		if (value.length() == 1) {
 			if (scope.hints.contains(BasicTypeID.CHAR)) {
 				return new ConstantCharExpression(position, value.charAt(0));
-			} else if (!scope.hints.contains(BasicTypeID.STRING)) {
-				if (scope.hints.contains(BasicTypeID.INT))
-					return new ConstantCharExpression(position, value.charAt(0));
+			} else {
+				for (ITypeID type : scope.hints)
+					if (type instanceof StringTypeID)
+						return new ConstantStringExpression(position, value);
+				
+				return new ConstantCharExpression(position, value.charAt(0));
 			}
 		}
 		
@@ -53,7 +56,7 @@ public class ParsedExpressionString extends ParsedExpression {
 				throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "char value expected but string given");
 			
 			return new CharSwitchValue(value.charAt(0));
-		} else if (type == BasicTypeID.STRING) {
+		} else if (type instanceof StringTypeID) {
 			return new StringSwitchValue(value);
 		} else {
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Can only use string keys for string values");

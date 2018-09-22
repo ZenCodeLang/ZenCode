@@ -26,6 +26,7 @@ import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -155,6 +156,11 @@ public class JavaSourceSyntheticHelperGenerator {
 				default:
 					throw new UnsupportedOperationException("Invalid array base type: " + basic);
 			}
+		}
+		
+		@Override
+		public ArrayKind visitString(StringTypeID string) {
+			return ArrayKind.OBJECT;
 		}
 
 		@Override

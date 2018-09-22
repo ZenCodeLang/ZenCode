@@ -6,9 +6,11 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -16,9 +18,13 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  */
 public class GenericTypeID implements ITypeID {
 	public final TypeParameter parameter;
+	public final StorageTag storage;
+	private final GenericTypeID withoutStorage;
 
-	public GenericTypeID(TypeParameter parameter) {
+	public GenericTypeID(GlobalTypeRegistry registry, TypeParameter parameter, StorageTag storage) {
 		this.parameter = parameter;
+		this.storage = storage;
+		withoutStorage = storage == null ? this : registry.getGeneric(parameter, null);
 	}
 	
 	public boolean matches(LocalMemberCache cache, ITypeID type) {
@@ -32,7 +38,12 @@ public class GenericTypeID implements ITypeID {
 	
 	@Override
 	public ITypeID instance(GenericMapper mapper) {
-		return mapper.map(this);
+		return mapper.map(this).withStorage(mapper.registry, storage);
+	}
+	
+	@Override
+	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
+		return registry.getGeneric(parameter, storage);
 	}
 
 	@Override
@@ -89,6 +100,7 @@ public class GenericTypeID implements ITypeID {
 	public int hashCode() {
 		int hash = 7;
 		hash = 47 * hash + parameter.hashCode();
+		hash = 47 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -104,11 +116,22 @@ public class GenericTypeID implements ITypeID {
 			return false;
 		}
 		final GenericTypeID other = (GenericTypeID) obj;
-		return this.parameter == other.parameter;
+		return this.parameter == other.parameter
+				&& Objects.equals(this.storage, other.storage);
 	}
 	
 	@Override
 	public String toString() {
 		return parameter.toString();
+	}
+
+	@Override
+	public StorageTag getStorage() {
+		return storage;
+	}
+
+	@Override
+	public ITypeID withoutStorage() {
+		return withoutStorage;
 	}
 }

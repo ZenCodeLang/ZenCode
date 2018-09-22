@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaSynthesizedFunctionInstance;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
@@ -66,10 +67,14 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 			case FLOAT: return "float";
 			case DOUBLE: return "double";
 			case CHAR: return "char";
-			case STRING: return "String";
 			default:
 				throw new IllegalArgumentException("Unknown basic type: " + basic);
 		}
+	}
+	
+	@Override
+	public String visitString(StringTypeID string) {
+		return "String";
 	}
 
 	@Override
@@ -144,12 +149,12 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 			output.append(cls == null ? importer.importType(type.definition) : importer.importType(cls));
 		}
 		
-		if (!isStatic && type.typeParameters.length > 0) {
+		if (!isStatic && type.typeArguments.length > 0) {
 			output.append("<");
-			for (int i = 0; i < type.typeParameters.length; i++) {
+			for (int i = 0; i < type.typeArguments.length; i++) {
 				if (i > 0)
 					output.append(", ");
-				output.append(type.typeParameters[i].accept(objectTypeVisitor));
+				output.append(type.typeArguments[i].accept(objectTypeVisitor));
 			}
 			output.append(">");
 		}

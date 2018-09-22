@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -85,6 +86,6 @@ public class IteratorMember extends FunctionalMember {
 	}
 	
 	private static FunctionHeader createIteratorHeader(GlobalTypeRegistry registry, ITypeID[] iteratorTypes) {
-		return new FunctionHeader(registry.getIterator(iteratorTypes));
+		return new FunctionHeader(registry.getIterator(iteratorTypes, UniqueStorageTag.INSTANCE));
 	}
 }

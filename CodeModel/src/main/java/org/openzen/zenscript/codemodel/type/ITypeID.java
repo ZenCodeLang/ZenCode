@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -55,6 +56,10 @@ public interface ITypeID {
 		throw new UnsupportedOperationException("Not an immutable type");
 	}
 	
+	public ITypeID withoutStorage();
+	
+	public StorageTag getStorage();
+	
 	public boolean hasDefaultValue();
 	
 	public boolean isObjectType();
@@ -72,6 +77,8 @@ public interface ITypeID {
 	}
 	
 	public ITypeID instance(GenericMapper mapper);
+	
+	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage);
 	
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters);
 	
@@ -177,9 +184,9 @@ public interface ITypeID {
 				if (definitionType.definition != definition.definition)
 					return false;
 				
-				if (definition.typeParameters != null) {
-					for (int i = 0; i < definitionType.typeParameters.length; i++) {
-						if (!match(definitionType.typeParameters[i], definition.typeParameters[i]))
+				if (definition.typeArguments != null) {
+					for (int i = 0; i < definitionType.typeArguments.length; i++) {
+						if (!match(definitionType.typeArguments[i], definition.typeArguments[i]))
 							return false;
 					}
 				}

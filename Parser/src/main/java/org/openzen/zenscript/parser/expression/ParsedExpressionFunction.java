@@ -25,6 +25,7 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LambdaScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -82,7 +83,9 @@ public class ParsedExpressionFunction extends ParsedExpression {
 			scope.genericInferenceMap.putAll(inferredTypes);
 		}
 		
-		FunctionTypeID functionType = scope.getTypeRegistry().getFunction(genericHeader.withGenericArguments(scope.getTypeRegistry(), new GenericMapper(scope.getTypeRegistry(), scope.genericInferenceMap)));
+		FunctionTypeID functionType = scope.getTypeRegistry().getFunction(
+				genericHeader.withGenericArguments(scope.getTypeRegistry(), new GenericMapper(scope.getTypeRegistry(), scope.genericInferenceMap)),
+				UniqueStorageTag.INSTANCE);
 		return new FunctionExpression(position, functionType, closure, header, statements);
 	}
 	

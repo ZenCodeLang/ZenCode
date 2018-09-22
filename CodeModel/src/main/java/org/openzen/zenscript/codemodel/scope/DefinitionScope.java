@@ -31,6 +31,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -60,7 +61,7 @@ public class DefinitionScope extends BaseScope {
 			
 			for (TypeParameter parameter : expansion.typeParameters) {
 				genericParameters.put(parameter.name, parameter);
-				typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter));
+				typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter, null));
 			}
 		} else {
 			DefinitionTypeID definitionType = outer.getTypeRegistry().getForMyDefinition(definition);
@@ -69,7 +70,7 @@ public class DefinitionScope extends BaseScope {
 			while (definitionType != null) {
 				for (TypeParameter parameter : definitionType.definition.typeParameters) {
 					genericParameters.put(parameter.name, parameter);
-					typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter));
+					typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter, null));
 				}
 				definitionType = definitionType.definition.isStatic() ? null : definitionType.outer;
 			}
@@ -92,37 +93,42 @@ public class DefinitionScope extends BaseScope {
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		if (members != null) {
 			if (members.hasInnerType(name.name))
-				return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
+				return new PartialTypeExpression(position, members.getInnerType(position, name, null), name.arguments);
 			if (members.hasMember(name.name) && !name.hasArguments())
 				return members.getMemberExpression(position, this, new ThisExpression(position, type), name, true);
 		} else if (innerTypes.containsKey(name.name)) {
-			return new PartialTypeExpression(position, getTypeRegistry().getForDefinition(innerTypes.get(name).get(), name.arguments), name.arguments);
+			return new PartialTypeExpression(position, getTypeRegistry().getForDefinition(innerTypes.get(name).get(), null, name.arguments), name.arguments);
 		}
 		if (genericParameters.containsKey(name.name) && !name.hasArguments())
-			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(genericParameters.get(name.name)), name.arguments);
+			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(genericParameters.get(name.name), null), name.arguments);
 		
 		return outer.get(position, name);
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
+	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
 		if (members != null && members.hasInnerType(name.get(0).name)) {
-			ITypeID result = members.getInnerType(position, name.get(0));
+			ITypeID result = members.getInnerType(position, name.get(0), storage);
 			for (int i = 1; i < name.size(); i++) {
-				result = getTypeMembers(result).getInnerType(position, name.get(i));
+				result = getTypeMembers(result).getInnerType(position, name.get(i), storage);
 			}
 			return result;
 		} else if (genericParameters.containsKey(name.get(0).name) && name.size() == 1 && !name.get(0).hasArguments()) {
-			return getTypeRegistry().getGeneric(genericParameters.get(name.get(0).name));
+			return getTypeRegistry().getGeneric(genericParameters.get(name.get(0).name), null);
 		} else if (innerTypes.containsKey(name.get(0).name)) {
-			ITypeID result = getTypeRegistry().getForDefinition(innerTypes.get(name.get(0).name).get(), name.get(0).arguments);
+			ITypeID result = getTypeRegistry().getForDefinition(innerTypes.get(name.get(0).name).get(), null, name.get(0).arguments);
 			for (int i = 1; i < name.size(); i++) {
-				result = getTypeMembers(result).getInnerType(position, name.get(i)); // TODO: this cannot be right, where did the type arguments go? the abyss?
+				result = getTypeMembers(result).getInnerType(position, name.get(i), storage); // TODO: this cannot be right, where did the type arguments go? the abyss?
 			}
 			return result;
 		}
 		
-		return outer.getType(position, name);
+		return outer.getType(position, name, storage);
+	}
+
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return outer.getStorageTag(position, name, parameters);
 	}
 
 	@Override

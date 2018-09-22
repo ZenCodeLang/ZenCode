@@ -38,6 +38,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
@@ -196,7 +197,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitCustomIterator(IteratorMember member) {
 		for (ITypeID type : member.getLoopVariableTypes())
 			type.accept(new TypeValidator(validator, member.position));
-		validateFunctional(member, new MethodStatementScope(new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes()))));
+		validateFunctional(member, new MethodStatementScope(new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes(), UniqueStorageTag.INSTANCE))));
 		return null;
 	}
 

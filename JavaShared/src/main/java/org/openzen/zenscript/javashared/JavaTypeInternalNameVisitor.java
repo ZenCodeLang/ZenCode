@@ -36,7 +36,6 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
 				case USIZE: return "java/lang/Integer";
 				case FLOAT: return "java/lang/Float";
 				case DOUBLE: return "java/lang/Double";
-				case STRING: return "java/lang/String";
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}
@@ -56,12 +55,16 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
 				case USIZE: return "I";
 				case FLOAT: return "F";
 				case DOUBLE: return "D";
-				case STRING: return "java/lang/String";
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}
 		}
     }
+	
+	@Override
+	public String visitString(StringTypeID string) {
+		return "java/lang/String";
+	}
 
     @Override
     public String visitArray(ArrayTypeID array) {

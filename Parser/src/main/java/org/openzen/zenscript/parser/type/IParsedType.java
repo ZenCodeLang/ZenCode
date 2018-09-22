@@ -149,19 +149,19 @@ public interface IParsedType {
 					
 					if (tokens.optional(ZSTokenType.T_SQCLOSE) != null) {
 						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-						result = new ParsedTypeArray(result, dimension, storage);
+						result = new ParsedTypeArray(position, result, dimension, storage);
 					} else if (tokens.isNext(T_LESS)) {
 						tokens.next();
 						ParsedTypeParameter parameter = ParsedTypeParameter.parse(tokens);
 						tokens.required(T_GREATER, "> expected");
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
 						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-						result = new ParsedTypeGenericMap(parameter, result, modifiers, storage);
+						result = new ParsedTypeGenericMap(position, parameter, result, modifiers, storage);
 					} else {
 						IParsedType keyType = parse(tokens);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
 						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-						result = new ParsedTypeAssociative(keyType, result, storage);
+						result = new ParsedTypeAssociative(position, keyType, result, storage);
 					}
 					break;
 				case T_QUEST:

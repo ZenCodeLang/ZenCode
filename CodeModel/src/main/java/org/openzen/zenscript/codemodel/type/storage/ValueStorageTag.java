@@ -9,28 +9,23 @@ package org.openzen.zenscript.codemodel.type.storage;
  *
  * @author Hoofdgebruiker
  */
-public class SharedStorageTag implements StorageTag {
-	public static final SharedStorageTag INSTANCE = new SharedStorageTag();
-	
-	private SharedStorageTag() {}
+public class ValueStorageTag implements StorageTag {
+	public static final ValueStorageTag INSTANCE = new ValueStorageTag();
+			
+	private ValueStorageTag() {}
 
 	@Override
 	public StorageType getType() {
-		return SharedStorageType.INSTANCE;
-	}
-	
-	@Override
-	public String toString() {
-		return "shared";
+		return ValueStorageType.INSTANCE;
 	}
 
 	@Override
 	public boolean canCastTo(StorageTag other) {
-		return false;
+		return other == this;
 	}
 
 	@Override
 	public boolean canCastFrom(StorageTag other) {
-		return other == this || other == UniqueStorageTag.INSTANCE;
+		return other == this;
 	}
 }

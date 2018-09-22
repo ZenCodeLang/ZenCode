@@ -89,6 +89,11 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 	public String visitBasic(BasicTypeID basic) {
 		return context.getDescriptor(basic);
 	}
+	
+	@Override
+	public String visitString(StringTypeID string) {
+		return context.getDescriptor(string);
+	}
 
 	@Override
 	public String visitArray(ArrayTypeID array) {
@@ -119,9 +124,9 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 	public String visitDefinition(DefinitionTypeID definition) {
 		StringBuilder builder = new StringBuilder("L").append(definition.definition.name);
 
-		if (definition.typeParameters.length > 0) {
+		if (definition.typeArguments.length > 0) {
 			builder.append("<");
-			for (ITypeID typeParameter : definition.typeParameters) {
+			for (ITypeID typeParameter : definition.typeArguments) {
 				builder.append(typeParameter.accept(this));
 			}
 			builder.append(">");

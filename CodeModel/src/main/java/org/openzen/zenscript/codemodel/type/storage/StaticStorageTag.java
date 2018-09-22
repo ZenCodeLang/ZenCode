@@ -18,4 +18,19 @@ public class StaticStorageTag implements StorageTag {
 	public StorageType getType() {
 		return StaticStorageType.INSTANCE;
 	}
+	
+	@Override
+	public String toString() {
+		return "static";
+	}
+
+	@Override
+	public boolean canCastTo(StorageTag other) {
+		return false;
+	}
+
+	@Override
+	public boolean canCastFrom(StorageTag other) {
+		return other == this || other == UniqueStorageTag.INSTANCE;
+	}
 }

@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -130,7 +131,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 		for (int i = 0; i < cValues.length; i++)
 			cValues[i] = cValues[i].castImplicit(position, scope, valueType);
 		
-		AssocTypeID asType = scope.getTypeRegistry().getAssociative(keyType, valueType);
+		AssocTypeID asType = scope.getTypeRegistry().getAssociative(keyType, valueType, UniqueStorageTag.INSTANCE);
 		return new MapExpression(position, cKeys, cValues, asType);
 	}
 

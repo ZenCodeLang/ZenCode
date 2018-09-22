@@ -7,7 +7,6 @@ package org.openzen.zenscript.ide.ui.view;
 
 import org.openzen.drawablegui.DEmptyView;
 import org.openzen.drawablegui.DScalableSize;
-import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.border.DLineBorder;
 import org.openzen.drawablegui.scroll.DScrollPane;
 import org.openzen.drawablegui.layout.DSideLayout;

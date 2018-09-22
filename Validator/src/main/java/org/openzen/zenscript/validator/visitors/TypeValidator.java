@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
@@ -36,10 +37,14 @@ public class TypeValidator implements TypeVisitor<Void> {
 
 	@Override
 	public Void visitBasic(BasicTypeID basic) {
-		if (basic == BasicTypeID.UNDETERMINED) {
+		if (basic == BasicTypeID.UNDETERMINED)
 			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, position, "type could not be determined");
-		}
 		
+		return null;
+	}
+	
+	@Override
+	public Void visitString(StringTypeID string) {
 		return null;
 	}
 
@@ -79,7 +84,7 @@ public class TypeValidator implements TypeVisitor<Void> {
 
 	@Override
 	public Void visitDefinition(DefinitionTypeID definition) {
-		ValidationUtils.validateTypeArguments(validator, position, definition.definition.typeParameters, definition.typeParameters);
+		ValidationUtils.validateTypeArguments(validator, position, definition.definition.typeParameters, definition.typeArguments);
 		return null;
 	}
 

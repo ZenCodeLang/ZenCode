@@ -3,11 +3,11 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.*;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 
 public class JavaStatementVisitor implements StatementVisitor<Boolean> {
@@ -190,7 +190,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 		javaWriter.label(start);
 		statement.value.accept(expressionVisitor);
-		if (statement.value.type == BasicTypeID.STRING)
+		if (statement.value.type instanceof StringTypeID)
 			javaWriter.invokeVirtual(JavaExpressionVisitor.OBJECT_HASHCODE);
 		boolean out = false;
 

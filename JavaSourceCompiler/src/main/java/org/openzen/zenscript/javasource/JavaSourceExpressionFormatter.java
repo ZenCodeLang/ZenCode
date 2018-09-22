@@ -74,6 +74,7 @@ import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
+import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.expression.ThrowExpression;
@@ -92,6 +93,10 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
@@ -651,6 +656,23 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 	
 	@Override
+	public ExpressionString visitStorageCast(StorageCastExpression expression) {
+		ExpressionString value = expression.accept(this);
+		if (expression.value.type.isDestructible()) {
+			StorageTag fromTag = expression.value.type.getStorage();
+			StorageTag toTag = expression.type.getStorage();
+			if (fromTag == SharedStorageTag.INSTANCE && toTag == BorrowStorageTag.INVOCATION) {
+				// Shared<T>.get()
+				return value.unaryPostfix(JavaOperator.CALL, ".get()");
+			} else if (fromTag == UniqueStorageTag.INSTANCE && toTag == SharedStorageTag.INSTANCE) {
+				// new Shared<T>(value)
+				return new ExpressionString("new " + scope.type(JavaClass.SHARED) + "(" + value.value + ")", JavaOperator.NEW);
+			}
+		}
+		return value;
+	}
+	
+	@Override
 	public ExpressionString visitSupertypeCast(SupertypeCastExpression expression) {
 		return expression.value.accept(this);
 	}
@@ -690,10 +712,10 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		
 		ExpressionString value = hoist(expression.value).accept(this);
 		target.writeLine("if (" + value.value + " instanceof " + errorType + ")");
-		target.writeLine(scope.settings.indent + "throw ((" + errorType + formatTypeArguments(type.typeParameters) + ")" + value.value + ").value;");
+		target.writeLine(scope.settings.indent + "throw ((" + errorType + formatTypeArguments(type.typeArguments) + ")" + value.value + ").value;");
 		
 		return value
-				.unaryPrefix(JavaOperator.CAST, "(" + okType + formatTypeArguments(type.typeParameters) + ")")
+				.unaryPrefix(JavaOperator.CAST, "(" + okType + formatTypeArguments(type.typeArguments) + ")")
 				.unaryPostfix(JavaOperator.MEMBER, ".value");
 	}
 
@@ -706,10 +728,10 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		
 		ExpressionString value = hoist(expression.value).accept(this);
 		target.writeLine("if (" + value.value + " instanceof " + errorType + ")");
-		target.writeLine(scope.settings.indent + "return new " + errorType + "<>(((" + errorType + formatTypeArguments(type.typeParameters) + ")" + value.value + ").value);");
+		target.writeLine(scope.settings.indent + "return new " + errorType + "<>(((" + errorType + formatTypeArguments(type.typeArguments) + ")" + value.value + ").value);");
 		
 		return value
-				.unaryPrefix(JavaOperator.CAST, "(" + okType + formatTypeArguments(type.typeParameters) + ")")
+				.unaryPrefix(JavaOperator.CAST, "(" + okType + formatTypeArguments(type.typeArguments) + ")")
 				.unaryPostfix(JavaOperator.MEMBER, ".value");
 	}
 	

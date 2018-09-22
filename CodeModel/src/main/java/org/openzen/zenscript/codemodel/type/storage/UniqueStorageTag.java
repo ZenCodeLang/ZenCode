@@ -18,4 +18,19 @@ public class UniqueStorageTag implements StorageTag {
 	public StorageType getType() {
 		return UniqueStorageType.INSTANCE;
 	}
+	
+	@Override
+	public String toString() {
+		return "unique";
+	}
+
+	@Override
+	public boolean canCastTo(StorageTag other) {
+		return false;
+	}
+
+	@Override
+	public boolean canCastFrom(StorageTag other) {
+		return other == this;
+	}
 }

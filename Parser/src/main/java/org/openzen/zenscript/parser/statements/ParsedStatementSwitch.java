@@ -23,6 +23,7 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
@@ -80,8 +81,13 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name) {
-			return outer.getType(position, name);
+		public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+			return outer.getType(position, name, storage);
+		}
+		
+		@Override
+		public StorageTag getStorageTag(CodePosition position, String name, String[] arguments) {
+			return outer.getStorageTag(position, name, arguments);
 		}
 
 		@Override

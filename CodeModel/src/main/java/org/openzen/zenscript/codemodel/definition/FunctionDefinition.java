@@ -41,7 +41,7 @@ public class FunctionDefinition extends HighLevelDefinition {
 	public void setHeader(GlobalTypeRegistry registry, FunctionHeader header) {
 		this.header = header;
 		addMember(caller = new CallerMember(position, this, modifiers | Modifiers.STATIC, header, null));
-		callerGroup.addMethod(new FunctionalMemberRef(caller, registry.getFunction(header), GenericMapper.EMPTY), TypeMemberPriority.SPECIFIED);
+		callerGroup.addMethod(new FunctionalMemberRef(caller, registry.getFunction(header, null), GenericMapper.EMPTY), TypeMemberPriority.SPECIFIED);
 	}
 	
 	public void setCode(Statement statement) {

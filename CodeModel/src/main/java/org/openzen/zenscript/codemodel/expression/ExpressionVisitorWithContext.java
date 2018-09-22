@@ -130,6 +130,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 	
 	public R visitStaticSetter(C context, StaticSetterExpression expression);
 	
+	public R visitStorageCast(C context, StorageCastExpression expression);
+	
 	public R visitSupertypeCast(C context, SupertypeCastExpression expression);
 	
 	public R visitThis(C context, ThisExpression expression);

@@ -60,7 +60,7 @@ public class FieldMember extends PropertyMember {
 		if (definition.typeParameters != null) {
 			parameters = new ITypeID[definition.typeParameters.length];
 			for (int i = 0; i < parameters.length; i++)
-				parameters[i] = registry.getGeneric(definition.typeParameters[i]);
+				parameters[i] = registry.getGeneric(definition.typeParameters[i], null);
 		}
 		
 		if (autoGetterAccess != 0) {

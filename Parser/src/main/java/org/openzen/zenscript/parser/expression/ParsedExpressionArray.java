@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.parser.PrecompilationState;
 
 /**
@@ -65,7 +66,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 			}
 			for (int i = 0; i < contents.size(); i++)
 				cContents[i] = cContents[i].castImplicit(position, scope, resultType);
-			asType = scope.getTypeRegistry().getArray(resultType, 1);
+			asType = scope.getTypeRegistry().getArray(resultType, 1, UniqueStorageTag.INSTANCE);
 		}
 		return new ArrayExpression(position, cContents, asType);
 	}
