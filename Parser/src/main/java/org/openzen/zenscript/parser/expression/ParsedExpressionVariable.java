@@ -14,7 +14,6 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -49,7 +48,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		TypeID[] genericArguments = TypeID.NONE;
 		if (genericParameters != null) {
 			genericArguments = new TypeID[genericParameters.size()];
@@ -71,7 +70,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 					return new VariantValueExpression(position, hint, option);
 			}
 			
-			return new InvalidExpression(position, CompileExceptionCode.UNDEFINED_VARIABLE, "No such symbol: " + name);
+			throw new CompileException(position, CompileExceptionCode.UNDEFINED_VARIABLE, "No such symbol: " + name);
 		} else {
 			return result;
 		}

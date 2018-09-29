@@ -48,7 +48,7 @@ public class ParsedExpressionFloat extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		if (scope.hints.isEmpty())
 			return new ConstantDoubleExpression(position, value);
 		
@@ -87,9 +87,9 @@ public class ParsedExpressionFloat extends ParsedExpression {
 				types.append(scope.hints.get(i).toString());
 			}
 
-			return new InvalidExpression(position, CompileExceptionCode.INVALID_CAST, "Cannot cast a floating-point value to any of these types: " + types);
+			throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Cannot cast a floating-point value to any of these types: " + types);
 		} else {
-			return new InvalidExpression(position, CompileExceptionCode.INVALID_SUFFIX, "Invalid suffix: " + suffix);
+			throw new CompileException(position, CompileExceptionCode.INVALID_SUFFIX, "Invalid suffix: " + suffix);
 		}
 	}
 

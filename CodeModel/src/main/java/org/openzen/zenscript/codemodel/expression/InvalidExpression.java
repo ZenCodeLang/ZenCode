@@ -9,7 +9,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
@@ -25,10 +24,6 @@ public class InvalidExpression extends Expression {
 		
 		this.code = code;
 		this.message = message;
-	}
-	
-	public InvalidExpression(CodePosition position, CompileExceptionCode code, String message) {
-		this(position, BasicTypeID.UNDETERMINED.stored, code, message);
 	}
 	
 	public InvalidExpression(StoredType type, CompileException cause) {

@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.partial;
 import java.util.Collections;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -29,15 +30,15 @@ public interface IPartialExpression {
 		return Collections.emptyList();
 	}
 	
-	Expression eval();
+	Expression eval() throws CompileException;
 	
-	List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments);
+	List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException;
 	
-	List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments);
+	List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException;
 	
-	IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name);
+	IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException;
 	
-	Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments);
+	Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException;
 	
 	TypeID[] getGenericCallTypes();
 	
@@ -50,11 +51,11 @@ public interface IPartialExpression {
 		return null;
 	}
 	
-	default Expression assign(CodePosition position, TypeScope scope, Expression value) {
+	default Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 		return new InvalidExpression(position, value.type, CompileExceptionCode.CANNOT_ASSIGN, "This expression is not assignable");
 	}
 	
-	default IPartialExpression capture(CodePosition position, LambdaClosure closure) {
-		return new InvalidExpression(position, CompileExceptionCode.UNAVAILABLE_IN_CLOSURE, "expression not allowed in closure");
+	default IPartialExpression capture(CodePosition position, LambdaClosure closure) throws CompileException {
+		throw new CompileException(position, CompileExceptionCode.UNAVAILABLE_IN_CLOSURE, "expression not allowed in closure");
 	}
 }

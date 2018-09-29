@@ -7,10 +7,10 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.AndAndExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
@@ -34,13 +34,13 @@ public class ParsedExpressionAndAnd extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression left = this.left.compile(scope).eval();
 		Expression right = this.right.compile(scope).eval();
 		
 		StoredType resultType = scope.getTypeMembers(left.type).union(right.type);
 		if (resultType == null)
-			return new InvalidExpression(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + left.type + " and " + right.type);
+			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + left.type + " and " + right.type);
 		
 		left = left.castImplicit(position, scope, resultType);
 		right = right.castImplicit(position, scope, resultType);

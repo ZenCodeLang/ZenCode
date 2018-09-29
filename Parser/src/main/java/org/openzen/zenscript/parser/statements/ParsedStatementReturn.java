@@ -1,8 +1,10 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
@@ -28,10 +30,15 @@ public class ParsedStatementReturn extends ParsedStatement {
 		if (expression == null) {
 			return new ReturnStatement(position, null);
 		} else {
-			Expression value = expression
+			Expression value;
+			try {
+				value = expression
 					.compile(new ExpressionScope(scope, scope.getFunctionHeader().getReturnType()))
 					.eval()
 					.castImplicit(position, scope, scope.getFunctionHeader().getReturnType());
+			} catch (CompileException ex) {
+				value = new InvalidExpression(scope.getFunctionHeader().getReturnType(), ex);
+			}
 			return result(new ReturnStatement(position, value), scope);
 		}
 	}

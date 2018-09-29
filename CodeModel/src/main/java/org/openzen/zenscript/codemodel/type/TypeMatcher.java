@@ -60,6 +60,11 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 			return false;
 		}
 	}
+	
+	@Override
+	public Boolean visitInvalid(Matching context, InvalidTypeID invalid) {
+		return false;
+	}
 
 	@Override
 	public Boolean visitIterator(Matching context, IteratorTypeID iterator) {

@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
@@ -29,7 +30,7 @@ public class ParsedExpressionAssign extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		IPartialExpression cLeft = left.compile(scope);
 		List<StoredType> resultHints = cLeft.getAssignHints();
 		

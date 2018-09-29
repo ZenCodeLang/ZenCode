@@ -46,7 +46,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		if (receiver instanceof ParsedExpressionVariable) {
 			ParsedExpressionVariable variable = (ParsedExpressionVariable) receiver;
 			for (StoredType hint : scope.hints) {
@@ -64,40 +64,36 @@ public class ParsedExpressionCall extends ParsedExpression {
 			}
 		}
 		
-		try {
-			if (receiver instanceof ParsedExpressionSuper) {
-				// super call (intended as first call in constructor)
-				StoredType targetType = scope.getThisType().getSuperType(scope.getTypeRegistry());
-				if (targetType == null)
-					return new InvalidExpression(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Class has no superclass");
+		if (receiver instanceof ParsedExpressionSuper) {
+			// super call (intended as first call in constructor)
+			StoredType targetType = scope.getThisType().getSuperType(scope.getTypeRegistry());
+			if (targetType == null)
+				throw new CompileException(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Class has no superclass");
 
-				TypeMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
-				CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
-				FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
-				if (!member.isConstructor())
-					return new InvalidExpression(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
+			TypeMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
+			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
+			FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
+			if (!member.isConstructor())
+				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 
-				return new ConstructorSuperCallExpression(position, targetType, member, callArguments);
-			} else if (receiver instanceof ParsedExpressionThis) {
-				// this call (intended as first call in constructor)
-				StoredType targetType = scope.getThisType();
+			return new ConstructorSuperCallExpression(position, targetType, member, callArguments);
+		} else if (receiver instanceof ParsedExpressionThis) {
+			// this call (intended as first call in constructor)
+			StoredType targetType = scope.getThisType();
 
-				TypeMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
-				CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
-				FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
-				if (!member.isConstructor())
-					return new InvalidExpression(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
+			TypeMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
+			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
+			FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
+			if (!member.isConstructor())
+				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
 
-				return new ConstructorThisCallExpression(position, scope.getThisType(), member, callArguments);
-			}
-
-			IPartialExpression cReceiver = receiver.compile(scope.withoutHints());
-			List<FunctionHeader> headers = cReceiver.getPossibleFunctionHeaders(scope, scope.hints, arguments.arguments.size());
-			CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getGenericCallTypes(), headers);
-			return cReceiver.call(position, scope, scope.hints, callArguments);
-		} catch (CompileException ex) {
-			return new InvalidExpression(BasicTypeID.UNDETERMINED.stored, ex);
+			return new ConstructorThisCallExpression(position, scope.getThisType(), member, callArguments);
 		}
+
+		IPartialExpression cReceiver = receiver.compile(scope.withoutHints());
+		List<FunctionHeader> headers = cReceiver.getPossibleFunctionHeaders(scope, scope.hints, arguments.arguments.size());
+		CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getGenericCallTypes(), headers);
+		return cReceiver.call(position, scope, scope.hints, callArguments);
 	}
 	
 	@Override

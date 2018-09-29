@@ -9,10 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialPackageExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
@@ -50,13 +50,13 @@ public class ZSPackage {
 		subPackages.put(name, subPackage);
 	}
 	
-	public IPartialExpression getMember(CodePosition position, GlobalTypeRegistry registry, GenericName name) {
+	public IPartialExpression getMember(CodePosition position, GlobalTypeRegistry registry, GenericName name) throws CompileException {
 		if (subPackages.containsKey(name.name) && name.hasNoArguments())
 			return new PartialPackageExpression(position, subPackages.get(name.name));
 		
 		if (types.containsKey(name.name)) {
 			if (types.get(name.name).typeParameters.length != name.getNumberOfArguments())
-				return new InvalidExpression(position, CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments");
+				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments");
 			
 			return new PartialTypeExpression(position, registry.getForDefinition(types.get(name.name), name.arguments), name.arguments);
 		}

@@ -64,7 +64,7 @@ public class ExpressionBuilder {
 				compiledArguments.getNumberOfTypeArguments() == 0 ? member.getHeader() : member.getHeader().fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments, scope.getLocalTypeParameters()));
 	}
 	
-	public Expression not(Expression value) {
+	public Expression not(Expression value) throws CompileException {
 		TypeMembers members = scope.getTypeMembers(value.type);
 		return members.getOrCreateGroup(OperatorType.NOT)
 				.call(position, scope, value, CallArguments.EMPTY, false);

@@ -136,7 +136,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				definition.name);
 				
 		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header));
-		definition.statement.accept(statementValidator);
+		definition.caller.body.accept(statementValidator);
 		return null;
 	}
 
@@ -196,8 +196,18 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				variant.position,
 				variant.name);
 		
+		for (VariantDefinition.Option option : variant.options)
+			validate(option);
+		
 		validateMembers(variant, DefinitionMemberContext.DEFINITION);
 		return null;
+	}
+	
+	private void validate(VariantDefinition.Option option) {
+		ValidationUtils.validateIdentifier(validator, option.position, option.name);
+		TypeValidator typeValidator = new TypeValidator(validator, option.position);
+		for (StoredType type : option.types)
+			typeValidator.validate(type);
 	}
 	
 	private class SimpleTypeScope implements TypeScope {

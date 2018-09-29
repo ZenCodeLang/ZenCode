@@ -11,6 +11,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -107,7 +109,27 @@ public class FunctionTypeID implements TypeID {
 	
 	@Override
 	public String toString() {
+		return toString(null);
+	}
+	
+	@Override
+	public String toString(StorageTag storage) {
 		StringBuilder result = new StringBuilder();
+		result.append("function");
+		if (header.typeParameters.length > 0) {
+			result.append('<');
+			for (int i = 0; i < header.typeParameters.length; i++) {
+				if (i > 0)
+					result.append(", ");
+				
+				result.append(header.typeParameters[i].toString());
+			}
+			result.append('>');
+		}
+		if (storage != null && storage != ValueStorageTag.INSTANCE) {
+			result.append('`');
+			result.append(storage);
+		}
 		result.append('(');
 		for (int i = 0; i < header.parameters.length; i++) {
 			if (i > 0)

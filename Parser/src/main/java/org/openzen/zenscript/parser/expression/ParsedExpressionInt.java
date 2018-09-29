@@ -110,7 +110,7 @@ public class ParsedExpressionInt extends ParsedExpression {
 	}
 	
 	@Override
-	public Expression compile(ExpressionScope scope) {
+	public Expression compile(ExpressionScope scope) throws CompileException {
 		if (suffix.equals("L") || suffix.equals("l"))
 			return new ConstantLongExpression(position, value);
 		if (suffix.equals("UL") || suffix.equals("ul"))
@@ -182,7 +182,7 @@ public class ParsedExpressionInt extends ParsedExpression {
 			else
 				return new ConstantLongExpression(position, value);
 		} else {
-			return new InvalidExpression(position, CompileExceptionCode.INVALID_SUFFIX, "Invalid suffix: " + suffix);
+			throw new CompileException(position, CompileExceptionCode.INVALID_SUFFIX, "Invalid suffix: " + suffix);
 		}
 	}
 	

@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.IfStatement;
+import org.openzen.zenscript.codemodel.statement.InvalidStatement;
 import org.openzen.zenscript.codemodel.statement.LockStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -129,6 +130,12 @@ public class StatementValidator implements StatementVisitor<Void> {
 		firstStatement = false;
 		return null;
 	}
+	
+	@Override
+	public Void visitInvalid(InvalidStatement statement) {
+		validator.logError(ValidationLogEntry.Code.INVALID_STATEMENT, statement.position, statement.message);
+		return null;
+	}
 
 	@Override
 	public Void visitLock(LockStatement statement) {
@@ -154,7 +161,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 			
 			if (scope.getFunctionHeader().getReturnType().isBasic(BasicTypeID.VOID)) {
 				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Function return type is void; cannot return a value");
-			} else if (statement.value.type != scope.getFunctionHeader().getReturnType()) {
+			} else if (!statement.value.type.equals(scope.getFunctionHeader().getReturnType())) {
 				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type.toString());
 			}
 		} else if (!scope.getFunctionHeader().getReturnType().isBasic(BasicTypeID.VOID)) {

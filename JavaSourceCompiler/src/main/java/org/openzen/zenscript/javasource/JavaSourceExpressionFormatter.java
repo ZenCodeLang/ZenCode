@@ -1695,7 +1695,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 								.append(newArray(type.elementType, size))
 								.append(";")
 								.toString());
-					VarStatement tempI = new VarStatement(expression.position, scope.createTempVariable(), BasicTypeID.INT.stored, null, true);
+					VarStatement tempI = new VarStatement(expression.position, new VariableID(), scope.createTempVariable(), BasicTypeID.INT.stored, null, true);
 					target.writeLine(new StringBuilder()
 								.append("for (int ")
 								.append(tempI.name)

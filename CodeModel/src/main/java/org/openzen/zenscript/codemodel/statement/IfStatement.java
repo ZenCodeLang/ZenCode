@@ -77,6 +77,10 @@ public class IfStatement extends Statement {
 
 	@Override
 	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return new IfStatement(position, condition.normalize(scope), onThen.normalize(scope, modified), onElse == null ? null : onElse.normalize(scope, modified));
+		return new IfStatement(
+				position,
+				condition.normalize(scope),
+				onThen.normalize(scope, modified),
+				onElse == null ? null : onElse.normalize(scope, modified));
 	}
 }

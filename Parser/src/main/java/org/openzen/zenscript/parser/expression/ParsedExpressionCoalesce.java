@@ -32,7 +32,7 @@ public class ParsedExpressionCoalesce extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression cLeft = left.compile(scope).eval();
 		StoredType cLeftType = cLeft.type;
 		if (!cLeftType.isOptional())

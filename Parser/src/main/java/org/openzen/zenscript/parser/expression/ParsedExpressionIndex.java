@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -36,7 +37,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		return new PartialIndexedExpression(scope);
 	}
 
@@ -49,13 +50,13 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		private final ExpressionScope scope;
 		private final Expression target;
 		
-		private PartialIndexedExpression(ExpressionScope scope) {
+		private PartialIndexedExpression(ExpressionScope scope) throws CompileException {
 			this.scope = scope;
 			target = value.compile(scope.withoutHints()).eval();
 		}
 		
 		@Override
-		public Expression eval() {
+		public Expression eval() throws CompileException {
 			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXGET);
 			List<StoredType>[] predictedTypes = members.predictCallTypes(scope, scope.hints, indexes.size());
 			Expression[] arguments = new Expression[indexes.size()];
@@ -66,27 +67,27 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		}
 
 		@Override
-		public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) {
+		public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException {
 			return eval().predictCallTypes(scope, hints, arguments);
 		}
 		
 		@Override
-		public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
+		public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException {
 			return eval().getPossibleFunctionHeaders(scope, hints, arguments);
 		}
 
 		@Override
-		public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) {
+		public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException {
 			return eval().getMember(position, scope, hints, name);
 		}
 
 		@Override
-		public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) {
+		public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
 			return eval().call(position, scope, hints, arguments);
 		}
 		
 		@Override
-		public Expression assign(CodePosition position, TypeScope scope, Expression value) {
+		public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXSET);
 			List<StoredType>[] predictedTypes = members.predictCallTypes(scope, this.scope.hints, indexes.size() + 1);
 			
@@ -105,7 +106,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 			return predictedTypes[indexes.size()];
 		}
 		
-		private Expression getLength(CodePosition position) {
+		private Expression getLength(CodePosition position) throws CompileException {
 			return target.getMember(position, scope, scope.hints, new GenericName("length")).eval();
 		}
 

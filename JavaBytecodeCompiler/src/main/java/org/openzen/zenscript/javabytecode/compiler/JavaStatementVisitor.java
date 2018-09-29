@@ -103,7 +103,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
             final Label variableStart = new Label();
             final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, javaWriter.local(type), variableStart, variable.name);
             info.end = end;
-            variable.setTag(JavaLocalVariableInfo.class, info);
+            variable.variable.setTag(JavaLocalVariableInfo.class, info);
             javaWriter.addVariableInfo(info);
         }
 
@@ -311,7 +311,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		final Label variableStart = new Label();
 		javaWriter.label(variableStart);
 		final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, local, variableStart, statement.name);
-		statement.setTag(JavaLocalVariableInfo.class, info);
+		statement.variable.setTag(JavaLocalVariableInfo.class, info);
 		javaWriter.addVariableInfo(info);
 		return false;
 	}

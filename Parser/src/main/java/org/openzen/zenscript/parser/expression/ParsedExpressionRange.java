@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.expression;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
@@ -31,7 +32,7 @@ public class ParsedExpressionRange extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		List<StoredType> fromHints = new ArrayList<>();
 		List<StoredType> toHints = new ArrayList<>();
 		

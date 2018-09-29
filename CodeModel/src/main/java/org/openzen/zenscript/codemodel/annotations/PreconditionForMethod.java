@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -83,19 +84,25 @@ public class PreconditionForMethod implements MemberAnnotation {
 		if (body == null)
 			return body;
 		
-		ExpressionScope expressionScope = new ExpressionScope(scope, BasicTypeID.BOOL.stored);
-		List<Statement> statements = new ArrayList<>();
-		ExpressionBuilder expressionBuilder = new ExpressionBuilder(position, expressionScope);
-		Expression inverseCondition = expressionBuilder.not(condition);
-		Statement throwStatement = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID.stored, message));
-		statements.add(new IfStatement(position, inverseCondition, throwStatement, null));
-		
-		if (body instanceof BlockStatement) {
-			statements.addAll(Arrays.asList(((BlockStatement)body).statements));
-		} else {
-			statements.add(body);
+		try {
+			ExpressionScope expressionScope = new ExpressionScope(scope, BasicTypeID.BOOL.stored);
+			List<Statement> statements = new ArrayList<>();
+			ExpressionBuilder expressionBuilder = new ExpressionBuilder(position, expressionScope);
+			Expression inverseCondition = expressionBuilder.not(condition);
+			Statement throwStatement = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID.stored, message));
+			statements.add(new IfStatement(position, inverseCondition, throwStatement, null));
+
+			if (body instanceof BlockStatement) {
+				statements.addAll(Arrays.asList(((BlockStatement)body).statements));
+			} else {
+				statements.add(body);
+			}
+			return new BlockStatement(position, statements.toArray(new Statement[statements.size()]));
+		} catch (CompileException ex) {
+			// TODO
+			ex.printStackTrace();
+			return body;
 		}
-		return new BlockStatement(position, statements.toArray(new Statement[statements.size()]));
 	}
 
 	@Override

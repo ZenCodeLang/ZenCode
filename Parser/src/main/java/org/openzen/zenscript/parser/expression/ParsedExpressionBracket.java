@@ -8,8 +8,8 @@ package org.openzen.zenscript.parser.expression;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.lexer.ParseException;
@@ -31,9 +31,9 @@ public class ParsedExpressionBracket extends ParsedExpression {
 	}
 	
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		if (expressions.size() != 1) {
-			return new InvalidExpression(position, CompileExceptionCode.BRACKET_MULTIPLE_EXPRESSIONS, "Bracket expression may have only one expression");
+			throw new CompileException(position, CompileExceptionCode.BRACKET_MULTIPLE_EXPRESSIONS, "Bracket expression may have only one expression");
 		} else {
 			return expressions.get(0).compile(scope);
 		}

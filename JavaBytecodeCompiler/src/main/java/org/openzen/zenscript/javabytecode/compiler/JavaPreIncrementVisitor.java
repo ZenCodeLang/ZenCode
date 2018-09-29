@@ -224,7 +224,7 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-		JavaLocalVariableInfo localVariable = expression.variable.getTag(JavaLocalVariableInfo.class);
+		JavaLocalVariableInfo localVariable = expression.variable.variable.getTag(JavaLocalVariableInfo.class);
 		javaWriter.iinc(localVariable.local);
 		javaWriter.load(localVariable);
 		return null;

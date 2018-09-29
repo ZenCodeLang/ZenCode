@@ -68,7 +68,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public Expression eval() {
+	public Expression eval() throws CompileException {
 		return group.getter(position, scope, target, allowStaticUsage);
 	}
 	
@@ -107,22 +107,22 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException {
 		return eval().getMember(position, scope, hints, name);
 	}
 
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) {
+	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
 		return group.call(position, scope, target, arguments, allowStaticUsage);
 	}
 	
 	@Override
-	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
+	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 		return group.setter(position, scope, target, value, allowStaticUsage);
 	}
 	
 	@Override
-	public IPartialExpression capture(CodePosition position, LambdaClosure closure) {
+	public IPartialExpression capture(CodePosition position, LambdaClosure closure) throws CompileException {
 		return new PartialMemberGroupExpression(position, scope, target.capture(position, closure).eval(), group, typeArguments, allowStaticUsage);
 	}
 

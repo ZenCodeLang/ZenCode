@@ -45,12 +45,14 @@ public class VariantDefinition extends HighLevelDefinition {
 	}
 	
 	public static class Option extends Taggable {
+		public final CodePosition position;
 		public final VariantDefinition variant;
 		public final String name;
 		public final int ordinal;
 		public final StoredType[] types;
 		
-		public Option(VariantDefinition variant, String name, int ordinal, StoredType[] types) {
+		public Option(CodePosition position, VariantDefinition variant, String name, int ordinal, StoredType[] types) {
+			this.position = position;
 			this.variant = variant;
 			this.name = name;
 			this.ordinal = ordinal;

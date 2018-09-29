@@ -6,13 +6,12 @@
 package org.openzen.zenscript.codemodel.scope;
 
 import java.util.List;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
@@ -62,7 +61,7 @@ public class FunctionScope extends StatementScope {
 	}
 
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		IPartialExpression fromSuper = super.get(position, name);
 		if (fromSuper != null)
 			return fromSuper;
@@ -110,7 +109,7 @@ public class FunctionScope extends StatementScope {
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		for (FunctionParameter parameter : header.parameters)
 			if (parameter.name.equals("$"))
 				return position -> new GetFunctionParameterExpression(position, parameter);
@@ -119,7 +118,7 @@ public class FunctionScope extends StatementScope {
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);
 	}
 

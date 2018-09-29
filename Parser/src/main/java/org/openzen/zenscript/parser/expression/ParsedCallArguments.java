@@ -210,7 +210,7 @@ public class ParsedCallArguments {
 		return new CallArguments(typeArguments2, cArguments);
 	}
 	
-	private CallArguments compileCallNaive(CodePosition position, ExpressionScope scope) {
+	private CallArguments compileCallNaive(CodePosition position, ExpressionScope scope) throws CompileException {
 		Expression[] cArguments = new Expression[arguments.size()];
 		for (int i = 0; i < cArguments.length; i++) {
 			IPartialExpression cArgument = arguments.get(i).compile(scope);

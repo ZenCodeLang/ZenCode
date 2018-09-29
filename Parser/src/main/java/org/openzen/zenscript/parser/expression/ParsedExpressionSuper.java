@@ -24,11 +24,11 @@ public class ParsedExpressionSuper extends ParsedExpression {
 	}
 	
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		StoredType type = scope.getThisType();
 		StoredType targetType = type.getSuperType(scope.getTypeRegistry());
 		if (targetType == null)
-			return new InvalidExpression(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Type has no superclass");
+			throw new CompileException(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Type has no superclass");
 		
 		return new PartialTypeExpression(position, targetType.type, null);
 	}

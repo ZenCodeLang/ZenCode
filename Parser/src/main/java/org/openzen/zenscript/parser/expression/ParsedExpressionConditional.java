@@ -7,10 +7,10 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -35,7 +35,7 @@ public class ParsedExpressionConditional extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression cIfThen = ifThen.compile(scope).eval();
 		Expression cIfElse = ifElse.compile(scope).eval();
 		
@@ -45,7 +45,7 @@ public class ParsedExpressionConditional extends ParsedExpression {
 		for (StoredType hint : scope.hints) {
 			if (thenMembers.canCastImplicit(hint) && elseMembers.canCastImplicit(hint)) {
 				if (resultType != null)
-					return new InvalidExpression(position, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Not sure which type to use");
+					throw new CompileException(position, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Not sure which type to use");
 				
 				resultType = hint;
 			}
@@ -55,7 +55,7 @@ public class ParsedExpressionConditional extends ParsedExpression {
 			resultType = thenMembers.union(cIfElse.type);
 		
 		if (resultType == null)
-			return new InvalidExpression(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + cIfThen.type + " and " + cIfElse.type);
+			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + cIfThen.type + " and " + cIfElse.type);
 		
 		cIfThen = cIfThen.castImplicit(position, scope, resultType);
 		cIfElse = cIfElse.castImplicit(position, scope, resultType);

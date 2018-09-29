@@ -1,8 +1,10 @@
 package org.openzen.zenscript.parser.definitions;
 
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
@@ -43,7 +45,11 @@ public class ParsedFunctionParameter {
 	
 	public void compileInitializer(BaseScope scope, PrecompilationState state) {
 		if (defaultValue != null) {
-			compiled.defaultValue = defaultValue.compile(new ExpressionScope(scope, compiled.type)).eval();
+			try {
+				compiled.defaultValue = defaultValue.compile(new ExpressionScope(scope, compiled.type)).eval();
+			} catch (CompileException ex) {
+				compiled.defaultValue = new InvalidExpression(compiled.type, ex);
+			}
 		}
 	}
 }

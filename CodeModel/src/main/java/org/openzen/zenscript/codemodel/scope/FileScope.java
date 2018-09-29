@@ -8,16 +8,14 @@ package org.openzen.zenscript.codemodel.scope;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialGlobalExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
@@ -114,13 +112,13 @@ public class FileScope extends BaseScope {
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		return null;
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
-		return new InvalidExpression(position, CompileExceptionCode.NO_OUTER_BECAUSE_OUTSIDE_TYPE, "Not in an inner type");
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
+		throw new CompileException(position, CompileExceptionCode.NO_OUTER_BECAUSE_OUTSIDE_TYPE, "Not in an inner type");
 	}
 
 	@Override

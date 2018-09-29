@@ -8,12 +8,11 @@ package org.openzen.zenscript.codemodel.scope;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
@@ -47,7 +46,7 @@ public class GenericFunctionScope extends BaseScope {
 	}
 
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		if (parameters.containsKey(name.name) && name.hasNoArguments())
 			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameters.get(name.name)), name.arguments);
 		
@@ -83,12 +82,12 @@ public class GenericFunctionScope extends BaseScope {
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		return outer.getDollar();
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);
 	}
 

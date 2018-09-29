@@ -6,14 +6,12 @@
 package org.openzen.zenscript.parser.statements;
 
 import java.util.List;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -49,18 +47,22 @@ public class ParsedStatementSwitch extends ParsedStatement {
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		SwitchStatement result = new SwitchStatement(position, name, value.compile(new ExpressionScope(scope)).eval());
-		SwitchScope innerScope = new SwitchScope(scope, result);
-		
-		for (ParsedSwitchCase switchCase : cases) {
-			try {
-				result.cases.add(switchCase.compile(result.value.type, innerScope));
-			} catch (CompileException ex) {
-				return new InvalidStatement(ex);
+		try {
+			SwitchStatement result = new SwitchStatement(position, name, value.compile(new ExpressionScope(scope)).eval());
+			SwitchScope innerScope = new SwitchScope(scope, result);
+
+			for (ParsedSwitchCase switchCase : cases) {
+				try {
+					result.cases.add(switchCase.compile(result.value.type, innerScope));
+				} catch (CompileException ex) {
+					return result(new InvalidStatement(ex), scope);
+				}
 			}
+
+			return result;
+		} catch (CompileException ex) {
+			return result(new InvalidStatement(ex), scope);
 		}
-		
-		return result;
 	}
 	
 	private class SwitchScope extends StatementScope {
@@ -73,7 +75,7 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		}
 	
 		@Override
-		public IPartialExpression get(CodePosition position, GenericName name) {
+		public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 			IPartialExpression result = super.get(position, name);
 			if (result == null) {
 				return outer.get(position, name);
@@ -113,12 +115,12 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		}
 
 		@Override
-		public Function<CodePosition, Expression> getDollar() {
+		public DollarEvaluator getDollar() {
 			return outer.getDollar();
 		}
 
 		@Override
-		public IPartialExpression getOuterInstance(CodePosition position) {
+		public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 			return outer.getOuterInstance(position);
 		}
 

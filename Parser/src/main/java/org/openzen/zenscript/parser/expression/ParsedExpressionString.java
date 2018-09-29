@@ -34,17 +34,8 @@ public class ParsedExpressionString extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		if (value.length() == 1) {
-			if (scope.hints.contains(BasicTypeID.CHAR)) {
-				return new ConstantCharExpression(position, value.charAt(0));
-			} else {
-				for (StoredType type : scope.hints)
-					if (type.type instanceof StringTypeID)
-						return new ConstantStringExpression(position, value);
-				
-				return new ConstantCharExpression(position, value.charAt(0));
-			}
-		}
+		if (value.length() == 1 && scope.hints.contains(BasicTypeID.CHAR.stored))
+			return new ConstantCharExpression(position, value.charAt(0));
 		
 		return new ConstantStringExpression(position, value);
 	}

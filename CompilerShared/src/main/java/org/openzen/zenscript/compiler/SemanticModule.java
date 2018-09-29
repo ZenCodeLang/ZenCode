@@ -88,12 +88,13 @@ public class SemanticModule {
 		ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(compilationUnit.globalTypeRegistry, annotations, storageTypes, rootPackage, null, globals);
 		AnnotationProcessor annotationProcessor = new AnnotationProcessor(context, expansions);
 		List<ScriptBlock> processedScripts = new ArrayList<>();
+		FileScope fileScope = new FileScope(context, expansions, globals, member -> {});
+			
 		for (ScriptBlock block : scripts)
-			processedScripts.add(annotationProcessor.process(block));
+			processedScripts.add(annotationProcessor.process(block).normalize(fileScope));
+		
 		for (HighLevelDefinition definition : definitions.getAll()) {
 			annotationProcessor.process(definition);
-			
-			FileScope fileScope = new FileScope(context, expansions, globals, member -> {});
 			definition.normalize(fileScope);
 		}
 		

@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -46,7 +47,7 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	}
 	
 	@Override
-	public Expression eval() {
+	public Expression eval() throws CompileException {
 		return group.staticGetter(position, scope);
 	}
 
@@ -64,17 +65,17 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException {
 		return eval().getMember(position, scope, hints, name);
 	}
 
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) {
+	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
 		return group.callStatic(position, target, scope, arguments);
 	}
 	
 	@Override
-	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
+	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 		return group.staticSetter(position, scope, value);
 	}
 

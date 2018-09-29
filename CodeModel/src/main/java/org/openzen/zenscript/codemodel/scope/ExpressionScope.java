@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
@@ -36,7 +37,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
  */
 public class ExpressionScope extends BaseScope {
 	private final BaseScope outer;
-	private final Function<CodePosition, Expression> dollar;
+	private final DollarEvaluator dollar;
 	
 	public final List<StoredType> hints;
 	public final Map<TypeParameter, TypeID> genericInferenceMap;
@@ -66,7 +67,7 @@ public class ExpressionScope extends BaseScope {
 	private ExpressionScope(
 			BaseScope scope,
 			List<StoredType> hints,
-			Function<CodePosition, Expression> dollar,
+			DollarEvaluator dollar,
 			Map<TypeParameter, TypeID> genericInferenceMap,
 			Map<String, Function<CodePosition, Expression>> innerVariables) {
 		this.outer = scope;
@@ -100,7 +101,7 @@ public class ExpressionScope extends BaseScope {
 		return new ExpressionScope(outer, hints, dollar, genericInferenceMap, innerVariables);
 	}
 	
-	public ExpressionScope createInner(List<StoredType> hints, Function<CodePosition, Expression> dollar) {
+	public ExpressionScope createInner(List<StoredType> hints, DollarEvaluator dollar) {
 		return new ExpressionScope(outer, hints, dollar, genericInferenceMap, innerVariables);
 	}
 	
@@ -121,7 +122,7 @@ public class ExpressionScope extends BaseScope {
 	}
 	
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		if (name.hasNoArguments() && innerVariables.containsKey(name.name))
 			return innerVariables.get(name.name).apply(position);
 		
@@ -154,12 +155,12 @@ public class ExpressionScope extends BaseScope {
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		return dollar == null ? outer.getDollar() : dollar;
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);
 	}
 

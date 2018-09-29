@@ -66,10 +66,10 @@ public class ParsedNamedType implements IParsedType {
 	
 	@Override
 	public TypeID compileUnstored(TypeResolutionContext context) {
-		if (storage != null)
+		if (storage != ParsedStorageTag.NULL)
 			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage not supported here");
 		
-		return (TypeID)compile(context);
+		return compile(context).type;
 	}
 	
 	@Override

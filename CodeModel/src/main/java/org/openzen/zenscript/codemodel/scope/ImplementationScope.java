@@ -6,12 +6,11 @@
 package org.openzen.zenscript.codemodel.scope;
 
 import java.util.List;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
@@ -49,7 +48,7 @@ public class ImplementationScope extends BaseScope {
 	}
 
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		if (members.hasInnerType(name.name))
 			return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
 		if (members.hasMember(name.name))
@@ -92,7 +91,7 @@ public class ImplementationScope extends BaseScope {
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		return outer.getDollar();
 	}
 

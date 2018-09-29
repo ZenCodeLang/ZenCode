@@ -41,12 +41,14 @@ public class ParsedString implements IParsedType {
 
 	@Override
 	public StoredType compile(TypeResolutionContext context) {
-		return StringTypeID.INSTANCE.stored(storage.resolve(position, context));
+		return context.getTypeRegistry()
+				.getModified(modifiers, StringTypeID.INSTANCE)
+				.stored(storage.resolve(position, context));
 	}
 
 	@Override
 	public TypeID compileUnstored(TypeResolutionContext context) {
-		if (storage != null)
+		if (storage != ParsedStorageTag.NULL)
 			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage tag not supported here");
 		
 		return StringTypeID.INSTANCE;

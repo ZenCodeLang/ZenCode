@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
@@ -25,7 +26,8 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -45,9 +47,10 @@ public class ParsedExpressionFunction extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		FunctionHeader definedHeader = header.compile(scope);
 		FunctionHeader header = definedHeader;
+		StorageTag storage = SharedStorageTag.INSTANCE;
 		for (StoredType hint : scope.hints) {
 			if (hint.getNormalized().type instanceof FunctionTypeID) {
 				FunctionTypeID functionHint = (FunctionTypeID) hint.getNormalized().type;
@@ -56,6 +59,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 						return new InvalidExpression(position, hint, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Ambiguity trying to resolve function types, can't decide for the type");
 					
 					header = functionHint.header.forLambda(definedHeader);
+					storage = hint.storage;
 				}
 			}
 		}
@@ -70,22 +74,22 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		StatementScope innerScope = new LambdaScope(scope, closure, header);
 		Statement statements = body.compile(innerScope, header);
 		
-		if (header.getReturnType().isBasic(BasicTypeID.UNDETERMINED)) {
+		if (header.getReturnType().isBasic(BasicTypeID.UNDETERMINED))
 			header.setReturnType(statements.getReturnType());
-		}
+		
 		if (!scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference
 			StoredType returnType = statements.getReturnType();
 			Map<TypeParameter, TypeID> inferredTypes = returnType.type.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType().type);
 			if (inferredTypes == null)
-				return new InvalidExpression(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
+				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
 			
 			scope.genericInferenceMap.putAll(inferredTypes);
 		}
 		
 		StoredType functionType = scope.getTypeRegistry()
 				.getFunction(genericHeader.withGenericArguments(scope.getTypeRegistry(), new GenericMapper(scope.getTypeRegistry(), scope.genericInferenceMap)))
-				.stored(UniqueStorageTag.INSTANCE);
+				.stored(storage);
 		return new FunctionExpression(position, functionType, closure, header, statements);
 	}
 	

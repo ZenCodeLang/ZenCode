@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.SwitchCase;
 import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 
@@ -65,7 +66,7 @@ public class MatchExpression extends Expression {
 	}
 	
 	public SwitchedMatch convertToSwitch(String tempVariable) {
-		VarStatement result = new VarStatement(position, tempVariable, type, null, false);
+		VarStatement result = new VarStatement(position, new VariableID(), tempVariable, type, null, false);
 		SwitchStatement switchStatement = new SwitchStatement(position, null, value);
 		boolean hasDefault = false;
 		for (MatchExpression.Case matchCase : cases) {

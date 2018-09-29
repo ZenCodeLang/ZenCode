@@ -49,6 +49,7 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -352,7 +353,7 @@ public final class TypeMembers {
 		return variantOptions.get(name);
 	}
 	
-	public Expression compare(CodePosition position, TypeScope scope, CompareType operator, Expression left, Expression right) {
+	public Expression compare(CodePosition position, TypeScope scope, CompareType operator, Expression left, Expression right) throws CompileException {
 		if (operator == CompareType.EQ) {
 			TypeMemberGroup equal = getOrCreateGroup(OperatorType.EQUALS);
 			for (TypeMember<FunctionalMemberRef> member : equal.getMethodMembers()) {
@@ -372,7 +373,7 @@ public final class TypeMembers {
 		return compare.callWithComparator(position, scope, left, new CallArguments(right), operator);
 	}
 	
-	public Expression unary(CodePosition position, TypeScope scope, OperatorType operator, Expression value) {
+	public Expression unary(CodePosition position, TypeScope scope, OperatorType operator, Expression value) throws CompileException {
 		TypeMemberGroup members = getOrCreateGroup(operator);
 		return members.call(position, scope, value, new CallArguments(Expression.NONE), false);
 	}
@@ -458,13 +459,19 @@ public final class TypeMembers {
 	}
 	
 	private Expression castEquivalent(CodePosition position, Expression value, StoredType toType) {
-		if (toType == value.type)
+		if (toType.equals(value.type))
 			return value;
+		
+		if (!(toType.type instanceof StringTypeID))
+			System.out.println(position + ": " + value.type.storage + " -> " + toType.storage);
 		
 		return new StorageCastExpression(position, value, toType);
 	}
 	
 	public Expression castImplicit(CodePosition position, Expression value, StoredType toType, boolean implicit) {
+		if (toType == null)
+			throw new NullPointerException();
+		
 		toType = toType.getNormalized();
 		if (toType.type == BasicTypeID.UNDETERMINED)
 			return value;
@@ -500,8 +507,8 @@ public final class TypeMembers {
 			return castImplicit(position, value, toType, false);
 		
 		for (TypeMember<CasterMemberRef> caster : casters)
-			if (toType == caster.member.toType)
-				return caster.member.cast(position, value, false);
+			if (areEquivalent(caster.member.toType, toType))
+				return castEquivalent(position, caster.member.cast(position, value, false), toType);
 		
 		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Cannot cast " + toString() + " to " + toType + ", even explicitly");
 	}

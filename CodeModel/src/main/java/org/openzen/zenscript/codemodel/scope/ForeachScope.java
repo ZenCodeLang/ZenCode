@@ -6,12 +6,11 @@
 package org.openzen.zenscript.codemodel.scope;
 
 import java.util.List;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
@@ -43,7 +42,7 @@ public class ForeachScope extends StatementScope {
 	}
 
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		if (name.hasNoArguments()) {
 			for (VarStatement loopVariable : statement.loopVariables) {
 				if (loopVariable.name.equals(name.name))
@@ -92,12 +91,12 @@ public class ForeachScope extends StatementScope {
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		return outer.getDollar();
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);
 	}
 

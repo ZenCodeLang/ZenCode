@@ -25,7 +25,6 @@ import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
  */
 public class FunctionDefinition extends HighLevelDefinition {
 	public FunctionHeader header;
-	public Statement statement;
 	public CallerMember caller;
 	public final TypeMemberGroup callerGroup;
 	
@@ -46,7 +45,6 @@ public class FunctionDefinition extends HighLevelDefinition {
 	}
 	
 	public void setCode(Statement statement) {
-		this.statement = statement;
 		caller.setBody(statement);
 	}
 

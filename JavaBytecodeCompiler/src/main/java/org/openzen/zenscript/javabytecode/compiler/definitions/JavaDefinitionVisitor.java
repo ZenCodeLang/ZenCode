@@ -145,7 +145,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final JavaWriter writer = new JavaWriter(outerWriter, true, method, definition, signature, null);
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, writer);
         statementVisitor.start();
-		boolean returns = definition.statement.accept(statementVisitor);
+		boolean returns = definition.caller.body.accept(statementVisitor);
 		if (!returns) {
 			StoredType type = definition.header.getReturnType();
 			if (CompilerUtils.isPrimitive(type.type))

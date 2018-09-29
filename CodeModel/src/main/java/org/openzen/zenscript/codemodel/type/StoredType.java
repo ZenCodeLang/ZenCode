@@ -122,10 +122,7 @@ public class StoredType {
 	
 	@Override
 	public String toString() {
-		if (storage == ValueStorageTag.INSTANCE)
-			return type.toString();
-		
-		return type.toString() + "`" + storage.toString();
+		return type.toString(storage);
 	}
 	
 	public static class MatchingTypeVisitor implements TypeVisitor<Boolean> {

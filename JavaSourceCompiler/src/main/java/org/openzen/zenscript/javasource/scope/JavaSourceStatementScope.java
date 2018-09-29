@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.formattershared.ExpressionString;
@@ -115,7 +116,7 @@ public class JavaSourceStatementScope {
 		if (!shouldHoist)
 			return expression;
 		
-		VarStatement temp = new VarStatement(expression.position, createTempVariable(), expression.type, expression, true);
+		VarStatement temp = new VarStatement(expression.position, new VariableID(), createTempVariable(), expression.type, expression, true);
 		new JavaSourceStatementFormatter(this).formatVar(target, temp);
 		return new GetLocalVariableExpression(expression.position, temp);
 	}

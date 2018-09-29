@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -79,5 +80,12 @@ public interface TypeID {
 	
 	default boolean isEnum() {
 		return false;
+	}
+	
+	default String toString(StorageTag storage) {
+		if (storage == ValueStorageTag.INSTANCE)
+			return toString();
+		
+		return toString() + "`" + storage.toString();
 	}
 }

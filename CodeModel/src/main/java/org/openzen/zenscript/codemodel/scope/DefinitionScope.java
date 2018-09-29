@@ -8,9 +8,9 @@ package org.openzen.zenscript.codemodel.scope;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 
@@ -19,7 +19,6 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -93,7 +92,7 @@ public class DefinitionScope extends BaseScope {
 	}
 
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		if (members != null) {
 			if (members.hasInnerType(name.name))
 				return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
@@ -150,14 +149,14 @@ public class DefinitionScope extends BaseScope {
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		return outer.getDollar();
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		if (!definition.isInnerDefinition()) {
-			return new InvalidExpression(position, CompileExceptionCode.NO_OUTER_BECAUSE_NOT_INNER, "Type is not an inner type; cannot access outer type");
+			throw new CompileException(position, CompileExceptionCode.NO_OUTER_BECAUSE_NOT_INNER, "Type is not an inner type; cannot access outer type");
 		} else if (definition.isStatic()) {
 			return new InvalidExpression(position, outer.getThisType(), CompileExceptionCode.NO_OUTER_BECAUSE_STATIC, "Inner type is static; cannot access outer type reference");
 		} else {

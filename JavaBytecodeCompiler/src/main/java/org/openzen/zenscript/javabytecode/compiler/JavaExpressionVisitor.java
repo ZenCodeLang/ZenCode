@@ -1778,7 +1778,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
 		final Label label = new Label();
-		final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
+		final JavaLocalVariableInfo tag = expression.variable.variable.getTag(JavaLocalVariableInfo.class);
+		if (tag == null)
+			throw new RuntimeException("Missing tag @ " + expression.position);
+		
 		tag.end = label;
 		javaWriter.load(tag.type, tag.local);
 		javaWriter.label(label);
@@ -2242,7 +2245,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 		Label label = new Label();
 		javaWriter.label(label);
-		final JavaLocalVariableInfo tag = expression.variable.getTag(JavaLocalVariableInfo.class);
+		final JavaLocalVariableInfo tag = expression.variable.variable.getTag(JavaLocalVariableInfo.class);
 		tag.end = label;
 
 		javaWriter.store(tag.type, tag.local);

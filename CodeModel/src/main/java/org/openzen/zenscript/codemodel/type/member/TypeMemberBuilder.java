@@ -6,7 +6,6 @@
 package org.openzen.zenscript.codemodel.type.member;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
@@ -68,6 +67,7 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
@@ -410,6 +410,11 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		notsame(builtin, GENERICMAP_NOTSAME, type);
 		
 		processType(builtin);
+		return null;
+	}
+	
+	@Override
+	public Void visitInvalid(Void context, InvalidTypeID invalid) {
 		return null;
 	}
 	
@@ -766,6 +771,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		dec(builtin, INT_INC, INT);
 
 		add(builtin, INT_ADD_INT, INT, INT);
+		add(builtin, LONG_ADD_LONG, USIZE, LONG, INT_TO_LONG);
 		add(builtin, LONG_ADD_LONG, LONG, LONG, INT_TO_LONG);
 		add(builtin, FLOAT_ADD_FLOAT, FLOAT, FLOAT, INT_TO_FLOAT);
 		add(builtin, DOUBLE_ADD_DOUBLE, DOUBLE, DOUBLE, INT_TO_DOUBLE);
@@ -846,6 +852,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		dec(builtin, UINT_INC, INT);
 
 		add(builtin, UINT_ADD_UINT, UINT, UINT);
+		add(builtin, ULONG_ADD_ULONG, USIZE, ULONG, UINT_TO_ULONG);
 		add(builtin, ULONG_ADD_ULONG, ULONG, ULONG, UINT_TO_ULONG);
 		add(builtin, FLOAT_ADD_FLOAT, FLOAT, FLOAT, UINT_TO_FLOAT);
 		add(builtin, DOUBLE_ADD_DOUBLE, DOUBLE, DOUBLE, UINT_TO_DOUBLE);

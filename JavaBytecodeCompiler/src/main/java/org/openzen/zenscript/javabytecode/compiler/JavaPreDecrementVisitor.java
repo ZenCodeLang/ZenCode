@@ -221,7 +221,7 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 	
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-		javaWriter.idec(expression.variable.getTag(JavaLocalVariableInfo.class).local);
+		javaWriter.idec(expression.variable.variable.getTag(JavaLocalVariableInfo.class).local);
 		return null;
 	}
 

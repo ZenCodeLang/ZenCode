@@ -6,13 +6,12 @@
 package org.openzen.zenscript.codemodel.scope;
 
 import java.util.List;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
@@ -45,7 +44,7 @@ public class LambdaScope extends StatementScope {
 	}
 	
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		IPartialExpression outer = this.outer.get(position, name);
 		if (outer == null) {
 			if (name.hasNoArguments()) {
@@ -87,8 +86,8 @@ public class LambdaScope extends StatementScope {
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
-		Function<CodePosition, Expression> outerDollar = outer.getDollar();
+	public DollarEvaluator getDollar() {
+		DollarEvaluator outerDollar = outer.getDollar();
 		if (outerDollar == null)
 			return null;
 		
@@ -96,7 +95,7 @@ public class LambdaScope extends StatementScope {
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);
 	}
 

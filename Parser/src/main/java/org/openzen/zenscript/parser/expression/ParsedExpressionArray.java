@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -32,7 +33,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		StoredType asBaseType = null;
 		StoredType asType = null;
 		boolean couldHintType = false;
@@ -55,13 +56,17 @@ public class ParsedExpressionArray extends ParsedExpression {
 			for (int i = 0; i < contents.size(); i++)
 				cContents[i] = contents.get(i).compile(contentScope).eval().castImplicit(position, scope, asBaseType);
 		} else if (contents.isEmpty()) {
-			return new InvalidExpression(position, CompileExceptionCode.UNTYPED_EMPTY_ARRAY, "Empty array with unknown type");
+			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_ARRAY, "Empty array with unknown type");
 		} else {
 			ExpressionScope contentScope = scope.withoutHints();
 			StoredType resultType = null;
 			for (int i = 0; i < contents.size(); i++) {
 				cContents[i] = contents.get(i).compileKey(contentScope).eval();
-				resultType = resultType == null ? cContents[i].type : scope.getTypeMembers(resultType).union(cContents[i].type);
+				StoredType joinedType = resultType == null ? cContents[i].type : scope.getTypeMembers(resultType).union(cContents[i].type);
+				if (joinedType == null)
+					throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "Could not combine " + resultType + " with " + cContents[i].type);
+				
+				resultType = joinedType;
 			}
 			for (int i = 0; i < contents.size(); i++)
 				cContents[i] = cContents[i].castImplicit(position, scope, resultType);
@@ -71,7 +76,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 	}
 
 	@Override
-	public Expression compileKey(ExpressionScope scope) {
+	public Expression compileKey(ExpressionScope scope) throws CompileException {
 		if (contents.size() == 1) {
 			return contents.get(0).compile(scope).eval();
 		} else {

@@ -29,7 +29,7 @@ public class JavaForeachWriter {
 		javaWriter.swap();
 		javaWriter.getField("zsynthetic/IntRange", "from", "I");
 
-		final int z = variables[0].getTag(JavaLocalVariableInfo.class).local;
+		final int z = variables[0].variable.getTag(JavaLocalVariableInfo.class).local;
 		javaWriter.storeInt(z);
 		javaWriter.label(startLabel);
 		javaWriter.dup();
@@ -41,17 +41,17 @@ public class JavaForeachWriter {
 	}
 
 	public void visitArrayValueIterator() {
-		handleArray(javaWriter.local(int.class), variables[0].getTag(JavaLocalVariableInfo.class));
+		handleArray(javaWriter.local(int.class), variables[0].variable.getTag(JavaLocalVariableInfo.class));
 	}
 
 	public void visitArrayKeyValueIterator() {
-		handleArray(variables[0].getTag(JavaLocalVariableInfo.class).local, variables[1].getTag(JavaLocalVariableInfo.class));
+		handleArray(variables[0].variable.getTag(JavaLocalVariableInfo.class).local, variables[1].variable.getTag(JavaLocalVariableInfo.class));
 	}
 
 	public void visitStringCharacterIterator() {
 		//TODO UNTESTED!
 		javaWriter.invokeSpecial("java/lang/String", "toCharArray()", "()[C");
-		handleArray(javaWriter.local(int.class), variables[0].getTag(JavaLocalVariableInfo.class));
+		handleArray(javaWriter.local(int.class), variables[0].variable.getTag(JavaLocalVariableInfo.class));
 	}
 
 	private void handleArray(final int z, final JavaLocalVariableInfo arrayTypeInfo) {

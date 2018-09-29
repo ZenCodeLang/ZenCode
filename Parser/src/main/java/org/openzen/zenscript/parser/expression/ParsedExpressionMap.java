@@ -44,7 +44,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		StoredType usedHint = null;
 		List<StoredType> keyHints = new ArrayList<>();
 		List<StoredType> valueHints = new ArrayList<>();
@@ -74,15 +74,11 @@ public class ParsedExpressionMap extends ParsedExpression {
 		}
 		
 		if (keys.isEmpty() && keyHints.size() == 1) {
-			try {
-				FunctionalMemberRef constructor = scope
-							.getTypeMembers(usedHint)
-							.getOrCreateGroup(OperatorType.CONSTRUCTOR)
-							.selectMethod(position, scope, CallArguments.EMPTY, true, true);
-					return new NewExpression(position, usedHint, constructor, CallArguments.EMPTY);
-			} catch (CompileException ex) {
-				return new InvalidExpression(ex.position, ex.code, ex.getMessage());
-			}
+			FunctionalMemberRef constructor = scope
+					.getTypeMembers(usedHint)
+					.getOrCreateGroup(OperatorType.CONSTRUCTOR)
+					.selectMethod(position, scope, CallArguments.EMPTY, true, true);
+			return new NewExpression(position, usedHint, constructor, CallArguments.EMPTY);
 		}
 		
 		if (!hasAssocHint && scope.hints.size() == 1) {
@@ -90,7 +86,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 			StoredType hint = scope.hints.get(0);
 			for (int i = 0; i < keys.size(); i++) {
 				if (keys.get(i) != null)
-					return new InvalidExpression(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
+					throw new CompileException(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
 			}
 			ParsedCallArguments arguments = new ParsedCallArguments(null, values);
 			return ParsedNewExpression.compile(position, hint, arguments, scope);
@@ -101,7 +97,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 
 		for (int i = 0; i < keys.size(); i++) {
 			if (keys.get(i) == null)
-				return new InvalidExpression(position, CompileExceptionCode.MISSING_MAP_KEY, "Missing key");
+				throw new CompileException(position, CompileExceptionCode.MISSING_MAP_KEY, "Missing key");
 			
 			cKeys[i] = keys.get(i).compileKey(scope.withHints(keyHints));
 			cValues[i] = values.get(i).compile(scope.withHints(valueHints)).eval();
@@ -119,7 +115,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 			}
 		}
 		if (keyType == null)
-			return new InvalidExpression(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
+			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
 		
 		for (int i = 0; i < cKeys.length; i++)
 			cKeys[i] = cKeys[i].castImplicit(position, scope, keyType);
@@ -136,7 +132,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 			}
 		}
 		if (valueType == null)
-			return new InvalidExpression(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
+			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
 		
 		for (int i = 0; i < cValues.length; i++)
 			cValues[i] = cValues[i].castImplicit(position, scope, valueType);

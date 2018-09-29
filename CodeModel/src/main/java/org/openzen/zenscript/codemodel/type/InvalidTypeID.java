@@ -10,8 +10,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -66,5 +64,10 @@ public class InvalidTypeID implements TypeID {
 	@Override
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitInvalid(context, this);
+	}
+	
+	@Override
+	public String toString() {
+		return "invalid";
 	}
 }

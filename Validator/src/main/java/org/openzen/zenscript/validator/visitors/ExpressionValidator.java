@@ -44,13 +44,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.left.accept(this);
 		expression.right.accept(this);
 		
-		if (expression.left.type.type != BasicTypeID.BOOL) {
+		if (!expression.left.type.type.isBasic(BasicTypeID.BOOL)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
 					"left hand side operand of && must be a bool");
 		}
-		if (expression.right.type.type != BasicTypeID.BOOL) {
+		if (!expression.right.type.type.isBasic(BasicTypeID.BOOL)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
@@ -62,7 +62,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitArray(ArrayExpression expression) {
 		for (Expression element : expression.expressions) {
-			if (element.type != expression.arrayType.elementType) {
+			if (!element.type.equals(expression.arrayType.elementType)) {
 				validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
@@ -75,9 +75,9 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitCompare(CompareExpression expression) {
-		if (expression.right.type != expression.operator.getHeader().parameters[0].type) {
+		if (!expression.right.type.equals(expression.operator.getHeader().parameters[0].type))
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison has invalid right type!");
-		}
+		
 		expression.left.accept(this);
 		expression.right.accept(this);
 		return null;
@@ -155,7 +155,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.condition.accept(this);
 		expression.ifThen.accept(this);
 		expression.ifElse.accept(this);
-		if (expression.condition.type.type != BasicTypeID.BOOL) {
+		if (!expression.condition.type.type.isBasic(BasicTypeID.BOOL)) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "conditional expression condition must be a bool");
 		}
 		return null;
@@ -361,10 +361,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			
 			key.accept(this);
 			value.accept(this);
-			if (key.type != type.keyType) {
+			if (!key.type.equals(type.keyType)) {
 				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Key type must match the associative array key type");
 			}
-			if (value.type != type.valueType) {
+			if (!value.type.equals(type.valueType)) {
 				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Value type must match the associative array value type");
 			}
 		}
@@ -497,10 +497,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.to.accept(this);
 		
 		RangeTypeID rangeType = (RangeTypeID) expression.type.type;
-		if (expression.from.type != rangeType.baseType) {
+		if (!expression.from.type.equals(rangeType.baseType)) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "From operand is not a " + rangeType.baseType.toString());
 		}
-		if (expression.to.type != rangeType.baseType) {
+		if (!expression.to.type.equals(rangeType.baseType)) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "To operand is not a " + rangeType.baseType.toString());
 		}
 		return null;
@@ -517,7 +517,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitSetField(SetFieldExpression expression) {
 		expression.target.accept(this);
 		expression.value.accept(this);
-		if (expression.value.type != expression.field.getType()) {
+		if (!expression.value.type.equals(expression.field.getType())) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
 					expression.position,
@@ -534,7 +534,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
 		expression.value.accept(this);
-		if (expression.value.type != expression.parameter.type) {
+		if (!expression.value.type.equals(expression.parameter.type)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
 					expression.position,
@@ -546,7 +546,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitSetLocalVariable(SetLocalVariableExpression expression) {
 		expression.value.accept(this);
-		if (expression.value.type != expression.variable.type) {
+		if (!expression.value.type.equals(expression.variable.type)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
 					expression.position,
@@ -561,7 +561,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitSetStaticField(SetStaticFieldExpression expression) {
 		expression.value.accept(this);
-		if (expression.value.type != expression.field.getType()) {
+		if (!expression.value.type.equals(expression.field.getType())) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
@@ -582,7 +582,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitSetter(SetterExpression expression) {
 		expression.target.accept(this);
 		expression.value.accept(this);
-		if (expression.value.type != expression.setter.getType()) {
+		if (!expression.value.type.equals(expression.setter.getType())) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
@@ -599,7 +599,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitStaticSetter(StaticSetterExpression expression) {
 		expression.value.accept(this);
-		if (expression.value.type != expression.setter.getType()) {
+		if (!expression.value.type.equals(expression.setter.getType())) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
@@ -663,7 +663,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, expression.position, "Invalid number of variant arguments for variant element " + expression.option.getName());
 		}
 		for (int i = 0; i < expression.getNumberOfArguments(); i++) {
-			if (expression.arguments[i].type != expression.option.types[i]) {
+			if (!expression.arguments[i].type.equals(expression.option.types[i])) {
 				validator.logError(
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						expression.position,
@@ -704,7 +704,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			}
 			
 			FunctionParameter parameter = instancedHeader.parameters[i];
-			if (parameter.type != argument.type) {
+			if (!parameter.type.equals(argument.type)) {
 				validator.logError(
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						position,

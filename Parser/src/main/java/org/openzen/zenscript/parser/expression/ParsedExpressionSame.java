@@ -7,6 +7,7 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -35,7 +36,7 @@ public class ParsedExpressionSame extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression cLeft = left.compile(scope.withoutHints()).eval();
 		Expression cRight = right.compile(scope.withHint(cLeft.type)).eval();
 		return scope.getTypeMembers(cLeft.type)

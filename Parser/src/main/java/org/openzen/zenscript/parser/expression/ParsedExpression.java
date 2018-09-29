@@ -577,9 +577,9 @@ public abstract class ParsedExpression {
 	 * @param scope
 	 * @return 
 	 */
-	public abstract IPartialExpression compile(ExpressionScope scope);
+	public abstract IPartialExpression compile(ExpressionScope scope) throws CompileException;
 
-	public Expression compileKey(ExpressionScope scope) {
+	public Expression compileKey(ExpressionScope scope) throws CompileException {
 		return compile(scope).eval();
 	}
 	

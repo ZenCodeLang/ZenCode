@@ -6,6 +6,7 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -29,10 +30,10 @@ public class ParsedTryConvertExpression extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression cValue = value.compile(scope).eval();
 		if (scope.getFunctionHeader() == null)
-			return new InvalidExpression(position, CompileExceptionCode.TRY_CONVERT_OUTSIDE_FUNCTION, "try? can only be used inside functions");
+			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_OUTSIDE_FUNCTION, "try? can only be used inside functions");
 		
 		HighLevelDefinition result = scope.getTypeRegistry().stdlib.getDefinition("Result");
 		if (cValue.thrownType != null) {
@@ -40,7 +41,7 @@ public class ParsedTryConvertExpression extends ParsedExpression {
 			DefinitionTypeID resultType = scope.getTypeRegistry().getForDefinition(result, cValue.type.type, cValue.thrownType.type);
 			return new TryConvertExpression(position, resultType.stored(cValue.type.storage), cValue);
 		} else {
-			return new InvalidExpression(position, CompileExceptionCode.TRY_CONVERT_ILLEGAL_TARGET, "try? can only be used on expressions that throw");
+			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_ILLEGAL_TARGET, "try? can only be used on expressions that throw");
 		}
 	}
 

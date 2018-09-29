@@ -31,7 +31,7 @@ public class SharedStorageTag implements StorageTag {
 
 	@Override
 	public boolean canCastFrom(StorageTag other) {
-		return other == this || other == UniqueStorageTag.INSTANCE;
+		return other == this || other == UniqueStorageTag.INSTANCE || other == StaticStorageTag.INSTANCE;
 	}
 
 	@Override

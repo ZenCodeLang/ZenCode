@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -136,6 +137,19 @@ public class ModifiedTypeID implements TypeID {
 		if ((modifiers & MODIFIER_CONST) > 0)
 			result.append("const ");
 		result.append(baseType.toString());
+		if ((modifiers & MODIFIER_OPTIONAL) > 0)
+			result.append("?");
+		return result.toString();
+	}
+	
+	@Override
+	public String toString(StorageTag storage) {
+		StringBuilder result = new StringBuilder();
+		if ((modifiers & MODIFIER_IMMUTABLE) > 0)
+			result.append("immutable ");
+		if ((modifiers & MODIFIER_CONST) > 0)
+			result.append("const ");
+		result.append(baseType.toString(storage));
 		if ((modifiers & MODIFIER_OPTIONAL) > 0)
 			result.append("?");
 		return result.toString();
