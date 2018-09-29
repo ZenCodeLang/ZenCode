@@ -7,12 +7,12 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.parser.PrecompilationState;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 /**
  *
@@ -27,7 +27,11 @@ public class ParsedDollarExpression extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) {
 		Function<CodePosition, Expression> dollar = scope.getDollar();
 		if (dollar == null)
-			throw new CompileException(position, CompileExceptionCode.NO_DOLLAR_HERE, "No dollar expression available in this context");
+			return new InvalidExpression(
+					position,
+					scope.hints.isEmpty() ? BasicTypeID.UNDETERMINED.stored : scope.hints.get(0),
+					CompileExceptionCode.NO_DOLLAR_HERE,
+					"No dollar expression available in this context");
 		
 		return dollar.apply(position);
 	}

@@ -12,7 +12,9 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
@@ -41,7 +43,7 @@ public class LocalTypeResolutionContext implements TypeResolutionContext {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+	public TypeID getType(CodePosition position, List<GenericName> name) {
 		if (type != null) {
 			CompilingType compiling = type.getInner(name.get(0).name);
 			if (compiling != null) {
@@ -53,10 +55,10 @@ public class LocalTypeResolutionContext implements TypeResolutionContext {
 		if (name.size() == 1 && name.get(0).hasNoArguments()) {
 			for (TypeParameter parameter : parameters)
 				if (parameter.name.equals(name.get(0).name))
-					return getTypeRegistry().getGeneric(parameter, storage);
+					return getTypeRegistry().getGeneric(parameter);
 		}
 		
-		return outer.getType(position, name, storage);
+		return outer.getType(position, name);
 	}
 
 	@Override
@@ -65,7 +67,7 @@ public class LocalTypeResolutionContext implements TypeResolutionContext {
 	}
 	
 	@Override
-	public ITypeID getThisType() {
-		return type == null ? null : getTypeRegistry().getForMyDefinition(type.load());
+	public StoredType getThisType() {
+		return type == null ? null : getTypeRegistry().getForMyDefinition(type.load()).stored(BorrowStorageTag.THIS);
 	}
 }

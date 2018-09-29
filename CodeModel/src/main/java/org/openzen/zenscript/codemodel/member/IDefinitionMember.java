@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -52,7 +52,7 @@ public interface IDefinitionMember {
 	
 	boolean isAbstract();
 	
-	DefinitionMemberRef ref(ITypeID type, GenericMapper mapper);
+	DefinitionMemberRef ref(StoredType type, GenericMapper mapper);
 	
 	FunctionHeader getHeader();
 }

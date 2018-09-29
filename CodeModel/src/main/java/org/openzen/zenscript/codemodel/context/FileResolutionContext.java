@@ -13,7 +13,8 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
@@ -45,21 +46,20 @@ public class FileResolutionContext implements TypeResolutionContext {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+	public TypeID getType(CodePosition position, List<GenericName> name) {
 		if (imports.containsKey(name.get(0).name)) {
 			return GenericName.getInnerType(
 					getTypeRegistry(),
-					getTypeRegistry().getForDefinition(imports.get(name.get(0).name), null, name.get(0).arguments),
+					getTypeRegistry().getForDefinition(imports.get(name.get(0).name), name.get(0).arguments),
 					name,
-					1,
-					storage);
+					1);
 		}
 		
-		ITypeID moduleType = modulePackage.getType(this, name);
+		TypeID moduleType = modulePackage.getType(this, name);
 		if (moduleType != null)
 			return moduleType;
 		
-		return module.getType(position, name, storage);
+		return module.getType(position, name);
 	}
 	
 	@Override
@@ -68,7 +68,7 @@ public class FileResolutionContext implements TypeResolutionContext {
 	}
 
 	@Override
-	public ITypeID getThisType() {
+	public StoredType getThisType() {
 		return null;
 	}
 }

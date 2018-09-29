@@ -6,7 +6,6 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -14,13 +13,13 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
  */
 public class GenericName {
 	public final String name;
-	public final ITypeID[] arguments;
+	public final TypeID[] arguments;
 	
 	public GenericName(String name) {
-		this(name, ITypeID.NONE);
+		this(name, TypeID.NONE);
 	}
 	
-	public GenericName(String name, ITypeID[] arguments) {
+	public GenericName(String name, TypeID[] arguments) {
 		if (arguments == null)
 			throw new NullPointerException("Arguments cannot be null");
 		
@@ -40,10 +39,10 @@ public class GenericName {
 		return arguments.length == 0;
 	}
 	
-	public static ITypeID getInnerType(GlobalTypeRegistry registry, DefinitionTypeID type, List<GenericName> name, int index, StorageTag storage) {
+	public static TypeID getInnerType(GlobalTypeRegistry registry, DefinitionTypeID type, List<GenericName> name, int index) {
 		while (index < name.size()) {
 			GenericName innerName = name.get(index++);
-			type = type.getInnerType(innerName, registry, storage);
+			type = type.getInnerType(innerName, registry);
 			if (type == null)
 				return null;
 		}

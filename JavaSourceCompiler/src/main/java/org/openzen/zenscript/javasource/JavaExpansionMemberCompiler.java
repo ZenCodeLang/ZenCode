@@ -29,7 +29,7 @@ import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -44,7 +44,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	
 	public JavaExpansionMemberCompiler(
 			JavaSourceFormattingSettings settings,
-			ITypeID targetType,
+			TypeID targetType,
 			TypeParameter[] expansionTypeParameters,
 			String indent,
 			StringBuilder output,
@@ -72,7 +72,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 		else
 			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, expansionTypeParameters, header.typeParameters);
 		
-		output.append(header.getReturnType().accept(scope.typeVisitor));
+		output.append(scope.typeVisitor.process(header.getReturnType()));
 		output.append(" ");
 		output.append(method.name);
 		formatParameters(member.isStatic(), expansionTypeParameters, header);
@@ -165,7 +165,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
-		compileMethod(member, new FunctionHeader(scope.semanticScope.getTypeRegistry().getIterator(member.getLoopVariableTypes(), UniqueStorageTag.INSTANCE)), member.body);
+		compileMethod(member, new FunctionHeader(scope.semanticScope.getTypeRegistry().getIterator(member.getLoopVariableTypes()).stored(UniqueStorageTag.INSTANCE)), member.body);
 		return null;
 	}
 

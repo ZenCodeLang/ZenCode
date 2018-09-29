@@ -7,17 +7,18 @@ package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ParameterSuperBound extends TypeParameterBound {
-	public final ITypeID type;
+	public final TypeID type;
 	
-	public ParameterSuperBound(ITypeID type) {
+	public ParameterSuperBound(TypeID type) {
 		this.type = type;
 	}
 	
@@ -32,13 +33,13 @@ public class ParameterSuperBound extends TypeParameterBound {
 	}
 
 	@Override
-	public boolean matches(LocalMemberCache cache, ITypeID type) {
-		return cache.get(this.type).extendsOrImplements(type);
+	public boolean matches(LocalMemberCache cache, TypeID type) {
+		return cache.get(this.type.stored(BorrowStorageTag.THIS)).extendsOrImplements(type);
 	}
 
 	@Override
 	public TypeParameterBound instance(GenericMapper mapper) {
-		ITypeID translated = type.instance(mapper);
+		TypeID translated = type.instanceUnstored(mapper);
 		if (translated == type)
 			return this;
 		

@@ -13,7 +13,6 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -21,6 +20,8 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -65,7 +66,9 @@ public interface CodeSerializationOutput {
 	
 	void serialize(TypeContext context, IDefinitionMember member);
 	
-	void serialize(TypeContext context, ITypeID type);
+	void serialize(TypeContext context, TypeID type);
+	
+	void serialize(TypeContext context, StoredType type);
 	
 	void serialize(TypeContext context, TypeParameter parameter);
 	

@@ -11,8 +11,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -20,19 +19,19 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
  */
 public class InnerDefinition {
 	public final HighLevelDefinition definition;
-	public final Map<TypeParameter, ITypeID> outerTypeArguments;
+	public final Map<TypeParameter, TypeID> outerTypeArguments;
 	
 	public InnerDefinition(HighLevelDefinition definition) {
 		this.definition = definition;
 		this.outerTypeArguments = Collections.emptyMap();
 	}
 	
-	public InnerDefinition(HighLevelDefinition definition, Map<TypeParameter, ITypeID> outerTypeArguments) {
+	public InnerDefinition(HighLevelDefinition definition, Map<TypeParameter, TypeID> outerTypeArguments) {
 		this.definition = definition;
 		this.outerTypeArguments = outerTypeArguments;
 	}
 	
-	public DefinitionTypeID instance(GlobalTypeRegistry registry, ITypeID[] typeArguments, DefinitionTypeID outer, StorageTag storage) {
-		return registry.getForDefinition(definition, typeArguments, outer, storage);
+	public DefinitionTypeID instance(GlobalTypeRegistry registry, TypeID[] typeArguments, DefinitionTypeID outer) {
+		return registry.getForDefinition(definition, typeArguments, outer);
 	}
 }

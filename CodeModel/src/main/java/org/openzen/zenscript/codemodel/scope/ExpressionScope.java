@@ -24,10 +24,11 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -37,8 +38,8 @@ public class ExpressionScope extends BaseScope {
 	private final BaseScope outer;
 	private final Function<CodePosition, Expression> dollar;
 	
-	public final List<ITypeID> hints;
-	public final Map<TypeParameter, ITypeID> genericInferenceMap;
+	public final List<StoredType> hints;
+	public final Map<TypeParameter, TypeID> genericInferenceMap;
 	public final Map<String, Function<CodePosition, Expression>> innerVariables = new HashMap<>();
 	
 	public ExpressionScope(BaseScope outer) {
@@ -48,25 +49,25 @@ public class ExpressionScope extends BaseScope {
 		this.genericInferenceMap = Collections.emptyMap();
 	}
 	
-	public ExpressionScope(BaseScope outer, List<ITypeID> hints) {
+	public ExpressionScope(BaseScope outer, List<StoredType> hints) {
 		this.outer = outer;
 		this.hints = hints;
 		this.dollar = null;
 		this.genericInferenceMap = Collections.emptyMap();
 	}
 	
-	public ExpressionScope(BaseScope scope, ITypeID hint) {
+	public ExpressionScope(BaseScope scope, StoredType hint) {
 		this.outer = scope;
-		this.hints = hint == BasicTypeID.UNDETERMINED ? Collections.emptyList() : Collections.singletonList(hint);
+		this.hints = hint.type == BasicTypeID.UNDETERMINED ? Collections.emptyList() : Collections.singletonList(hint);
 		this.dollar = null;
 		this.genericInferenceMap = Collections.emptyMap();
 	}
 	
 	private ExpressionScope(
 			BaseScope scope,
-			List<ITypeID> hints,
+			List<StoredType> hints,
 			Function<CodePosition, Expression> dollar,
-			Map<TypeParameter, ITypeID> genericInferenceMap,
+			Map<TypeParameter, TypeID> genericInferenceMap,
 			Map<String, Function<CodePosition, Expression>> innerVariables) {
 		this.outer = scope;
 		this.hints = hints;
@@ -83,7 +84,7 @@ public class ExpressionScope extends BaseScope {
 		innerVariables.put(name, position -> new GetMatchingVariantField(position, value, index));
 	}
 	
-	public List<ITypeID> getResultTypeHints() {
+	public List<StoredType> getResultTypeHints() {
 		return hints;
 	}
 	
@@ -91,15 +92,15 @@ public class ExpressionScope extends BaseScope {
 		return new ExpressionScope(outer, Collections.emptyList(), dollar, genericInferenceMap, innerVariables);
 	}
 	
-	public ExpressionScope withHint(ITypeID hint) {
+	public ExpressionScope withHint(StoredType hint) {
 		return new ExpressionScope(outer, Collections.singletonList(hint), dollar, genericInferenceMap, innerVariables);
 	}
 	
-	public ExpressionScope withHints(List<ITypeID> hints) {
+	public ExpressionScope withHints(List<StoredType> hints) {
 		return new ExpressionScope(outer, hints, dollar, genericInferenceMap, innerVariables);
 	}
 	
-	public ExpressionScope createInner(List<ITypeID> hints, Function<CodePosition, Expression> dollar) {
+	public ExpressionScope createInner(List<StoredType> hints, Function<CodePosition, Expression> dollar) {
 		return new ExpressionScope(outer, hints, dollar, genericInferenceMap, innerVariables);
 	}
 	
@@ -107,7 +108,7 @@ public class ExpressionScope extends BaseScope {
 		if (header.typeParameters == null)
 			return this;
 		
-		Map<TypeParameter, ITypeID> genericInferenceMap = new HashMap<>();
+		Map<TypeParameter, TypeID> genericInferenceMap = new HashMap<>();
 		for (TypeParameter parameter : header.typeParameters)
 			genericInferenceMap.put(parameter, null);
 		
@@ -128,8 +129,8 @@ public class ExpressionScope extends BaseScope {
 	}
 	
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
-		return outer.getType(position, name, storage);
+	public TypeID getType(CodePosition position, List<GenericName> name) {
+		return outer.getType(position, name);
 	}
 
 	@Override
@@ -148,7 +149,7 @@ public class ExpressionScope extends BaseScope {
 	}
 	
 	@Override
-	public ITypeID getThisType() {
+	public StoredType getThisType() {
 		return outer.getThisType();
 	}
 

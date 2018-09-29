@@ -10,12 +10,15 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.expression.ParsedCallArguments;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.expression.ParsedNewExpression;
@@ -25,15 +28,20 @@ import org.openzen.zenscript.parser.expression.ParsedNewExpression;
  * @author Hoofdgebruiker
  */
 public class ParsedEnumConstant {
-	public static ParsedEnumConstant parse(ZSTokenParser tokens, EnumDefinition definition, int value) {
+	public static ParsedEnumConstant parse(ZSTokenParser tokens, EnumDefinition definition, int value) throws ParseException {
 		CodePosition position = tokens.getPosition();
 		ZSToken name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
 		List<ParsedExpression> arguments = new ArrayList<>();
 		if (tokens.optional(ZSTokenType.T_BROPEN) != null) {
-			do {
-				arguments.add(ParsedExpression.parse(tokens));
-			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
-			tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
+			try {
+				do {
+					arguments.add(ParsedExpression.parse(tokens));
+				} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+				tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
+			} catch (ParseException ex) {
+				tokens.logError(ex);
+				tokens.recoverUntilToken(ZSTokenType.T_BRCLOSE);
+			}
 		}
 		
 		return new ParsedEnumConstant(position, definition, name.content, value, arguments);
@@ -59,6 +67,6 @@ public class ParsedEnumConstant {
 	
 	public void compileCode(DefinitionTypeID type, ExpressionScope scope) {
 		ParsedCallArguments arguments = new ParsedCallArguments(null, this.arguments);
-		compiled.constructor = ParsedNewExpression.compile(position, type, arguments, scope);
+		compiled.constructor = (NewExpression)ParsedNewExpression.compile(position, type.stored(StaticStorageTag.INSTANCE), arguments, scope);
 	}
 }

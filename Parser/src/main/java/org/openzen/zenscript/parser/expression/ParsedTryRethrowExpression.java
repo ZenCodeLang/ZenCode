@@ -6,17 +6,16 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -43,22 +42,22 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 				return new TryRethrowAsExceptionExpression(position, cSource.type, cSource, cSource.thrownType);
 			} else {
 				// rethrow as result
-				ITypeID resultType = scope.getTypeRegistry().getForDefinition(result, UniqueStorageTag.INSTANCE, cSource.type, cSource.thrownType);
+				StoredType resultType = scope.getTypeRegistry().getForDefinition(result, cSource.type.type, cSource.thrownType.type).stored(cSource.thrownType.storage);
 				return new TryRethrowAsResultExpression(position, resultType, cSource);
 			}
 		} else {
 			// expression
-			if (cSource.type instanceof DefinitionTypeID) {
-				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type;
+			if (cSource.type.type instanceof DefinitionTypeID) {
+				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type.type;
 				if (sourceType.definition == result) {
-					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0], cSource);
+					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0].stored(cSource.type.storage), cSource);
 				}
 			}
 			
 			if (scope.getFunctionHeader() == null)
-				throw new CompileException(position, CompileExceptionCode.TRY_RETHROW_NOT_A_RESULT, "type is not a Result type, cannot convert");
+				return new InvalidExpression(position, CompileExceptionCode.TRY_RETHROW_NOT_A_RESULT, "type is not a Result type, cannot convert");
 			
-			throw new CompileException(position, CompileExceptionCode.TRY_RETHROW_NOT_A_RESULT, "this expression doesn't throw an exception nor returns a result");
+			return new InvalidExpression(position, CompileExceptionCode.TRY_RETHROW_NOT_A_RESULT, "this expression doesn't throw an exception nor returns a result");
 		}
 	}
 

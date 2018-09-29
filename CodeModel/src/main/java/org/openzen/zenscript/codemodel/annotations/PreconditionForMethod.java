@@ -83,11 +83,11 @@ public class PreconditionForMethod implements MemberAnnotation {
 		if (body == null)
 			return body;
 		
-		ExpressionScope expressionScope = new ExpressionScope(scope, BasicTypeID.BOOL);
+		ExpressionScope expressionScope = new ExpressionScope(scope, BasicTypeID.BOOL.stored);
 		List<Statement> statements = new ArrayList<>();
 		ExpressionBuilder expressionBuilder = new ExpressionBuilder(position, expressionScope);
 		Expression inverseCondition = expressionBuilder.not(condition);
-		Statement throwStatement = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID, message));
+		Statement throwStatement = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID.stored, message));
 		statements.add(new IfStatement(position, inverseCondition, throwStatement, null));
 		
 		if (body instanceof BlockStatement) {

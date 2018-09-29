@@ -18,10 +18,11 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import stdlib.Chars;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
@@ -37,6 +38,14 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		this.settings = settings;
 		this.importer = importer;
 	}
+	
+	public String format(TypeID type) {
+		return type.accept(this);
+	}
+	
+	public String format(StoredType type) {
+		return type.type.accept(this) + "`" + type.storage.toString();
+	}
 
 	@Override
 	public String visitBasic(BasicTypeID basic) {
@@ -45,34 +54,24 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 	
 	@Override
 	public String visitString(StringTypeID string) {
-		if (string.storage == null)
-			return "string";
-		else
-			return "string`" + string.storage.toString();
+		return "string";
 	}
 
 	@Override
 	public String visitArray(ArrayTypeID array) {
-		String element = array.elementType.accept(this);
+		String element = format(array.elementType);
 		String result;
 		if (array.dimension == 1) {
 			result = element + "[]";
 		} else {
 			result = element + "[" + Chars.times(',', array.dimension - 1) + "]";
 		}
-		if (array.storage == null)
-			return result;
-		
-		return result + '`' + array.storage.toString();
+		return result;
 	}
 
 	@Override
 	public String visitAssoc(AssocTypeID assoc) {
-		String result = assoc.valueType.accept(this) + "[" + assoc.keyType.accept(this) + "]";
-		if (assoc.storage == null)
-			return result;
-		
-		return result + '`' + assoc.storage.toString();
+		return format(assoc.valueType) + "[" + format(assoc.keyType) + "]";
 	}
 
 	@Override
@@ -85,12 +84,6 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		StringBuilder result = new StringBuilder();
 		result.append("function");
 		FormattingUtils.formatHeader(result, settings, function.header, this);
-		
-		if (function.storage != null) {
-			result.append('`');
-			result.append(function.storage.toString());
-		}
-		
 		return result.toString();
 	}
 
@@ -104,33 +97,24 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		result.append(importedName);
 		result.append("<");
 		int index = 0;
-		for (ITypeID typeParameter : definition.typeArguments) {
+		for (TypeID typeParameter : definition.typeArguments) {
 			if (index > 0)
 				result.append(", ");
 			
 			result.append(typeParameter.accept(this));
 		}
 		result.append(">");
-		
-		if (definition.storage != null) {
-			result.append('`');
-			result.append(definition.storage.toString());
-		}
-		
 		return result.toString();
 	}
 
 	@Override
 	public String visitGeneric(GenericTypeID generic) {
-		if (generic.storage == null)
-			return generic.parameter.name;
-		
-		return generic.parameter.name + '`' + generic.storage.toString();
+		return generic.parameter.name;
 	}
 
 	@Override
 	public String visitRange(RangeTypeID range) {
-		return range.baseType.accept(this) + " .. " + range.baseType.accept(this);
+		return format(range.baseType) + " .. " + format(range.baseType);
 	}
 
 	@Override
@@ -160,16 +144,10 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 	@Override
 	public String visitGenericMap(GenericMapTypeID map) {
 		StringBuilder result = new StringBuilder();
-		result.append(map.value.accept(this));
+		result.append(format(map.value));
 		result.append("[<");
 		FormattingUtils.formatTypeParameters(result, new TypeParameter[] { map.key }, this);
 		result.append("]>");
-		
-		if (map.storage != null) {
-			result.append('`');
-			result.append(map.storage.toString());
-		}
-		
 		return result.toString();
 	}
 }

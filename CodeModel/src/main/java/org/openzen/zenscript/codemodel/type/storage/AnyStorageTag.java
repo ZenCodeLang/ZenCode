@@ -33,4 +33,9 @@ public class AnyStorageTag implements StorageTag {
 	public boolean canCastFrom(StorageTag other) {
 		return true;
 	}
+
+	@Override
+	public boolean isDestructible() {
+		return true;
+	}
 }

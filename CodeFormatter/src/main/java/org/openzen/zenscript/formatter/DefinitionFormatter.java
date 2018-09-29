@@ -195,7 +195,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 				for (int i = 0; i < option.types.length; i++) {
 					if (i > 0)
 						output.append(", ");
-					output.append(option.types[i].accept(typeFormatter));
+					output.append(typeFormatter.format(option.types[i]));
 				}
 			}
 		}

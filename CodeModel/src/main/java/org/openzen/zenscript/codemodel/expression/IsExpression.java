@@ -8,7 +8,7 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -16,10 +16,10 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class IsExpression extends Expression {
 	public final Expression value;
-	public final ITypeID isType;
+	public final TypeID isType;
 	
-	public IsExpression(CodePosition position, Expression value, ITypeID type) {
-		super(position, BasicTypeID.BOOL, value.thrownType);
+	public IsExpression(CodePosition position, Expression value, TypeID type) {
+		super(position, BasicTypeID.BOOL.stored, value.thrownType);
 		
 		this.value = value;
 		this.isType = type;
@@ -38,11 +38,11 @@ public class IsExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
-		return tValue == value ? this : new IsExpression(position, tValue, type);
+		return tValue == value ? this : new IsExpression(position, tValue, isType);
 	}
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		return new IsExpression(position, value.normalize(scope), type.getNormalized());
+		return new IsExpression(position, value.normalize(scope), isType.getNormalizedUnstored());
 	}
 }

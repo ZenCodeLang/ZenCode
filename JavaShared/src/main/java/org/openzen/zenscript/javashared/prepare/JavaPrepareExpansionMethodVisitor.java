@@ -116,7 +116,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		visitFunctional(member, member.header, "to" + member.toType.accept(new JavaTypeNameVisitor()));
+		visitFunctional(member, member.header, "to" + JavaTypeNameVisitor.INSTANCE.process(member.toType));
 		return null;
 	}
 
@@ -134,7 +134,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		JavaClass implementationClass = new JavaClass(cls, member.type.accept(new JavaTypeNameVisitor()) + "Implementation", JavaClass.Kind.CLASS);
+		JavaClass implementationClass = new JavaClass(cls, JavaTypeNameVisitor.INSTANCE.process(member.type) + "Implementation", JavaClass.Kind.CLASS);
 		member.setTag(JavaImplementation.class, new JavaImplementation(false, implementationClass));
 		for (IDefinitionMember implementedMember : member.members)
 			implementedMember.accept(this);
@@ -161,7 +161,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
 		if (method == null)
-			method = new JavaMethod(cls, getKind(member), name, true, context.getMethodDescriptor(header), JavaModifiers.getJavaModifiers(member.modifiers), header.getReturnType() instanceof GenericTypeID); 
+			method = new JavaMethod(cls, getKind(member), name, true, context.getMethodDescriptor(header), JavaModifiers.getJavaModifiers(member.modifiers), header.getReturnType().type instanceof GenericTypeID); 
 		
 		if (method.compile) {
 			if (DEBUG_EMPTY && cls.empty)

@@ -4,7 +4,7 @@ import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 
-public class JavaBoxingTypeVisitor implements TypeVisitor<Void> {
+public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<StoredType, Void, RuntimeException> {
 	private static final JavaMethod BOOLEAN_VALUEOF = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "valueOf", "(Z)Ljava/lang/Boolean;");
 	private static final JavaMethod BYTE_VALUEOF = JavaMethod.getNativeStatic(JavaClass.BYTE, "valueOf", "(B)Ljava/lang/Byte;");
 	private static final JavaMethod SHORT_VALUEOF = JavaMethod.getNativeStatic(JavaClass.SHORT, "valueOf", "(S)Ljava/lang/Short;");
@@ -21,7 +21,7 @@ public class JavaBoxingTypeVisitor implements TypeVisitor<Void> {
 	}
 
 	@Override
-	public Void visitBasic(BasicTypeID basic) {
+	public Void visitBasic(StoredType context, BasicTypeID basic) {
 		final JavaMethod method;
 		switch (basic) {
 			case BOOL:
@@ -68,61 +68,61 @@ public class JavaBoxingTypeVisitor implements TypeVisitor<Void> {
 	}
 	
 	@Override
-	public Void visitString(StringTypeID string) {
+	public Void visitString(StoredType context, StringTypeID string) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitArray(ArrayTypeID array) {
+	public Void visitArray(StoredType context, ArrayTypeID array) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitAssoc(AssocTypeID assoc) {
+	public Void visitAssoc(StoredType context, AssocTypeID assoc) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitGenericMap(GenericMapTypeID map) {
+	public Void visitGenericMap(StoredType context, GenericMapTypeID map) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitIterator(IteratorTypeID iterator) {
+	public Void visitIterator(StoredType context, IteratorTypeID iterator) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitFunction(FunctionTypeID function) {
+	public Void visitFunction(StoredType context, FunctionTypeID function) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitDefinition(DefinitionTypeID definition) {
+	public Void visitDefinition(StoredType context, DefinitionTypeID definition) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitGeneric(GenericTypeID generic) {
+	public Void visitGeneric(StoredType context, GenericTypeID generic) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitRange(RangeTypeID range) {
+	public Void visitRange(StoredType context, RangeTypeID range) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitModified(ModifiedTypeID type) {
+	public Void visitModified(StoredType context, ModifiedTypeID type) {
 		//NO-OP
 		return null;
 	}

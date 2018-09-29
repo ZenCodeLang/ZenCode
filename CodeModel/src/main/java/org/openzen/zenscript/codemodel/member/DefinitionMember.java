@@ -42,6 +42,7 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 		return definition;
 	}
 	
+	@Override
 	public MemberAnnotation[] getAnnotations() {
 		return annotations;
 	}

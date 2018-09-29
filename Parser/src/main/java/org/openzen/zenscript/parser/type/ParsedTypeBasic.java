@@ -7,7 +7,8 @@ package org.openzen.zenscript.parser.type;
 
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -38,7 +39,12 @@ public enum ParsedTypeBasic implements IParsedType {
 	}
 	
 	@Override
-	public ITypeID compile(TypeResolutionContext context) {
+	public StoredType compile(TypeResolutionContext context) {
+		return type.stored;
+	}
+	
+	@Override
+	public TypeID compileUnstored(TypeResolutionContext context) {
 		return type;
 	}
 

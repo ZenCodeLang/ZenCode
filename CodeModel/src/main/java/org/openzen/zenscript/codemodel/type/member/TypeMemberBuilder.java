@@ -60,45 +60,48 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
 import static org.openzen.zencode.shared.CodePosition.BUILTIN;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.codemodel.type.TypeVisitor;
-import org.openzen.zenscript.codemodel.type.storage.AnyStorageTag;
+import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class TypeMemberBuilder implements TypeVisitor<Void> {
+public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, RuntimeException> {
 	private final GlobalTypeRegistry registry;
 	private final TypeMembers members;
 	private final LocalMemberCache cache;
+	private final StoredType type;
 	
 	public TypeMemberBuilder(GlobalTypeRegistry registry, TypeMembers members, LocalMemberCache cache) {
 		this.registry = registry;
 		this.members = members;
 		this.cache = cache;
+		
+		type = members.type;
 	}
 	
-	private void processType(HighLevelDefinition definition, ITypeID type) {
+	private void processType(HighLevelDefinition definition) {
 		for (ExpansionDefinition expansion : cache.getExpansions()) {
 			if (expansion.target == null)
-				throw new CompileException(expansion.position, CompileExceptionCode.INTERNAL_ERROR, "Missing expansion target");
+				throw new RuntimeException(expansion.position.toString() + ": Missing expansion target");
 			
-			Map<TypeParameter, ITypeID> mapping = matchType(type, expansion.target);
+			Map<TypeParameter, TypeID> mapping = matchType(type.type, expansion.target);
 			if (mapping == null)
 				continue;
 			
@@ -108,8 +111,8 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		}
 		
 		if (members.hasOperator(OperatorType.EQUALS)) {
-			DefinitionMemberGroup group = members.getOrCreateGroup(OperatorType.EQUALS);
-			DefinitionMemberGroup inverse = members.getOrCreateGroup(OperatorType.NOTEQUALS);
+			TypeMemberGroup group = members.getOrCreateGroup(OperatorType.EQUALS);
+			TypeMemberGroup inverse = members.getOrCreateGroup(OperatorType.NOTEQUALS);
 			for (TypeMember<FunctionalMemberRef> method : group.getMethodMembers()) {
 				if (!inverse.hasMethod(method.member.getHeader())) {
 					notequals(definition, BuiltinID.AUTOOP_NOTEQUALS, method.member.getHeader().parameters[0].type);
@@ -118,16 +121,12 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		}
 	}
 	
-	private Map<TypeParameter, ITypeID> matchType(ITypeID type, ITypeID pattern) {
-		Map<TypeParameter, ITypeID> mapping = new HashMap<>();
-		if (type.inferTypeParameters(cache, pattern, mapping))
-			return mapping;
-		
-		return null;
+	private Map<TypeParameter, TypeID> matchType(TypeID type, TypeID pattern) {
+		return type.inferTypeParameters(cache, pattern);
 	}
 
 	@Override
-	public Void visitBasic(BasicTypeID basic) {
+	public Void visitBasic(Void context, BasicTypeID basic) {
 		switch (basic) {
 			case BOOL:
 				visitBool();
@@ -174,36 +173,37 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 	}
 	
 	@Override
-	public Void visitString(StringTypeID string) {
+	public Void visitString(Void context, StringTypeID string) {
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "string", Modifiers.EXPORT, null);
 		
-		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, registry.getModified(ModifiedTypeID.MODIFIER_CONST, registry.getArray(CHAR, 1, BorrowStorageTag.INVOCATION)));
+		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, new StoredType(registry.getModified(ModifiedTypeID.MODIFIER_CONST, registry.getArray(CHAR.stored, 1)), BorrowStorageTag.INVOCATION));
 		
 		add(builtin, STRING_ADD_STRING, StringTypeID.BORROW, StringTypeID.UNIQUE);
-		indexGet(builtin, STRING_INDEXGET, USIZE, CHAR);
-		indexGet(builtin, STRING_RANGEGET, RangeTypeID.USIZE, StringTypeID.UNIQUE);
+		indexGet(builtin, STRING_INDEXGET, USIZE.stored, CHAR.stored);
+		indexGet(builtin, STRING_RANGEGET, RangeTypeID.USIZE.stored, StringTypeID.UNIQUE);
 		compare(builtin, STRING_COMPARE, StringTypeID.BORROW);
 		
-		getter(builtin, STRING_LENGTH, "length", USIZE);
-		getter(builtin, STRING_CHARACTERS, "characters", registry.getArray(CHAR, 1, UniqueStorageTag.INSTANCE)); // TODO: can this be const borrowed / immutable borrowed?
-		getter(builtin, STRING_ISEMPTY, "isEmpty", BOOL);
+		getter(builtin, STRING_LENGTH, "length", USIZE.stored);
+		getter(builtin, STRING_CHARACTERS, "characters", new StoredType(registry.getArray(CHAR.stored, 1), UniqueStorageTag.INSTANCE)); // TODO: can this be const borrowed / immutable borrowed?
+		getter(builtin, STRING_ISEMPTY, "isEmpty", BOOL.stored);
 
 		method(builtin, STRING_REMOVE_DIACRITICS, "removeDiacritics", StringTypeID.BORROW);
 		method(builtin, STRING_TRIM, "trim", StringTypeID.BORROW, StringTypeID.UNIQUE);
 		method(builtin, STRING_TO_LOWER_CASE, "toLowerCase", StringTypeID.UNIQUE);
 		method(builtin, STRING_TO_UPPER_CASE, "toUpperCase", StringTypeID.UNIQUE);
 		
-		iterator(builtin, ITERATOR_STRING_CHARS, CHAR);
+		iterator(builtin, ITERATOR_STRING_CHARS, CHAR.stored);
 		
-		processType(builtin, string);
+		processType(builtin);
 		return null;
 	}
 
 	@Override
-	public Void visitArray(ArrayTypeID array) {
+	public Void visitArray(Void context, ArrayTypeID array) {
 		HighLevelDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
-		ITypeID baseType = array.elementType;
+		StoredType baseType = array.elementType;
 		int dimension = array.dimension;
+		StorageTag storage = type.storage;
 
 		FunctionParameter[] indexGetParameters = new FunctionParameter[dimension];
 		for (int i = 0; i < indexGetParameters.length; i++)
@@ -216,32 +216,32 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				ARRAY_INDEXGET);
 		
 		if (dimension == 1) {
-			FunctionHeader sliceHeader = new FunctionHeader(array, new FunctionParameter(RangeTypeID.USIZE, "range"));
+			FunctionHeader sliceHeader = new FunctionHeader(type, new FunctionParameter(RangeTypeID.USIZE.stored, "range"));
 			operator(
 					definition,
 					OperatorType.INDEXGET,
 					sliceHeader,
 					ARRAY_INDEXGETRANGE);
 			
-			if (baseType == BYTE)
-				castImplicit(definition, BYTE_ARRAY_AS_SBYTE_ARRAY, registry.getArray(SBYTE, 1, array.storage));
-			if (baseType == SBYTE)
-				castImplicit(definition, SBYTE_ARRAY_AS_BYTE_ARRAY, registry.getArray(BYTE, 1, array.storage));
-			if (baseType == SHORT)
-				castImplicit(definition, SHORT_ARRAY_AS_USHORT_ARRAY, registry.getArray(USHORT, 1, array.storage));
-			if (baseType == USHORT)
-				castImplicit(definition, USHORT_ARRAY_AS_SHORT_ARRAY, registry.getArray(SHORT, 1, array.storage));
-			if (baseType == INT)
-				castImplicit(definition, INT_ARRAY_AS_UINT_ARRAY, registry.getArray(UINT, 1, array.storage));
-			if (baseType == UINT)
-				castImplicit(definition, UINT_ARRAY_AS_INT_ARRAY, registry.getArray(INT, 1, array.storage));
-			if (baseType == LONG)
-				castImplicit(definition, LONG_ARRAY_AS_ULONG_ARRAY, registry.getArray(ULONG, 1, array.storage));
-			if (baseType == ULONG)
-				castImplicit(definition, ULONG_ARRAY_AS_LONG_ARRAY, registry.getArray(LONG, 1, array.storage));
+			if (baseType.type == BYTE)
+				castImplicit(definition, BYTE_ARRAY_AS_SBYTE_ARRAY, registry.getArray(SBYTE.stored, 1).stored(storage));
+			if (baseType.type == SBYTE)
+				castImplicit(definition, SBYTE_ARRAY_AS_BYTE_ARRAY, registry.getArray(BYTE.stored, 1).stored(storage));
+			if (baseType.type == SHORT)
+				castImplicit(definition, SHORT_ARRAY_AS_USHORT_ARRAY, registry.getArray(USHORT.stored, 1).stored(storage));
+			if (baseType.type == USHORT)
+				castImplicit(definition, USHORT_ARRAY_AS_SHORT_ARRAY, registry.getArray(SHORT.stored, 1).stored(storage));
+			if (baseType.type == INT)
+				castImplicit(definition, INT_ARRAY_AS_UINT_ARRAY, registry.getArray(UINT.stored, 1).stored(storage));
+			if (baseType.type == UINT)
+				castImplicit(definition, UINT_ARRAY_AS_INT_ARRAY, registry.getArray(INT.stored, 1).stored(storage));
+			if (baseType.type == LONG)
+				castImplicit(definition, LONG_ARRAY_AS_ULONG_ARRAY, registry.getArray(ULONG.stored, 1).stored(storage));
+			if (baseType.type == ULONG)
+				castImplicit(definition, ULONG_ARRAY_AS_LONG_ARRAY, registry.getArray(LONG.stored, 1).stored(storage));
 		}
 
-		FunctionHeader containsHeader = new FunctionHeader(BOOL, new FunctionParameter(baseType, "value"));
+		FunctionHeader containsHeader = new FunctionHeader(BOOL.stored, new FunctionParameter(baseType, "value"));
 		operator(
 				definition,
 				OperatorType.CONTAINS,
@@ -253,15 +253,15 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 					BUILTIN,
 					definition,
 					0,
-					new FunctionHeader(VOID, indexGetParameters),
-					ARRAY_CONSTRUCTOR_SIZED).ref(array, null));
+					new FunctionHeader(VOID.stored, indexGetParameters),
+					ARRAY_CONSTRUCTOR_SIZED).ref(type));
 		}
 
 		FunctionParameter[] initialValueConstructorParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
 			initialValueConstructorParameters[i] = new FunctionParameter(USIZE);
 		initialValueConstructorParameters[dimension] = new FunctionParameter(baseType);
-		FunctionHeader initialValueConstructorHeader = new FunctionHeader(VOID, initialValueConstructorParameters);
+		FunctionHeader initialValueConstructorHeader = new FunctionHeader(VOID.stored, initialValueConstructorParameters);
 		new ConstructorMember(
 				BUILTIN,
 				definition,
@@ -272,33 +272,33 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		
 		FunctionParameter[] lambdaConstructorParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
-			lambdaConstructorParameters[i] = new FunctionParameter(USIZE, null);
+			lambdaConstructorParameters[i] = new FunctionParameter(USIZE);
 		
 		FunctionHeader lambdaConstructorFunction = new FunctionHeader(baseType, indexGetParameters);
-		lambdaConstructorParameters[dimension] = new FunctionParameter(cache.getRegistry().getFunction(lambdaConstructorFunction, BorrowStorageTag.INVOCATION), null);
-		FunctionHeader lambdaConstructorHeader = new FunctionHeader(VOID, lambdaConstructorParameters);
+		lambdaConstructorParameters[dimension] = new FunctionParameter(cache.getRegistry().getFunction(lambdaConstructorFunction).stored(BorrowStorageTag.INVOCATION));
+		FunctionHeader lambdaConstructorHeader = new FunctionHeader(VOID.stored, lambdaConstructorParameters);
 		members.addConstructor(new ConstructorMember(
 				BUILTIN,
 				definition,
 				0,
 				lambdaConstructorHeader,
-				ARRAY_CONSTRUCTOR_LAMBDA).ref(array, null));
+				ARRAY_CONSTRUCTOR_LAMBDA).ref(type));
 		
 		{
 			TypeParameter mappedConstructorParameter = new TypeParameter(BUILTIN, "T");
-			FunctionHeader mappedConstructorHeaderWithoutIndex = new FunctionHeader(baseType, registry.getGeneric(mappedConstructorParameter, BorrowStorageTag.INVOCATION));
+			FunctionHeader mappedConstructorHeaderWithoutIndex = new FunctionHeader(baseType, registry.getGeneric(mappedConstructorParameter).stored(BorrowStorageTag.INVOCATION));
 			FunctionHeader mappedConstructorFunctionWithoutIndex = new FunctionHeader(
 					new TypeParameter[] { mappedConstructorParameter },
-					VOID,
+					VOID.stored,
 					null,
-					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter, BorrowStorageTag.INVOCATION), dimension, BorrowStorageTag.INVOCATION), "original"),
-					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithoutIndex, BorrowStorageTag.INVOCATION), "projection"));
+					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter).stored(BorrowStorageTag.INVOCATION), dimension).stored(BorrowStorageTag.INVOCATION), "original"),
+					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithoutIndex).stored(BorrowStorageTag.INVOCATION), "projection"));
 			members.addConstructor(new ConstructorMember(
 					BUILTIN,
 					definition,
 					Modifiers.PUBLIC,
 					mappedConstructorFunctionWithoutIndex,
-					ARRAY_CONSTRUCTOR_PROJECTED).ref(array, null));
+					ARRAY_CONSTRUCTOR_PROJECTED).ref(type));
 		}
 		
 		{
@@ -306,48 +306,48 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 			FunctionParameter[] projectionParameters = new FunctionParameter[dimension + 1];
 			for (int i = 0; i < dimension; i++)
 				projectionParameters[i] = new FunctionParameter(USIZE);
-			projectionParameters[dimension] = new FunctionParameter(registry.getGeneric(mappedConstructorParameter, BorrowStorageTag.INVOCATION));
+			projectionParameters[dimension] = new FunctionParameter(registry.getGeneric(mappedConstructorParameter).stored(BorrowStorageTag.INVOCATION));
 			
 			FunctionHeader mappedConstructorHeaderWithIndex = new FunctionHeader(baseType, projectionParameters);
 			FunctionHeader mappedConstructorFunctionWithIndex = new FunctionHeader(
 					new TypeParameter[] { mappedConstructorParameter },
-					VOID,
+					VOID.stored,
 					null,
-					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter, BorrowStorageTag.INVOCATION), dimension, BorrowStorageTag.INVOCATION), "original"),
-					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithIndex, BorrowStorageTag.INVOCATION), "projection"));
+					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter).stored(BorrowStorageTag.INVOCATION), dimension).stored(BorrowStorageTag.INVOCATION), "original"),
+					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithIndex).stored(BorrowStorageTag.INVOCATION), "projection"));
 			constructor(definition, ARRAY_CONSTRUCTOR_PROJECTED_INDEXED, mappedConstructorFunctionWithIndex);
 		}
 		
 		FunctionParameter[] indexSetParameters = new FunctionParameter[dimension + 1];
 		for (int i = 0; i < dimension; i++)
-			indexSetParameters[i] = new FunctionParameter(USIZE, null);
-		indexSetParameters[dimension] = new FunctionParameter(baseType, null);
+			indexSetParameters[i] = new FunctionParameter(USIZE);
+		indexSetParameters[dimension] = new FunctionParameter(baseType);
 
-		FunctionHeader indexSetHeader = new FunctionHeader(VOID, indexSetParameters);
+		FunctionHeader indexSetHeader = new FunctionHeader(VOID.stored, indexSetParameters);
 		operator(definition, OperatorType.INDEXSET, indexSetHeader, ARRAY_INDEXSET);
 		
 		if (dimension == 1) {
-			getter(definition, ARRAY_LENGTH, "length", USIZE);
+			getter(definition, ARRAY_LENGTH, "length", USIZE.stored);
 		}
 
-		getter(definition, ARRAY_ISEMPTY, "isEmpty", BOOL);
-		getter(definition, ARRAY_HASHCODE, "objectHashCode", INT);
+		getter(definition, ARRAY_ISEMPTY, "isEmpty", BOOL.stored);
+		getter(definition, ARRAY_HASHCODE, "objectHashCode", INT.stored);
 		iterator(definition, ITERATOR_ARRAY_VALUES, baseType);
-		iterator(definition, ITERATOR_ARRAY_KEY_VALUES, USIZE, baseType);
+		iterator(definition, ITERATOR_ARRAY_KEY_VALUES, USIZE.stored, baseType);
 		
-		equals(definition, ARRAY_EQUALS, array);
-		notequals(definition, ARRAY_NOTEQUALS, array);
-		same(definition, ARRAY_SAME, array);
-		notsame(definition, ARRAY_NOTSAME, array);
+		equals(definition, ARRAY_EQUALS, type);
+		notequals(definition, ARRAY_NOTEQUALS, type);
+		same(definition, ARRAY_SAME, type);
+		notsame(definition, ARRAY_NOTSAME, type);
 		
-		processType(definition, array);
+		processType(definition);
 		return null;
 	}
 
 	@Override
-	public Void visitAssoc(AssocTypeID assoc) {
-		ITypeID keyType = assoc.keyType;
-		ITypeID valueType = assoc.valueType;
+	public Void visitAssoc(Void context, AssocTypeID assoc) {
+		StoredType keyType = assoc.keyType;
+		StoredType valueType = assoc.valueType;
 		
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		
@@ -361,36 +361,36 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		operator(
 				builtin,
 				OperatorType.CONTAINS,
-				new FunctionHeader(BOOL, new FunctionParameter(keyType, "key")),
+				new FunctionHeader(BOOL.stored, new FunctionParameter(keyType, "key")),
 				ASSOC_CONTAINS);
 		
-		getter(builtin, BuiltinID.ASSOC_SIZE, "size", USIZE);
-		getter(builtin, BuiltinID.ASSOC_ISEMPTY, "isEmpty", BOOL);
-		getter(builtin, BuiltinID.ASSOC_KEYS, "keys", cache.getRegistry().getArray(keyType, 1, UniqueStorageTag.INSTANCE));
-		getter(builtin, BuiltinID.ASSOC_VALUES, "values", cache.getRegistry().getArray(valueType, 1, UniqueStorageTag.INSTANCE));
-		getter(builtin, BuiltinID.ASSOC_HASHCODE, "objectHashCode", BasicTypeID.INT);
+		getter(builtin, BuiltinID.ASSOC_SIZE, "size", USIZE.stored);
+		getter(builtin, BuiltinID.ASSOC_ISEMPTY, "isEmpty", BOOL.stored);
+		getter(builtin, BuiltinID.ASSOC_KEYS, "keys", cache.getRegistry().getArray(keyType, 1).stored(UniqueStorageTag.INSTANCE));
+		getter(builtin, BuiltinID.ASSOC_VALUES, "values", cache.getRegistry().getArray(valueType, 1).stored(UniqueStorageTag.INSTANCE));
+		getter(builtin, BuiltinID.ASSOC_HASHCODE, "objectHashCode", BasicTypeID.INT.stored);
 		
 		iterator(builtin, ITERATOR_ASSOC_KEYS, keyType);
 		iterator(builtin, ITERATOR_ASSOC_KEY_VALUES, keyType, valueType);
 		
-		equals(builtin, BuiltinID.ASSOC_EQUALS, assoc);
-		notequals(builtin, BuiltinID.ASSOC_NOTEQUALS, assoc);
-		same(builtin, BuiltinID.ASSOC_SAME, assoc);
-		notsame(builtin, BuiltinID.ASSOC_NOTSAME, assoc);
+		equals(builtin, BuiltinID.ASSOC_EQUALS, type);
+		notequals(builtin, BuiltinID.ASSOC_NOTEQUALS, type);
+		same(builtin, BuiltinID.ASSOC_SAME, type);
+		notsame(builtin, BuiltinID.ASSOC_NOTSAME, type);
 		
-		processType(builtin, assoc);
+		processType(builtin);
 		return null;
 	}
 	
 	@Override
-	public Void visitGenericMap(GenericMapTypeID map) {
+	public Void visitGenericMap(Void context, GenericMapTypeID map) {
 		TypeParameter functionParameter = new TypeParameter(BUILTIN, "T");
-		Map<TypeParameter, ITypeID> parameterFilled = Collections.singletonMap(map.key, registry.getGeneric(functionParameter, null));
-		ITypeID valueType = map.value.instance(new GenericMapper(registry, parameterFilled));
+		Map<TypeParameter, TypeID> parameterFilled = Collections.singletonMap(map.key, registry.getGeneric(functionParameter));
+		StoredType valueType = map.value.instance(new GenericMapper(registry, parameterFilled));
 		
-		FunctionHeader getOptionalHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, registry.getOptional(valueType), null, new FunctionParameter[0]);
-		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BasicTypeID.VOID, null, new FunctionParameter(valueType));
-		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BasicTypeID.BOOL, null, new FunctionParameter[0]);
+		FunctionHeader getOptionalHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, registry.getOptional(valueType.type).stored(valueType.storage), null, new FunctionParameter[0]);
+		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, VOID.stored, null, new FunctionParameter(valueType));
+		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BOOL.stored, null, new FunctionParameter[0]);
 		
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		constructor(builtin, GENERICMAP_CONSTRUCTOR);
@@ -398,44 +398,44 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		method(builtin, "getOptional", getOptionalHeader, GENERICMAP_GETOPTIONAL);
 		method(builtin, "put", putHeader, GENERICMAP_PUT);
 		method(builtin, "contains", containsHeader, GENERICMAP_CONTAINS);
-		method(builtin, "addAll", new FunctionHeader(VOID, map), GENERICMAP_ADDALL);
+		method(builtin, "addAll", new FunctionHeader(VOID.stored, type), GENERICMAP_ADDALL);
 		
-		getter(builtin, GENERICMAP_SIZE, "size", USIZE);
-		getter(builtin, GENERICMAP_ISEMPTY, "isEmpty", BOOL);
-		getter(builtin, GENERICMAP_HASHCODE, "objectHashCode", INT);
+		getter(builtin, GENERICMAP_SIZE, "size", USIZE.stored);
+		getter(builtin, GENERICMAP_ISEMPTY, "isEmpty", BOOL.stored);
+		getter(builtin, GENERICMAP_HASHCODE, "objectHashCode", INT.stored);
 		
-		equals(builtin, GENERICMAP_EQUALS, map);
-		notequals(builtin, GENERICMAP_NOTEQUALS, map);
-		same(builtin, GENERICMAP_SAME, map);
-		notsame(builtin, GENERICMAP_NOTSAME, map);
+		equals(builtin, GENERICMAP_EQUALS, type);
+		notequals(builtin, GENERICMAP_NOTEQUALS, type);
+		same(builtin, GENERICMAP_SAME, type);
+		notsame(builtin, GENERICMAP_NOTSAME, type);
 		
-		processType(builtin, map);
+		processType(builtin);
 		return null;
 	}
 	
 	@Override
-	public Void visitIterator(IteratorTypeID iterator) {
+	public Void visitIterator(Void context, IteratorTypeID iterator) {
 		return null;
 	}
 
 	@Override
-	public Void visitFunction(FunctionTypeID function) {
+	public Void visitFunction(Void context, FunctionTypeID function) {
 		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT, function.header, registry);
 		new CallerMember(BUILTIN, builtin, 0, function.header, FUNCTION_CALL).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
-		same(builtin, FUNCTION_SAME, function);
-		notsame(builtin, FUNCTION_NOTSAME, function);
+		same(builtin, FUNCTION_SAME, type);
+		notsame(builtin, FUNCTION_NOTSAME, type);
 		
-		processType(builtin, function);
+		processType(builtin);
 		return null;
 	}
 
 	@Override
-	public Void visitDefinition(DefinitionTypeID type) {
-		HighLevelDefinition definition = type.definition;
+	public Void visitDefinition(Void context, DefinitionTypeID definitionType) {
+		HighLevelDefinition definition = definitionType.definition;
 		GenericMapper mapper = null;
-		if (type.hasTypeParameters() || (type.outer != null && type.outer.hasTypeParameters())) {
-			Map<TypeParameter, ITypeID> mapping = type.getTypeParameterMapping();
+		if (definitionType.hasTypeParameters() || (definitionType.outer != null && definitionType.outer.hasTypeParameters())) {
+			Map<TypeParameter, TypeID> mapping = definitionType.getTypeParameterMapping();
 			mapper = new GenericMapper(registry, mapping);
 		}
 		
@@ -456,7 +456,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 			}
 		}
 
-		DefinitionMemberGroup constructors = members.getOrCreateGroup(OperatorType.CONSTRUCTOR);
+		TypeMemberGroup constructors = members.getOrCreateGroup(OperatorType.CONSTRUCTOR);
 		if (constructors.getMethodMembers().isEmpty()) {
 			if (definition instanceof ClassDefinition) {
 				// add default constructor (TODO: only works if all fields have a default value)
@@ -477,8 +477,8 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 							BUILTIN,
 							definition,
 							Modifiers.PUBLIC,
-							new FunctionHeader(VOID, parameters),
-							STRUCT_VALUE_CONSTRUCTOR).ref(type, null), TypeMemberPriority.SPECIFIED);
+							new FunctionHeader(VOID.stored, parameters),
+							STRUCT_VALUE_CONSTRUCTOR).ref(type), TypeMemberPriority.SPECIFIED);
 				}
 			} else if (definition instanceof EnumDefinition) {
 				// add default constructor
@@ -487,20 +487,20 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 						definition,
 						Modifiers.PRIVATE,
 						new FunctionHeader(VOID),
-						ENUM_EMPTY_CONSTRUCTOR).ref(type, null), TypeMemberPriority.SPECIFIED);
+						ENUM_EMPTY_CONSTRUCTOR).ref(type), TypeMemberPriority.SPECIFIED);
 			}
 		}
 		
 		if (definition instanceof EnumDefinition) {
 			getter(definition, ENUM_NAME, "name", StringTypeID.STATIC);
-			getter(definition, ENUM_ORDINAL, "ordinal", USIZE);
+			getter(definition, ENUM_ORDINAL, "ordinal", USIZE.stored);
 			
 			List<EnumConstantMember> enumConstants = ((EnumDefinition) definition).enumConstants;
 			Expression[] constValues = new Expression[enumConstants.size()];
 			for (int i = 0; i < constValues.length; i++)
-				constValues[i] = new EnumConstantExpression(BUILTIN, type, enumConstants.get(i));
+				constValues[i] = new EnumConstantExpression(BUILTIN, definitionType, enumConstants.get(i));
 			
-			constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(type, 1, StaticStorageTag.INSTANCE)));
+			constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(definitionType.stored(StaticStorageTag.INSTANCE), 1).stored(StaticStorageTag.INSTANCE)));
 			compare(definition, ENUM_COMPARE, type);
 			
 			if (!members.canCast(StringTypeID.STATIC)) {
@@ -510,25 +510,27 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		
 		if (definition instanceof InterfaceDefinition) {
 			InterfaceDefinition interfaceDefinition = (InterfaceDefinition)definition;
-			for (ITypeID baseType : interfaceDefinition.baseInterfaces)
-				cache.get(baseType.instance(mapper)).copyMembersTo(type.definition.position, members, TypeMemberPriority.INHERITED);
+			for (TypeID baseType : interfaceDefinition.baseInterfaces)
+				cache.get(baseType.instanceUnstored(mapper).stored(type.storage))
+						.copyMembersTo(definitionType.definition.position, members, TypeMemberPriority.INHERITED);
 		}
 		
-		if (type.superType != null) {
-			cache.get(type.superType.instance(mapper)).copyMembersTo(type.definition.position, members, TypeMemberPriority.INHERITED);
+		if (definitionType.superType != null) {
+			cache.get(definitionType.superType.stored(type.storage))
+					.copyMembersTo(definitionType.definition.position, members, TypeMemberPriority.INHERITED);
 		} else {
-			getter(definition, OBJECT_HASHCODE, "objectHashCode", BasicTypeID.INT);
+			getter(definition, OBJECT_HASHCODE, "objectHashCode", INT.stored);
 		}
 		
 		same(definition, OBJECT_SAME, type);
 		notsame(definition, OBJECT_NOTSAME, type);
 		
-		processType(definition, type);
+		processType(definition);
 		return null;
 	}
 
 	@Override
-	public Void visitGeneric(GenericTypeID generic) {
+	public Void visitGeneric(Void context, GenericTypeID generic) {
 		TypeParameter parameter = generic.parameter;
 
 		for (TypeParameterBound bound : parameter.bounds) {
@@ -539,39 +541,40 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 	}
 
 	@Override
-	public Void visitRange(RangeTypeID range) {
-		ITypeID baseType = range.baseType;
+	public Void visitRange(Void context, RangeTypeID range) {
+		StoredType baseType = range.baseType;
 
 		ClassDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		getter(definition, RANGE_FROM, "from", baseType);
 		getter(definition, RANGE_TO, "to", baseType);
-		if (baseType == BYTE
-				|| baseType == SBYTE
-				|| baseType == SHORT
-				|| baseType == USHORT
-				|| baseType == INT
-				|| baseType == UINT
-				|| baseType == LONG
-				|| baseType == ULONG
-				|| baseType == USIZE) {
+		if (baseType.type == BYTE
+				|| baseType.type == SBYTE
+				|| baseType.type == SHORT
+				|| baseType.type == USHORT
+				|| baseType.type == INT
+				|| baseType.type == UINT
+				|| baseType.type == LONG
+				|| baseType.type == ULONG
+				|| baseType.type == USIZE) {
 			
 			iterator(definition, ITERATOR_INT_RANGE, baseType);
 		}
 		
-		processType(definition, range);
+		processType(definition);
 		return null;
 	}
 
 	@Override
-	public Void visitModified(ModifiedTypeID modified) {
+	public Void visitModified(Void context, ModifiedTypeID modified) {
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "modified", Modifiers.EXPORT, null);
-		modified.baseType.accept(this);
+		modified.baseType.accept(context, this);
 		
 		if (modified.isOptional()) {
-			operator(builtin, OperatorType.EQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NULL);
-			operator(builtin, OperatorType.NOTEQUALS, new FunctionHeader(BOOL, NULL), BuiltinID.OPTIONAL_IS_NOT_NULL);
+			operator(builtin, OperatorType.EQUALS, new FunctionHeader(BOOL.stored, NULL.stored), BuiltinID.OPTIONAL_IS_NULL);
+			operator(builtin, OperatorType.NOTEQUALS, new FunctionHeader(BOOL.stored, NULL.stored), BuiltinID.OPTIONAL_IS_NOT_NULL);
 		}
-		processType(builtin, modified);
+		
+		processType(builtin);
 		return null;
 	}
 	
@@ -585,9 +588,9 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		notequals(builtin, BOOL_NOTEQUALS, BOOL);
 		
 		castExplicit(builtin, BOOL_TO_STRING, StringTypeID.STATIC);
-		staticMethod(builtin, BOOL_PARSE, "parse", BOOL, StringTypeID.BORROW);
+		staticMethod(builtin, BOOL_PARSE, "parse", BOOL.stored, StringTypeID.BORROW);
 		
-		processType(builtin, BOOL);
+		processType(builtin);
 	}
 	
 	private void visitByte() {
@@ -621,13 +624,13 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, BYTE_TO_CHAR, CHAR);
 		castImplicit(builtin, BYTE_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, BYTE_PARSE, "parse", BYTE, StringTypeID.BORROW);
-		staticMethod(builtin, BYTE_PARSE_WITH_BASE, "parse", BYTE, StringTypeID.BORROW, INT);
+		staticMethod(builtin, BYTE_PARSE, "parse", BYTE.stored, StringTypeID.BORROW);
+		staticMethod(builtin, BYTE_PARSE_WITH_BASE, "parse", BYTE.stored, StringTypeID.BORROW, INT.stored);
 		
 		constant(builtin, BYTE_GET_MIN_VALUE, "MIN_VALUE", new ConstantByteExpression(BUILTIN, 0));
 		constant(builtin, BYTE_GET_MAX_VALUE, "MAX_VALUE", new ConstantByteExpression(BUILTIN, 255));
 		
-		processType(builtin, BYTE);
+		processType(builtin);
 	}
 	
 	private void visitSByte() {
@@ -663,13 +666,13 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, SBYTE_TO_CHAR, CHAR);
 		castImplicit(builtin, SBYTE_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, SBYTE_PARSE, "parse", SBYTE, StringTypeID.BORROW);
-		staticMethod(builtin, SBYTE_PARSE_WITH_BASE, "parse", SBYTE, StringTypeID.BORROW, INT);
+		staticMethod(builtin, SBYTE_PARSE, "parse", SBYTE.stored, StringTypeID.BORROW);
+		staticMethod(builtin, SBYTE_PARSE_WITH_BASE, "parse", SBYTE.stored, StringTypeID.BORROW, INT.stored);
 		
 		constant(builtin, SBYTE_GET_MIN_VALUE, "MIN_VALUE", new ConstantSByteExpression(BUILTIN, Byte.MIN_VALUE));
 		constant(builtin, SBYTE_GET_MAX_VALUE, "MAX_VALUE", new ConstantSByteExpression(BUILTIN, Byte.MAX_VALUE));
 		
-		processType(builtin, SBYTE);
+		processType(builtin);
 	}
 	
 	private void visitShort() {
@@ -705,13 +708,13 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, SHORT_TO_CHAR, CHAR);
 		castImplicit(builtin, SHORT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, SHORT_PARSE, "parse", SHORT, StringTypeID.BORROW);
-		staticMethod(builtin, SHORT_PARSE_WITH_BASE, "parse", SHORT, StringTypeID.BORROW, INT);
+		staticMethod(builtin, SHORT_PARSE, "parse", SHORT.stored, StringTypeID.BORROW);
+		staticMethod(builtin, SHORT_PARSE_WITH_BASE, "parse", SHORT.stored, StringTypeID.BORROW, INT.stored);
 		
 		constant(builtin, SHORT_GET_MIN_VALUE, "MIN_VALUE", new ConstantShortExpression(BUILTIN, Short.MIN_VALUE));
 		constant(builtin, SHORT_GET_MAX_VALUE, "MAX_VALUE", new ConstantShortExpression(BUILTIN, Short.MAX_VALUE));
 		
-		processType(builtin, SHORT);
+		processType(builtin);
 	}
 	
 	private void visitUShort() {
@@ -745,13 +748,13 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, USHORT_TO_CHAR, CHAR);
 		castImplicit(builtin, USHORT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, USHORT_PARSE, "parse", USHORT, StringTypeID.BORROW);
-		staticMethod(builtin, USHORT_PARSE_WITH_BASE, "parse", USHORT, StringTypeID.BORROW, INT);
+		staticMethod(builtin, USHORT_PARSE, "parse", USHORT.stored, StringTypeID.BORROW);
+		staticMethod(builtin, USHORT_PARSE_WITH_BASE, "parse", USHORT.stored, StringTypeID.BORROW, INT.stored);
 		
 		constant(builtin, USHORT_GET_MIN_VALUE, "MIN_VALUE", new ConstantUShortExpression(BUILTIN, 0));
 		constant(builtin, USHORT_GET_MAX_VALUE, "MAX_VALUE", new ConstantUShortExpression(BUILTIN, 65535));
 		
-		processType(builtin, USHORT);
+		processType(builtin);
 	}
 	
 	private void visitInt() {
@@ -817,22 +820,22 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, INT_TO_CHAR, CHAR);
 		castImplicit(builtin, INT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, INT_PARSE, "parse", INT, StringTypeID.BORROW);
-		staticMethod(builtin, INT_PARSE_WITH_BASE, "parse", INT, StringTypeID.BORROW, INT);
+		staticMethod(builtin, INT_PARSE, "parse", INT.stored, StringTypeID.BORROW);
+		staticMethod(builtin, INT_PARSE_WITH_BASE, "parse", INT.stored, StringTypeID.BORROW, INT.stored);
 		
-		method(builtin, INT_COUNT_LOW_ZEROES, "countLowZeroes", INT);
-		method(builtin, INT_COUNT_HIGH_ZEROES, "countHighZeroes", INT);
-		method(builtin, INT_COUNT_LOW_ONES, "countLowOnes", INT);
-		method(builtin, INT_COUNT_HIGH_ONES, "countHighOnes", INT);
+		method(builtin, INT_COUNT_LOW_ZEROES, "countLowZeroes", USIZE.stored);
+		method(builtin, INT_COUNT_HIGH_ZEROES, "countHighZeroes", USIZE.stored);
+		method(builtin, INT_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
+		method(builtin, INT_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		ITypeID optionalInt = registry.getOptional(INT);
-		getter(builtin, INT_HIGHEST_ONE_BIT, "highestOneBit", optionalInt);
-		getter(builtin, INT_LOWEST_ONE_BIT, "lowestOneBit", optionalInt);
-		getter(builtin, INT_HIGHEST_ZERO_BIT, "highestZeroBit", optionalInt);
-		getter(builtin, INT_LOWEST_ZERO_BIT, "lowestZeroBit", optionalInt);
-		getter(builtin, INT_BIT_COUNT, "bitCount", INT);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		getter(builtin, INT_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
+		getter(builtin, INT_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
+		getter(builtin, INT_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);
+		getter(builtin, INT_LOWEST_ZERO_BIT, "lowestZeroBit", optionalUSize);
+		getter(builtin, INT_BIT_COUNT, "bitCount", USIZE.stored);
 		
-		processType(builtin, INT);
+		processType(builtin);
 	}
 
 	private void visitUInt() {
@@ -896,22 +899,22 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, UINT_TO_CHAR, CHAR);
 		castImplicit(builtin, UINT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, UINT_PARSE, "parse", UINT, StringTypeID.BORROW);
-		staticMethod(builtin, UINT_PARSE_WITH_BASE, "parse", UINT, StringTypeID.BORROW, INT);
+		staticMethod(builtin, UINT_PARSE, "parse", UINT.stored, StringTypeID.BORROW);
+		staticMethod(builtin, UINT_PARSE_WITH_BASE, "parse", UINT.stored, StringTypeID.BORROW, INT.stored);
 		
-		method(builtin, UINT_COUNT_LOW_ZEROES, "countLowZeroes", UINT);
-		method(builtin, UINT_COUNT_HIGH_ZEROES, "countHighZeroes", UINT);
-		method(builtin, UINT_COUNT_LOW_ONES, "countLowOnes", UINT);
-		method(builtin, UINT_COUNT_HIGH_ONES, "countHighOnes", UINT);
+		method(builtin, UINT_COUNT_LOW_ZEROES, "countLowZeroes", USIZE.stored);
+		method(builtin, UINT_COUNT_HIGH_ZEROES, "countHighZeroes", USIZE.stored);
+		method(builtin, UINT_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
+		method(builtin, UINT_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		ITypeID optionalInt = registry.getOptional(INT);
-		getter(builtin, UINT_HIGHEST_ONE_BIT, "highestOneBit", optionalInt);
-		getter(builtin, UINT_LOWEST_ONE_BIT, "lowestOneBit", optionalInt);
-		getter(builtin, UINT_HIGHEST_ZERO_BIT, "highestZeroBit", optionalInt);
-		getter(builtin, UINT_LOWEST_ZERO_BIT, "lowestZeroBit", optionalInt);
-		getter(builtin, UINT_BIT_COUNT, "bitCount", UINT);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		getter(builtin, UINT_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
+		getter(builtin, UINT_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
+		getter(builtin, UINT_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);
+		getter(builtin, UINT_LOWEST_ZERO_BIT, "lowestZeroBit", optionalUSize);
+		getter(builtin, UINT_BIT_COUNT, "bitCount", USIZE.stored);
 		
-		processType(builtin, UINT);
+		processType(builtin);
 	}
 	
 	private void visitLong() {
@@ -969,22 +972,22 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, LONG_TO_CHAR, CHAR);
 		castImplicit(builtin, LONG_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, LONG_PARSE, "parse", LONG, StringTypeID.BORROW);
-		staticMethod(builtin, LONG_PARSE_WITH_BASE, "parse", LONG, StringTypeID.BORROW, INT);
+		staticMethod(builtin, LONG_PARSE, "parse", LONG.stored, StringTypeID.BORROW);
+		staticMethod(builtin, LONG_PARSE_WITH_BASE, "parse", LONG.stored, StringTypeID.BORROW, INT.stored);
 		
-		method(builtin, LONG_COUNT_LOW_ZEROES, "countLowZeroes", INT);
-		method(builtin, LONG_COUNT_HIGH_ZEROES, "countHighZeroes", INT);
-		method(builtin, LONG_COUNT_LOW_ONES, "countLowOnes", INT);
-		method(builtin, LONG_COUNT_HIGH_ONES, "countHighOnes", INT);
+		method(builtin, LONG_COUNT_LOW_ZEROES, "countLowZeroes", USIZE.stored);
+		method(builtin, LONG_COUNT_HIGH_ZEROES, "countHighZeroes", USIZE.stored);
+		method(builtin, LONG_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
+		method(builtin, LONG_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		ITypeID optionalInt = registry.getOptional(INT);
-		getter(builtin, LONG_HIGHEST_ONE_BIT, "highestOneBit", optionalInt);
-		getter(builtin, LONG_LOWEST_ONE_BIT, "lowestOneBit", optionalInt);
-		getter(builtin, LONG_HIGHEST_ZERO_BIT, "highestZeroBit", optionalInt);
-		getter(builtin, LONG_LOWEST_ZERO_BIT, "lowestZeroBit", optionalInt);
-		getter(builtin, LONG_BIT_COUNT, "bitCount", INT);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		getter(builtin, LONG_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
+		getter(builtin, LONG_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
+		getter(builtin, LONG_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);
+		getter(builtin, LONG_LOWEST_ZERO_BIT, "lowestZeroBit", optionalUSize);
+		getter(builtin, LONG_BIT_COUNT, "bitCount", USIZE.stored);
 		
-		processType(builtin, LONG);
+		processType(builtin);
 	}
 	
 	private void visitULong() {
@@ -1041,22 +1044,22 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, ULONG_TO_CHAR, CHAR);
 		castImplicit(builtin, ULONG_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, ULONG_PARSE, "parse", ULONG, StringTypeID.BORROW);
-		staticMethod(builtin, ULONG_PARSE_WITH_BASE, "parse", ULONG, StringTypeID.BORROW, INT);
+		staticMethod(builtin, ULONG_PARSE, "parse", ULONG.stored, StringTypeID.BORROW);
+		staticMethod(builtin, ULONG_PARSE_WITH_BASE, "parse", ULONG.stored, StringTypeID.BORROW, INT.stored);
 		
-		method(builtin, ULONG_COUNT_LOW_ZEROES, "countLowZeroes", INT);
-		method(builtin, ULONG_COUNT_HIGH_ZEROES, "countHighZeroes", INT);
-		method(builtin, ULONG_COUNT_LOW_ONES, "countLowOnes", INT);
-		method(builtin, ULONG_COUNT_HIGH_ONES, "countHighOnes", INT);
+		method(builtin, ULONG_COUNT_LOW_ZEROES, "countLowZeroes", USIZE.stored);
+		method(builtin, ULONG_COUNT_HIGH_ZEROES, "countHighZeroes", USIZE.stored);
+		method(builtin, ULONG_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
+		method(builtin, ULONG_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		ITypeID optionalInt = registry.getOptional(INT);
-		getter(builtin, ULONG_HIGHEST_ONE_BIT, "highestOneBit", optionalInt);
-		getter(builtin, ULONG_LOWEST_ONE_BIT, "lowestOneBit", optionalInt);
-		getter(builtin, ULONG_HIGHEST_ZERO_BIT, "highestZeroBit", optionalInt);
-		getter(builtin, ULONG_LOWEST_ZERO_BIT, "lowestZeroBit", optionalInt);
-		getter(builtin, ULONG_BIT_COUNT, "bitCount", INT);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		getter(builtin, ULONG_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
+		getter(builtin, ULONG_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
+		getter(builtin, ULONG_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);
+		getter(builtin, ULONG_LOWEST_ZERO_BIT, "lowestZeroBit", optionalUSize);
+		getter(builtin, ULONG_BIT_COUNT, "bitCount", USIZE.stored);
 		
-		processType(builtin, ULONG);
+		processType(builtin);
 	}
 	
 	private void visitUSize() {
@@ -1118,22 +1121,22 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castExplicit(builtin, USIZE_TO_CHAR, CHAR);
 		castImplicit(builtin, USIZE_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, USIZE_PARSE, "parse", USIZE, StringTypeID.BORROW);
-		staticMethod(builtin, USIZE_PARSE_WITH_BASE, "parse", USIZE, StringTypeID.BORROW, INT);
+		staticMethod(builtin, USIZE_PARSE, "parse", USIZE.stored, StringTypeID.BORROW);
+		staticMethod(builtin, USIZE_PARSE_WITH_BASE, "parse", USIZE.stored, StringTypeID.BORROW, INT.stored);
 		
-		method(builtin, USIZE_COUNT_LOW_ZEROES, "countLowZeroes", INT);
-		method(builtin, USIZE_COUNT_HIGH_ZEROES, "countHighZeroes", INT);
-		method(builtin, USIZE_COUNT_LOW_ONES, "countLowOnes", INT);
-		method(builtin, USIZE_COUNT_HIGH_ONES, "countHighOnes", INT);
+		method(builtin, USIZE_COUNT_LOW_ZEROES, "countLowZeroes", USIZE.stored);
+		method(builtin, USIZE_COUNT_HIGH_ZEROES, "countHighZeroes", USIZE.stored);
+		method(builtin, USIZE_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
+		method(builtin, USIZE_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		ITypeID optionalInt = registry.getOptional(INT);
-		getter(builtin, USIZE_HIGHEST_ONE_BIT, "highestOneBit", optionalInt);
-		getter(builtin, USIZE_LOWEST_ONE_BIT, "lowestOneBit", optionalInt);
-		getter(builtin, USIZE_HIGHEST_ZERO_BIT, "highestZeroBit", optionalInt);
-		getter(builtin, USIZE_LOWEST_ZERO_BIT, "lowestZeroBit", optionalInt);
-		getter(builtin, USIZE_BIT_COUNT, "bitCount", INT);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		getter(builtin, USIZE_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
+		getter(builtin, USIZE_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
+		getter(builtin, USIZE_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);
+		getter(builtin, USIZE_LOWEST_ZERO_BIT, "lowestZeroBit", optionalUSize);
+		getter(builtin, USIZE_BIT_COUNT, "bitCount", USIZE.stored);
 		
-		processType(builtin, USIZE);
+		processType(builtin);
 	}
 	
 	private void visitFloat() {
@@ -1173,12 +1176,12 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, FLOAT_TO_DOUBLE, DOUBLE);
 		castImplicit(builtin, FLOAT_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, FLOAT_PARSE, "parse", FLOAT, StringTypeID.BORROW);
-		staticMethod(builtin, FLOAT_FROM_BITS, "fromBits", FLOAT, UINT);
+		staticMethod(builtin, FLOAT_PARSE, "parse", FLOAT.stored, StringTypeID.BORROW);
+		staticMethod(builtin, FLOAT_FROM_BITS, "fromBits", FLOAT.stored, UINT.stored);
 		
-		getter(builtin, FLOAT_BITS, "bits", UINT);
+		getter(builtin, FLOAT_BITS, "bits", UINT.stored);
 		
-		processType(builtin, FLOAT);
+		processType(builtin);
 	}
 	
 	private void visitDouble() {
@@ -1209,12 +1212,12 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, DOUBLE_TO_FLOAT, FLOAT);
 		castImplicit(builtin, DOUBLE_TO_STRING, StringTypeID.UNIQUE);
 		
-		staticMethod(builtin, DOUBLE_PARSE, "parse", DOUBLE, StringTypeID.BORROW);
-		staticMethod(builtin, DOUBLE_FROM_BITS, "fromBits", DOUBLE, ULONG);
+		staticMethod(builtin, DOUBLE_PARSE, "parse", DOUBLE.stored, StringTypeID.BORROW);
+		staticMethod(builtin, DOUBLE_FROM_BITS, "fromBits", DOUBLE.stored, ULONG.stored);
 		
-		getter(builtin, DOUBLE_BITS, "bits", ULONG);
+		getter(builtin, DOUBLE_BITS, "bits", ULONG.stored);
 		
-		processType(builtin, DOUBLE);
+		processType(builtin);
 	}
 
 	private void visitChar() {
@@ -1236,17 +1239,17 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 		castImplicit(builtin, CHAR_TO_USIZE, USIZE);
 		castImplicit(builtin, CHAR_TO_STRING, StringTypeID.UNIQUE);
 		
-		getter(builtin, CHAR_GET_MIN_VALUE, "MIN_VALUE", CHAR);
-		getter(builtin, CHAR_GET_MAX_VALUE, "MAX_VALUE", CHAR);
+		getter(builtin, CHAR_GET_MIN_VALUE, "MIN_VALUE", CHAR.stored);
+		getter(builtin, CHAR_GET_MAX_VALUE, "MAX_VALUE", CHAR.stored);
 		
-		method(builtin, CHAR_REMOVE_DIACRITICS, "removeDiacritics", CHAR);
-		method(builtin, CHAR_TO_LOWER_CASE, "toLowerCase", CHAR);
-		method(builtin, CHAR_TO_UPPER_CASE, "toUpperCase", CHAR);
+		method(builtin, CHAR_REMOVE_DIACRITICS, "removeDiacritics", CHAR.stored);
+		method(builtin, CHAR_TO_LOWER_CASE, "toLowerCase", CHAR.stored);
+		method(builtin, CHAR_TO_UPPER_CASE, "toUpperCase", CHAR.stored);
 		
-		processType(builtin, CHAR);
+		processType(builtin);
 	}
 	
-	private void castedTargetCall(OperatorMember member, ITypeID toType, BuiltinID casterBuiltin) {
+	private void castedTargetCall(OperatorMember member, StoredType toType, BuiltinID casterBuiltin) {
 		CasterMemberRef caster = castImplicitRef(member.definition, casterBuiltin, toType);
 		TranslatedOperatorMemberRef method = new TranslatedOperatorMemberRef(member, members.type, GenericMapper.EMPTY, call -> member.ref(members.type, null).call(call.position, caster.cast(call.position, call.target, true), call.arguments, call.scope));
 		members.getOrCreateGroup(member.operator).addMethod(method, TypeMemberPriority.SPECIFIED);
@@ -1270,27 +1273,47 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				builtin).ref(members.type, null));
 	}
 	
-	private void not(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
+	private void not(HighLevelDefinition cls, BuiltinID id, BasicTypeID result) {
+		not(cls, id, result.stored);
+	}
+	
+	private void not(HighLevelDefinition cls, BuiltinID id, StoredType result) {
 		operator(cls, OperatorType.NOT, new FunctionHeader(result), id);
 	}
 	
-	private void invert(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
+	private void invert(HighLevelDefinition cls, BuiltinID id, BasicTypeID result) {
+		invert(cls, id, result.stored);
+	}
+	
+	private void invert(HighLevelDefinition cls, BuiltinID id, StoredType result) {
 		operator(cls, OperatorType.INVERT, new FunctionHeader(result), id);
 	}
 	
-	private void neg(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
+	private void neg(HighLevelDefinition cls, BuiltinID id, BasicTypeID result) {
+		neg(cls, id, result.stored);
+	}
+	
+	private void neg(HighLevelDefinition cls, BuiltinID id, StoredType result) {
 		operator(cls, OperatorType.NEG, new FunctionHeader(result), id);
 	}
 	
-	private void inc(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
+	private void inc(HighLevelDefinition cls, BuiltinID id, BasicTypeID result) {
+		inc(cls, id, result.stored);
+	}
+	
+	private void inc(HighLevelDefinition cls, BuiltinID id, StoredType result) {
 		operator(cls, OperatorType.INCREMENT, new FunctionHeader(result), id);
 	}
 	
-	private void dec(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
+	private void dec(HighLevelDefinition cls, BuiltinID id, BasicTypeID result) {
+		dec(cls, id, result.stored);
+	}
+	
+	private void dec(HighLevelDefinition cls, BuiltinID id, StoredType result) {
 		operator(cls, OperatorType.DECREMENT, new FunctionHeader(result), id);
 	}
 	
-	private OperatorMember addOp(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember addOp(HighLevelDefinition definition, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				definition,
@@ -1300,15 +1323,19 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void add(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result) {
+	private void add(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		add(definition, id, operand.stored, result.stored);
+	}
+	
+	private void add(HighLevelDefinition definition, BuiltinID id, StoredType operand, StoredType result) {
 		addOp(definition, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void add(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(addOp(definition, id, operand, result), result, caster);
+	private void add(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedTargetCall(addOp(definition, id, operand.stored, result.stored), result.stored, caster);
 	}
 	
-	private OperatorMember subOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember subOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1318,15 +1345,15 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void sub(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		subOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void sub(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		subOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void sub(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(subOp(definition, id, operand, result), result, caster);
+	private void sub(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedTargetCall(subOp(definition, id, operand.stored, result.stored), result.stored, caster);
 	}
 	
-	private OperatorMember mulOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember mulOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1336,15 +1363,15 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void mul(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		mulOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void mul(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		mulOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void mul(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(mulOp(definition, id, operand, result), result, caster);
+	private void mul(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedTargetCall(mulOp(definition, id, operand.stored, result.stored), result.stored, caster);
 	}
 	
-	private OperatorMember divOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember divOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1354,15 +1381,15 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void div(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		divOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void div(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		divOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void div(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(divOp(definition, id, operand, result), result, caster);
+	private void div(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedTargetCall(divOp(definition, id, operand.stored, result.stored), result.stored, caster);
 	}
 	
-	private OperatorMember modOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember modOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1372,15 +1399,15 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void mod(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		modOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void mod(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		modOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void mod(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(modOp(definition, id, operand, result), result, caster);
+	private void mod(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedTargetCall(modOp(definition, id, operand.stored, result.stored), result.stored, caster);
 	}
 	
-	private OperatorMember shlOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember shlOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1390,15 +1417,11 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void shl(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		shlOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void shl(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		shlOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void shl(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(shlOp(definition, id, operand, result), result, caster);
-	}
-	
-	private OperatorMember shrOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember shrOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1408,15 +1431,11 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void shr(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		shrOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void shr(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		shrOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void shr(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(shrOp(definition, id, operand, result), result, caster);
-	}
-	
-	private OperatorMember ushrOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember ushrOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1426,15 +1445,11 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void ushr(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		ushrOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void ushr(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		ushrOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void ushr(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(ushrOp(definition, id, operand, result), result, caster);
-	}
-	
-	private OperatorMember orOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember orOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1444,15 +1459,15 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void or(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		orOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void or(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		orOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void or(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		orOp(definition, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void or(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		orOp(definition, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private OperatorMember andOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember andOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1462,15 +1477,15 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void and(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		andOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void and(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		andOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void and(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(andOp(definition, id, operand, result), result, caster);
+	private void and(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedTargetCall(andOp(definition, id, operand.stored, result.stored), result.stored, caster);
 	}
 	
-	private OperatorMember xorOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private OperatorMember xorOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1480,15 +1495,15 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void xor(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
-		xorOp(cls, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	private void xor(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+		xorOp(cls, id, operand.stored, result.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void xor(HighLevelDefinition definition, BuiltinID id, ITypeID operand, ITypeID result, BuiltinID caster) {
-		castedTargetCall(xorOp(definition, id, operand, result), result, caster);
+	private void xor(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedTargetCall(xorOp(definition, id, operand.stored, result.stored), result.stored, caster);
 	}
 	
-	private void indexGet(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID result) {
+	private void indexGet(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1498,7 +1513,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void indexSet(HighLevelDefinition cls, BuiltinID id, ITypeID operand, ITypeID value) {
+	private void indexSet(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType value) {
 		new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1508,7 +1523,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private OperatorMember compareOp(HighLevelDefinition cls, BuiltinID id, ITypeID operand) {
+	private OperatorMember compareOp(HighLevelDefinition cls, BuiltinID id, StoredType operand) {
 		return new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1518,15 +1533,19 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id);
 	}
 	
-	private void compare(HighLevelDefinition cls, BuiltinID id, ITypeID operand) {
+	private void compare(HighLevelDefinition cls, BuiltinID id, BasicTypeID operand) {
+		compareOp(cls, id, operand.stored).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+	}
+	
+	private void compare(HighLevelDefinition cls, BuiltinID id, StoredType operand) {
 		compareOp(cls, id, operand).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void compare(HighLevelDefinition definition, BuiltinID id, ITypeID operand, BuiltinID caster) {
-		castedTargetCall(compareOp(definition, id, operand), operand, caster);
+	private void compare(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BuiltinID caster) {
+		castedTargetCall(compareOp(definition, id, operand.stored), operand.stored, caster);
 	}
 	
-	private void getter(HighLevelDefinition cls, BuiltinID id, String name, ITypeID type) {
+	private void getter(HighLevelDefinition cls, BuiltinID id, String name, StoredType type) {
 		new GetterMember(
 				BUILTIN,
 				cls,
@@ -1563,12 +1582,12 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 	private void constructor(
 			HighLevelDefinition definition,
 			BuiltinID id,
-			ITypeID... arguments) {
+			StoredType... arguments) {
 		new ConstructorMember(
 				BUILTIN,
 				definition,
 				Modifiers.PUBLIC,
-				new FunctionHeader(VOID, arguments),
+				new FunctionHeader(VOID.stored, arguments),
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
@@ -1590,8 +1609,8 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 			ClassDefinition cls,
 			BuiltinID id,
 			String name,
-			ITypeID result,
-			ITypeID... arguments) {
+			StoredType result,
+			StoredType... arguments) {
 		register(new MethodMember(
 				BUILTIN,
 				cls,
@@ -1605,8 +1624,8 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 			ClassDefinition cls,
 			BuiltinID id,
 			String name,
-			ITypeID result,
-			ITypeID... arguments) {
+			StoredType result,
+			StoredType... arguments) {
 		register(new MethodMember(
 				BUILTIN,
 				cls,
@@ -1616,7 +1635,11 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id));
 	}
 	
-	private void castExplicit(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
+	private void castExplicit(HighLevelDefinition cls, BuiltinID id, BasicTypeID result) {
+		castExplicit(cls, id, result.stored);
+	}
+	
+	private void castExplicit(HighLevelDefinition cls, BuiltinID id, StoredType result) {
 		new CasterMember(
 				CodePosition.BUILTIN,
 				cls,
@@ -1625,7 +1648,11 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void castImplicit(HighLevelDefinition cls, BuiltinID id, ITypeID result) {
+	private void castImplicit(HighLevelDefinition cls, BuiltinID id, BasicTypeID result) {
+		castImplicit(cls, id, result.stored);
+	}
+	
+	private void castImplicit(HighLevelDefinition cls, BuiltinID id, StoredType result) {
 		new CasterMember(
 				CodePosition.BUILTIN,
 				cls,
@@ -1634,7 +1661,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private CasterMemberRef castImplicitRef(HighLevelDefinition definition, BuiltinID id, ITypeID result) {
+	private CasterMemberRef castImplicitRef(HighLevelDefinition definition, BuiltinID id, StoredType result) {
 		return new CasterMemberRef(new CasterMember(
 				CodePosition.BUILTIN,
 				definition,
@@ -1643,7 +1670,11 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id), members.type, result);
 	}
 	
-	private void equals(HighLevelDefinition cls, BuiltinID id, ITypeID type) {
+	private void equals(HighLevelDefinition cls, BuiltinID id, BasicTypeID type) {
+		equals(cls, id, type.stored);
+	}
+	
+	private void equals(HighLevelDefinition cls, BuiltinID id, StoredType type) {
 		new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1653,7 +1684,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void same(HighLevelDefinition cls, BuiltinID id, ITypeID type) {
+	private void same(HighLevelDefinition cls, BuiltinID id, StoredType type) {
 		new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1663,7 +1694,11 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void notequals(HighLevelDefinition cls, BuiltinID id, ITypeID type) {
+	private void notequals(HighLevelDefinition cls, BuiltinID id, BasicTypeID type) {
+		notequals(cls, id, type.stored);
+	}
+	
+	private void notequals(HighLevelDefinition cls, BuiltinID id, StoredType type) {
 		new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1673,7 +1708,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void notsame(HighLevelDefinition cls, BuiltinID id, ITypeID type) {
+	private void notsame(HighLevelDefinition cls, BuiltinID id, StoredType type) {
 		new OperatorMember(
 				BUILTIN,
 				cls,
@@ -1683,7 +1718,7 @@ public class TypeMemberBuilder implements TypeVisitor<Void> {
 				id).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
 	
-	private void iterator(HighLevelDefinition cls, BuiltinID builtin, ITypeID... types) {
+	private void iterator(HighLevelDefinition cls, BuiltinID builtin, StoredType... types) {
 		new IteratorMember(BUILTIN, cls, Modifiers.PUBLIC, types, registry, builtin)
 				.registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}

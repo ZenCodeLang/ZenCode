@@ -7,36 +7,30 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class IteratorTypeID implements ITypeID {
-	public final ITypeID[] iteratorTypes;
-	public final StorageTag storage;
+public class IteratorTypeID implements TypeID {
+	public final StoredType[] iteratorTypes;
 	private final IteratorTypeID normalized;
-	private final IteratorTypeID withoutStorage;
 	
-	public IteratorTypeID(GlobalTypeRegistry registry, ITypeID[] iteratorTypes, StorageTag storage) {
+	public IteratorTypeID(GlobalTypeRegistry registry, StoredType[] iteratorTypes) {
 		this.iteratorTypes = iteratorTypes;
-		this.storage = storage;
 		
 		normalized = isDenormalized() ? normalize(registry) : this;
-		withoutStorage = storage == null ? this : registry.getIterator(iteratorTypes, null);
 	}
 	
 	@Override
-	public IteratorTypeID getNormalized() {
+	public IteratorTypeID getNormalizedUnstored() {
 		return normalized;
 	}
 	
 	private boolean isDenormalized() {
-		for (ITypeID type : iteratorTypes)
+		for (StoredType type : iteratorTypes)
 			if (type.getNormalized() != type)
 				return true;
 		
@@ -44,24 +38,19 @@ public class IteratorTypeID implements ITypeID {
 	}
 	
 	private IteratorTypeID normalize(GlobalTypeRegistry registry) {
-		ITypeID[] normalizedTypes = new ITypeID[iteratorTypes.length];
+		StoredType[] normalizedTypes = new StoredType[iteratorTypes.length];
 		for (int i = 0; i < normalizedTypes.length; i++)
 			normalizedTypes[i] = iteratorTypes[i].getNormalized();
-		return registry.getIterator(normalizedTypes, storage);
+		return registry.getIterator(normalizedTypes);
 	}
-
+	
 	@Override
-	public ITypeID getUnmodified() {
-		return this;
-	}
-
-	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitIterator(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitIterator(context, this);
 	}
 
@@ -76,26 +65,19 @@ public class IteratorTypeID implements ITypeID {
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return true;
-	}
-
-	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		ITypeID[] instanced = new ITypeID[iteratorTypes.length];
-		for (int i = 0; i < iteratorTypes.length; i++)
-			instanced[i] = iteratorTypes[i].instance(mapper);
-		return mapper.registry.getIterator(instanced, storage);
+	public boolean isDestructible() {
+		return false;
 	}
 	
 	@Override
-	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
-		return registry.getIterator(iteratorTypes, storage);
+	public TypeID instanceUnstored(GenericMapper mapper) {
+		StoredType[] instanced = mapper.map(iteratorTypes);
+		return mapper.registry.getIterator(instanced);
 	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		for (ITypeID type : iteratorTypes)
+		for (StoredType type : iteratorTypes)
 			if (type.hasInferenceBlockingTypeParameters(parameters))
 				return true;
 		
@@ -109,15 +91,14 @@ public class IteratorTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		for (ITypeID type : iteratorTypes)
-			type.extractTypeParameters(typeParameters);
+		for (StoredType type : iteratorTypes)
+			type.type.extractTypeParameters(typeParameters);
 	}
 
 	@Override
 	public int hashCode() {
 		int hash = 5;
 		hash = 13 * hash + Arrays.deepHashCode(this.iteratorTypes);
-		hash = 13 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -133,17 +114,6 @@ public class IteratorTypeID implements ITypeID {
 			return false;
 		}
 		final IteratorTypeID other = (IteratorTypeID) obj;
-		return Arrays.deepEquals(this.iteratorTypes, other.iteratorTypes)
-				&& Objects.equals(this.storage, other.storage);
-	}
-
-	@Override
-	public StorageTag getStorage() {
-		return storage;
-	}
-
-	@Override
-	public ITypeID withoutStorage() {
-		return withoutStorage;
+		return Arrays.deepEquals(this.iteratorTypes, other.iteratorTypes);
 	}
 }

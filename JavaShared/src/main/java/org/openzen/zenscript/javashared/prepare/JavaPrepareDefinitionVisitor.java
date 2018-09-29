@@ -27,7 +27,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaVariantOption;
@@ -239,10 +239,10 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		return definition.hasTag(JavaClass.class);
 	}
 	
-	public void prepare(ITypeID type) {
+	public void prepare(TypeID type) {
 		if (!(type instanceof DefinitionTypeID))
 			return;
-			
+		
 		HighLevelDefinition definition = ((DefinitionTypeID)type).definition;
 		definition.accept(this);
 	}
@@ -260,7 +260,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		if (isPrepared(definition))
 			return definition.getTag(JavaClass.class);
 		
-		for (ITypeID baseType : definition.baseInterfaces)
+		for (TypeID baseType : definition.baseInterfaces)
 			prepare(baseType);
 		
 		return visitClassCompiled(definition, true, JavaClass.Kind.INTERFACE);

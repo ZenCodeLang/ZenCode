@@ -10,6 +10,7 @@ import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -32,13 +33,13 @@ public class PrefixedBracketParser implements BracketExpressionParser {
 	}
 
 	@Override
-	public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) {
+	public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
 		if (defaultParser == null) {
 			ZSToken start = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
 			tokens.required(ZSTokenType.T_COLON, ": expected");
 			BracketExpressionParser subParser = subParsers.get(start.content);
 			if (subParser == null)
-				throw new CompileException(position, CompileExceptionCode.INVALID_BRACKET_EXPRESSION, "Invalid bracket expression");
+				throw new ParseException(position, "Invalid bracket expression: no prefix " + start.content);
 			
 			return subParser.parse(position, tokens);
 		} else {

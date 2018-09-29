@@ -9,18 +9,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialPackageExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -57,9 +56,9 @@ public class ZSPackage {
 		
 		if (types.containsKey(name.name)) {
 			if (types.get(name.name).typeParameters.length != name.getNumberOfArguments())
-				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments");
+				return new InvalidExpression(position, CompileExceptionCode.TYPE_ARGUMENTS_INVALID_NUMBER, "Invalid number of type arguments");
 			
-			return new PartialTypeExpression(position, registry.getForDefinition(types.get(name.name), null, name.arguments), name.arguments);
+			return new PartialTypeExpression(position, registry.getForDefinition(types.get(name.name), name.arguments), name.arguments);
 		}
 		
 		return null;
@@ -86,29 +85,29 @@ public class ZSPackage {
 		return null;
 	}
 	
-	public ITypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts, StorageTag storage) {
-		return getType(position, context, nameParts, 0, storage);
+	public TypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts) {
+		return getType(position, context, nameParts, 0);
 	}
 	
-	public ITypeID getType(CodePosition position, TypeResolutionContext context, GenericName name, StorageTag storage) {
+	public TypeID getType(CodePosition position, TypeResolutionContext context, GenericName name) {
 		if (types.containsKey(name.name)) {
-			return context.getTypeRegistry().getForDefinition(types.get(name.name), storage, name.arguments);
+			return context.getTypeRegistry().getForDefinition(types.get(name.name), name.arguments);
 		}
 		
 		return null;
 	}
 	
-	private ITypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts, int depth, StorageTag storage) {
+	private TypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts, int depth) {
 		if (depth >= nameParts.size())
 			return null;
 		
 		GenericName name = nameParts.get(depth);
 		if (subPackages.containsKey(name.name) && name.hasNoArguments())
-			return subPackages.get(name.name).getType(position, context, nameParts, depth + 1, storage);
+			return subPackages.get(name.name).getType(position, context, nameParts, depth + 1);
 		
 		if (types.containsKey(name.name)) {
-			DefinitionTypeID type = context.getTypeRegistry().getForDefinition(types.get(name.name), null, name.arguments);
-			return GenericName.getInnerType(context.getTypeRegistry(), type, nameParts, depth + 1, storage);
+			DefinitionTypeID type = context.getTypeRegistry().getForDefinition(types.get(name.name), name.arguments);
+			return GenericName.getInnerType(context.getTypeRegistry(), type, nameParts, depth + 1);
 		}
 		
 		return null;

@@ -12,11 +12,9 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -45,7 +43,7 @@ public class ParsedConstructor extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType) {
+	protected void fillOverride(TypeScope scope, StoredType baseType) throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.OVERRIDE_CONSTRUCTOR, "Cannot override a constructor");
 	}
 }

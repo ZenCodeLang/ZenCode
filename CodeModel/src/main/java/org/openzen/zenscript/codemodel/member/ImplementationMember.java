@@ -15,19 +15,20 @@ import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ImplementationMember extends DefinitionMember {
-	public final ITypeID type;
+	public final TypeID type;
 	public final List<IDefinitionMember> members = new ArrayList<>();
 	
-	public ImplementationMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID type) {
+	public ImplementationMember(CodePosition position, HighLevelDefinition definition, int modifiers, TypeID type) {
 		super(position, definition, modifiers);
 		
 		this.type = type;
@@ -39,10 +40,10 @@ public class ImplementationMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		ITypeID instancedType = mapper == null ? type : mapper.map(type);
+		TypeID instancedType = mapper == null ? type : mapper.map(type);
 		members.addImplementation(new ImplementationMemberRef(this, members.type, instancedType), priority);
 		
-		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType);
+		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType.stored(members.type.storage));
 		interfaceTypeMembers.copyMembersTo(position, members, TypeMemberPriority.INTERFACE);
 	}
 
@@ -83,7 +84,7 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
-	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
 		throw new UnsupportedOperationException("Cannot create an implementation reference");
 	}
 

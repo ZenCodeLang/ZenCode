@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -21,15 +22,26 @@ import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
  * @author Hoofdgebruiker
  */
 public class ParsedStruct extends BaseParsedDefinition {
-	public static ParsedStruct parseStruct(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedStruct parseStruct(
+			CompilingPackage pkg,
+			CodePosition position,
+			int modifiers,
+			ParsedAnnotation[] annotations,
+			ZSTokenParser tokens,
+			HighLevelDefinition outerDefinition) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> parameters = ParsedTypeParameter.parseAll(tokens);
 		
 		tokens.required(ZSTokenType.T_AOPEN, "{");
 		
 		ParsedStruct result = new ParsedStruct(pkg, position, modifiers, annotations, name, parameters, outerDefinition);
-		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-			result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+		try {
+			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
+				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+			}
+		} catch (ParseException ex) {
+			tokens.logError(ex);
+			tokens.recoverUntilToken(ZSTokenType.T_ACLOSE);
 		}
 		return result;
 	}

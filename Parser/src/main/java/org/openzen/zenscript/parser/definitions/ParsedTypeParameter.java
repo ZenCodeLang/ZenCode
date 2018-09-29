@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.scope.GenericFunctionScope;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -21,7 +21,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
  * @author Hoofdgebruiker
  */
 public class ParsedTypeParameter {
-	public static ParsedTypeParameter parse(ZSTokenParser tokens) {
+	public static ParsedTypeParameter parse(ZSTokenParser tokens) throws ParseException {
 		CodePosition position = tokens.getPosition();
 		ZSToken name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
 		List<ParsedGenericBound> bounds = new ArrayList<>();
@@ -35,7 +35,7 @@ public class ParsedTypeParameter {
 		return new ParsedTypeParameter(position, name.content, bounds);
 	}
 	
-	public static List<ParsedTypeParameter> parseAll(ZSTokenParser tokens) {
+	public static List<ParsedTypeParameter> parseAll(ZSTokenParser tokens) throws ParseException {
 		if (tokens.optional(ZSTokenType.T_LESS) == null)
 			return null;
 		

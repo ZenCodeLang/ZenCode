@@ -6,66 +6,48 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
-import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class AssocTypeID implements ITypeID {
-	public final ITypeID keyType;
-	public final ITypeID valueType;
-	public final StorageTag storage;
+public class AssocTypeID implements TypeID {
+	public final StoredType keyType;
+	public final StoredType valueType;
 	private final AssocTypeID normalized;
-	private final AssocTypeID withoutStorage;
 	
-	public AssocTypeID(GlobalTypeRegistry typeRegistry, ITypeID keyType, ITypeID valueType, StorageTag storage) {
+	public AssocTypeID(GlobalTypeRegistry typeRegistry, StoredType keyType, StoredType valueType) {
 		this.keyType = keyType;
 		this.valueType = valueType;
-		this.storage = storage;
 		
 		if (keyType != keyType.getNormalized() || valueType != valueType.getNormalized())
-			normalized = typeRegistry.getAssociative(keyType.getNormalized(), valueType.getNormalized(), storage);
+			normalized = typeRegistry.getAssociative(keyType.getNormalized(), valueType.getNormalized());
 		else
 			normalized = this;
-		
-		withoutStorage = storage == null ? this : typeRegistry.getAssociative(normalized.keyType, normalized.valueType, null);
 	}
 	
 	@Override
-	public AssocTypeID instance(GenericMapper mapper) {
+	public AssocTypeID instanceUnstored(GenericMapper mapper) {
 		return mapper.registry.getAssociative(
 				keyType.instance(mapper),
-				valueType.instance(mapper),
-				storage);
+				valueType.instance(mapper));
 	}
 	
 	@Override
-	public AssocTypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
-		return registry.getAssociative(keyType, valueType, storage);
-	}
-	
-	@Override
-	public AssocTypeID getNormalized() {
+	public AssocTypeID getNormalizedUnstored() {
 		return normalized;
 	}
 	
 	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitAssoc(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitAssoc(context, this);
-	}
-	
-	@Override
-	public AssocTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
@@ -79,8 +61,8 @@ public class AssocTypeID implements ITypeID {
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return true;
+	public boolean isDestructible() {
+		return keyType.isDestructible() || valueType.isDestructible();
 	}
 	
 	@Override
@@ -95,8 +77,8 @@ public class AssocTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		keyType.extractTypeParameters(typeParameters);
-		valueType.extractTypeParameters(typeParameters);
+		keyType.type.extractTypeParameters(typeParameters);
+		valueType.type.extractTypeParameters(typeParameters);
 	}
 
 	@Override
@@ -104,7 +86,6 @@ public class AssocTypeID implements ITypeID {
 		int hash = 7;
 		hash = 29 * hash + keyType.hashCode();
 		hash = 29 * hash + valueType.hashCode();
-		hash = 29 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -120,9 +101,8 @@ public class AssocTypeID implements ITypeID {
 			return false;
 		}
 		final AssocTypeID other = (AssocTypeID) obj;
-		return this.keyType == other.keyType
-				&& this.valueType == other.valueType
-				&& Objects.equals(this.storage, other.storage);
+		return this.keyType.equals(other.keyType)
+				&& this.valueType.equals(other.valueType);
 	}
 	
 	@Override
@@ -133,15 +113,5 @@ public class AssocTypeID implements ITypeID {
 		result.append(keyType.toString());
 		result.append(']');
 		return result.toString();
-	}
-
-	@Override
-	public StorageTag getStorage() {
-		return storage;
-	}
-
-	@Override
-	public ITypeID withoutStorage() {
-		return withoutStorage;
 	}
 }

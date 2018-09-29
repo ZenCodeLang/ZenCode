@@ -6,51 +6,41 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
-import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.storage.AnyStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class StringTypeID implements ITypeID {
-	public static final StringTypeID ANY = new StringTypeID(AnyStorageTag.INSTANCE);
-	public static final StringTypeID STATIC = new StringTypeID(StaticStorageTag.INSTANCE);
-	public static final StringTypeID UNIQUE = new StringTypeID(UniqueStorageTag.INSTANCE);
-	public static final StringTypeID BORROW = new StringTypeID(BorrowStorageTag.INVOCATION);
-	public static final StringTypeID SHARED = new StringTypeID(SharedStorageTag.INSTANCE);
-	public static final StringTypeID NOSTORAGE = new StringTypeID(null);
+public class StringTypeID implements TypeID {
+	public static final StringTypeID INSTANCE = new StringTypeID();
 	
-	public final StorageTag storage;
+	public static final StoredType ANY = new StoredType(INSTANCE, AnyStorageTag.INSTANCE);
+	public static final StoredType STATIC = new StoredType(INSTANCE, StaticStorageTag.INSTANCE);
+	public static final StoredType UNIQUE = new StoredType(INSTANCE, UniqueStorageTag.INSTANCE);
+	public static final StoredType BORROW = new StoredType(INSTANCE, BorrowStorageTag.INVOCATION);
+	public static final StoredType SHARED = new StoredType(INSTANCE, SharedStorageTag.INSTANCE);
 	
-	public StringTypeID(StorageTag storage) {
-		this.storage = storage;
-	}
-
+	private StringTypeID() {}
+	
 	@Override
-	public ITypeID getUnmodified() {
-		return this;
+	public TypeID getNormalizedUnstored() {
+		return INSTANCE;
 	}
-
+	
 	@Override
-	public ITypeID getNormalized() {
-		return this;
-	}
-
-	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitString(this);
 	}
 
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitString(context, this);
 	}
 
@@ -58,20 +48,15 @@ public class StringTypeID implements ITypeID {
 	public boolean hasDefaultValue() {
 		return true;
 	}
-
-	@Override
-	public boolean isObjectType() {
-		return true;
-	}
-
-	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		return this;
-	}
 	
 	@Override
-	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
-		return registry.getString(storage);
+	public boolean isDestructible() {
+		return false;
+	}
+
+	@Override
+	public TypeID instanceUnstored(GenericMapper mapper) {
+		return this;
 	}
 
 	@Override
@@ -83,42 +68,24 @@ public class StringTypeID implements ITypeID {
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
 		
 	}
+
+	@Override
+	public TypeID getSuperType(GlobalTypeRegistry registry) {
+		return null;
+	}
 	
 	@Override
 	public String toString() {
-		if (storage == null)
-			return "string";
-		
-		return "string`" + storage.toString();
+		return "string";
 	}
 
 	@Override
 	public int hashCode() {
-		int hash = 5;
-		hash = 97 * hash + Objects.hashCode(this.storage);
-		return hash;
+		return 1278;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		
-		final StringTypeID other = (StringTypeID) obj;
-		return Objects.equals(this.storage, other.storage);
-	}
-
-	@Override
-	public StorageTag getStorage() {
-		return storage;
-	}
-
-	@Override
-	public ITypeID withoutStorage() {
-		return NOSTORAGE;
+		return this == obj;
 	}
 }

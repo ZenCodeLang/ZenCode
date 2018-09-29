@@ -5,17 +5,21 @@
  */
 package org.openzen.zenscript.parser;
 
+import org.openzen.zenscript.lexer.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.annotations.Annotation;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
+import org.openzen.zenscript.codemodel.annotations.InvalidDefinitionAnnotation;
+import org.openzen.zenscript.codemodel.annotations.InvalidMemberAnnotation;
+import org.openzen.zenscript.codemodel.annotations.InvalidParameterAnnotation;
+import org.openzen.zenscript.codemodel.annotations.InvalidStatementAnnotation;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.annotations.StatementAnnotation;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -26,9 +30,10 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.expression.ParsedCallArguments;
 import org.openzen.zenscript.parser.type.IParsedType;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.annotations.ParameterAnnotation;
 
 /**
  *
@@ -37,14 +42,21 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedAnnotation {
 	public static final ParsedAnnotation[] NONE = new ParsedAnnotation[0];
 	
-	public static ParsedAnnotation[] parseAnnotations(ZSTokenParser parser) {
+	public static ParsedAnnotation[] parseAnnotations(ZSTokenParser parser) throws ParseException {
 		if (!parser.isNext(ZSTokenType.T_SQOPEN))
 			return NONE;
 		
 		List<ParsedAnnotation> results = new ArrayList<>();
 		while (parser.isNext(ZSTokenType.T_SQOPEN)) {
 			parser.pushMark();
-			parser.next();
+			try {
+				parser.next();
+			} catch (ParseException ex) {
+				parser.popMark();
+				parser.recoverUntilTokenOrNewline(ZSTokenType.T_SQCLOSE);
+				continue;
+			}
+			
 			if (!parser.isNext(ZSTokenType.T_IDENTIFIER)) {
 				parser.reset();
 				break;
@@ -54,9 +66,13 @@ public class ParsedAnnotation {
 			
 			CodePosition position = parser.getPosition();
 			IParsedType type = IParsedType.parse(parser);
-			ParsedCallArguments arguments = ParsedCallArguments.parseForAnnotation(parser);
-			parser.required(ZSTokenType.T_SQCLOSE, "] expected");
-			results.add(new ParsedAnnotation(position, type, arguments));
+			try {
+				ParsedCallArguments arguments = ParsedCallArguments.parseForAnnotation(parser);
+				parser.required(ZSTokenType.T_SQCLOSE, "] expected");
+				results.add(new ParsedAnnotation(position, type, arguments));
+			} catch (ParseException ex) {
+				parser.recoverUntilTokenOrNewline(ZSTokenType.T_SQCLOSE);
+			}
 		}
 		return results.toArray(new ParsedAnnotation[results.size()]);
 	}
@@ -93,11 +109,11 @@ public class ParsedAnnotation {
 		return compiled;
 	}
 	
-	public static Annotation[] compileForParameter(ParsedAnnotation[] annotations, FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
+	public static ParameterAnnotation[] compileForParameter(ParsedAnnotation[] annotations, FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
 		if (annotations.length == 0)
-			return Annotation.NONE;
+			return ParameterAnnotation.NONE;
 		
-		Annotation[] compiled = new Annotation[annotations.length];
+		ParameterAnnotation[] compiled = new ParameterAnnotation[annotations.length];
 		for (int i = 0; i < annotations.length; i++)
 			compiled[i] = annotations[i].compileForParameter(header, parameter, scope);
 		return compiled;
@@ -114,43 +130,59 @@ public class ParsedAnnotation {
 	}
 	
 	public MemberAnnotation compileForMember(IDefinitionMember member, BaseScope scope) {
-		AnnotationDefinition annotationType = type.compileAnnotation(scope);
-		ExpressionScope evalScope = annotationType.getScopeForMember(member, scope);
-		ITypeID[] types = type.compileTypeArguments(scope);
-		CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
-		return annotationType.createForMember(position, cArguments);
+		try {
+			AnnotationDefinition annotationType = type.compileAnnotation(scope);
+			ExpressionScope evalScope = annotationType.getScopeForMember(member, scope);
+			TypeID[] types = type.compileTypeArguments(scope);
+			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
+			return annotationType.createForMember(position, cArguments);
+		} catch (CompileException ex) {
+			return new InvalidMemberAnnotation(ex);
+		}
 	}
 	
 	public DefinitionAnnotation compileForDefinition(HighLevelDefinition definition, BaseScope scope) {
 		AnnotationDefinition annotationType = type.compileAnnotation(scope);
 		if (annotationType == null)
-			throw new CompileException(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
+			return new InvalidDefinitionAnnotation(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
 		
-		ExpressionScope evalScope = annotationType.getScopeForType(definition, scope);
-		ITypeID[] types = type.compileTypeArguments(scope);
-		CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
-		return annotationType.createForDefinition(position, cArguments);
+		try {
+			ExpressionScope evalScope = annotationType.getScopeForType(definition, scope);
+			TypeID[] types = type.compileTypeArguments(scope);
+			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
+			return annotationType.createForDefinition(position, cArguments);
+		} catch (CompileException ex) {
+			return new InvalidDefinitionAnnotation(ex);
+		}
 	}
 	
 	public StatementAnnotation compileForStatement(Statement statement, StatementScope scope) {
 		AnnotationDefinition annotationType = type.compileAnnotation(scope);
 		if (annotationType == null)
-			throw new CompileException(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
+			return new InvalidStatementAnnotation(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
 		
-		ExpressionScope evalScope = annotationType.getScopeForStatement(statement, scope);
-		ITypeID[] types = type.compileTypeArguments(scope);
-		CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
-		return annotationType.createForStatement(position, cArguments);
+		try {
+			ExpressionScope evalScope = annotationType.getScopeForStatement(statement, scope);
+			TypeID[] types = type.compileTypeArguments(scope);
+			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
+			return annotationType.createForStatement(position, cArguments);
+		} catch (CompileException ex) {
+			return new InvalidStatementAnnotation(ex);
+		}
 	}
 	
-	public Annotation compileForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
+	public ParameterAnnotation compileForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
 		AnnotationDefinition annotationType = type.compileAnnotation(scope);
 		if (annotationType == null)
-			throw new CompileException(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
+			return new InvalidParameterAnnotation(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
 		
-		ExpressionScope evalScope = annotationType.getScopeForParameter(header, parameter, scope);
-		ITypeID[] types = type.compileTypeArguments(scope);
-		CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
-		return annotationType.createForParameter(position, cArguments);
+		try {
+			ExpressionScope evalScope = annotationType.getScopeForParameter(header, parameter, scope);
+			TypeID[] types = type.compileTypeArguments(scope);
+			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
+			return annotationType.createForParameter(position, cArguments);
+		} catch (CompileException ex) {
+			return new InvalidParameterAnnotation(ex);
+		}
 	}
 }

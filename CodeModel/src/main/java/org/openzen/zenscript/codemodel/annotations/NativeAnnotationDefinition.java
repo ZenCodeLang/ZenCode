@@ -86,7 +86,7 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public Annotation createForParameter(CodePosition position, CallArguments arguments) {
+	public ParameterAnnotation createForParameter(CodePosition position, CallArguments arguments) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
@@ -108,7 +108,7 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public Annotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
+	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 }

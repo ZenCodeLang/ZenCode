@@ -17,7 +17,7 @@ public class ConstantDoubleExpression extends Expression {
 	public final double value;
 	
 	public ConstantDoubleExpression(CodePosition position, double value) {
-		super(position, BasicTypeID.DOUBLE, null);
+		super(position, BasicTypeID.DOUBLE.stored, null);
 		
 		this.value = value;
 	}

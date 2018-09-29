@@ -11,7 +11,8 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -21,52 +22,52 @@ public class GenericMapper {
 	public static final GenericMapper EMPTY = new GenericMapper(null, Collections.emptyMap());
 	
 	public final GlobalTypeRegistry registry;
-	private final Map<TypeParameter, ITypeID> mapping;
+	private final Map<TypeParameter, TypeID> mapping;
 	
-	public GenericMapper(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
+	public GenericMapper(GlobalTypeRegistry registry, Map<TypeParameter, TypeID> mapping) {
 		this.registry = registry;
 		this.mapping = mapping;
 	}
 	
-	public Map<TypeParameter, ITypeID> getMapping() {
+	public Map<TypeParameter, TypeID> getMapping() {
 		return mapping;
 	}
 	
-	public ITypeID map(ITypeID original) {
-		return mapping.isEmpty() ? original : original.instance(this);
+	public TypeID map(TypeID original) {
+		return mapping.isEmpty() ? original : original.instanceUnstored(this);
 	}
 	
-	public ITypeID[] map(ITypeID[] original) {
-		if (mapping.isEmpty())
+	public StoredType[] map(StoredType[] original) {
+		if (mapping.isEmpty() || original.length == 0)
 			return original;
 		
-		ITypeID[] mapped = new ITypeID[original.length];
+		StoredType[] mapped = new StoredType[original.length];
 		for (int i = 0; i < original.length; i++)
 			mapped[i] = original[i].instance(this);
 		return mapped;
 	}
 	
-	public ITypeID map(GenericTypeID type) {
+	public TypeID map(GenericTypeID type) {
 		if (!mapping.containsKey(type.parameter))
 			throw new IllegalStateException("No mapping found for type " + type);
 		
-		return mapping.containsKey(type.parameter) ? mapping.get(type.parameter).withStorage(registry, type.storage) : type;
+		return mapping.containsKey(type.parameter) ? mapping.get(type.parameter) : type;
 	}
 	
 	public FunctionHeader map(FunctionHeader original) {
 		return mapping.isEmpty() ? original : original.withGenericArguments(registry, this);
 	}
 	
-	public GenericMapper getInner(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> mapping) {
-		Map<TypeParameter, ITypeID> resultMap = new HashMap<>(this.mapping);
+	public GenericMapper getInner(GlobalTypeRegistry registry, Map<TypeParameter, TypeID> mapping) {
+		Map<TypeParameter, TypeID> resultMap = new HashMap<>(this.mapping);
 		resultMap.putAll(mapping);
 		return new GenericMapper(registry, resultMap);
 	}
 	
 	public GenericMapper getInner(GlobalTypeRegistry registry, TypeParameter[] parameters) {
-		Map<TypeParameter, ITypeID> resultMap = new HashMap<>(this.mapping);
+		Map<TypeParameter, TypeID> resultMap = new HashMap<>(this.mapping);
 		for (TypeParameter parameter : parameters)
-			resultMap.put(parameter, registry.getGeneric(parameter, null));
+			resultMap.put(parameter, registry.getGeneric(parameter));
 		return new GenericMapper(registry, resultMap);
 	}
 	
@@ -78,7 +79,7 @@ public class GenericMapper {
 		StringBuilder result = new StringBuilder();
 		result.append('{');
 		boolean first = true;
-		for (Map.Entry<TypeParameter, ITypeID> entry : mapping.entrySet()) {
+		for (Map.Entry<TypeParameter, TypeID> entry : mapping.entrySet()) {
 			if (first) {
 				first = false;
 			} else {

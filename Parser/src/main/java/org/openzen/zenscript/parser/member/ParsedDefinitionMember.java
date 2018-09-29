@@ -8,7 +8,6 @@ package org.openzen.zenscript.parser.member;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -21,6 +20,7 @@ import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -34,7 +34,7 @@ import org.openzen.zenscript.parser.type.ParsedTypeBasic;
  * @author Hoofdgebruiker
  */
 public abstract class ParsedDefinitionMember {
-	public static ParsedDefinitionMember parse(ZSTokenParser tokens, ParsedDefinition forDefinition, ParsedImplementation forImplementation) {
+	public static ParsedDefinitionMember parse(ZSTokenParser tokens, ParsedDefinition forDefinition, ParsedImplementation forImplementation) throws ParseException {
 		CodePosition start = tokens.getPosition();
 		ParsedAnnotation[] annotations = ParsedAnnotation.parseAnnotations(tokens);
 		int modifiers = 0;
@@ -133,7 +133,7 @@ public abstract class ParsedDefinitionMember {
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
 				ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
 				if (body == null)
-					throw new CompileException(start, CompileExceptionCode.METHOD_BODY_REQUIRED, "Function body is required for constructors");
+					throw new ParseException(start, "Function body is required for constructors");
 				
 				return new ParsedConstructor(start, forDefinition.getCompiled(), forImplementation, modifiers, annotations, header, body);
 			}
@@ -281,7 +281,7 @@ public abstract class ParsedDefinitionMember {
 					ParsedStatementBlock body = ParsedStatementBlock.parseBlock(tokens, annotations, true);
 					return new ParsedStaticInitializer(forDefinition.getCompiled(), tokens.getPosition(), annotations, body);
 				}
-				throw new CompileException(tokens.getPosition(), CompileExceptionCode.UNEXPECTED_TOKEN, "Unexpected token: " + tokens.peek().content);
+				throw new ParseException(tokens.getPosition(), "Unexpected token: " + tokens.peek().content);
 		}
 	}
 	
@@ -334,7 +334,7 @@ public abstract class ParsedDefinitionMember {
 	
 	public abstract IDefinitionMember getCompiled();
 	
-	public abstract void compile(BaseScope scope);
+	public abstract void compile(BaseScope scope) throws CompileException;
 	
 	public void registerMembers(BaseScope scope, PrecompilationState state) {}
 }

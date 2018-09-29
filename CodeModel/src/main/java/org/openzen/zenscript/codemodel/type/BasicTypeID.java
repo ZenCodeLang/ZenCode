@@ -9,14 +9,13 @@ import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public enum BasicTypeID implements ITypeID {
+public enum BasicTypeID implements TypeID {
 	VOID("void"),
 	NULL("null"),
 	BOOL("bool"),
@@ -35,26 +34,23 @@ public enum BasicTypeID implements ITypeID {
 	
 	UNDETERMINED("undetermined");
 	
-	public static final List<ITypeID> HINT_BOOL = Collections.singletonList(BOOL);
+	public static final List<StoredType> HINT_BOOL = Collections.singletonList(BOOL.stored);
 	
 	public final String name;
+	public final StoredType stored;
 	
 	BasicTypeID(String name) {
 		this.name = name;
+		stored = new StoredType(this, ValueStorageTag.INSTANCE);
 	}
 	
 	@Override
-	public BasicTypeID getNormalized() {
+	public BasicTypeID getNormalizedUnstored() {
 		return this;
 	}
 	
 	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		return this;
-	}
-
-	@Override
-	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
+	public BasicTypeID instanceUnstored(GenericMapper mapper) {
 		return this;
 	}
 	
@@ -62,20 +58,15 @@ public enum BasicTypeID implements ITypeID {
 	public String toString() {
 		return name;
 	}
-
+	
 	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitBasic(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitBasic(context, this);
-	}
-	
-	@Override
-	public BasicTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
@@ -89,7 +80,7 @@ public enum BasicTypeID implements ITypeID {
 	}
 	
 	@Override
-	public boolean isObjectType() {
+	public boolean isDestructible() {
 		return false;
 	}
 
@@ -106,15 +97,5 @@ public enum BasicTypeID implements ITypeID {
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
 		
-	}
-
-	@Override
-	public StorageTag getStorage() {
-		return ValueStorageTag.INSTANCE;
-	}
-
-	@Override
-	public ITypeID withoutStorage() {
-		return this;
 	}
 }

@@ -28,7 +28,8 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
@@ -221,7 +222,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+		public TypeID getType(CodePosition position, List<GenericName> name) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -231,7 +232,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		}
 
 		@Override
-		public ITypeID getThisType() {
+		public StoredType getThisType() {
 			throw new UnsupportedOperationException();
 		}
 

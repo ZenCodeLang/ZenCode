@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.member.MemberVisitor;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 
@@ -28,7 +28,7 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 	protected final JavaSourceFileScope scope;
 	protected final JavaSourceStatementScope fieldInitializerScope;
 	protected final JavaSourceFormattingSettings settings;
-	protected final ITypeID expansionTarget;
+	protected final TypeID expansionTarget;
 	protected final HighLevelDefinition definition;
 	
 	private ElementType currentElementType = null;
@@ -38,7 +38,7 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 			String indent,
 			StringBuilder output,
 			JavaSourceFileScope scope,
-			ITypeID expansionTarget,
+			TypeID expansionTarget,
 			HighLevelDefinition definition)
 	{
 		this.indent = indent;

@@ -8,14 +8,14 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ThisExpression extends Expression {
-	public ThisExpression(CodePosition position, ITypeID type) {
+	public ThisExpression(CodePosition position, StoredType type) {
 		super(position, type, null);
 	}
 	

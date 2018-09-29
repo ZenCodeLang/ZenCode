@@ -13,7 +13,8 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.ExpressionHoistingChecker;
@@ -33,7 +34,7 @@ public class JavaSourceStatementScope {
 	public final String indent;
 	public final LoopStatement innerLoop;
 	public final boolean isExpansion;
-	public final ITypeID thisType;
+	public final TypeID thisType;
 	public final JavaSourceContext context;
 	
 	private final JavaSourceStatementScope outer;
@@ -75,11 +76,19 @@ public class JavaSourceStatementScope {
 		return expression.accept(new JavaSourceExpressionFormatter(target, this));
 	}
 	
-	public String type(ITypeID type) {
+	public String type(StoredType type) {
 		return fileScope.type(type);
 	}
 	
-	public String type(ITypeID type, JavaClass renamed) {
+	public String type(TypeID type) {
+		return fileScope.type(type);
+	}
+	
+	public String type(StoredType type, JavaClass renamed) {
+		return fileScope.type(type, renamed);
+	}
+	
+	public String type(TypeID type, JavaClass renamed) {
 		return fileScope.type(type, renamed);
 	}
 	

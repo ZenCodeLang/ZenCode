@@ -21,7 +21,8 @@ import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 /**
@@ -32,10 +33,10 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	private final FunctionalMember target;
 	
 	private FunctionHeader header;
-	private final ITypeID type;
+	private final StoredType type;
 	private GenericMapper mapper;
 	
-	public FunctionalMemberRef(FunctionalMember target, ITypeID type, GenericMapper mapper) {
+	public FunctionalMemberRef(FunctionalMember target, StoredType type, GenericMapper mapper) {
 		this.target = target;
 		this.type = type;
 		
@@ -71,7 +72,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public ITypeID getOwnerType() {
+	public StoredType getOwnerType() {
 		return type;
 	}
 	
@@ -145,7 +146,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 		return new CompareExpression(position, target, arguments.arguments[0], this, comparison);
 	}
 	
-	public Expression callStatic(CodePosition position, ITypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
+	public Expression callStatic(CodePosition position, TypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		return new CallStaticExpression(position, target, this, instancedHeader, arguments);
 	}
 }

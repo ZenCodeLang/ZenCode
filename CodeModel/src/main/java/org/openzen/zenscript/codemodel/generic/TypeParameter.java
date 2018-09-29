@@ -11,7 +11,7 @@ import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 /**
@@ -48,7 +48,7 @@ public class TypeParameter extends Taggable {
 		return false;
 	}
 	
-	public boolean matches(LocalMemberCache cache, ITypeID type) {
+	public boolean matches(LocalMemberCache cache, TypeID type) {
 		for (TypeParameterBound bound : bounds) {
 			if (!bound.matches(cache, type))
 				return false;
@@ -57,7 +57,7 @@ public class TypeParameter extends Taggable {
 		return true;
 	}
 	
-	public TypeParameter withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, ITypeID> arguments) {
+	public TypeParameter withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, TypeID> arguments) {
 		// TODO: think about this...
 		//List<GenericParameterBound> bounds = new ArrayList<>();
 		//for (GenericParameterBound bound : this.bounds)

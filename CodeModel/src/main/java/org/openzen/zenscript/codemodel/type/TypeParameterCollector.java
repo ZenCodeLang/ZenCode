@@ -13,80 +13,80 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
  *
  * @author Hoofdgebruiker
  */
-public class TypeParameterCollector implements TypeVisitor<Void> {
-	private final Map<TypeParameter, ITypeID> map;
+public class TypeParameterCollector implements TypeVisitorWithContext<Map<TypeParameter, TypeID>, Void, RuntimeException> {
+	private final Map<TypeParameter, TypeID> map;
 	
-	public TypeParameterCollector(Map<TypeParameter, ITypeID> map) {
+	public TypeParameterCollector(Map<TypeParameter, TypeID> map) {
 		this.map = map;
 	}
 
 	@Override
-	public Void visitBasic(BasicTypeID basic) {
+	public Void visitBasic(Map<TypeParameter, TypeID> context, BasicTypeID basic) {
 		return null;
 	}
 	
 	@Override
-	public Void visitString(StringTypeID string) {
+	public Void visitString(Map<TypeParameter, TypeID> context, StringTypeID string) {
 		return null;
 	}
 
 	@Override
-	public Void visitArray(ArrayTypeID array) {
-		array.elementType.accept(this);
+	public Void visitArray(Map<TypeParameter, TypeID> context, ArrayTypeID array) {
+		array.elementType.type.accept(context, this);
 		return null;
 	}
 
 	@Override
-	public Void visitAssoc(AssocTypeID assoc) {
-		assoc.keyType.accept(this);
-		assoc.valueType.accept(this);
+	public Void visitAssoc(Map<TypeParameter, TypeID> context, AssocTypeID assoc) {
+		assoc.keyType.type.accept(context, this);
+		assoc.valueType.type.accept(context, this);
 		return null;
 	}
 
 	@Override
-	public Void visitGenericMap(GenericMapTypeID map) {
+	public Void visitGenericMap(Map<TypeParameter, TypeID> context, GenericMapTypeID map) {
 		return null;
 	}
 
 	@Override
-	public Void visitIterator(IteratorTypeID iterator) {
-		for (ITypeID type : iterator.iteratorTypes)
-			type.accept(this);
+	public Void visitIterator(Map<TypeParameter, TypeID> context, IteratorTypeID iterator) {
+		for (StoredType type : iterator.iteratorTypes)
+			type.type.accept(context, this);
 		return null;
 	}
 
 	@Override
-	public Void visitFunction(FunctionTypeID function) {
-		function.header.getReturnType().accept(this);
+	public Void visitFunction(Map<TypeParameter, TypeID> context, FunctionTypeID function) {
+		function.header.getReturnType().type.accept(context, this);
 		for (FunctionParameter parameter : function.header.parameters)
-			parameter.type.accept(this);
+			parameter.type.type.accept(context, this);
 		return null;
 	}
 
 	@Override
-	public Void visitDefinition(DefinitionTypeID definition) {
-		for (ITypeID argument : definition.typeArguments)
-			argument.accept(this);
+	public Void visitDefinition(Map<TypeParameter, TypeID> context, DefinitionTypeID definition) {
+		for (TypeID argument : definition.typeArguments)
+			argument.accept(context, this);
 		if (definition.outer != null)
-			visitDefinition(definition.outer);
+			visitDefinition(context, definition.outer);
 		return null;
 	}
 
 	@Override
-	public Void visitGeneric(GenericTypeID generic) {
+	public Void visitGeneric(Map<TypeParameter, TypeID> context, GenericTypeID generic) {
 		map.put(generic.parameter, generic);
 		return null;
 	}
 
 	@Override
-	public Void visitRange(RangeTypeID range) {
-		range.baseType.accept(this);
+	public Void visitRange(Map<TypeParameter, TypeID> context, RangeTypeID range) {
+		range.baseType.type.accept(context, this);
 		return null;
 	}
 
 	@Override
-	public Void visitModified(ModifiedTypeID type) {
-		type.baseType.accept(this);
+	public Void visitModified(Map<TypeParameter, TypeID> context, ModifiedTypeID type) {
+		type.baseType.accept(context, this);
 		return null;
 	}
 }

@@ -15,7 +15,6 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LoopScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 /**
@@ -40,7 +39,7 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 		Expression condition = this.condition
 				.compile(new ExpressionScope(scope, BasicTypeID.HINT_BOOL))
 				.eval()
-				.castImplicit(position, scope, BasicTypeID.BOOL);
+				.castImplicit(position, scope, BasicTypeID.BOOL.stored);
 		
 		DoWhileStatement result = new DoWhileStatement(position, label, condition);
 		LoopScope innerScope = new LoopScope(result, scope);

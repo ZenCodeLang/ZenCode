@@ -10,8 +10,8 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -27,7 +27,7 @@ public class ReturnStatement extends Statement {
 	}
 	
 	@Override
-	public ITypeID getReturnType() {
+	public StoredType getReturnType() {
 		return value.type;
 	}
 	
@@ -37,7 +37,7 @@ public class ReturnStatement extends Statement {
 	}
 	
 	@Override
-	public Statement withReturnType(TypeScope scope, ITypeID returnType) {
+	public Statement withReturnType(TypeScope scope, StoredType returnType) {
 		return new ReturnStatement(position, value == null ? null : value.castImplicit(position, scope, returnType));
 	}
 

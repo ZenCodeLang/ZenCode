@@ -6,10 +6,13 @@
 package org.openzen.zenscript.parser.type;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
@@ -50,10 +53,21 @@ public class ParsedTypeArray implements IParsedType {
 	}
 
 	@Override
-	public ITypeID compile(TypeResolutionContext context) {
-		ITypeID baseType = this.baseType.compile(context);
+	public StoredType compile(TypeResolutionContext context) {
+		StoredType baseType = this.baseType.compile(context);
 		StorageTag storage = this.storage.resolve(position, context);
 		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return registry.getModified(modifiers, registry.getArray(baseType, dimension, storage));
+		return registry.getModified(modifiers, registry.getArray(baseType, dimension)).stored(storage);
+	}
+	
+	@Override
+	public TypeID compileUnstored(TypeResolutionContext context) {
+		if (storage != null)
+			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage tag not supported here");
+		
+		StoredType baseType = this.baseType.compile(context);
+		StorageTag storage = this.storage.resolve(position, context);
+		GlobalTypeRegistry registry = context.getTypeRegistry();
+		return registry.getModified(modifiers, registry.getArray(baseType, dimension));
 	}
 }

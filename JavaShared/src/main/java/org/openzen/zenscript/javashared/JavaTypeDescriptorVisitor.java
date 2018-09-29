@@ -3,6 +3,7 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 
 public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 	private final JavaTypeDescriptorVisitor forOptional;
@@ -17,6 +18,17 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 		this.optional = optional;
 		this.context = context;
 		forOptional = optional ? this : new JavaTypeDescriptorVisitor(context, true);
+	}
+	
+	public String process(StoredType type) {
+		if (type.isDestructible() && type.storage == SharedStorageTag.INSTANCE)
+			return "L" + JavaClass.SHARED.internalName + ";";
+		
+		return type.type.accept(this);
+	}
+	
+	public String process(TypeID type) {
+		return type.accept(this);
 	}
 	
     @Override
@@ -68,12 +80,12 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 
     @Override
     public String visitArray(ArrayTypeID array) {
-		if (array.elementType == BasicTypeID.BYTE)
+		if (array.elementType.type == BasicTypeID.BYTE)
 			return "[B"; // instead of int[], save memory, save compatibility
-		else if (array.elementType == BasicTypeID.USHORT)
+		else if (array.elementType.type == BasicTypeID.USHORT)
 			return "[S"; // instead of int[], save memory
 		else
-			return "[" + array.elementType.accept(this);
+			return "[" + this.context.getDescriptor(array.elementType);
     }
 
     @Override
@@ -88,7 +100,7 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 
     @Override
     public String visitFunction(FunctionTypeID function) {
-        return "L" + context.getFunction(function).getCls().internalName + ";";
+        return "L" + this.context.getFunction(function).getCls().internalName + ";";
     }
 
     @Override
@@ -103,9 +115,8 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
     @Override
     public String visitGeneric(GenericTypeID generic) {
 		for (TypeParameterBound bound : generic.parameter.bounds) {
-			if (bound instanceof ParameterTypeBound) {
-				return ((ParameterTypeBound) bound).type.accept(this);
-			}
+			if (bound instanceof ParameterTypeBound)
+				return process(((ParameterTypeBound) bound).type);
 		}
 		
 		return "Ljava/lang/Object;";
@@ -113,7 +124,7 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 
     @Override
     public String visitRange(RangeTypeID range) {
-		return "L" + context.getRange(range).cls.internalName + ";";
+		return "L" + this.context.getRange(range).cls.internalName + ";";
     }
 
     @Override

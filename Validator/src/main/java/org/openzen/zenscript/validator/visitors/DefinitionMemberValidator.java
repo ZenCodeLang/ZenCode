@@ -36,13 +36,15 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -59,7 +61,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	private final Set<FieldMember> initializedFields = new HashSet<>();
 	private final List<FunctionHeader> constructors = new ArrayList<>();
 	private final Set<EnumConstantMember> initializedEnumConstants = new HashSet<>();
-	private final Set<ITypeID> implementedTypes = new HashSet<>();
+	private final Set<TypeID> implementedTypes = new HashSet<>();
 	private boolean hasDestructor = false;
 	
 	public DefinitionMemberValidator(Validator validator, HighLevelDefinition definition, TypeScope scope, DefinitionMemberContext context) {
@@ -95,7 +97,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 					"Duplicate field name: " + member.name);
 		}
 		fieldNames.add(member.name);
-		member.type.accept(new TypeValidator(validator, member.position));
+		new TypeValidator(validator, member.position).validate(member.type);
 		
 		if (member.initializer != null) {
 			member.initializer.accept(new ExpressionValidator(validator, new FieldInitializerScope(member)));
@@ -154,7 +156,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		member.type.accept(new TypeValidator(validator, member.position));
+		new TypeValidator(validator, member.position).validate(member.type);
 		validateGetter(member, new MethodStatementScope(new FunctionHeader(member.type)));
 		return null;
 	}
@@ -162,7 +164,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitSetter(SetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		member.type.accept(new TypeValidator(validator, member.position));
+		new TypeValidator(validator, member.position).validate(member.type);
 		validateSetter(member, new MethodStatementScope(new FunctionHeader(BasicTypeID.VOID, member.parameter)));
 		return null;
 	}
@@ -188,16 +190,18 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		member.toType.accept(new TypeValidator(validator, member.position));
+		new TypeValidator(validator, member.position).validate(member.toType);
 		validateFunctional(member, new MethodStatementScope(member.header));
 		return null;
 	}
 
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
-		for (ITypeID type : member.getLoopVariableTypes())
-			type.accept(new TypeValidator(validator, member.position));
-		validateFunctional(member, new MethodStatementScope(new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes(), UniqueStorageTag.INSTANCE))));
+		TypeValidator typeValidator = new TypeValidator(validator, member.position);
+		for (StoredType type : member.getLoopVariableTypes())
+			typeValidator.validate(type);
+		
+		validateFunctional(member, new MethodStatementScope(new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes()).stored(UniqueStorageTag.INSTANCE))));
 		return null;
 	}
 
@@ -245,7 +249,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			if (member.getOverrides() != null)
 				implemented.add(member.getOverrides().getTarget());
 		
-		TypeMembers members = scope.getTypeMembers(implementation.type);
+		TypeMembers members = scope.getTypeMembers(implementation.type.stored(BorrowStorageTag.THIS));
 		List<IDefinitionMember> unimplemented = members.getUnimplementedMembers(implemented);
 		if (unimplemented.size() == 1) {
 			validator.logError(ValidationLogEntry.Code.INCOMPLETE_IMPLEMENTATION, implementation.position, unimplemented.get(0).describe() + " not implemented");

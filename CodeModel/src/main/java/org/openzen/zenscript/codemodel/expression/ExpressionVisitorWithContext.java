@@ -94,6 +94,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 	
 	public R visitInterfaceCast(C context, InterfaceCastExpression expression);
 	
+	public R visitInvalid(C context, InvalidExpression expression);
+	
 	public R visitIs(C context, IsExpression expression);
 	
 	public R visitMakeConst(C context, MakeConstExpression expression);

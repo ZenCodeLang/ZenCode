@@ -5,36 +5,50 @@
  */
 package org.openzen.zenscript.parser.type;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ParsedString implements IParsedType {
+	private final CodePosition position;
 	private final int modifiers;
-	private final ParsedStorageTag storageTag;
+	private final ParsedStorageTag storage;
 	
-	public ParsedString(int modifiers, ParsedStorageTag storageTag) {
+	public ParsedString(CodePosition position, int modifiers, ParsedStorageTag storage) {
+		this.position = position;
 		this.modifiers = modifiers;
-		this.storageTag = storageTag;
+		this.storage = storage;
 	}
 
 	@Override
 	public IParsedType withOptional() {
-		return new ParsedString(modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storageTag);
+		return new ParsedString(position, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storage);
 	}
 
 	@Override
 	public IParsedType withModifiers(int modifiers) {
-		return new ParsedString(this.modifiers | modifiers, storageTag);
+		return new ParsedString(position, this.modifiers | modifiers, storage);
 	}
 
 	@Override
-	public ITypeID compile(TypeResolutionContext context) {
-		return StringTypeID.UNIQUE; // TODO
+	public StoredType compile(TypeResolutionContext context) {
+		return StringTypeID.INSTANCE.stored(storage.resolve(position, context));
+	}
+
+	@Override
+	public TypeID compileUnstored(TypeResolutionContext context) {
+		if (storage != null)
+			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage tag not supported here");
+		
+		return StringTypeID.INSTANCE;
 	}
 }

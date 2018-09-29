@@ -28,4 +28,9 @@ public class ValueStorageTag implements StorageTag {
 	public boolean canCastFrom(StorageTag other) {
 		return other == this;
 	}
+
+	@Override
+	public boolean isDestructible() {
+		return false;
+	}
 }

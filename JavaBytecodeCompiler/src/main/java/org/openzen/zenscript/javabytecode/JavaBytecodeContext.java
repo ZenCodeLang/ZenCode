@@ -8,10 +8,10 @@ package org.openzen.zenscript.javabytecode;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -48,15 +48,27 @@ public class JavaBytecodeContext extends JavaContext {
 	}
 	
 	@Override
-	public String getDescriptor(ITypeID type) {
+	public String getDescriptor(StoredType type) {
+		if (type.storage == SharedStorageTag.INSTANCE && type.isDestructible())
+			return "Lzsynthetic/Shared";
+		
+		return type.type.accept(descriptorVisitor);
+	}
+	
+	@Override
+	public String getDescriptor(TypeID type) {
 		return type.accept(descriptorVisitor);
 	}
 	
-	public String getInternalName(ITypeID type) {
-		return type.accept(internalNameVisitor);
+	public String getInternalName(StoredType type) {
+		return type.type.accept(type, internalNameVisitor);
 	}
 	
-	public Type getType(ITypeID type) {
+	public String getInternalName(TypeID type) {
+		return type.accept(null, internalNameVisitor);
+	}
+	
+	public Type getType(StoredType type) {
 		return Type.getType(getDescriptor(type));
 	}
 	

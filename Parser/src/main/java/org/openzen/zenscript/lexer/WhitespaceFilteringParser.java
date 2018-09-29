@@ -17,7 +17,7 @@ public class WhitespaceFilteringParser<TT extends TokenType, T extends Token<TT>
 	private CodePosition position;
 	private String whitespace;
 	
-	public WhitespaceFilteringParser(TokenStream<TT, T> stream) {
+	public WhitespaceFilteringParser(TokenStream<TT, T> stream) throws ParseException {
 		this.stream = stream;
 		advance();
 	}
@@ -54,7 +54,7 @@ public class WhitespaceFilteringParser<TT extends TokenType, T extends Token<TT>
 	}
 
 	@Override
-	public T next() {
+	public T next() throws ParseException {
 		T result = next;
 		advance();
 		return result;
@@ -70,7 +70,7 @@ public class WhitespaceFilteringParser<TT extends TokenType, T extends Token<TT>
 		return stream.getEOF();
 	}
 	
-	private void advance() {
+	private void advance() throws ParseException {
 		whitespace = "";
 		position = stream.getPosition();
 		next = stream.next();

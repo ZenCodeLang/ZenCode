@@ -12,7 +12,7 @@ import org.openzen.zencode.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public interface TokenStream<TT extends TokenType, T extends Token<TT>> {
-	T next();
+	T next() throws ParseException;
 	
 	CodePosition getPosition();
 	

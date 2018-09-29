@@ -6,7 +6,6 @@
 package org.openzen.zenscript.codemodel.type.member;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
@@ -21,10 +20,10 @@ import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.ConstExpression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
@@ -33,14 +32,17 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class DefinitionMemberGroup {
-	public static DefinitionMemberGroup forMethod(String name, FunctionalMemberRef member) {
-		DefinitionMemberGroup instance = new DefinitionMemberGroup(member.isStatic(), name);
+public class TypeMemberGroup {
+	public static TypeMemberGroup forMethod(String name, FunctionalMemberRef member) {
+		TypeMemberGroup instance = new TypeMemberGroup(member.isStatic(), name);
 		instance.addMethod(member, TypeMemberPriority.SPECIFIED);
 		return instance;
 	}
@@ -53,12 +55,12 @@ public class DefinitionMemberGroup {
 	public final boolean isStatic;
 	public final String name;
 	
-	public DefinitionMemberGroup(boolean isStatic, String name) {
+	public TypeMemberGroup(boolean isStatic, String name) {
 		this.isStatic = isStatic;
 		this.name = name;
 	}
 	
-	public void merge(CodePosition position, DefinitionMemberGroup other, TypeMemberPriority priority) {
+	public void merge(CodePosition position, TypeMemberGroup other, TypeMemberPriority priority) {
 		if (other.constant != null)
 			setConst(other.constant.member, priority);
 		if (other.field != null)
@@ -105,9 +107,9 @@ public class DefinitionMemberGroup {
 		return false;
 	}
 	
-	public FunctionalMemberRef getStaticMethod(int arguments, ITypeID returnType) {
+	public FunctionalMemberRef getStaticMethod(int arguments, StoredType returnType) {
 		for (TypeMember<FunctionalMemberRef> method : methods) {
-			if (method.member.isStatic() && method.member.getHeader().accepts(arguments) && method.member.getHeader().getReturnType() == returnType)
+			if (method.member.isStatic() && method.member.getHeader().accepts(arguments) && method.member.getHeader().getReturnType().equals(returnType))
 				return method.member;
 		}
 		
@@ -155,115 +157,124 @@ public class DefinitionMemberGroup {
 	}
 	
 	public void addMethod(FunctionalMemberRef method, TypeMemberPriority priority) {
-		/*for (int i = 0; i < methods.size(); i++) {
-			if (methods.get(i).member.getHeader().isEquivalentTo(method.getHeader())) {
-				methods.set(i, methods.get(i).resolve(new TypeMember<>(priority, method)));
-				return;
-			}
-		}*/
-		
 		methods.add(new TypeMember<>(priority, method));
 	}
 	
 	public Expression getter(CodePosition position, TypeScope scope, Expression target, boolean allowStaticUsage) {
-		if (getter != null) {
-			if (getter.member.isStatic()) {
-				if (!allowStaticUsage)
-					throw new CompileException(position, CompileExceptionCode.USING_STATIC_ON_INSTANCE, "This field is static");
-				
-				return getter.member.getStatic(position);
+		try {
+			if (getter != null) {
+				if (getter.member.isStatic()) {
+					if (!allowStaticUsage)
+						return new InvalidExpression(position, getter.member.getType(), CompileExceptionCode.USING_STATIC_ON_INSTANCE, "This field is static");
+
+					return getter.member.getStatic(position);
+				}
+
+				scope.getPreparer().prepare(getter.member.member);
+				return getter.member.get(position, target);
+			} else if (field != null) {
+				if (field.member.isStatic()) {
+					if (!allowStaticUsage)
+						return new InvalidExpression(position, field.member.getType(), CompileExceptionCode.USING_STATIC_ON_INSTANCE, "This field is static");
+
+					return new GetStaticFieldExpression(position, field.member);
+				}
+
+				scope.getPreparer().prepare(field.member.member);
+				return new GetFieldExpression(position, target, field.member);
+			} else {
+				return new InvalidExpression(position, CompileExceptionCode.MEMBER_NO_GETTER, "Value is not a property");
 			}
-			
-			scope.getPreparer().prepare(getter.member.member);
-			return getter.member.get(position, target);
-		} else if (field != null) {
-			if (field.member.isStatic()) {
-				if (!allowStaticUsage)
-					throw new CompileException(position, CompileExceptionCode.USING_STATIC_ON_INSTANCE, "This field is static");
-				
-				return new GetStaticFieldExpression(position, field.member);
-			}
-			
-			scope.getPreparer().prepare(field.member.member);
-			return new GetFieldExpression(position, target, field.member);
-		} else {
-			throw new CompileException(position, CompileExceptionCode.MEMBER_NO_GETTER, "Value is not a property");
+		} catch (CompileException ex) {
+			return new InvalidExpression(BasicTypeID.UNDETERMINED.stored, ex);
 		}
 	}
 	
 	public Expression setter(CodePosition position, TypeScope scope, Expression target, Expression value, boolean allowStaticUsage) {
-		if (setter != null) {
-			if (setter.member.isStatic()) {
-				if (!allowStaticUsage)
-					throw new CompileException(position, CompileExceptionCode.USING_STATIC_ON_INSTANCE, "This field is static");
-				
+		try {
+			if (setter != null) {
+				if (setter.member.isStatic()) {
+					if (!allowStaticUsage)
+						return new InvalidExpression(position, setter.member.getType(), CompileExceptionCode.USING_STATIC_ON_INSTANCE, "This field is static");
+
+					scope.getPreparer().prepare(setter.member.member);
+					return new StaticSetterExpression(position, setter.member, value.castImplicit(position, scope, setter.member.getType()));
+				}
+
 				scope.getPreparer().prepare(setter.member.member);
-				return new StaticSetterExpression(position, setter.member, value.castImplicit(position, scope, setter.member.getType()));
-			}
-			
-			scope.getPreparer().prepare(setter.member.member);
-			return new SetterExpression(position, target, setter.member, value.castImplicit(position, scope, setter.member.getType()));
-		} else if (field != null) {
-			// TODO: perform proper checks on val fields
-			//if (field.isFinal)
-			//	throw new CompileException(position, "This field cannot be modified");
-			if (field.member.isStatic()) {
-				if (!allowStaticUsage)
-					throw new CompileException(position, CompileExceptionCode.USING_STATIC_ON_INSTANCE, "This field is static");
-				
+				return new SetterExpression(position, target, setter.member, value.castImplicit(position, scope, setter.member.getType()));
+			} else if (field != null) {
+				// TODO: perform proper checks on val fields
+				//if (field.isFinal)
+				//	throw new CompileException(position, "This field cannot be modified");
+				if (field.member.isStatic()) {
+					if (!allowStaticUsage)
+						return new InvalidExpression(position, field.member.getType(), CompileExceptionCode.USING_STATIC_ON_INSTANCE, "This field is static");
+
+					scope.getPreparer().prepare(field.member.member);
+					return new SetStaticFieldExpression(position, field.member, value.castImplicit(position, scope, field.member.getType()));
+				}
+
 				scope.getPreparer().prepare(field.member.member);
-				return new SetStaticFieldExpression(position, field.member, value.castImplicit(position, scope, field.member.getType()));
+				return new SetFieldExpression(position, target, field.member, value.castImplicit(position, scope, field.member.getType()));
+			} else {
+				return new InvalidExpression(position, CompileExceptionCode.MEMBER_NO_SETTER, "Value is not settable");
 			}
-			
-			scope.getPreparer().prepare(field.member.member);
-			return new SetFieldExpression(position, target, field.member, value.castImplicit(position, scope, field.member.getType()));
-		} else {
-			throw new CompileException(position, CompileExceptionCode.MEMBER_NO_SETTER, "Value is not settable");
+		} catch (CompileException ex) {
+			return new InvalidExpression(BasicTypeID.UNDETERMINED.stored, ex);
 		}
 	}
 	
 	public Expression staticGetter(CodePosition position, TypeScope scope) {
-		if (constant != null) {
-			return new ConstExpression(position, constant.member);
-		} else if (getter != null) {
-			if (!getter.member.isStatic())
-				throw new CompileException(position, CompileExceptionCode.MEMBER_NOT_STATIC, "This getter is not static");
-			
-			scope.getPreparer().prepare(getter.member.member);
-			return getter.member.getStatic(position);
-		} else if (field != null) {
-			if (!field.member.isStatic())
-				throw new CompileException(position, CompileExceptionCode.MEMBER_NOT_STATIC, "This field is not static");
-			
-			scope.getPreparer().prepare(field.member.member);
-			return new GetStaticFieldExpression(position, field.member);
-		} else {
-			throw new CompileException(position, CompileExceptionCode.MEMBER_NO_GETTER, "Member is not gettable");
+		try {
+			if (constant != null) {
+				return new ConstExpression(position, constant.member);
+			} else if (getter != null) {
+				if (!getter.member.isStatic())
+					return new InvalidExpression(position, getter.member.getType(), CompileExceptionCode.MEMBER_NOT_STATIC, "This getter is not static");
+
+				scope.getPreparer().prepare(getter.member.member);
+				return getter.member.getStatic(position);
+			} else if (field != null) {
+				if (!field.member.isStatic())
+					return new InvalidExpression(position, field.member.getType(), CompileExceptionCode.MEMBER_NOT_STATIC, "This field is not static");
+
+				scope.getPreparer().prepare(field.member.member);
+				return new GetStaticFieldExpression(position, field.member);
+			} else {
+				return new InvalidExpression(position, CompileExceptionCode.MEMBER_NO_GETTER, "Member is not gettable");
+			}
+		} catch (CompileException ex) {
+			return new InvalidExpression(BasicTypeID.UNDETERMINED.stored, ex);
 		}
 	}
 	
 	public Expression staticSetter(CodePosition position, TypeScope scope, Expression value) {
-		if (getter != null) {
-			if (!getter.member.isStatic())
-				throw new CompileException(position, CompileExceptionCode.MEMBER_NOT_STATIC, "This getter is not static");
-			
-			scope.getPreparer().prepare(setter.member.member);
-			return new StaticSetterExpression(position, setter.member, value.castImplicit(position, scope, setter.member.getType()));
-		} else if (field != null) {
-			//if (field.member.isFinal)
-			//	throw new CompileException(position, CompileExceptionCode.MEMBER_IS_FINAL, "This field cannot be modified");
-			if (!field.member.isStatic())
-				throw new CompileException(position, CompileExceptionCode.MEMBER_NOT_STATIC, "This field is not static");
-			
-			scope.getPreparer().prepare(field.member.member);
-			return new SetStaticFieldExpression(position, field.member, value.castImplicit(position, scope, field.member.getType()));
-		} else {
-			throw new CompileException(position, CompileExceptionCode.MEMBER_NO_SETTER, "Member is not settable");
+		try {
+			if (getter != null) {
+				if (!getter.member.isStatic())
+					return new InvalidExpression(position, getter.member.getType(), CompileExceptionCode.MEMBER_NOT_STATIC, "This getter is not static");
+
+				scope.getPreparer().prepare(setter.member.member);
+				return new StaticSetterExpression(position, setter.member, value.castImplicit(position, scope, setter.member.getType()));
+			} else if (field != null) {
+				//if (field.member.isFinal)
+				//	throw new CompileException(position, CompileExceptionCode.MEMBER_IS_FINAL, "This field cannot be modified");
+				if (!field.member.isStatic())
+					return new InvalidExpression(position, field.member.getType(), CompileExceptionCode.MEMBER_NOT_STATIC, "This field is not static");
+
+				scope.getPreparer().prepare(field.member.member);
+				return new SetStaticFieldExpression(position, field.member, value.castImplicit(position, scope, field.member.getType()));
+			} else {
+				return new InvalidExpression(position, CompileExceptionCode.MEMBER_NO_SETTER, "Member is not settable");
+			}
+		} catch (CompileException ex) {
+			return new InvalidExpression(BasicTypeID.UNDETERMINED.stored, ex);
 		}
 	}
 	
-	public List<ITypeID>[] predictCallTypes(TypeScope scope, List<ITypeID> typeHints, int arguments) {
-		List<ITypeID>[] result = (List<ITypeID>[])(new List[arguments]);
+	public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> typeHints, int arguments) {
+		List<StoredType>[] result = (List<StoredType>[])(new List[arguments]);
 		for (int i = 0; i < result.length; i++)
 			result[i] = new ArrayList<>();
 		
@@ -273,9 +284,9 @@ public class DefinitionMemberGroup {
 				continue;
 			
 			if (header.typeParameters != null) {
-				for (ITypeID resultHint : typeHints) {
-					Map<TypeParameter, ITypeID> mapping = new HashMap<>();
-					if (header.getReturnType().inferTypeParameters(scope.getMemberCache(), resultHint, mapping)) {
+				for (StoredType resultHint : typeHints) {
+					Map<TypeParameter, TypeID> mapping = header.getReturnType().inferTypeParameters(scope.getMemberCache(), resultHint);
+					if (mapping != null) {
 						header = header.withGenericArguments(scope.getTypeRegistry(), scope.getLocalTypeParameters().getInner(scope.getTypeRegistry(), mapping));
 						break;
 					}
@@ -292,26 +303,34 @@ public class DefinitionMemberGroup {
 	}
 	
 	public Expression call(CodePosition position, TypeScope scope, Expression target, CallArguments arguments, boolean allowStaticUsage) {
-		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, allowStaticUsage);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
-		for (int i = 0; i < arguments.arguments.length; i++) {
-			arguments.arguments[i] = arguments.arguments[i].castImplicit(position, scope, instancedHeader.parameters[i].type);
+		try {
+			FunctionalMemberRef method = selectMethod(position, scope, arguments, true, allowStaticUsage);
+			FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
+			for (int i = 0; i < arguments.arguments.length; i++) {
+				arguments.arguments[i] = arguments.arguments[i].castImplicit(position, scope, instancedHeader.parameters[i].type);
+			}
+
+			scope.getPreparer().prepare(method.getTarget());
+			return method.call(position, target, instancedHeader, arguments, scope);
+		} catch (CompileException ex) {
+			return new InvalidExpression(position, ex.code, ex.getMessage());
 		}
-		
-		scope.getPreparer().prepare(method.getTarget());
-		return method.call(position, target, instancedHeader, arguments, scope);
 	}
 	
 	public Expression callPostfix(CodePosition position, TypeScope scope, Expression target) {
 		if (methods.isEmpty())
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "There is no such operator");
+			return new InvalidExpression(position, CompileExceptionCode.NO_SUCH_MEMBER, "There is no such operator");
 		
 		FunctionalMemberRef method = methods.get(0).member;
-		if (!method.isOperator()) {
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Member is not an operator");
+		if (!method.isOperator())
+			return new InvalidExpression(position, CompileExceptionCode.NO_SUCH_MEMBER, "Member is not an operator");
+		
+		try {
+			scope.getPreparer().prepare(method.getTarget());
+			return new PostCallExpression(position, target, method, method.getHeader());
+		} catch (CompileException ex) {
+			return new InvalidExpression(BasicTypeID.UNDETERMINED.stored, ex);
 		}
-		scope.getPreparer().prepare(method.getTarget());
-		return new PostCallExpression(position, target, method, method.getHeader());
 	}
 	
 	public Expression callWithComparator(
@@ -320,18 +339,26 @@ public class DefinitionMemberGroup {
 			Expression target,
 			CallArguments arguments,
 			CompareType compareType) {
-		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, false);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
-		return method.callWithComparator(position, compareType, target, instancedHeader, arguments, scope);
+		try {
+			FunctionalMemberRef method = selectMethod(position, scope, arguments, true, false);
+			FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
+			return method.callWithComparator(position, compareType, target, instancedHeader, arguments, scope);
+		} catch (CompileException ex) {
+			return new InvalidExpression(position, ex.code, ex.getMessage());
+		}
 	}
 	
-	public Expression callStatic(CodePosition position, ITypeID target, TypeScope scope, CallArguments arguments) {
-		FunctionalMemberRef method = selectMethod(position, scope, arguments, false, true);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
-		return method.callStatic(position, target, instancedHeader, arguments, scope);
+	public Expression callStatic(CodePosition position, TypeID target, TypeScope scope, CallArguments arguments) {
+		try {
+			FunctionalMemberRef method = selectMethod(position, scope, arguments, false, true);
+			FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
+			return method.callStatic(position, target, instancedHeader, arguments, scope);
+		} catch (CompileException ex) {
+			return new InvalidExpression(position, ex.code, ex.getMessage());
+		}
 	}
 	
-	public FunctionalMemberRef selectMethod(CodePosition position, TypeScope scope, CallArguments arguments, boolean allowNonStatic, boolean allowStatic) {
+	public FunctionalMemberRef selectMethod(CodePosition position, TypeScope scope, CallArguments arguments, boolean allowNonStatic, boolean allowStatic) throws CompileException {
 		// try to match with exact types
 		for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
@@ -388,7 +415,7 @@ public class DefinitionMemberGroup {
 		return selected;
 	}
 	
-	public FunctionalMemberRef getOverride(CodePosition position, TypeScope scope, FunctionalMember member) {
+	public FunctionalMemberRef getOverride(CodePosition position, TypeScope scope, FunctionalMember member) throws CompileException {
 		List<FunctionalMemberRef> candidates = new ArrayList<>();
 		for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (member.header.canOverride(scope, method.member.getHeader()))

@@ -7,60 +7,44 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class FunctionTypeID implements ITypeID {
+public class FunctionTypeID implements TypeID {
 	public final FunctionHeader header;
-	public final StorageTag storage;
 	private final FunctionTypeID normalized;
-	private final FunctionTypeID withoutStorage;
 	
-	public FunctionTypeID(GlobalTypeRegistry registry, FunctionHeader header, StorageTag storage) {
+	public FunctionTypeID(GlobalTypeRegistry registry, FunctionHeader header) {
 		this.header = header;
-		this.storage = storage;
 		
 		FunctionHeader normalizedHeader = header.normalize(registry);
-		normalized = header == normalizedHeader ? this : registry.getFunction(normalizedHeader, storage);
-		withoutStorage = storage == null ? this : registry.getFunction(header, null);
+		normalized = header == normalizedHeader ? this : registry.getFunction(normalizedHeader);
 	}
 	
 	@Override
-	public FunctionTypeID getNormalized() {
+	public FunctionTypeID getNormalizedUnstored() {
 		return normalized;
 	}
 	
 	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		return mapper.registry.getFunction(mapper.map(header), storage);
-	}
-
-	@Override
-	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
-		return registry.getFunction(header, storage);
+	public TypeID instanceUnstored(GenericMapper mapper) {
+		return mapper.registry.getFunction(mapper.map(header));
 	}
 	
 	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitFunction(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitFunction(context, this);
-	}
-	
-	@Override
-	public FunctionTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
@@ -74,8 +58,8 @@ public class FunctionTypeID implements ITypeID {
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return true;
+	public boolean isDestructible() {
+		return false;
 	}
 
 	@Override
@@ -90,9 +74,9 @@ public class FunctionTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		header.getReturnType().extractTypeParameters(typeParameters);
+		header.getReturnType().type.extractTypeParameters(typeParameters);
 		for (FunctionParameter parameter : header.parameters)
-			parameter.type.extractTypeParameters(typeParameters);
+			parameter.type.type.extractTypeParameters(typeParameters);
 	}
 
 	@Override
@@ -101,7 +85,6 @@ public class FunctionTypeID implements ITypeID {
 		hash = 71 * hash + header.getReturnType().hashCode();
 		hash = 71 * hash + Arrays.deepHashCode(header.parameters);
 		hash = 71 * hash + Arrays.deepHashCode(header.typeParameters);
-		hash = 71 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -117,10 +100,9 @@ public class FunctionTypeID implements ITypeID {
 			return false;
 		}
 		final FunctionTypeID other = (FunctionTypeID) obj;
-		return this.header.getReturnType() == other.header.getReturnType()
+		return this.header.getReturnType().equals(other.header.getReturnType())
 				&& Arrays.deepEquals(this.header.parameters, other.header.parameters)
-				&& Arrays.deepEquals(this.header.typeParameters, other.header.typeParameters)
-				&& Objects.equals(this.storage, other.storage);
+				&& Arrays.deepEquals(this.header.typeParameters, other.header.typeParameters);
 	}
 	
 	@Override
@@ -140,15 +122,5 @@ public class FunctionTypeID implements ITypeID {
 		result.append(" as ");
 		result.append(header.getReturnType());
 		return result.toString();
-	}
-
-	@Override
-	public StorageTag getStorage() {
-		return storage;
-	}
-
-	@Override
-	public ITypeID withoutStorage() {
-		return withoutStorage;
 	}
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.parser;
+package org.openzen.zenscript.lexer;
 
 import org.openzen.zencode.shared.CodePosition;
 
@@ -11,8 +11,14 @@ import org.openzen.zencode.shared.CodePosition;
  *
  * @author Hoofdgebruiker
  */
-public class ParseException extends RuntimeException {
+public class ParseException extends Exception {
+	public final CodePosition position;
+	public final String message;
+	
 	public ParseException(CodePosition position, String message) {
 		super(position.toString() + ": " + message);
+		
+		this.position = position;
+		this.message = message;
 	}
 }

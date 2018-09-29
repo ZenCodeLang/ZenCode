@@ -14,14 +14,15 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.MapExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
@@ -44,43 +45,52 @@ public class ParsedExpressionMap extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		AssocTypeID assocHint = null;
-		List<ITypeID> keyHints = new ArrayList<>();
-		List<ITypeID> valueHints = new ArrayList<>();
+		StoredType usedHint = null;
+		List<StoredType> keyHints = new ArrayList<>();
+		List<StoredType> valueHints = new ArrayList<>();
 		
 		boolean hasAssocHint = false;
-		for (ITypeID hint : scope.hints) {
-			if (hint instanceof AssocTypeID) {
-				assocHint = (AssocTypeID) hint;
+		for (StoredType hint : scope.hints) {
+			if (hint.type instanceof AssocTypeID) {
+				usedHint = hint;
+				AssocTypeID assocHint = (AssocTypeID) hint.type;
 				if (!keyHints.contains(assocHint.keyType))
 					keyHints.add(assocHint.keyType);
 				if (!valueHints.contains(assocHint.valueType))
 					valueHints.add(assocHint.valueType);
 				
 				hasAssocHint = true;
-			} else if (hint instanceof GenericMapTypeID) {
-				FunctionalMemberRef constructor = scope
-						.getTypeMembers(hint)
-						.getOrCreateGroup(OperatorType.CONSTRUCTOR)
-						.selectMethod(position, scope, CallArguments.EMPTY, true, true);
-				return new NewExpression(position, hint, constructor, CallArguments.EMPTY);
+			} else if (hint.type instanceof GenericMapTypeID) {
+				try {
+					FunctionalMemberRef constructor = scope
+							.getTypeMembers(hint)
+							.getOrCreateGroup(OperatorType.CONSTRUCTOR)
+							.selectMethod(position, scope, CallArguments.EMPTY, true, true);
+					return new NewExpression(position, hint, constructor, CallArguments.EMPTY);
+				} catch (CompileException ex) {
+					return new InvalidExpression(ex.position, hint, ex.code, ex.getMessage());
+				}
 			}
 		}
 		
 		if (keys.isEmpty() && keyHints.size() == 1) {
-			FunctionalMemberRef constructor = scope
-						.getTypeMembers(assocHint)
-						.getOrCreateGroup(OperatorType.CONSTRUCTOR)
-						.selectMethod(position, scope, CallArguments.EMPTY, true, true);
-				return new NewExpression(position, assocHint, constructor, CallArguments.EMPTY);
+			try {
+				FunctionalMemberRef constructor = scope
+							.getTypeMembers(usedHint)
+							.getOrCreateGroup(OperatorType.CONSTRUCTOR)
+							.selectMethod(position, scope, CallArguments.EMPTY, true, true);
+					return new NewExpression(position, usedHint, constructor, CallArguments.EMPTY);
+			} catch (CompileException ex) {
+				return new InvalidExpression(ex.position, ex.code, ex.getMessage());
+			}
 		}
 		
 		if (!hasAssocHint && scope.hints.size() == 1) {
 			// compile as constructor call
-			ITypeID hint = scope.hints.get(0);
+			StoredType hint = scope.hints.get(0);
 			for (int i = 0; i < keys.size(); i++) {
 				if (keys.get(i) != null)
-					throw new CompileException(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
+					return new InvalidExpression(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
 			}
 			ParsedCallArguments arguments = new ParsedCallArguments(null, values);
 			return ParsedNewExpression.compile(position, hint, arguments, scope);
@@ -91,13 +101,13 @@ public class ParsedExpressionMap extends ParsedExpression {
 
 		for (int i = 0; i < keys.size(); i++) {
 			if (keys.get(i) == null)
-				throw new CompileException(position, CompileExceptionCode.MISSING_MAP_KEY, "Missing key");
+				return new InvalidExpression(position, CompileExceptionCode.MISSING_MAP_KEY, "Missing key");
 			
 			cKeys[i] = keys.get(i).compileKey(scope.withHints(keyHints));
 			cValues[i] = values.get(i).compile(scope.withHints(valueHints)).eval();
 		}
 		
-		ITypeID keyType = null;
+		StoredType keyType = null;
 		for (Expression key : cKeys) {
 			if (key.type == keyType)
 				continue;
@@ -109,12 +119,12 @@ public class ParsedExpressionMap extends ParsedExpression {
 			}
 		}
 		if (keyType == null)
-			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
+			return new InvalidExpression(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
 		
 		for (int i = 0; i < cKeys.length; i++)
 			cKeys[i] = cKeys[i].castImplicit(position, scope, keyType);
 		
-		ITypeID valueType = null;
+		StoredType valueType = null;
 		for (Expression value : cValues) {
 			if (value.type == valueType)
 				continue;
@@ -126,13 +136,13 @@ public class ParsedExpressionMap extends ParsedExpression {
 			}
 		}
 		if (valueType == null)
-			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
+			return new InvalidExpression(position, CompileExceptionCode.UNTYPED_EMPTY_MAP, "Empty map without known type");
 		
 		for (int i = 0; i < cValues.length; i++)
 			cValues[i] = cValues[i].castImplicit(position, scope, valueType);
 		
-		AssocTypeID asType = scope.getTypeRegistry().getAssociative(keyType, valueType, UniqueStorageTag.INSTANCE);
-		return new MapExpression(position, cKeys, cValues, asType);
+		AssocTypeID asType = scope.getTypeRegistry().getAssociative(keyType, valueType);
+		return new MapExpression(position, cKeys, cValues, asType.stored(UniqueStorageTag.INSTANCE));
 	}
 
 	@Override

@@ -21,7 +21,8 @@ import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
@@ -43,8 +44,8 @@ public class FieldMember extends PropertyMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
-			ITypeID thisType,
-			ITypeID type,
+			StoredType thisType,
+			StoredType type,
 			GlobalTypeRegistry registry,
 			int autoGetterAccess,
 			int autoSetterAccess,
@@ -56,11 +57,11 @@ public class FieldMember extends PropertyMember {
 		this.autoGetterAccess = autoGetterAccess;
 		this.autoSetterAccess = autoSetterAccess;
 		
-		ITypeID[] parameters = null;
+		TypeID[] parameters = null;
 		if (definition.typeParameters != null) {
-			parameters = new ITypeID[definition.typeParameters.length];
+			parameters = new TypeID[definition.typeParameters.length];
 			for (int i = 0; i < parameters.length; i++)
-				parameters[i] = registry.getGeneric(definition.typeParameters[i], null);
+				parameters[i] = registry.getGeneric(definition.typeParameters[i]);
 		}
 		
 		if (autoGetterAccess != 0) {
@@ -89,7 +90,7 @@ public class FieldMember extends PropertyMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
-			ITypeID type,
+			StoredType type,
 			int autoGetterAccess,
 			int autoSetterAccess,
 			GetterMember autoGetter,
@@ -160,7 +161,7 @@ public class FieldMember extends PropertyMember {
 	}
 
 	@Override
-	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
 		return new FieldMemberRef(type, this, mapper);
 	}
 	

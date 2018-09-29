@@ -8,8 +8,6 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
@@ -31,7 +29,6 @@ import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaSynthesizedClass;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
@@ -192,7 +189,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitArray(ArrayExpression expression) {
         javaWriter.constant(expression.expressions.length);
-        Type type = context.getType(((ArrayTypeID)expression.type).elementType);
+        Type type = context.getType(((ArrayTypeID)expression.type.type).elementType);
         javaWriter.newArray(type);
         for (int i = 0; i < expression.expressions.length; i++) {
             javaWriter.dup();
@@ -386,7 +383,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			//if (expression.member.getHeader().returnType != expression.type)
 
 			//TODO see if the types differ (e.g. if a generic method was invoked) and only cast then
-			if(expression.type != BasicTypeID.VOID)
+			if(expression.type.type != BasicTypeID.VOID)
 				javaWriter.checkCast(context.getInternalName(expression.type));
 			return null;
 		}
@@ -722,7 +719,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case ASSOC_GETORDEFAULT: {
 				javaWriter.invokeVirtual(MAP_GET);
 
-				AssocTypeID type = (AssocTypeID) expression.target.type;
+				AssocTypeID type = (AssocTypeID) expression.target.type.type;
 				javaWriter.checkCast(context.getInternalName(type.valueType));
 				break;
 			}
@@ -778,17 +775,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			case GENERICMAP_NOTEQUALS:
 				throw new UnsupportedOperationException("Not yet supported!");
 			case ARRAY_INDEXGET: {
-				ArrayTypeID type = (ArrayTypeID) expression.target.type;
+				ArrayTypeID type = (ArrayTypeID) expression.target.type.type;
 				javaWriter.arrayLoad(context.getType(type.elementType));
 				break;
 			}
 			case ARRAY_INDEXSET: {
-				ArrayTypeID type = (ArrayTypeID) expression.target.type;
+				ArrayTypeID type = (ArrayTypeID) expression.target.type.type;
 				javaWriter.arrayStore(context.getType(type.elementType));
 				break;
 			}
 			case ARRAY_INDEXGETRANGE: {
-				ArrayTypeID type = (ArrayTypeID) expression.target.type;
+				ArrayTypeID type = (ArrayTypeID) expression.target.type.type;
 
 				expression.target.accept(this);
 				Expression argument = expression.arguments.arguments[0];
@@ -806,8 +803,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					javaWriter.getField("zsynthetic/IntRange", "to", "I");
 				}
 
-				if (type.elementType instanceof BasicTypeID) {
-					switch ((BasicTypeID) type.elementType) {
+				if (type.elementType.type instanceof BasicTypeID) {
+					switch ((BasicTypeID) type.elementType.type) {
 						case BOOL:
 							javaWriter.invokeStatic(ARRAYS_COPY_OF_RANGE_BOOLS);
 							break;
@@ -841,7 +838,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					}
 				} else {
 					javaWriter.invokeStatic(ARRAYS_COPY_OF_RANGE_OBJECTS);
-					javaWriter.checkCast(context.getInternalName(type));
+					javaWriter.checkCast(context.getInternalName(expression.target.type));
 				}
 				break;
 			}
@@ -849,9 +846,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				throw new UnsupportedOperationException("Not yet supported!");
 			case ARRAY_EQUALS:
 			case ARRAY_NOTEQUALS: {
-				ArrayTypeID type = (ArrayTypeID) expression.target.type;
-				if (type.elementType instanceof BasicTypeID) {
-					switch ((BasicTypeID) type.elementType) {
+				ArrayTypeID type = (ArrayTypeID) expression.target.type.type;
+				if (type.elementType.type instanceof BasicTypeID) {
+					switch ((BasicTypeID) type.elementType.type) {
 						case BOOL:
 							javaWriter.invokeStatic(ARRAYS_EQUALS_BOOLS);
 							break;
@@ -1502,7 +1499,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.getStaticField(CHARACTER_MAX_VALUE);
 				break;
 			case ENUM_VALUES: {
-				DefinitionTypeID type = (DefinitionTypeID) expression.type;
+				DefinitionTypeID type = (DefinitionTypeID) expression.type.type;
 				JavaClass cls = type.definition.getTag(JavaClass.class);
 				javaWriter.invokeStatic(JavaMethod.getNativeStatic(cls, "values", "()[L" + cls.internalName + ";"));
 				break;
@@ -1654,7 +1651,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", signature);
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
-		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header, null))});
+		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))});
 		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 
 		javaWriter.newObject(name);
@@ -1737,7 +1734,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				return h;
 			h++;
 		}
-		throw new CompileException(localVariableExpression.position, CompileExceptionCode.INTERNAL_ERROR, "Captured Statement error");
+		throw new RuntimeException(localVariableExpression.position.toString() + ": Captured Statement error");
 	}
 
 	private static int calculateMemberPosition(CapturedParameterExpression functionParameterExpression, FunctionExpression expression) {
@@ -1747,7 +1744,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				return h;
 			h++;
 		}
-		throw new CompileException(functionParameterExpression.position, CompileExceptionCode.INTERNAL_ERROR, "Captured Statement error");
+		throw new RuntimeException(functionParameterExpression.position.toString() + ": Captured Statement error");
 	}
 
     private String calcFunctionSignature(LambdaClosure closure) {
@@ -1771,10 +1768,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
 		JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
 
-		if (parameter == null) {
-			throw new CompileException(expression.position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Could not resolve lambda parameter" + expression.parameter);
-		}
-
+		if (parameter == null)
+			throw new RuntimeException(expression.position.toString() + ": Could not resolve lambda parameter" + expression.parameter);
+		
         javaWriter.load(context.getType(expression.parameter.type), parameter.index);
         return null;
     }
@@ -1792,7 +1788,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		javaWriter.loadObject(0);
-		final ITypeID type = expression.value.option.getParameterType(expression.index);
+		final StoredType type = expression.value.option.getParameterType(expression.index);
 		final JavaVariantOption tag = expression.value.option.getTag(JavaVariantOption.class);
 		javaWriter.checkCast(tag.variantOptionClass.internalName);
 		javaWriter.getField(new JavaField(tag.variantOptionClass, "field" + expression.index, context.getDescriptor(type)));
@@ -1890,9 +1886,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.invokeVirtual(MAP_ISEMPTY);
 				break;
 			case ASSOC_KEYS: {
-				AssocTypeID type = (AssocTypeID) expression.target.type;
-				ArrayTypeID result = new ArrayTypeID(null, type.keyType, 1, UniqueStorageTag.INSTANCE);
-				Type resultType = context.getType(result);
+				Type resultType = context.getType(expression.type);
 
 				javaWriter.invokeVirtual(MAP_KEYS);
 				javaWriter.dup();
@@ -1903,9 +1897,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			}
 			case ASSOC_VALUES: {
-				AssocTypeID type = (AssocTypeID) expression.target.type;
-				ArrayTypeID result = new ArrayTypeID(null, type.valueType, 1, UniqueStorageTag.INSTANCE);
-				Type resultType = context.getType(result);
+				Type resultType = context.getType(expression.type);
 
 				javaWriter.invokeVirtual(MAP_VALUES);
 				javaWriter.dup();
@@ -1927,9 +1919,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.arrayLength();
 				break;
 			case ARRAY_HASHCODE: {
-				ArrayTypeID type = (ArrayTypeID) expression.target.type;
-				if (type.elementType instanceof BasicTypeID) {
-					switch ((BasicTypeID) type.elementType) {
+				ArrayTypeID type = (ArrayTypeID) expression.target.type.type;
+				if (type.elementType.type instanceof BasicTypeID) {
+					switch ((BasicTypeID) type.elementType.type) {
 						case BOOL:
 							javaWriter.invokeStatic(ARRAYS_HASHCODE_BOOLS);
 							break;
@@ -1988,15 +1980,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.invokeVirtual(OBJECT_HASHCODE);
 				break;
 			case RANGE_FROM: {
-				RangeTypeID type = (RangeTypeID)expression.target.type;
-				JavaClass cls = context.getRange(type).cls;
-				javaWriter.getField(cls.internalName, "from", context.getDescriptor(type.baseType));
+				RangeTypeID type = (RangeTypeID)expression.target.type.type;
+				Type jType = context.getType(expression.target.type);
+				javaWriter.getField(jType.getInternalName(), "from", context.getDescriptor(type.baseType));
 				break;
 			}
 			case RANGE_TO:
-				RangeTypeID type = (RangeTypeID)expression.target.type;
-				JavaClass cls = context.getRange(type).cls;
-				javaWriter.getField(cls.internalName, "to", context.getDescriptor(type.baseType));
+				RangeTypeID type = (RangeTypeID)expression.target.type.type;
+				Type jType = context.getType(expression.target.type);
+				javaWriter.getField(jType.getInternalName(), "to", context.getDescriptor(type.baseType));
 				break;
 		}
 
@@ -2023,7 +2015,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitIs(IsExpression expression) {
         expression.value.accept(this);
-        javaWriter.instanceOf(context.getInternalName(expression.isType));
+        javaWriter.instanceOf(context.getInternalName(expression.isType.stored(BorrowStorageTag.INVOCATION)));
         return null;
     }
 
@@ -2056,7 +2048,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 
 		//TODO replace beforeSwitch visitor or similar
-		if (expression.value.type instanceof StringTypeID)
+		if (expression.value.type.type instanceof StringTypeID)
 			javaWriter.invokeVirtual(OBJECT_HASHCODE);
 
 		//TODO replace with beforeSwitch visitor or similar
@@ -2123,8 +2115,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		JavaMethod method = expression.constructor.getTag(JavaMethod.class);
 
         final String type;
-        if (expression.type instanceof DefinitionTypeID)
-            type = ((DefinitionTypeID) expression.type).definition.name;
+        if (expression.type.type instanceof DefinitionTypeID)
+            type = ((DefinitionTypeID) expression.type.type).definition.name;
         else
             type = context.getDescriptor(expression.type);
 
@@ -2141,7 +2133,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitNull(NullExpression expression) {
-		if (expression.type.withoutOptional() == BasicTypeID.USIZE)
+		if (expression.type.type.withoutOptional() == BasicTypeID.USIZE)
 			javaWriter.constant(-1); // special case: usize? null = -1
 		else
 			javaWriter.aConstNull();
@@ -2195,13 +2187,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitRange(RangeExpression expression) {
-		RangeTypeID type = (RangeTypeID)expression.type;
-		JavaSynthesizedClass cls = context.getRange(type);
-		javaWriter.newObject(cls.cls.internalName);
+		RangeTypeID type = (RangeTypeID)expression.type.type;
+		Type cls = context.getType(expression.type);
+		javaWriter.newObject(cls.getInternalName());
 		javaWriter.dup();
 		expression.from.accept(this);
 		expression.to.accept(this);
-		javaWriter.invokeSpecial(cls.cls.internalName, "<init>", "(" + context.getDescriptor(type.baseType) + context.getDescriptor(type.baseType) + ")V");
+		javaWriter.invokeSpecial(cls.getInternalName(), "<init>", "(" + context.getDescriptor(type.baseType) + context.getDescriptor(type.baseType) + ")V");
 
 		return null;
 	}
@@ -2260,12 +2252,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitSetStaticField(SetStaticFieldExpression expression) {
-		if (expression.field.isFinal())
-			throw new CompileException(expression.position, CompileExceptionCode.CANNOT_SET_FINAL_VARIABLE, "Cannot set a final field!");
-
 		expression.value.accept(this);
+		
 		if (!checkAndPutFieldInfo(expression.field, true))
 			throw new IllegalStateException("Missing field info on a field member!");
+		
 		return null;
 	}
 
@@ -2352,7 +2343,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.getStaticField(CHARACTER_MAX_VALUE);
 				break;
 			case ENUM_VALUES: {
-				DefinitionTypeID type = (DefinitionTypeID) expression.type;
+				DefinitionTypeID type = (DefinitionTypeID) expression.type.type;
 				JavaClass cls = type.definition.getTag(JavaClass.class);
 				javaWriter.invokeStatic(JavaMethod.getNativeStatic(cls, "values", "()[L" + cls.internalName + ";"));
 				break;
@@ -2374,8 +2365,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 		
 		if (expression.type.isDestructible()) { // only destructible types matter here; nondestructible types never need conversion
-			StorageTag fromTag = expression.value.type.getStorage();
-			StorageTag toTag = expression.type.getStorage();
+			StorageTag fromTag = expression.value.type.storage;
+			StorageTag toTag = expression.type.storage;
 			if (fromTag == SharedStorageTag.INSTANCE && toTag == BorrowStorageTag.INVOCATION) {
 				// Shared<T>.get()
 				javaWriter.invokeVirtual(SHARED_GET);
@@ -2435,7 +2426,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		}
 
 		final StringBuilder builder = new StringBuilder("(");
-		for (ITypeID type : expression.option.getOption().types) {
+		for (StoredType type : expression.option.getOption().types) {
 			builder.append(context.getDescriptor(type));
 		}
 		builder.append(")V");
@@ -2449,7 +2440,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
 		//Does nothing if not required to be wrapped
 		expression.value.accept(this);
-		expression.value.type.accept(new JavaBoxingTypeVisitor(javaWriter));
+		expression.value.type.type.accept(expression.value.type, new JavaBoxingTypeVisitor(javaWriter));
 		return null;
 	}
 
@@ -2458,7 +2449,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
     //Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
-    private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, ITypeID resultType) {
+    private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, StoredType resultType) {
         JavaMethod methodInfo = member.getTag(JavaMethod.class);
         if (methodInfo == null)
             return false;

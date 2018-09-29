@@ -6,74 +6,46 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
-import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class ArrayTypeID implements ITypeID {
-	public static final ArrayTypeID INT_NOSTORAGE = new ArrayTypeID(BasicTypeID.INT, 1, null);
-	public static final ArrayTypeID CHAR_NOSTORAGE = new ArrayTypeID(BasicTypeID.CHAR, 1, null);
+public class ArrayTypeID implements TypeID {
+	public static final ArrayTypeID INT = new ArrayTypeID(BasicTypeID.INT.stored, 1);
+	public static final ArrayTypeID CHAR = new ArrayTypeID(BasicTypeID.CHAR.stored, 1);
 	
-	public static final ArrayTypeID INT_UNIQUE = new ArrayTypeID(BasicTypeID.INT, 1, UniqueStorageTag.INSTANCE);
-	public static final ArrayTypeID CHAR_UNIQUE = new ArrayTypeID(BasicTypeID.CHAR, 1, UniqueStorageTag.INSTANCE);
-	
-	public final ITypeID elementType;
+	public final StoredType elementType;
 	public final int dimension;
-	public final StorageTag storage;
 	private final ArrayTypeID normalized;
-	private final ArrayTypeID withoutStorage;
 
-	private ArrayTypeID(ITypeID elementType, int dimension, StorageTag storage) {
+	private ArrayTypeID(StoredType elementType, int dimension) {
 		this.elementType = elementType;
 		this.dimension = dimension;
 		this.normalized = this;
-		this.storage = storage;
-		
-		if (storage == null) {
-			withoutStorage = this;
-		} else {
-			if (elementType == BasicTypeID.INT)
-				withoutStorage = INT_NOSTORAGE;
-			else if (elementType == BasicTypeID.CHAR)
-				withoutStorage = CHAR_NOSTORAGE;
-			else
-				throw new IllegalArgumentException();
-		}
 	}
 	
-	public ArrayTypeID(GlobalTypeRegistry registry, ITypeID elementType, int dimension, StorageTag storage) {
+	public ArrayTypeID(GlobalTypeRegistry registry, StoredType elementType, int dimension) {
 		this.elementType = elementType;
 		this.dimension = dimension;
-		this.normalized = elementType.getNormalized() == elementType ? this : registry.getArray(elementType.getNormalized(), dimension, storage);
-		this.storage = storage;
-		
-		withoutStorage = storage == null ? this : registry.getArray(elementType, dimension, null);
+		this.normalized = elementType.getNormalized() == elementType ? this : registry.getArray(elementType.getNormalized(), dimension);
 	}
 	
 	@Override
-	public ArrayTypeID getNormalized() {
+	public ArrayTypeID getNormalizedUnstored() {
 		return normalized;
 	}
 	
 	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitArray(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitArray(context, this);
-	}
-	
-	@Override
-	public ArrayTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
@@ -87,18 +59,13 @@ public class ArrayTypeID implements ITypeID {
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return true;
+	public boolean isDestructible() {
+		return elementType.type.isDestructible();
 	}
 	
 	@Override
-	public ArrayTypeID instance(GenericMapper mapper) {
-		return mapper.registry.getArray(elementType.instance(mapper), dimension, storage);
-	}
-	
-	@Override
-	public ArrayTypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
-		return registry.getArray(elementType, dimension, storage);
+	public ArrayTypeID instanceUnstored(GenericMapper mapper) {
+		return mapper.registry.getArray(elementType.instance(mapper), dimension);
 	}
 
 	@Override
@@ -113,7 +80,7 @@ public class ArrayTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		elementType.extractTypeParameters(typeParameters);
+		elementType.type.extractTypeParameters(typeParameters);
 	}
 
 	@Override
@@ -121,7 +88,6 @@ public class ArrayTypeID implements ITypeID {
 		int hash = 7;
 		hash = 79 * hash + elementType.hashCode();
 		hash = 79 * hash + dimension;
-		hash = 79 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -138,8 +104,7 @@ public class ArrayTypeID implements ITypeID {
 		}
 		final ArrayTypeID other = (ArrayTypeID) obj;
 		return this.dimension == other.dimension
-				&& this.elementType == other.elementType
-				&& Objects.equals(this.storage, other.storage);
+				&& this.elementType.equals(other.elementType);
 	}
 
 	@Override
@@ -151,20 +116,6 @@ public class ArrayTypeID implements ITypeID {
 			result.append(',');
 		}
 		result.append(']');
-		if (storage != null) {
-			result.append('`');
-			result.append(storage.toString());
-		}
 		return result.toString();
-	}
-
-	@Override
-	public StorageTag getStorage() {
-		return storage;
-	}
-
-	@Override
-	public ITypeID withoutStorage() {
-		return withoutStorage;
 	}
 }

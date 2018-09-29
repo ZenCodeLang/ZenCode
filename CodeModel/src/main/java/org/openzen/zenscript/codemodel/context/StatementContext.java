@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitc
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -30,7 +30,7 @@ public class StatementContext extends TypeContext {
 	
 	public VariantOptionSwitchValue variantOptionSwitchValue;
 	
-	public StatementContext(ModuleContext module, ITypeID thisType) {
+	public StatementContext(ModuleContext module, StoredType thisType) {
 		super(module, TypeParameter.NONE, thisType);
 		
 		loops = LoopStatement.NONE;
@@ -39,7 +39,7 @@ public class StatementContext extends TypeContext {
 		lambdaOuter = null;
 	}
 	
-	public StatementContext(ModuleContext module, ITypeID thisType, FunctionHeader header) {
+	public StatementContext(ModuleContext module, StoredType thisType, FunctionHeader header) {
 		super(module, header.typeParameters, thisType);
 		
 		loops = LoopStatement.NONE;

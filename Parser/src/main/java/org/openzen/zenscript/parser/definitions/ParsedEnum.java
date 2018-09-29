@@ -8,17 +8,18 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 
@@ -27,7 +28,7 @@ import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
  * @author Hoofdgebruiker
  */
 public class ParsedEnum extends BaseParsedDefinition {
-	public static ParsedEnum parseEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedEnum parseEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
@@ -40,8 +41,13 @@ public class ParsedEnum extends BaseParsedDefinition {
 		}
 		
 		if (tokens.optional(ZSTokenType.T_SEMICOLON) != null) {
-			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+			try {
+				while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
+					result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+				}
+			} catch (ParseException ex) {
+				tokens.logError(ex);
+				tokens.recoverUntilToken(ZSTokenType.T_ACLOSE);
 			}
 		} else {
 			tokens.required(ZSTokenType.T_ACLOSE, "} expected");
@@ -78,10 +84,10 @@ public class ParsedEnum extends BaseParsedDefinition {
 	}
 
 	@Override
-	public void compile(BaseScope scope) {
+	public void compile(BaseScope scope) throws CompileException {
 		super.compile(scope);
 		
-		DefinitionTypeID type = scope.getTypeRegistry().getForDefinition(compiled, BorrowStorageTag.INVOCATION, ITypeID.NONE);
+		DefinitionTypeID type = scope.getTypeRegistry().getForDefinition(compiled, TypeID.NONE);
 		ExpressionScope evalScope = new ExpressionScope(scope);
 		for (ParsedEnumConstant constant : enumValues) {
 			constant.compileCode(type, evalScope);

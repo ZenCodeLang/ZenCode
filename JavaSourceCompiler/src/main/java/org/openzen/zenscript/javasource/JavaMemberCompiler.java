@@ -94,7 +94,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		
 		modifiers(member.modifiers);
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
-		output.append(header.getReturnType().accept(scope.typeVisitor));
+		output.append(scope.typeVisitor.process(header.getReturnType()));
 		output.append(" ");
 		output.append(method.name);
 		formatParameters(member.isStatic(), header);
@@ -211,7 +211,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
-		compileMethod(member, new FunctionHeader(scope.semanticScope.getTypeRegistry().getIterator(member.getLoopVariableTypes(), UniqueStorageTag.INSTANCE)), member.body);
+		compileMethod(member, new FunctionHeader(scope.semanticScope.getTypeRegistry().getIterator(member.getLoopVariableTypes()).stored(UniqueStorageTag.INSTANCE)), member.body);
 		return null;
 	}
 
@@ -229,7 +229,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 				m.accept(this);
 			}
 		} else {
-			String interfaceName = member.type.accept(new JavaTypeNameVisitor());
+			String interfaceName = JavaTypeNameVisitor.INSTANCE.process(member.type);
 			String implementationName = interfaceName + "Implementation";
 			
 			begin(ElementType.FIELD);

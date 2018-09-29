@@ -21,7 +21,7 @@ public interface CompilingType {
 	HighLevelDefinition load();
 	
 	default DefinitionTypeID getInnerType(GlobalTypeRegistry registry, List<GenericName> name, int index, DefinitionTypeID outer) {
-		DefinitionTypeID type = registry.getForDefinition(load(), name.get(index).arguments, outer, null);
+		DefinitionTypeID type = registry.getForDefinition(load(), name.get(index).arguments, outer);
 		index++;
 		if (index == name.size())
 			return type;

@@ -17,7 +17,7 @@ public class ConstantULongExpression extends Expression {
 	public final long value;
 	
 	public ConstantULongExpression(CodePosition position, long value) {
-		super(position, BasicTypeID.ULONG, null);
+		super(position, BasicTypeID.ULONG.stored, null);
 		
 		this.value = value;
 	}

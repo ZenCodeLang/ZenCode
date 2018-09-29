@@ -6,11 +6,12 @@
 package org.openzen.zenscript.parser.type;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -47,11 +48,21 @@ public class ParsedTypeRange implements IParsedType {
 	}
 	
 	@Override
-	public ITypeID compile(TypeResolutionContext context) {
-		ITypeID from = this.from.compile(context);
-		ITypeID to = this.to.compile(context);
-		if (from != to)
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "from and to in a range must be the same type");
+	public StoredType compile(TypeResolutionContext context) {
+		StoredType from = this.from.compile(context);
+		StoredType to = this.to.compile(context);
+		if (!from.equals(to))
+			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "from and to in a range must be the same type").stored(from.storage);
+		
+		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getRange(from)).stored(from.storage);
+	}
+	
+	@Override
+	public TypeID compileUnstored(TypeResolutionContext context) {
+		StoredType from = this.from.compile(context);
+		StoredType to = this.to.compile(context);
+		if (!from.equals(to))
+			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "from and to in a range must be the same type");
 		
 		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getRange(from));
 	}

@@ -9,7 +9,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.*;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
@@ -17,25 +17,9 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 public class CompilerUtils {
 	private CompilerUtils() {}
 
-	public static boolean isPrimitive(ITypeID id) {
-		if (id instanceof BasicTypeID) {
-			switch ((BasicTypeID) id) {
-				case BOOL:
-				case BYTE:
-				case SBYTE:
-				case SHORT:
-				case USHORT:
-				case INT:
-				case UINT:
-				case LONG:
-				case ULONG:
-				case FLOAT:
-				case DOUBLE:
-				case CHAR:
-					return true;
-			}
-		}
-		return false;
+	public static boolean isPrimitive(TypeID id) {
+		return id instanceof BasicTypeID
+				|| (id.isOptional() && id.withoutOptional() == BasicTypeID.USIZE);
 	}
 
 	public static int calcAccess(int modifiers) {

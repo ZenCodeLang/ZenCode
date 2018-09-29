@@ -4,7 +4,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.type.*;
 
-public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
+public class JavaTypeInternalNameVisitor implements TypeVisitorWithContext<StoredType, String, RuntimeException> {
 	private final JavaTypeInternalNameVisitor forOptional;
 	private final JavaContext context;
 	private final boolean optional;
@@ -20,7 +20,7 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
 	}
 	
     @Override
-    public String visitBasic(BasicTypeID basic) {
+    public String visitBasic(StoredType context, BasicTypeID basic) {
 		if (optional) {
 			switch (basic) {
 				case BOOL: return "java/lang/Boolean";
@@ -62,40 +62,40 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
     }
 	
 	@Override
-	public String visitString(StringTypeID string) {
+	public String visitString(StoredType context, StringTypeID string) {
 		return "java/lang/String";
 	}
 
     @Override
-    public String visitArray(ArrayTypeID array) {
-		return "[" + array.elementType.accept(this);
+    public String visitArray(StoredType context, ArrayTypeID array) {
+		return "[" + array.elementType.type.accept(array.elementType, this);
     }
 
     @Override
-    public String visitAssoc(AssocTypeID assoc) {
+    public String visitAssoc(StoredType context, AssocTypeID assoc) {
 		return "java/util/Map;";
     }
 
     @Override
-    public String visitIterator(IteratorTypeID iterator) {
+    public String visitIterator(StoredType context, IteratorTypeID iterator) {
 		return "java/lang/Iterator;";
     }
 
     @Override
-    public String visitFunction(FunctionTypeID function) {
-        return context.getFunction(function).getCls().internalName;
+    public String visitFunction(StoredType context, FunctionTypeID function) {
+        return this.context.getFunction(function).getCls().internalName;
     }
 
     @Override
-    public String visitDefinition(DefinitionTypeID definition) {
+    public String visitDefinition(StoredType context, DefinitionTypeID definition) {
 		return definition.definition.getTag(JavaClass.class).internalName;
     }
 
     @Override
-    public String visitGeneric(GenericTypeID generic) {
+    public String visitGeneric(StoredType context, GenericTypeID generic) {
 		for (TypeParameterBound bound : generic.parameter.bounds) {
 			if (bound instanceof ParameterTypeBound) {
-				return ((ParameterTypeBound) bound).type.accept(this);
+				return ((ParameterTypeBound) bound).type.accept(null, this);
 			}
 		}
 		
@@ -103,20 +103,20 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
     }
 
     @Override
-    public String visitRange(RangeTypeID range) {
-		return context.getRange(range).cls.internalName;
+    public String visitRange(StoredType context, RangeTypeID range) {
+		return this.context.getRange(range).cls.internalName;
     }
 
     @Override
-    public String visitModified(ModifiedTypeID modified) {
+    public String visitModified(StoredType context, ModifiedTypeID modified) {
 		if (modified.isOptional())
-			return modified.withoutOptional().accept(forOptional);
+			return modified.withoutOptional().accept(context, forOptional);
 		
-		return modified.baseType.accept(this);
+		return modified.baseType.accept(context, this);
     }
 
 	@Override
-	public String visitGenericMap(GenericMapTypeID map) {
+	public String visitGenericMap(StoredType context, GenericMapTypeID map) {
 		return "java/util/Map";
 	}
 }

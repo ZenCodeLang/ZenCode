@@ -11,15 +11,12 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class GlobalTypeRegistry {
-	private final Map<StringTypeID, StringTypeID> stringTypes = new HashMap<>();
 	private final Map<ArrayTypeID, ArrayTypeID> arrayTypes = new HashMap<>();
 	private final Map<AssocTypeID, AssocTypeID> assocTypes = new HashMap<>();
 	private final Map<GenericMapTypeID, GenericMapTypeID> genericMapTypes = new HashMap<>();
@@ -36,95 +33,68 @@ public class GlobalTypeRegistry {
 	public GlobalTypeRegistry(ZSPackage stdlib) {
 		this.stdlib = stdlib;
 		
-		stringTypes.put(StringTypeID.NOSTORAGE, StringTypeID.NOSTORAGE);
-		stringTypes.put(StringTypeID.ANY, StringTypeID.ANY);
-		stringTypes.put(StringTypeID.BORROW, StringTypeID.BORROW);
-		stringTypes.put(StringTypeID.SHARED, StringTypeID.SHARED);
-		stringTypes.put(StringTypeID.STATIC, StringTypeID.STATIC);
-		stringTypes.put(StringTypeID.UNIQUE, StringTypeID.UNIQUE);
-		
-		arrayTypes.put(ArrayTypeID.INT_UNIQUE, ArrayTypeID.INT_UNIQUE);
-		arrayTypes.put(ArrayTypeID.CHAR_UNIQUE, ArrayTypeID.CHAR_UNIQUE);
+		arrayTypes.put(ArrayTypeID.INT, ArrayTypeID.INT);
+		arrayTypes.put(ArrayTypeID.CHAR, ArrayTypeID.CHAR);
 		
 		rangeTypes.put(RangeTypeID.INT, RangeTypeID.INT);
 		rangeTypes.put(RangeTypeID.USIZE, RangeTypeID.USIZE);
 	}
 	
-	public StringTypeID getString(StorageTag storage) {
-		StringTypeID id = new StringTypeID(storage);
-		return internalize(stringTypes, id);
-	}
-	
-	public ArrayTypeID getArray(ITypeID baseType, int dimension, StorageTag storage) {
-		ArrayTypeID id = new ArrayTypeID(this, baseType, dimension, storage);
+	public ArrayTypeID getArray(StoredType baseType, int dimension) {
+		ArrayTypeID id = new ArrayTypeID(this, baseType, dimension);
 		return internalize(arrayTypes, id);
 	}
 	
-	public AssocTypeID getAssociative(ITypeID keyType, ITypeID valueType, StorageTag storage) {
-		AssocTypeID id = new AssocTypeID(this, keyType, valueType, storage);
+	public AssocTypeID getAssociative(StoredType keyType, StoredType valueType) {
+		AssocTypeID id = new AssocTypeID(this, keyType, valueType);
 		return internalize(assocTypes, id);
 	}
 	
-	public GenericMapTypeID getGenericMap(ITypeID valueType, TypeParameter key, StorageTag storage) {
-		GenericMapTypeID id = new GenericMapTypeID(this, valueType, key, storage);
+	public GenericMapTypeID getGenericMap(StoredType valueType, TypeParameter key) {
+		GenericMapTypeID id = new GenericMapTypeID(this, valueType, key);
 		return internalize(genericMapTypes, id);
 	}
 	
-	public IteratorTypeID getIterator(ITypeID[] loopTypes, StorageTag storage) {
-		IteratorTypeID id = new IteratorTypeID(this, loopTypes, storage);
+	public IteratorTypeID getIterator(StoredType[] loopTypes) {
+		IteratorTypeID id = new IteratorTypeID(this, loopTypes);
 		return internalize(iteratorTypes, id);
 	}
 	
-	public FunctionTypeID getFunction(FunctionHeader header, StorageTag storage) {
-		FunctionTypeID id = new FunctionTypeID(this, header, storage);
-		if (functionTypes.containsKey(id)) {
-			return functionTypes.get(id);
-		} else {
-			functionTypes.put(id, id);
-			return id;
-		}
+	public FunctionTypeID getFunction(FunctionHeader header) {
+		FunctionTypeID id = new FunctionTypeID(this, header);
+		return internalize(functionTypes, id);
 	}
 	
-	public RangeTypeID getRange(ITypeID type) {
+	public RangeTypeID getRange(StoredType type) {
 		RangeTypeID id = new RangeTypeID(this, type);
-		if (rangeTypes.containsKey(id)) {
-			return rangeTypes.get(id);
-		} else {
-			rangeTypes.put(id, id);
-			return id;
-		}
+		return internalize(rangeTypes, id);
 	}
 	
-	public GenericTypeID getGeneric(TypeParameter parameter, StorageTag storage) {
-		GenericTypeID id = new GenericTypeID(this, parameter, storage);
-		if (genericTypes.containsKey(id)) {
-			return genericTypes.get(id);
-		} else {
-			genericTypes.put(id, id);
-			return id;
-		}
+	public GenericTypeID getGeneric(TypeParameter parameter) {
+		GenericTypeID id = new GenericTypeID(parameter);
+		return internalize(genericTypes, id);
 	}
 	
 	public DefinitionTypeID getForMyDefinition(HighLevelDefinition definition) {
-		ITypeID[] typeArguments = ITypeID.NONE;
+		TypeID[] typeArguments = TypeID.NONE;
 		if (definition.getNumberOfGenericParameters() > 0) {
-			typeArguments = new ITypeID[definition.getNumberOfGenericParameters()];
+			typeArguments = new TypeID[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < definition.typeParameters.length; i++)
-				typeArguments[i] = getGeneric(definition.typeParameters[i], null);
+				typeArguments[i] = getGeneric(definition.typeParameters[i]);
 		}
 		DefinitionTypeID outer = null;
 		if (definition.outerDefinition != null)
 			outer = getForMyDefinition(definition.outerDefinition);
 		
-		return getForDefinition(definition, typeArguments, outer, BorrowStorageTag.THIS);
+		return getForDefinition(definition, typeArguments, outer);
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, StorageTag storage, ITypeID... genericArguments) {
-		return this.getForDefinition(definition, genericArguments, null, storage);
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeID... typeArguments) {
+		return this.getForDefinition(definition, typeArguments, null);
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, ITypeID[] typeParameters, DefinitionTypeID outer, StorageTag storage) {
-		DefinitionTypeID id = new DefinitionTypeID(this, definition, typeParameters, definition.isStatic() ? null : outer, storage);
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeID[] typeArguments, DefinitionTypeID outer) {
+		DefinitionTypeID id = new DefinitionTypeID(this, definition, typeArguments, definition.isStatic() ? null : outer);
 		
 		if (definitionTypes.containsKey(id)) {
 			return definitionTypes.get(id);
@@ -134,11 +104,11 @@ public class GlobalTypeRegistry {
 		}
 	}
 	
-	public ITypeID getOptional(ITypeID original) {
+	public TypeID getOptional(TypeID original) {
 		return getModified(ModifiedTypeID.MODIFIER_OPTIONAL, original);
 	}
 	
-	public ITypeID getModified(int modifiers, ITypeID type) {
+	public TypeID getModified(int modifiers, TypeID type) {
 		if (modifiers == 0)
 			return type;
 		if (type instanceof ModifiedTypeID) {

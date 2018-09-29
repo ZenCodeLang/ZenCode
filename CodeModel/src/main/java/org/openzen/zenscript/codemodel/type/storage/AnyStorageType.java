@@ -26,7 +26,7 @@ public class AnyStorageType implements StorageType {
 	@Override
 	public StorageTag instance(CodePosition position, String[] arguments) {
 		if (arguments != null)
-			throw new CompileException(position, CompileExceptionCode.INVALID_STORAGE_TYPE_ARGUMENTS, "any storage type doesn't take arguments");
+			return new InvalidStorageTag(position, CompileExceptionCode.INVALID_STORAGE_TYPE_ARGUMENTS, "any storage type doesn't take arguments");
 		
 		return AnyStorageTag.INSTANCE;
 	}

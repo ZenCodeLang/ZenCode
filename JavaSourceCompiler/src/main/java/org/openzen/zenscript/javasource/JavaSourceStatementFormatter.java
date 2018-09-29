@@ -157,7 +157,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			ExpressionString valueString = scope.expression(target, value);
 			List<StatementFormattingSubBlock> blocks = new ArrayList<>();
 			
-			DefinitionTypeID variantType = (DefinitionTypeID)statement.value.type;
+			DefinitionTypeID variantType = statement.value.type.asDefinition();
 			HighLevelDefinition variant = variantType.definition;
 			String variantTypeName = scope.type(variant.getTag(JavaClass.class));
 			for (SwitchCase switchCase : statement.cases) {

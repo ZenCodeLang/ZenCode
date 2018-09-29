@@ -4,8 +4,8 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
@@ -36,7 +36,7 @@ public class ParsedFunctionParameter {
 		if (compiled != null)
 			return compiled;
 		
-		ITypeID cType = type.compile(context);
+		StoredType cType = type.compile(context);
 		Expression cDefaultValue = null;
 		return compiled = new FunctionParameter(cType, name, cDefaultValue, variadic);
 	}

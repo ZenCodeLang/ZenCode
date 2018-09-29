@@ -23,11 +23,11 @@ import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import static org.openzen.zenscript.validator.ValidationLogEntry.Code.*;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -51,7 +51,7 @@ public class ValidationUtils {
 	
 	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header) {
 		TypeValidator typeValidator = new TypeValidator(target, position);
-		header.getReturnType().accept(typeValidator);
+		typeValidator.validate(header.getReturnType());
 		
 		Set<String> parameterNames = new HashSet<>();
 		int i = 0;
@@ -61,7 +61,7 @@ public class ValidationUtils {
 			}
 			
 			parameterNames.add(parameter.name);
-			parameter.type.accept(typeValidator);
+			typeValidator.validate(parameter.type);
 			
 			if (parameter.defaultValue != null) {
 				parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope()));
@@ -74,7 +74,7 @@ public class ValidationUtils {
 				if (i != header.parameters.length - 1) {
 					target.logError(VARIADIC_PARAMETER_MUST_BE_LAST, position, "variadic parameter must be the last parameter");
 				}
-				if (!(parameter.type instanceof ArrayTypeID)) {
+				if (!(parameter.type.type instanceof ArrayTypeID)) {
 					target.logError(INVALID_TYPE, position, "variadic parameter must be an array");
 				}
 			}
@@ -139,7 +139,7 @@ public class ValidationUtils {
 			Validator target,
 			CodePosition position,
 			TypeParameter[] typeParameters,
-			ITypeID[] typeArguments)
+			TypeID[] typeArguments)
 	{
 		if (typeParameters == null || typeParameters.length == 0) {
 			if (typeArguments == null || typeArguments.length == 0) {
@@ -192,10 +192,10 @@ public class ValidationUtils {
 	}
 	
 	private static class TypeParameterBoundErrorVisitor implements GenericParameterBoundVisitor<String> {
-		private final ITypeID type;
+		private final TypeID type;
 		private final Validator target;
 		
-		public TypeParameterBoundErrorVisitor(ITypeID type, Validator target) {
+		public TypeParameterBoundErrorVisitor(TypeID type, Validator target) {
 			this.type = type;
 			this.target = target;
 		}

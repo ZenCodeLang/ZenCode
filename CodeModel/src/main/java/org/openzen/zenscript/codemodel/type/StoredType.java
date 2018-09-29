@@ -5,101 +5,135 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface ITypeID {
-	public static final ITypeID[] NONE = new ITypeID[0];
+public class StoredType {
+	public static final StoredType[] NONE = new StoredType[0];
 	
-	public ITypeID getUnmodified();
+	public final TypeID type;
+	public final StorageTag storage;
 	
-	public ITypeID getNormalized();
-	
-	public <T> T accept(TypeVisitor<T> visitor);
-	
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor);
-	
-	public default ITypeID getSuperType(GlobalTypeRegistry registry) {
-		return null;
+	public StoredType(TypeID type, StorageTag storage) {
+		this.type = type;
+		this.storage = storage;
 	}
 	
-	public default boolean isOptional() {
-		return false;
+	public StoredType getNormalized() {
+		return type.getNormalizedUnstored() == type ? this : new StoredType(type, storage);
 	}
 	
-	public default boolean isConst() {
-		return false;
+	public StoredType getSuperType(GlobalTypeRegistry registry) {
+		TypeID superType = type.getSuperType(registry);
+		return superType == null ? null : superType.stored(storage);
 	}
 	
-	public default boolean isImmutable() {
-		return false;
+	public StoredType instance(GenericMapper mapper) {
+		TypeID result = mapper.map(type);
+		return result == type ? this : new StoredType(result, storage);
 	}
 	
-	public default ITypeID withoutOptional() {
-		throw new UnsupportedOperationException("Not an optional type");
+	public boolean isDestructible() {
+		return type.isDestructible() && storage.isDestructible();
 	}
 	
-	public default ITypeID withoutConst() {
-		throw new UnsupportedOperationException("Not a const type");
+	public boolean hasDefaultValue() {
+		return type.hasDefaultValue();
 	}
 	
-	public default ITypeID withoutImmutable() {
-		throw new UnsupportedOperationException("Not an immutable type");
+	public boolean isOptional() {
+		return type.isOptional();
 	}
 	
-	public ITypeID withoutStorage();
-	
-	public StorageTag getStorage();
-	
-	public boolean hasDefaultValue();
-	
-	public boolean isObjectType();
-	
-	public default boolean isEnum() {
-		return false;
+	public boolean isConst() {
+		return type.isConst();
 	}
 	
-	public default boolean isVariant() {
-		return false;
+	public boolean isImmutable() {
+		return type.isImmutable();
 	}
 	
-	public default boolean isDefinition(HighLevelDefinition definition) {
-		return false;
+	public boolean isBasic(BasicTypeID type) {
+		return this.type == type;
 	}
 	
-	public ITypeID instance(GenericMapper mapper);
+	public StoredType withoutOptional() {
+		return new StoredType(type.withoutOptional(), storage);
+	}
 	
-	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage);
+	public StoredType withoutConst() {
+		return new StoredType(type.withoutConst(), storage);
+	}
 	
-	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters);
+	public StoredType withoutImmutable() {
+		return new StoredType(type.withoutImmutable(), storage);
+	}
+	
+	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
+		return type.hasInferenceBlockingTypeParameters(parameters);
+	}
 	
 	// Infers type parameters for this type so it matches with targetType
 	// returns false if that isn't possible
-	public default boolean inferTypeParameters(LocalMemberCache cache, ITypeID targetType, Map<TypeParameter, ITypeID> mapping) {
-		return targetType.accept(new MatchingTypeVisitor(cache, this, mapping));
+	public Map<TypeParameter, TypeID> inferTypeParameters(LocalMemberCache cache, StoredType targetType) {
+		return type.inferTypeParameters(cache, targetType.type);
 	}
 	
-	public void extractTypeParameters(List<TypeParameter> typeParameters);
+	public boolean isVariant() {
+		return type.isVariant();
+	}
+	
+	public boolean isEnum() {
+		return type.isEnum();
+	}
+	
+	public DefinitionTypeID asDefinition() {
+		return (DefinitionTypeID)type;
+	}
+	
+	@Override
+	public int hashCode() {
+		int hash = 5;
+		hash = 41 * hash + Objects.hashCode(this.type);
+		hash = 41 * hash + Objects.hashCode(this.storage);
+		return hash;
+	}
 
-	public default boolean isDestructible() {
-		return false;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		final StoredType other = (StoredType) obj;
+		return Objects.equals(this.type, other.type)
+				&& Objects.equals(this.storage, other.storage);
+	}
+	
+	@Override
+	public String toString() {
+		if (storage == ValueStorageTag.INSTANCE)
+			return type.toString();
+		
+		return type.toString() + "`" + storage.toString();
 	}
 	
 	public static class MatchingTypeVisitor implements TypeVisitor<Boolean> {
-		private final ITypeID type;
-		private final Map<TypeParameter, ITypeID> mapping;
+		private final TypeID type;
+		private final Map<TypeParameter, TypeID> mapping;
 		private final LocalMemberCache cache;
 		
-		public MatchingTypeVisitor(LocalMemberCache cache, ITypeID type, Map<TypeParameter, ITypeID> mapping) {
+		public MatchingTypeVisitor(LocalMemberCache cache, TypeID type, Map<TypeParameter, TypeID> mapping) {
 			this.type = type;
 			this.mapping = mapping;
 			this.cache = cache;
@@ -112,7 +146,7 @@ public interface ITypeID {
 		
 		@Override
 		public Boolean visitString(StringTypeID string) {
-			return string == type || (type instanceof StringTypeID && ((StringTypeID)type).storage == null);
+			return string == type;
 		}
 
 		@Override
@@ -229,8 +263,15 @@ public interface ITypeID {
 			}
 		}
 		
-		private boolean match(ITypeID type, ITypeID pattern) {
-			return pattern.accept(new MatchingTypeVisitor(cache, type, mapping));
+		private boolean match(StoredType type, StoredType pattern) {
+			if (type.storage != pattern.storage)
+				return false;
+			
+			return TypeMatcher.match(cache, type.type, pattern.type) != null;
+		}
+		
+		private boolean match(TypeID type, TypeID pattern) {
+			return TypeMatcher.match(cache, type, pattern) != null;
 		}
 
 		@Override

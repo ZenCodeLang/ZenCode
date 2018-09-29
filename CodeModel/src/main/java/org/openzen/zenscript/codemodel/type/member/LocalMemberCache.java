@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -19,7 +19,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class LocalMemberCache {
 	private final GlobalTypeRegistry registry;
-	private final Map<ITypeID, TypeMembers> types = new HashMap<>();
+	private final Map<StoredType, TypeMembers> types = new HashMap<>();
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
 	
 	public LocalMemberCache(
@@ -33,7 +33,7 @@ public class LocalMemberCache {
 		return registry;
 	}
 	
-	public TypeMembers get(ITypeID type) {
+	public TypeMembers get(StoredType type) {
 		type = type.getNormalized();
 		if (types.containsKey(type)) {
 			return types.get(type);
@@ -46,7 +46,7 @@ public class LocalMemberCache {
 	}
 	
 	private void registerMembers(TypeMembers members) {
-		members.type.accept(new TypeMemberBuilder(registry, members, this));
+		members.type.type.accept(null, new TypeMemberBuilder(registry, members, this));
 	}
 	
 	public List<ExpansionDefinition> getExpansions() {

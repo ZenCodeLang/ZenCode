@@ -7,11 +7,11 @@ package org.openzen.zenscript.codemodel.expression;
 
 import java.util.Arrays;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -20,17 +20,17 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class CallArguments {
 	public static final CallArguments EMPTY = new CallArguments(new Expression[0]);
 	
-	public final ITypeID[] typeArguments;
+	public final TypeID[] typeArguments;
 	public final Expression[] arguments;
 	
 	public CallArguments(Expression... arguments) {
-		this.typeArguments = ITypeID.NONE;
+		this.typeArguments = TypeID.NONE;
 		this.arguments = arguments;
 	}
 	
-	public CallArguments(ITypeID[] typeArguments, Expression[] arguments) {
+	public CallArguments(TypeID[] typeArguments, Expression[] arguments) {
 		if (typeArguments == null)
-			typeArguments = ITypeID.NONE;
+			typeArguments = TypeID.NONE;
 		if (arguments == null)
 			throw new IllegalArgumentException("Arguments cannot be null!");
 		
@@ -38,11 +38,11 @@ public class CallArguments {
 		this.arguments = arguments;
 	}
 	
-	public CallArguments(ITypeID... dummy) {
-		this.typeArguments = ITypeID.NONE;
+	public CallArguments(TypeID... dummy) {
+		this.typeArguments = TypeID.NONE;
 		this.arguments = new Expression[dummy.length];
 		for (int i = 0; i < dummy.length; i++)
-			arguments[i] = new DummyExpression(dummy[i]);
+			arguments[i] = new DummyExpression(dummy[i].stored(UniqueStorageTag.INSTANCE));
 	}
 	
 	public int getNumberOfTypeArguments() {
@@ -65,8 +65,9 @@ public class CallArguments {
 			Expression[] newArguments = Arrays.copyOf(arguments, header.parameters.length);
 			for (int i = arguments.length; i < header.parameters.length; i++) {
 				if (header.parameters[i].defaultValue == null)
-					throw new CompileException(position, CompileExceptionCode.MISSING_PARAMETER, "Parameter missing and no default value specified");
-				newArguments[i] = header.parameters[i].defaultValue;
+					newArguments[i] = new InvalidExpression(position, header.parameters[i].type, CompileExceptionCode.MISSING_PARAMETER, "Parameter missing and no default value specified");
+				else
+					newArguments[i] = header.parameters[i].defaultValue;
 			}
 			result = new CallArguments(typeArguments, newArguments);
 		}

@@ -11,7 +11,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -69,8 +69,8 @@ public class BlockStatement extends Statement {
 		return unchanged ? this : new BlockStatement(position, tStatements);
 	}
 	
-	private static ITypeID getThrownType(Statement[] statements) {
-		ITypeID result = null;
+	private static StoredType getThrownType(Statement[] statements) {
+		StoredType result = null;
 		for (Statement statement : statements)
 			result = Expression.binaryThrow(statement.position, result, statement.thrownType);
 		return result;

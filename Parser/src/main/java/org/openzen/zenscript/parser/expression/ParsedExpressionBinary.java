@@ -11,7 +11,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 
 /**
@@ -34,7 +34,7 @@ public class ParsedExpressionBinary extends ParsedExpression {
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
 		Expression cLeft = left.compile(scope).eval();
-		DefinitionMemberGroup members = scope.getTypeMembers(cLeft.type).getOrCreateGroup(this.operator);
+		TypeMemberGroup members = scope.getTypeMembers(cLeft.type).getOrCreateGroup(this.operator);
 		ExpressionScope innerScope = scope.withHints(members.predictCallTypes(scope, scope.getResultTypeHints(), 1)[0]);
 		
 		Expression cRight = right.compile(innerScope).eval();

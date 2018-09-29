@@ -16,8 +16,11 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -39,38 +42,40 @@ public abstract class JavaContext {
 			functions.put("TToU", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "Function", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t, u },
-					new FunctionHeader(registry.getGeneric(u, null), registry.getGeneric(t, null)),
+					new FunctionHeader(registry.getGeneric(u).stored(BorrowStorageTag.INVOCATION), registry.getGeneric(t).stored(BorrowStorageTag.INVOCATION)),
 					"apply"));
 			
 			functions.put("TUToV", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "BiFunction", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t, u, v },
-					new FunctionHeader(registry.getGeneric(v, null), registry.getGeneric(t, null), registry.getGeneric(u, null)),
+					new FunctionHeader(registry.getGeneric(v).stored(BorrowStorageTag.INVOCATION), registry.getGeneric(t).stored(BorrowStorageTag.INVOCATION), registry.getGeneric(u).stored(BorrowStorageTag.INVOCATION)),
 					"apply"));
 			
 			functions.put("TToVoid", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "Consumer", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t },
-					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t, null)),
+					new FunctionHeader(BasicTypeID.VOID.stored, registry.getGeneric(t).stored(BorrowStorageTag.INVOCATION)),
 					"accept"));
 			
 			functions.put("TUToVoid", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "BiConsumer", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t, u },
-					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t, null), registry.getGeneric(u, null)),
+					new FunctionHeader(BasicTypeID.VOID.stored, registry.getGeneric(t).stored(BorrowStorageTag.INVOCATION), registry.getGeneric(u).stored(BorrowStorageTag.INVOCATION)),
 					"accept"));
 			
 			functions.put("TToBool", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "Predicate", JavaClass.Kind.INTERFACE),
 					new TypeParameter[] { t },
-					new FunctionHeader(BasicTypeID.BOOL, registry.getGeneric(t, null)),
+					new FunctionHeader(BasicTypeID.BOOL.stored, registry.getGeneric(t).stored(BorrowStorageTag.INVOCATION)),
 					"test"));
 		}
 	}
 	
 	protected abstract JavaSyntheticClassGenerator getTypeGenerator();
 			
-	public abstract String getDescriptor(ITypeID type);
+	public abstract String getDescriptor(TypeID type);
+	
+	public abstract String getDescriptor(StoredType type);
 	
 	public String getMethodDescriptor(FunctionHeader header) {
 		return getMethodDescriptor(header, false);
@@ -98,10 +103,10 @@ public abstract class JavaContext {
 				} else {
 					TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, getTypeParameter(typeParameters.size()));
 					typeParameters.add(typeParameter);
-					parameters.add(new FunctionParameter(registry.getGeneric(typeParameter, null), Character.toString((char)('a' + parameters.size()))));
+					parameters.add(new FunctionParameter(registry.getGeneric(typeParameter).stored(BorrowStorageTag.INVOCATION), Character.toString((char)('a' + parameters.size()))));
 				}
 			}
-			ITypeID returnType;
+			StoredType returnType;
 			{
 				JavaTypeInfo typeInfo = JavaTypeInfo.get(type.header.getReturnType());
 				if (typeInfo.primitive) {
@@ -109,7 +114,7 @@ public abstract class JavaContext {
 				} else {
 					TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, getTypeParameter(typeParameters.size()));
 					typeParameters.add(typeParameter);
-					returnType = registry.getGeneric(typeParameter, null);
+					returnType = registry.getGeneric(typeParameter).stored(UniqueStorageTag.INSTANCE);
 				}
 			}
 			function = new JavaSynthesizedFunction(
@@ -124,17 +129,17 @@ public abstract class JavaContext {
 			function = functions.get(id);
 		}
 		
-		List<ITypeID> typeArguments = new ArrayList<>();
+		List<TypeID> typeArguments = new ArrayList<>();
 		for (FunctionParameter parameter : type.header.parameters) {
 			JavaTypeInfo typeInfo = JavaTypeInfo.get(parameter.type);
 			if (!typeInfo.primitive) {
-				typeArguments.add(parameter.type);
+				typeArguments.add(parameter.type.type);
 			}
 		}
 		if (!JavaTypeInfo.isPrimitive(type.header.getReturnType()))
-			typeArguments.add(type.header.getReturnType());
+			typeArguments.add(type.header.getReturnType().type);
 		
-		return new JavaSynthesizedFunctionInstance(function, typeArguments.toArray(new ITypeID[typeArguments.size()]));
+		return new JavaSynthesizedFunctionInstance(function, typeArguments.toArray(new TypeID[typeArguments.size()]));
 	}
 	
 	private String getFunctionId(FunctionHeader header) {
@@ -142,13 +147,13 @@ public abstract class JavaContext {
 		int typeParameterIndex = 0;
 		for (FunctionParameter parameter : header.parameters) {
 			JavaTypeInfo typeInfo = JavaTypeInfo.get(parameter.type);
-			String id = typeInfo.primitive ? parameter.type.accept(new JavaSyntheticTypeSignatureConverter()) : getTypeParameter(typeParameterIndex++);
+			String id = typeInfo.primitive ? parameter.type.type.accept(parameter.type, new JavaSyntheticTypeSignatureConverter()) : getTypeParameter(typeParameterIndex++);
 			signature.append(id);
 		}
 		signature.append("To");
 		{
 			JavaTypeInfo typeInfo = JavaTypeInfo.get(header.getReturnType());
-			String id = typeInfo.primitive ? header.getReturnType().accept(new JavaSyntheticTypeSignatureConverter()) : getTypeParameter(typeParameterIndex++);
+			String id = typeInfo.primitive ? header.getReturnType().type.accept(header.getReturnType(), new JavaSyntheticTypeSignatureConverter()) : getTypeParameter(typeParameterIndex++);
 			signature.append(id);
 		}
 		return signature.toString();
@@ -169,7 +174,7 @@ public abstract class JavaContext {
 	
 	public JavaSynthesizedClass getRange(RangeTypeID type) {
 		JavaTypeInfo typeInfo = JavaTypeInfo.get(type.baseType);
-		String id = typeInfo.primitive ? type.accept(new JavaSyntheticTypeSignatureConverter()) : "T";
+		String id = typeInfo.primitive ? type.accept(null, new JavaSyntheticTypeSignatureConverter()) : "T";
 		JavaSynthesizedRange range;
 		if (!ranges.containsKey(id)) {
 			JavaClass cls = new JavaClass("zsynthetic", id + "Range", JavaClass.Kind.CLASS);
@@ -177,7 +182,7 @@ public abstract class JavaContext {
 				range = new JavaSynthesizedRange(cls, TypeParameter.NONE, type.baseType);
 			} else {
 				TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, "T");
-				range = new JavaSynthesizedRange(cls, new TypeParameter[] { typeParameter }, registry.getGeneric(typeParameter, null));
+				range = new JavaSynthesizedRange(cls, new TypeParameter[] { typeParameter }, registry.getGeneric(typeParameter).stored(BorrowStorageTag.INVOCATION));
 			}
 			ranges.put(id, range);
 			getTypeGenerator().synthesizeRange(range);
@@ -186,9 +191,9 @@ public abstract class JavaContext {
 		}
 		
 		if (typeInfo.primitive) {
-			return new JavaSynthesizedClass(range.cls, ITypeID.NONE);
+			return new JavaSynthesizedClass(range.cls, TypeID.NONE);
 		} else {
-			return new JavaSynthesizedClass(range.cls, new ITypeID[] { type.baseType });
+			return new JavaSynthesizedClass(range.cls, new TypeID[] { type.baseType.type });
 		}
 	}
 	

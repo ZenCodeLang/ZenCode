@@ -15,8 +15,8 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
 
 /**
@@ -38,8 +38,8 @@ public class ParsedExpressionString extends ParsedExpression {
 			if (scope.hints.contains(BasicTypeID.CHAR)) {
 				return new ConstantCharExpression(position, value.charAt(0));
 			} else {
-				for (ITypeID type : scope.hints)
-					if (type instanceof StringTypeID)
+				for (StoredType type : scope.hints)
+					if (type.type instanceof StringTypeID)
 						return new ConstantStringExpression(position, value);
 				
 				return new ConstantCharExpression(position, value.charAt(0));
@@ -50,13 +50,13 @@ public class ParsedExpressionString extends ParsedExpression {
 	}
 	
 	@Override
-	public SwitchValue compileToSwitchValue(ITypeID type, ExpressionScope scope) {
-		if (type == BasicTypeID.CHAR) {
+	public SwitchValue compileToSwitchValue(StoredType type, ExpressionScope scope) throws CompileException {
+		if (type.isBasic(BasicTypeID.CHAR)) {
 			if (value.length() != 1)
 				throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "char value expected but string given");
 			
 			return new CharSwitchValue(value.charAt(0));
-		} else if (type instanceof StringTypeID) {
+		} else if (type.type instanceof StringTypeID) {
 			return new StringSwitchValue(value);
 		} else {
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Can only use string keys for string values");

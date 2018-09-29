@@ -29,15 +29,15 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 
 /**
  *
@@ -64,7 +64,7 @@ public class GlobalRegistry {
 			Modifiers.EXPORT | Modifiers.FINAL,
 			"out",
 			null,
-			DefinitionTypeID.forType(registry, SYSTEM, SharedStorageTag.INSTANCE), null, 0, 0, null);
+			DefinitionTypeID.forType(registry, SYSTEM).stored(SharedStorageTag.INSTANCE), null, 0, 0, null);
 		
 		JavaClass jPrintStream = new JavaClass("java.io", "PrintStream", JavaClass.Kind.CLASS);
 		JavaMethod printstreamPrintln = JavaMethod.getNativeVirtual(jPrintStream, "println", "(Ljava/lang/String;)V");
@@ -118,19 +118,19 @@ public class GlobalRegistry {
 	private class PrintlnSymbol implements ISymbol {
 
 		@Override
-		public IPartialExpression getExpression(CodePosition position, BaseScope scope, ITypeID[] typeArguments) {
+		public IPartialExpression getExpression(CodePosition position, BaseScope scope, TypeID[] typeArguments) {
 			return new PartialMemberGroupExpression(
 					position,
 					scope,
-					new GetStaticFieldExpression(position, new FieldMemberRef(scope.getTypeRegistry().getForMyDefinition(SYSTEM), SYSTEM_OUT, GenericMapper.EMPTY)),
+					new GetStaticFieldExpression(position, new FieldMemberRef(scope.getTypeRegistry().getForMyDefinition(SYSTEM).stored(StaticExpressionStorageTag.INSTANCE), SYSTEM_OUT, GenericMapper.EMPTY)),
 					"println",
-					PRINTSTREAM_PRINTLN.ref(scope.getTypeRegistry().getForDefinition(PRINTSTREAM, BorrowStorageTag.INVOCATION), GenericMapper.EMPTY),
+					PRINTSTREAM_PRINTLN.ref(scope.getTypeRegistry().getForDefinition(PRINTSTREAM).stored(BorrowStorageTag.INVOCATION), GenericMapper.EMPTY),
 					null,
 					false);
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, TypeResolutionContext context, ITypeID[] typeArguments, StorageTag storage) {
+		public TypeID getType(CodePosition position, TypeResolutionContext context, TypeID[] typeArguments) {
 			return null; // not a type
 		}
 	}

@@ -13,7 +13,8 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.context.LocalTypeResolutionContext;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -28,7 +29,7 @@ import org.openzen.zenscript.parser.type.ParsedTypeBasic;
  * @author Hoofdgebruiker
  */
 public class ParsedFunctionHeader {
-	public static ParsedFunctionHeader parse(ZSTokenParser tokens) {
+	public static ParsedFunctionHeader parse(ZSTokenParser tokens) throws ParseException {
 		List<ParsedTypeParameter> genericParameters = null;
 		if (tokens.optional(ZSTokenType.T_LESS) != null) {
 			genericParameters = new ArrayList<>();
@@ -97,7 +98,7 @@ public class ParsedFunctionHeader {
 		LocalTypeResolutionContext localContext = new LocalTypeResolutionContext(context, null, genericParameters);
 		ParsedTypeParameter.compile(localContext, genericParameters, this.genericParameters);
 		
-		ITypeID returnType = this.returnType.compile(localContext);
+		StoredType returnType = this.returnType.compile(localContext);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.size()];
 		for (int i = 0; i < parameters.length; i++)
 			parameters[i] = this.parameters.get(i).compile(localContext);

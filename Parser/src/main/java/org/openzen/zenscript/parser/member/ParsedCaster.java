@@ -10,11 +10,9 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -50,7 +48,7 @@ public class ParsedCaster extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType) {
+	protected void fillOverride(TypeScope scope, StoredType baseType) {
 		compiled.overrides = scope.getTypeMembers(baseType).getCaster(compiled.toType);
 	}
 }

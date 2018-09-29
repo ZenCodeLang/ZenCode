@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public abstract class CapturedExpression extends Expression {
 	public final LambdaClosure closure;
 	
-	public CapturedExpression(CodePosition position, ITypeID type, LambdaClosure closure) {
+	public CapturedExpression(CodePosition position, StoredType type, LambdaClosure closure) {
 		super(position, type, null);
 		
 		this.closure = closure;

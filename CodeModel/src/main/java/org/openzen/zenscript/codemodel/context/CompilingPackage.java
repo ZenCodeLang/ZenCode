@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -71,11 +71,11 @@ public class CompilingPackage {
 		return getImportType(context, type.getInner(name.get(index)), name, index + 1);
 	}
 	
-	public ITypeID getType(TypeResolutionContext context, List<GenericName> name) {
+	public TypeID getType(TypeResolutionContext context, List<GenericName> name) {
 		return getType(context, name, 0);
 	}
 	
-	private ITypeID getType(TypeResolutionContext context, List<GenericName> name, int index) {
+	private TypeID getType(TypeResolutionContext context, List<GenericName> name, int index) {
 		if (index == name.size())
 			return null;
 		
@@ -84,14 +84,14 @@ public class CompilingPackage {
 		
 		if (types.containsKey(name.get(index).name)) {
 			CompilingType type = types.get(name.get(index).name);
-			DefinitionTypeID result = context.getTypeRegistry().getForDefinition(type.load(), null, name.get(index).arguments);
+			DefinitionTypeID result = context.getTypeRegistry().getForDefinition(type.load(), name.get(index).arguments);
 			return getInner(context, name, index + 1, type, result);
 		}
 		
 		return null;
 	}
 	
-	private ITypeID getInner(TypeResolutionContext context, List<GenericName> name, int index, CompilingType type, DefinitionTypeID result) {
+	private TypeID getInner(TypeResolutionContext context, List<GenericName> name, int index, CompilingType type, DefinitionTypeID result) {
 		if (index == name.size())
 			return result;
 		
@@ -99,7 +99,7 @@ public class CompilingPackage {
 		if (innerType == null)
 			return null;
 		
-		DefinitionTypeID innerResult = context.getTypeRegistry().getForDefinition(innerType.load(), name.get(index).arguments, result, null);
+		DefinitionTypeID innerResult = context.getTypeRegistry().getForDefinition(innerType.load(), name.get(index).arguments, result);
 		return getInner(context, name, index + 1, innerType, innerResult);
 	}
 }

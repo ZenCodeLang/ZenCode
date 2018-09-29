@@ -17,7 +17,8 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -68,27 +69,27 @@ public class ParsedGetter extends ParsedDefinitionMember {
 		return compiled;
 	}
 	
-	private void inferHeaders(BaseScope scope) {
+	private void inferHeaders(BaseScope scope) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(scope, implementation.getCompiled().type);
+			fillOverride(scope, implementation.getCompiled().type.stored(BorrowStorageTag.THIS));
 			compiled.modifiers |= Modifiers.PUBLIC;
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 			
-			fillOverride(scope, definition.getSuperType());
+			fillOverride(scope, definition.getSuperType().stored(BorrowStorageTag.THIS));
 		}
 		
 		if (compiled == null)
 			throw new IllegalStateException("Types not yet linked");
 	}
 
-	private void fillOverride(TypeScope scope, ITypeID baseType) {
+	private void fillOverride(TypeScope scope, StoredType baseType) {
 		compiled.setOverrides(scope.getTypeMembers(baseType).getOrCreateGroup(name, false).getGetter());
 	}
 	
 	@Override
-	public final void compile(BaseScope scope) {
+	public final void compile(BaseScope scope) throws CompileException {
 		if (isCompiled)
 			return;
 		isCompiled = true;
@@ -100,7 +101,7 @@ public class ParsedGetter extends ParsedDefinitionMember {
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		compiled.setBody(body.compile(innerScope, header));
 		
-		if (compiled.type == BasicTypeID.UNDETERMINED)
+		if (compiled.type.isBasic(BasicTypeID.UNDETERMINED))
 			compiled.type = compiled.body.getReturnType();
 	}
 }

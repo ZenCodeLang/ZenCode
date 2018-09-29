@@ -9,7 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -22,7 +22,7 @@ public interface DefinitionMemberRef {
 	
 	<T> T getTag(Class<T> type);
 	
-	ITypeID getOwnerType();
+	StoredType getOwnerType();
 	
 	DefinitionMemberRef getOverrides();
 	

@@ -19,7 +19,8 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
@@ -48,17 +49,17 @@ public class CompileTypeScope extends BaseScope {
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
 		if (typeParameters.containsKey(name.name) && !name.hasArguments())
-			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(typeParameters.get(name.name), null), name.arguments);
+			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(typeParameters.get(name.name)), name.arguments);
 
 		return outer.get(position, name);
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+	public TypeID getType(CodePosition position, List<GenericName> name) {
 		if (typeParameters.containsKey(name.get(0).name) && name.size() == 1 && !name.get(0).hasArguments())
-			return getTypeRegistry().getGeneric(typeParameters.get(name.get(0).name), storage);
+			return getTypeRegistry().getGeneric(typeParameters.get(name.get(0).name));
 
-		return outer.getType(position, name, storage);
+		return outer.getType(position, name);
 	}
 
 	@Override
@@ -77,7 +78,7 @@ public class CompileTypeScope extends BaseScope {
 	}
 
 	@Override
-	public ITypeID getThisType() {
+	public StoredType getThisType() {
 		throw new UnsupportedOperationException("Not available at this stage");
 	}
 

@@ -14,13 +14,16 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
+import org.openzen.zenscript.codemodel.type.storage.InvalidStorageTag;
 
 /**
  *
@@ -33,6 +36,19 @@ public class TypeValidator implements TypeVisitor<Void> {
 	public TypeValidator(Validator validator, CodePosition position) {
 		this.validator = validator;
 		this.position = position;
+	}
+	
+	public void validate(StoredType type) {
+		if (type.storage instanceof InvalidStorageTag) {
+			InvalidStorageTag storage = (InvalidStorageTag)type.storage;
+			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, storage.position, storage.message);
+		}
+		
+		validate(type.type);
+	}
+	
+	public void validate(TypeID type) {
+		type.accept(this);
 	}
 
 	@Override
@@ -56,23 +72,30 @@ public class TypeValidator implements TypeVisitor<Void> {
 			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, position, "array dimension must be at most 16");
 		}
 		
-		array.elementType.accept(this);
+		validate(array.elementType);
 		return null;
 	}
 
 	@Override
 	public Void visitAssoc(AssocTypeID assoc) {
-		assoc.keyType.accept(this);
-		assoc.valueType.accept(this);
+		validate(assoc.keyType);
+		validate(assoc.valueType);
 		
 		// TODO: does the keytype have == and hashcode operators?
+		return null;
+	}
+	
+	@Override
+	public Void visitInvalid(InvalidTypeID type) {
+		validator.logError(ValidationLogEntry.Code.INVALID_TYPE, type.position, type.message);
 		return null;
 	}
 
 	@Override
 	public Void visitIterator(IteratorTypeID iterator) {
-		for (ITypeID type : iterator.iteratorTypes)
-			type.accept(this);
+		for (StoredType type : iterator.iteratorTypes)
+			validate(type);
+		
 		return null;
 	}
 
@@ -95,20 +118,20 @@ public class TypeValidator implements TypeVisitor<Void> {
 
 	@Override
 	public Void visitRange(RangeTypeID range) {
-		range.baseType.accept(this);
+		validate(range.baseType);
 		return null;
 	}
 
 	@Override
 	public Void visitModified(ModifiedTypeID type) {
 		// TODO: detect duplicate const
-		type.baseType.accept(this);
+		validate(type.baseType);
 		return null;
 	}
 
 	@Override
 	public Void visitGenericMap(GenericMapTypeID map) {
-		map.value.accept(this);
+		validate(map.value);
 		return null;
 	}
 }

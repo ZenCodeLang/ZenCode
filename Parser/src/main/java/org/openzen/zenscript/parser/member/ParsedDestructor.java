@@ -6,16 +6,14 @@
 package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.DestructorMember;
-import org.openzen.zenscript.codemodel.member.FunctionalMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
 /**
@@ -46,7 +44,7 @@ public class ParsedDestructor extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType) {
+	protected void fillOverride(TypeScope scope, StoredType baseType) throws CompileException {
 		compiled.overrides = scope.getTypeMembers(baseType).getOrCreateGroup(OperatorType.DESTRUCTOR).getOverride(position, scope, compiled);
 	}
 }

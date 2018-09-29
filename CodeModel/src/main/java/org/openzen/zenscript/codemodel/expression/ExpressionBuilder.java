@@ -14,8 +14,9 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import stdlib.Strings;
@@ -33,21 +34,21 @@ public class ExpressionBuilder {
 		this.scope = scope;
 	}
 	
-	public Expression constructNew(String typename, Expression... arguments) {
+	public Expression constructNew(String typename, Expression... arguments) throws CompileException {
 		String[] nameParts = Strings.split(typename, '.');
 		List<GenericName> name = new ArrayList<>();
 		for (String namePart : nameParts)
 			name.add(new GenericName(namePart));
-		ITypeID type = scope.getType(position, name, UniqueStorageTag.INSTANCE);
+		TypeID type = scope.getType(position, name);
 		if (type == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "No such type: " + typename);
 		
-		return constructNew(type, arguments);
+		return constructNew(type.stored(UniqueStorageTag.INSTANCE), arguments);
 	}
 	
-	public Expression constructNew(ITypeID type, Expression... arguments) {
-		DefinitionMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
-		List<ITypeID>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.length);
+	public Expression constructNew(StoredType type, Expression... arguments) throws CompileException {
+		TypeMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
+		List<StoredType>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.length);
 		CallArguments compiledArguments = new CallArguments(arguments);
 		FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 		if (member == null)

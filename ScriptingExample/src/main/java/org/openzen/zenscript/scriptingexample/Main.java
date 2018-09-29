@@ -25,6 +25,7 @@ import org.openzen.zenscript.formatter.ScriptFormattingSettings;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.compiler.ModuleSpace;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -37,7 +38,7 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws ParseException {
 		
 		System.out.println();
 		File inputDirectory = new File("scripts");
@@ -63,7 +64,7 @@ public class Main {
 		}
     }
 	
-	private static ParsedFile[] parse(CompilingPackage compilingPkg, File[] files) throws IOException {
+	private static ParsedFile[] parse(CompilingPackage compilingPkg, File[] files) throws ParseException {
 		ParsedFile[] parsedFiles = new ParsedFile[files.length];
 		for (int i = 0; i < files.length; i++) {
 			parsedFiles[i] = ParsedFile.parse(compilingPkg, new TestBracketParser(), files[i]);
@@ -139,7 +140,7 @@ public class Main {
 	
 	private static class TestBracketParser implements BracketExpressionParser {
 		@Override
-		public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) {
+		public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
 			StringBuilder result = new StringBuilder();
 			while (tokens.optional(ZSTokenType.T_GREATER) == null) {
 				ZSToken token = tokens.next();

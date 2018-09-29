@@ -26,7 +26,7 @@ public class ParsedPanicExpression extends ParsedExpression {
 	
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		return new PanicExpression(position, scope.getResultTypeHints().isEmpty() ? BasicTypeID.VOID : scope.getResultTypeHints().get(0), value.compile(scope).eval());
+		return new PanicExpression(position, scope.getResultTypeHints().isEmpty() ? BasicTypeID.VOID.stored : scope.getResultTypeHints().get(0), value.compile(scope).eval());
 	}
 
 	@Override

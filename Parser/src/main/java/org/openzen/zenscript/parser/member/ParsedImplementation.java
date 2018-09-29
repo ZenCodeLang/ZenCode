@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.member;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
@@ -49,7 +50,7 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 
 	@Override
 	public void linkTypes(TypeResolutionContext context) {
-		compiled = new ImplementationMember(position, definition, modifiers, type.compile(context));
+		compiled = new ImplementationMember(position, definition, modifiers, type.compileUnstored(context));
 		
 		for (ParsedDefinitionMember member : members) {
 			member.linkTypes(context);
@@ -63,7 +64,7 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void compile(BaseScope scope) {
+	public void compile(BaseScope scope) throws CompileException {
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		
 		ImplementationScope innerScope = new ImplementationScope(scope, compiled);

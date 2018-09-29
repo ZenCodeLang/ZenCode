@@ -7,12 +7,13 @@ package org.openzen.zenscript.parser.statements;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.SwitchCase;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 /**
@@ -27,7 +28,7 @@ public class ParsedSwitchCase {
 		this.value = value;
 	}
 	
-	public SwitchCase compile(ITypeID type, StatementScope scope) {
+	public SwitchCase compile(StoredType type, StatementScope scope) throws CompileException {
 		SwitchValue cValue = value == null ? null : value.compileToSwitchValue(type, new ExpressionScope(scope));
 		Statement[] cStatements = new Statement[statements.size()];
 		int i = 0;

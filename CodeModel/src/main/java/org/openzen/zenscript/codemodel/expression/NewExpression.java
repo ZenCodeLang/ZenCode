@@ -9,7 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -22,7 +22,7 @@ public class NewExpression extends Expression {
 	
 	public NewExpression(
 			CodePosition position,
-			ITypeID type,
+			StoredType type,
 			FunctionalMemberRef constructor,
 			CallArguments arguments)
 	{
@@ -31,7 +31,7 @@ public class NewExpression extends Expression {
 	
 	public NewExpression(
 			CodePosition position,
-			ITypeID type,
+			StoredType type,
 			FunctionalMemberRef constructor,
 			CallArguments arguments,
 			FunctionHeader instancedHeader)

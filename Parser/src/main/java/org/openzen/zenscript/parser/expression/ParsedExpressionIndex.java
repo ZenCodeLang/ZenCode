@@ -15,9 +15,10 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -55,8 +56,8 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		
 		@Override
 		public Expression eval() {
-			DefinitionMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXGET);
-			List<ITypeID>[] predictedTypes = members.predictCallTypes(scope, scope.hints, indexes.size());
+			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXGET);
+			List<StoredType>[] predictedTypes = members.predictCallTypes(scope, scope.hints, indexes.size());
 			Expression[] arguments = new Expression[indexes.size()];
 			for (int i = 0; i < arguments.length; i++)
 				arguments[i] = indexes.get(i).compile(scope.createInner(predictedTypes[i], this::getLength)).eval();
@@ -65,29 +66,29 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		}
 
 		@Override
-		public List<ITypeID>[] predictCallTypes(TypeScope scope, List<ITypeID> hints, int arguments) {
+		public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) {
 			return eval().predictCallTypes(scope, hints, arguments);
 		}
 		
 		@Override
-		public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<ITypeID> hints, int arguments) {
+		public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
 			return eval().getPossibleFunctionHeaders(scope, hints, arguments);
 		}
 
 		@Override
-		public IPartialExpression getMember(CodePosition position, TypeScope scope, List<ITypeID> hints, GenericName name) {
+		public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) {
 			return eval().getMember(position, scope, hints, name);
 		}
 
 		@Override
-		public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
+		public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) {
 			return eval().call(position, scope, hints, arguments);
 		}
 		
 		@Override
 		public Expression assign(CodePosition position, TypeScope scope, Expression value) {
-			DefinitionMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXSET);
-			List<ITypeID>[] predictedTypes = members.predictCallTypes(scope, this.scope.hints, indexes.size() + 1);
+			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXSET);
+			List<StoredType>[] predictedTypes = members.predictCallTypes(scope, this.scope.hints, indexes.size() + 1);
 			
 			Expression[] arguments = new Expression[indexes.size() + 1];
 			for (int i = 0; i < arguments.length - 1; i++)
@@ -98,9 +99,9 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		}
 		
 		@Override
-		public List<ITypeID> getAssignHints() {
-			DefinitionMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXSET);
-			List<ITypeID>[] predictedTypes = members.predictCallTypes(scope, scope.hints, indexes.size() + 1);
+		public List<StoredType> getAssignHints() {
+			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXSET);
+			List<StoredType>[] predictedTypes = members.predictCallTypes(scope, scope.hints, indexes.size() + 1);
 			return predictedTypes[indexes.size()];
 		}
 		
@@ -109,7 +110,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		}
 
 		@Override
-		public ITypeID[] getGenericCallTypes() {
+		public TypeID[] getGenericCallTypes() {
 			return null;
 		}
 	}

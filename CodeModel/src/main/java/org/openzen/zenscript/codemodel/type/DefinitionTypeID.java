@@ -16,38 +16,35 @@ import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class DefinitionTypeID implements ITypeID {
-	public static DefinitionTypeID forType(GlobalTypeRegistry registry, HighLevelDefinition definition, StorageTag storage) {
+public class DefinitionTypeID implements TypeID {
+	public static DefinitionTypeID forType(GlobalTypeRegistry registry, HighLevelDefinition definition) {
 		if (definition.typeParameters != null && definition.typeParameters.length > 0)
 			throw new IllegalArgumentException("Definition has type arguments!");
 		
-		return new DefinitionTypeID(registry, definition, ITypeID.NONE, storage);
+		return new DefinitionTypeID(registry, definition, TypeID.NONE);
 	}
 	
 	public final HighLevelDefinition definition;
-	public final ITypeID[] typeArguments;
+	public final TypeID[] typeArguments;
 	public final DefinitionTypeID outer;
-	public final StorageTag storage;
-	private ITypeID normalized;
-	private ITypeID withoutStorage;
+	private TypeID normalized;
 	
-	public ITypeID superType;
+	public TypeID superType;
 	
-	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, ITypeID[] typeParameters, StorageTag storage) {
-		this(typeRegistry, definition, typeParameters, null, storage);
+	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, TypeID[] typeArguments) {
+		this(typeRegistry, definition, typeArguments, null);
 	}
 	
 	// For inner classes of generic outer classes
-	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, ITypeID[] typeParameters, DefinitionTypeID outer, StorageTag storage) {
-		if (typeParameters == null)
+	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, TypeID[] typeArguments, DefinitionTypeID outer) {
+		if (typeArguments == null)
 			throw new NullPointerException("typeParameters cannot be null");
-		if (typeParameters.length != definition.getNumberOfGenericParameters())
+		if (typeArguments.length != definition.getNumberOfGenericParameters())
 			throw new IllegalArgumentException("Wrong number of type parameters!");
 		if (definition.isInnerDefinition() && !definition.isStatic() && outer == null)
 			throw new IllegalArgumentException("Inner definition requires outer instance");
@@ -55,57 +52,54 @@ public class DefinitionTypeID implements ITypeID {
 			throw new IllegalArgumentException("Static inner definition must not have outer instance");
 		
 		this.definition = definition;
-		this.typeArguments = typeParameters;
+		this.typeArguments = typeArguments;
 		this.outer = outer;
-		this.storage = storage;
 		
 		normalized = isDenormalized() ? normalize(typeRegistry) : this;
 		if (normalized instanceof DefinitionTypeID && ((DefinitionTypeID)normalized).isDenormalized())
 			throw new AssertionError();
-		
-		withoutStorage = storage == null ? this : typeRegistry.getForDefinition(definition, typeParameters, outer, null);
 	}
 	
 	private boolean isDenormalized() {
 		if (definition instanceof AliasDefinition)
 			return true;
 		
-		for (ITypeID typeParameter : typeArguments)
-			if (typeParameter.getNormalized() != typeParameter)
+		for (TypeID typeParameter : typeArguments)
+			if (typeParameter.getNormalizedUnstored() != typeParameter)
 				return true;
-		if (outer != null && outer.getNormalized() != outer)
+		if (outer != null && outer.getNormalizedUnstored() != outer)
 			return true;
 		
 		return false;
 	}
 	
-	private ITypeID normalize(GlobalTypeRegistry typeRegistry) {
+	private TypeID normalize(GlobalTypeRegistry typeRegistry) {
 		if (definition instanceof AliasDefinition) {
 			AliasDefinition alias = (AliasDefinition)definition;
 			if (alias.type == null)
 				throw new IllegalStateException("Alias type not yet initialized!");
 			
-			Map<TypeParameter, ITypeID> typeMapping = new HashMap<>();
+			Map<TypeParameter, TypeID> typeMapping = new HashMap<>();
 			for (int i = 0; i < definition.typeParameters.length; i++)
-				typeMapping.put(definition.typeParameters[i], typeArguments[i].getNormalized());
+				typeMapping.put(definition.typeParameters[i], typeArguments[i].getNormalizedUnstored());
 			GenericMapper mapper = new GenericMapper(typeRegistry, typeMapping);
-			ITypeID result = alias.type.instance(mapper).getNormalized();
+			TypeID result = alias.type.instanceUnstored(mapper).getNormalizedUnstored();
 			return result;
 		}
 		
-		ITypeID[] normalizedTypeParameters = new ITypeID[typeArguments.length];
+		TypeID[] normalizedTypeParameters = new TypeID[typeArguments.length];
 		for (int i = 0; i < normalizedTypeParameters.length; i++)
-			normalizedTypeParameters[i] = typeArguments[i].getNormalized();
+			normalizedTypeParameters[i] = typeArguments[i].getNormalizedUnstored();
 		
-		return typeRegistry.getForDefinition(definition, normalizedTypeParameters, outer == null ? null : (DefinitionTypeID)outer.getNormalized(), storage);
+		return typeRegistry.getForDefinition(definition, normalizedTypeParameters, outer == null ? null : (DefinitionTypeID)outer.getNormalizedUnstored());
 	}
 	
 	public boolean hasTypeParameters() {
 		return typeArguments.length > 0;
 	}
 	
-	public Map<TypeParameter, ITypeID> getTypeParameterMapping() {
-		Map<TypeParameter, ITypeID> mapping = new HashMap<>();
+	public Map<TypeParameter, TypeID> getTypeParameterMapping() {
+		Map<TypeParameter, TypeID> mapping = new HashMap<>();
 		DefinitionTypeID current = this;
 		do {
 			if (current.typeArguments != null) {
@@ -121,21 +115,20 @@ public class DefinitionTypeID implements ITypeID {
 		return mapping;
 	}
 	
-	public DefinitionTypeID(HighLevelDefinition definition, StorageTag storage) {
+	public DefinitionTypeID(HighLevelDefinition definition) {
 		this.definition = definition;
-		this.typeArguments = ITypeID.NONE;
+		this.typeArguments = TypeID.NONE;
 		this.superType = definition.getSuperType();
 		this.outer = null;
-		this.storage = storage;
 	}
 	
 	@Override
-	public ITypeID getNormalized() {
+	public TypeID getNormalizedUnstored() {
 		return normalized;
 	}
 	
 	@Override
-	public DefinitionTypeID instance(GenericMapper mapper) {
+	public DefinitionTypeID instanceUnstored(GenericMapper mapper) {
 		if (!hasTypeParameters() && outer == null)
 			return this;
 		if (mapper.getMapping().isEmpty())
@@ -143,40 +136,30 @@ public class DefinitionTypeID implements ITypeID {
 		if (mapper.registry == null)
 			throw new NullPointerException();
 		
-		ITypeID[] instancedArguments = ITypeID.NONE;
+		TypeID[] instancedArguments = TypeID.NONE;
 		if (hasTypeParameters()) {
-			instancedArguments = new ITypeID[typeArguments.length];
+			instancedArguments = new TypeID[typeArguments.length];
 			for (int i = 0; i < typeArguments.length; i++)
-				instancedArguments[i] = typeArguments[i].instance(mapper);
+				instancedArguments[i] = typeArguments[i].instanceUnstored(mapper);
 		}
 		
-		DefinitionTypeID instancedOuter = outer == null ? null : outer.instance(mapper);
-		return mapper.registry.getForDefinition(definition, instancedArguments, instancedOuter, storage);
-	}
-
-	@Override
-	public DefinitionTypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
-		return registry.getForDefinition(definition, typeArguments, outer, storage);
+		DefinitionTypeID instancedOuter = outer == null ? null : outer.instanceUnstored(mapper);
+		return mapper.registry.getForDefinition(definition, instancedArguments, instancedOuter);
 	}
 	
 	@Override
-	public ITypeID getSuperType(GlobalTypeRegistry registry) {
-		return definition.getSuperType() == null ? null : definition.getSuperType().instance(new GenericMapper(registry, getTypeParameterMapping()));
+	public TypeID getSuperType(GlobalTypeRegistry registry) {
+		return definition.getSuperType() == null ? null : definition.getSuperType().instanceUnstored(new GenericMapper(registry, getTypeParameterMapping()));
 	}
 	
 	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitDefinition(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitDefinition(context, this);
-	}
-	
-	@Override
-	public DefinitionTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
@@ -187,11 +170,6 @@ public class DefinitionTypeID implements ITypeID {
 	@Override
 	public boolean isConst() {
 		return false;
-	}
-	
-	@Override
-	public boolean isObjectType() {
-		return true;
 	}
 
 	@Override
@@ -205,14 +183,14 @@ public class DefinitionTypeID implements ITypeID {
 	}
 	
 	@Override
-	public boolean isDefinition(HighLevelDefinition definition) {
-		return definition == this.definition;
+	public boolean isDestructible() {
+		return definition.isDestructible();
 	}
 	
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		if (hasTypeParameters()) {
-			for (ITypeID typeParameter : typeArguments)
+			for (TypeID typeParameter : typeArguments)
 				if (typeParameter.hasInferenceBlockingTypeParameters(parameters))
 					return true;
 		}
@@ -226,7 +204,6 @@ public class DefinitionTypeID implements ITypeID {
 		hash = 97 * hash + definition.hashCode();
 		hash = 97 * hash + Arrays.deepHashCode(typeArguments);
 		hash = 97 * hash + Objects.hashCode(outer);
-		hash = 97 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -244,8 +221,7 @@ public class DefinitionTypeID implements ITypeID {
 		final DefinitionTypeID other = (DefinitionTypeID) obj;
 		return this.definition == other.definition
 				&& Arrays.deepEquals(this.typeArguments, other.typeArguments)
-				&& Objects.equals(outer, this.outer)
-				&& Objects.equals(this.storage, other.storage);
+				&& Objects.equals(outer, this.outer);
 	}
 	
 	@Override
@@ -275,27 +251,12 @@ public class DefinitionTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		for (ITypeID type : this.typeArguments)
+		for (TypeID type : this.typeArguments)
 			type.extractTypeParameters(typeParameters);
 	}
-	
-	@Override
-	public boolean isDestructible() {
-		return definition.isDestructible();
-	}
 
-	public DefinitionTypeID getInnerType(GenericName name, GlobalTypeRegistry registry, StorageTag storage) {
+	public DefinitionTypeID getInnerType(GenericName name, GlobalTypeRegistry registry) {
 		HighLevelDefinition type = definition.getInnerType(name.name);
-		return registry.getForDefinition(type, name.arguments, this, storage);
-	}
-
-	@Override
-	public StorageTag getStorage() {
-		return storage;
-	}
-
-	@Override
-	public ITypeID withoutStorage() {
-		return withoutStorage;
+		return registry.getForDefinition(type, name.arguments, this);
 	}
 }

@@ -45,7 +45,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		JavaSourceUtils.formatTypeParameters(typeVisitor, contents, function.typeParameters, false);
 		contents.append(" {\n");
 		contents.append(settings.indent);
-		contents.append(function.header.getReturnType().accept(typeVisitor));
+		contents.append(typeVisitor.process(function.header.getReturnType()));
 		contents.append(' ');
 		contents.append("invoke(");
 		boolean first = true;
@@ -55,7 +55,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 			} else {
 				contents.append(", ");
 			}
-			contents.append(parameter.type.accept(typeVisitor));
+			contents.append(typeVisitor.process(parameter.type));
 			contents.append(' ');
 			contents.append(parameter.name);
 			if (parameter.variadic)
@@ -74,16 +74,16 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		
 		StringBuilder contents = new StringBuilder();
 		contents.append("public final class ").append(range.cls.getName()).append(" {\n");
-		contents.append(settings.indent).append("public final ").append(range.baseType.accept(typeVisitor)).append(" from;\n");
-		contents.append(settings.indent).append("public final ").append(range.baseType.accept(typeVisitor)).append(" to;\n");
+		contents.append(settings.indent).append("public final ").append(typeVisitor.process(range.baseType)).append(" from;\n");
+		contents.append(settings.indent).append("public final ").append(typeVisitor.process(range.baseType)).append(" to;\n");
 		contents.append(settings.indent).append("\n");
 		contents.append(settings.indent)
 				.append("public ")
 				.append(range.cls.getName())
 				.append("(")
-				.append(range.baseType.accept(typeVisitor))
+				.append(typeVisitor.process(range.baseType))
 				.append(" from, ")
-				.append(range.baseType.accept(typeVisitor))
+				.append(typeVisitor.process(range.baseType))
 				.append(" to) {\n");
 		contents.append(settings.indent).append(settings.indent).append("this.from = from;\n");
 		contents.append(settings.indent).append(settings.indent).append("this.to = to;\n");

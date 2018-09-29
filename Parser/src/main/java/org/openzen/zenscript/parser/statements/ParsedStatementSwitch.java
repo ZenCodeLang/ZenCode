@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser.statements;
 import java.util.List;
 import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
@@ -18,10 +19,12 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.statement.InvalidStatement;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -50,7 +53,11 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		SwitchScope innerScope = new SwitchScope(scope, result);
 		
 		for (ParsedSwitchCase switchCase : cases) {
-			result.cases.add(switchCase.compile(result.value.type, innerScope));
+			try {
+				result.cases.add(switchCase.compile(result.value.type, innerScope));
+			} catch (CompileException ex) {
+				return new InvalidStatement(ex);
+			}
 		}
 		
 		return result;
@@ -81,8 +88,8 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
-			return outer.getType(position, name, storage);
+		public TypeID getType(CodePosition position, List<GenericName> name) {
+			return outer.getType(position, name);
 		}
 		
 		@Override
@@ -101,7 +108,7 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		}
 
 		@Override
-		public ITypeID getThisType() {
+		public StoredType getThisType() {
 			return outer.getThisType();
 		}
 

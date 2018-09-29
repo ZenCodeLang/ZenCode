@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.ParsedFile;
 
@@ -53,21 +54,17 @@ public class ParsedModule {
 		}
 	}
 	
-	public ParsedFile[] parse(CompilingPackage compilingPackage) throws IOException {
+	public ParsedFile[] parse(CompilingPackage compilingPackage) throws ParseException {
 		// TODO: load bracket parsers from host plugins
 		List<ParsedFile> files = new ArrayList<>();
 		parse(files, compilingPackage, null, sourceDirectory);
 		return files.toArray(new ParsedFile[files.size()]);
 	}
 	
-	private void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, File directory) throws IOException {
+	private void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, File directory) throws ParseException {
 		for (File file : directory.listFiles()) {
 			if (file.getName().endsWith(".zs")) {
-				try {
-					files.add(ParsedFile.parse(pkg, bracketParser, file));
-				} catch (CompileException ex) {
-					exceptionLogger.accept(ex);
-				}
+				files.add(ParsedFile.parse(pkg, bracketParser, file));
 			} else if (file.isDirectory()) {
 				CompilingPackage innerPackage = pkg.getOrCreatePackage(file.getName());
 				pkg.addPackage(file.getName(), innerPackage);

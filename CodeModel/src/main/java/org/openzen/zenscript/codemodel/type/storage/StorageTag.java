@@ -15,4 +15,6 @@ public interface StorageTag {
 	boolean canCastTo(StorageTag other);
 	
 	boolean canCastFrom(StorageTag other);
+	
+	boolean isDestructible();
 }

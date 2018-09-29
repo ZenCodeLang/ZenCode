@@ -9,16 +9,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -37,11 +38,11 @@ public class PartialVariantOptionExpression implements IPartialExpression {
 	
 	@Override
 	public Expression eval() {
-		throw new CompileException(position, CompileExceptionCode.VARIANT_OPTION_NOT_AN_EXPRESSION, "Cannot use a variant option as expression");
+		return new InvalidExpression(position, option.variant, CompileExceptionCode.VARIANT_OPTION_NOT_AN_EXPRESSION, "Cannot use a variant option as expression");
 	}
 
 	@Override
-	public List<ITypeID>[] predictCallTypes(TypeScope scope, List<ITypeID> hints, int arguments) {
+	public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) {
 		if (arguments != option.getOption().types.length)
 			return new List[0];
 		
@@ -49,7 +50,7 @@ public class PartialVariantOptionExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<ITypeID> hints, int arguments) {
+	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
 		if (arguments != option.getOption().types.length)
 			return Collections.emptyList();
 		
@@ -57,17 +58,17 @@ public class PartialVariantOptionExpression implements IPartialExpression {
 	}
 
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<ITypeID> hints, GenericName name) {
-		throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Variant options don't have members");
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) {
+		return new InvalidExpression(position, CompileExceptionCode.NO_SUCH_MEMBER, "Variant options don't have members");
 	}
 
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
+	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) {
 		return new VariantValueExpression(position, option.variant, option, arguments.arguments);
 	}
 
 	@Override
-	public ITypeID[] getGenericCallTypes() {
-		return ITypeID.NONE;
+	public TypeID[] getGenericCallTypes() {
+		return TypeID.NONE;
 	}
 }

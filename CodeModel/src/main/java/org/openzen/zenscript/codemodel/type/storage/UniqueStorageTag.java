@@ -33,4 +33,9 @@ public class UniqueStorageTag implements StorageTag {
 	public boolean canCastFrom(StorageTag other) {
 		return other == this;
 	}
+
+	@Override
+	public boolean isDestructible() {
+		return true;
+	}
 }

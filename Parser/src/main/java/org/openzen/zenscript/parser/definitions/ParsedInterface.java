@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -24,22 +25,36 @@ import org.openzen.zenscript.parser.type.IParsedType;
  * @author Hoofdgebruiker
  */
 public class ParsedInterface extends BaseParsedDefinition {
-	public static ParsedInterface parseInterface(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedInterface parseInterface(
+			CompilingPackage pkg,
+			CodePosition position,
+			int modifiers,
+			ParsedAnnotation[] annotations,
+			ZSTokenParser tokens,
+			HighLevelDefinition outerDefinition) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> genericParameters = ParsedTypeParameter.parseAll(tokens);
 		List<IParsedType> superInterfaces = Collections.emptyList();
-		if (tokens.optional(ZSTokenType.T_COLON) != null) {
-			superInterfaces = new ArrayList<>();
-			do {
-				superInterfaces.add(IParsedType.parse(tokens));
-			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+		try {
+			if (tokens.optional(ZSTokenType.T_COLON) != null) {
+				superInterfaces = new ArrayList<>();
+				do {
+					superInterfaces.add(IParsedType.parse(tokens));
+				} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+			}
+		} catch (ParseException ex) {
+			tokens.logError(ex);
 		}
 		
-		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
-		
 		ParsedInterface result = new ParsedInterface(pkg, position, modifiers, annotations, name, genericParameters, superInterfaces, outerDefinition);
-		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-			result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+		
+		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
+		try {
+			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
+				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+			}
+		} catch (ParseException ex) {
+			tokens.recoverUntilToken(ZSTokenType.T_ACLOSE);
 		}
 		return result;
 	}
@@ -69,7 +84,7 @@ public class ParsedInterface extends BaseParsedDefinition {
 		ParsedTypeParameter.compile(context, compiled.typeParameters, typeParameters);
 		
 		for (IParsedType superInterface : superInterfaces)
-			compiled.addBaseInterface(superInterface.compile(context));
+			compiled.addBaseInterface(superInterface.compileUnstored(context));
 		
 		super.linkTypesLocal(context);
 	}

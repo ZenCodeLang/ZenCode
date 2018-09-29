@@ -34,4 +34,9 @@ public class BorrowStorageTag implements StorageTag {
 	public boolean canCastFrom(StorageTag other) {
 		return true;
 	}
+
+	@Override
+	public boolean isDestructible() {
+		return false;
+	}
 }

@@ -29,7 +29,7 @@ import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.compiler.CompileScope;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javashared.JavaNativeClass;
@@ -147,7 +147,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			firstExtends = false;
 		}
 		
-		for (ITypeID base : definition.baseInterfaces) {
+		for (TypeID base : definition.baseInterfaces) {
 			if (firstExtends) {
 				firstExtends = false;
 				output.append(" extends ");
@@ -369,10 +369,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	
 	private void compileMembers(JavaSourceFileScope scope, HighLevelDefinition definition) {
 		if (definition.hasTag(JavaNativeClass.class)) {
-			ITypeID[] typeParameters = new ITypeID[definition.getNumberOfGenericParameters()];
+			TypeID[] typeParameters = new TypeID[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < typeParameters.length; i++)
-				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i], null);
-			ITypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, null, typeParameters);
+				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]);
+			TypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, typeParameters);
 			
 			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.typeParameters, indent + settings.indent, output, scope, definition);
 			for (IDefinitionMember member : definition.members)

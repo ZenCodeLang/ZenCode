@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.javashared;
 
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -13,9 +13,9 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class JavaSynthesizedFunctionInstance {
 	private final JavaSynthesizedFunction function;
-	public final ITypeID[] typeArguments;
+	public final TypeID[] typeArguments;
 	
-	public JavaSynthesizedFunctionInstance(JavaSynthesizedFunction function, ITypeID[] typeArguments) {
+	public JavaSynthesizedFunctionInstance(JavaSynthesizedFunction function, TypeID[] typeArguments) {
 		this.function = function;
 		this.typeArguments = typeArguments;
 	}

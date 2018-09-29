@@ -17,7 +17,7 @@ public class ConstantCharExpression extends Expression {
 	public final char value;
 	
 	public ConstantCharExpression(CodePosition position, char value) {
-		super(position, BasicTypeID.CHAR, null);
+		super(position, BasicTypeID.CHAR.stored, null);
 		
 		this.value = value;
 	}

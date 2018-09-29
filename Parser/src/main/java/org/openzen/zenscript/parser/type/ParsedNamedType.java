@@ -8,15 +8,16 @@ package org.openzen.zenscript.parser.type;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -43,7 +44,7 @@ public class ParsedNamedType implements IParsedType {
 	}
 	
 	@Override
-	public ITypeID compile(TypeResolutionContext context) {
+	public StoredType compile(TypeResolutionContext context) {
 		if (name.size() == 1 && name.get(0).name.equals("Iterator"))
 			return toIterator(context);
 		
@@ -52,15 +53,23 @@ public class ParsedNamedType implements IParsedType {
 			genericNames.add(namePart.compile(context));
 		
 		StorageTag storage = this.storage.resolve(position, context);
-		ITypeID baseType = context.getType(position, genericNames, storage);
+		TypeID baseType = context.getType(position, genericNames);
 		if (baseType == null)
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString());
+			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored(storage);
 		
-		ITypeID result = context.getTypeRegistry().getModified(modifiers, baseType);
+		TypeID result = context.getTypeRegistry().getModified(modifiers, baseType);
 		if (result == null)
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString());
+			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored(storage);
 		
-		return result;
+		return result.stored(storage);
+	}
+	
+	@Override
+	public TypeID compileUnstored(TypeResolutionContext context) {
+		if (storage != null)
+			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage not supported here");
+		
+		return (TypeID)compile(context);
 	}
 	
 	@Override
@@ -93,20 +102,20 @@ public class ParsedNamedType implements IParsedType {
 	}
 	
 	@Override
-	public ITypeID[] compileTypeArguments(BaseScope scope) {
+	public TypeID[] compileTypeArguments(BaseScope scope) {
 		ParsedNamePart last = name.get(name.size() - 1);
-		return IParsedType.compileList(last.typeArguments, scope);
+		return IParsedType.compileListUnstored(last.typeArguments, scope);
 	}
 	
-	private ITypeID toIterator(TypeResolutionContext context) {
+	private StoredType toIterator(TypeResolutionContext context) {
 		List<IParsedType> genericTypes = name.get(0).typeArguments;
-		ITypeID[] iteratorTypes = new ITypeID[genericTypes.size()];
+		StoredType[] iteratorTypes = new StoredType[genericTypes.size()];
 		for (int i = 0; i < genericTypes.size(); i++)
 			iteratorTypes[i] = genericTypes.get(i).compile(context);
 
 		StorageTag storage = this.storage.resolve(position, context);
-		ITypeID type = context.getTypeRegistry().getIterator(iteratorTypes, storage);
-		return context.getTypeRegistry().getModified(modifiers, type);
+		TypeID type = context.getTypeRegistry().getIterator(iteratorTypes);
+		return context.getTypeRegistry().getModified(modifiers, type).stored(storage);
 	}
 	
 	public static class ParsedNamePart {
@@ -119,7 +128,7 @@ public class ParsedNamedType implements IParsedType {
 		}
 		
 		private GenericName compile(TypeResolutionContext context) {
-			return new GenericName(name, IParsedType.compileList(typeArguments, context));
+			return new GenericName(name, IParsedType.compileListUnstored(typeArguments, context));
 		}
 		
 		@Override

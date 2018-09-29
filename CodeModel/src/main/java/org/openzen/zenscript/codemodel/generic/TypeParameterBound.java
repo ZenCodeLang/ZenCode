@@ -6,7 +6,7 @@
 package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
@@ -23,7 +23,7 @@ public abstract class TypeParameterBound {
 	
 	public abstract void registerMembers(LocalMemberCache cache, TypeMembers type);
 	
-	public abstract boolean matches(LocalMemberCache cache, ITypeID type);
+	public abstract boolean matches(LocalMemberCache cache, TypeID type);
 	
 	public abstract TypeParameterBound instance(GenericMapper mapper);
 	

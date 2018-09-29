@@ -14,7 +14,8 @@ import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
 import org.openzen.zenscript.codemodel.expression.GlobalExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -24,9 +25,9 @@ public class PartialGlobalExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final String name;
 	private final IPartialExpression resolution;
-	private final ITypeID[] typeParameters;
+	private final TypeID[] typeParameters;
 	
-	public PartialGlobalExpression(CodePosition position, String name, IPartialExpression resolution, ITypeID[] typeParameters) {
+	public PartialGlobalExpression(CodePosition position, String name, IPartialExpression resolution, TypeID[] typeParameters) {
 		this.position = position;
 		this.name = name;
 		this.resolution = resolution;
@@ -39,27 +40,27 @@ public class PartialGlobalExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<ITypeID>[] predictCallTypes(TypeScope scope, List<ITypeID> hints, int arguments) {
+	public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) {
 		return resolution.predictCallTypes(scope, hints, arguments);
 	}
 
 	@Override
-	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<ITypeID> hints, int arguments) {
+	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
 		return resolution.getPossibleFunctionHeaders(scope, hints, arguments);
 	}
 
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<ITypeID> hints, GenericName name) {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) {
 		return eval().getMember(position, scope, hints, name);
 	}
 
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
+	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) {
 		return new GlobalCallExpression(position, name, arguments, resolution.call(position, scope, hints, arguments));
 	}
 
 	@Override
-	public ITypeID[] getGenericCallTypes() {
+	public TypeID[] getGenericCallTypes() {
 		return typeParameters;
 	}
 }

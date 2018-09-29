@@ -7,15 +7,15 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -41,11 +41,11 @@ public class ParsedExpressionConditional extends ParsedExpression {
 		
 		TypeMembers thenMembers = scope.getTypeMembers(cIfThen.type);
 		TypeMembers elseMembers = scope.getTypeMembers(cIfElse.type);
-		ITypeID resultType = null;
-		for (ITypeID hint : scope.hints) {
+		StoredType resultType = null;
+		for (StoredType hint : scope.hints) {
 			if (thenMembers.canCastImplicit(hint) && elseMembers.canCastImplicit(hint)) {
 				if (resultType != null)
-					throw new CompileException(position, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Not sure which type to use");
+					return new InvalidExpression(position, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Not sure which type to use");
 				
 				resultType = hint;
 			}
@@ -55,14 +55,14 @@ public class ParsedExpressionConditional extends ParsedExpression {
 			resultType = thenMembers.union(cIfElse.type);
 		
 		if (resultType == null)
-			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + cIfThen.type + " and " + cIfElse.type);
+			return new InvalidExpression(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + cIfThen.type + " and " + cIfElse.type);
 		
 		cIfThen = cIfThen.castImplicit(position, scope, resultType);
 		cIfElse = cIfElse.castImplicit(position, scope, resultType);
 		
 		return new ConditionalExpression(
 				position,
-				condition.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL),
+				condition.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL.stored),
 				cIfThen,
 				cIfElse,
 				resultType);

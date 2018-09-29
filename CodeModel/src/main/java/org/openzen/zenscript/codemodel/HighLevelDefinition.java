@@ -25,7 +25,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -42,7 +42,7 @@ public abstract class HighLevelDefinition extends Taggable {
 	public DefinitionAnnotation[] annotations = DefinitionAnnotation.NONE;
 	
 	public HighLevelDefinition outerDefinition;
-	private ITypeID superType;
+	private TypeID superType;
 	
 	private boolean isDestructible = false;
 	
@@ -72,11 +72,11 @@ public abstract class HighLevelDefinition extends Taggable {
 		return pkg.fullName + '.' + name;
 	}
 	
-	public ITypeID getSuperType() {
+	public TypeID getSuperType() {
 		return superType;
 	}
 	
-	public void setSuperType(ITypeID superType) {
+	public void setSuperType(TypeID superType) {
 		this.superType = superType;
 		if (outerDefinition != null)
 			isDestructible |= outerDefinition.isDestructible;

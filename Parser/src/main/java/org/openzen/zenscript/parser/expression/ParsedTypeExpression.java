@@ -9,7 +9,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -27,7 +26,7 @@ public class ParsedTypeExpression extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		return new PartialTypeExpression(position, type.compile(scope), null);
+		return new PartialTypeExpression(position, type.compileUnstored(scope), null);
 	}
 
 	@Override

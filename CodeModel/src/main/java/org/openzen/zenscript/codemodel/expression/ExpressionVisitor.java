@@ -94,6 +94,10 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitInterfaceCast(InterfaceCastExpression expression);
 	
+	public default T visitInvalid(InvalidExpression expression) {
+		throw new RuntimeException("Invalid expression");
+	}
+	
 	public T visitIs(IsExpression expression);
 	
 	public T visitMakeConst(MakeConstExpression expression);

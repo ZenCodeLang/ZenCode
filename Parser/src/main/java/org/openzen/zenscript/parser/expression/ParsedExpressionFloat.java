@@ -12,11 +12,13 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
@@ -55,19 +57,23 @@ public class ParsedExpressionFloat extends ParsedExpression {
 		if (suffix.equals("d") || suffix.equals("D"))
 			return new ConstantDoubleExpression(position, value);
 		
-		for (ITypeID hint : scope.hints) {
+		for (StoredType hint : scope.hints) {
 			if (suffix.isEmpty()) {
-				if (hint == BasicTypeID.DOUBLE)
+				if (hint.isBasic(BasicTypeID.DOUBLE))
 					return new ConstantDoubleExpression(position, value);
-				else if (hint == BasicTypeID.FLOAT)
+				else if (hint.isBasic(BasicTypeID.FLOAT))
 					return new ConstantFloatExpression(position, (float) value);
 			} else {
 				TypeMembers members = scope.getTypeMembers(hint);
 				FunctionalMemberRef method = members.getOrCreateGroup(suffix, true).getStaticMethod(1, hint);
 				if (method != null) {
-					ParsedCallArguments parsedArguments = new ParsedCallArguments(Collections.emptyList(), Collections.singletonList(new ParsedExpressionFloat(position, value)));
-					CallArguments arguments = parsedArguments.compileCall(position, scope, ITypeID.NONE, method.getHeader());
-					method.callStatic(position, hint, method.getHeader(), arguments, scope);
+					try {
+						ParsedCallArguments parsedArguments = new ParsedCallArguments(Collections.emptyList(), Collections.singletonList(new ParsedExpressionFloat(position, value)));
+						CallArguments arguments = parsedArguments.compileCall(position, scope, TypeID.NONE, method.getHeader());
+						method.callStatic(position, hint.type, method.getHeader(), arguments, scope);
+					} catch (CompileException ex) {
+						return new InvalidExpression(hint, ex);
+					}
 				}
 			}
 		}
@@ -81,9 +87,9 @@ public class ParsedExpressionFloat extends ParsedExpression {
 				types.append(scope.hints.get(i).toString());
 			}
 
-			throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Cannot cast a floating-point value to any of these types: " + types);
+			return new InvalidExpression(position, CompileExceptionCode.INVALID_CAST, "Cannot cast a floating-point value to any of these types: " + types);
 		} else {
-			throw new CompileException(position, CompileExceptionCode.INVALID_SUFFIX, "Invalid suffix: " + suffix);
+			return new InvalidExpression(position, CompileExceptionCode.INVALID_SUFFIX, "Invalid suffix: " + suffix);
 		}
 	}
 

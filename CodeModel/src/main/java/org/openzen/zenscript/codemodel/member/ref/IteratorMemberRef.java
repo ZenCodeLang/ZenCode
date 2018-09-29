@@ -10,7 +10,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -18,12 +18,12 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class IteratorMemberRef implements DefinitionMemberRef {
 	public final IteratorMember target;
-	private final ITypeID type;
-	public final ITypeID[] types;
+	private final StoredType owner;
+	public final StoredType[] types;
 	
-	public IteratorMemberRef(IteratorMember target, ITypeID type, ITypeID... types) {
+	public IteratorMemberRef(IteratorMember target, StoredType owner, StoredType... types) {
 		this.target = target;
-		this.type = type;
+		this.owner = owner;
 		this.types = types;
 	}
 
@@ -33,8 +33,8 @@ public class IteratorMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public ITypeID getOwnerType() {
-		return type;
+	public StoredType getOwnerType() {
+		return owner;
 	}
 
 	@Override

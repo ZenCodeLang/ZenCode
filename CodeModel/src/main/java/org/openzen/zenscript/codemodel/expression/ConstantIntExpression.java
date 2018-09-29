@@ -17,7 +17,7 @@ public class ConstantIntExpression extends Expression {
 	public final int value;
 	
 	public ConstantIntExpression(CodePosition position, int value) {
-		super(position, BasicTypeID.INT, null);
+		super(position, BasicTypeID.INT.stored, null);
 		
 		this.value = value;
 	}

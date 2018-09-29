@@ -6,7 +6,7 @@
 package org.openzen.zenscript.javashared;
 
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -15,9 +15,9 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class JavaSynthesizedRange {
 	public final JavaClass cls;
 	public final TypeParameter[] typeParameters;
-	public final ITypeID baseType;
+	public final StoredType baseType;
 	
-	public JavaSynthesizedRange(JavaClass cls, TypeParameter[] typeParameters, ITypeID baseType) {
+	public JavaSynthesizedRange(JavaClass cls, TypeParameter[] typeParameters, StoredType baseType) {
 		this.cls = cls;
 		this.typeParameters = typeParameters;
 		this.baseType = baseType;

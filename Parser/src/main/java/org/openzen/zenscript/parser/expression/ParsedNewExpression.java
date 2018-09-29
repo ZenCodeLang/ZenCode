@@ -11,13 +11,14 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.parser.PrecompilationState;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -37,7 +38,7 @@ public class ParsedNewExpression extends ParsedExpression{
 	
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		ITypeID type = this.type.compile(scope);
+		StoredType type = this.type.compile(scope);
 		return compile(position, type, arguments, scope);
 	}
 
@@ -46,21 +47,25 @@ public class ParsedNewExpression extends ParsedExpression{
 		return true;
 	}
 	
-	public static NewExpression compile(CodePosition position, ITypeID type, ParsedCallArguments arguments, ExpressionScope scope) {
-		DefinitionMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
-		List<ITypeID>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.arguments.size());
-		CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
-		FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
-		if (member == null)
-			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching constructor found");
-		if (!member.isConstructor())
-			throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "COMPILER BUG: constructor is not a constructor");
-		
-		return new NewExpression(
-				position,
-				type,
-				member,
-				compiledArguments,
-				member.getHeader().fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments, scope.getLocalTypeParameters()));
+	public static Expression compile(CodePosition position, StoredType type, ParsedCallArguments arguments, ExpressionScope scope) {
+		try {
+			TypeMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
+			List<StoredType>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.arguments.size());
+			CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
+			FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
+			if (member == null)
+				return new InvalidExpression(position, type, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching constructor found");
+			if (!member.isConstructor())
+				return new InvalidExpression(position, type, CompileExceptionCode.INTERNAL_ERROR, "COMPILER BUG: constructor is not a constructor");
+
+			return new NewExpression(
+					position,
+					type,
+					member,
+					compiledArguments,
+					member.getHeader().fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments, scope.getLocalTypeParameters()));
+		} catch (CompileException ex) {
+			return new InvalidExpression(type, ex);
+		}
 	}
 }

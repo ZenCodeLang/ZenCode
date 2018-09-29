@@ -11,6 +11,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 
@@ -21,7 +22,7 @@ import org.openzen.zenscript.lexer.ZSTokenType;
 public class ParsedStorageTag {
 	public static final ParsedStorageTag NULL = new ParsedStorageTag("", null);
 	
-	public static ParsedStorageTag parse(ZSTokenParser parser) {
+	public static ParsedStorageTag parse(ZSTokenParser parser) throws ParseException {
 		if (parser.optional(ZSTokenType.T_BACKTICK) == null)
 			return NULL;
 		

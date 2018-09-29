@@ -7,13 +7,16 @@ package org.openzen.zenscript.parser.type;
 
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 
@@ -47,13 +50,26 @@ public class ParsedTypeGenericMap implements IParsedType {
 	}
 
 	@Override
-	public ITypeID compile(TypeResolutionContext context) {
+	public StoredType compile(TypeResolutionContext context) {
 		TypeParameter cKey = key.compiled;
-		ITypeID valueType = this.value.compile(new GenericMapScope(context, cKey));
+		StoredType valueType = this.value.compile(new GenericMapScope(context, cKey));
 		
 		GlobalTypeRegistry registry = context.getTypeRegistry();
 		StorageTag storage = this.storage.resolve(position, context);
-		return registry.getModified(modifiers, registry.getGenericMap(valueType, cKey, storage));
+		return registry.getModified(modifiers, registry.getGenericMap(valueType, cKey)).stored(storage);
+	}
+
+	@Override
+	public TypeID compileUnstored(TypeResolutionContext context) {
+		if (storage != null)
+			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage tag not supported here");
+		
+		TypeParameter cKey = key.compiled;
+		StoredType valueType = this.value.compile(new GenericMapScope(context, cKey));
+		
+		GlobalTypeRegistry registry = context.getTypeRegistry();
+		StorageTag storage = this.storage.resolve(position, context);
+		return registry.getModified(modifiers, registry.getGenericMap(valueType, cKey));
 	}
 	
 	private class GenericMapScope implements TypeResolutionContext {
@@ -71,11 +87,11 @@ public class ParsedTypeGenericMap implements IParsedType {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
+		public TypeID getType(CodePosition position, List<GenericName> name) {
 			if (name.get(0).name.equals(parameter.name) && name.size() == 1 && name.get(0).hasNoArguments())
-				return getTypeRegistry().getGeneric(parameter, storage);
+				return getTypeRegistry().getGeneric(parameter);
 			
-			return outer.getType(position, name, storage);
+			return outer.getType(position, name);
 		}
 		
 		@Override
@@ -84,7 +100,7 @@ public class ParsedTypeGenericMap implements IParsedType {
 		}
 		
 		@Override
-		public ITypeID getThisType() {
+		public StoredType getThisType() {
 			return outer.getThisType();
 		}
 

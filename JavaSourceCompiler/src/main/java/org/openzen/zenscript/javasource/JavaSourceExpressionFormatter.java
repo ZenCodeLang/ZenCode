@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.javasource;
 
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -90,10 +88,10 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
@@ -256,7 +254,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		
 		JavaMethod method = expression.member.getTag(JavaMethod.class);
 		if (method == null)
-			throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "No tag for caster");
+			throw new RuntimeException(expression.position + ": No tag for caster");
 		
 		if (method.kind == JavaMethod.Kind.COMPILED) {
 			return (ExpressionString)method.translation.translate(expression, this);
@@ -449,7 +447,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString visitGetStaticField(GetStaticFieldExpression expression) {
 		JavaField field = expression.field.getTag(JavaField.class);
 		if (field == null)
-			throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Missing field tag");
+			throw new RuntimeException(expression.position + ": Missing field tag");
 		
 		return new ExpressionString(scope.type(field.cls) + '.' + field.name, JavaOperator.MEMBER);
 	}
@@ -555,7 +553,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitNull(NullExpression expression) {
-		if (expression.type.withoutOptional() == BasicTypeID.USIZE)
+		if (expression.type.withoutOptional().type == BasicTypeID.USIZE)
 			return new ExpressionString("-1", JavaOperator.PRIMARY); // usize? null = -1
 		
 		return new ExpressionString("null", JavaOperator.PRIMARY);
@@ -619,7 +617,8 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString visitSetStaticField(SetStaticFieldExpression expression) {
 		JavaField field = expression.field.getTag(JavaField.class);
 		if (field == null)
-			throw new CompileException(expression.position, CompileExceptionCode.INTERNAL_ERROR, "Missing field tag");
+			throw new RuntimeException(expression.position + ": Missing field tag");
+		
 		if (field.cls.fullName.equals(scope.fileScope.cls.fullName) && !scope.hasLocalVariable(field.name)) {
 			return new ExpressionString(
 					field.name + " = " + expression.value.accept(this).value,
@@ -659,14 +658,14 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString visitStorageCast(StorageCastExpression expression) {
 		ExpressionString value = expression.accept(this);
 		if (expression.value.type.isDestructible()) {
-			StorageTag fromTag = expression.value.type.getStorage();
-			StorageTag toTag = expression.type.getStorage();
-			if (fromTag == SharedStorageTag.INSTANCE && toTag == BorrowStorageTag.INVOCATION) {
+			StorageTag fromTag = expression.value.type.storage;
+			StorageTag toTag = expression.type.storage;
+			if (fromTag == SharedStorageTag.INSTANCE) {
 				// Shared<T>.get()
 				return value.unaryPostfix(JavaOperator.CALL, ".get()");
 			} else if (fromTag == UniqueStorageTag.INSTANCE && toTag == SharedStorageTag.INSTANCE) {
 				// new Shared<T>(value)
-				return new ExpressionString("new " + scope.type(JavaClass.SHARED) + "(" + value.value + ")", JavaOperator.NEW);
+				return new ExpressionString("new " + scope.type(JavaClass.SHARED) + "<>(" + value.value + ")", JavaOperator.NEW);
 			}
 		}
 		return value;
@@ -682,7 +681,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (scope.isExpansion || scope.thisType == expression.type) {
 			return new ExpressionString(scope.isExpansion ? "self" : "this", JavaOperator.PRIMARY);
 		} else {
-			return new ExpressionString(constructThisName((DefinitionTypeID)expression.type) + ".this", JavaOperator.MEMBER);
+			return new ExpressionString(constructThisName((DefinitionTypeID)expression.type.type) + ".this", JavaOperator.MEMBER);
 		}
 	}
 	
@@ -705,7 +704,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
-		DefinitionTypeID type = (DefinitionTypeID) expression.value.type;
+		DefinitionTypeID type = (DefinitionTypeID) expression.value.type.type;
 		
 		String errorType = scope.fileScope.importer.importType(RESULT_ERROR);
 		String okType = scope.fileScope.importer.importType(RESULT_OK);
@@ -721,7 +720,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
-		DefinitionTypeID type = (DefinitionTypeID) expression.value.type;
+		DefinitionTypeID type = (DefinitionTypeID) expression.value.type.type;
 		
 		String errorType = scope.fileScope.importer.importType(RESULT_ERROR);
 		String okType = scope.fileScope.importer.importType(RESULT_OK);
@@ -750,7 +749,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		return expression.value.accept(this);
 	}
 	
-	private String formatTypeArguments(ITypeID[] types) {
+	private String formatTypeArguments(TypeID[] types) {
 		if (types == null || types.length == 0)
 			return "";
 		
@@ -767,19 +766,19 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		return output.toString();
 	}
 	
-	public ExpressionString newArray(ITypeID elementType, ExpressionString length) {
-		if (elementType instanceof GenericTypeID) {
+	public ExpressionString newArray(StoredType elementType, ExpressionString length) {
+		if (elementType.type instanceof GenericTypeID) {
 			// generic array creation
-			GenericTypeID generic = (GenericTypeID)elementType;
+			GenericTypeID generic = (GenericTypeID)elementType.type;
 			String array = scope.type(new JavaClass("java.lang.reflect", "Array", JavaClass.Kind.CLASS));
 			return new ExpressionString("(" + generic.parameter.name + "[])(" + array + ".newInstance(typeOf" + generic.parameter.name + ", " + length.value + "))", JavaOperator.CAST);
-		} else if (elementType == BasicTypeID.BYTE) {
+		} else if (elementType.type == BasicTypeID.BYTE) {
 			return new ExpressionString("new byte[" + length.value + "]", JavaOperator.NEW);
-		} else if (elementType == BasicTypeID.USHORT) {
+		} else if (elementType.type == BasicTypeID.USHORT) {
 			return new ExpressionString("new short[" + length.value + "]", JavaOperator.NEW);
-		} else if (elementType == BasicTypeID.UINT) {
+		} else if (elementType.type == BasicTypeID.UINT) {
 			return new ExpressionString("new int[" + length.value + "]", JavaOperator.NEW);
-		} else if (elementType == BasicTypeID.ULONG) {
+		} else if (elementType.type == BasicTypeID.ULONG) {
 			return new ExpressionString("new long[" + length.value + "]", JavaOperator.NEW);
 		} else {
 			return new ExpressionString("new " + scope.type(elementType) + "[" + length.value + "]", JavaOperator.NEW);
@@ -816,7 +815,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		output.append(method).append("(");
 		boolean first = true;
 		if (expression.arguments.typeArguments != null) {
-			for (ITypeID typeArgument : expression.arguments.typeArguments) {
+			for (TypeID typeArgument : expression.arguments.typeArguments) {
 				if (!first)
 					output.append(", ");
 				
@@ -1177,11 +1176,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case ARRAY_INDEXGET: return new ExpressionString(call.target.accept(this) + "[" + call.arguments.arguments[0].accept(this) + "]", JavaOperator.INDEX);
 			case ARRAY_INDEXSET: {
 				ExpressionString value = call.arguments.arguments[1].accept(this);
-				ITypeID baseType = ((ArrayTypeID)(call.target.type)).elementType;
+				StoredType baseType = ((ArrayTypeID)(call.target.type.type)).elementType;
 				String asType = "";
-				if (baseType == BasicTypeID.BYTE) {
+				if (baseType.type == BasicTypeID.BYTE) {
 					asType = "(byte)";
-				} else if (baseType == BasicTypeID.USHORT) {
+				} else if (baseType.type == BasicTypeID.USHORT) {
 					asType = "(short)";
 				}
 				
@@ -1211,7 +1210,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				}
 			}
 			case ARRAY_CONTAINS: {
-				JavaMethod method = scope.fileScope.helperGenerator.createArrayContains((ArrayTypeID)call.target.type);
+				JavaMethod method = scope.fileScope.helperGenerator.createArrayContains((ArrayTypeID)call.target.type.type);
 				return callAsStatic(scope.fileScope.importer.importType(method.cls) + '.' + method.name, call);
 			}
 			case ARRAY_EQUALS: return callAsStatic(scope.type(JavaClass.ARRAYS) + ".equals", call);
@@ -1220,7 +1219,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case ARRAY_NOTSAME: return binary(call, JavaOperator.NOTEQUALS);
 			case FUNCTION_CALL: {
 				StringBuilder output = new StringBuilder();
-				JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)call.target.type);
+				JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)call.target.type.type);
 				output.append(call.target.accept(this).value);
 				output.append(".").append(function.getMethod()).append("(");
 				int i = 0;
@@ -1237,10 +1236,10 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case FUNCTION_NOTSAME: return binary(call, JavaOperator.NOTEQUALS);
 			case OBJECT_SAME: return binary(call, JavaOperator.EQUALS);
 			case OBJECT_NOTSAME: return binary(call, JavaOperator.NOTEQUALS);
-			case OPTIONAL_IS_NULL: return call.target.type.withoutOptional() == BasicTypeID.USIZE
+			case OPTIONAL_IS_NULL: return call.target.type.withoutOptional().type == BasicTypeID.USIZE
 					? call.target.accept(this).unaryPostfix(JavaOperator.NOTEQUALS, " < 0")
 					: call.target.accept(this).unaryPostfix(JavaOperator.EQUALS, " == null");
-			case OPTIONAL_IS_NOT_NULL: return call.target.type.withoutOptional() == BasicTypeID.USIZE
+			case OPTIONAL_IS_NOT_NULL: return call.target.type.withoutOptional().type == BasicTypeID.USIZE
 					? call.target.accept(this).unaryPostfix(JavaOperator.NOTEQUALS, " >= 0")
 					: call.target.accept(this).unaryPostfix(JavaOperator.NOTEQUALS, " != null");
 			case AUTOOP_NOTEQUALS:
@@ -1374,12 +1373,12 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			case ASSOC_ISEMPTY:
 				return call.target.accept(this).unaryPostfix(JavaOperator.CALL, ".isEmpty()");
 			case ASSOC_KEYS: {
-				AssocTypeID type = (AssocTypeID) call.target.type;
+				AssocTypeID type = (AssocTypeID) call.target.type.type;
 				ExpressionString keys = hoist(call.target.accept(this).unaryPostfix(JavaOperator.CALL, ".keys()"), scope.type(type.keyType) + "[]");
 				return keys.unaryPostfix(JavaOperator.CALL, ".toArray(new " + scope.type(type.keyType) + "[" + keys.value + ".length])");
 			}
 			case ASSOC_VALUES:
-				AssocTypeID type = (AssocTypeID) call.target.type;
+				AssocTypeID type = (AssocTypeID) call.target.type.type;
 				ExpressionString values = hoist(call.target.accept(this).unaryPostfix(JavaOperator.CALL, ".values()"), scope.type(type.valueType) + "[]");
 				return values.unaryPostfix(JavaOperator.CALL, ".toArray(new " + scope.type(type.valueType) + "[" + values.value + ".length])");
 			case ASSOC_HASHCODE:
@@ -1609,7 +1608,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				return callStatic("new String", expression.arguments.arguments[0]);
 			case ASSOC_CONSTRUCTOR: {
 				String typeName = scope.type(new JavaClass("java.util", "HashMap", JavaClass.Kind.CLASS));
-				AssocTypeID type = (AssocTypeID) expression.type;
+				AssocTypeID type = (AssocTypeID) expression.type.type;
 				
 				StringBuilder result = new StringBuilder();
 				result.append("new ").append(typeName).append("<");
@@ -1626,7 +1625,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				return new ExpressionString(result.toString(), JavaOperator.NEW);
 			}
 			case ARRAY_CONSTRUCTOR_SIZED: {
-				ArrayTypeID type = (ArrayTypeID) expression.type;
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 				if (type.dimension == 1) {
 					ExpressionString size = expression.arguments.arguments[0].accept(this);
 					return newArray(type.elementType, size);
@@ -1636,7 +1635,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				}
 			}
 			case ARRAY_CONSTRUCTOR_INITIAL_VALUE: {
-				ArrayTypeID type = (ArrayTypeID) expression.type;
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 				
 				if (type.dimension == 1) {
 					ExpressionString size = duplicable(expression.arguments.arguments[0]).accept(this);
@@ -1678,7 +1677,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				}
 			}
 			case ARRAY_CONSTRUCTOR_LAMBDA: {
-				ArrayTypeID type = (ArrayTypeID) expression.type;
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 				
 				if (type.dimension == 1) {
 					Expression lambda = expression.arguments.arguments[1];
@@ -1696,7 +1695,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 								.append(newArray(type.elementType, size))
 								.append(";")
 								.toString());
-					VarStatement tempI = new VarStatement(expression.position, scope.createTempVariable(), BasicTypeID.INT, null, true);
+					VarStatement tempI = new VarStatement(expression.position, scope.createTempVariable(), BasicTypeID.INT.stored, null, true);
 					target.writeLine(new StringBuilder()
 								.append("for (int ")
 								.append(tempI.name)
@@ -1727,7 +1726,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							throw new UnsupportedOperationException("Not yet supported!");
 						}
 					} else {
-						JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)lambda.type);
+						JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)lambda.type.type);
 						target.writeLine(new StringBuilder()
 								.append(scope.settings.indent)
 								.append(temp)
@@ -1748,7 +1747,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				}
 			}
 			case ARRAY_CONSTRUCTOR_PROJECTED: {
-				ArrayTypeID type = (ArrayTypeID) expression.type;
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 				
 				if (type.dimension == 1) {
 					Expression original = duplicable(expression.arguments.arguments[0]);
@@ -1767,7 +1766,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							.append(newArray(type.elementType, originalString.unaryPostfix(JavaOperator.MEMBER, ".length")))
 							.append(";")
 							.toString());
-					VarStatement tempI = new VarStatement(expression.position, scope.createTempVariable(), BasicTypeID.INT, null, true);
+					VarStatement tempI = new VarStatement(expression.position, scope.createTempVariable(), BasicTypeID.INT.stored, null, true);
 					target.writeLine(new StringBuilder()
 							.append("for (int ")
 							.append(tempI.name)
@@ -1802,7 +1801,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							throw new UnsupportedOperationException("Not yet supported!");
 						}
 					} else {
-						JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)lambda.type);
+						JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)lambda.type.type);
 						target.writeLine(new StringBuilder()
 								.append(scope.settings.indent)
 								.append(temp)
@@ -1825,7 +1824,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				}
 			}
 			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
-				ArrayTypeID type = (ArrayTypeID) expression.type;
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 				
 				if (type.dimension == 1) {
 					Expression original = duplicable(expression.arguments.arguments[0]);
@@ -1844,7 +1843,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							.append(newArray(type.elementType, originalString.unaryPostfix(JavaOperator.MEMBER, ".length")))
 							.append(";")
 							.toString());
-					VarStatement tempI = new VarStatement(expression.position, scope.createTempVariable(), BasicTypeID.INT, null, true);
+					VarStatement tempI = new VarStatement(expression.position, scope.createTempVariable(), BasicTypeID.INT.stored, null, true);
 					target.writeLine(new StringBuilder()
 							.append("for (int ")
 							.append(tempI.name)
@@ -1881,7 +1880,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							throw new UnsupportedOperationException("Not yet supported!");
 						}
 					} else {
-						JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)lambda.type);
+						JavaSynthesizedFunctionInstance function = scope.context.getFunction((FunctionTypeID)lambda.type.type);
 						target.writeLine(new StringBuilder()
 								.append(scope.settings.indent)
 								.append(temp)
@@ -1921,7 +1920,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString listToArray(CastExpression expression) {
 		Expression target = duplicable(expression.target);
 		ExpressionString targetString = target.accept(this);
-		ArrayTypeID resultType = (ArrayTypeID)expression.type;
+		ArrayTypeID resultType = (ArrayTypeID)expression.type.type;
 		return new ExpressionString(
 				targetString.value + ".toArray(" + newArray(resultType.elementType, targetString.unaryPostfix(JavaOperator.CALL, ".size()")).value + ")",
 				JavaOperator.CALL);

@@ -6,15 +6,14 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -33,15 +32,15 @@ public class ParsedTryConvertExpression extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) {
 		Expression cValue = value.compile(scope).eval();
 		if (scope.getFunctionHeader() == null)
-			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_OUTSIDE_FUNCTION, "try? can only be used inside functions");
+			return new InvalidExpression(position, CompileExceptionCode.TRY_CONVERT_OUTSIDE_FUNCTION, "try? can only be used inside functions");
 		
 		HighLevelDefinition result = scope.getTypeRegistry().stdlib.getDefinition("Result");
 		if (cValue.thrownType != null) {
 			// this function throws
-			DefinitionTypeID resultType = scope.getTypeRegistry().getForDefinition(result, UniqueStorageTag.INSTANCE, cValue.type, cValue.thrownType);
-			return new TryConvertExpression(position, resultType, cValue);
+			DefinitionTypeID resultType = scope.getTypeRegistry().getForDefinition(result, cValue.type.type, cValue.thrownType.type);
+			return new TryConvertExpression(position, resultType.stored(cValue.type.storage), cValue);
 		} else {
-			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_ILLEGAL_TARGET, "try? can only be used on expressions that throw");
+			return new InvalidExpression(position, CompileExceptionCode.TRY_CONVERT_ILLEGAL_TARGET, "try? can only be used on expressions that throw");
 		}
 	}
 

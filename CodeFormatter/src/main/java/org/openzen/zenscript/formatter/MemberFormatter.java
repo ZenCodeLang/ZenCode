@@ -62,7 +62,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append("const")
 				.append(member.name)
 				.append(" as ")
-				.append(member.type.accept(typeFormatter))
+				.append(typeFormatter.format(member.type))
 				.append(" = ")
 				.append(member.value.accept(new ExpressionFormatter(settings, typeFormatter, indent)))
 				.append(";\n");
@@ -76,7 +76,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append(member.isFinal() ? "val " : "var ")
 				.append(member.name)
 				.append(" as ")
-				.append(member.type.accept(typeFormatter));
+				.append(typeFormatter.format(member.type));
 		
 		if (member.initializer != null) {
 			output.append(" = ")
@@ -122,7 +122,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append("get ");
 		output.append(member.name);
 		output.append(" as ");
-		output.append(member.type.accept(typeFormatter));
+		output.append(typeFormatter.format(member.type));
 		formatBody(member.body);
 		return null;
 	}
@@ -134,7 +134,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append("set ");
 		output.append(member.name);
 		output.append(" as ");
-		output.append(member.type.accept(typeFormatter));
+		output.append(typeFormatter.format(member.type));
 		formatBody(member.body);
 		return null;
 	}
@@ -186,7 +186,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		visit(false);
 		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
 		output.append(" as ");
-		output.append(member.toType.accept(typeFormatter));
+		output.append(typeFormatter.format(member.toType));
 		formatBody(member.body);
 		return null;
 	}

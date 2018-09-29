@@ -6,59 +6,43 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
-import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class GenericTypeID implements ITypeID {
+public class GenericTypeID implements TypeID {
 	public final TypeParameter parameter;
-	public final StorageTag storage;
-	private final GenericTypeID withoutStorage;
 
-	public GenericTypeID(GlobalTypeRegistry registry, TypeParameter parameter, StorageTag storage) {
+	public GenericTypeID(TypeParameter parameter) {
 		this.parameter = parameter;
-		this.storage = storage;
-		withoutStorage = storage == null ? this : registry.getGeneric(parameter, null);
 	}
 	
-	public boolean matches(LocalMemberCache cache, ITypeID type) {
+	public boolean matches(LocalMemberCache cache, TypeID type) {
 		return parameter.matches(cache, type);
 	}
 	
 	@Override
-	public GenericTypeID getNormalized() {
+	public GenericTypeID getNormalizedUnstored() {
 		return this;
 	}
 	
 	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		return mapper.map(this).withStorage(mapper.registry, storage);
+	public TypeID instanceUnstored(GenericMapper mapper) {
+		return mapper.map(this);
 	}
 	
 	@Override
-	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
-		return registry.getGeneric(parameter, storage);
-	}
-
-	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitGeneric(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitGeneric(context, this);
-	}
-	
-	@Override
-	public GenericTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
@@ -72,8 +56,8 @@ public class GenericTypeID implements ITypeID {
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return parameter.isObjectType();
+	public boolean isDestructible() {
+		return false; // TODO: actually depends on the type..?
 	}
 
 	@Override
@@ -100,7 +84,6 @@ public class GenericTypeID implements ITypeID {
 	public int hashCode() {
 		int hash = 7;
 		hash = 47 * hash + parameter.hashCode();
-		hash = 47 * hash + Objects.hashCode(storage);
 		return hash;
 	}
 
@@ -116,22 +99,11 @@ public class GenericTypeID implements ITypeID {
 			return false;
 		}
 		final GenericTypeID other = (GenericTypeID) obj;
-		return this.parameter == other.parameter
-				&& Objects.equals(this.storage, other.storage);
+		return this.parameter == other.parameter;
 	}
 	
 	@Override
 	public String toString() {
 		return parameter.toString();
-	}
-
-	@Override
-	public StorageTag getStorage() {
-		return storage;
-	}
-
-	@Override
-	public ITypeID withoutStorage() {
-		return withoutStorage;
 	}
 }

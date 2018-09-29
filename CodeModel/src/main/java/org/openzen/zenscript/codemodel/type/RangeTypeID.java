@@ -8,58 +8,50 @@ package org.openzen.zenscript.codemodel.type;
 import java.util.List;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class RangeTypeID implements ITypeID {
-	public static final RangeTypeID INT = new RangeTypeID(null, BasicTypeID.INT);
-	public static final RangeTypeID USIZE = new RangeTypeID(null, BasicTypeID.USIZE);
+public class RangeTypeID implements TypeID {
+	public static final RangeTypeID INT = new RangeTypeID(null, BasicTypeID.INT.stored);
+	public static final RangeTypeID USIZE = new RangeTypeID(null, BasicTypeID.USIZE.stored);
 	
-	public final ITypeID baseType;
+	public final StoredType baseType;
 	private final RangeTypeID normalized;
+	public final StoredType stored;
 	
-	public RangeTypeID(GlobalTypeRegistry registry, ITypeID baseType) {
+	public RangeTypeID(GlobalTypeRegistry registry, StoredType baseType) {
 		this.baseType = baseType;
 		
-		if (baseType.getNormalized() == baseType) {
+		if (baseType.getNormalized().equals(baseType)) {
 			normalized = this;
 		} else {
 			normalized = registry.getRange(baseType.getNormalized());
 		}
+		
+		stored = new StoredType(this, ValueStorageTag.INSTANCE);
 	}
 	
 	@Override
-	public RangeTypeID getNormalized() {
+	public RangeTypeID getNormalizedUnstored() {
 		return normalized;
 	}
 	
 	@Override
-	public ITypeID instance(GenericMapper mapper) {
+	public TypeID instanceUnstored(GenericMapper mapper) {
 		return mapper.registry.getRange(baseType.instance(mapper));
 	}
 	
 	@Override
-	public ITypeID withStorage(GlobalTypeRegistry registry, StorageTag storage) {
-		return registry.getRange(baseType.withStorage(registry, storage));
-	}
-
-	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitRange(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitRange(context, this);
-	}
-	
-	@Override
-	public RangeTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
@@ -73,7 +65,7 @@ public class RangeTypeID implements ITypeID {
 	}
 	
 	@Override
-	public boolean isObjectType() {
+	public boolean isDestructible() {
 		return false;
 	}
 
@@ -89,7 +81,7 @@ public class RangeTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		baseType.extractTypeParameters(typeParameters);
+		baseType.type.extractTypeParameters(typeParameters);
 	}
 
 	@Override
@@ -111,21 +103,11 @@ public class RangeTypeID implements ITypeID {
 			return false;
 		}
 		final RangeTypeID other = (RangeTypeID) obj;
-		return this.baseType == other.baseType;
+		return this.baseType.equals(other.baseType);
 	}
 	
 	@Override
 	public String toString() {
 		return baseType.toString() + " .. " + baseType.toString();
-	}
-
-	@Override
-	public StorageTag getStorage() {
-		return ValueStorageTag.INSTANCE;
-	}
-
-	@Override
-	public ITypeID withoutStorage() {
-		return this;
 	}
 }

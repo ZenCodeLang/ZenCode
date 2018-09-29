@@ -51,9 +51,9 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	@Override
 	public List<FunctionHeader> getInitializers(BaseScope scope) {
 		return Collections.singletonList(new FunctionHeader(
-				BasicTypeID.VOID,
-				scope.getType(CodePosition.BUILTIN, enforcementLevelName, StaticStorageTag.INSTANCE),
-				BasicTypeID.BOOL,
+				BasicTypeID.VOID.stored,
+				scope.getType(CodePosition.BUILTIN, enforcementLevelName).stored(StaticStorageTag.INSTANCE),
+				BasicTypeID.BOOL.stored,
 				StringTypeID.UNIQUE));
 	}
 
@@ -106,7 +106,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public Annotation createForParameter(CodePosition position, CallArguments arguments) {
+	public ParameterAnnotation createForParameter(CodePosition position, CallArguments arguments) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
@@ -131,7 +131,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public Annotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
+	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }

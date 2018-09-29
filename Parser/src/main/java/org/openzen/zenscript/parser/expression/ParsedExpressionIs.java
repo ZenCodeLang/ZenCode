@@ -9,8 +9,9 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.IsExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -30,8 +31,8 @@ public class ParsedExpressionIs extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		ITypeID isType = type.compile(scope);
-		Expression expression = this.expression.compile(scope.withHint(isType)).eval();
+		TypeID isType = type.compileUnstored(scope);
+		Expression expression = this.expression.compile(scope.withHint(isType.stored(BorrowStorageTag.INVOCATION))).eval();
 		return new IsExpression(position, expression, isType);
 	}
 

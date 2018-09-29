@@ -15,9 +15,7 @@ import org.openzen.zenscript.codemodel.member.ConstMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -70,7 +68,7 @@ public class ParsedConst extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void compile(BaseScope scope) {
+	public void compile(BaseScope scope) throws CompileException {
 		if (isCompiled)
 			return;
 		isCompiled = true;
@@ -84,9 +82,9 @@ public class ParsedConst extends ParsedDefinitionMember {
 					.castImplicit(position, scope, compiled.type);
 			compiled.value = initializer;
 			
-			if (compiled.type == BasicTypeID.UNDETERMINED)
+			if (compiled.type.isBasic(BasicTypeID.UNDETERMINED))
 				compiled.type = initializer.type;
-		} else if (compiled.type == BasicTypeID.UNDETERMINED) {
+		} else if (compiled.type.isBasic(BasicTypeID.UNDETERMINED)) {
 			throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "No type or initializer given");
 		}
 	}

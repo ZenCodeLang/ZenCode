@@ -10,10 +10,11 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -33,16 +34,16 @@ public class ParsedExpressionCoalesce extends ParsedExpression {
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
 		Expression cLeft = left.compile(scope).eval();
-		ITypeID cLeftType = cLeft.type;
+		StoredType cLeftType = cLeft.type;
 		if (!cLeftType.isOptional())
-			throw new CompileException(position, CompileExceptionCode.COALESCE_TARGET_NOT_OPTIONAL, "Type of the first expression is not optional");
+			return new InvalidExpression(position, cLeft.type, CompileExceptionCode.COALESCE_TARGET_NOT_OPTIONAL, "Type of the first expression is not optional");
 		
-		ITypeID resultType = cLeftType.withoutOptional();
+		StoredType resultType = cLeftType.withoutOptional();
 		Expression cRight = right.compile(scope.withHint(resultType)).eval();
 		
 		TypeMembers resultTypeMembers = scope.getTypeMembers(resultType);
 		resultType = resultTypeMembers.union(cRight.type);
-		cLeft = cLeft.castImplicit(position, scope, resultType.isOptional() ? resultType : scope.getTypeRegistry().getOptional(resultType));
+		cLeft = cLeft.castImplicit(position, scope, resultType.isOptional() ? resultType : scope.getTypeRegistry().getOptional(resultType.type).stored(resultType.storage));
 		cRight = cRight.castImplicit(position, scope, resultType);
 		
 		return new CoalesceExpression(position, cLeft, cRight);

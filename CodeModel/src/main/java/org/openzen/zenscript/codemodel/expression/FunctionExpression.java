@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -30,7 +31,7 @@ public class FunctionExpression extends Expression {
 	
 	public FunctionExpression(
 			CodePosition position,
-			FunctionTypeID type,
+			StoredType type,
 			LambdaClosure closure,
 			FunctionHeader header,
 			Statement body) {
@@ -54,7 +55,7 @@ public class FunctionExpression extends Expression {
 	@Override
 	public FunctionExpression transform(ExpressionTransformer transformer) {
 		Statement tBody = body.transform(transformer, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
-		return tBody == body ? this : new FunctionExpression(position, (FunctionTypeID)type, closure, header, tBody);
+		return tBody == body ? this : new FunctionExpression(position, type, closure, header, tBody);
 	}
 	
 	@Override
@@ -83,7 +84,7 @@ public class FunctionExpression extends Expression {
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		return new FunctionExpression(position, (FunctionTypeID)type, closure, header, body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class)));
+		return new FunctionExpression(position, type, closure, header, body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class)));
 	}
 	
 	private static class ReturnExpressionTransformer implements ExpressionTransformer {

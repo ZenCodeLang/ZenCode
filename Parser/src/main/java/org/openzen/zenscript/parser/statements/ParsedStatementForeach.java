@@ -1,7 +1,6 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -9,13 +8,13 @@ import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.ForeachScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.statement.InvalidStatement;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 public class ParsedStatementForeach extends ParsedStatement {
@@ -38,9 +37,9 @@ public class ParsedStatementForeach extends ParsedStatement {
 		TypeMembers members = scope.getTypeMembers(list.type);
 		IteratorMemberRef iterator = members.getIterator(varnames.length);
 		if (iterator == null)
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_ITERATOR, list.type + " doesn't have an iterator with " + varnames.length + " variables");
+			return new InvalidStatement(position, CompileExceptionCode.NO_SUCH_ITERATOR, list.type + " doesn't have an iterator with " + varnames.length + " variables");
 		
-		ITypeID[] loopTypes = iterator.types;
+		StoredType[] loopTypes = iterator.types;
 		VarStatement[] variables = new VarStatement[varnames.length];
 		for (int i = 0; i < variables.length; i++)
 			variables[i] = new VarStatement(position, varnames[i], loopTypes[i], null, true);

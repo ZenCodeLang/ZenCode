@@ -42,7 +42,7 @@ public final class ModuleSpace {
 		this.storageTypes = storageTypes;
 	}
 	
-	public void addModule(String name, SemanticModule dependency) {
+	public void addModule(String name, SemanticModule dependency) throws CompileException {
 		rootPackage.add(name, dependency.modulePackage);
 		dependency.definitions.registerExpansionsTo(expansions);
 		

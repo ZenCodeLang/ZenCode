@@ -15,7 +15,8 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -48,15 +49,15 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	@Override
 	public abstract FunctionalMember getCompiled();
 	
-	protected void inferHeaders(BaseScope scope) {
+	protected void inferHeaders(BaseScope scope) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(scope, implementation.getCompiled().type);
+			fillOverride(scope, implementation.getCompiled().type.stored(BorrowStorageTag.THIS));
 			getCompiled().modifiers |= Modifiers.PUBLIC;
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 			
-			fillOverride(scope, definition.getSuperType());
+			fillOverride(scope, definition.getSuperType().stored(BorrowStorageTag.THIS));
 		}
 		
 		if (getCompiled() == null || getCompiled().header == null)
@@ -64,7 +65,7 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	}
 	
 	@Override
-	public final void compile(BaseScope scope) {
+	public final void compile(BaseScope scope) throws CompileException {
 		if (isCompiled)
 			return;
 		isCompiled = true;
@@ -75,8 +76,8 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 		getCompiled().annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		getCompiled().setBody(body.compile(innerScope, getCompiled().header));
 		
-		if (getCompiled().header.getReturnType() == BasicTypeID.UNDETERMINED) {
-			ITypeID returnType = getCompiled().body.getReturnType();
+		if (getCompiled().header.getReturnType().isBasic(BasicTypeID.UNDETERMINED)) {
+			StoredType returnType = getCompiled().body.getReturnType();
 			if (returnType == null) {
 				throw new CompileException(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Method return type could not be inferred");
 			} else {
@@ -85,5 +86,5 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 		}
 	}
 	
-	protected abstract void fillOverride(TypeScope scope, ITypeID baseType);
+	protected abstract void fillOverride(TypeScope scope, StoredType baseType) throws CompileException;
 }

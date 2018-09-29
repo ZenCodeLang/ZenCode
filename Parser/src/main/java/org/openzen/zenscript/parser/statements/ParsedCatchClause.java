@@ -18,9 +18,10 @@ import org.openzen.zenscript.codemodel.statement.CatchClause;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -71,8 +72,8 @@ public class ParsedCatchClause {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name, StorageTag storage) {
-			return outer.getType(position, name, storage);
+		public TypeID getType(CodePosition position, List<GenericName> name) {
+			return outer.getType(position, name);
 		}
 		
 		@Override
@@ -91,7 +92,7 @@ public class ParsedCatchClause {
 		}
 
 		@Override
-		public ITypeID getThisType() {
+		public StoredType getThisType() {
 			return outer.getThisType();
 		}
 

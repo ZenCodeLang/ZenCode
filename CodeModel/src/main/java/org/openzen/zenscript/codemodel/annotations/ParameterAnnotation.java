@@ -9,8 +9,8 @@ package org.openzen.zenscript.codemodel.annotations;
  *
  * @author Hoofdgebruiker
  */
-public interface Annotation {
-	public static final Annotation[] NONE = new Annotation[0];
+public interface ParameterAnnotation {
+	public static final ParameterAnnotation[] NONE = new ParameterAnnotation[0];
 	
 	public AnnotationDefinition getDefinition();
 	

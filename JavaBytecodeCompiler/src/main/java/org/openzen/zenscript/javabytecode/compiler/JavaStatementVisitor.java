@@ -190,7 +190,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 		javaWriter.label(start);
 		statement.value.accept(expressionVisitor);
-		if (statement.value.type instanceof StringTypeID)
+		if (statement.value.type.type == StringTypeID.INSTANCE)
 			javaWriter.invokeVirtual(JavaExpressionVisitor.OBJECT_HASHCODE);
 		boolean out = false;
 

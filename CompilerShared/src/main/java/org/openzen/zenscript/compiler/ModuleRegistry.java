@@ -27,7 +27,7 @@ public class ModuleRegistry {
 		modules.put(reference.getModuleName(), reference);
 	}
 	
-	public SemanticModule load(String name) {
+	public SemanticModule load(String name) throws CompileException {
 		if (loading.contains(name)) {
 			StringBuilder sequence = new StringBuilder();
 			boolean first = true;

@@ -14,6 +14,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
 import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
@@ -21,11 +22,11 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitc
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
@@ -49,28 +50,28 @@ public class ParsedExpressionVariable extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		ITypeID[] genericArguments = ITypeID.NONE;
+		TypeID[] genericArguments = TypeID.NONE;
 		if (genericParameters != null) {
-			genericArguments = new ITypeID[genericParameters.size()];
+			genericArguments = new TypeID[genericParameters.size()];
 			for (int i = 0; i < genericParameters.size(); i++) {
-				genericArguments[i] = genericParameters.get(i).compile(scope);
+				genericArguments[i] = genericParameters.get(i).compileUnstored(scope);
 			}
 		}
 		
 		IPartialExpression result = scope.get(position, new GenericName(name, genericArguments));
 		if (result == null) {
-			for (ITypeID hint : scope.hints) {
+			for (StoredType hint : scope.hints) {
 				TypeMembers members = scope.getTypeMembers(hint);
 				EnumConstantMember member = members.getEnumMember(name);
 				if (member != null)
-					return new EnumConstantExpression(position, hint, member);
+					return new EnumConstantExpression(position, hint.type, member);
 				
 				VariantOptionRef option = members.getVariantOption(name);
 				if (option != null)
 					return new VariantValueExpression(position, hint, option);
 			}
 			
-			throw new CompileException(position, CompileExceptionCode.UNDEFINED_VARIABLE, "No such symbol: " + name);
+			return new InvalidExpression(position, CompileExceptionCode.UNDEFINED_VARIABLE, "No such symbol: " + name);
 		} else {
 			return result;
 		}
@@ -82,7 +83,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 	}
 	
 	@Override
-	public SwitchValue compileToSwitchValue(ITypeID type, ExpressionScope scope) {
+	public SwitchValue compileToSwitchValue(StoredType type, ExpressionScope scope) throws CompileException {
 		TypeMembers members = scope.getTypeMembers(type);
 		if (type.isEnum()) {
 			EnumConstantMember member = members.getEnumMember(name);

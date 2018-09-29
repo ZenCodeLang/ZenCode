@@ -11,7 +11,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -20,7 +20,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class GetterMemberRef extends PropertyRef {
 	public final GetterMember member;
 	
-	public GetterMemberRef(ITypeID owner, GetterMember member, GenericMapper mapper) {
+	public GetterMemberRef(StoredType owner, GetterMember member, GenericMapper mapper) {
 		super(owner, member, mapper);
 		
 		this.member = member;

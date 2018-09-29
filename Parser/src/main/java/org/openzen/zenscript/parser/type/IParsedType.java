@@ -11,22 +11,23 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
-import org.openzen.zenscript.parser.ParseException;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface IParsedType {
-	public static IParsedType parse(ZSTokenParser tokens) {
+	public static IParsedType parse(ZSTokenParser tokens) throws ParseException {
 		IParsedType result = tryParse(tokens);
 		if (result == null)
 			throw new ParseException(tokens.getPosition(), "Type expected (got " + tokens.peek().content + ")");
@@ -34,7 +35,59 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public static IParsedType tryParse(ZSTokenParser tokens) {
+	public static List<IParsedType> parseTypeArguments(ZSTokenParser tokens) throws ParseException {
+		if (!tokens.isNext(T_LESS))
+			return null;
+		
+		tokens.pushMark();
+		tokens.next();
+		
+		List<IParsedType> genericParameters = new ArrayList<>();
+		do {
+			IParsedType type = tryParse(tokens);
+			if (type == null) {
+				tokens.reset();
+				return Collections.emptyList();
+			}
+			genericParameters.add(type);
+		} while (tokens.optional(T_COMMA) != null);
+		
+		if (tokens.isNext(T_SHR)) {
+			tokens.replace(T_GREATER.flyweight);
+		} else if (tokens.isNext(T_USHR)) {
+			tokens.replace(T_SHR.flyweight);
+		} else if (tokens.isNext(T_SHRASSIGN)) {
+			tokens.replace(T_GREATEREQ.flyweight);
+		} else if (tokens.isNext(T_USHRASSIGN)) {
+			tokens.replace(T_SHRASSIGN.flyweight);
+		} else if (tokens.optional(T_GREATER) == null) {
+			tokens.reset();
+			return Collections.emptyList();
+		}
+		
+		tokens.popMark();
+		return genericParameters;
+	}
+	
+	public static List<IParsedType> parseTypeArgumentsForCall(ZSTokenParser tokens) throws ParseException {
+		List<IParsedType> typeArguments = null;
+		if (tokens.optional(ZSTokenType.T_LESS) != null) {
+			try {
+				typeArguments = new ArrayList<>();
+				do {
+					IParsedType type = IParsedType.parse(tokens);
+					typeArguments.add(type);
+				} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+				tokens.required(ZSTokenType.T_GREATER, "> expected");
+			} catch (ParseException ex) {
+				tokens.logError(ex);
+				tokens.recoverUntilTokenOrNewline(ZSTokenType.T_GREATER);
+			}
+		}
+		return typeArguments;
+	}
+	
+	public static IParsedType tryParse(ZSTokenParser tokens) throws ParseException {
 		CodePosition position = tokens.getPosition();
 		int modifiers = 0;
 		while (true) {
@@ -108,7 +161,7 @@ public interface IParsedType {
 			case K_STRING: {
 				tokens.next();
 				ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-				result = new ParsedString(modifiers, storage);
+				result = new ParsedString(position, modifiers, storage);
 				break;
 			}
 			case K_FUNCTION: {
@@ -122,7 +175,7 @@ public interface IParsedType {
 				List<ParsedNamedType.ParsedNamePart> name = new ArrayList<>();
 				do {
 					String namePart = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
-					List<IParsedType> generic = parseGenericParameters(tokens);
+					List<IParsedType> generic = parseTypeArguments(tokens);
 					name.add(new ParsedNamedType.ParsedNamePart(namePart, generic));
 				} while (tokens.optional(ZSTokenType.T_DOT) != null);
 				ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
@@ -179,46 +232,23 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public static List<IParsedType> parseGenericParameters(ZSTokenParser tokens) {
-		if (!tokens.isNext(T_LESS))
-			return null;
-		
-		tokens.pushMark();
-		tokens.next();
-		
-		List<IParsedType> genericParameters = new ArrayList<>();
-		do {
-			IParsedType type = tryParse(tokens);
-			if (type == null) {
-				tokens.reset();
-				return Collections.emptyList();
+	public static TypeID[] compileList(List<IParsedType> typeParameters, TypeResolutionContext context) {
+		TypeID[] result = TypeID.NONE;
+		if (typeParameters != null) {
+			result = new TypeID[typeParameters.size()];
+			for (int i = 0; i < typeParameters.size(); i++) {
+				result[i] = typeParameters.get(i).compileUnstored(context);
 			}
-			genericParameters.add(type);
-		} while (tokens.optional(T_COMMA) != null);
-		
-		if (tokens.isNext(T_SHR)) {
-			tokens.replace(T_GREATER.flyweight);
-		} else if (tokens.isNext(T_USHR)) {
-			tokens.replace(T_SHR.flyweight);
-		} else if (tokens.isNext(T_SHRASSIGN)) {
-			tokens.replace(T_GREATEREQ.flyweight);
-		} else if (tokens.isNext(T_USHRASSIGN)) {
-			tokens.replace(T_SHRASSIGN.flyweight);
-		} else if (tokens.optional(T_GREATER) == null) {
-			tokens.reset();
-			return Collections.emptyList();
 		}
-		
-		tokens.popMark();
-		return genericParameters;
+		return result;
 	}
 	
-	public static ITypeID[] compileList(List<IParsedType> typeParameters, TypeResolutionContext context) {
-		ITypeID[] result = ITypeID.NONE;
+	public static TypeID[] compileListUnstored(List<IParsedType> typeParameters, TypeResolutionContext context) {
+		TypeID[] result = TypeID.NONE;
 		if (typeParameters != null) {
-			result = new ITypeID[typeParameters.size()];
+			result = new TypeID[typeParameters.size()];
 			for (int i = 0; i < typeParameters.size(); i++) {
-				result[i] = typeParameters.get(i).compile(context);
+				result[i] = typeParameters.get(i).compileUnstored(context);
 			}
 		}
 		return result;
@@ -228,13 +258,15 @@ public interface IParsedType {
 	
 	public IParsedType withModifiers(int modifiers);
 	
-	public ITypeID compile(TypeResolutionContext context);
+	public StoredType compile(TypeResolutionContext context);
+	
+	public TypeID compileUnstored(TypeResolutionContext context);
 	
 	public default AnnotationDefinition compileAnnotation(BaseScope scope) {
 		return null;
 	}
 	
-	public default ITypeID[] compileTypeArguments(BaseScope scope) {
-		return ITypeID.NONE;
+	public default TypeID[] compileTypeArguments(BaseScope scope) {
+		return TypeID.NONE;
 	}
 }

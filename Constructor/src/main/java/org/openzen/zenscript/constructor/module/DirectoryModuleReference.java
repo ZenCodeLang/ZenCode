@@ -79,7 +79,12 @@ public class DirectoryModuleReference implements ModuleReference {
 				String dependencyName = dependencyNames.get(i);
 				SemanticModule module = loader.getModule(dependencyName);
 				dependencies[i] = module;
-				space.addModule(dependencyName, module);
+				
+				try {
+					space.addModule(dependencyName, module);
+				} catch (CompileException ex) {
+					throw new ConstructorException("Error: exception during compilation", ex);
+				}
 			}
 
 			ParsedModule parsedModule = new ParsedModule(moduleName, directory, jsonFile, exceptionLogger);
