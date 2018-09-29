@@ -117,8 +117,11 @@ public abstract class HighLevelDefinition extends Taggable {
 		for (IDefinitionMember member : members) {
 			if (member instanceof DestructorMember)
 				isDestructible = true;
-			if ((member instanceof FieldMember) && ((FieldMember)member).type.isDestructible())
-				isDestructible = true;
+			if (member instanceof FieldMember) {
+				FieldMember field = (FieldMember)member;
+				if (!field.type.isDefinition(this) && field.type.isDestructible())
+					isDestructible = true;
+			}
 			if ((member instanceof ImplementationMember) && ((ImplementationMember)member).type.isDestructible())
 				isDestructible = true;
 		}

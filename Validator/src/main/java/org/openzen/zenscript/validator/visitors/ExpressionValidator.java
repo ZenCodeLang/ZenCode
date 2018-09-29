@@ -44,13 +44,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.left.accept(this);
 		expression.right.accept(this);
 		
-		if (!expression.left.type.type.isBasic(BasicTypeID.BOOL)) {
+		if (!expression.left.type.isBasic(BasicTypeID.BOOL)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
 					"left hand side operand of && must be a bool");
 		}
-		if (!expression.right.type.type.isBasic(BasicTypeID.BOOL)) {
+		if (!expression.right.type.isBasic(BasicTypeID.BOOL)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
@@ -155,7 +155,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.condition.accept(this);
 		expression.ifThen.accept(this);
 		expression.ifElse.accept(this);
-		if (!expression.condition.type.type.isBasic(BasicTypeID.BOOL)) {
+		if (!expression.condition.type.isBasic(BasicTypeID.BOOL)) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "conditional expression condition must be a bool");
 		}
 		return null;

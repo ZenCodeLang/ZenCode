@@ -8,10 +8,10 @@ package org.openzen.zenscript.codemodel.type;
 import java.util.Map;
 import java.util.Objects;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -66,6 +66,10 @@ public class StoredType {
 		return this.type == type;
 	}
 	
+	public boolean isGeneric() {
+		return type.isGeneric();
+	}
+	
 	public StoredType withoutOptional() {
 		return new StoredType(type.withoutOptional(), storage);
 	}
@@ -94,6 +98,10 @@ public class StoredType {
 	
 	public boolean isEnum() {
 		return type.isEnum();
+	}
+	
+	public boolean isDefinition(HighLevelDefinition definition) {
+		return type.isDefinition(definition);
 	}
 	
 	public DefinitionTypeID asDefinition() {

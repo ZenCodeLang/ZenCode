@@ -34,10 +34,12 @@ public class ScriptBlock extends Taggable {
 	}
 	
 	public ScriptBlock normalize(TypeScope scope) {
-		List<Statement> result = new ArrayList<>();
+		List<Statement> normalized = new ArrayList<>();
 		for (Statement statement : statements) {
-			result.add(statement.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class)));
+			normalized.add(statement.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class)));
 		}
-		return new ScriptBlock(pkg, result);
+		ScriptBlock result = new ScriptBlock(pkg, normalized);
+		result.addAllTagsFrom(this);
+		return result;
 	}
 }

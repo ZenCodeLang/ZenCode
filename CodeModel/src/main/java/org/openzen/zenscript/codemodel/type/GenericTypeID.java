@@ -59,6 +59,11 @@ public class GenericTypeID implements TypeID {
 	public boolean isDestructible() {
 		return false; // TODO: actually depends on the type..?
 	}
+	
+	@Override
+	public boolean isGeneric() {
+		return true;
+	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {

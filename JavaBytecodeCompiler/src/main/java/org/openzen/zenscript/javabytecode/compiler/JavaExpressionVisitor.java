@@ -380,11 +380,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
-			//if (expression.member.getHeader().returnType != expression.type)
-
-			//TODO see if the types differ (e.g. if a generic method was invoked) and only cast then
-			if(expression.type.type != BasicTypeID.VOID)
+			
+			if (expression.member.getTarget().header.getReturnType().isGeneric())
 				javaWriter.checkCast(context.getInternalName(expression.type));
+			
 			return null;
 		}
 
@@ -895,7 +894,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 						JavaMethod.getNativeVirtual(
 								JavaClass.fromInternalName(context.getInternalName(expression.target.type), JavaClass.Kind.INTERFACE),
 								"accept",
-								context.getMethodSignature(expression.instancedHeader)));
+								context.getMethodDescriptor(expression.instancedHeader)));
 				break;
 			case AUTOOP_NOTEQUALS:
 				throw new UnsupportedOperationException("Not yet supported!");
@@ -1158,32 +1157,44 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.invokeStatic(INTEGER_TO_STRING);
 				break;
 			case INT_TO_BYTE:
+			case USIZE_TO_BYTE:
 				break;
 			case INT_TO_SBYTE:
+			case USIZE_TO_SBYTE:
 				javaWriter.i2b();
 				break;
 			case INT_TO_SHORT:
+			case USIZE_TO_SHORT:
 				javaWriter.i2s();
 				break;
 			case INT_TO_USHORT:
+			case USIZE_TO_USHORT:
 				break;
 			case INT_TO_UINT:
+			case USIZE_TO_INT:
+			case USIZE_TO_UINT:
 			case INT_TO_USIZE:
 				break;
 			case INT_TO_LONG:
 			case INT_TO_ULONG:
+			case USIZE_TO_LONG:
+			case USIZE_TO_ULONG:
 				javaWriter.i2l();
 				break;
 			case INT_TO_FLOAT:
+			case USIZE_TO_FLOAT:
 				javaWriter.i2f();
 				break;
 			case INT_TO_DOUBLE:
+			case USIZE_TO_DOUBLE:
 				javaWriter.i2d();
 				break;
 			case INT_TO_CHAR:
+			case USIZE_TO_CHAR:
 				javaWriter.i2s();
 				break;
 			case INT_TO_STRING:
+			case USIZE_TO_STRING:
 				javaWriter.invokeStatic(INTEGER_TO_STRING);
 				break;
 			case UINT_TO_BYTE:
@@ -1646,10 +1657,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
             ((ReturnStatement) expression.body).value.accept(this);
             return null;
         }
+		
+		final String descriptor = context.getMethodDescriptor(expression.header);
         final String signature = context.getMethodSignature(expression.header);
 		final String name = context.getLambdaCounter();
 
-		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", signature);
+		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", descriptor);
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))});
 		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
@@ -2136,7 +2149,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitNull(NullExpression expression) {
-		if (expression.type.type.withoutOptional() == BasicTypeID.USIZE)
+		if (!expression.type.isBasic(BasicTypeID.NULL) && expression.type.type.withoutOptional() == BasicTypeID.USIZE)
 			javaWriter.constant(-1); // special case: usize? null = -1
 		else
 			javaWriter.aConstNull();

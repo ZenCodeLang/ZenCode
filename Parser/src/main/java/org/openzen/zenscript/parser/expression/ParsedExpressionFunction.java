@@ -74,8 +74,13 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		StatementScope innerScope = new LambdaScope(scope, closure, header);
 		Statement statements = body.compile(innerScope, header);
 		
-		if (header.getReturnType().isBasic(BasicTypeID.UNDETERMINED))
+		if (header.getReturnType().isBasic(BasicTypeID.UNDETERMINED)) {
+			StoredType returnType = statements.getReturnType();
+			if (returnType == null)
+				throw new CompileException(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Could not infer return type");
+			
 			header.setReturnType(statements.getReturnType());
+		}
 		
 		if (!scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference

@@ -78,7 +78,12 @@ public class JavaWriter {
         if (debug)
             System.out.println("--end--");
 
-        visitor.visitMaxs(0, 0);
+		try {
+	        visitor.visitMaxs(0, 0);
+		} catch (ArrayIndexOutOfBoundsException ex) {
+			throw ex;
+		}
+		
         if (nameVariables) {
             for (JavaLocalVariableInfo info : localVariableInfos) {
                 nameVariable(info.local, info.name, info.start, info.end, info.type);
@@ -132,7 +137,7 @@ public class JavaWriter {
 
     public void aConstNull() {
         if (debug)
-            System.out.println("null");
+            System.out.println("aConstNull");
 
         visitor.visitInsn(ACONST_NULL);
     }
@@ -1111,6 +1116,14 @@ public class JavaWriter {
             keys[i] = switchLabels[i].key;
             labels[i] = switchLabels[i].label;
         }
+		
+		if (debug) {
+			System.out.println("lookupSwitch");
+			for (int i = 0; i < switchLabels.length; i++) {
+				System.out.println("  " + keys[i] + " -> " + getLabelName(labels[i]));
+			}
+			System.out.println("  default -> " + getLabelName(defaultLabel));
+		}
 
         visitor.visitLookupSwitchInsn(defaultLabel, keys, labels);
     }

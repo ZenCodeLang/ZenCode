@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.type;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
@@ -62,6 +63,10 @@ public interface TypeID {
 		return false;
 	}
 	
+	default boolean isGeneric() {
+		return false;
+	}
+	
 	default TypeID withoutOptional() {
 		throw new UnsupportedOperationException("Not an optional type");
 	}
@@ -79,6 +84,10 @@ public interface TypeID {
 	}
 	
 	default boolean isEnum() {
+		return false;
+	}
+	
+	default boolean isDefinition(HighLevelDefinition definition) {
 		return false;
 	}
 	

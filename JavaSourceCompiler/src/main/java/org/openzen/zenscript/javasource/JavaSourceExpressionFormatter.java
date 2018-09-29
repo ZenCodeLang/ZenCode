@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -82,6 +83,7 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -249,8 +251,13 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	
 	@Override
 	public ExpressionString visitCast(CastExpression expression) {
-		if (expression.member.member.builtin != null)
-			return visitBuiltinCast(expression);
+		if (expression.member.member.builtin != null) {
+			try {
+				return visitBuiltinCast(expression);
+			} catch (CompileException ex) {
+				throw new RuntimeException(ex);
+			}
+		}
 		
 		JavaMethod method = expression.member.getTag(JavaMethod.class);
 		if (method == null)
@@ -526,8 +533,13 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitNew(NewExpression expression) {
-		if (expression.constructor.getBuiltin() != null)
-			return visitBuiltinConstructor(expression);
+		if (expression.constructor.getBuiltin() != null) {
+			try {
+				return visitBuiltinConstructor(expression);
+			} catch (CompileException ex) {
+				throw new RuntimeException(ex.toString());
+			}
+		}
 		
 		JavaMethod method = expression.constructor.getTag(JavaMethod.class);
 		switch (method.kind) {
@@ -968,7 +980,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 	
 	private Expression hoist(Expression value) {
-		VarStatement temp = new VarStatement(value.position, scope.createTempVariable(), value.type, value, true);
+		VarStatement temp = new VarStatement(value.position, new VariableID(), scope.createTempVariable(), value.type, value, true);
 		new JavaSourceStatementFormatter(scope).formatVar(target, temp);
 		return new GetLocalVariableExpression(value.position, temp);
 	}
@@ -1446,7 +1458,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		throw new UnsupportedOperationException("Unknown builtin static getter: " + builtin);
 	}
 	
-	private ExpressionString visitBuiltinCast(CastExpression cast) {
+	private ExpressionString visitBuiltinCast(CastExpression cast) throws CompileException {
 		switch (cast.member.member.builtin) {
 			case BOOL_TO_STRING: return callStatic("Boolean.toString", cast.target);
 			case BYTE_TO_SBYTE: return cast(cast, "byte");
@@ -1602,7 +1614,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		throw new UnsupportedOperationException("Unknown builtin cast: " + cast.member.member.builtin);
 	}
 	
-	private ExpressionString visitBuiltinConstructor(NewExpression expression) {
+	private ExpressionString visitBuiltinConstructor(NewExpression expression) throws CompileException {
 		switch (expression.constructor.getBuiltin()) {
 			case STRING_CONSTRUCTOR_CHARACTERS:
 				return callStatic("new String", expression.arguments.arguments[0]);
@@ -1766,7 +1778,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							.append(newArray(type.elementType, originalString.unaryPostfix(JavaOperator.MEMBER, ".length")))
 							.append(";")
 							.toString());
-					VarStatement tempI = new VarStatement(expression.position, scope.createTempVariable(), BasicTypeID.INT.stored, null, true);
+					VarStatement tempI = new VarStatement(expression.position, new VariableID(), scope.createTempVariable(), BasicTypeID.INT.stored, null, true);
 					target.writeLine(new StringBuilder()
 							.append("for (int ")
 							.append(tempI.name)
@@ -1843,7 +1855,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 							.append(newArray(type.elementType, originalString.unaryPostfix(JavaOperator.MEMBER, ".length")))
 							.append(";")
 							.toString());
-					VarStatement tempI = new VarStatement(expression.position, scope.createTempVariable(), BasicTypeID.INT.stored, null, true);
+					VarStatement tempI = new VarStatement(expression.position, new VariableID(), scope.createTempVariable(), BasicTypeID.INT.stored, null, true);
 					target.writeLine(new StringBuilder()
 							.append("for (int ")
 							.append(tempI.name)

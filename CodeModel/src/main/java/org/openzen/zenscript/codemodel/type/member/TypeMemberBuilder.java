@@ -771,7 +771,6 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		dec(builtin, INT_INC, INT);
 
 		add(builtin, INT_ADD_INT, INT, INT);
-		add(builtin, LONG_ADD_LONG, USIZE, LONG, INT_TO_LONG);
 		add(builtin, LONG_ADD_LONG, LONG, LONG, INT_TO_LONG);
 		add(builtin, FLOAT_ADD_FLOAT, FLOAT, FLOAT, INT_TO_FLOAT);
 		add(builtin, DOUBLE_ADD_DOUBLE, DOUBLE, DOUBLE, INT_TO_DOUBLE);

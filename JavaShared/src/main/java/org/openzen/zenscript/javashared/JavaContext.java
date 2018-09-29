@@ -177,7 +177,7 @@ public abstract class JavaContext {
 		String id = typeInfo.primitive ? type.accept(null, new JavaSyntheticTypeSignatureConverter()) : "T";
 		JavaSynthesizedRange range;
 		if (!ranges.containsKey(id)) {
-			JavaClass cls = new JavaClass("zsynthetic", id + "Range", JavaClass.Kind.CLASS);
+			JavaClass cls = new JavaClass("zsynthetic", id, JavaClass.Kind.CLASS);
 			if (typeInfo.primitive) {
 				range = new JavaSynthesizedRange(cls, TypeParameter.NONE, type.baseType);
 			} else {

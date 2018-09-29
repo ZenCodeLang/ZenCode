@@ -26,6 +26,7 @@ import org.openzen.zenscript.constructor.ParsedModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.codemodel.type.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedFile;
 
 /**
@@ -111,6 +112,8 @@ public class DirectoryModuleReference implements ModuleReference {
 			
 			return result;
 		} catch (IOException ex) {
+			throw new ConstructorException("Loading module files failed: " + ex.getMessage(), ex);
+		} catch (ParseException ex) {
 			throw new ConstructorException("Loading module files failed: " + ex.getMessage(), ex);
 		}
 	}
