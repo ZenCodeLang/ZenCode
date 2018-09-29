@@ -24,7 +24,7 @@ public class UniqueStorageType implements StorageType {
 
 	@Override
 	public StorageTag instance(CodePosition position, String[] arguments) {
-		if (arguments != null)
+		if (arguments.length > 0)
 			return new InvalidStorageTag(position, CompileExceptionCode.INVALID_STORAGE_TYPE_ARGUMENTS, "unique storage type doesn't take arguments");
 		
 		return UniqueStorageTag.INSTANCE;

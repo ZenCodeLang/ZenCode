@@ -8,12 +8,14 @@ package org.openzen.zenscript.parser.definitions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.context.LocalTypeResolutionContext;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -22,6 +24,7 @@ import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
+import org.openzen.zenscript.parser.type.ParsedStorageTag;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 /**
@@ -30,6 +33,10 @@ import org.openzen.zenscript.parser.type.ParsedTypeBasic;
  */
 public class ParsedFunctionHeader {
 	public static ParsedFunctionHeader parse(ZSTokenParser tokens) throws ParseException {
+		CodePosition position = tokens.getPosition();
+		
+		ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
+		
 		List<ParsedTypeParameter> genericParameters = null;
 		if (tokens.optional(ZSTokenType.T_LESS) != null) {
 			genericParameters = new ArrayList<>();
@@ -71,26 +78,32 @@ public class ParsedFunctionHeader {
 			thrownType = IParsedType.parse(tokens);
 		}
 		
-		return new ParsedFunctionHeader(genericParameters, parameters, returnType, thrownType);
+		return new ParsedFunctionHeader(position, genericParameters, parameters, returnType, thrownType, storage);
 	}
 	
+	public final CodePosition position;
 	public final List<ParsedTypeParameter> genericParameters;
 	public final List<ParsedFunctionParameter> parameters;
 	public final IParsedType returnType;
 	public final IParsedType thrownType;
+	public final ParsedStorageTag storage;
 	
-	public ParsedFunctionHeader(List<ParsedFunctionParameter> parameters, IParsedType returnType, IParsedType thrownType) {
+	public ParsedFunctionHeader(CodePosition position, List<ParsedFunctionParameter> parameters, IParsedType returnType) {
+		this.position = position;
 		this.genericParameters = Collections.emptyList();
 		this.parameters = parameters;
 		this.returnType = returnType;
-		this.thrownType = thrownType;
+		this.thrownType = null;
+		this.storage = ParsedStorageTag.NULL;
 	}
 	
-	public ParsedFunctionHeader(List<ParsedTypeParameter> genericParameters, List<ParsedFunctionParameter> parameters, IParsedType returnType, IParsedType thrownType) {
+	public ParsedFunctionHeader(CodePosition position, List<ParsedTypeParameter> genericParameters, List<ParsedFunctionParameter> parameters, IParsedType returnType, IParsedType thrownType, ParsedStorageTag storage) {
+		this.position = position;
 		this.genericParameters = genericParameters;
 		this.parameters = parameters;
 		this.returnType = returnType;
 		this.thrownType = thrownType;
+		this.storage = storage;
 	}
 	
 	public FunctionHeader compile(TypeResolutionContext context) {
@@ -103,6 +116,7 @@ public class ParsedFunctionHeader {
 		for (int i = 0; i < parameters.length; i++)
 			parameters[i] = this.parameters.get(i).compile(localContext);
 		
-		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(context), parameters);
+		StorageTag storage = this.storage.resolve(position, context);
+		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(context), storage, parameters);
 	}
 }

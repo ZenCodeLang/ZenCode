@@ -6,7 +6,9 @@
 package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
@@ -113,18 +115,30 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 	
 	public boolean isDestructible() {
+		Set<HighLevelDefinition> scanning = new HashSet<>();
+		return isDestructible(scanning);
+	}
+	
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		if (scanning.contains(this))
+			return false;
+		
+		scanning.add(this);
+		
 		boolean isDestructible = false;
 		for (IDefinitionMember member : members) {
 			if (member instanceof DestructorMember)
 				isDestructible = true;
 			if (member instanceof FieldMember) {
 				FieldMember field = (FieldMember)member;
-				if (!field.type.isDefinition(this) && field.type.isDestructible())
+				if (field.type.isDestructible(scanning))
 					isDestructible = true;
 			}
 			if ((member instanceof ImplementationMember) && ((ImplementationMember)member).type.isDestructible())
 				isDestructible = true;
 		}
+		
+		scanning.remove(this);
 		return isDestructible;
 	}
 	

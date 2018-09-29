@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -44,6 +45,10 @@ public class StoredType {
 	
 	public boolean isDestructible() {
 		return type.isDestructible() && storage.isDestructible();
+	}
+	
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return type.isDestructible(scanning) && storage.isDestructible();
 	}
 	
 	public boolean hasDefaultValue() {

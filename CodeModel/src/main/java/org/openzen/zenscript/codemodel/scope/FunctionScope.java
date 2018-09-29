@@ -32,10 +32,14 @@ public class FunctionScope extends StatementScope {
 	private final BaseScope outer;
 	private final FunctionHeader header;
 	private final GenericMapper typeParameterMap;
+	private final StoredType thisType;
 	
 	public FunctionScope(BaseScope outer, FunctionHeader header) {
 		this.outer = outer;
 		this.header = header;
+		this.thisType = outer.getThisType() == null || header.storage == null ? outer.getThisType() : outer.getThisType().type.stored(header.storage);
+		if (header.storage != null)
+			System.out.println("Storage is " + header.storage);
 		
 		if (outer.getLocalTypeParameters() == null)
 			throw new NullPointerException();
@@ -105,7 +109,7 @@ public class FunctionScope extends StatementScope {
 
 	@Override
 	public StoredType getThisType() {
-		return outer.getThisType();
+		return thisType;
 	}
 
 	@Override

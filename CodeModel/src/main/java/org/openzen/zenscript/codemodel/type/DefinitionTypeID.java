@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
@@ -185,6 +186,11 @@ public class DefinitionTypeID implements TypeID {
 	@Override
 	public boolean isDestructible() {
 		return definition.isDestructible();
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return definition.isDestructible(scanning);
 	}
 	
 	@Override

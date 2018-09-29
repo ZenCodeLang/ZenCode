@@ -27,16 +27,9 @@ public class ParsedStorageTag {
 			return NULL;
 		
 		String name = parser.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
-		List<String> arguments = null;
-		if (parser.optional(ZSTokenType.T_BROPEN) != null) {
-			arguments = new ArrayList<>();
-			if (parser.optional(ZSTokenType.T_BRCLOSE) == null) {
-				do {
-					arguments.add(parser.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content);
-				} while (parser.optional(ZSTokenType.T_COMMA) == null);
-				parser.required(ZSTokenType.T_BRCLOSE, ") expected");
-			}
-		}
+		List<String> arguments = new ArrayList<>();
+		while (parser.optional(ZSTokenType.T_COLON) != null)
+			arguments.add(parser.next().content);
 		
 		return new ParsedStorageTag(name, arguments.toArray(new String[arguments.size()]));
 	}

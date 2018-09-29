@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -30,6 +31,8 @@ public interface TypeID {
 	TypeID getNormalizedUnstored();
 	
 	boolean isDestructible();
+	
+	boolean isDestructible(Set<HighLevelDefinition> scanning);
 	
 	boolean hasDefaultValue();
 	

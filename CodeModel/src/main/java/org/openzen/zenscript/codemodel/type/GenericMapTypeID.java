@@ -7,7 +7,9 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
@@ -54,6 +56,11 @@ public class GenericMapTypeID implements TypeID {
 	@Override
 	public boolean isDestructible() {
 		return value.isDestructible();
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return value.isDestructible(scanning);
 	}
 	
 	@Override

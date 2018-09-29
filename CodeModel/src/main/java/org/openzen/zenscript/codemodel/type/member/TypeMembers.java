@@ -492,8 +492,8 @@ public final class TypeMembers {
 				return castEquivalent(position, caster.member.cast(position, value, implicit), toType);
 		}
 		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
-			if (implementation.member.implementsType.equals(toType))
-				return new InterfaceCastExpression(position, value, toType);
+			if (implementation.member.implementsType.equals(toType.type))
+				return castEquivalent(position, new InterfaceCastExpression(position, value, toType.type.stored(type.storage)), toType);
 		}
 		if (extendsType(toType.type))
 			return new SupertypeCastExpression(position, value, toType);

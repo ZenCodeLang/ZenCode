@@ -42,4 +42,9 @@ public class InvalidStorageTag implements StorageTag {
 	public boolean isDestructible() {
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return "invalid";
+	}
 }

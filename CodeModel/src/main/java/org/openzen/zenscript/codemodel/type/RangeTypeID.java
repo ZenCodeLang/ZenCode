@@ -6,7 +6,9 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
@@ -66,7 +68,12 @@ public class RangeTypeID implements TypeID {
 	
 	@Override
 	public boolean isDestructible() {
-		return false;
+		return baseType.isDestructible();
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return baseType.isDestructible(scanning);
 	}
 
 	@Override

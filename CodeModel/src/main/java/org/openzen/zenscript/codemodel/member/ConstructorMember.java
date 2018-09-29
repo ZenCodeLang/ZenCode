@@ -38,7 +38,7 @@ public class ConstructorMember extends FunctionalMember {
 				position,
 				definition,
 				modifiers,
-				new FunctionHeader(header.typeParameters, BasicTypeID.VOID.stored, header.thrownType, header.parameters),
+				new FunctionHeader(header.typeParameters, BasicTypeID.VOID.stored, header.thrownType, header.storage, header.parameters),
 				builtin);
 	}
 	

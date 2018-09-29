@@ -6,7 +6,9 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
@@ -57,6 +59,11 @@ public class GenericTypeID implements TypeID {
 	
 	@Override
 	public boolean isDestructible() {
+		return false; // TODO: actually depends on the type..?
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
 		return false; // TODO: actually depends on the type..?
 	}
 	

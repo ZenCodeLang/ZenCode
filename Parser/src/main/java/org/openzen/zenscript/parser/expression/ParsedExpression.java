@@ -434,12 +434,15 @@ public abstract class ParsedExpression {
 						position,
 						parser.next().content);
 			case T_STRING_SQ:
-			case T_STRING_DQ:
+			case T_STRING_DQ: {
+				String quoted = parser.next().content;
 				return new ParsedExpressionString(
 						position,
-						StringExpansion.unescape(parser.next().content).orElse(error -> {
+						StringExpansion.unescape(quoted).orElse(error -> {
 							return "INVALID_STRING";
-						}));
+						}),
+						quoted.charAt(0) == '\'');
+			}
 			case T_IDENTIFIER: {
 				String name = parser.next().content;
 				List<IParsedType> genericParameters = IParsedType.parseTypeArguments(parser);

@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
+import org.openzen.zenscript.parser.type.ParsedStorageTag;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 /**
@@ -45,7 +46,7 @@ public class ParsedExpressionBracket extends ParsedExpression {
 		for (ParsedExpression expression : expressions)
 			parameters.add(expression.toLambdaParameter());
 		
-		return new ParsedFunctionHeader(parameters, ParsedTypeBasic.UNDETERMINED, null);
+		return new ParsedFunctionHeader(position, parameters, ParsedTypeBasic.UNDETERMINED);
 	}
 
 	@Override

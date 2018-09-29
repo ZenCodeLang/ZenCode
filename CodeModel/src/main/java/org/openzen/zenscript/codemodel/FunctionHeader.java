@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -28,6 +29,7 @@ public class FunctionHeader {
 	private StoredType returnType;
 	public final FunctionParameter[] parameters;
 	public final StoredType thrownType;
+	public final StorageTag storage;
 	
 	public final int minParameters;
 	public final int maxParameters;
@@ -41,6 +43,7 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = FunctionParameter.NONE;
 		this.thrownType = null;
+		this.storage = null;
 		
 		minParameters = 0;
 		maxParameters = 0;
@@ -59,6 +62,7 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = new FunctionParameter[parameterTypes.length];
 		this.thrownType = null;
+		this.storage = null;
 		
 		for (int i = 0; i < parameterTypes.length; i++)
 			parameters[i] = new FunctionParameter(parameterTypes[i], null);
@@ -80,6 +84,7 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.thrownType = null;
+		this.storage = null;
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
@@ -90,7 +95,7 @@ public class FunctionHeader {
 		this(returnType.stored, parameters);
 	}
 	
-	public FunctionHeader(TypeParameter[] typeParameters, StoredType returnType, StoredType thrownType, FunctionParameter... parameters) {
+	public FunctionHeader(TypeParameter[] typeParameters, StoredType returnType, StoredType thrownType, StorageTag storage, FunctionParameter... parameters) {
 		if (returnType == null)
 			throw new NullPointerException();
 		if (typeParameters == null)
@@ -100,6 +105,7 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.thrownType = thrownType;
+		this.storage = storage;
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
@@ -134,7 +140,7 @@ public class FunctionHeader {
 		FunctionParameter[] normalizedParameters = new FunctionParameter[parameters.length];
 		for (int i = 0; i < normalizedParameters.length; i++)
 			normalizedParameters[i] = parameters[i].normalized(registry);
-		return new FunctionHeader(typeParameters, returnType.getNormalized(), thrownType == null ? null : thrownType.getNormalized(), normalizedParameters);
+		return new FunctionHeader(typeParameters, returnType.getNormalized(), thrownType == null ? null : thrownType.getNormalized(), storage, normalizedParameters);
 	}
 	
 	public int getNumberOfTypeParameters() {
@@ -150,7 +156,7 @@ public class FunctionHeader {
 	}
 	
 	public FunctionHeader withReturnType(StoredType returnType) {
-		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
+		return new FunctionHeader(typeParameters, returnType, thrownType, storage, parameters);
 	}
 	
 	public FunctionHeader inferFromOverride(GlobalTypeRegistry registry, FunctionHeader overridden) {
@@ -172,7 +178,11 @@ public class FunctionHeader {
 			}
 		}
 		
-		return new FunctionHeader(resultTypeParameters, resultReturnType, resultThrownType, resultParameters);
+		StorageTag resultStorage = this.storage;
+		if (resultStorage == null)
+			resultStorage = overridden.storage;
+		
+		return new FunctionHeader(resultTypeParameters, resultReturnType, resultThrownType, resultStorage, resultParameters);
 	}
 	
 	public boolean matchesExactly(CallArguments arguments, TypeScope scope) {
@@ -382,7 +392,7 @@ public class FunctionHeader {
 		for (int i = 0; i < parameters.length; i++) {
 			parameters[i] = this.parameters[i].withGenericArguments(mapper);
 		}
-		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
+		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), storage, parameters);
 	}
 	
 	public FunctionHeader fillGenericArguments(GlobalTypeRegistry registry, TypeID[] arguments, GenericMapper typeParameterMapping) {
@@ -399,7 +409,7 @@ public class FunctionHeader {
 		for (int i = 0; i < parameters.length; i++) {
 			parameters[i] = this.parameters[i].withGenericArguments(mapper);
 		}
-		return new FunctionHeader(TypeParameter.NONE, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
+		return new FunctionHeader(TypeParameter.NONE, returnType, thrownType == null ? null : thrownType.instance(mapper), storage, parameters);
 	}
 	
 	public FunctionHeader forTypeParameterInference() {
@@ -411,7 +421,7 @@ public class FunctionHeader {
 		for (int i = 0; i < lambdaHeader.parameters.length; i++)
 			parameters[i] = new FunctionParameter(this.parameters[i].type, lambdaHeader.parameters[i].name);
 		
-		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
+		return new FunctionHeader(typeParameters, returnType, thrownType, storage, parameters);
 	}
 	
 	public FunctionParameter getVariadicParameter() {

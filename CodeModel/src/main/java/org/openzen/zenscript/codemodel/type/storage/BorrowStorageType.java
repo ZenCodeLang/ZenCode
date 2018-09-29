@@ -24,7 +24,7 @@ public class BorrowStorageType implements StorageType {
 
 	@Override
 	public StorageTag instance(CodePosition position, String[] arguments) {
-		if (arguments != null) {
+		if (arguments.length > 0) {
 			if (arguments.length == 1 && arguments[0].equals("this"))
 				return BorrowStorageTag.THIS;
 			

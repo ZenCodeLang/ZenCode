@@ -25,16 +25,18 @@ import org.openzen.zenscript.codemodel.type.StringTypeID;
  */
 public class ParsedExpressionString extends ParsedExpression {
 	public final String value;
+	public final boolean singleQuote;
 	
-	public ParsedExpressionString(CodePosition position, String value) {
+	public ParsedExpressionString(CodePosition position, String value, boolean singleQuote) {
 		super(position);
 		
 		this.value = value;
+		this.singleQuote = singleQuote;
 	}
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		if (value.length() == 1 && scope.hints.contains(BasicTypeID.CHAR.stored))
+		if (value.length() == 1 && (singleQuote || scope.hints.contains(BasicTypeID.CHAR.stored)))
 			return new ConstantCharExpression(position, value.charAt(0));
 		
 		return new ConstantStringExpression(position, value);

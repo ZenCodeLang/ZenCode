@@ -16,6 +16,7 @@ import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
+import org.openzen.zenscript.parser.type.ParsedStorageTag;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 /**
@@ -52,7 +53,7 @@ public class ParsedExpressionCast extends ParsedExpression {
 		if (header.returnType != ParsedTypeBasic.UNDETERMINED)
 			throw new ParseException(position, "Lambda parameter already has a return type");
 		
-		return new ParsedFunctionHeader(header.genericParameters, header.parameters, type, null);
+		return new ParsedFunctionHeader(position, header.genericParameters, header.parameters, type, null, ParsedStorageTag.NULL);
 	}
 	
 	@Override

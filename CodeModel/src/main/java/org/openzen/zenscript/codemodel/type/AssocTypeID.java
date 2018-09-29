@@ -6,7 +6,9 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
@@ -63,6 +65,11 @@ public class AssocTypeID implements TypeID {
 	@Override
 	public boolean isDestructible() {
 		return keyType.isDestructible() || valueType.isDestructible();
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return keyType.isDestructible(scanning) || valueType.isDestructible(scanning);
 	}
 	
 	@Override

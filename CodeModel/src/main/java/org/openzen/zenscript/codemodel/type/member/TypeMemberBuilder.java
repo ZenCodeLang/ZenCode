@@ -291,6 +291,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 					new TypeParameter[] { mappedConstructorParameter },
 					VOID.stored,
 					null,
+					null,
 					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter).stored(BorrowStorageTag.INVOCATION), dimension).stored(BorrowStorageTag.INVOCATION), "original"),
 					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithoutIndex).stored(BorrowStorageTag.INVOCATION), "projection"));
 			members.addConstructor(new ConstructorMember(
@@ -312,6 +313,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			FunctionHeader mappedConstructorFunctionWithIndex = new FunctionHeader(
 					new TypeParameter[] { mappedConstructorParameter },
 					VOID.stored,
+					null,
 					null,
 					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter).stored(BorrowStorageTag.INVOCATION), dimension).stored(BorrowStorageTag.INVOCATION), "original"),
 					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithIndex).stored(BorrowStorageTag.INVOCATION), "projection"));
@@ -388,9 +390,9 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		Map<TypeParameter, TypeID> parameterFilled = Collections.singletonMap(map.key, registry.getGeneric(functionParameter));
 		StoredType valueType = map.value.instance(new GenericMapper(registry, parameterFilled));
 		
-		FunctionHeader getOptionalHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, registry.getOptional(valueType.type).stored(valueType.storage), null, new FunctionParameter[0]);
-		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, VOID.stored, null, new FunctionParameter(valueType));
-		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BOOL.stored, null, new FunctionParameter[0]);
+		FunctionHeader getOptionalHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, registry.getOptional(valueType.type).stored(valueType.storage), null, null, new FunctionParameter[0]);
+		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, VOID.stored, null, null, new FunctionParameter(valueType));
+		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BOOL.stored, null, null, new FunctionParameter[0]);
 		
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		constructor(builtin, GENERICMAP_CONSTRUCTOR);

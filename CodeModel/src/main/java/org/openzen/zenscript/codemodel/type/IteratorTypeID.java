@@ -7,7 +7,9 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
@@ -66,6 +68,11 @@ public class IteratorTypeID implements TypeID {
 	
 	@Override
 	public boolean isDestructible() {
+		return false;
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
 		return false;
 	}
 	

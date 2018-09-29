@@ -7,9 +7,11 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
@@ -61,6 +63,11 @@ public class FunctionTypeID implements TypeID {
 	
 	@Override
 	public boolean isDestructible() {
+		return false;
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
 		return false;
 	}
 
