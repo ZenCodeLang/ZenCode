@@ -70,6 +70,8 @@ public interface TypeID {
 		return false;
 	}
 	
+	boolean isValueType();
+	
 	default TypeID withoutOptional() {
 		throw new UnsupportedOperationException("Not an optional type");
 	}

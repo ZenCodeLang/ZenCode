@@ -45,6 +45,7 @@ import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.validator.TypeContext;
 
 /**
  *
@@ -97,7 +98,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 					"Duplicate field name: " + member.name);
 		}
 		fieldNames.add(member.name);
-		new TypeValidator(validator, member.position).validate(member.type);
+		new TypeValidator(validator, member.position).validate(TypeContext.FIELD_TYPE, member.type);
 		
 		if (member.initializer != null) {
 			member.initializer.accept(new ExpressionValidator(validator, new FieldInitializerScope(member)));
@@ -156,7 +157,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		new TypeValidator(validator, member.position).validate(member.type);
+		new TypeValidator(validator, member.position).validate(TypeContext.GETTER_TYPE, member.type);
 		validateGetter(member, new MethodStatementScope(new FunctionHeader(member.type)));
 		return null;
 	}
@@ -164,7 +165,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitSetter(SetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		new TypeValidator(validator, member.position).validate(member.type);
+		new TypeValidator(validator, member.position).validate(TypeContext.SETTER_TYPE, member.type);
 		validateSetter(member, new MethodStatementScope(new FunctionHeader(BasicTypeID.VOID, member.parameter)));
 		return null;
 	}
@@ -190,7 +191,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		new TypeValidator(validator, member.position).validate(member.toType);
+		new TypeValidator(validator, member.position).validate(TypeContext.CASTER_TYPE, member.toType);
 		validateFunctional(member, new MethodStatementScope(member.header));
 		return null;
 	}
@@ -199,7 +200,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitCustomIterator(IteratorMember member) {
 		TypeValidator typeValidator = new TypeValidator(validator, member.position);
 		for (StoredType type : member.getLoopVariableTypes())
-			typeValidator.validate(type);
+			typeValidator.validate(TypeContext.ITERATOR_TYPE, type);
 		
 		validateFunctional(member, new MethodStatementScope(new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes()).stored(UniqueStorageTag.INSTANCE))));
 		return null;

@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -68,6 +69,10 @@ public class LocalTypeResolutionContext implements TypeResolutionContext {
 	
 	@Override
 	public StoredType getThisType() {
-		return type == null ? null : getTypeRegistry().getForMyDefinition(type.load()).stored(BorrowStorageTag.THIS);
+		if (type == null)
+			return null;
+		
+		TypeID self = getTypeRegistry().getForMyDefinition(type.load());
+		return self.stored(self.isValueType() ? ValueStorageTag.INSTANCE : BorrowStorageTag.THIS);
 	}
 }

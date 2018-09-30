@@ -29,6 +29,7 @@ import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.InvalidStorageTag;
+import org.openzen.zenscript.validator.TypeContext;
 
 /**
  *
@@ -52,7 +53,7 @@ public class ValidationUtils {
 	
 	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header) {
 		TypeValidator typeValidator = new TypeValidator(target, position);
-		typeValidator.validate(header.getReturnType());
+		typeValidator.validate(TypeContext.RETURN_TYPE, header.getReturnType());
 		
 		if (header.storage instanceof InvalidStorageTag) {
 			InvalidStorageTag invalid = (InvalidStorageTag)header.storage;
@@ -67,7 +68,7 @@ public class ValidationUtils {
 			}
 			
 			parameterNames.add(parameter.name);
-			typeValidator.validate(parameter.type);
+			typeValidator.validate(TypeContext.PARAMETER_TYPE, parameter.type);
 			
 			if (parameter.defaultValue != null) {
 				parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope()));

@@ -18,6 +18,9 @@ import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageType;
 
 /**
  *
@@ -52,15 +55,20 @@ public class ParsedNamedType implements IParsedType {
 		for (ParsedNamePart namePart : name)
 			genericNames.add(namePart.compile(context));
 		
-		StorageTag storage = this.storage.resolve(position, context);
 		TypeID baseType = context.getType(position, genericNames);
 		if (baseType == null)
-			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored(storage);
+			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored(ValueStorageTag.INSTANCE);
 		
 		TypeID result = context.getTypeRegistry().getModified(modifiers, baseType);
 		if (result == null)
-			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored(storage);
+			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored(ValueStorageTag.INSTANCE);
 		
+		StorageTag storage;
+		if (this.storage == ParsedStorageTag.NULL) {
+			storage = result.isValueType() ? ValueStorageTag.INSTANCE : SharedStorageTag.INSTANCE;
+		} else {
+			storage = this.storage.resolve(position, context);
+		}
 		return result.stored(storage);
 	}
 	

@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
@@ -330,7 +331,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitInterfaceCast(InterfaceCastExpression expression) {
 		expression.value.accept(this);
-		new TypeValidator(validator, expression.position).validate(expression.type);
+		new TypeValidator(validator, expression.position).validate(TypeContext.CAST_TARGET_TYPE, expression.type);
 		return null;
 	}
 	
@@ -343,7 +344,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitIs(IsExpression expression) {
 		expression.value.accept(this);
-		expression.isType.accept(new TypeValidator(validator, expression.position));
+		new TypeValidator(validator, expression.position).validate(TypeContext.TYPE_CHECK_TYPE, expression.isType);
 		return null;
 	}
 

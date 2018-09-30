@@ -58,6 +58,11 @@ public class GenericTypeID implements TypeID {
 	}
 	
 	@Override
+	public boolean isValueType() {
+		return false;
+	}
+	
+	@Override
 	public boolean isDestructible() {
 		return false; // TODO: actually depends on the type..?
 	}

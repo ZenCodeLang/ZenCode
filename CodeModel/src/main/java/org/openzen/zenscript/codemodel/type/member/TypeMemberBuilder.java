@@ -507,7 +507,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			for (int i = 0; i < constValues.length; i++)
 				constValues[i] = new EnumConstantExpression(BUILTIN, definitionType, enumConstants.get(i));
 			
-			constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(definitionType.stored(StaticStorageTag.INSTANCE), 1).stored(StaticStorageTag.INSTANCE)));
+			constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(definitionType.stored(ValueStorageTag.INSTANCE), 1).stored(StaticStorageTag.INSTANCE)));
 			compare(definition, ENUM_COMPARE, type);
 			
 			if (!members.canCast(StringTypeID.STATIC)) {

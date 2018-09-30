@@ -12,7 +12,9 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -25,6 +27,11 @@ public class StoredType {
 	public final StorageTag storage;
 	
 	public StoredType(TypeID type, StorageTag storage) {
+		if (type.isValueType() && storage != ValueStorageTag.INSTANCE && storage != StaticExpressionStorageTag.INSTANCE)
+			throw new IllegalArgumentException("storage of a value type must be value");
+		if (!type.isValueType() && storage == ValueStorageTag.INSTANCE)
+			throw new IllegalArgumentException("storage of a nonvalue type cannot be value");
+		
 		this.type = type;
 		this.storage = storage;
 	}
@@ -40,7 +47,7 @@ public class StoredType {
 	
 	public StoredType instance(GenericMapper mapper) {
 		TypeID result = mapper.map(type);
-		return result == type ? this : new StoredType(result, storage);
+		return result == type ? this : new StoredType(result, result.isValueType() ? ValueStorageTag.INSTANCE : storage);
 	}
 	
 	public boolean isDestructible() {

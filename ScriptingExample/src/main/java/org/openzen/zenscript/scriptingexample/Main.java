@@ -148,7 +148,7 @@ public class Main {
 				result.append(tokens.getLastWhitespace());
 			}
 			
-			return new ParsedExpressionString(position.until(tokens.getPosition()), result.toString());
+			return new ParsedExpressionString(position.until(tokens.getPosition()), result.toString(), false);
 		}
 	}
 }

@@ -34,6 +34,7 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -59,7 +60,7 @@ public class DefinitionScope extends BaseScope {
 		Map<TypeParameter, TypeID> typeParameters = new HashMap<>();
 		if (definition instanceof ExpansionDefinition) {
 			ExpansionDefinition expansion = (ExpansionDefinition)definition;
-			type = expansion.target.stored(BorrowStorageTag.THIS);
+			type = expansion.target.stored(expansion.target.isValueType() ? ValueStorageTag.INSTANCE : BorrowStorageTag.THIS);
 			
 			for (TypeParameter parameter : expansion.typeParameters) {
 				genericParameters.put(parameter.name, parameter);
@@ -67,7 +68,7 @@ public class DefinitionScope extends BaseScope {
 			}
 		} else {
 			DefinitionTypeID definitionType = outer.getTypeRegistry().getForMyDefinition(definition);
-			type = definitionType.stored(BorrowStorageTag.THIS);
+			type = definitionType.stored(definitionType.isValueType() ? ValueStorageTag.INSTANCE : BorrowStorageTag.THIS);
 			
 			while (definitionType != null) {
 				for (TypeParameter parameter : definitionType.definition.typeParameters) {

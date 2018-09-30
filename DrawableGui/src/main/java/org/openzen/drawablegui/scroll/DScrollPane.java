@@ -92,6 +92,8 @@ public class DScrollPane implements DComponent, DScrollContext {
 	
 	@Override
 	public void unmount() {
+		context = null;
+		
 		subSurface.close();
 		style.border.close();
 		

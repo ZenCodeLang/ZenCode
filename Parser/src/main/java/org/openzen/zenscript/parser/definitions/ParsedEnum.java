@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
+import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
  *
@@ -30,9 +31,13 @@ import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 public class ParsedEnum extends BaseParsedDefinition {
 	public static ParsedEnum parseEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
+		IParsedType asType = null;
+		if (tokens.optional(ZSTokenType.K_AS) != null)
+			asType = IParsedType.parse(tokens);
+		
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
-		ParsedEnum result = new ParsedEnum(pkg, position, modifiers, annotations, name, outerDefinition);
+		ParsedEnum result = new ParsedEnum(pkg, position, modifiers, annotations, name, outerDefinition, asType);
 		
 		while (!tokens.isNext(ZSTokenType.T_ACLOSE) && !tokens.isNext(ZSTokenType.T_SEMICOLON)) {
 			result.addEnumValue(ParsedEnumConstant.parse(tokens, result.compiled, result.enumValues.size()));
@@ -57,11 +62,13 @@ public class ParsedEnum extends BaseParsedDefinition {
 	
 	private final List<ParsedEnumConstant> enumValues = new ArrayList<>();
 	
+	private final IParsedType asType;
 	private final EnumDefinition compiled;
 	
-	public ParsedEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, HighLevelDefinition outerDefinition) {
+	public ParsedEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, HighLevelDefinition outerDefinition, IParsedType asType) {
 		super(position, modifiers, pkg, annotations);
 		
+		this.asType = asType;
 		compiled = new EnumDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
 	}
 	
@@ -76,6 +83,9 @@ public class ParsedEnum extends BaseParsedDefinition {
 	
 	@Override
 	protected void linkTypesLocal(TypeResolutionContext context) {
+		if (asType != null)
+			compiled.asType = asType.compileUnstored(context);
+		
 		for (ParsedEnumConstant constant : enumValues) {
 			compiled.addEnumConstant(constant.getCompiled());
 		}

@@ -13,14 +13,20 @@ import java.io.File;
  */
 public class Arguments {
 	public final File projectDirectory;
+	public final String defaultTarget;
 	
-	public Arguments(String[] arguments, File defaultProjectDir) {
-		File projectDir = defaultProjectDir;
+	public Arguments(String[] arguments) {
+		File projectDir = null;
+		String defaultTarget = null;
+		
 		int positional = 0;
 		for (int i = 0; i < arguments.length; i++) {
 			switch (positional) {
 				case 0:
 					projectDir = new File(arguments[0]);
+					break;
+				case 1:
+					defaultTarget = arguments[1];
 					break;
 				default:
 					throw new IllegalArgumentException("Too many arguments");
@@ -32,5 +38,6 @@ public class Arguments {
 			projectDir = projectDir.getParentFile();
 		
 		this.projectDirectory = projectDir;
+		this.defaultTarget = defaultTarget;
 	}
 }

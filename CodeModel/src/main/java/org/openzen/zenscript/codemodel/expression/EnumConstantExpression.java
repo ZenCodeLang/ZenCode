@@ -11,7 +11,7 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -21,13 +21,13 @@ public class EnumConstantExpression extends Expression {
 	public final EnumConstantMember value;
 	
 	public EnumConstantExpression(CodePosition position, TypeID type, EnumConstantMember value) {
-		super(position, type.stored(StaticStorageTag.INSTANCE), null);
+		super(position, type.stored(ValueStorageTag.INSTANCE), null);
 		
 		this.value = value;
 	}
 	
 	public EnumConstantExpression(CodePosition position, GlobalTypeRegistry registry, EnumDefinition type, EnumConstantMember value) {
-		super(position, registry.getForDefinition(type).stored(StaticStorageTag.INSTANCE), null);
+		super(position, registry.getForDefinition(type).stored(ValueStorageTag.INSTANCE), null);
 		
 		this.value = value;
 	}

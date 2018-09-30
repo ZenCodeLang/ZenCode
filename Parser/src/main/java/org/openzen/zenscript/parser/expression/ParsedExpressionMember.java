@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -42,8 +43,10 @@ public class ParsedExpressionMember extends ParsedExpression {
 				scope,
 				scope.hints,
 				new GenericName(this.member, typeParameters));
-		if (member == null)
+		if (member == null) {
+			TypeMembers members = scope.getTypeMembers(cValue.eval().type);
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Member not found: " + this.member);
+		}
 		
 		return member;
 	}

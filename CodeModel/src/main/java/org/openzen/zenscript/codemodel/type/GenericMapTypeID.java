@@ -54,6 +54,11 @@ public class GenericMapTypeID implements TypeID {
 	}
 	
 	@Override
+	public boolean isValueType() {
+		return false;
+	}
+	
+	@Override
 	public boolean isDestructible() {
 		return value.isDestructible();
 	}

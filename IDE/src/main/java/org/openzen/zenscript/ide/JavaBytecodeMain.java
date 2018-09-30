@@ -5,12 +5,7 @@
  */
 package org.openzen.zenscript.ide;
 
-import java.io.File;
 import java.io.IOException;
-import org.openzen.zenscript.constructor.Project;
-import static org.openzen.zenscript.ide.Main.open;
-import org.openzen.zenscript.ide.host.DevelopmentHost;
-import org.openzen.zenscript.ide.host.local.LocalProjectDevelopmentHost;
 
 /**
  *
@@ -21,11 +16,6 @@ public class JavaBytecodeMain {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
-		Arguments arguments = new Arguments(args, new File("../../ZenCode")); // TODO: remove this and open a project chooser/creator instead
-		File directory = arguments.projectDirectory;
-		
-		Project project = new Project(directory);
-		DevelopmentHost host = new LocalProjectDevelopmentHost(project);
-		open(host, "SharedJavaBytecode");
+		Main.main("../../ZenCode", "SharedJavaBytecode");
     }
 }

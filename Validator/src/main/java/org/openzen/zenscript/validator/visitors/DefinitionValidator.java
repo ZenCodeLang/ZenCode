@@ -33,6 +33,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
@@ -149,7 +150,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				definition.position,
 				"Invalid expansion modifier");
 		
-		definition.target.accept(new TypeValidator(validator, definition.position));
+		new TypeValidator(validator, definition.position).validate(TypeContext.EXPANSION_TARGET_TYPE, definition.target);
 		validateMembers(definition, DefinitionMemberContext.EXPANSION);
 		return null;
 	}
@@ -207,7 +208,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateIdentifier(validator, option.position, option.name);
 		TypeValidator typeValidator = new TypeValidator(validator, option.position);
 		for (StoredType type : option.types)
-			typeValidator.validate(type);
+			typeValidator.validate(TypeContext.OPTION_MEMBER_TYPE, type);
 	}
 	
 	private class SimpleTypeScope implements TypeScope {

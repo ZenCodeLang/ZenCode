@@ -67,6 +67,11 @@ public class RangeTypeID implements TypeID {
 	}
 	
 	@Override
+	public boolean isValueType() {
+		return baseType.type.isValueType();
+	}
+	
+	@Override
 	public boolean isDestructible() {
 		return baseType.isDestructible();
 	}

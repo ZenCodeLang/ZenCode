@@ -77,6 +77,11 @@ public class IteratorTypeID implements TypeID {
 	}
 	
 	@Override
+	public boolean isValueType() {
+		return false;
+	}
+	
+	@Override
 	public TypeID instanceUnstored(GenericMapper mapper) {
 		StoredType[] instanced = mapper.map(iteratorTypes);
 		return mapper.registry.getIterator(instanced);

@@ -116,7 +116,7 @@ public class ParsedFunctionHeader {
 		for (int i = 0; i < parameters.length; i++)
 			parameters[i] = this.parameters.get(i).compile(localContext);
 		
-		StorageTag storage = this.storage.resolve(position, context);
+		StorageTag storage = this.storage == ParsedStorageTag.NULL ? null : this.storage.resolve(position, context);
 		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(context), storage, parameters);
 	}
 }

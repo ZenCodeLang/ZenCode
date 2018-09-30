@@ -71,6 +71,11 @@ public class ModifiedTypeID implements TypeID {
 	}
 	
 	@Override
+	public boolean isValueType() {
+		return baseType.isValueType();
+	}
+	
+	@Override
 	public boolean isDestructible() {
 		return baseType.isDestructible();
 	}

@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
@@ -171,6 +172,11 @@ public class DefinitionTypeID implements TypeID {
 	@Override
 	public boolean isConst() {
 		return false;
+	}
+	
+	@Override
+	public boolean isValueType() {
+		return definition instanceof StructDefinition || definition instanceof EnumDefinition;
 	}
 
 	@Override

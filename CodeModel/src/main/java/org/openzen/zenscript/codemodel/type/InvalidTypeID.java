@@ -54,6 +54,11 @@ public class InvalidTypeID implements TypeID {
 	}
 	
 	@Override
+	public boolean isValueType() {
+		return false;
+	}
+	
+	@Override
 	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
 		return false;
 	}

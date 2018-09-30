@@ -60,6 +60,11 @@ public class StringTypeID implements TypeID {
 	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
 		return false;
 	}
+	
+	@Override
+	public boolean isValueType() {
+		return false;
+	}
 
 	@Override
 	public TypeID instanceUnstored(GenericMapper mapper) {

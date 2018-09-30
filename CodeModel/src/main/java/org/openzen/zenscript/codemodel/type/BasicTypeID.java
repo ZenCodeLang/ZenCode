@@ -82,6 +82,11 @@ public enum BasicTypeID implements TypeID {
 	}
 	
 	@Override
+	public boolean isValueType() {
+		return true;
+	}
+	
+	@Override
 	public boolean isDestructible() {
 		return false;
 	}

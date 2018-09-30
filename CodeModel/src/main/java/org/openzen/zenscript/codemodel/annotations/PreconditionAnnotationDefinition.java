@@ -28,7 +28,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -52,7 +52,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	public List<FunctionHeader> getInitializers(BaseScope scope) {
 		return Collections.singletonList(new FunctionHeader(
 				BasicTypeID.VOID.stored,
-				scope.getType(CodePosition.BUILTIN, enforcementLevelName).stored(StaticStorageTag.INSTANCE),
+				scope.getType(CodePosition.BUILTIN, enforcementLevelName).stored(ValueStorageTag.INSTANCE),
 				BasicTypeID.BOOL.stored,
 				StringTypeID.UNIQUE));
 	}

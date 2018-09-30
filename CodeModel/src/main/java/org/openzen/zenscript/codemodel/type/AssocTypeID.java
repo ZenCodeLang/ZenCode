@@ -63,6 +63,11 @@ public class AssocTypeID implements TypeID {
 	}
 	
 	@Override
+	public boolean isValueType() {
+		return false;
+	}
+	
+	@Override
 	public boolean isDestructible() {
 		return keyType.isDestructible() || valueType.isDestructible();
 	}

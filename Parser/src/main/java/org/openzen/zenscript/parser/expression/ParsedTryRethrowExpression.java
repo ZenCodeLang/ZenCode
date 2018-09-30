@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -50,7 +51,7 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 			if (cSource.type.type instanceof DefinitionTypeID) {
 				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type.type;
 				if (sourceType.definition == result) {
-					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0].stored(cSource.type.storage), cSource);
+					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0].stored(sourceType.typeArguments[0].isValueType() ? ValueStorageTag.INSTANCE : cSource.type.storage), cSource);
 				}
 			}
 			
