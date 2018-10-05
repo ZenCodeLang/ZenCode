@@ -11,6 +11,7 @@ import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -27,7 +28,7 @@ public class IteratorTypeID implements TypeID {
 	}
 	
 	@Override
-	public IteratorTypeID getNormalizedUnstored() {
+	public IteratorTypeID getNormalized() {
 		return normalized;
 	}
 	
@@ -82,9 +83,9 @@ public class IteratorTypeID implements TypeID {
 	}
 	
 	@Override
-	public TypeID instanceUnstored(GenericMapper mapper) {
+	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
 		StoredType[] instanced = mapper.map(iteratorTypes);
-		return mapper.registry.getIterator(instanced);
+		return new TypeArgument(mapper.registry.getIterator(instanced), storage);
 	}
 
 	@Override

@@ -122,8 +122,8 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 
 		if (definition.typeArguments.length > 0) {
 			builder.append("<");
-			for (TypeID typeParameter : definition.typeArguments) {
-				builder.append(typeParameter.accept(null, this));
+			for (TypeArgument typeParameter : definition.typeArguments) {
+				builder.append(typeParameter.type.accept(null, this));
 			}
 			builder.append(">");
 		}

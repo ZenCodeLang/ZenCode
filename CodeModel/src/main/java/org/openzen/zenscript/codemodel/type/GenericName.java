@@ -13,13 +13,13 @@ import java.util.List;
  */
 public class GenericName {
 	public final String name;
-	public final TypeID[] arguments;
+	public final TypeArgument[] arguments;
 	
 	public GenericName(String name) {
-		this(name, TypeID.NONE);
+		this(name, TypeArgument.NONE);
 	}
 	
-	public GenericName(String name, TypeID[] arguments) {
+	public GenericName(String name, TypeArgument[] arguments) {
 		if (arguments == null)
 			throw new NullPointerException("Arguments cannot be null");
 		

@@ -12,7 +12,9 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
@@ -27,6 +29,9 @@ public class ParsedTypeArray implements IParsedType {
 	public final ParsedStorageTag storage;
 	
 	public ParsedTypeArray(CodePosition position, IParsedType baseType, int dimension, ParsedStorageTag storage) {
+		if (storage == null)
+			throw new NullPointerException();
+		
 		this.position = position;
 		this.baseType = baseType;
 		this.dimension = dimension;
@@ -35,6 +40,9 @@ public class ParsedTypeArray implements IParsedType {
 	}
 
 	private ParsedTypeArray(CodePosition position, IParsedType baseType, int dimension, int modifiers, ParsedStorageTag storage) {
+		if (storage == null)
+			throw new NullPointerException();
+		
 		this.position = position;
 		this.baseType = baseType;
 		this.dimension = dimension;
@@ -57,7 +65,7 @@ public class ParsedTypeArray implements IParsedType {
 		StoredType baseType = this.baseType.compile(context);
 		StorageTag storage = this.storage.resolve(position, context);
 		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return registry.getModified(modifiers, registry.getArray(baseType, dimension)).stored(storage);
+		return registry.getModified(modifiers, registry.getArray(baseType, dimension)).stored(storage == null ? AutoStorageTag.INSTANCE : storage);
 	}
 	
 	@Override
@@ -69,5 +77,13 @@ public class ParsedTypeArray implements IParsedType {
 		StorageTag storage = this.storage.resolve(position, context);
 		GlobalTypeRegistry registry = context.getTypeRegistry();
 		return registry.getModified(modifiers, registry.getArray(baseType, dimension));
+	}
+
+	@Override
+	public TypeArgument compileArgument(TypeResolutionContext context) {
+		StoredType baseType = this.baseType.compile(context);
+		StorageTag storage = this.storage.resolve(position, context);
+		GlobalTypeRegistry registry = context.getTypeRegistry();
+		return new TypeArgument(registry.getModified(modifiers, registry.getArray(baseType, dimension)), storage);
 	}
 }

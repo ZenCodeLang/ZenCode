@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import stdlib.Chars;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
@@ -41,6 +42,10 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 	
 	public String format(TypeID type) {
 		return type.accept(this);
+	}
+	
+	public String format(TypeArgument type) {
+		return type.storage == null ? format(type.type) : format(type.stored());
 	}
 	
 	public String format(StoredType type) {
@@ -97,11 +102,11 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		result.append(importedName);
 		result.append("<");
 		int index = 0;
-		for (TypeID typeParameter : definition.typeArguments) {
+		for (TypeArgument typeParameter : definition.typeArguments) {
 			if (index > 0)
 				result.append(", ");
 			
-			result.append(typeParameter.accept(this));
+			result.append(format(typeParameter));
 		}
 		result.append(">");
 		return result.toString();

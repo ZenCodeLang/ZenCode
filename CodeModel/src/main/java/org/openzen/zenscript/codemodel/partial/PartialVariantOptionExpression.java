@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -69,7 +70,7 @@ public class PartialVariantOptionExpression implements IPartialExpression {
 	}
 
 	@Override
-	public TypeID[] getGenericCallTypes() {
-		return TypeID.NONE;
+	public TypeArgument[] getTypeArguments() {
+		return TypeArgument.NONE;
 	}
 }

@@ -25,8 +25,8 @@ import org.openzen.zenscript.codemodel.scope.LambdaScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -50,7 +50,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		FunctionHeader definedHeader = header.compile(scope);
 		FunctionHeader header = definedHeader;
-		StorageTag storage = SharedStorageTag.INSTANCE;
+		StorageTag storage = AutoStorageTag.INSTANCE;
 		for (StoredType hint : scope.hints) {
 			if (hint.getNormalized().type instanceof FunctionTypeID) {
 				FunctionTypeID functionHint = (FunctionTypeID) hint.getNormalized().type;
@@ -85,7 +85,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		if (!scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference
 			StoredType returnType = statements.getReturnType();
-			Map<TypeParameter, TypeID> inferredTypes = returnType.type.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType().type);
+			Map<TypeParameter, TypeArgument> inferredTypes = returnType.type.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType().asArgument());
 			if (inferredTypes == null)
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
 			

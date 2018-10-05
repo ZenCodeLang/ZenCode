@@ -92,7 +92,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 
 		IPartialExpression cReceiver = receiver.compile(scope.withoutHints());
 		List<FunctionHeader> headers = cReceiver.getPossibleFunctionHeaders(scope, scope.hints, arguments.arguments.size());
-		CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getGenericCallTypes(), headers);
+		CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getTypeArguments(), headers);
 		return cReceiver.call(position, scope, scope.hints, callArguments);
 	}
 	

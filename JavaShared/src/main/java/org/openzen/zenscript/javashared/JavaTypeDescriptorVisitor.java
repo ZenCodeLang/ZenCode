@@ -3,7 +3,6 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 
 public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 	private final JavaTypeDescriptorVisitor forOptional;
@@ -21,7 +20,7 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 	}
 	
 	public String process(StoredType type) {
-		if (type.isDestructible() && type.storage == SharedStorageTag.INSTANCE)
+		if (JavaTypeUtils.isShared(type))
 			return "L" + JavaClass.SHARED.internalName + ";";
 		
 		return type.type.accept(this);

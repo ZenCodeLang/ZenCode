@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -40,7 +41,7 @@ public class ImplementationMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		TypeID instancedType = mapper == null ? type : mapper.map(type);
+		TypeID instancedType = mapper == null ? type : mapper.map(position, new TypeArgument(type, null)).type;
 		members.addImplementation(new ImplementationMemberRef(this, members.type, instancedType), priority);
 		
 		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType.stored(members.type.storage));

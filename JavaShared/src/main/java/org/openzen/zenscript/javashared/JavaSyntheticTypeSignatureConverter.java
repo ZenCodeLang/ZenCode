@@ -119,7 +119,7 @@ public class JavaSyntheticTypeSignatureConverter implements TypeVisitorWithConte
 		if (definition.typeArguments.length > 0) {
 			result.append("With");
 			for (int i = 0; i < definition.typeArguments.length; i++) {
-				result.append(definition.typeArguments[i].accept(null, this));
+				result.append(definition.typeArguments[i].type.accept(null, this));
 			}
 		}
 		return result.toString();

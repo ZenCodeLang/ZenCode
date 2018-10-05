@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -26,7 +27,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
  * @author Hoofdgebruiker
  */
 public class PartialStaticMemberGroupExpression implements IPartialExpression {
-	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, TypeScope scope, String name, TypeID target, FunctionalMemberRef method, TypeID[] typeArguments) {
+	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, TypeScope scope, String name, TypeID target, FunctionalMemberRef method, TypeArgument[] typeArguments) {
 		TypeMemberGroup group = new TypeMemberGroup(true, name);
 		group.addMethod(method, TypeMemberPriority.SPECIFIED);
 		return new PartialStaticMemberGroupExpression(position, scope, target, group, typeArguments);
@@ -36,9 +37,9 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	private final TypeScope scope;
 	private final TypeID target;
 	private final TypeMemberGroup group;
-	private final TypeID[] typeArguments;
+	private final TypeArgument[] typeArguments;
 	
-	public PartialStaticMemberGroupExpression(CodePosition position, TypeScope scope, TypeID target, TypeMemberGroup group, TypeID[] typeArguments) {
+	public PartialStaticMemberGroupExpression(CodePosition position, TypeScope scope, TypeID target, TypeMemberGroup group, TypeArgument[] typeArguments) {
 		this.position = position;
 		this.scope = scope;
 		this.group = group;
@@ -80,7 +81,7 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public TypeID[] getGenericCallTypes() {
+	public TypeArgument[] getTypeArguments() {
 		return typeArguments;
 	}
 	

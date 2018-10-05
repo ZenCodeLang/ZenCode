@@ -32,17 +32,18 @@ public class ModifiedTypeID implements TypeID {
 		this.baseType = baseType;
 		this.registry = registry;
 		
-		normalized = baseType.getNormalizedUnstored() == baseType ? this : registry.getModified(modifiers, baseType.getNormalizedUnstored());
+		normalized = baseType.getNormalized() == baseType ? this : registry.getModified(modifiers, baseType.getNormalized());
 	}
 	
 	@Override
-	public TypeID getNormalizedUnstored() {
+	public TypeID getNormalized() {
 		return normalized;
 	}
 	
 	@Override
-	public TypeID instanceUnstored(GenericMapper mapper) {
-		return mapper.registry.getModified(modifiers, baseType.instanceUnstored(mapper));
+	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
+		TypeArgument base = baseType.instance(mapper, storage);
+		return new TypeArgument(mapper.registry.getModified(modifiers, base.type), base.storage);
 	}
 	
 	@Override

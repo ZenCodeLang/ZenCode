@@ -70,6 +70,7 @@ import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
@@ -101,7 +102,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			if (expansion.target == null)
 				throw new RuntimeException(expansion.position.toString() + ": Missing expansion target");
 			
-			Map<TypeParameter, TypeID> mapping = matchType(type.type, expansion.target);
+			Map<TypeParameter, TypeArgument> mapping = matchType(type, expansion.target);
 			if (mapping == null)
 				continue;
 			
@@ -121,7 +122,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		}
 	}
 	
-	private Map<TypeParameter, TypeID> matchType(TypeID type, TypeID pattern) {
+	private Map<TypeParameter, TypeArgument> matchType(StoredType type, TypeArgument pattern) {
 		return type.inferTypeParameters(cache, pattern);
 	}
 
@@ -387,7 +388,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	@Override
 	public Void visitGenericMap(Void context, GenericMapTypeID map) {
 		TypeParameter functionParameter = new TypeParameter(BUILTIN, "T");
-		Map<TypeParameter, TypeID> parameterFilled = Collections.singletonMap(map.key, registry.getGeneric(functionParameter));
+		Map<TypeParameter, TypeArgument> parameterFilled = Collections.singletonMap(map.key, new TypeArgument(registry.getGeneric(functionParameter), null));
 		StoredType valueType = map.value.instance(new GenericMapper(registry, parameterFilled));
 		
 		FunctionHeader getOptionalHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, registry.getOptional(valueType.type).stored(valueType.storage), null, null, new FunctionParameter[0]);
@@ -442,7 +443,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		HighLevelDefinition definition = definitionType.definition;
 		GenericMapper mapper = null;
 		if (definitionType.hasTypeParameters() || (definitionType.outer != null && definitionType.outer.hasTypeParameters())) {
-			Map<TypeParameter, TypeID> mapping = definitionType.getTypeParameterMapping();
+			Map<TypeParameter, TypeArgument> mapping = definitionType.getTypeParameterMapping();
 			mapper = new GenericMapper(registry, mapping);
 		}
 		
@@ -518,7 +519,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		if (definition instanceof InterfaceDefinition) {
 			InterfaceDefinition interfaceDefinition = (InterfaceDefinition)definition;
 			for (TypeID baseType : interfaceDefinition.baseInterfaces)
-				cache.get(baseType.instanceUnstored(mapper).stored(type.storage))
+				cache.get(baseType.instance(mapper, type.storage).stored())
 						.copyMembersTo(definitionType.definition.position, members, TypeMemberPriority.INHERITED);
 		}
 		

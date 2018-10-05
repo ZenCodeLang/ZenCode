@@ -212,11 +212,11 @@ public class ParsedFile {
 	}
 	
 	public boolean hasErrors() {
-		return false;
+		return errors.size() > 0;
 	}
 	
-	public void printErrors() {
-		
+	public List<ParseException> getErrors() {
+		return errors;
 	}
 	
 	public void listDefinitions(PackageDefinitions definitions) {

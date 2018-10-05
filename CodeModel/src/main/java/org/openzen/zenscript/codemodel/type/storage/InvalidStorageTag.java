@@ -47,4 +47,14 @@ public class InvalidStorageTag implements StorageTag {
 	public String toString() {
 		return "invalid";
 	}
+	
+	@Override
+	public boolean isConst() {
+		return false;
+	}
+	
+	@Override
+	public boolean isImmutable() {
+		return false;
+	}
 }

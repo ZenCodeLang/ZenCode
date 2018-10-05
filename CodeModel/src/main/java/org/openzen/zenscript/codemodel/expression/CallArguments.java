@@ -10,8 +10,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 
 /**
  *
@@ -20,17 +19,17 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public class CallArguments {
 	public static final CallArguments EMPTY = new CallArguments(new Expression[0]);
 	
-	public final TypeID[] typeArguments;
+	public final TypeArgument[] typeArguments;
 	public final Expression[] arguments;
 	
 	public CallArguments(Expression... arguments) {
-		this.typeArguments = TypeID.NONE;
+		this.typeArguments = TypeArgument.NONE;
 		this.arguments = arguments;
 	}
 	
-	public CallArguments(TypeID[] typeArguments, Expression[] arguments) {
+	public CallArguments(TypeArgument[] typeArguments, Expression[] arguments) {
 		if (typeArguments == null)
-			typeArguments = TypeID.NONE;
+			typeArguments = TypeArgument.NONE;
 		if (arguments == null)
 			throw new IllegalArgumentException("Arguments cannot be null!");
 		
@@ -38,11 +37,11 @@ public class CallArguments {
 		this.arguments = arguments;
 	}
 	
-	public CallArguments(TypeID... dummy) {
-		this.typeArguments = TypeID.NONE;
+	public CallArguments(TypeArgument... dummy) {
+		this.typeArguments = TypeArgument.NONE;
 		this.arguments = new Expression[dummy.length];
 		for (int i = 0; i < dummy.length; i++)
-			arguments[i] = new DummyExpression(dummy[i].stored(UniqueStorageTag.INSTANCE));
+			arguments[i] = new DummyExpression(dummy[i].stored());
 	}
 	
 	public int getNumberOfTypeArguments() {

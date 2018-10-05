@@ -13,10 +13,10 @@ import org.openzen.zencode.shared.CompileExceptionCode;
  *
  * @author Hoofdgebruiker
  */
-public class AnyStorageType implements StorageType {
-	public static final AnyStorageType INSTANCE = new AnyStorageType();
+public class AutoStorageType implements StorageType {
+	public static final AutoStorageType INSTANCE = new AutoStorageType();
 	
-	private AnyStorageType() {}
+	private AutoStorageType() {}
 
 	@Override
 	public String getName() {
@@ -28,6 +28,6 @@ public class AnyStorageType implements StorageType {
 		if (arguments.length > 0)
 			return new InvalidStorageTag(position, CompileExceptionCode.INVALID_STORAGE_TYPE_ARGUMENTS, "any storage type doesn't take arguments");
 		
-		return AnyStorageTag.INSTANCE;
+		return AutoStorageTag.INSTANCE;
 	}
 }

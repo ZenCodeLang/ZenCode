@@ -33,6 +33,7 @@ import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -268,7 +269,7 @@ public class TypeMemberGroup {
 			
 			if (header.typeParameters != null) {
 				for (StoredType resultHint : typeHints) {
-					Map<TypeParameter, TypeID> mapping = header.getReturnType().inferTypeParameters(scope.getMemberCache(), resultHint);
+					Map<TypeParameter, TypeArgument> mapping = header.getReturnType().inferTypeParameters(scope.getMemberCache(), resultHint.asArgument());
 					if (mapping != null) {
 						header = header.withGenericArguments(scope.getTypeRegistry(), scope.getLocalTypeParameters().getInner(scope.getTypeRegistry(), mapping));
 						break;

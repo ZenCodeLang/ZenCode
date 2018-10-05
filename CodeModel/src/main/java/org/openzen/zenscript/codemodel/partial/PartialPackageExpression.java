@@ -17,7 +17,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 
 /**
  *
@@ -58,7 +58,7 @@ public class PartialPackageExpression implements IPartialExpression {
 	}
 
 	@Override
-	public TypeID[] getGenericCallTypes() {
+	public TypeArgument[] getTypeArguments() {
 		return null;
 	}
 }

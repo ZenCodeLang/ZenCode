@@ -6,15 +6,14 @@
 package org.openzen.zenscript.codemodel.context;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -61,9 +60,7 @@ public class TypeContext {
 	}
 	
 	public GenericMapper getMapper() {
-		Map<TypeParameter, TypeID> mapper = new HashMap<>();
-		for (TypeParameter parameter : typeParameters)
-			mapper.put(parameter, moduleContext.registry.getGeneric(parameter));
+		Map<TypeParameter, TypeArgument> mapper = TypeArgument.getSelfMapping(moduleContext.registry, typeParameters);
 		return new GenericMapper(moduleContext.registry, mapper);
 	}
 	

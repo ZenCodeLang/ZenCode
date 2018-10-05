@@ -19,7 +19,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.TypeMember;
 
 /**
@@ -30,7 +30,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final Expression target;
 	private final TypeMemberGroup group;
-	private final TypeID[] typeArguments;
+	private final TypeArgument[] typeArguments;
 	private final boolean allowStaticUsage;
 	private final TypeScope scope;
 	
@@ -39,7 +39,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 			TypeScope scope,
 			Expression target,
 			TypeMemberGroup group,
-			TypeID[] typeArguments,
+			TypeArgument[] typeArguments,
 			boolean allowStaticMembers)
 	{
 		this.position = position;
@@ -56,7 +56,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 			Expression target,
 			String name,
 			FunctionalMemberRef member,
-			TypeID[] typeArguments,
+			TypeArgument[] typeArguments,
 			boolean allowStaticMembers)
 	{
 		this.position = position;
@@ -127,7 +127,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public TypeID[] getGenericCallTypes() {
+	public TypeArgument[] getTypeArguments() {
 		return typeArguments;
 	}
 }

@@ -11,10 +11,11 @@ import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 
 /**
  *
@@ -52,7 +53,7 @@ public class ParsedFunctionType implements IParsedType {
 
 	@Override
 	public StoredType compile(TypeResolutionContext context) {
-		StorageTag storage = this.storage == null ? SharedStorageTag.INSTANCE : this.storage.resolve(position, context);
+		StorageTag storage = this.storage == ParsedStorageTag.NULL ? AutoStorageTag.INSTANCE : this.storage.resolve(position, context);
 		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getFunction(header.compile(context))).stored(storage);
 	}
 	
@@ -62,5 +63,11 @@ public class ParsedFunctionType implements IParsedType {
 			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage tag not supported here");
 		
 		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getFunction(header.compile(context)));
+	}
+
+	@Override
+	public TypeArgument compileArgument(TypeResolutionContext context) {
+		StorageTag storage = this.storage == ParsedStorageTag.NULL ? null : this.storage.resolve(position, context);
+		return new TypeArgument(context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getFunction(header.compile(context))), storage);
 	}
 }

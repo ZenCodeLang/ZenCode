@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
@@ -26,9 +27,9 @@ public interface TypeID {
 		return null;
 	}
 	
-	TypeID instanceUnstored(GenericMapper mapper);
+	TypeArgument instance(GenericMapper mapper, StorageTag storage);
 	
-	TypeID getNormalizedUnstored();
+	TypeID getNormalized();
 	
 	boolean isDestructible();
 	
@@ -40,8 +41,8 @@ public interface TypeID {
 	
 	// Infers type parameters for this type so it matches with targetType
 	// returns false if that isn't possible
-	default Map<TypeParameter, TypeID> inferTypeParameters(LocalMemberCache cache, TypeID targetType) {
-		return TypeMatcher.match(cache, this, targetType);
+	default Map<TypeParameter, TypeArgument> inferTypeParameters(LocalMemberCache cache, TypeArgument targetType) {
+		return TypeMatcher.match(cache, new TypeArgument(this, null), targetType);
 	}
 	
 	void extractTypeParameters(List<TypeParameter> typeParameters);
@@ -52,6 +53,14 @@ public interface TypeID {
 	
 	default StoredType stored(StorageTag storage) {
 		return new StoredType(this, storage);
+	}
+	
+	default StoredType stored() {
+		return new StoredType(this, AutoStorageTag.INSTANCE);
+	}
+	
+	default TypeArgument argument(StorageTag storage) {
+		return new TypeArgument(this, storage);
 	}
 	
 	default boolean isOptional() {

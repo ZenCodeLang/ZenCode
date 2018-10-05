@@ -11,6 +11,7 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaContext;
@@ -20,6 +21,7 @@ import org.openzen.zenscript.javashared.JavaSynthesizedRange;
 import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
 import org.openzen.zenscript.javashared.JavaTypeInternalNameVisitor;
+import org.openzen.zenscript.javashared.JavaTypeUtils;
 
 /**
  *
@@ -49,7 +51,7 @@ public class JavaBytecodeContext extends JavaContext {
 	
 	@Override
 	public String getDescriptor(StoredType type) {
-		if (type.storage == SharedStorageTag.INSTANCE && type.isDestructible())
+		if (JavaTypeUtils.isShared(type))
 			return "Lzsynthetic/Shared";
 		
 		return type.type.accept(descriptorVisitor);

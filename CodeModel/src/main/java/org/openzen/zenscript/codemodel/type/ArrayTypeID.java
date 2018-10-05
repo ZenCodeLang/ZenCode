@@ -10,6 +10,7 @@ import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -36,7 +37,7 @@ public class ArrayTypeID implements TypeID {
 	}
 	
 	@Override
-	public ArrayTypeID getNormalizedUnstored() {
+	public ArrayTypeID getNormalized() {
 		return normalized;
 	}
 	
@@ -76,8 +77,8 @@ public class ArrayTypeID implements TypeID {
 	}
 	
 	@Override
-	public ArrayTypeID instanceUnstored(GenericMapper mapper) {
-		return mapper.registry.getArray(elementType.instance(mapper), dimension);
+	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
+		return mapper.registry.getArray(elementType.instance(mapper), dimension).argument(storage);
 	}
 
 	@Override

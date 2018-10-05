@@ -39,7 +39,7 @@ public class ParameterSuperBound extends TypeParameterBound {
 
 	@Override
 	public TypeParameterBound instance(GenericMapper mapper) {
-		TypeID translated = type.instanceUnstored(mapper);
+		TypeID translated = type.instance(mapper, null).type;
 		if (translated == type)
 			return this;
 		

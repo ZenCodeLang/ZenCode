@@ -32,13 +32,13 @@ public class FunctionTypeID implements TypeID {
 	}
 	
 	@Override
-	public FunctionTypeID getNormalizedUnstored() {
+	public FunctionTypeID getNormalized() {
 		return normalized;
 	}
 	
 	@Override
-	public TypeID instanceUnstored(GenericMapper mapper) {
-		return mapper.registry.getFunction(mapper.map(header));
+	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
+		return new TypeArgument(mapper.registry.getFunction(mapper.map(header)), storage);
 	}
 	
 	@Override

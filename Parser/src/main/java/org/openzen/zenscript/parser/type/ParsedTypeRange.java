@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -65,5 +66,15 @@ public class ParsedTypeRange implements IParsedType {
 			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "from and to in a range must be the same type");
 		
 		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getRange(from));
+	}
+	
+	@Override
+	public TypeArgument compileArgument(TypeResolutionContext context) {
+		StoredType from = this.from.compile(context);
+		StoredType to = this.to.compile(context);
+		if (!from.equals(to))
+			return new TypeArgument(new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "from and to in a range must be the same type"), null);
+		
+		return new TypeArgument(context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getRange(from)), from.storage);
 	}
 }

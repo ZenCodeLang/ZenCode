@@ -43,6 +43,6 @@ public class IsExpression extends Expression {
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		return new IsExpression(position, value.normalize(scope), isType.getNormalizedUnstored());
+		return new IsExpression(position, value.normalize(scope), isType.getNormalized());
 	}
 }

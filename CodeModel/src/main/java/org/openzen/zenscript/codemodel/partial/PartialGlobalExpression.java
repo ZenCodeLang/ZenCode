@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.expression.GlobalExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 
 /**
  *
@@ -26,13 +26,13 @@ public class PartialGlobalExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final String name;
 	private final IPartialExpression resolution;
-	private final TypeID[] typeParameters;
+	private final TypeArgument[] typeArguments;
 	
-	public PartialGlobalExpression(CodePosition position, String name, IPartialExpression resolution, TypeID[] typeParameters) {
+	public PartialGlobalExpression(CodePosition position, String name, IPartialExpression resolution, TypeArgument[] typeArguments) {
 		this.position = position;
 		this.name = name;
 		this.resolution = resolution;
-		this.typeParameters = typeParameters;
+		this.typeArguments = typeArguments;
 	}
 	
 	@Override
@@ -61,7 +61,7 @@ public class PartialGlobalExpression implements IPartialExpression {
 	}
 
 	@Override
-	public TypeID[] getGenericCallTypes() {
-		return typeParameters;
+	public TypeArgument[] getTypeArguments() {
+		return typeArguments;
 	}
 }

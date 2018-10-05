@@ -7,12 +7,11 @@ package org.openzen.zenscript.codemodel.generic;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -23,6 +22,7 @@ public class TypeParameter extends Taggable {
 	
 	public final CodePosition position;
 	public final String name;
+	public StorageTag storage = null;
 	public final List<TypeParameterBound> bounds = new ArrayList<>();
 	
 	public TypeParameter(CodePosition position, String name) {
@@ -55,15 +55,6 @@ public class TypeParameter extends Taggable {
 		}
 		
 		return true;
-	}
-	
-	public TypeParameter withGenericArguments(GlobalTypeRegistry registry, Map<TypeParameter, TypeID> arguments) {
-		// TODO: think about this...
-		//List<GenericParameterBound> bounds = new ArrayList<>();
-		//for (GenericParameterBound bound : this.bounds)
-		//	bounds.add(bound.withGenericArguments(registry, arguments));
-		//return new TypeParameter(name, bounds);
-		return this;
 	}
 	
 	public String getCanonical() {

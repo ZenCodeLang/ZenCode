@@ -9,33 +9,43 @@ package org.openzen.zenscript.codemodel.type.storage;
  *
  * @author Hoofdgebruiker
  */
-public class AnyStorageTag implements StorageTag {
-	public static final AnyStorageTag INSTANCE = new AnyStorageTag();
+public class AutoStorageTag implements StorageTag {
+	public static final AutoStorageTag INSTANCE = new AutoStorageTag();
 	
-	private AnyStorageTag() {}
+	private AutoStorageTag() {}
 
 	@Override
 	public StorageType getType() {
-		return AnyStorageType.INSTANCE;
+		return AutoStorageType.INSTANCE;
 	}
 	
 	@Override
 	public String toString() {
-		return "any";
+		return "auto";
 	}
 
 	@Override
 	public boolean canCastTo(StorageTag other) {
-		return other == BorrowStorageTag.INVOCATION;
+		return other == BorrowStorageTag.INVOCATION || other == BorrowStorageTag.THIS;
 	}
 
 	@Override
 	public boolean canCastFrom(StorageTag other) {
-		return true;
+		return other == this || other == UniqueStorageTag.INSTANCE || other == StaticStorageTag.INSTANCE;
 	}
 
 	@Override
 	public boolean isDestructible() {
 		return true;
+	}
+	
+	@Override
+	public boolean isConst() {
+		return false;
+	}
+	
+	@Override
+	public boolean isImmutable() {
+		return false;
 	}
 }

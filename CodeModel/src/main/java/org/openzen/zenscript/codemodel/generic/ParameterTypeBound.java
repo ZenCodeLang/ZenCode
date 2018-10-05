@@ -45,7 +45,7 @@ public class ParameterTypeBound extends TypeParameterBound {
 
 	@Override
 	public TypeParameterBound instance(GenericMapper mapper) {
-		return new ParameterTypeBound(position, type.instanceUnstored(mapper));
+		return new ParameterTypeBound(position, type.instance(mapper, null).type);
 	}
 
 	@Override

@@ -14,7 +14,7 @@ import org.openzen.zencode.shared.CodePosition;
 public interface StorageType {
 	public static StorageType[] getStandard() {
 		return new StorageType[] {
-			AnyStorageType.INSTANCE,
+			AutoStorageType.INSTANCE,
 			BorrowStorageType.INSTANCE,
 			SharedStorageType.INSTANCE,
 			StaticStorageType.INSTANCE,

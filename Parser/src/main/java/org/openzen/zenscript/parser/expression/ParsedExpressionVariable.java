@@ -25,12 +25,11 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.parser.type.ParsedStorageTag;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 /**
@@ -39,26 +38,19 @@ import org.openzen.zenscript.parser.type.ParsedTypeBasic;
  */
 public class ParsedExpressionVariable extends ParsedExpression {
 	public final String name;
-	private final List<IParsedType> genericParameters;
+	private final List<IParsedType> typeArguments;
 	
-	public ParsedExpressionVariable(CodePosition position, String name, List<IParsedType> genericParameters) {
+	public ParsedExpressionVariable(CodePosition position, String name, List<IParsedType> typeArguments) {
 		super(position);
 
 		this.name = name;
-		this.genericParameters = genericParameters;
+		this.typeArguments = typeArguments;
 	}
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		TypeID[] genericArguments = TypeID.NONE;
-		if (genericParameters != null) {
-			genericArguments = new TypeID[genericParameters.size()];
-			for (int i = 0; i < genericParameters.size(); i++) {
-				genericArguments[i] = genericParameters.get(i).compileUnstored(scope);
-			}
-		}
-		
-		IPartialExpression result = scope.get(position, new GenericName(name, genericArguments));
+		TypeArgument[] typeArguments = IParsedType.compileArguments(this.typeArguments, scope);
+		IPartialExpression result = scope.get(position, new GenericName(name, typeArguments));
 		if (result == null) {
 			for (StoredType hint : scope.hints) {
 				TypeMembers members = scope.getTypeMembers(hint);

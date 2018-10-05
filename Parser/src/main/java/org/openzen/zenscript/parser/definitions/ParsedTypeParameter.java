@@ -15,6 +15,7 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.type.IParsedType;
+import org.openzen.zenscript.parser.type.ParsedStorageTag;
 
 /**
  *
@@ -24,6 +25,7 @@ public class ParsedTypeParameter {
 	public static ParsedTypeParameter parse(ZSTokenParser tokens) throws ParseException {
 		CodePosition position = tokens.getPosition();
 		ZSToken name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
+		ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
 		List<ParsedGenericBound> bounds = new ArrayList<>();
 		while (tokens.optional(ZSTokenType.T_COLON) != null) {
 			if (tokens.optional(ZSTokenType.K_SUPER) != null) {
@@ -32,7 +34,7 @@ public class ParsedTypeParameter {
 				bounds.add(new ParsedTypeBound(tokens.getPosition(), IParsedType.parse(tokens)));
 			}
 		}
-		return new ParsedTypeParameter(position, name.content, bounds);
+		return new ParsedTypeParameter(position, name.content, storage, bounds);
 	}
 	
 	public static List<ParsedTypeParameter> parseAll(ZSTokenParser tokens) throws ParseException {
@@ -54,6 +56,8 @@ public class ParsedTypeParameter {
 		for (int i = 0; i < compiled.length; i++) {
 			for (ParsedGenericBound bound : parameters.get(i).bounds)
 				compiled[i].addBound(bound.compile(context));
+			
+			compiled[i].storage = parameters.get(i).storage == null ? null : parameters.get(i).storage.resolve(parameters.get(i).position, context);
 		}
 	}
 	
@@ -69,13 +73,15 @@ public class ParsedTypeParameter {
 	
 	public final CodePosition position;
 	public final String name;
+	public final ParsedStorageTag storage;
 	public final List<ParsedGenericBound> bounds;
 	
 	public final TypeParameter compiled;
 	
-	public ParsedTypeParameter(CodePosition position, String name, List<ParsedGenericBound> bounds) {
+	public ParsedTypeParameter(CodePosition position, String name, ParsedStorageTag storage, List<ParsedGenericBound> bounds) {
 		this.position = position;
 		this.name = name;
+		this.storage = storage;
 		this.bounds = bounds;
 		
 		compiled = new TypeParameter(position, name);

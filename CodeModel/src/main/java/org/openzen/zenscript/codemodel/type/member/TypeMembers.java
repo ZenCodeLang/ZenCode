@@ -85,7 +85,7 @@ public final class TypeMembers {
 	}
 	
 	public boolean extendsOrImplements(TypeID other) {
-		other = other.getNormalizedUnstored();
+		other = other.getNormalized();
 		TypeID superType = type.type.getSuperType(cache.getRegistry());
 		if (superType != null) {
 			if (superType == other)
@@ -105,7 +105,7 @@ public final class TypeMembers {
 	}
 	
 	public boolean extendsType(TypeID other) {
-		other = other.getNormalizedUnstored();
+		other = other.getNormalized();
 		TypeID superType = type.type.getSuperType(cache.getRegistry());
 		if (superType != null) {
 			if (superType == other)
@@ -408,8 +408,6 @@ public final class TypeMembers {
 		
 		if (toType.isOptional() && canCastImplicit(toType.withoutOptional()))
 			return true;
-		if (toType.isConst() && canCastImplicit(toType.withoutConst()))
-			return true;
 		if (type.isOptional() && areEquivalent(type.withoutOptional(), toType))
 			return true;
 		
@@ -482,8 +480,6 @@ public final class TypeMembers {
 			return new NullExpression(position, toType);
 		if (toType.isOptional() && canCastImplicit(toType.withoutOptional()))
 			return castEquivalent(position, new WrapOptionalExpression(position, castImplicit(position, value, toType.withoutOptional(), implicit), toType), toType);
-		if (toType.isConst() && canCastImplicit(toType.withoutConst()))
-			return castEquivalent(position, new MakeConstExpression(position, castImplicit(position, value, toType.withoutConst(), implicit), toType), toType);
 		if (type.isOptional() && areEquivalent(type.withoutOptional(), toType))
 			return castEquivalent(position, new CheckNullExpression(position, value), toType);
 		

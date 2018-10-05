@@ -16,8 +16,8 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
@@ -232,14 +232,14 @@ public class FunctionHeader {
 		return result.toString();
 	}
 	
-	public TypeID[] inferTypes(LocalMemberCache cache, CallArguments arguments, List<StoredType> resultHint) {
+	public TypeArgument[] inferTypes(LocalMemberCache cache, CallArguments arguments, List<StoredType> resultHint) {
 		if (arguments.arguments.length != this.parameters.length)
 			return null;
 		
-		Map<TypeParameter, TypeID> mapping = new HashMap<>();
+		Map<TypeParameter, TypeArgument> mapping = new HashMap<>();
 		if (!resultHint.isEmpty()) {
 			for (StoredType hint : resultHint) {
-				Map<TypeParameter, TypeID> temp = returnType.inferTypeParameters(cache, hint);
+				Map<TypeParameter, TypeArgument> temp = returnType.inferTypeParameters(cache, hint.asArgument());
 				if (temp != null) {
 					mapping = temp;
 					break;
@@ -249,7 +249,7 @@ public class FunctionHeader {
 		
 		// TODO: lambda header inference
 		for (int i = 0; i < parameters.length; i++) {
-			Map<TypeParameter, TypeID> forParameter = parameters[i].type.inferTypeParameters(cache, arguments.arguments[i].type);
+			Map<TypeParameter, TypeArgument> forParameter = parameters[i].type.inferTypeParameters(cache, arguments.arguments[i].type.asArgument());
 			if (forParameter == null)
 				return null;
 			
@@ -259,7 +259,7 @@ public class FunctionHeader {
 		if (mapping.size() > typeParameters.length)
 			return null;
 		
-		TypeID[] result = new TypeID[typeParameters.length];
+		TypeArgument[] result = new TypeArgument[typeParameters.length];
 		for (int i = 0; i < typeParameters.length; i++) {
 			TypeParameter typeParameter = typeParameters[i];
 			if (!mapping.containsKey(typeParameter)) {
@@ -366,10 +366,7 @@ public class FunctionHeader {
 	
 	public FunctionHeader instanceForCall(GlobalTypeRegistry registry, CallArguments arguments) {
 		if (arguments.getNumberOfTypeArguments() > 0) {
-			Map<TypeParameter, TypeID> typeParameters = new HashMap<>();
-			for (int i = 0; i < this.typeParameters.length; i++) {
-				typeParameters.put(this.typeParameters[i], arguments.typeArguments[i]);
-			}
+			Map<TypeParameter, TypeArgument> typeParameters = TypeArgument.getMapping(this.typeParameters, arguments.typeArguments);
 			return withGenericArguments(
 					registry,
 					new GenericMapper(registry, typeParameters));
@@ -379,13 +376,8 @@ public class FunctionHeader {
 	}
 	
 	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, GenericMapper mapper) {
-		if (typeParameters.length > 0) {
-			Map<TypeParameter, TypeID> innerMap = new HashMap<>();
-			for (TypeParameter parameter : typeParameters)
-				innerMap.put(parameter, mapper.registry.getGeneric(parameter));
-			
-			mapper = mapper.getInner(registry, innerMap);
-		}
+		if (typeParameters.length > 0)
+			mapper = mapper.getInner(registry, TypeArgument.getSelfMapping(registry, typeParameters));
 		
 		StoredType returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
@@ -395,13 +387,11 @@ public class FunctionHeader {
 		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), storage, parameters);
 	}
 	
-	public FunctionHeader fillGenericArguments(GlobalTypeRegistry registry, TypeID[] arguments, GenericMapper typeParameterMapping) {
+	public FunctionHeader fillGenericArguments(GlobalTypeRegistry registry, TypeArgument[] arguments, GenericMapper typeParameterMapping) {
 		if (arguments == null || arguments.length == 0)
 			return this;
 		
-		Map<TypeParameter, TypeID> typeArguments = new HashMap<>();
-		for (int i = 0; i < typeParameters.length; i++)
-			typeArguments.put(typeParameters[i], arguments[i]);
+		Map<TypeParameter, TypeArgument> typeArguments = TypeArgument.getMapping(typeParameters, arguments);
 		GenericMapper mapper = typeParameterMapping.getInner(registry, typeArguments);
 		
 		StoredType returnType = this.returnType.instance(mapper);

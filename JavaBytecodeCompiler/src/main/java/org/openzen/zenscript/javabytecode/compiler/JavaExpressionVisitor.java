@@ -23,12 +23,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaTypeUtils;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
@@ -2383,10 +2383,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		if (expression.type.isDestructible()) { // only destructible types matter here; nondestructible types never need conversion
 			StorageTag fromTag = expression.value.type.storage;
 			StorageTag toTag = expression.type.storage;
-			if (fromTag == SharedStorageTag.INSTANCE && toTag == BorrowStorageTag.INVOCATION) {
+			if (JavaTypeUtils.isShared(fromTag) && toTag == BorrowStorageTag.INVOCATION) {
 				// Shared<T>.get()
 				javaWriter.invokeVirtual(SHARED_GET);
-			} else if (fromTag == UniqueStorageTag.INSTANCE && toTag == SharedStorageTag.INSTANCE) {
+			} else if (fromTag == UniqueStorageTag.INSTANCE && JavaTypeUtils.isShared(toTag)) {
 				// new Shared<T>(value)
 				javaWriter.newObject("zsynthetic/Shared");
 				javaWriter.dup();

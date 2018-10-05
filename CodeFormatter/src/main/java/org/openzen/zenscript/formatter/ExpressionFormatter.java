@@ -238,7 +238,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				case CAST: {
 					StringBuilder result = new StringBuilder();
 					result.append(" as ");
-					result.append(expression.arguments.typeArguments[0].accept(typeFormatter));
+					result.append(typeFormatter.format(expression.arguments.typeArguments[0]));
 					return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
 				}
 				default:

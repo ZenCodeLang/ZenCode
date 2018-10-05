@@ -38,4 +38,14 @@ public class UniqueStorageTag implements StorageTag {
 	public boolean isDestructible() {
 		return true;
 	}
+	
+	@Override
+	public boolean isConst() {
+		return false;
+	}
+	
+	@Override
+	public boolean isImmutable() {
+		return false;
+	}
 }

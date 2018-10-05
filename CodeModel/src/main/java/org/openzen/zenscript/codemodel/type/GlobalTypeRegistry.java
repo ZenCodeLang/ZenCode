@@ -76,11 +76,11 @@ public class GlobalTypeRegistry {
 	}
 	
 	public DefinitionTypeID getForMyDefinition(HighLevelDefinition definition) {
-		TypeID[] typeArguments = TypeID.NONE;
+		TypeArgument[] typeArguments = TypeArgument.NONE;
 		if (definition.getNumberOfGenericParameters() > 0) {
-			typeArguments = new TypeID[definition.getNumberOfGenericParameters()];
+			typeArguments = new TypeArgument[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < definition.typeParameters.length; i++)
-				typeArguments[i] = getGeneric(definition.typeParameters[i]);
+				typeArguments[i] = new TypeArgument(getGeneric(definition.typeParameters[i]), definition.typeParameters[i].storage);
 		}
 		DefinitionTypeID outer = null;
 		if (definition.outerDefinition != null)
@@ -89,11 +89,11 @@ public class GlobalTypeRegistry {
 		return getForDefinition(definition, typeArguments, outer);
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeID... typeArguments) {
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeArgument... typeArguments) {
 		return this.getForDefinition(definition, typeArguments, null);
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeID[] typeArguments, DefinitionTypeID outer) {
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeArgument[] typeArguments, DefinitionTypeID outer) {
 		DefinitionTypeID id = new DefinitionTypeID(this, definition, typeArguments, definition.isStatic() ? null : outer);
 		
 		if (definitionTypes.containsKey(id)) {

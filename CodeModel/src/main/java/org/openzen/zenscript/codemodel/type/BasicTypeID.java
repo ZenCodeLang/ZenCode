@@ -11,6 +11,7 @@ import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
@@ -40,20 +41,22 @@ public enum BasicTypeID implements TypeID {
 	
 	public final String name;
 	public final StoredType stored;
+	public final TypeArgument argument;
 	
 	BasicTypeID(String name) {
 		this.name = name;
 		stored = new StoredType(this, ValueStorageTag.INSTANCE);
+		argument = new TypeArgument(this, ValueStorageTag.INSTANCE);
 	}
 	
 	@Override
-	public BasicTypeID getNormalizedUnstored() {
+	public BasicTypeID getNormalized() {
 		return this;
 	}
 	
 	@Override
-	public BasicTypeID instanceUnstored(GenericMapper mapper) {
-		return this;
+	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
+		return new TypeArgument(this, storage);
 	}
 	
 	@Override

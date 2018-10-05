@@ -25,7 +25,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaSynthesizedFunctionInstance;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
+import org.openzen.zenscript.javashared.JavaTypeUtils;
 
 /**
  *
@@ -54,7 +54,7 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 	}
 	
 	public String process(StoredType type) {
-		if (type.isDestructible() && type.storage == SharedStorageTag.INSTANCE)
+		if (JavaTypeUtils.isShared(type))
 			return importer.importType(JavaClass.SHARED) + "<" + type.type.accept(this) + ">";
 		
 		return type.type.accept(this);
@@ -168,7 +168,7 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 			for (int i = 0; i < type.typeArguments.length; i++) {
 				if (i > 0)
 					output.append(", ");
-				output.append(type.typeArguments[i].accept(objectTypeVisitor));
+				output.append(type.typeArguments[i].type.accept(objectTypeVisitor));
 			}
 			output.append(">");
 		}

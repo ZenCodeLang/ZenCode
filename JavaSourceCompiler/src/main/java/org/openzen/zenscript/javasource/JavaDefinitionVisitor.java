@@ -29,6 +29,7 @@ import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.compiler.CompileScope;
 import org.openzen.zenscript.compiler.SemanticModule;
@@ -252,7 +253,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		output.append(" {\n");
 		output.append(indent).append(settings.indent).append("private ").append(cls.getName()).append("() {}\n");
 		
-		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.typeParameters, "\t", output, scope, definition);
+		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target.type, definition.typeParameters, "\t", output, scope, definition);
 		for (IDefinitionMember member : definition.members)
 			member.accept(memberCompiler);
 		memberCompiler.finish();
@@ -341,7 +342,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	private void compileExpansions() {
 		for (ExpansionDefinition definition : expansions) {
 			JavaSourceFileScope scope = createScope(definition);
-			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.typeParameters, indent + settings.indent, output, scope, definition);
+			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target.type, definition.typeParameters, indent + settings.indent, output, scope, definition);
 			for (IDefinitionMember member : definition.members)
 				member.accept(memberCompiler);
 			memberCompiler.finish();
@@ -369,9 +370,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	
 	private void compileMembers(JavaSourceFileScope scope, HighLevelDefinition definition) {
 		if (definition.hasTag(JavaNativeClass.class)) {
-			TypeID[] typeParameters = new TypeID[definition.getNumberOfGenericParameters()];
+			TypeArgument[] typeParameters = new TypeArgument[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < typeParameters.length; i++)
-				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]);
+				typeParameters[i] = new TypeArgument(scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]), definition.typeParameters[i].storage);
 			TypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, typeParameters);
 			
 			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.typeParameters, indent + settings.indent, output, scope, definition);

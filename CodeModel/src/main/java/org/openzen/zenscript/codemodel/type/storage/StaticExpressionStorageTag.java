@@ -33,4 +33,14 @@ public class StaticExpressionStorageTag implements StorageTag {
 	public boolean isDestructible() {
 		return false;
 	}
+	
+	@Override
+	public boolean isConst() {
+		return false;
+	}
+	
+	@Override
+	public boolean isImmutable() {
+		return false;
+	}
 }

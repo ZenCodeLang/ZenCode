@@ -12,7 +12,9 @@ import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 
 /**
  *
@@ -43,7 +45,7 @@ public class ParsedString implements IParsedType {
 	public StoredType compile(TypeResolutionContext context) {
 		return context.getTypeRegistry()
 				.getModified(modifiers, StringTypeID.INSTANCE)
-				.stored(storage.resolve(position, context));
+				.stored(storage == ParsedStorageTag.NULL ? AutoStorageTag.INSTANCE : storage.resolve(position, context));
 	}
 
 	@Override
@@ -52,5 +54,11 @@ public class ParsedString implements IParsedType {
 			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage tag not supported here");
 		
 		return StringTypeID.INSTANCE;
+	}
+
+	@Override
+	public TypeArgument compileArgument(TypeResolutionContext context) {
+		return new TypeArgument(context.getTypeRegistry()
+				.getModified(modifiers, StringTypeID.INSTANCE), storage.resolve(position, context));
 	}
 }

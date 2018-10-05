@@ -15,9 +15,9 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  * @author Hoofdgebruiker
  */
 public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching, Boolean, RuntimeException> {
-	public static Map<TypeParameter, TypeID> match(LocalMemberCache cache, TypeID type, TypeID pattern) {
+	public static Map<TypeParameter, TypeArgument> match(LocalMemberCache cache, TypeArgument type, TypeArgument pattern) {
 		Matching matching = new Matching(cache, type);
-		if (pattern.accept(matching, INSTANCE))
+		if (pattern.type.accept(matching, INSTANCE))
 			return matching.mapping;
 		
 		return null;
@@ -29,18 +29,18 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	
 	@Override
 	public Boolean visitBasic(Matching context, BasicTypeID basic) {
-		return basic == context.type;
+		return context.type.isBasic(basic);
 	}
 
 	@Override
 	public Boolean visitString(Matching context, StringTypeID string) {
-		return string == context.type;
+		return context.type.type == StringTypeID.INSTANCE;
 	}
 
 	@Override
 	public Boolean visitArray(Matching context, ArrayTypeID array) {
-		if (context.type instanceof ArrayTypeID) {
-			ArrayTypeID arrayType = (ArrayTypeID) context.type;
+		if (context.type.type instanceof ArrayTypeID) {
+			ArrayTypeID arrayType = (ArrayTypeID) context.type.type;
 			if (arrayType.dimension != array.dimension)
 				return false;
 
@@ -52,8 +52,8 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 
 	@Override
 	public Boolean visitAssoc(Matching context, AssocTypeID assoc) {
-		if (context.type instanceof AssocTypeID) {
-			AssocTypeID assocType = (AssocTypeID) context.type;
+		if (context.type.type instanceof AssocTypeID) {
+			AssocTypeID assocType = (AssocTypeID) context.type.type;
 			return match(context, assocType.keyType, assoc.keyType)
 					&& match(context, assocType.valueType, assoc.valueType);
 		} else {
@@ -68,8 +68,8 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 
 	@Override
 	public Boolean visitIterator(Matching context, IteratorTypeID iterator) {
-		if (context.type instanceof IteratorTypeID) {
-			IteratorTypeID iteratorType = (IteratorTypeID) context.type;
+		if (context.type.type instanceof IteratorTypeID) {
+			IteratorTypeID iteratorType = (IteratorTypeID) context.type.type;
 			if (iteratorType.iteratorTypes.length != iterator.iteratorTypes.length)
 				return false;
 
@@ -85,8 +85,8 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 
 	@Override
 	public Boolean visitFunction(Matching context, FunctionTypeID function) {
-		if (context.type instanceof FunctionTypeID) {
-			FunctionTypeID functionType = (FunctionTypeID) context.type;
+		if (context.type.type instanceof FunctionTypeID) {
+			FunctionTypeID functionType = (FunctionTypeID) context.type.type;
 			if (functionType.header.parameters.length != function.header.parameters.length)
 				return false;
 
@@ -106,8 +106,8 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 
 	@Override
 	public Boolean visitDefinition(Matching context, DefinitionTypeID definition) {
-		if (context.type instanceof DefinitionTypeID) {
-			DefinitionTypeID definitionType = (DefinitionTypeID) context.type;
+		if (context.type.type instanceof DefinitionTypeID) {
+			DefinitionTypeID definitionType = (DefinitionTypeID) context.type.type;
 			if (definitionType.definition != definition.definition)
 				return false;
 
@@ -127,8 +127,9 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	@Override
 	public Boolean visitGeneric(Matching context, GenericTypeID generic) {
 		if (context.mapping.containsKey(generic.parameter)) {
-			return context.mapping.get(generic.parameter) == context.type;
-		} else if (context.type == generic || generic.matches(context.cache, context.type)) {
+			TypeArgument argument = context.mapping.get(generic.parameter);
+			return argument.type == context.type && (argument.storage == null || argument.storage == context.type.storage);
+		} else if (context.type.type == generic || generic.matches(context.cache, context.type)) {
 			context.mapping.put(generic.parameter, context.type);
 			return true;
 		} else {
@@ -138,8 +139,8 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 
 	@Override
 	public Boolean visitRange(Matching context, RangeTypeID range) {
-		if (context.type instanceof RangeTypeID) {
-			RangeTypeID rangeType = (RangeTypeID) context.type;
+		if (context.type.type instanceof RangeTypeID) {
+			RangeTypeID rangeType = (RangeTypeID) context.type.type;
 			return match(context, rangeType.baseType, range.baseType);
 		} else {
 			return false;
@@ -148,48 +149,48 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 
 	@Override
 	public Boolean visitModified(Matching context, ModifiedTypeID type) {
-		if (context.type instanceof ModifiedTypeID) {
-			ModifiedTypeID modified = (ModifiedTypeID) context.type;
-			return match(context, modified.baseType, type.baseType);
+		if (context.type.type instanceof ModifiedTypeID) {
+			ModifiedTypeID modified = (ModifiedTypeID) context.type.type;
+			return match(context, modified.baseType.argument(null), type.baseType.argument(null));
 		} else {
 			return false;
 		}
 	}
 
-	private boolean match(Matching context, TypeID type, TypeID pattern) {
-		return pattern.accept(context.withType(type), this);
-	}
-
-	private boolean match(Matching context, StoredType type, StoredType pattern) {
-		if (type.storage != pattern.storage)
+	private boolean match(Matching context, TypeArgument type, TypeArgument pattern) {
+		if (pattern.storage != null && !pattern.storage.equals(type.storage))
 			return false;
 		
-		return pattern.type.accept(context.withType(type.type), this);
+		return pattern.type.accept(context.withType(type), this);
+	}
+	
+	private boolean match(Matching context, StoredType type, StoredType pattern) {
+		return match(context, type.asArgument(), pattern.asArgument());
 	}
 
 	@Override
 	public Boolean visitGenericMap(Matching context, GenericMapTypeID map) {
-		return map == context.type; // TODO: improve this
+		return map == context.type.type; // TODO: improve this
 	}
 		
 	public static final class Matching {
 		public final LocalMemberCache cache;
-		public final TypeID type;
-		public final Map<TypeParameter, TypeID> mapping;
+		public final TypeArgument type;
+		public final Map<TypeParameter, TypeArgument> mapping;
 		
-		public Matching(LocalMemberCache cache, TypeID type) {
+		public Matching(LocalMemberCache cache, TypeArgument type) {
 			this.cache = cache;
 			this.type = type;
 			mapping = new HashMap<>();
 		}
 		
-		private Matching(LocalMemberCache cache, TypeID type, Map<TypeParameter, TypeID> mapping) {
+		private Matching(LocalMemberCache cache, TypeArgument type, Map<TypeParameter, TypeArgument> mapping) {
 			this.cache = cache;
 			this.type = type;
 			this.mapping = mapping;
 		}
 		
-		public Matching withType(TypeID type) {
+		public Matching withType(TypeArgument type) {
 			return new Matching(cache, type, mapping);
 		}
 	}

@@ -91,10 +91,9 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.formattershared.ExpressionString;
@@ -105,6 +104,7 @@ import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaNativeTranslator;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaSynthesizedFunctionInstance;
+import org.openzen.zenscript.javashared.JavaTypeUtils;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 /**
@@ -672,10 +672,10 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.value.type.isDestructible()) {
 			StorageTag fromTag = expression.value.type.storage;
 			StorageTag toTag = expression.type.storage;
-			if (fromTag == SharedStorageTag.INSTANCE) {
+			if (JavaTypeUtils.isShared(fromTag)) {
 				// Shared<T>.get()
 				return value.unaryPostfix(JavaOperator.CALL, ".get()");
-			} else if (fromTag == UniqueStorageTag.INSTANCE && toTag == SharedStorageTag.INSTANCE) {
+			} else if (fromTag == UniqueStorageTag.INSTANCE && JavaTypeUtils.isShared(toTag)) {
 				// new Shared<T>(value)
 				return new ExpressionString("new " + scope.type(JavaClass.SHARED) + "<>(" + value.value + ")", JavaOperator.NEW);
 			}
@@ -761,7 +761,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		return expression.value.accept(this);
 	}
 	
-	private String formatTypeArguments(TypeID[] types) {
+	private String formatTypeArguments(TypeArgument[] types) {
 		if (types == null || types.length == 0)
 			return "";
 		
@@ -772,7 +772,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			if (i > 0)
 				output.append(", ");
 			
-			output.append(types[i].accept(scope.fileScope.objectTypeVisitor));
+			output.append(types[i].type.accept(scope.fileScope.objectTypeVisitor));
 		}
 		output.append(">");
 		return output.toString();
@@ -827,12 +827,12 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		output.append(method).append("(");
 		boolean first = true;
 		if (expression.arguments.typeArguments != null) {
-			for (TypeID typeArgument : expression.arguments.typeArguments) {
+			for (TypeArgument typeArgument : expression.arguments.typeArguments) {
 				if (!first)
 					output.append(", ");
 				
-				if (typeArgument instanceof GenericTypeID) {
-					output.append("typeOf").append(((GenericTypeID) typeArgument).parameter.name);
+				if (typeArgument.type instanceof GenericTypeID) {
+					output.append("typeOf").append(((GenericTypeID) typeArgument.type).parameter.name);
 				} else {
 					output.append(scope.type(typeArgument));
 					output.append(".class");

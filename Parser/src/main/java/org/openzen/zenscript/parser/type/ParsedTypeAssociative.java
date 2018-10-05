@@ -12,7 +12,9 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
@@ -58,7 +60,7 @@ public class ParsedTypeAssociative implements IParsedType {
 		StoredType key = this.key.compile(context);
 		StoredType value = this.value.compile(context);
 		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return registry.getModified(modifiers, context.getTypeRegistry().getAssociative(key, value)).stored(storage);
+		return registry.getModified(modifiers, context.getTypeRegistry().getAssociative(key, value)).stored(storage == null ? AutoStorageTag.INSTANCE : storage);
 	}
 
 	@Override
@@ -71,5 +73,14 @@ public class ParsedTypeAssociative implements IParsedType {
 		StoredType value = this.value.compile(context);
 		GlobalTypeRegistry registry = context.getTypeRegistry();
 		return registry.getModified(modifiers, context.getTypeRegistry().getAssociative(key, value));
+	}
+
+	@Override
+	public TypeArgument compileArgument(TypeResolutionContext context) {
+		StorageTag storage = this.storage.resolve(position, context);
+		StoredType key = this.key.compile(context);
+		StoredType value = this.value.compile(context);
+		GlobalTypeRegistry registry = context.getTypeRegistry();
+		return new TypeArgument(registry.getModified(modifiers, context.getTypeRegistry().getAssociative(key, value)), storage);
 	}
 }

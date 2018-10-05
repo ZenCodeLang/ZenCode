@@ -39,4 +39,14 @@ public class BorrowStorageTag implements StorageTag {
 	public boolean isDestructible() {
 		return false;
 	}
+	
+	@Override
+	public boolean isConst() {
+		return true;
+	}
+	
+	@Override
+	public boolean isImmutable() {
+		return true;
+	}
 }

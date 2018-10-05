@@ -52,7 +52,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	public List<FunctionHeader> getInitializers(BaseScope scope) {
 		return Collections.singletonList(new FunctionHeader(
 				BasicTypeID.VOID.stored,
-				scope.getType(CodePosition.BUILTIN, enforcementLevelName).stored(ValueStorageTag.INSTANCE),
+				scope.getType(CodePosition.BUILTIN, enforcementLevelName).stored(),
 				BasicTypeID.BOOL.stored,
 				StringTypeID.UNIQUE));
 	}

@@ -17,6 +17,7 @@ import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
@@ -254,6 +255,17 @@ public interface IParsedType {
 		return result;
 	}
 	
+	public static TypeArgument[] compileArguments(List<IParsedType> typeParameters, TypeResolutionContext context) {
+		TypeArgument[] result = TypeArgument.NONE;
+		if (typeParameters != null && typeParameters.size() > 0) {
+			result = new TypeArgument[typeParameters.size()];
+			for (int i = 0; i < typeParameters.size(); i++) {
+				result[i] = typeParameters.get(i).compileArgument(context);
+			}
+		}
+		return result;
+	}
+	
 	public IParsedType withOptional();
 	
 	public IParsedType withModifiers(int modifiers);
@@ -262,11 +274,13 @@ public interface IParsedType {
 	
 	public TypeID compileUnstored(TypeResolutionContext context);
 	
+	public TypeArgument compileArgument(TypeResolutionContext context);
+	
 	public default AnnotationDefinition compileAnnotation(BaseScope scope) {
 		return null;
 	}
 	
-	public default TypeID[] compileTypeArguments(BaseScope scope) {
-		return TypeID.NONE;
+	public default TypeArgument[] compileTypeArguments(BaseScope scope) {
+		return TypeArgument.NONE;
 	}
 }

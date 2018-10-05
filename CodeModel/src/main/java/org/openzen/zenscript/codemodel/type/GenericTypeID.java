@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -23,18 +24,21 @@ public class GenericTypeID implements TypeID {
 		this.parameter = parameter;
 	}
 	
-	public boolean matches(LocalMemberCache cache, TypeID type) {
-		return parameter.matches(cache, type);
+	public boolean matches(LocalMemberCache cache, TypeArgument type) {
+		if (type.storage != null && parameter.storage != null && !type.storage.equals(parameter.storage))
+			return false;
+		
+		return parameter.matches(cache, type.type);
 	}
 	
 	@Override
-	public GenericTypeID getNormalizedUnstored() {
+	public GenericTypeID getNormalized() {
 		return this;
 	}
 	
 	@Override
-	public TypeID instanceUnstored(GenericMapper mapper) {
-		return mapper.map(this);
+	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
+		return mapper.map(this).argument(StorageTag.union(parameter.storage, storage));
 	}
 	
 	@Override

@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 
@@ -29,12 +30,12 @@ import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 public class PartialTypeExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final StoredType type;
-	private final TypeID[] typeParameters;
+	private final TypeArgument[] typeArguments;
 	
-	public PartialTypeExpression(CodePosition position, TypeID type, TypeID[] typeParameters) {
+	public PartialTypeExpression(CodePosition position, TypeID type, TypeArgument[] typeArguments) {
 		this.position = position;
 		this.type = type.stored(StaticExpressionStorageTag.INSTANCE);
-		this.typeParameters = typeParameters;
+		this.typeArguments = typeArguments;
 	}
 
 	@Override
@@ -64,15 +65,15 @@ public class PartialTypeExpression implements IPartialExpression {
 
 	@Override
 	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
-		if (arguments.getNumberOfTypeArguments() == 0 && (typeParameters != null && typeParameters.length > 0))
-			arguments = new CallArguments(typeParameters, arguments.arguments);
+		if (arguments.getNumberOfTypeArguments() == 0 && (typeArguments != null && typeArguments.length > 0))
+			arguments = new CallArguments(typeArguments, arguments.arguments);
 		
 		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).callStatic(position, type.type, scope, arguments);
 	}
 
 	@Override
-	public TypeID[] getGenericCallTypes() {
-		return typeParameters;
+	public TypeArgument[] getTypeArguments() {
+		return typeArguments;
 	}
 	
 	@Override

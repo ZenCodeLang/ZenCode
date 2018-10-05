@@ -50,7 +50,7 @@ public class CallStaticExpression extends Expression {
 	public Expression normalize(TypeScope scope) {
 		return new CallStaticExpression(
 				position,
-				target.getNormalizedUnstored(),
+				target.getNormalized(),
 				member,
 				instancedHeader.normalize(scope.getTypeRegistry()),
 				arguments.normalize(position, scope, instancedHeader));

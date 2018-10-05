@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -44,7 +43,7 @@ public class ParsedStorageTag {
 	
 	public StorageTag resolve(CodePosition position, TypeResolutionContext context) {
 		if (this == NULL)
-			return SharedStorageTag.INSTANCE;
+			return null;
 		
 		return context.getStorageTag(position, name, arguments);
 	}

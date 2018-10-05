@@ -73,6 +73,6 @@ public class LocalTypeResolutionContext implements TypeResolutionContext {
 			return null;
 		
 		TypeID self = getTypeRegistry().getForMyDefinition(type.load());
-		return self.stored(self.isValueType() ? ValueStorageTag.INSTANCE : BorrowStorageTag.THIS);
+		return self.stored(BorrowStorageTag.THIS);
 	}
 }

@@ -31,12 +31,13 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 
 /**
@@ -64,7 +65,7 @@ public class GlobalRegistry {
 			Modifiers.EXPORT | Modifiers.FINAL,
 			"out",
 			null,
-			DefinitionTypeID.forType(registry, SYSTEM).stored(SharedStorageTag.INSTANCE), null, 0, 0, null);
+			DefinitionTypeID.forType(registry, SYSTEM).stored(AutoStorageTag.INSTANCE), null, 0, 0, null);
 		
 		JavaClass jPrintStream = new JavaClass("java.io", "PrintStream", JavaClass.Kind.CLASS);
 		JavaMethod printstreamPrintln = JavaMethod.getNativeVirtual(jPrintStream, "println", "(Ljava/lang/String;)V");
@@ -118,7 +119,7 @@ public class GlobalRegistry {
 	private class PrintlnSymbol implements ISymbol {
 
 		@Override
-		public IPartialExpression getExpression(CodePosition position, BaseScope scope, TypeID[] typeArguments) {
+		public IPartialExpression getExpression(CodePosition position, BaseScope scope, TypeArgument[] typeArguments) {
 			return new PartialMemberGroupExpression(
 					position,
 					scope,
@@ -130,7 +131,7 @@ public class GlobalRegistry {
 		}
 
 		@Override
-		public TypeID getType(CodePosition position, TypeResolutionContext context, TypeID[] typeArguments) {
+		public TypeID getType(CodePosition position, TypeResolutionContext context, TypeArgument[] typeArguments) {
 			return null; // not a type
 		}
 	}

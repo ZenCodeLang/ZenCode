@@ -23,9 +23,9 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -88,7 +88,7 @@ public class ParsedCallArguments {
 	public CallArguments compileCall(
 			CodePosition position, 
 			ExpressionScope scope,
-			TypeID[] genericParameters,
+			TypeArgument[] genericParameters,
 			TypeMemberGroup member) throws CompileException
 	{
 		List<FunctionHeader> possibleHeaders = member.getMethodMembers().stream()
@@ -100,13 +100,13 @@ public class ParsedCallArguments {
 	public CallArguments compileCall(
 			CodePosition position,
 			ExpressionScope scope,
-			TypeID[] typeArguments,
+			TypeArgument[] typeArguments,
 			List<FunctionHeader> candidateFunctions) throws CompileException
 	{
 		if (this.typeArguments != null) {
-			typeArguments = new TypeID[this.typeArguments.size()];
+			typeArguments = new TypeArgument[this.typeArguments.size()];
 			for (int i = 0; i < this.typeArguments.size(); i++)
-				typeArguments[i] = this.typeArguments.get(i).compileUnstored(scope);
+				typeArguments[i] = this.typeArguments.get(i).compileArgument(scope);
 		}
 		
 		List<FunctionHeader> candidates = new ArrayList<>();
@@ -153,14 +153,14 @@ public class ParsedCallArguments {
 			cArguments[i] = cArgument.eval();
 		}
 		
-		TypeID[] typeArguments2 = typeArguments;
+		TypeArgument[] typeArguments2 = typeArguments;
 		if (typeArguments2 == null || typeArguments2.length == 0) {
 			for (FunctionHeader candidate : candidates) {
 				if (candidate.typeParameters != null) {
-					typeArguments2 = new TypeID[candidate.typeParameters.length];
+					typeArguments2 = new TypeArgument[candidate.typeParameters.length];
 					for (int i = 0; i < typeArguments2.length; i++) {
 						if (innerScope.genericInferenceMap.get(candidate.typeParameters[i]) == null)
-							typeArguments2[i] = new InvalidTypeID(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + candidate.typeParameters[i].name);
+							typeArguments2[i] = new TypeArgument(new InvalidTypeID(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + candidate.typeParameters[i].name), null);
 						else
 							typeArguments2[i] = innerScope.genericInferenceMap.get(candidate.typeParameters[i]);
 					}
@@ -177,7 +177,7 @@ public class ParsedCallArguments {
 	public CallArguments compileCall(
 			CodePosition position,
 			ExpressionScope scope,
-			TypeID[] typeArguments,
+			TypeArgument[] typeArguments,
 			FunctionHeader function) throws CompileException
 	{
 		ExpressionScope innerScope = scope.forCall(function);
@@ -194,10 +194,10 @@ public class ParsedCallArguments {
 			cArguments[i] = cArgument.eval();
 		}
 		
-		TypeID[] typeArguments2 = typeArguments;
+		TypeArgument[] typeArguments2 = typeArguments;
 		if (typeArguments2 == null) {
 			if (function.typeParameters != null) {
-				typeArguments2 = new TypeID[function.typeParameters.length];
+				typeArguments2 = new TypeArgument[function.typeParameters.length];
 				for (int i = 0; i < typeArguments2.length; i++) {
 					if (innerScope.genericInferenceMap.get(function.typeParameters[i]) == null)
 						throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + function.typeParameters[i].name);
@@ -216,15 +216,15 @@ public class ParsedCallArguments {
 			IPartialExpression cArgument = arguments.get(i).compile(scope);
 			cArguments[i] = cArgument.eval();
 		}
-		return new CallArguments(TypeID.NONE, cArguments);
+		return new CallArguments(TypeArgument.NONE, cArguments);
 	}
 	
-	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header, TypeID[] typeParameters) {
+	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header, TypeArgument[] typeArguments) {
 		if (arguments.size() != header.parameters.length)
 			return false;
 		
 		for (int i = 0; i < arguments.size(); i++) {
-			if (typeParameters == null && header.typeParameters != null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
+			if (typeArguments == null && header.typeParameters != null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
 				return false;
 			
 			if (!arguments.get(i).isCompatibleWith(scope, header.parameters[i].type.getNormalized()))

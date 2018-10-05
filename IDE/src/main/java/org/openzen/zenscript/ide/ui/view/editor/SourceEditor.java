@@ -884,7 +884,6 @@ public class SourceEditor implements DComponent {
 					return KEYWORD;
 					
 				case K_VOID:
-				case K_ANY:
 				case K_BOOL:
 				case K_BYTE:
 				case K_SBYTE:

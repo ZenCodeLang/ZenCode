@@ -21,13 +21,13 @@ public class EnumConstantExpression extends Expression {
 	public final EnumConstantMember value;
 	
 	public EnumConstantExpression(CodePosition position, TypeID type, EnumConstantMember value) {
-		super(position, type.stored(ValueStorageTag.INSTANCE), null);
+		super(position, type.stored(), null);
 		
 		this.value = value;
 	}
 	
 	public EnumConstantExpression(CodePosition position, GlobalTypeRegistry registry, EnumDefinition type, EnumConstantMember value) {
-		super(position, registry.getForDefinition(type).stored(ValueStorageTag.INSTANCE), null);
+		super(position, registry.getForDefinition(type).stored(), null);
 		
 		this.value = value;
 	}

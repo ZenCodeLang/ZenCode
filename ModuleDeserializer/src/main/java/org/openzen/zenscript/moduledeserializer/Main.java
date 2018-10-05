@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeAnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.storage.AnyStorageType;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageType;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageType;
 import org.openzen.zenscript.codemodel.type.storage.SharedStorageType;
 import org.openzen.zenscript.codemodel.type.storage.StaticStorageType;

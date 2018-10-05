@@ -10,6 +10,7 @@ import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -31,14 +32,14 @@ public class AssocTypeID implements TypeID {
 	}
 	
 	@Override
-	public AssocTypeID instanceUnstored(GenericMapper mapper) {
+	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
 		return mapper.registry.getAssociative(
 				keyType.instance(mapper),
-				valueType.instance(mapper));
+				valueType.instance(mapper)).argument(storage);
 	}
 	
 	@Override
-	public AssocTypeID getNormalizedUnstored() {
+	public AssocTypeID getNormalized() {
 		return normalized;
 	}
 	
