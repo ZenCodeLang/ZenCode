@@ -93,6 +93,41 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		writeFile(range.cls, importer, contents);
 	}
 	
+	@Override
+	public void synthesizeShared() {
+		JavaSourceImporter importer = new JavaSourceImporter(JavaClass.SHARED);
+		
+		StringBuilder contents = new StringBuilder();
+		contents.append("public final class Shared<T extends AutoCloseable> {\n");
+		contents.append(settings.indent).append("private final T value;\n");
+		contents.append(settings.indent).append("private int refcount = 1;\n");
+		contents.append(settings.indent).append("\n");
+		contents.append(settings.indent).append("public Shared(T value) {\n");
+		contents.append(settings.indent).append(settings.indent).append("this.value = value;\n");
+		contents.append(settings.indent).append("}\n");
+		contents.append(settings.indent).append("\n");
+		contents.append(settings.indent).append("public synchronized void addRef() {\n");
+		contents.append(settings.indent).append(settings.indent).append("refcount++;\n");
+		contents.append(settings.indent).append("}\n");
+		contents.append(settings.indent).append("\n");
+		contents.append(settings.indent).append("public synchronized void release() {\n");
+		contents.append(settings.indent).append(settings.indent).append("refcount--;\n");
+		contents.append(settings.indent).append(settings.indent).append("if (refcount == 0) {\n");
+		contents.append(settings.indent).append(settings.indent).append(settings.indent).append("try {\n");
+		contents.append(settings.indent).append(settings.indent).append(settings.indent).append(settings.indent).append("value.close();\n");
+		contents.append(settings.indent).append(settings.indent).append(settings.indent).append("} catch (Exception ex) {}\n");
+		contents.append(settings.indent).append(settings.indent).append("}\n");
+		contents.append(settings.indent).append("}\n");
+		contents.append("}\n");
+		
+		writeFile(JavaClass.SHARED, importer, contents);
+	}
+	
+	private void line(StringBuilder output, int level) {
+		for (int i = 0; i < level; i++)
+			output.append(settings.indent);
+	}
+	
 	private void writeFile(JavaClass cls, JavaSourceImporter importer, StringBuilder contents) {
 		if (!directory.exists())
 			directory.mkdirs();

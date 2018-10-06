@@ -190,7 +190,7 @@ public class FunctionHeader {
 		
 		FunctionHeader header = fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
 		for (int i = 0; i < header.parameters.length; i++) {
-			if (arguments.arguments[i].type != header.parameters[i].type)
+			if (!arguments.arguments[i].type.equals(header.parameters[i].type))
 				return false;
 		}
 		
@@ -366,9 +366,7 @@ public class FunctionHeader {
 	public FunctionHeader instanceForCall(GlobalTypeRegistry registry, CallArguments arguments) {
 		if (arguments.getNumberOfTypeArguments() > 0) {
 			Map<TypeParameter, StoredType> typeParameters = StoredType.getMapping(this.typeParameters, arguments.typeArguments);
-			return withGenericArguments(
-					registry,
-					new GenericMapper(registry, typeParameters));
+			return instance(new GenericMapper(registry, typeParameters));
 		} else {
 			return this;
 		}
@@ -378,6 +376,10 @@ public class FunctionHeader {
 		if (typeParameters.length > 0)
 			mapper = mapper.getInner(registry, StoredType.getSelfMapping(registry, typeParameters));
 		
+		return instance(mapper);
+	}
+	
+	private FunctionHeader instance(GenericMapper mapper) {
 		StoredType returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
 		for (int i = 0; i < parameters.length; i++) {

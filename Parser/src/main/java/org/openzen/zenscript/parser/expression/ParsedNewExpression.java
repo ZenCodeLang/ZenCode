@@ -19,6 +19,9 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.TypeMember;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -49,7 +52,13 @@ public class ParsedNewExpression extends ParsedExpression{
 	
 	public static Expression compile(CodePosition position, StoredType type, ParsedCallArguments arguments, ExpressionScope scope) {
 		try {
-			TypeMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
+			TypeMembers members = scope.getTypeMembers(type);
+			TypeMemberGroup constructors = members.getOrCreateGroup(OperatorType.CONSTRUCTOR);
+			for (TypeMember<FunctionalMemberRef> member : constructors.getMethodMembers()) {
+				if (member.member.getBuiltin() == BuiltinID.ARRAY_CONSTRUCTOR_PROJECTED)
+					System.out.println("X");
+			}
+
 			List<StoredType>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.arguments.size());
 			CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
 			FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);

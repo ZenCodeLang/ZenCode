@@ -48,8 +48,8 @@ public class GenericMapper {
 	}
 	
 	public StoredType map(GenericTypeID type) {
-		if (!mapping.containsKey(type.parameter))
-			throw new IllegalStateException("No mapping found for type " + type);
+		//if (!mapping.containsKey(type.parameter))
+		//	throw new IllegalStateException("No mapping found for type " + type);
 		
 		return mapping.containsKey(type.parameter) ? mapping.get(type.parameter) : type.stored();
 	}

@@ -215,7 +215,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 				ARRAY_INDEXGET);
 		
 		if (dimension == 1) {
-			FunctionHeader sliceHeader = new FunctionHeader(type, new FunctionParameter(RangeTypeID.USIZE.stored, "range"));
+			FunctionHeader sliceHeader = new FunctionHeader(new StoredType(type.type, UniqueStorageTag.INSTANCE), new FunctionParameter(RangeTypeID.USIZE.stored, "range"));
 			operator(
 					definition,
 					OperatorType.INDEXGET,
@@ -291,7 +291,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 					VOID.stored,
 					null,
 					null,
-					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter).stored(BorrowStorageTag.INVOCATION), dimension).stored(BorrowStorageTag.INVOCATION), "original"),
+					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter).stored(), dimension).stored(BorrowStorageTag.INVOCATION), "original"),
 					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithoutIndex).stored(BorrowStorageTag.INVOCATION), "projection"));
 			members.addConstructor(new ConstructorMember(
 					BUILTIN,
@@ -314,7 +314,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 					VOID.stored,
 					null,
 					null,
-					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter).stored(BorrowStorageTag.INVOCATION), dimension).stored(BorrowStorageTag.INVOCATION), "original"),
+					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter).stored(), dimension).stored(BorrowStorageTag.INVOCATION), "original"),
 					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithIndex).stored(BorrowStorageTag.INVOCATION), "projection"));
 			constructor(definition, ARRAY_CONSTRUCTOR_PROJECTED_INDEXED, mappedConstructorFunctionWithIndex);
 		}

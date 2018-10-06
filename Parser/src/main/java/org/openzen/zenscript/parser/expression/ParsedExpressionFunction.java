@@ -24,6 +24,7 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LambdaScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
@@ -76,9 +77,9 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		if (header.getReturnType().isBasic(BasicTypeID.UNDETERMINED)) {
 			StoredType returnType = statements.getReturnType();
 			if (returnType == null)
-				throw new CompileException(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Could not infer return type");
+				returnType = new InvalidTypeID(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Could not infer return type").stored();
 			
-			header.setReturnType(statements.getReturnType());
+			header.setReturnType(returnType);
 		}
 		
 		if (!scope.genericInferenceMap.isEmpty()) {

@@ -61,7 +61,7 @@ public class StoredType {
 	}
 	
 	public StoredType getNormalized() {
-		return type.getNormalized() == type ? this : new StoredType(type, storage);
+		return type.getNormalized() == type ? this : new StoredType(type.getNormalized(), storage);
 	}
 	
 	public StoredType getSuperType(GlobalTypeRegistry registry) {

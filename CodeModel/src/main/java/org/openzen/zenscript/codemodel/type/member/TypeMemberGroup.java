@@ -332,7 +332,7 @@ public class TypeMemberGroup {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
 			
-			FunctionHeader header = method.member.getHeader();
+			FunctionHeader header = method.member.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
 			if (header.matchesExactly(arguments, scope))
 				return method.member;
 		}
@@ -347,14 +347,15 @@ public class TypeMemberGroup {
 			
 			scope.getPreparer().prepare(method.member.getTarget());
 			
-			FunctionHeader header = method.member.getHeader();
+			FunctionHeader header = method.member.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
 			if (!header.matchesImplicitly(arguments, scope))
 				continue;
 			
 			if (selected != null) {
 				StringBuilder explanation = new StringBuilder();
-				explanation.append("Function A: ").append(selected.getHeader().toString()).append("\n");
-				explanation.append("Function B: ").append(method.member.getHeader().toString());
+				FunctionHeader selectedHeader = selected.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
+				explanation.append("Function A: ").append(selectedHeader.toString()).append("\n");
+				explanation.append("Function B: ").append(header.toString());
 				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, "Ambiguous call; multiple methods match:\n" + explanation.toString());
 			}
 			
@@ -374,7 +375,8 @@ public class TypeMemberGroup {
 					continue;
 				}
 				
-				message.append(method.member.getHeader().explainWhyIncompatible(scope, arguments)).append("\n");
+				FunctionHeader instancedHeader = method.member.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
+				message.append(instancedHeader.explainWhyIncompatible(scope, arguments)).append("\n");
 			}
 			
 			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching method found for " + name + ":\n" + message.toString());

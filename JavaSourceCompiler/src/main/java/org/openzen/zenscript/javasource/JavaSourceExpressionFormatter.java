@@ -667,7 +667,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	
 	@Override
 	public ExpressionString visitStorageCast(StorageCastExpression expression) {
-		ExpressionString value = expression.accept(this);
+		ExpressionString value = expression.value.accept(this);
 		if (expression.value.type.isDestructible()) {
 			StorageTag fromTag = expression.value.type.getActualStorage();
 			StorageTag toTag = expression.type.getActualStorage();
@@ -689,7 +689,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitThis(ThisExpression expression) {
-		if (scope.isExpansion || scope.thisType == expression.type) {
+		if (scope.isExpansion || scope.thisType == expression.type.type) {
 			return new ExpressionString(scope.isExpansion ? "self" : "this", JavaOperator.PRIMARY);
 		} else {
 			return new ExpressionString(constructThisName((DefinitionTypeID)expression.type.type) + ".this", JavaOperator.MEMBER);

@@ -177,6 +177,9 @@ public class StatementValidator implements StatementVisitor<Void> {
 		statement.value.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		
 		for (SwitchCase switchCase : statement.cases) {
+			for (Statement caseStatement : switchCase.statements)
+				caseStatement.accept(this);
+			
 			// TODO: finish this
 		}
 		

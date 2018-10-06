@@ -20,8 +20,10 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 	}
 	
 	public String process(StoredType type) {
-		if (JavaTypeUtils.isShared(type))
+		if (JavaTypeUtils.isShared(type)) {
+			context.useShared();
 			return "L" + JavaClass.SHARED.internalName + ";";
+		}
 		
 		return type.type.accept(this);
 	}

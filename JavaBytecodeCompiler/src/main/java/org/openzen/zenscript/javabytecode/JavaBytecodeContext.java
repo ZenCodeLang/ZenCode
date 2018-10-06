@@ -11,8 +11,6 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -118,6 +116,10 @@ public class JavaBytecodeContext extends JavaContext {
 		
 		register(range.cls.internalName, rangeWriter.toByteArray());
 	}
+	
+	private void createSharedClass() {
+		// TODO
+	}
 
     public String getLambdaCounter() {
         return "lambda" + ++lambdaCounter;
@@ -133,6 +135,11 @@ public class JavaBytecodeContext extends JavaContext {
 		@Override
 		public void synthesizeRange(JavaSynthesizedRange range) {
 			createRangeClass(range);
+		}
+		
+		@Override
+		public void synthesizeShared() {
+			createSharedClass();
 		}
 	}
 }

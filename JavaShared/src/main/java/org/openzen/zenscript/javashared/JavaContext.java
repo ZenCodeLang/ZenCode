@@ -30,6 +30,7 @@ public abstract class JavaContext {
 	private final GlobalTypeRegistry registry;
 	private final Map<String, JavaSynthesizedFunction> functions = new HashMap<>();
 	private final Map<String, JavaSynthesizedRange> ranges = new HashMap<>();
+	private boolean useShared = false;
 	
 	public JavaContext(GlobalTypeRegistry registry) {
 		this.registry = registry;
@@ -76,6 +77,14 @@ public abstract class JavaContext {
 	public abstract String getDescriptor(TypeID type);
 	
 	public abstract String getDescriptor(StoredType type);
+	
+	public void useShared() {
+		if (useShared)
+			return;
+		
+		useShared = true;
+		getTypeGenerator().synthesizeShared();
+	}
 	
 	public String getMethodDescriptor(FunctionHeader header) {
 		return getMethodDescriptor(header, false);

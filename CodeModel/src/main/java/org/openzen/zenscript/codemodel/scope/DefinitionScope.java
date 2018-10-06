@@ -66,7 +66,7 @@ public class DefinitionScope extends BaseScope {
 			typeParameters = StoredType.getSelfMapping(outer.getTypeRegistry(), expansion.typeParameters);
 		} else {
 			DefinitionTypeID definitionType = outer.getTypeRegistry().getForMyDefinition(definition);
-			type = definitionType.stored(BorrowStorageTag.THIS);
+			type = definitionType.stored();
 			
 			List<TypeParameter> typeParameterList = new ArrayList<>();
 			while (definitionType != null) {
