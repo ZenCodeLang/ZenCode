@@ -1,6 +1,6 @@
 package listeners;
 
-import zsynthetic.FunctionTToVoid;
+import java.util.function.Consumer;
 
 public final class ListenerList<T> {
     public static final int PRIORITY_HIGH = 100;
@@ -43,10 +43,10 @@ public final class ListenerList<T> {
         this.first = this.last = null;
     }
     
-    public void accept(FunctionTToVoid<T> consumer) {
+    public void accept(Consumer<T> consumer) {
         ListenerList<T>.EventListenerNode current = first;
         while (current != null) {
-            consumer.invoke(current.getListener());
+            consumer.accept(current.getListener());
             current = current.next;
         }
     }
