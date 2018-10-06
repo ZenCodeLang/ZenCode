@@ -52,7 +52,7 @@ public class JavaSourceSyntheticHelperGenerator {
 	}
 	
 	public JavaMethod createArrayContains(ArrayTypeID type) {
-		ArrayKind kind = type.accept(new ArrayKindVisitor());
+		ArrayKind kind = type.elementType.type.accept(new ArrayKindVisitor());
 		if (existingContains.containsKey(kind))
 			return existingContains.get(kind);
 		

@@ -32,7 +32,7 @@ public final class StringExpansion {
 	public static Result<String, String> unescape(String self) {
 	    if (!(self.charAt(0) == self.charAt(self.length() - 1)))
 	        throw new AssertionError("Unbalanced quotes");
-	    if (!(self.charAt(0) == '@' && ArrayHelpers.contains(new char[] {'"', '\''}, self.charAt(1)) || ArrayHelpers.contains(new char[] {'"', '\''}, self.charAt(0))))
+	    if (!(self.charAt(0) == '@' && ArrayHelpers.containsChar(new char[] {'"', '\''}, self.charAt(1)) || ArrayHelpers.containsChar(new char[] {'"', '\''}, self.charAt(0))))
 	        throw new AssertionError("String is not quoted");
 	    if (!(self.length() >= 2))
 	        throw new AssertionError("String is not quoted");
