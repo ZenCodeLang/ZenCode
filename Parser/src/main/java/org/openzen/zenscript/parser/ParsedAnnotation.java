@@ -34,7 +34,7 @@ import org.openzen.zenscript.parser.expression.ParsedCallArguments;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.annotations.ParameterAnnotation;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -134,7 +134,7 @@ public class ParsedAnnotation {
 		try {
 			AnnotationDefinition annotationType = type.compileAnnotation(scope);
 			ExpressionScope evalScope = annotationType.getScopeForMember(member, scope);
-			TypeArgument[] types = type.compileTypeArguments(scope);
+			StoredType[] types = type.compileTypeArguments(scope);
 			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
 			return annotationType.createForMember(position, cArguments);
 		} catch (CompileException ex) {
@@ -149,7 +149,7 @@ public class ParsedAnnotation {
 		
 		try {
 			ExpressionScope evalScope = annotationType.getScopeForType(definition, scope);
-			TypeArgument[] types = type.compileTypeArguments(scope);
+			StoredType[] types = type.compileTypeArguments(scope);
 			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
 			return annotationType.createForDefinition(position, cArguments);
 		} catch (CompileException ex) {
@@ -164,7 +164,7 @@ public class ParsedAnnotation {
 		
 		try {
 			ExpressionScope evalScope = annotationType.getScopeForStatement(statement, scope);
-			TypeArgument[] types = type.compileTypeArguments(scope);
+			StoredType[] types = type.compileTypeArguments(scope);
 			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
 			return annotationType.createForStatement(position, cArguments);
 		} catch (CompileException ex) {
@@ -179,7 +179,7 @@ public class ParsedAnnotation {
 		
 		try {
 			ExpressionScope evalScope = annotationType.getScopeForParameter(header, parameter, scope);
-			TypeArgument[] types = type.compileTypeArguments(scope);
+			StoredType[] types = type.compileTypeArguments(scope);
 			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
 			return annotationType.createForParameter(position, cArguments);
 		} catch (CompileException ex) {

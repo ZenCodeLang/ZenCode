@@ -19,7 +19,7 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -204,7 +204,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		}
 
 		@Override
-		public ArrayKind visitModified(ModifiedTypeID type) {
+		public ArrayKind visitOptional(OptionalTypeID type) {
 			return ArrayKind.OBJECT;
 		}
 	}

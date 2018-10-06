@@ -33,7 +33,7 @@ public class ParameterTypeBound extends TypeParameterBound {
 
 	@Override
 	public void registerMembers(LocalMemberCache cache, TypeMembers members) {
-		cache.get(this.type.stored(members.type.storage))
+		cache.get(this.type.stored(members.type.getSpecifiedStorage()))
 				.copyMembersTo(position, members, TypeMemberPriority.FROM_TYPE_BOUNDS);
 	}
 

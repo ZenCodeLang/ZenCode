@@ -28,7 +28,7 @@ public interface StorageTag {
 		if (major == AutoStorageTag.INSTANCE || major == null)
 			return minor;
 		if (!minor.equals(major))
-			throw new IllegalArgumentException("Could not unite storage types"); // TODO: proper reporting
+			throw new IllegalArgumentException("Could not unite storage types: " + minor + " and " + major); // TODO: proper reporting
 		
 		return major;
 	}

@@ -9,7 +9,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -114,14 +114,10 @@ public class JavaTypeNameVisitor implements TypeVisitorWithContext<StoredType, S
 	}
 
 	@Override
-	public String visitModified(StoredType context, ModifiedTypeID type) {
+	public String visitModified(StoredType context, OptionalTypeID type) {
 		StringBuilder result = new StringBuilder();
-		if (type.isConst())
-			result.append("Const");
 		if (type.isOptional())
 			result.append("Optional");
-		if (type.isImmutable())
-			result.append("Immutable");
 		result.append(type.baseType.accept(context, this));
 		return result.toString();
 	}

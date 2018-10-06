@@ -20,7 +20,6 @@ import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
-import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
@@ -90,14 +89,14 @@ public final class TypeMembers {
 		if (superType != null) {
 			if (superType == other)
 				return true;
-			if (cache.get(superType.stored(type.storage)).extendsOrImplements(other))
+			if (cache.get(superType.stored(type.getActualStorage())).extendsOrImplements(other))
 				return true;
 		}
 		
 		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
 			if (implementation.member.implementsType.equals(other)) // TODO: for some reason duplicate types are generated
 				return true;
-			if (cache.get(implementation.member.implementsType.stored(type.storage)).extendsOrImplements(other))
+			if (cache.get(implementation.member.implementsType.stored(type.getActualStorage())).extendsOrImplements(other))
 				return true;
 		}
 		
@@ -110,7 +109,7 @@ public final class TypeMembers {
 		if (superType != null) {
 			if (superType == other)
 				return true;
-			if (cache.get(superType.stored(type.storage)).extendsType(other))
+			if (cache.get(superType.stored(type.getActualStorage())).extendsType(other))
 				return true;
 		}
 		
@@ -403,7 +402,7 @@ public final class TypeMembers {
 		if (type.type == BasicTypeID.NULL && toType.type.isOptional())
 			return true;
 		
-		if (!type.storage.canCastTo(toType.storage) && !toType.storage.canCastFrom(type.storage))
+		if (!type.getActualStorage().canCastTo(toType.getActualStorage()) && !toType.getActualStorage().canCastFrom(type.getActualStorage()))
 			return false;
 		
 		if (toType.isOptional() && canCastImplicit(toType.withoutOptional()))
@@ -417,7 +416,7 @@ public final class TypeMembers {
 	private boolean areEquivalent(StoredType fromType, StoredType toType) {
 		if (fromType == toType)
 			return true;
-		if (!fromType.storage.canCastTo(toType.storage) && !toType.storage.canCastFrom(fromType.storage))
+		if (!fromType.getActualStorage().canCastTo(toType.getActualStorage()) && !toType.getActualStorage().canCastFrom(fromType.getActualStorage()))
 			return false;
 		
 		return fromType.type == toType.type;
@@ -461,7 +460,7 @@ public final class TypeMembers {
 			return value;
 		
 		if (!(toType.type instanceof StringTypeID))
-			System.out.println(position + ": " + value.type.storage + " -> " + toType.storage);
+			System.out.println(position + ": " + value.type.getActualStorage() + " -> " + toType.getActualStorage());
 		
 		return new StorageCastExpression(position, value, toType);
 	}
@@ -489,7 +488,7 @@ public final class TypeMembers {
 		}
 		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
 			if (implementation.member.implementsType.equals(toType.type))
-				return castEquivalent(position, new InterfaceCastExpression(position, value, toType.type.stored(type.storage)), toType);
+				return castEquivalent(position, new InterfaceCastExpression(position, value, toType.type.stored(type.getActualStorage())), toType);
 		}
 		if (extendsType(toType.type))
 			return new SupertypeCastExpression(position, value, toType);

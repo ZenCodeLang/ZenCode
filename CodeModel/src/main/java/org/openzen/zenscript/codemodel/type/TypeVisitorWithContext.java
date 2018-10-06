@@ -30,7 +30,7 @@ public interface TypeVisitorWithContext<C, R, E extends Exception> {
 	
 	R visitRange(C context, RangeTypeID range) throws E;
 	
-	R visitModified(C context, ModifiedTypeID type) throws E;
+	R visitModified(C context, OptionalTypeID type) throws E;
 	
 	default R visitInvalid(C context, InvalidTypeID type) throws E {
 		throw new RuntimeException("Invalid type: " + type.message);

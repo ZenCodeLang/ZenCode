@@ -30,7 +30,7 @@ public interface TypeVisitor<T> {
 	
 	public T visitRange(RangeTypeID range);
 	
-	public T visitModified(ModifiedTypeID type);
+	public T visitOptional(OptionalTypeID type);
 	
 	public default T visitInvalid(InvalidTypeID type) {
 		throw new UnsupportedOperationException("Invalid type: " + type.message);

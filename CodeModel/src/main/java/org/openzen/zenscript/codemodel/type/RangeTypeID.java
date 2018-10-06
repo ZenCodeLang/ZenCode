@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -34,7 +33,7 @@ public class RangeTypeID implements TypeID {
 			normalized = registry.getRange(baseType.getNormalized());
 		}
 		
-		stored = new StoredType(this, baseType.storage);
+		stored = new StoredType(this, baseType.getSpecifiedStorage());
 	}
 	
 	@Override
@@ -43,8 +42,8 @@ public class RangeTypeID implements TypeID {
 	}
 	
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
-		return mapper.registry.getRange(baseType.instance(mapper)).argument(storage);
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return mapper.registry.getRange(baseType.instance(mapper)).stored(storage);
 	}
 	
 	@Override
@@ -59,11 +58,6 @@ public class RangeTypeID implements TypeID {
 
 	@Override
 	public boolean isOptional() {
-		return false;
-	}
-
-	@Override
-	public boolean isConst() {
 		return false;
 	}
 	

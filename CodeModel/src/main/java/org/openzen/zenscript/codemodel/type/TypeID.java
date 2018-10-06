@@ -12,7 +12,6 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
@@ -27,7 +26,7 @@ public interface TypeID {
 		return null;
 	}
 	
-	TypeArgument instance(GenericMapper mapper, StorageTag storage);
+	StoredType instance(GenericMapper mapper, StorageTag storage);
 	
 	TypeID getNormalized();
 	
@@ -41,8 +40,8 @@ public interface TypeID {
 	
 	// Infers type parameters for this type so it matches with targetType
 	// returns false if that isn't possible
-	default Map<TypeParameter, TypeArgument> inferTypeParameters(LocalMemberCache cache, TypeArgument targetType) {
-		return TypeMatcher.match(cache, new TypeArgument(this, null), targetType);
+	default Map<TypeParameter, StoredType> inferTypeParameters(LocalMemberCache cache, StoredType targetType) {
+		return TypeMatcher.match(cache, stored(), targetType);
 	}
 	
 	void extractTypeParameters(List<TypeParameter> typeParameters);
@@ -56,22 +55,10 @@ public interface TypeID {
 	}
 	
 	default StoredType stored() {
-		return new StoredType(this, AutoStorageTag.INSTANCE);
-	}
-	
-	default TypeArgument argument(StorageTag storage) {
-		return new TypeArgument(this, storage);
+		return new StoredType(this, null);
 	}
 	
 	default boolean isOptional() {
-		return false;
-	}
-	
-	default boolean isConst() {
-		return false;
-	}
-	
-	default boolean isImmutable() {
 		return false;
 	}
 	
@@ -83,14 +70,6 @@ public interface TypeID {
 	
 	default TypeID withoutOptional() {
 		throw new UnsupportedOperationException("Not an optional type");
-	}
-	
-	default TypeID withoutConst() {
-		throw new UnsupportedOperationException("Not a const type");
-	}
-	
-	default TypeID withoutImmutable() {
-		throw new UnsupportedOperationException("Not an immutable type");
 	}
 	
 	default boolean isVariant() {

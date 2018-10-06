@@ -2381,8 +2381,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 		
 		if (expression.type.isDestructible()) { // only destructible types matter here; nondestructible types never need conversion
-			StorageTag fromTag = expression.value.type.storage;
-			StorageTag toTag = expression.type.storage;
+			StorageTag fromTag = expression.value.type.getActualStorage();
+			StorageTag toTag = expression.type.getActualStorage();
 			if (JavaTypeUtils.isShared(fromTag) && toTag == BorrowStorageTag.INVOCATION) {
 				// Shared<T>.get()
 				javaWriter.invokeVirtual(SHARED_GET);

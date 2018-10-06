@@ -41,12 +41,10 @@ public enum BasicTypeID implements TypeID {
 	
 	public final String name;
 	public final StoredType stored;
-	public final TypeArgument argument;
 	
 	BasicTypeID(String name) {
 		this.name = name;
-		stored = new StoredType(this, ValueStorageTag.INSTANCE);
-		argument = new TypeArgument(this, ValueStorageTag.INSTANCE);
+		stored = new StoredType(this, null);
 	}
 	
 	@Override
@@ -55,8 +53,8 @@ public enum BasicTypeID implements TypeID {
 	}
 	
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
-		return new TypeArgument(this, storage);
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return stored(storage);
 	}
 	
 	@Override
@@ -76,11 +74,6 @@ public enum BasicTypeID implements TypeID {
 
 	@Override
 	public boolean isOptional() {
-		return false;
-	}
-
-	@Override
-	public boolean isConst() {
 		return false;
 	}
 	

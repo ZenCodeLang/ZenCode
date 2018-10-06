@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  * @author Hoofdgebruiker
  */
 public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching, Boolean, RuntimeException> {
-	public static Map<TypeParameter, TypeArgument> match(LocalMemberCache cache, TypeArgument type, TypeArgument pattern) {
+	public static Map<TypeParameter, StoredType> match(LocalMemberCache cache, StoredType type, StoredType pattern) {
 		Matching matching = new Matching(cache, type);
 		if (pattern.type.accept(matching, INSTANCE))
 			return matching.mapping;
@@ -127,8 +127,8 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	@Override
 	public Boolean visitGeneric(Matching context, GenericTypeID generic) {
 		if (context.mapping.containsKey(generic.parameter)) {
-			TypeArgument argument = context.mapping.get(generic.parameter);
-			return argument.type == context.type && (argument.storage == null || argument.storage == context.type.storage);
+			StoredType argument = context.mapping.get(generic.parameter);
+			return argument.type == context.type && (argument.getSpecifiedStorage() == null || argument.getSpecifiedStorage() == context.type.getSpecifiedStorage());
 		} else if (context.type.type == generic || generic.matches(context.cache, context.type)) {
 			context.mapping.put(generic.parameter, context.type);
 			return true;
@@ -148,24 +148,20 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	}
 
 	@Override
-	public Boolean visitModified(Matching context, ModifiedTypeID type) {
-		if (context.type.type instanceof ModifiedTypeID) {
-			ModifiedTypeID modified = (ModifiedTypeID) context.type.type;
-			return match(context, modified.baseType.argument(null), type.baseType.argument(null));
+	public Boolean visitModified(Matching context, OptionalTypeID type) {
+		if (context.type.type instanceof OptionalTypeID) {
+			OptionalTypeID modified = (OptionalTypeID) context.type.type;
+			return match(context, modified.baseType.stored(), type.baseType.stored());
 		} else {
 			return false;
 		}
 	}
 
-	private boolean match(Matching context, TypeArgument type, TypeArgument pattern) {
-		if (pattern.storage != null && !pattern.storage.equals(type.storage))
+	private boolean match(Matching context, StoredType type, StoredType pattern) {
+		if (pattern.getSpecifiedStorage() != null && !pattern.getSpecifiedStorage().equals(type.getSpecifiedStorage()))
 			return false;
 		
 		return pattern.type.accept(context.withType(type), this);
-	}
-	
-	private boolean match(Matching context, StoredType type, StoredType pattern) {
-		return match(context, type.asArgument(), pattern.asArgument());
 	}
 
 	@Override
@@ -175,22 +171,22 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 		
 	public static final class Matching {
 		public final LocalMemberCache cache;
-		public final TypeArgument type;
-		public final Map<TypeParameter, TypeArgument> mapping;
+		public final StoredType type;
+		public final Map<TypeParameter, StoredType> mapping;
 		
-		public Matching(LocalMemberCache cache, TypeArgument type) {
+		public Matching(LocalMemberCache cache, StoredType type) {
 			this.cache = cache;
 			this.type = type;
 			mapping = new HashMap<>();
 		}
 		
-		private Matching(LocalMemberCache cache, TypeArgument type, Map<TypeParameter, TypeArgument> mapping) {
+		private Matching(LocalMemberCache cache, StoredType type, Map<TypeParameter, StoredType> mapping) {
 			this.cache = cache;
 			this.type = type;
 			this.mapping = mapping;
 		}
 		
-		public Matching withType(TypeArgument type) {
+		public Matching withType(StoredType type) {
 			return new Matching(cache, type, mapping);
 		}
 	}

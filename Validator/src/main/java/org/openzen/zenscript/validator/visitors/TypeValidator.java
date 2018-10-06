@@ -9,7 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -19,7 +19,6 @@ import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -41,17 +40,8 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 	}
 	
 	public void validate(TypeContext context, StoredType type) {
-		if (type.storage instanceof InvalidStorageTag) {
-			InvalidStorageTag storage = (InvalidStorageTag)type.storage;
-			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, storage.position, storage.message);
-		}
-		
-		validate(context, type.type);
-	}
-	
-	public void validate(TypeContext context, TypeArgument type) {
-		if (type.storage instanceof InvalidStorageTag) {
-			InvalidStorageTag storage = (InvalidStorageTag)type.storage;
+		if (type.getActualStorage() instanceof InvalidStorageTag) {
+			InvalidStorageTag storage = (InvalidStorageTag)type.getActualStorage();
 			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, storage.position, storage.message);
 		}
 		
@@ -134,7 +124,7 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 	}
 
 	@Override
-	public Void visitModified(TypeContext context, ModifiedTypeID type) {
+	public Void visitModified(TypeContext context, OptionalTypeID type) {
 		// TODO: detect duplicate const
 		validate(context, type.baseType);
 		return null;

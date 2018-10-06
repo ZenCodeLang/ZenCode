@@ -26,7 +26,6 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
@@ -41,7 +40,7 @@ public class ExpressionScope extends BaseScope {
 	private final DollarEvaluator dollar;
 	
 	public final List<StoredType> hints;
-	public final Map<TypeParameter, TypeArgument> genericInferenceMap;
+	public final Map<TypeParameter, StoredType> genericInferenceMap;
 	public final Map<String, Function<CodePosition, Expression>> innerVariables = new HashMap<>();
 	
 	public ExpressionScope(BaseScope outer) {
@@ -69,7 +68,7 @@ public class ExpressionScope extends BaseScope {
 			BaseScope scope,
 			List<StoredType> hints,
 			DollarEvaluator dollar,
-			Map<TypeParameter, TypeArgument> genericInferenceMap,
+			Map<TypeParameter, StoredType> genericInferenceMap,
 			Map<String, Function<CodePosition, Expression>> innerVariables) {
 		this.outer = scope;
 		this.hints = hints;
@@ -110,7 +109,7 @@ public class ExpressionScope extends BaseScope {
 		if (header.typeParameters == null)
 			return this;
 		
-		Map<TypeParameter, TypeArgument> genericInferenceMap = new HashMap<>();
+		Map<TypeParameter, StoredType> genericInferenceMap = new HashMap<>();
 		for (TypeParameter parameter : header.typeParameters)
 			genericInferenceMap.put(parameter, null);
 		

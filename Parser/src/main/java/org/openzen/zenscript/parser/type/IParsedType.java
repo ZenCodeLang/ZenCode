@@ -15,9 +15,7 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
@@ -90,16 +88,6 @@ public interface IParsedType {
 	
 	public static IParsedType tryParse(ZSTokenParser tokens) throws ParseException {
 		CodePosition position = tokens.getPosition();
-		int modifiers = 0;
-		while (true) {
-			if (tokens.optional(ZSTokenType.K_CONST) != null) {
-				modifiers |= ModifiedTypeID.MODIFIER_CONST;
-			} else if (tokens.optional(ZSTokenType.K_IMMUTABLE) != null) {
-				modifiers |= ModifiedTypeID.MODIFIER_IMMUTABLE;
-			} else {
-				break;
-			}
-		}
 		
 		IParsedType result;
 		switch (tokens.peek().type) {
@@ -162,7 +150,7 @@ public interface IParsedType {
 			case K_STRING: {
 				tokens.next();
 				ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-				result = new ParsedString(position, modifiers, storage);
+				result = new ParsedString(position, storage);
 				break;
 			}
 			case K_FUNCTION: {
@@ -210,7 +198,7 @@ public interface IParsedType {
 						tokens.required(T_GREATER, "> expected");
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
 						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-						result = new ParsedTypeGenericMap(position, parameter, result, modifiers, storage);
+						result = new ParsedTypeGenericMap(position, parameter, result, storage);
 					} else {
 						IParsedType keyType = parse(tokens);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
@@ -220,15 +208,12 @@ public interface IParsedType {
 					break;
 				case T_QUEST:
 					tokens.next();
-					result = result.withOptional();
+					result = new ParsedOptionalType(result);
 					break;
 				default:
 					break outer;
 			}
 		}
-		
-		if (modifiers > 0)
-			result = result.withModifiers(modifiers);
 		
 		return result;
 	}
@@ -255,32 +240,26 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public static TypeArgument[] compileArguments(List<IParsedType> typeParameters, TypeResolutionContext context) {
-		TypeArgument[] result = TypeArgument.NONE;
+	public static StoredType[] compileTypes(List<IParsedType> typeParameters, TypeResolutionContext context) {
+		StoredType[] result = StoredType.NONE;
 		if (typeParameters != null && typeParameters.size() > 0) {
-			result = new TypeArgument[typeParameters.size()];
+			result = new StoredType[typeParameters.size()];
 			for (int i = 0; i < typeParameters.size(); i++) {
-				result[i] = typeParameters.get(i).compileArgument(context);
+				result[i] = typeParameters.get(i).compile(context);
 			}
 		}
 		return result;
 	}
 	
-	public IParsedType withOptional();
-	
-	public IParsedType withModifiers(int modifiers);
-	
 	public StoredType compile(TypeResolutionContext context);
 	
 	public TypeID compileUnstored(TypeResolutionContext context);
-	
-	public TypeArgument compileArgument(TypeResolutionContext context);
 	
 	public default AnnotationDefinition compileAnnotation(BaseScope scope) {
 		return null;
 	}
 	
-	public default TypeArgument[] compileTypeArguments(BaseScope scope) {
-		return TypeArgument.NONE;
+	public default StoredType[] compileTypeArguments(BaseScope scope) {
+		return StoredType.NONE;
 	}
 }

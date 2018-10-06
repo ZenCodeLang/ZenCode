@@ -25,7 +25,6 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
@@ -49,7 +48,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		TypeArgument[] typeArguments = IParsedType.compileArguments(this.typeArguments, scope);
+		StoredType[] typeArguments = IParsedType.compileTypes(this.typeArguments, scope);
 		IPartialExpression result = scope.get(position, new GenericName(name, typeArguments));
 		if (result == null) {
 			for (StoredType hint : scope.hints) {

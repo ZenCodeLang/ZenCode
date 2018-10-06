@@ -42,7 +42,7 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 				return new TryRethrowAsExceptionExpression(position, cSource.type, cSource, cSource.thrownType);
 			} else {
 				// rethrow as result
-				StoredType resultType = scope.getTypeRegistry().getForDefinition(result, cSource.type.asArgument(), cSource.thrownType.asArgument()).stored(cSource.thrownType.storage);
+				StoredType resultType = scope.getTypeRegistry().getForDefinition(result, cSource.type, cSource.thrownType).stored(cSource.thrownType.getSpecifiedStorage());
 				return new TryRethrowAsResultExpression(position, resultType, cSource);
 			}
 		} else {
@@ -50,7 +50,7 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 			if (cSource.type.type instanceof DefinitionTypeID) {
 				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type.type;
 				if (sourceType.definition == result) {
-					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0].stored(), cSource);
+					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0], cSource);
 				}
 			}
 			

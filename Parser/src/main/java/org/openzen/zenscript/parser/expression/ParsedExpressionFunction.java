@@ -25,7 +25,6 @@ import org.openzen.zenscript.codemodel.scope.LambdaScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -59,7 +58,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 						return new InvalidExpression(position, hint, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Ambiguity trying to resolve function types, can't decide for the type");
 					
 					header = functionHint.header.forLambda(definedHeader);
-					storage = hint.storage;
+					storage = hint.getActualStorage();
 				}
 			}
 		}
@@ -85,7 +84,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		if (!scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference
 			StoredType returnType = statements.getReturnType();
-			Map<TypeParameter, TypeArgument> inferredTypes = returnType.type.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType().asArgument());
+			Map<TypeParameter, StoredType> inferredTypes = returnType.type.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType());
 			if (inferredTypes == null)
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
 			

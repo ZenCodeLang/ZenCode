@@ -37,8 +37,8 @@ public class FunctionTypeID implements TypeID {
 	}
 	
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
-		return new TypeArgument(mapper.registry.getFunction(mapper.map(header)), storage);
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return mapper.registry.getFunction(mapper.map(header)).stored(storage);
 	}
 	
 	@Override
@@ -53,11 +53,6 @@ public class FunctionTypeID implements TypeID {
 
 	@Override
 	public boolean isOptional() {
-		return false;
-	}
-
-	@Override
-	public boolean isConst() {
 		return false;
 	}
 	

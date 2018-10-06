@@ -29,7 +29,6 @@ import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -37,7 +36,6 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -60,21 +58,19 @@ public class DefinitionScope extends BaseScope {
 		this.outer = outer;
 		this.definition = definition;
 		
-		Map<TypeParameter, TypeArgument> typeParameters = new HashMap<>();
+		Map<TypeParameter, StoredType> typeParameters = new HashMap<>();
 		if (definition instanceof ExpansionDefinition) {
 			ExpansionDefinition expansion = (ExpansionDefinition)definition;
-			type = expansion.target.storage == null
-					? expansion.target.stored(BorrowStorageTag.THIS)
-					: expansion.target.stored();
+			type = expansion.target;
 			this.typeParameters = expansion.typeParameters;
-			typeParameters = TypeArgument.getSelfMapping(outer.getTypeRegistry(), expansion.typeParameters);
+			typeParameters = StoredType.getSelfMapping(outer.getTypeRegistry(), expansion.typeParameters);
 		} else {
 			DefinitionTypeID definitionType = outer.getTypeRegistry().getForMyDefinition(definition);
 			type = definitionType.stored(BorrowStorageTag.THIS);
 			
 			List<TypeParameter> typeParameterList = new ArrayList<>();
 			while (definitionType != null) {
-				typeParameters = TypeArgument.getSelfMapping(outer.getTypeRegistry(), definitionType.definition.typeParameters);
+				typeParameters = StoredType.getSelfMapping(outer.getTypeRegistry(), definitionType.definition.typeParameters);
 				typeParameterList.addAll(Arrays.asList(definitionType.definition.typeParameters));
 				
 				definitionType = definitionType.definition.isStatic() ? null : definitionType.outer;

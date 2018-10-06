@@ -43,4 +43,9 @@ public class ValueStorageTag implements StorageTag {
 	public boolean isImmutable() {
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return "value";
+	}
 }

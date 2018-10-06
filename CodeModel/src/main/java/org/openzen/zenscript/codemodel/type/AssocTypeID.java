@@ -32,10 +32,10 @@ public class AssocTypeID implements TypeID {
 	}
 	
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
 		return mapper.registry.getAssociative(
 				keyType.instance(mapper),
-				valueType.instance(mapper)).argument(storage);
+				valueType.instance(mapper)).stored(storage);
 	}
 	
 	@Override
@@ -55,11 +55,6 @@ public class AssocTypeID implements TypeID {
 
 	@Override
 	public boolean isOptional() {
-		return false;
-	}
-
-	@Override
-	public boolean isConst() {
 		return false;
 	}
 	

@@ -29,7 +29,7 @@ import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.compiler.CompileScope;
 import org.openzen.zenscript.compiler.SemanticModule;
@@ -370,9 +370,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	
 	private void compileMembers(JavaSourceFileScope scope, HighLevelDefinition definition) {
 		if (definition.hasTag(JavaNativeClass.class)) {
-			TypeArgument[] typeParameters = new TypeArgument[definition.getNumberOfGenericParameters()];
+			StoredType[] typeParameters = new StoredType[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < typeParameters.length; i++)
-				typeParameters[i] = new TypeArgument(scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]), definition.typeParameters[i].storage);
+				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]).stored(definition.typeParameters[i].storage);
 			TypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, typeParameters);
 			
 			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.typeParameters, indent + settings.indent, output, scope, definition);

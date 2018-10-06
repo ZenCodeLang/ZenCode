@@ -8,7 +8,6 @@ package org.openzen.zenscript.parser.type;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -47,20 +46,5 @@ public enum ParsedTypeBasic implements IParsedType {
 	@Override
 	public TypeID compileUnstored(TypeResolutionContext context) {
 		return type;
-	}
-	
-	@Override
-	public TypeArgument compileArgument(TypeResolutionContext context) {
-		return type.argument;
-	}
-
-	@Override
-	public IParsedType withOptional() {
-		return new ParsedOptionalBasicType(this);
-	}
-
-	@Override
-	public IParsedType withModifiers(int modifiers) {
-		throw new UnsupportedOperationException();
 	}
 }

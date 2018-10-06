@@ -10,11 +10,8 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
@@ -25,7 +22,6 @@ public class ParsedTypeArray implements IParsedType {
 	private final CodePosition position;
 	public final IParsedType baseType;
 	public final int dimension;
-	public final int modifiers;
 	public final ParsedStorageTag storage;
 	
 	public ParsedTypeArray(CodePosition position, IParsedType baseType, int dimension, ParsedStorageTag storage) {
@@ -35,29 +31,7 @@ public class ParsedTypeArray implements IParsedType {
 		this.position = position;
 		this.baseType = baseType;
 		this.dimension = dimension;
-		this.modifiers = 0;
 		this.storage = storage;
-	}
-
-	private ParsedTypeArray(CodePosition position, IParsedType baseType, int dimension, int modifiers, ParsedStorageTag storage) {
-		if (storage == null)
-			throw new NullPointerException();
-		
-		this.position = position;
-		this.baseType = baseType;
-		this.dimension = dimension;
-		this.modifiers = modifiers;
-		this.storage = storage;
-	}
-	
-	@Override
-	public IParsedType withOptional() {
-		return new ParsedTypeArray(position, baseType, dimension, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storage);
-	}
-
-	@Override
-	public IParsedType withModifiers(int modifiers) {
-		return new ParsedTypeArray(position, baseType, dimension, this.modifiers | modifiers, storage);
 	}
 
 	@Override
@@ -65,7 +39,7 @@ public class ParsedTypeArray implements IParsedType {
 		StoredType baseType = this.baseType.compile(context);
 		StorageTag storage = this.storage.resolve(position, context);
 		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return registry.getModified(modifiers, registry.getArray(baseType, dimension)).stored(storage == null ? AutoStorageTag.INSTANCE : storage);
+		return registry.getArray(baseType, dimension).stored(storage);
 	}
 	
 	@Override
@@ -76,14 +50,6 @@ public class ParsedTypeArray implements IParsedType {
 		StoredType baseType = this.baseType.compile(context);
 		StorageTag storage = this.storage.resolve(position, context);
 		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return registry.getModified(modifiers, registry.getArray(baseType, dimension));
-	}
-
-	@Override
-	public TypeArgument compileArgument(TypeResolutionContext context) {
-		StoredType baseType = this.baseType.compile(context);
-		StorageTag storage = this.storage.resolve(position, context);
-		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return new TypeArgument(registry.getModified(modifiers, registry.getArray(baseType, dimension)), storage);
+		return registry.getArray(baseType, dimension);
 	}
 }

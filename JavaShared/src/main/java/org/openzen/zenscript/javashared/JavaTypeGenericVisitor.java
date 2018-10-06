@@ -122,7 +122,7 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 
 		if (definition.typeArguments.length > 0) {
 			builder.append("<");
-			for (TypeArgument typeParameter : definition.typeArguments) {
+			for (StoredType typeParameter : definition.typeArguments) {
 				builder.append(typeParameter.type.accept(null, this));
 			}
 			builder.append(">");
@@ -142,7 +142,7 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 	}
 
 	@Override
-	public String visitModified(StoredType context, ModifiedTypeID type) {
+	public String visitModified(StoredType context, OptionalTypeID type) {
 		return type.baseType.accept(context, this);
 	}
 }

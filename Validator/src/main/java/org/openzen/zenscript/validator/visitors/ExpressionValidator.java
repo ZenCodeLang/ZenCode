@@ -613,7 +613,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitStorageCast(StorageCastExpression expression) {
 		if (expression.value.type.type != expression.type.type)
 			validator.logError(ValidationLogEntry.Code.INVALID_STORAGE_CAST, expression.position, "Invalid storage cast");
-		if (!expression.value.type.storage.canCastTo(expression.type.storage) && !expression.type.storage.canCastFrom(expression.value.type.storage))
+		if (!expression.value.type.getActualStorage().canCastTo(expression.type.getActualStorage()) && !expression.type.getActualStorage().canCastFrom(expression.value.type.getActualStorage()))
 			validator.logError(ValidationLogEntry.Code.INVALID_STORAGE_CAST, expression.position, "Invalid storage cast");
 		
 		expression.value.accept(this);

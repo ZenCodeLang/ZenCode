@@ -9,11 +9,11 @@ package org.openzen.zenscript.codemodel.type.storage;
  *
  * @author Hoofdgebruiker
  */
-public class BorrowStorageTag implements StorageTag {
-	public static final BorrowStorageTag INVOCATION = new BorrowStorageTag();
-	public static final BorrowStorageTag THIS = new BorrowStorageTag();
+public class MutableStorageTag implements StorageTag {
+	public static final MutableStorageTag INVOCATION = new MutableStorageTag();
+	public static final MutableStorageTag THIS = new MutableStorageTag();
 	
-	private BorrowStorageTag() {} // TODO: scoped borrow
+	private MutableStorageTag() {} // TODO: scoped borrow
 
 	@Override
 	public StorageType getType() {
@@ -22,7 +22,7 @@ public class BorrowStorageTag implements StorageTag {
 	
 	@Override
 	public String toString() {
-		return this == THIS ? "borrow:this" : "borrow";
+		return this == THIS ? "mutable:this" : "mutable";
 	}
 
 	@Override

@@ -55,11 +55,6 @@ public class ArrayTypeID implements TypeID {
 	public boolean isOptional() {
 		return false;
 	}
-
-	@Override
-	public boolean isConst() {
-		return false;
-	}
 	
 	@Override
 	public boolean isValueType() {
@@ -77,8 +72,8 @@ public class ArrayTypeID implements TypeID {
 	}
 	
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
-		return mapper.registry.getArray(elementType.instance(mapper), dimension).argument(storage);
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return mapper.registry.getArray(elementType.instance(mapper), dimension).stored(storage);
 	}
 
 	@Override

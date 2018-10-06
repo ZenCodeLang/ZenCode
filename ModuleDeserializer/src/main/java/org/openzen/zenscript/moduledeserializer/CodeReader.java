@@ -63,7 +63,7 @@ import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -336,9 +336,9 @@ public class CodeReader implements CodeSerializationInput {
 			case TypeEncoding.TYPE_OPTIONAL:
 				return registry.getOptional(deserializeTypeID(context));
 			case TypeEncoding.TYPE_CONST:
-				return registry.getModified(ModifiedTypeID.MODIFIER_CONST, deserializeTypeID(context));
+				return registry.getModified(OptionalTypeID.MODIFIER_CONST, deserializeTypeID(context));
 			case TypeEncoding.TYPE_IMMUTABLE:
-				return registry.getModified(ModifiedTypeID.MODIFIER_IMMUTABLE, deserializeTypeID(context));
+				return registry.getModified(OptionalTypeID.MODIFIER_IMMUTABLE, deserializeTypeID(context));
 			default:
 				throw new IllegalArgumentException("Unknown type: " + type);
 		}
@@ -794,7 +794,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_MAKE_CONST: {
 				Expression value = deserializeExpression(context);
-				StoredType constType = registry.getModified(ModifiedTypeID.MODIFIER_CONST, value.type.type).stored(value.type.storage);
+				StoredType constType = registry.getModified(OptionalTypeID.MODIFIER_CONST, value.type.type).stored(value.type.getActualStorage());
 				return new MakeConstExpression(position, value, constType);
 			}
 			case ExpressionEncoding.TYPE_MAP: {
@@ -933,7 +933,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_WRAP_OPTIONAL: {
 				Expression value = deserializeExpression(context);
-				StoredType optionalType = registry.getOptional(value.type.type).stored(value.type.storage);
+				StoredType optionalType = registry.getOptional(value.type.type).stored(value.type.getActualStorage());
 				return new WrapOptionalExpression(position, value, optionalType);
 			}
 			default:

@@ -91,7 +91,6 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
@@ -670,8 +669,8 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString visitStorageCast(StorageCastExpression expression) {
 		ExpressionString value = expression.accept(this);
 		if (expression.value.type.isDestructible()) {
-			StorageTag fromTag = expression.value.type.storage;
-			StorageTag toTag = expression.type.storage;
+			StorageTag fromTag = expression.value.type.getActualStorage();
+			StorageTag toTag = expression.type.getActualStorage();
 			if (JavaTypeUtils.isShared(fromTag)) {
 				// Shared<T>.get()
 				return value.unaryPostfix(JavaOperator.CALL, ".get()");
@@ -761,7 +760,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		return expression.value.accept(this);
 	}
 	
-	private String formatTypeArguments(TypeArgument[] types) {
+	private String formatTypeArguments(StoredType[] types) {
 		if (types == null || types.length == 0)
 			return "";
 		
@@ -827,7 +826,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		output.append(method).append("(");
 		boolean first = true;
 		if (expression.arguments.typeArguments != null) {
-			for (TypeArgument typeArgument : expression.arguments.typeArguments) {
+			for (StoredType typeArgument : expression.arguments.typeArguments) {
 				if (!first)
 					output.append(", ");
 				

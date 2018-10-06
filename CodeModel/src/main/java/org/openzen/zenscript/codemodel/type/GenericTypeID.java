@@ -24,8 +24,8 @@ public class GenericTypeID implements TypeID {
 		this.parameter = parameter;
 	}
 	
-	public boolean matches(LocalMemberCache cache, TypeArgument type) {
-		if (type.storage != null && parameter.storage != null && !type.storage.equals(parameter.storage))
+	public boolean matches(LocalMemberCache cache, StoredType type) {
+		if (type.getSpecifiedStorage() != null && parameter.storage != null && !type.getActualStorage().equals(parameter.storage))
 			return false;
 		
 		return parameter.matches(cache, type.type);
@@ -37,8 +37,9 @@ public class GenericTypeID implements TypeID {
 	}
 	
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
-		return mapper.map(this).argument(StorageTag.union(parameter.storage, storage));
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		StoredType mapped = mapper.map(this);
+		return new StoredType(mapped.type, StorageTag.union(mapped.getSpecifiedStorage(), storage));
 	}
 	
 	@Override
@@ -53,11 +54,6 @@ public class GenericTypeID implements TypeID {
 
 	@Override
 	public boolean isOptional() {
-		return false;
-	}
-
-	@Override
-	public boolean isConst() {
 		return false;
 	}
 	

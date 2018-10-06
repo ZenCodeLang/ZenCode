@@ -16,6 +16,7 @@ public interface StorageType {
 		return new StorageType[] {
 			AutoStorageType.INSTANCE,
 			BorrowStorageType.INSTANCE,
+			MutableStorageType.INSTANCE,
 			SharedStorageType.INSTANCE,
 			StaticStorageType.INSTANCE,
 			UniqueStorageType.INSTANCE

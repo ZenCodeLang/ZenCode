@@ -19,7 +19,6 @@ import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 
@@ -30,9 +29,9 @@ import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 public class PartialTypeExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final StoredType type;
-	private final TypeArgument[] typeArguments;
+	private final StoredType[] typeArguments;
 	
-	public PartialTypeExpression(CodePosition position, TypeID type, TypeArgument[] typeArguments) {
+	public PartialTypeExpression(CodePosition position, TypeID type, StoredType[] typeArguments) {
 		this.position = position;
 		this.type = type.stored(StaticExpressionStorageTag.INSTANCE);
 		this.typeArguments = typeArguments;
@@ -72,7 +71,7 @@ public class PartialTypeExpression implements IPartialExpression {
 	}
 
 	@Override
-	public TypeArgument[] getTypeArguments() {
+	public StoredType[] getTypeArguments() {
 		return typeArguments;
 	}
 	

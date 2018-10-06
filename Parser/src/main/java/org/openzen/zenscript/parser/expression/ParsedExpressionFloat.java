@@ -18,7 +18,6 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
@@ -69,7 +68,7 @@ public class ParsedExpressionFloat extends ParsedExpression {
 				if (method != null) {
 					try {
 						ParsedCallArguments parsedArguments = new ParsedCallArguments(Collections.emptyList(), Collections.singletonList(new ParsedExpressionFloat(position, value)));
-						CallArguments arguments = parsedArguments.compileCall(position, scope, TypeArgument.NONE, method.getHeader());
+						CallArguments arguments = parsedArguments.compileCall(position, scope, StoredType.NONE, method.getHeader());
 						method.callStatic(position, hint.type, method.getHeader(), arguments, scope);
 					} catch (CompileException ex) {
 						return new InvalidExpression(hint, ex);

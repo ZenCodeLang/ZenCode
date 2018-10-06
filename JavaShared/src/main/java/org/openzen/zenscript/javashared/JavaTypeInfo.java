@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
@@ -95,7 +95,7 @@ public class JavaTypeInfo {
 		}
 
 		@Override
-		public JavaTypeInfo visitModified(StoredType context, ModifiedTypeID type) {
+		public JavaTypeInfo visitModified(StoredType context, OptionalTypeID type) {
 			return type.baseType.accept(null, this);
 		}
 	}

@@ -50,7 +50,7 @@ public class ParsedExpressionRange extends ParsedExpression {
 		Expression to = this.to.compile(scope.withHints(toHints)).eval();
 		
 		StoredType baseType = scope.getTypeMembers(from.type).union(to.type);
-		return new RangeExpression(position, scope.getTypeRegistry().getRange(baseType).stored(baseType.storage), from, to);
+		return new RangeExpression(position, scope.getTypeRegistry().getRange(baseType).stored(baseType.getSpecifiedStorage()), from, to);
 	}
 
 	@Override

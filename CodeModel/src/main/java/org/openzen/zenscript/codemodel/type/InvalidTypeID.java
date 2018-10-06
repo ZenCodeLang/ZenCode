@@ -35,8 +35,8 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
-		return new TypeArgument(this, storage);
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return stored(storage);
 	}
 
 	@Override

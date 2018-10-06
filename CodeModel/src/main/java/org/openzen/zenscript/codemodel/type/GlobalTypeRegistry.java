@@ -26,7 +26,7 @@ public class GlobalTypeRegistry {
 	private final Map<DefinitionTypeID, DefinitionTypeID> definitionTypes = new HashMap<>();
 	private final Map<GenericTypeID, GenericTypeID> genericTypes = new HashMap<>();
 	
-	private final Map<ModifiedTypeID, ModifiedTypeID> modifiedTypes = new HashMap<>();
+	private final Map<OptionalTypeID, OptionalTypeID> optionalTypes = new HashMap<>();
 	
 	public final ZSPackage stdlib;
 	
@@ -76,11 +76,11 @@ public class GlobalTypeRegistry {
 	}
 	
 	public DefinitionTypeID getForMyDefinition(HighLevelDefinition definition) {
-		TypeArgument[] typeArguments = TypeArgument.NONE;
+		StoredType[] typeArguments = StoredType.NONE;
 		if (definition.getNumberOfGenericParameters() > 0) {
-			typeArguments = new TypeArgument[definition.getNumberOfGenericParameters()];
+			typeArguments = new StoredType[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < definition.typeParameters.length; i++)
-				typeArguments[i] = new TypeArgument(getGeneric(definition.typeParameters[i]), definition.typeParameters[i].storage);
+				typeArguments[i] = new StoredType(getGeneric(definition.typeParameters[i]), definition.typeParameters[i].storage);
 		}
 		DefinitionTypeID outer = null;
 		if (definition.outerDefinition != null)
@@ -89,35 +89,17 @@ public class GlobalTypeRegistry {
 		return getForDefinition(definition, typeArguments, outer);
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeArgument... typeArguments) {
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, StoredType... typeArguments) {
 		return this.getForDefinition(definition, typeArguments, null);
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeArgument[] typeArguments, DefinitionTypeID outer) {
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, StoredType[] typeArguments, DefinitionTypeID outer) {
 		DefinitionTypeID id = new DefinitionTypeID(this, definition, typeArguments, definition.isStatic() ? null : outer);
-		
-		if (definitionTypes.containsKey(id)) {
-			return definitionTypes.get(id);
-		} else {
-			definitionTypes.put(id, id);
-			return id;
-		}
+		return internalize(definitionTypes, id);
 	}
 	
 	public TypeID getOptional(TypeID original) {
-		return getModified(ModifiedTypeID.MODIFIER_OPTIONAL, original);
-	}
-	
-	public TypeID getModified(int modifiers, TypeID type) {
-		if (modifiers == 0)
-			return type;
-		if (type instanceof ModifiedTypeID) {
-			ModifiedTypeID modified = (ModifiedTypeID)type;
-			return getModified(modified.modifiers | modifiers, modified.baseType);
-		}
-		
-		ModifiedTypeID result = new ModifiedTypeID(this, modifiers, type);
-		return internalize(modifiedTypes, result);
+		return internalize(optionalTypes, new OptionalTypeID(this, original));
 	}
 	
 	private <T> T internalize(Map<T, T> identityMap, T id) {

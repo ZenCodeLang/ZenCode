@@ -14,13 +14,8 @@ import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -28,20 +23,11 @@ import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
  */
 public class ParsedNamedType implements IParsedType {
 	private final CodePosition position;
-	private final int modifiers;
 	public final List<ParsedNamePart> name;
 	private final ParsedStorageTag storage;
 	
 	public ParsedNamedType(CodePosition position, List<ParsedNamePart> name, ParsedStorageTag storage) {
 		this.position = position;
-		this.modifiers = 0;
-		this.name = name;
-		this.storage = storage;
-	}
-	
-	private ParsedNamedType(CodePosition position, int modifiers, List<ParsedNamePart> name, ParsedStorageTag storage) {
-		this.position = position;
-		this.modifiers = modifiers;
 		this.name = name;
 		this.storage = storage;
 	}
@@ -55,21 +41,11 @@ public class ParsedNamedType implements IParsedType {
 		for (ParsedNamePart namePart : name)
 			genericNames.add(namePart.compile(context));
 		
-		TypeID baseType = context.getType(position, genericNames);
-		if (baseType == null)
-			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored(ValueStorageTag.INSTANCE);
-		
-		TypeID result = context.getTypeRegistry().getModified(modifiers, baseType);
+		TypeID result = context.getType(position, genericNames);
 		if (result == null)
-			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored(ValueStorageTag.INSTANCE);
+			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored();
 		
-		StorageTag storage;
-		if (this.storage == ParsedStorageTag.NULL) {
-			storage = AutoStorageTag.INSTANCE;
-		} else {
-			storage = this.storage.resolve(position, context);
-		}
-		return result.stored(storage);
+		return result.stored(storage.resolve(position, context));
 	}
 	
 	@Override
@@ -78,42 +54,6 @@ public class ParsedNamedType implements IParsedType {
 			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage not supported here");
 		
 		return compile(context).type;
-	}
-	
-	@Override
-	public TypeArgument compileArgument(TypeResolutionContext context) {
-		if (name.size() == 1 && name.get(0).name.equals("Iterator"))
-			return toIterator(context).asArgument();
-		
-		List<GenericName> genericNames = new ArrayList<>();
-		for (ParsedNamePart namePart : name)
-			genericNames.add(namePart.compile(context));
-		
-		TypeID baseType = context.getType(position, genericNames);
-		if (baseType == null)
-			return new TypeArgument(new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()), null);
-		
-		TypeID result = context.getTypeRegistry().getModified(modifiers, baseType);
-		if (result == null)
-			return new TypeArgument(new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()), null);
-		
-		StorageTag storage;
-		if (this.storage == ParsedStorageTag.NULL) {
-			storage = null;
-		} else {
-			storage = this.storage.resolve(position, context);
-		}
-		return new TypeArgument(result, storage);
-	}
-	
-	@Override
-	public IParsedType withOptional() {
-		return new ParsedNamedType(position, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, name, storage);
-	}
-	
-	@Override
-	public IParsedType withModifiers(int modifiers) {
-		return new ParsedNamedType(position, this.modifiers | modifiers, name, storage);
 	}
 	
 	@Override
@@ -136,9 +76,9 @@ public class ParsedNamedType implements IParsedType {
 	}
 	
 	@Override
-	public TypeArgument[] compileTypeArguments(BaseScope scope) {
+	public StoredType[] compileTypeArguments(BaseScope scope) {
 		ParsedNamePart last = name.get(name.size() - 1);
-		return IParsedType.compileArguments(last.typeArguments, scope);
+		return IParsedType.compileTypes(last.typeArguments, scope);
 	}
 	
 	private StoredType toIterator(TypeResolutionContext context) {
@@ -147,11 +87,8 @@ public class ParsedNamedType implements IParsedType {
 		for (int i = 0; i < genericTypes.size(); i++)
 			iteratorTypes[i] = genericTypes.get(i).compile(context);
 
-		StorageTag storage = this.storage.resolve(position, context);
 		TypeID type = context.getTypeRegistry().getIterator(iteratorTypes);
-		if (storage == null)
-			storage = AutoStorageTag.INSTANCE;
-		return context.getTypeRegistry().getModified(modifiers, type).stored(storage);
+		return type.stored(storage.resolve(position, context));
 	}
 	
 	public static class ParsedNamePart {
@@ -164,7 +101,7 @@ public class ParsedNamedType implements IParsedType {
 		}
 		
 		private GenericName compile(TypeResolutionContext context) {
-			return new GenericName(name, IParsedType.compileArguments(typeArguments, context));
+			return new GenericName(name, IParsedType.compileTypes(typeArguments, context));
 		}
 		
 		@Override

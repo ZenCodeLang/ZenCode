@@ -43,7 +43,7 @@ public class ParsedExpressionCoalesce extends ParsedExpression {
 		
 		TypeMembers resultTypeMembers = scope.getTypeMembers(resultType);
 		resultType = resultTypeMembers.union(cRight.type);
-		cLeft = cLeft.castImplicit(position, scope, resultType.isOptional() ? resultType : scope.getTypeRegistry().getOptional(resultType.type).stored(resultType.storage));
+		cLeft = cLeft.castImplicit(position, scope, resultType.isOptional() ? resultType : scope.getTypeRegistry().getOptional(resultType.type).stored(resultType.getSpecifiedStorage()));
 		cRight = cRight.castImplicit(position, scope, resultType);
 		
 		return new CoalesceExpression(position, cLeft, cRight);

@@ -53,7 +53,7 @@ import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -70,14 +70,12 @@ import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -102,7 +100,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			if (expansion.target == null)
 				throw new RuntimeException(expansion.position.toString() + ": Missing expansion target");
 			
-			Map<TypeParameter, TypeArgument> mapping = matchType(type, expansion.target);
+			Map<TypeParameter, StoredType> mapping = matchType(type, expansion.target);
 			if (mapping == null)
 				continue;
 			
@@ -122,7 +120,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		}
 	}
 	
-	private Map<TypeParameter, TypeArgument> matchType(StoredType type, TypeArgument pattern) {
+	private Map<TypeParameter, StoredType> matchType(StoredType type, StoredType pattern) {
 		return type.inferTypeParameters(cache, pattern);
 	}
 
@@ -177,7 +175,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	public Void visitString(Void context, StringTypeID string) {
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "string", Modifiers.EXPORT, null);
 		
-		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, new StoredType(registry.getModified(ModifiedTypeID.MODIFIER_CONST, registry.getArray(CHAR.stored, 1)), BorrowStorageTag.INVOCATION));
+		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, new StoredType(registry.getOptional(registry.getArray(CHAR.stored, 1)), BorrowStorageTag.INVOCATION));
 		
 		add(builtin, STRING_ADD_STRING, StringTypeID.BORROW, StringTypeID.UNIQUE);
 		indexGet(builtin, STRING_INDEXGET, USIZE.stored, CHAR.stored);
@@ -204,7 +202,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		HighLevelDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		StoredType baseType = array.elementType;
 		int dimension = array.dimension;
-		StorageTag storage = type.storage;
+		StorageTag storage = type.getActualStorage();
 
 		FunctionParameter[] indexGetParameters = new FunctionParameter[dimension];
 		for (int i = 0; i < indexGetParameters.length; i++)
@@ -388,12 +386,17 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	@Override
 	public Void visitGenericMap(Void context, GenericMapTypeID map) {
 		TypeParameter functionParameter = new TypeParameter(BUILTIN, "T");
-		Map<TypeParameter, TypeArgument> parameterFilled = Collections.singletonMap(map.key, new TypeArgument(registry.getGeneric(functionParameter), null));
+		Map<TypeParameter, StoredType> parameterFilled = Collections.singletonMap(map.key, registry.getGeneric(functionParameter).stored());
 		StoredType valueType = map.value.instance(new GenericMapper(registry, parameterFilled));
 		
-		FunctionHeader getOptionalHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, registry.getOptional(valueType.type).stored(valueType.storage), null, null, new FunctionParameter[0]);
+		FunctionHeader getOptionalHeader = new FunctionHeader(
+				new TypeParameter[] { functionParameter },
+				registry.getOptional(valueType.type).stored(valueType.getSpecifiedStorage()),
+				null,
+				null,
+				FunctionParameter.NONE);
 		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, VOID.stored, null, null, new FunctionParameter(valueType));
-		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BOOL.stored, null, null, new FunctionParameter[0]);
+		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BOOL.stored, null, null, FunctionParameter.NONE);
 		
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
 		constructor(builtin, GENERICMAP_CONSTRUCTOR);
@@ -443,7 +446,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		HighLevelDefinition definition = definitionType.definition;
 		GenericMapper mapper = null;
 		if (definitionType.hasTypeParameters() || (definitionType.outer != null && definitionType.outer.hasTypeParameters())) {
-			Map<TypeParameter, TypeArgument> mapping = definitionType.getTypeParameterMapping();
+			Map<TypeParameter, StoredType> mapping = definitionType.getTypeParameterMapping();
 			mapper = new GenericMapper(registry, mapping);
 		}
 		
@@ -508,7 +511,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			for (int i = 0; i < constValues.length; i++)
 				constValues[i] = new EnumConstantExpression(BUILTIN, definitionType, enumConstants.get(i));
 			
-			constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(definitionType.stored(ValueStorageTag.INSTANCE), 1).stored(StaticStorageTag.INSTANCE)));
+			constant(definition, ENUM_VALUES, "values", new ArrayExpression(BUILTIN, constValues, registry.getArray(definitionType.stored(), 1).stored(StaticStorageTag.INSTANCE)));
 			compare(definition, ENUM_COMPARE, type);
 			
 			if (!members.canCast(StringTypeID.STATIC)) {
@@ -519,12 +522,12 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		if (definition instanceof InterfaceDefinition) {
 			InterfaceDefinition interfaceDefinition = (InterfaceDefinition)definition;
 			for (TypeID baseType : interfaceDefinition.baseInterfaces)
-				cache.get(baseType.instance(mapper, type.storage).stored())
+				cache.get(baseType.instance(mapper, type.getSpecifiedStorage()))
 						.copyMembersTo(definitionType.definition.position, members, TypeMemberPriority.INHERITED);
 		}
 		
 		if (definitionType.superType != null) {
-			cache.get(definitionType.superType.stored(type.storage))
+			cache.get(definitionType.superType.stored(type.getSpecifiedStorage()))
 					.copyMembersTo(definitionType.definition.position, members, TypeMemberPriority.INHERITED);
 		} else {
 			getter(definition, OBJECT_HASHCODE, "objectHashCode", INT.stored);
@@ -573,7 +576,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 
 	@Override
-	public Void visitModified(Void context, ModifiedTypeID modified) {
+	public Void visitModified(Void context, OptionalTypeID modified) {
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "modified", Modifiers.EXPORT, null);
 		modified.baseType.accept(context, this);
 		
@@ -836,7 +839,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		method(builtin, INT_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
 		method(builtin, INT_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored();
 		getter(builtin, INT_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
 		getter(builtin, INT_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
 		getter(builtin, INT_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);
@@ -916,7 +919,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		method(builtin, UINT_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
 		method(builtin, UINT_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored();
 		getter(builtin, UINT_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
 		getter(builtin, UINT_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
 		getter(builtin, UINT_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);
@@ -989,7 +992,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		method(builtin, LONG_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
 		method(builtin, LONG_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored();
 		getter(builtin, LONG_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
 		getter(builtin, LONG_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
 		getter(builtin, LONG_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);
@@ -1061,7 +1064,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		method(builtin, ULONG_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
 		method(builtin, ULONG_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored();
 		getter(builtin, ULONG_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
 		getter(builtin, ULONG_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
 		getter(builtin, ULONG_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);
@@ -1138,7 +1141,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		method(builtin, USIZE_COUNT_LOW_ONES, "countLowOnes", USIZE.stored);
 		method(builtin, USIZE_COUNT_HIGH_ONES, "countHighOnes", USIZE.stored);
 		
-		StoredType optionalUSize = registry.getOptional(USIZE).stored(ValueStorageTag.INSTANCE);
+		StoredType optionalUSize = registry.getOptional(USIZE).stored();
 		getter(builtin, USIZE_HIGHEST_ONE_BIT, "highestOneBit", optionalUSize);
 		getter(builtin, USIZE_LOWEST_ONE_BIT, "lowestOneBit", optionalUSize);
 		getter(builtin, USIZE_HIGHEST_ZERO_BIT, "highestZeroBit", optionalUSize);

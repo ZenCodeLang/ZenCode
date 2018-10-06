@@ -18,7 +18,7 @@ public class JavaTypeUtils {
 	private JavaTypeUtils() {}
 	
 	public static boolean isShared(StoredType type) {
-		return type.type.isDestructible() && isShared(type.storage);
+		return type.type.isDestructible() && isShared(type.getActualStorage());
 	}
 	
 	public static boolean isShared(StorageTag storage) {

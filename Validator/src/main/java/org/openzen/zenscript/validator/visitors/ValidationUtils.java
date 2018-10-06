@@ -23,7 +23,7 @@ import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import static org.openzen.zenscript.validator.ValidationLogEntry.Code.*;
 import org.openzen.zenscript.validator.Validator;
@@ -147,7 +147,7 @@ public class ValidationUtils {
 			Validator target,
 			CodePosition position,
 			TypeParameter[] typeParameters,
-			TypeArgument[] typeArguments)
+			StoredType[] typeArguments)
 	{
 		if (typeParameters == null || typeParameters.length == 0) {
 			if (typeArguments == null || typeArguments.length == 0) {

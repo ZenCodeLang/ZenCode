@@ -15,7 +15,6 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
@@ -80,10 +79,6 @@ public class JavaSourceStatementScope {
 	
 	public String type(StoredType type) {
 		return fileScope.type(type);
-	}
-	
-	public String type(TypeArgument type) {
-		return type.storage == null ? type(type.type) : type(type.stored());
 	}
 	
 	public String type(TypeID type) {

@@ -23,7 +23,6 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -88,7 +87,7 @@ public class ParsedCallArguments {
 	public CallArguments compileCall(
 			CodePosition position, 
 			ExpressionScope scope,
-			TypeArgument[] genericParameters,
+			StoredType[] genericParameters,
 			TypeMemberGroup member) throws CompileException
 	{
 		List<FunctionHeader> possibleHeaders = member.getMethodMembers().stream()
@@ -100,13 +99,13 @@ public class ParsedCallArguments {
 	public CallArguments compileCall(
 			CodePosition position,
 			ExpressionScope scope,
-			TypeArgument[] typeArguments,
+			StoredType[] typeArguments,
 			List<FunctionHeader> candidateFunctions) throws CompileException
 	{
 		if (this.typeArguments != null) {
-			typeArguments = new TypeArgument[this.typeArguments.size()];
+			typeArguments = new StoredType[this.typeArguments.size()];
 			for (int i = 0; i < this.typeArguments.size(); i++)
-				typeArguments[i] = this.typeArguments.get(i).compileArgument(scope);
+				typeArguments[i] = this.typeArguments.get(i).compile(scope);
 		}
 		
 		List<FunctionHeader> candidates = new ArrayList<>();
@@ -153,14 +152,14 @@ public class ParsedCallArguments {
 			cArguments[i] = cArgument.eval();
 		}
 		
-		TypeArgument[] typeArguments2 = typeArguments;
+		StoredType[] typeArguments2 = typeArguments;
 		if (typeArguments2 == null || typeArguments2.length == 0) {
 			for (FunctionHeader candidate : candidates) {
 				if (candidate.typeParameters != null) {
-					typeArguments2 = new TypeArgument[candidate.typeParameters.length];
+					typeArguments2 = new StoredType[candidate.typeParameters.length];
 					for (int i = 0; i < typeArguments2.length; i++) {
 						if (innerScope.genericInferenceMap.get(candidate.typeParameters[i]) == null)
-							typeArguments2[i] = new TypeArgument(new InvalidTypeID(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + candidate.typeParameters[i].name), null);
+							typeArguments2[i] = new InvalidTypeID(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + candidate.typeParameters[i].name).stored();
 						else
 							typeArguments2[i] = innerScope.genericInferenceMap.get(candidate.typeParameters[i]);
 					}
@@ -177,7 +176,7 @@ public class ParsedCallArguments {
 	public CallArguments compileCall(
 			CodePosition position,
 			ExpressionScope scope,
-			TypeArgument[] typeArguments,
+			StoredType[] typeArguments,
 			FunctionHeader function) throws CompileException
 	{
 		ExpressionScope innerScope = scope.forCall(function);
@@ -194,10 +193,10 @@ public class ParsedCallArguments {
 			cArguments[i] = cArgument.eval();
 		}
 		
-		TypeArgument[] typeArguments2 = typeArguments;
+		StoredType[] typeArguments2 = typeArguments;
 		if (typeArguments2 == null) {
 			if (function.typeParameters != null) {
-				typeArguments2 = new TypeArgument[function.typeParameters.length];
+				typeArguments2 = new StoredType[function.typeParameters.length];
 				for (int i = 0; i < typeArguments2.length; i++) {
 					if (innerScope.genericInferenceMap.get(function.typeParameters[i]) == null)
 						throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + function.typeParameters[i].name);
@@ -216,10 +215,10 @@ public class ParsedCallArguments {
 			IPartialExpression cArgument = arguments.get(i).compile(scope);
 			cArguments[i] = cArgument.eval();
 		}
-		return new CallArguments(TypeArgument.NONE, cArguments);
+		return new CallArguments(StoredType.NONE, cArguments);
 	}
 	
-	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header, TypeArgument[] typeArguments) {
+	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header, StoredType[] typeArguments) {
 		if (arguments.size() != header.parameters.length)
 			return false;
 		

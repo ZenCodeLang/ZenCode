@@ -19,7 +19,6 @@ import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 
 /**
  *
@@ -111,7 +110,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		}
 
 		@Override
-		public TypeArgument[] getTypeArguments() {
+		public StoredType[] getTypeArguments() {
 			return null;
 		}
 	}

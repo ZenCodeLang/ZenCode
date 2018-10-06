@@ -11,7 +11,6 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
@@ -60,7 +59,7 @@ public class TypeContext {
 	}
 	
 	public GenericMapper getMapper() {
-		Map<TypeParameter, TypeArgument> mapper = TypeArgument.getSelfMapping(moduleContext.registry, typeParameters);
+		Map<TypeParameter, StoredType> mapper = StoredType.getSelfMapping(moduleContext.registry, typeParameters);
 		return new GenericMapper(moduleContext.registry, mapper);
 	}
 	

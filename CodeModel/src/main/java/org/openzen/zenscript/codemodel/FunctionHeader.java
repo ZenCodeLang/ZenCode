@@ -16,7 +16,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
@@ -232,14 +231,14 @@ public class FunctionHeader {
 		return result.toString();
 	}
 	
-	public TypeArgument[] inferTypes(LocalMemberCache cache, CallArguments arguments, List<StoredType> resultHint) {
+	public StoredType[] inferTypes(LocalMemberCache cache, CallArguments arguments, List<StoredType> resultHint) {
 		if (arguments.arguments.length != this.parameters.length)
 			return null;
 		
-		Map<TypeParameter, TypeArgument> mapping = new HashMap<>();
+		Map<TypeParameter, StoredType> mapping = new HashMap<>();
 		if (!resultHint.isEmpty()) {
 			for (StoredType hint : resultHint) {
-				Map<TypeParameter, TypeArgument> temp = returnType.inferTypeParameters(cache, hint.asArgument());
+				Map<TypeParameter, StoredType> temp = returnType.inferTypeParameters(cache, hint);
 				if (temp != null) {
 					mapping = temp;
 					break;
@@ -249,7 +248,7 @@ public class FunctionHeader {
 		
 		// TODO: lambda header inference
 		for (int i = 0; i < parameters.length; i++) {
-			Map<TypeParameter, TypeArgument> forParameter = parameters[i].type.inferTypeParameters(cache, arguments.arguments[i].type.asArgument());
+			Map<TypeParameter, StoredType> forParameter = parameters[i].type.inferTypeParameters(cache, arguments.arguments[i].type);
 			if (forParameter == null)
 				return null;
 			
@@ -259,7 +258,7 @@ public class FunctionHeader {
 		if (mapping.size() > typeParameters.length)
 			return null;
 		
-		TypeArgument[] result = new TypeArgument[typeParameters.length];
+		StoredType[] result = new StoredType[typeParameters.length];
 		for (int i = 0; i < typeParameters.length; i++) {
 			TypeParameter typeParameter = typeParameters[i];
 			if (!mapping.containsKey(typeParameter)) {
@@ -366,7 +365,7 @@ public class FunctionHeader {
 	
 	public FunctionHeader instanceForCall(GlobalTypeRegistry registry, CallArguments arguments) {
 		if (arguments.getNumberOfTypeArguments() > 0) {
-			Map<TypeParameter, TypeArgument> typeParameters = TypeArgument.getMapping(this.typeParameters, arguments.typeArguments);
+			Map<TypeParameter, StoredType> typeParameters = StoredType.getMapping(this.typeParameters, arguments.typeArguments);
 			return withGenericArguments(
 					registry,
 					new GenericMapper(registry, typeParameters));
@@ -377,7 +376,7 @@ public class FunctionHeader {
 	
 	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, GenericMapper mapper) {
 		if (typeParameters.length > 0)
-			mapper = mapper.getInner(registry, TypeArgument.getSelfMapping(registry, typeParameters));
+			mapper = mapper.getInner(registry, StoredType.getSelfMapping(registry, typeParameters));
 		
 		StoredType returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
@@ -387,11 +386,11 @@ public class FunctionHeader {
 		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), storage, parameters);
 	}
 	
-	public FunctionHeader fillGenericArguments(GlobalTypeRegistry registry, TypeArgument[] arguments, GenericMapper typeParameterMapping) {
+	public FunctionHeader fillGenericArguments(GlobalTypeRegistry registry, StoredType[] arguments, GenericMapper typeParameterMapping) {
 		if (arguments == null || arguments.length == 0)
 			return this;
 		
-		Map<TypeParameter, TypeArgument> typeArguments = TypeArgument.getMapping(typeParameters, arguments);
+		Map<TypeParameter, StoredType> typeArguments = StoredType.getMapping(typeParameters, arguments);
 		GenericMapper mapper = typeParameterMapping.getInner(registry, typeArguments);
 		
 		StoredType returnType = this.returnType.instance(mapper);

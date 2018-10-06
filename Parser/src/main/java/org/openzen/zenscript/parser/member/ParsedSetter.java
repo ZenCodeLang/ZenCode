@@ -70,13 +70,13 @@ public class ParsedSetter extends ParsedDefinitionMember {
 	
 	private void inferHeaders(BaseScope scope) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(scope, implementation.getCompiled().type.stored(scope.getThisType().storage));
+			fillOverride(scope, implementation.getCompiled().type.stored(scope.getThisType().getSpecifiedStorage()));
 			compiled.modifiers |= Modifiers.PUBLIC;
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 			
-			fillOverride(scope, definition.getSuperType().stored(scope.getThisType().storage));
+			fillOverride(scope, definition.getSuperType().stored(scope.getThisType().getSpecifiedStorage()));
 		}
 		
 		if (compiled == null)

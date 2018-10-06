@@ -74,7 +74,7 @@ public class ParsedEnumConstant {
 	
 	public void compileCode(DefinitionTypeID type, ExpressionScope scope) throws CompileException {
 		ParsedCallArguments arguments = new ParsedCallArguments(null, this.arguments);
-		compiled.constructor = (NewExpression)ParsedNewExpression.compile(position, type.stored(ValueStorageTag.INSTANCE), arguments, scope);
+		compiled.constructor = (NewExpression)ParsedNewExpression.compile(position, type.stored(), arguments, scope);
 		
 		if (value != null)
 			compiled.value = value.compile(scope).eval();

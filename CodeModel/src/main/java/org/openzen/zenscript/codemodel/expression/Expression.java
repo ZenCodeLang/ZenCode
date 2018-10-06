@@ -25,7 +25,6 @@ import org.openzen.zenscript.codemodel.statement.StatementTransformer;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
@@ -131,7 +130,7 @@ public abstract class Expression implements IPartialExpression {
 	}
 	
 	@Override
-	public TypeArgument[] getTypeArguments() {
+	public StoredType[] getTypeArguments() {
 		return null;
 	}
 	

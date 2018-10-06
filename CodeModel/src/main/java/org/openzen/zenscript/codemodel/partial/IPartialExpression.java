@@ -19,8 +19,6 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
-import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -41,7 +39,7 @@ public interface IPartialExpression {
 	
 	Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException;
 	
-	TypeArgument[] getTypeArguments();
+	StoredType[] getTypeArguments();
 	
 	/**
 	 * Retrieves the (primary) member this expression refers to, or null if there is no primary target.

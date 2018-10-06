@@ -61,11 +61,6 @@ public class IteratorTypeID implements TypeID {
 	public boolean isOptional() {
 		return false;
 	}
-
-	@Override
-	public boolean isConst() {
-		return false;
-	}
 	
 	@Override
 	public boolean isDestructible() {
@@ -83,9 +78,9 @@ public class IteratorTypeID implements TypeID {
 	}
 	
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
 		StoredType[] instanced = mapper.map(iteratorTypes);
-		return new TypeArgument(mapper.registry.getIterator(instanced), storage);
+		return mapper.registry.getIterator(instanced).stored(storage);
 	}
 
 	@Override

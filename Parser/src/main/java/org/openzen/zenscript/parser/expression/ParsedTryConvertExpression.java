@@ -38,8 +38,8 @@ public class ParsedTryConvertExpression extends ParsedExpression {
 		HighLevelDefinition result = scope.getTypeRegistry().stdlib.getDefinition("Result");
 		if (cValue.thrownType != null) {
 			// this function throws
-			DefinitionTypeID resultType = scope.getTypeRegistry().getForDefinition(result, cValue.type.asArgument(), cValue.thrownType.asArgument());
-			return new TryConvertExpression(position, resultType.stored(cValue.type.storage), cValue);
+			DefinitionTypeID resultType = scope.getTypeRegistry().getForDefinition(result, cValue.type, cValue.thrownType);
+			return new TryConvertExpression(position, resultType.stored(cValue.type.getActualStorage()), cValue);
 		} else {
 			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_ILLEGAL_TARGET, "try? can only be used on expressions that throw");
 		}

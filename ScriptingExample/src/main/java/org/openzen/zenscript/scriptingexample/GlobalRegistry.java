@@ -30,8 +30,8 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
@@ -119,7 +119,7 @@ public class GlobalRegistry {
 	private class PrintlnSymbol implements ISymbol {
 
 		@Override
-		public IPartialExpression getExpression(CodePosition position, BaseScope scope, TypeArgument[] typeArguments) {
+		public IPartialExpression getExpression(CodePosition position, BaseScope scope, StoredType[] typeArguments) {
 			return new PartialMemberGroupExpression(
 					position,
 					scope,
@@ -131,7 +131,7 @@ public class GlobalRegistry {
 		}
 
 		@Override
-		public TypeID getType(CodePosition position, TypeResolutionContext context, TypeArgument[] typeArguments) {
+		public TypeID getType(CodePosition position, TypeResolutionContext context, StoredType[] typeArguments) {
 			return null; // not a type
 		}
 	}

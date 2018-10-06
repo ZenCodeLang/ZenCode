@@ -48,11 +48,6 @@ public class GenericMapTypeID implements TypeID {
 	public boolean isOptional() {
 		return false;
 	}
-
-	@Override
-	public boolean isConst() {
-		return false;
-	}
 	
 	@Override
 	public boolean isValueType() {
@@ -70,8 +65,8 @@ public class GenericMapTypeID implements TypeID {
 	}
 	
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
-		return new TypeArgument(mapper.registry.getGenericMap(value.instance(mapper), key), storage);
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return mapper.registry.getGenericMap(value.instance(mapper), key).stored(storage);
 	}
 
 	@Override

@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
@@ -137,7 +137,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void,
 	}
 
 	@Override
-	public Void visitModified(TypeContext context, ModifiedTypeID type) {
+	public Void visitModified(TypeContext context, OptionalTypeID type) {
 		if (type.isOptional()) {
 			output.writeUInt(TypeEncoding.TYPE_OPTIONAL);
 			type.withoutOptional().accept(context, this);

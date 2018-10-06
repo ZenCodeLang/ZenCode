@@ -30,7 +30,7 @@ import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -128,7 +128,7 @@ public class FormattingUtils {
 			result.append("<");
 			
 			int index = 0;
-			for (TypeArgument typeArgument : arguments.typeArguments) {
+			for (StoredType typeArgument : arguments.typeArguments) {
 				if (index > 0)
 					result.append(", ");
 				result.append(typeFormatter.format(typeArgument));

@@ -19,7 +19,7 @@ import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
@@ -145,12 +145,8 @@ public class JavaSyntheticTypeSignatureConverter implements TypeVisitorWithConte
 	}
 
 	@Override
-	public String visitModified(StoredType context, ModifiedTypeID type) {
+	public String visitModified(StoredType context, OptionalTypeID type) {
 		StringBuilder result = new StringBuilder();
-		if (type.isConst())
-			result.append("Const");
-		if (type.isImmutable())
-			result.append("Immutable");
 		if (type.isOptional())
 			result.append("Optional");
 		

@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -12,6 +13,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
@@ -20,22 +22,42 @@ import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
  * @author Hoofdgebruiker
  */
 public class StoredType {
+	public static Map<TypeParameter, StoredType> getMapping(TypeParameter[] parameters, StoredType[] arguments) {
+		Map<TypeParameter, StoredType> typeArguments = new HashMap<>();
+		for (int i = 0; i < parameters.length; i++)
+			typeArguments.put(parameters[i], arguments[i]);
+		return typeArguments;
+	}
+	
+	public static Map<TypeParameter, StoredType> getSelfMapping(GlobalTypeRegistry registry, TypeParameter[] parameters) {
+		Map<TypeParameter, StoredType> typeArguments = new HashMap<>();
+		for (TypeParameter parameter : parameters)
+			typeArguments.put(parameter, registry.getGeneric(parameter).stored(parameter.storage));
+		return typeArguments;
+	}
+	
 	public static final StoredType[] NONE = new StoredType[0];
 	
 	public final TypeID type;
-	public final StorageTag storage;
+	private final StorageTag storage;
 	
 	public StoredType(TypeID type, StorageTag storage) {
-		if (storage == null)
-			throw new NullPointerException();
-		
-		if (type.isValueType())
-			storage = ValueStorageTag.INSTANCE;
-		else if (storage == ValueStorageTag.INSTANCE)
+		if (/*!type.isValueType() && */storage == ValueStorageTag.INSTANCE)
 			throw new IllegalArgumentException("storage of a nonvalue type cannot be value");
 		
 		this.type = type;
 		this.storage = storage;
+	}
+	
+	public StorageTag getSpecifiedStorage() {
+		return storage;
+	}
+	
+	public StorageTag getActualStorage() {
+		if (storage != null)
+			return storage;
+		
+		return type.isValueType() ? ValueStorageTag.INSTANCE : AutoStorageTag.INSTANCE;
 	}
 	
 	public StoredType getNormalized() {
@@ -48,16 +70,15 @@ public class StoredType {
 	}
 	
 	public StoredType instance(GenericMapper mapper) {
-		TypeArgument result = type.instance(mapper, storage);
-		return result == type ? this : result.stored();
+		return type.instance(mapper, storage);
 	}
 	
 	public boolean isDestructible() {
-		return type.isDestructible() && storage.isDestructible();
+		return type.isDestructible() && getActualStorage().isDestructible();
 	}
 	
 	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
-		return type.isDestructible(scanning) && storage.isDestructible();
+		return type.isDestructible(scanning) && getActualStorage().isDestructible();
 	}
 	
 	public boolean hasDefaultValue() {
@@ -69,11 +90,11 @@ public class StoredType {
 	}
 	
 	public boolean isConst() {
-		return storage.isConst();
+		return getActualStorage().isConst();
 	}
 	
 	public boolean isImmutable() {
-		return storage.isImmutable();
+		return getActualStorage().isImmutable();
 	}
 	
 	public boolean isBasic(BasicTypeID type) {
@@ -88,21 +109,13 @@ public class StoredType {
 		return new StoredType(type.withoutOptional(), storage);
 	}
 	
-	public StoredType withoutConst() {
-		return new StoredType(type.withoutConst(), storage);
-	}
-	
-	public StoredType withoutImmutable() {
-		return new StoredType(type.withoutImmutable(), storage);
-	}
-	
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		return type.hasInferenceBlockingTypeParameters(parameters);
 	}
 	
 	// Infers type parameters for this type so it matches with targetType
 	// returns false if that isn't possible
-	public Map<TypeParameter, TypeArgument> inferTypeParameters(LocalMemberCache cache, TypeArgument targetType) {
+	public Map<TypeParameter, StoredType> inferTypeParameters(LocalMemberCache cache, StoredType targetType) {
 		return type.inferTypeParameters(cache, targetType);
 	}
 	
@@ -120,10 +133,6 @@ public class StoredType {
 	
 	public DefinitionTypeID asDefinition() {
 		return (DefinitionTypeID)type;
-	}
-	
-	public TypeArgument asArgument() {
-		return new TypeArgument(type, storage);
 	}
 	
 	@Override
@@ -148,15 +157,15 @@ public class StoredType {
 	
 	@Override
 	public String toString() {
-		return type.toString(storage);
+		return storage == null ? type.toString() : type.toString(storage);
 	}
 	
 	public static class MatchingTypeVisitor implements TypeVisitor<Boolean> {
 		private final TypeID type;
-		private final Map<TypeParameter, TypeArgument> mapping;
+		private final Map<TypeParameter, StoredType> mapping;
 		private final LocalMemberCache cache;
 		
-		public MatchingTypeVisitor(LocalMemberCache cache, TypeID type, Map<TypeParameter, TypeArgument> mapping) {
+		public MatchingTypeVisitor(LocalMemberCache cache, TypeID type, Map<TypeParameter, StoredType> mapping) {
 			this.type = type;
 			this.mapping = mapping;
 			this.cache = cache;
@@ -179,7 +188,7 @@ public class StoredType {
 				if (arrayType.dimension != array.dimension)
 					return false;
 				
-				return match(arrayType.elementType, array.elementType.asArgument());
+				return match(arrayType.elementType, array.elementType);
 			} else {
 				return false;
 			}
@@ -189,8 +198,8 @@ public class StoredType {
 		public Boolean visitAssoc(AssocTypeID assoc) {
 			if (type instanceof AssocTypeID) {
 				AssocTypeID assocType = (AssocTypeID) type;
-				return match(assocType.keyType, assoc.keyType.asArgument())
-						&& match(assocType.valueType, assoc.valueType.asArgument());
+				return match(assocType.keyType, assoc.keyType)
+						&& match(assocType.valueType, assoc.valueType);
 			} else {
 				return false;
 			}
@@ -205,7 +214,7 @@ public class StoredType {
 				
 				boolean result = true;
 				for (int i = 0; i < iteratorType.iteratorTypes.length; i++)
-					result = result && match(iterator.iteratorTypes[i], iteratorType.iteratorTypes[i].asArgument());
+					result = result && match(iterator.iteratorTypes[i], iteratorType.iteratorTypes[i]);
 				
 				return result;
 			} else {
@@ -220,11 +229,11 @@ public class StoredType {
 				if (functionType.header.parameters.length != function.header.parameters.length)
 					return false;
 				
-				if (!match(functionType.header.getReturnType(), function.header.getReturnType().asArgument()))
+				if (!match(functionType.header.getReturnType(), function.header.getReturnType()))
 					return false;
 				
 				for (int i = 0; i < function.header.parameters.length; i++) {
-					if (!match(functionType.header.parameters[i].type, function.header.parameters[i].type.asArgument()))
+					if (!match(functionType.header.parameters[i].type, function.header.parameters[i].type))
 						return false;
 				}
 				
@@ -243,7 +252,7 @@ public class StoredType {
 				
 				if (definition.typeArguments != null) {
 					for (int i = 0; i < definitionType.typeArguments.length; i++) {
-						if (!match(definitionType.typeArguments[i].stored(), definition.typeArguments[i]))
+						if (!match(definitionType.typeArguments[i], definition.typeArguments[i]))
 							return false;
 					}
 				}
@@ -258,8 +267,8 @@ public class StoredType {
 		public Boolean visitGeneric(GenericTypeID generic) {
 			if (mapping.containsKey(generic.parameter)) {
 				return mapping.get(generic.parameter) == type;
-			} else if (type == generic || generic.matches(cache, new TypeArgument(type, null))) {
-				mapping.put(generic.parameter, new TypeArgument(type, null));
+			} else if (type == generic || generic.matches(cache, type.stored())) {
+				mapping.put(generic.parameter, type.stored());
 				return true;
 			} else {
 				return false;
@@ -270,31 +279,31 @@ public class StoredType {
 		public Boolean visitRange(RangeTypeID range) {
 			if (type instanceof RangeTypeID) {
 				RangeTypeID rangeType = (RangeTypeID) type;
-				return match(rangeType.baseType, range.baseType.asArgument());
+				return match(rangeType.baseType, range.baseType);
 			} else {
 				return false;
 			}
 		}
 
 		@Override
-		public Boolean visitModified(ModifiedTypeID type) {
-			if (this.type instanceof ModifiedTypeID) {
-				ModifiedTypeID constType = (ModifiedTypeID) this.type;
-				return match(constType.baseType, new TypeArgument(type.baseType, null));
+		public Boolean visitOptional(OptionalTypeID type) {
+			if (this.type instanceof OptionalTypeID) {
+				OptionalTypeID constType = (OptionalTypeID) this.type;
+				return match(constType.baseType, type.baseType.stored());
 			} else {
 				return false;
 			}
 		}
 		
-		private boolean match(StoredType type, TypeArgument pattern) {
+		private boolean match(StoredType type, StoredType pattern) {
 			if (pattern.storage != null && type.storage != pattern.storage)
 				return false;
 			
-			return TypeMatcher.match(cache, type.asArgument(), pattern) != null;
+			return TypeMatcher.match(cache, type, pattern) != null;
 		}
 		
-		private boolean match(TypeID type, TypeArgument pattern) {
-			return TypeMatcher.match(cache, new TypeArgument(type, null), pattern) != null;
+		private boolean match(TypeID type, StoredType pattern) {
+			return TypeMatcher.match(cache, type.stored(), pattern) != null;
 		}
 
 		@Override

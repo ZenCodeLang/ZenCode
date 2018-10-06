@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -22,7 +22,6 @@ import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import stdlib.Chars;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
@@ -44,12 +43,8 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		return type.accept(this);
 	}
 	
-	public String format(TypeArgument type) {
-		return type.storage == null ? format(type.type) : format(type.stored());
-	}
-	
 	public String format(StoredType type) {
-		return type.type.accept(this) + "`" + type.storage.toString();
+		return type.type.accept(this) + (type.getSpecifiedStorage() == null ? "" : "`" + type.getSpecifiedStorage().toString());
 	}
 
 	@Override
@@ -102,7 +97,7 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		result.append(importedName);
 		result.append("<");
 		int index = 0;
-		for (TypeArgument typeParameter : definition.typeArguments) {
+		for (StoredType typeParameter : definition.typeArguments) {
 			if (index > 0)
 				result.append(", ");
 			
@@ -123,17 +118,8 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 	}
 
 	@Override
-	public String visitModified(ModifiedTypeID type) {
-		StringBuilder result = new StringBuilder();
-		if (type.isConst())
-			result.append("const ");
-		if (type.isImmutable())
-			result.append("immutable ");
-		result.append(type.accept(this));
-		if (type.isOptional())
-			result.append("?");
-		
-		return result.toString();
+	public String visitOptional(OptionalTypeID type) {
+		return type.accept(this) + "?";
 	}
 
 	@Override

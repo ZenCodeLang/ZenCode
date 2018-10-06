@@ -127,11 +127,8 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
     }
 
     @Override
-    public String visitModified(ModifiedTypeID modified) {
-		if (modified.isOptional())
-			return modified.withoutOptional().accept(forOptional);
-		
-		return modified.baseType.accept(this);
+    public String visitOptional(OptionalTypeID modified) {
+		return modified.withoutOptional().accept(forOptional);
     }
 
 	@Override

@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
@@ -198,8 +198,8 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 	}
 
 	@Override
-	public String visitModified(ModifiedTypeID optional) {
-		if (optional.isOptional() && optional.withoutOptional() == BasicTypeID.USIZE)
+	public String visitOptional(OptionalTypeID optional) {
+		if (optional.withoutOptional() == BasicTypeID.USIZE)
 			return "int"; // usize? is an int
 		
 		return optional.baseType.accept(new JavaSourceObjectTypeVisitor(importer, context));

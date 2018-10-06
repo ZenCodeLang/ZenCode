@@ -9,13 +9,10 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 
 /**
  *
@@ -23,38 +20,19 @@ import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
  */
 public class ParsedFunctionType implements IParsedType {
 	private final CodePosition position;
-	private final int modifiers;
 	private final ParsedFunctionHeader header;
 	private final ParsedStorageTag storage;
 	
 	public ParsedFunctionType(CodePosition position, ParsedFunctionHeader header, ParsedStorageTag storage) {
 		this.position = position;
 		this.header = header;
-		this.modifiers = 0;
 		this.storage = storage;
-	}
-	
-	private ParsedFunctionType(CodePosition position, ParsedFunctionHeader header, int modifiers, ParsedStorageTag storageTag) {
-		this.position = position;
-		this.header = header;
-		this.modifiers = modifiers;
-		this.storage = storageTag;
-	}
-	
-	@Override
-	public IParsedType withOptional() {
-		return new ParsedFunctionType(position, header, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL, storage);
-	}
-
-	@Override
-	public IParsedType withModifiers(int modifiers) {
-		return new ParsedFunctionType(position, header, modifiers | this.modifiers, storage);
 	}
 
 	@Override
 	public StoredType compile(TypeResolutionContext context) {
-		StorageTag storage = this.storage == ParsedStorageTag.NULL ? AutoStorageTag.INSTANCE : this.storage.resolve(position, context);
-		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getFunction(header.compile(context))).stored(storage);
+		StorageTag storage = this.storage.resolve(position, context);
+		return context.getTypeRegistry().getFunction(header.compile(context)).stored(storage);
 	}
 	
 	@Override
@@ -62,12 +40,6 @@ public class ParsedFunctionType implements IParsedType {
 		if (storage != ParsedStorageTag.NULL)
 			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage tag not supported here");
 		
-		return context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getFunction(header.compile(context)));
-	}
-
-	@Override
-	public TypeArgument compileArgument(TypeResolutionContext context) {
-		StorageTag storage = this.storage == ParsedStorageTag.NULL ? null : this.storage.resolve(position, context);
-		return new TypeArgument(context.getTypeRegistry().getModified(modifiers, context.getTypeRegistry().getFunction(header.compile(context))), storage);
+		return context.getTypeRegistry().getFunction(header.compile(context));
 	}
 }

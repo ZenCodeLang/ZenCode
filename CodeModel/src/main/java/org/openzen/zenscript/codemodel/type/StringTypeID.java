@@ -68,8 +68,8 @@ public class StringTypeID implements TypeID {
 	}
 
 	@Override
-	public TypeArgument instance(GenericMapper mapper, StorageTag storage) {
-		return argument(storage);
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return new StoredType(this, storage);
 	}
 
 	@Override

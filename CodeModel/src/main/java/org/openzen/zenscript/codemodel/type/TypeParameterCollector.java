@@ -65,7 +65,7 @@ public class TypeParameterCollector implements TypeVisitorWithContext<Map<TypePa
 
 	@Override
 	public Void visitDefinition(Map<TypeParameter, GenericTypeID> context, DefinitionTypeID definition) {
-		for (TypeArgument argument : definition.typeArguments)
+		for (StoredType argument : definition.typeArguments)
 			argument.type.accept(context, this);
 		if (definition.outer != null)
 			visitDefinition(context, definition.outer);
@@ -85,7 +85,7 @@ public class TypeParameterCollector implements TypeVisitorWithContext<Map<TypePa
 	}
 
 	@Override
-	public Void visitModified(Map<TypeParameter, GenericTypeID> context, ModifiedTypeID type) {
+	public Void visitModified(Map<TypeParameter, GenericTypeID> context, OptionalTypeID type) {
 		type.baseType.accept(context, this);
 		return null;
 	}

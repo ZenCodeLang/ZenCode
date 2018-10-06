@@ -18,7 +18,6 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeArgument;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -27,7 +26,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
  * @author Hoofdgebruiker
  */
 public class PartialStaticMemberGroupExpression implements IPartialExpression {
-	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, TypeScope scope, String name, TypeID target, FunctionalMemberRef method, TypeArgument[] typeArguments) {
+	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, TypeScope scope, String name, TypeID target, FunctionalMemberRef method, StoredType[] typeArguments) {
 		TypeMemberGroup group = new TypeMemberGroup(true, name);
 		group.addMethod(method, TypeMemberPriority.SPECIFIED);
 		return new PartialStaticMemberGroupExpression(position, scope, target, group, typeArguments);
@@ -37,9 +36,9 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	private final TypeScope scope;
 	private final TypeID target;
 	private final TypeMemberGroup group;
-	private final TypeArgument[] typeArguments;
+	private final StoredType[] typeArguments;
 	
-	public PartialStaticMemberGroupExpression(CodePosition position, TypeScope scope, TypeID target, TypeMemberGroup group, TypeArgument[] typeArguments) {
+	public PartialStaticMemberGroupExpression(CodePosition position, TypeScope scope, TypeID target, TypeMemberGroup group, StoredType[] typeArguments) {
 		this.position = position;
 		this.scope = scope;
 		this.group = group;
@@ -81,7 +80,7 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public TypeArgument[] getTypeArguments() {
+	public StoredType[] getTypeArguments() {
 		return typeArguments;
 	}
 	
