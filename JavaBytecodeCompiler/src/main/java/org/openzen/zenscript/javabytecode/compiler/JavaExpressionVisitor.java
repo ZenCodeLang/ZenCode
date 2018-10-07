@@ -1821,9 +1821,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterExpression expression) {
 		expression.target.accept(this);
-
+		
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
+			if (expression.getter.hasTag(JavaField.class)) {
+				javaWriter.getField(expression.getter.getTag(JavaField.class));
+				return null;
+			}
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
 
@@ -2285,6 +2289,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitStaticGetter(StaticGetterExpression expression) {
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
+			if (expression.getter.hasTag(JavaField.class)) {
+				javaWriter.getStaticField(expression.getter.getTag(JavaField.class));
+				return null;
+			}
+			
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
 

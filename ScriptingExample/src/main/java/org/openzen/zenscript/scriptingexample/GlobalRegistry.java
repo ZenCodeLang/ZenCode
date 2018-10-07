@@ -19,10 +19,10 @@ import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
-import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
+import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialMemberGroupExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -54,18 +54,18 @@ public class GlobalRegistry {
 		PRINTSTREAM_PRINTLN = new MethodMember(
 			CodePosition.NATIVE,
 			PRINTSTREAM,
-			Modifiers.EXPORT,
+			Modifiers.PUBLIC,
 			"println",
 			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(StringTypeID.BORROW)),
 			null);
 		
-		SYSTEM_OUT = new FieldMember(
+		SYSTEM_OUT = new GetterMember(
 			CodePosition.NATIVE,
 			SYSTEM,
-			Modifiers.EXPORT | Modifiers.FINAL,
+			Modifiers.PUBLIC | Modifiers.FINAL | Modifiers.STATIC,
 			"out",
-			null,
-			DefinitionTypeID.forType(registry, SYSTEM).stored(AutoStorageTag.INSTANCE), null, 0, 0, null);
+			DefinitionTypeID.forType(registry, SYSTEM).stored(AutoStorageTag.INSTANCE),
+			null);
 		
 		JavaClass jPrintStream = new JavaClass("java.io", "PrintStream", JavaClass.Kind.CLASS);
 		JavaMethod printstreamPrintln = JavaMethod.getNativeVirtual(jPrintStream, "println", "(Ljava/lang/String;)V");
@@ -111,10 +111,10 @@ public class GlobalRegistry {
 	}
 	
 	private final Module MODULE = new Module("scriptingExample");
-	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaIo, "PrintStream", Modifiers.EXPORT);
-	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaLang, "System", Modifiers.EXPORT);
+	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaIo, "PrintStream", Modifiers.PUBLIC);
+	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaLang, "System", Modifiers.PUBLIC);
 	private final MethodMember PRINTSTREAM_PRINTLN;
-	private final FieldMember SYSTEM_OUT;
+	private final GetterMember SYSTEM_OUT;
 	
 	private class PrintlnSymbol implements ISymbol {
 
@@ -123,7 +123,7 @@ public class GlobalRegistry {
 			return new PartialMemberGroupExpression(
 					position,
 					scope,
-					new GetStaticFieldExpression(position, new FieldMemberRef(scope.getTypeRegistry().getForMyDefinition(SYSTEM).stored(StaticExpressionStorageTag.INSTANCE), SYSTEM_OUT, GenericMapper.EMPTY)),
+					new StaticGetterExpression(position, new GetterMemberRef(scope.getTypeRegistry().getForMyDefinition(SYSTEM).stored(StaticExpressionStorageTag.INSTANCE), SYSTEM_OUT, GenericMapper.EMPTY)),
 					"println",
 					PRINTSTREAM_PRINTLN.ref(scope.getTypeRegistry().getForDefinition(PRINTSTREAM).stored(BorrowStorageTag.INVOCATION), GenericMapper.EMPTY),
 					null,

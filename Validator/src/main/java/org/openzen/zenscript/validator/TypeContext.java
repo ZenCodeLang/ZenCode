@@ -20,7 +20,8 @@ public enum TypeContext {
 	EXPANSION_TARGET_TYPE("expansion target type"),
 	OPTION_MEMBER_TYPE("option member type"),
 	CAST_TARGET_TYPE("cast target type"),
-	TYPE_CHECK_TYPE("type check type");
+	TYPE_CHECK_TYPE("type check type"),
+	CONSTRUCTOR_TYPE("constructed object type");
 	
 	public final String display;
 	

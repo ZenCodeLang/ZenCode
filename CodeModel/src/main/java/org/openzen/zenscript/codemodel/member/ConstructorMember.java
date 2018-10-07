@@ -97,6 +97,8 @@ public class ConstructorMember extends FunctionalMember {
 	public void normalize(TypeScope scope) {
 		if (definition instanceof EnumDefinition)
 			modifiers |= Modifiers.PRIVATE;
+		else if (!Modifiers.hasAccess(modifiers))
+			modifiers |= Modifiers.INTERNAL;
 		
 		super.normalize(scope);
 	}

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -52,7 +53,7 @@ public class ValidationUtils {
 		}
 	}
 	
-	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header) {
+	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header, AccessScope access) {
 		TypeValidator typeValidator = new TypeValidator(target, position);
 		typeValidator.validate(TypeContext.RETURN_TYPE, header.getReturnType());
 		
@@ -72,7 +73,7 @@ public class ValidationUtils {
 			typeValidator.validate(TypeContext.PARAMETER_TYPE, parameter.type);
 			
 			if (parameter.defaultValue != null) {
-				parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope()));
+				parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope(access)));
 				if (parameter.defaultValue.type != parameter.type) {
 					target.logError(INVALID_TYPE, position, "default value does not match parameter type");
 				}
@@ -97,16 +98,16 @@ public class ValidationUtils {
 			CodePosition position,
 			String error)
 	{
-		if (Modifiers.isPublic(modifiers) && Modifiers.isExport(modifiers))
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and export");
+		if (Modifiers.isPublic(modifiers) && Modifiers.isInternal(modifiers))
+			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and internal");
 		if (Modifiers.isPublic(modifiers) && Modifiers.isPrivate(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and private");
 		if (Modifiers.isPublic(modifiers) && Modifiers.isProtected(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and protected");
-		if (Modifiers.isExport(modifiers) && Modifiers.isPrivate(modifiers))
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine export and private");
-		if (Modifiers.isExport(modifiers) && Modifiers.isProtected(modifiers))
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine export and protected");
+		if (Modifiers.isInternal(modifiers) && Modifiers.isPrivate(modifiers))
+			target.logError(INVALID_MODIFIER, position, error + ": cannot combine internal and private");
+		if (Modifiers.isInternal(modifiers) && Modifiers.isProtected(modifiers))
+			target.logError(INVALID_MODIFIER, position, error + ": cannot combine internal and protected");
 		if (Modifiers.isPrivate(modifiers) && Modifiers.isProtected(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine private and protected");
 		
@@ -123,8 +124,8 @@ public class ValidationUtils {
 		
 		if (Modifiers.isPublic(invalid))
 			target.logError(INVALID_MODIFIER, position, error + ": public");
-		if (Modifiers.isExport(invalid))
-			target.logError(INVALID_MODIFIER, position, error + ": export");
+		if (Modifiers.isInternal(invalid))
+			target.logError(INVALID_MODIFIER, position, error + ": internal");
 		if (Modifiers.isProtected(invalid))
 			target.logError(INVALID_MODIFIER, position, error + ": protected");
 		if (Modifiers.isPrivate(invalid))
@@ -220,6 +221,11 @@ public class ValidationUtils {
 	}
 	
 	private static class DefaultParameterValueExpressionScope implements ExpressionScope {
+		private final AccessScope access;
+		
+		public DefaultParameterValueExpressionScope(AccessScope access) {
+			this.access = access;
+		}
 		
 		@Override
 		public boolean isConstructor() {
@@ -264,6 +270,11 @@ public class ValidationUtils {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return null;
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return access;
 		}
 	}
 }

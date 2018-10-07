@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -59,6 +60,9 @@ public class ConstMember extends PropertyMember {
 
 	@Override
 	public void normalize(TypeScope scope) {
+		if (!Modifiers.hasAccess(modifiers))
+			modifiers |= Modifiers.INTERNAL;
+		
 		type = type.getNormalized();
 		value = value.normalize(scope);
 	}

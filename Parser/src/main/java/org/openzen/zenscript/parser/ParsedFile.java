@@ -152,8 +152,8 @@ public class ParsedFile {
 					case K_PRIVATE:
 						modifiers |= Modifiers.PRIVATE;
 						break;
-					case K_EXPORT:
-						modifiers |= Modifiers.EXPORT;
+					case K_INTERNAL:
+						modifiers |= Modifiers.INTERNAL;
 						break;
 					case K_EXTERN:
 						modifiers |= Modifiers.EXTERN;
@@ -299,7 +299,7 @@ public class ParsedFile {
 				statements.add(statement.compile(statementScope));
 			}
 			
-			ScriptBlock block = new ScriptBlock(modulePackage.getPackage(), statements);
+			ScriptBlock block = new ScriptBlock(modulePackage.module, modulePackage.getPackage(), statements);
 			block.setTag(SourceFile.class, file);
 			block.setTag(WhitespacePostComment.class, postComment);
 			scripts.add(block);

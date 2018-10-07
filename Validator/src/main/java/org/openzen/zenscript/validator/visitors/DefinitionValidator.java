@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -53,7 +54,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PRIVATE | ABSTRACT | STATIC | PROTECTED | VIRTUAL,
+				PUBLIC | INTERNAL | PRIVATE | ABSTRACT | STATIC | PROTECTED | VIRTUAL,
 				definition.position,
 				"Invalid class modifier");
 		ValidationUtils.validateIdentifier(
@@ -73,7 +74,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid interface modifier");
 		ValidationUtils.validateIdentifier(
@@ -90,7 +91,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid enum modifier");
 		ValidationUtils.validateIdentifier(
@@ -104,7 +105,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitStruct(StructDefinition definition) {
-		int validModifiers = PUBLIC | EXPORT | PROTECTED | PRIVATE;
+		int validModifiers = PUBLIC | INTERNAL | PROTECTED | PRIVATE;
 		if (definition.outerDefinition != null)
 			validModifiers |= STATIC;
 		
@@ -128,7 +129,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid function modifier");
 		ValidationUtils.validateIdentifier(
@@ -136,7 +137,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				definition.position,
 				definition.name);
 				
-		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header));
+		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header, definition.getAccessScope()));
 		definition.caller.body.accept(statementValidator);
 		return null;
 	}
@@ -146,7 +147,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid expansion modifier");
 		
@@ -160,7 +161,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid alias modifier");
 		ValidationUtils.validateIdentifier(
@@ -189,7 +190,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				variant.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				variant.position,
 				"Invalid variant modifier");
 		ValidationUtils.validateIdentifier(
@@ -260,9 +261,11 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 	
 	private class FunctionStatementScope implements StatementScope {
 		private final FunctionHeader header;
+		private final AccessScope access;
 		
-		public FunctionStatementScope(FunctionHeader header) {
+		public FunctionStatementScope(FunctionHeader header, AccessScope access) {
 			this.header = header;
+			this.access = access;
 		}
 
 		@Override
@@ -288,6 +291,11 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return null;
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return access;
 		}
 	}
 }

@@ -11,6 +11,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -74,6 +75,9 @@ public class ImplementationMember extends DefinitionMember {
 
 	@Override
 	public void normalize(TypeScope scope) {
+		if (!Modifiers.hasAccess(modifiers))
+			modifiers |= Modifiers.PUBLIC;
+		
 		for (IDefinitionMember member : members)
 			member.normalize(scope);
 	}

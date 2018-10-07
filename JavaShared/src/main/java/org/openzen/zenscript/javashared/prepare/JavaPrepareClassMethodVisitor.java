@@ -77,11 +77,15 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	
 	@Override
 	public Void visitField(FieldMember member) {
-		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
-		if (member.hasAutoGetter())
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.type));
+		member.setTag(JavaField.class, field);
+		if (member.hasAutoGetter()) {
 			visitGetter(member.autoGetter);
-		if (member.hasAutoSetter())
+			member.autoGetter.setTag(JavaField.class, field);
+		}
+		if (member.hasAutoSetter()) {
 			visitSetter(member.autoSetter);
+		}
 		
 		return null;
 	}

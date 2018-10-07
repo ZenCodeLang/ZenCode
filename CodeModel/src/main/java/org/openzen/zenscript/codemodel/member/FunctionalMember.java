@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
@@ -50,6 +51,7 @@ public abstract class FunctionalMember extends DefinitionMember {
 		return new FunctionalMemberRef(this, type, null);
 	}
 	
+	@Override
 	public FunctionalMemberRef ref(StoredType type, GenericMapper mapper) {
 		return new FunctionalMemberRef(this, type, mapper);
 	}
@@ -61,6 +63,9 @@ public abstract class FunctionalMember extends DefinitionMember {
 
 	@Override
 	public void normalize(TypeScope scope) {
+		if (!Modifiers.hasAccess(modifiers))
+			modifiers |= Modifiers.INTERNAL;
+		
 		header = header.normalize(scope.getTypeRegistry());
 		if (body != null)
 			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));

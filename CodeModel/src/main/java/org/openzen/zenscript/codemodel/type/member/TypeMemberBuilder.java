@@ -173,7 +173,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	
 	@Override
 	public Void visitString(Void context, StringTypeID string) {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "string", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "string", Modifiers.PUBLIC, null);
 		
 		constructor(builtin, STRING_CONSTRUCTOR_CHARACTERS, new StoredType(registry.getOptional(registry.getArray(CHAR.stored, 1)), BorrowStorageTag.INVOCATION));
 		
@@ -199,7 +199,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 
 	@Override
 	public Void visitArray(Void context, ArrayTypeID array) {
-		HighLevelDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
+		HighLevelDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.PUBLIC);
 		StoredType baseType = array.elementType;
 		int dimension = array.dimension;
 		StorageTag storage = type.getActualStorage();
@@ -350,7 +350,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		StoredType keyType = assoc.keyType;
 		StoredType valueType = assoc.valueType;
 		
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.PUBLIC);
 		
 		constructor(builtin, ASSOC_CONSTRUCTOR);
 
@@ -398,7 +398,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, VOID.stored, null, null, new FunctionParameter(valueType));
 		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BOOL.stored, null, null, FunctionParameter.NONE);
 		
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.PUBLIC);
 		constructor(builtin, GENERICMAP_CONSTRUCTOR);
 		
 		method(builtin, "getOptional", getOptionalHeader, GENERICMAP_GETOPTIONAL);
@@ -431,8 +431,8 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 
 	@Override
 	public Void visitFunction(Void context, FunctionTypeID function) {
-		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT, function.header, registry);
-		new CallerMember(BUILTIN, builtin, 0, function.header, FUNCTION_CALL).registerTo(members, TypeMemberPriority.SPECIFIED, null);
+		FunctionDefinition builtin = new FunctionDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.PUBLIC, function.header, registry);
+		new CallerMember(BUILTIN, builtin, Modifiers.PUBLIC, function.header, FUNCTION_CALL).registerTo(members, TypeMemberPriority.SPECIFIED, null);
 		
 		same(builtin, FUNCTION_SAME, type);
 		notsame(builtin, FUNCTION_NOTSAME, type);
@@ -555,7 +555,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	public Void visitRange(Void context, RangeTypeID range) {
 		StoredType baseType = range.baseType;
 
-		ClassDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.EXPORT);
+		ClassDefinition definition = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.PUBLIC);
 		getter(definition, RANGE_FROM, "from", baseType);
 		getter(definition, RANGE_TO, "to", baseType);
 		if (baseType.type == BYTE
@@ -577,7 +577,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 
 	@Override
 	public Void visitModified(Void context, OptionalTypeID modified) {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "modified", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "modified", Modifiers.PUBLIC, null);
 		modified.baseType.accept(context, this);
 		
 		if (modified.isOptional()) {
@@ -590,7 +590,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitBool() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "bool", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "bool", Modifiers.PUBLIC, null);
 		not(builtin, BOOL_NOT, BOOL);
 		and(builtin, BOOL_AND, BOOL, BOOL);
 		or(builtin, BOOL_OR, BOOL, BOOL);
@@ -605,7 +605,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitByte() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "byte", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "byte", Modifiers.PUBLIC, null);
 		
 		invert(builtin, BYTE_NOT, BYTE);
 		inc(builtin, BYTE_INC, BYTE);
@@ -645,7 +645,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitSByte() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "sbyte", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "sbyte", Modifiers.PUBLIC, null);
 		
 		invert(builtin, SBYTE_NOT, SBYTE);
 		neg(builtin, SBYTE_NEG, SBYTE);
@@ -687,7 +687,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitShort() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "short", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "short", Modifiers.PUBLIC, null);
 		
 		invert(builtin, SHORT_NOT, SHORT);
 		neg(builtin, SHORT_NEG, SHORT);
@@ -729,7 +729,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitUShort() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "ushort", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "ushort", Modifiers.PUBLIC, null);
 		
 		invert(builtin, USHORT_NOT, USHORT);
 		inc(builtin, USHORT_INC, USHORT);
@@ -769,7 +769,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitInt() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "int", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "int", Modifiers.PUBLIC, null);
 		
 		invert(builtin, INT_NOT, INT);
 		neg(builtin, INT_NEG, INT);
@@ -850,7 +850,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 
 	private void visitUInt() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "uint", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "uint", Modifiers.PUBLIC, null);
 		
 		invert(builtin, UINT_NOT, INT);
 		inc(builtin, UINT_DEC, INT);
@@ -930,7 +930,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitLong() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "long", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "long", Modifiers.PUBLIC, null);
 		
 		invert(builtin, LONG_NOT, LONG);
 		neg(builtin, LONG_NEG, LONG);
@@ -1003,7 +1003,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitULong() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "ulong", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "ulong", Modifiers.PUBLIC, null);
 		
 		invert(builtin, ULONG_NOT, ULONG);
 		inc(builtin, ULONG_DEC, ULONG);
@@ -1075,7 +1075,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitUSize() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "usize", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "usize", Modifiers.PUBLIC, null);
 		
 		invert(builtin, USIZE_NOT, USIZE);
 		inc(builtin, USIZE_DEC, USIZE);
@@ -1152,7 +1152,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitFloat() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "float", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "float", Modifiers.PUBLIC, null);
 		
 		neg(builtin, FLOAT_NEG, FLOAT);
 		inc(builtin, FLOAT_DEC, FLOAT);
@@ -1197,7 +1197,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 	
 	private void visitDouble() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "double", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "double", Modifiers.PUBLIC, null);
 		
 		neg(builtin, DOUBLE_NEG, DOUBLE);
 		inc(builtin, DOUBLE_DEC, DOUBLE);
@@ -1233,7 +1233,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 
 	private void visitChar() {
-		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "char", Modifiers.EXPORT, null);
+		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "char", Modifiers.PUBLIC, null);
 		
 		add(builtin, CHAR_ADD_INT, INT, CHAR);
 		sub(builtin, CHAR_SUB_INT, INT, CHAR);

@@ -37,6 +37,7 @@ import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaImplementation;
 
 /**
  *
@@ -96,7 +97,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		List<ImplementationMember> mergedImplementations = new ArrayList<>();
 		for (IDefinitionMember member : definition.members) {
 			if (member instanceof ImplementationMember) {
-				if (isImplementationMergable((ImplementationMember)member))
+				JavaImplementation implementation = ((ImplementationMember) member).getTag(JavaImplementation.class);
+				if (implementation.inline)
 					mergedImplementations.add((ImplementationMember)member);
 			}
 		}
@@ -350,7 +352,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	}
 	
 	private void convertModifiers(int modifiers) {
-		if (Modifiers.isExport(modifiers) || Modifiers.isPublic(modifiers))
+		if (Modifiers.isPublic(modifiers) || Modifiers.isInternal(modifiers))
 			output.append("public ");
 		if (Modifiers.isPrivate(modifiers))
 			output.append("private ");
@@ -362,10 +364,6 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			output.append("abstract ");
 		if (!Modifiers.isVirtual(modifiers) && !Modifiers.isAbstract(modifiers))
 			output.append("final ");
-	}
-	
-	private boolean isImplementationMergable(ImplementationMember implementation) {
-		return true; // TODO: check merging conflicts
 	}
 	
 	private void compileMembers(JavaSourceFileScope scope, HighLevelDefinition definition) {

@@ -40,9 +40,9 @@ public abstract class ParsedDefinitionMember {
 		int modifiers = 0;
 		outer: while (true) {
 			switch (tokens.peek().type) {
-				case K_EXPORT:
+				case K_INTERNAL:
 					tokens.next();
-					modifiers |= Modifiers.EXPORT;
+					modifiers |= Modifiers.INTERNAL;
 					break;
 				case K_PUBLIC:
 					tokens.next();

@@ -27,6 +27,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -82,6 +83,16 @@ public abstract class HighLevelDefinition extends Taggable {
 		this.superType = superType;
 		if (outerDefinition != null)
 			isDestructible |= outerDefinition.isDestructible;
+	}
+	
+	public boolean isSubclassOf(HighLevelDefinition other) {
+		if (superType.isDefinition(other))
+			return true;
+		if (superType == null || !(superType instanceof DefinitionTypeID))
+			return false;
+		
+		DefinitionTypeID superDefinition = (DefinitionTypeID)superType;
+		return superDefinition.definition.isSubclassOf(other);
 	}
 	
 	public int getNumberOfGenericParameters() {
@@ -144,6 +155,10 @@ public abstract class HighLevelDefinition extends Taggable {
 	
 	public void setTypeParameters(TypeParameter[] typeParameters) {
 		this.typeParameters = typeParameters;
+	}
+	
+	public AccessScope getAccessScope() {
+		return new AccessScope(module, this);
 	}
 	
 	public List<FieldMember> getFields() {

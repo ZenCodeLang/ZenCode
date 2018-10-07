@@ -20,7 +20,13 @@ public interface DefinitionMemberRef {
 	
 	String describe();
 	
-	<T> T getTag(Class<T> type);
+	default <T> T getTag(Class<T> type) {
+		return getTarget().getTag(type);
+	}
+	
+	default boolean hasTag(Class<?> type) {
+		return getTarget().hasTag(type);
+	}
 	
 	StoredType getOwnerType();
 	

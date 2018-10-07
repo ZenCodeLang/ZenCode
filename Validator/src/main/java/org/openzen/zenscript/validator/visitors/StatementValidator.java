@@ -7,6 +7,7 @@ package org.openzen.zenscript.validator.visitors;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
@@ -302,6 +303,11 @@ public class StatementValidator implements StatementVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return scope.getDefinition();
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return scope.getAccessScope();
 		}
 	}
 }

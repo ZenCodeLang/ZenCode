@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -55,4 +56,8 @@ public interface IDefinitionMember {
 	DefinitionMemberRef ref(StoredType type, GenericMapper mapper);
 	
 	FunctionHeader getHeader();
+	
+	default AccessScope getAccessScope() {
+		return getDefinition().getAccessScope();
+	}
 }

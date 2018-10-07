@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -81,6 +82,9 @@ public class SetterMember extends PropertyMember {
 
 	@Override
 	public void normalize(TypeScope scope) {
+		if (!Modifiers.hasAccess(modifiers))
+			modifiers |= Modifiers.INTERNAL;
+		
 		if (body != null)
 			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}

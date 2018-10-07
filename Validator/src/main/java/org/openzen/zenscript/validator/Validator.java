@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
@@ -44,7 +45,7 @@ public class Validator {
 	}
 	
 	public void validate(ScriptBlock script) {
-		StatementValidator statementValidator = new StatementValidator(this, new ScriptScope());
+		StatementValidator statementValidator = new StatementValidator(this, new ScriptScope(new AccessScope(script.module, null)));
 		for (Statement statement : script.statements) {
 			statement.accept(statementValidator);
 		}
@@ -68,6 +69,11 @@ public class Validator {
 	}
 	
 	private class ScriptScope implements StatementScope {
+		private final AccessScope access;
+		
+		public ScriptScope(AccessScope access) {
+			this.access = access;
+		}
 
 		@Override
 		public boolean isConstructor() {
@@ -92,6 +98,11 @@ public class Validator {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return null;
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return access;
 		}
 	}
 }

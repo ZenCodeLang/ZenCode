@@ -46,8 +46,8 @@ public class FormattingUtils {
 			output.append("protected ");
 		if (Modifiers.isPublic(modifiers))
 			output.append("public ");
-		if (Modifiers.isExport(modifiers))
-			output.append("export ");
+		if (Modifiers.isInternal(modifiers))
+			output.append("internal ");
 		if (Modifiers.isStatic(modifiers))
 			output.append("static ");
 		if (Modifiers.isAbstract(modifiers))
