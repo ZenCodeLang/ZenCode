@@ -1,5 +1,5 @@
 package stdlib;
 
-final class USize {
+public final class USize {
     private USize() {}
 }

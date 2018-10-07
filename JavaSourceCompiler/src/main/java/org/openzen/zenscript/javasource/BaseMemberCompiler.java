@@ -74,7 +74,7 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 	}
 	
 	protected void modifiers(int modifiers) {
-		if (Modifiers.isPublic(modifiers))
+		if (Modifiers.isPublic(modifiers) && !definition.isInterface())
 			output.append("public ");
 		if (Modifiers.isProtected(modifiers))
 			output.append("protected ");

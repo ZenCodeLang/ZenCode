@@ -84,7 +84,6 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		if (isInterface && method.name.equals("toString") && header.parameters.length == 0) {
 			hasBody = false;
 		}
-			
 		
 		begin(ElementType.METHOD);
 		override(member.getOverrides() != null);

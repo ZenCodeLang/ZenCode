@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -65,6 +66,18 @@ public class OperatorMember extends FunctionalMember {
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitOperator(context, this);
+	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = super.getEffectiveModifiers();
+		if (overrides != null) {
+			if (overrides.getTarget().isPublic())
+				result |= Modifiers.PUBLIC;
+			if (overrides.getTarget().isProtected())
+				result |= Modifiers.PROTECTED;
+		}
+		return result;
 	}
 
 	@Override

@@ -46,7 +46,7 @@ public final class ListenerList<T> {
     public void accept(Consumer<T> consumer) {
         ListenerList<T>.EventListenerNode current = first;
         while (current != null) {
-            consumer.accept(current.getListener());
+            consumer.accept(current.listener);
             current = current.next;
         }
     }

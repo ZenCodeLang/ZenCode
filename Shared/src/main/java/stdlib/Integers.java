@@ -1,5 +1,5 @@
 package stdlib;
 
-final class Integers {
+public final class Integers {
     private Integers() {}
 }

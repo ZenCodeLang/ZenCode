@@ -462,15 +462,22 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString visitGetter(GetterExpression expression) {
 		if (expression.getter.member.builtin != null)
 			return visitBuiltinGetter(expression, expression.getter.member.builtin);
+		
+		ExpressionString target = expression.target.accept(this);
 		if (expression.getter.member.hasTag(JavaField.class)) {
 			JavaField field = expression.getter.member.getTag(JavaField.class);
-			return expression.target.accept(this).unaryPostfix(JavaOperator.MEMBER, "." + field.name);
+			if (target.value.equals("this") && !scope.hasLocalVariable(field.name))
+				return new ExpressionString(field.name, JavaOperator.PRIMARY);
+			
+			return target.unaryPostfix(JavaOperator.MEMBER, "." + field.name);
 		}
 		
 		JavaMethod method = expression.getter.getTag(JavaMethod.class);
 		StringBuilder result = new StringBuilder();
-		result.append(expression.target.accept(this));
-		result.append(".");
+		if (!target.value.equals("this") || scope.hasLocalVariable(method.name)) {
+			result.append(target.value);
+			result.append(".");
+		}
 		result.append(method.name);
 		result.append("()");
 		return new ExpressionString(result.toString(), JavaOperator.MEMBER);
