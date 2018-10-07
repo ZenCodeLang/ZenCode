@@ -33,6 +33,7 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaImplementation;
@@ -47,17 +48,20 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
 	
 	private final JavaContext context;
+	private final JavaCompiledModule module;
 	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
 	private final JavaPrepareDefinitionMemberVisitor memberPreparer;
 	
 	public JavaPrepareClassMethodVisitor(
 			JavaContext context,
+			JavaCompiledModule module,
 			JavaClass cls,
 			JavaNativeClass nativeClass,
 			JavaPrepareDefinitionMemberVisitor memberPreparer,
 			boolean startsEmpty) {
 		this.context = context;
+		this.module = module;
 		this.cls = cls;
 		this.nativeClass = nativeClass;
 		this.memberPreparer = memberPreparer;
@@ -71,20 +75,21 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			System.out.println("Class " + cls.fullName + " not empty because of const " + member.name);
 		
 		cls.empty = false;
-		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
+		module.setFieldInfo(member, new JavaField(cls, member.name, context.getDescriptor(member.type)));
 		return null;
 	}
 	
 	@Override
 	public Void visitField(FieldMember member) {
 		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.type));
-		member.setTag(JavaField.class, field);
+		module.setFieldInfo(member, field);
 		if (member.hasAutoGetter()) {
 			visitGetter(member.autoGetter);
-			member.autoGetter.setTag(JavaField.class, field);
+			module.setFieldInfo(member.autoGetter, field);
 		}
 		if (member.hasAutoSetter()) {
 			visitSetter(member.autoSetter);
+			module.setFieldInfo(member.autoSetter, field);
 		}
 		
 		return null;
@@ -152,7 +157,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		memberPreparer.prepare(member.type);
 		
 		if (canMergeImplementation(member)) {
-			member.setTag(JavaImplementation.class, new JavaImplementation(true, cls));
+			module.setImplementationInfo(member, new JavaImplementation(true, cls));
 			for (IDefinitionMember m : member.members)
 				m.accept(this);
 		} else {
@@ -162,9 +167,9 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			cls.empty = false;
 			
 			JavaClass implementationClass = new JavaClass(cls, JavaTypeNameVisitor.INSTANCE.process(member.type) + "Implementation", JavaClass.Kind.CLASS);
-			member.setTag(JavaImplementation.class, new JavaImplementation(false, implementationClass));
+			module.setImplementationInfo(member, new JavaImplementation(false, implementationClass));
 			
-			JavaPrepareClassMethodVisitor visitor = new JavaPrepareClassMethodVisitor(context, implementationClass, null, memberPreparer, true);
+			JavaPrepareClassMethodVisitor visitor = new JavaPrepareClassMethodVisitor(context, module, implementationClass, null, memberPreparer, true);
 			for (IDefinitionMember m : member.members)
 				m.accept(visitor);
 		}
@@ -177,7 +182,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		JavaPrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaPrepareDefinitionMemberVisitor(context);
+		JavaPrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaPrepareDefinitionMemberVisitor(context, module);
 		member.innerDefinition.accept(innerDefinitionPrepare);
 		
 		if (DEBUG_EMPTY && cls.empty)
@@ -293,10 +298,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		
 		if (member.getOverrides() != null) {
 			DefinitionMemberRef base = member.getOverrides();
-			JavaMethod baseMethod = base.getTarget().getTag(JavaMethod.class);
-			if (baseMethod == null)
-				throw new IllegalStateException("Base method not yet prepared!");
-			
+			JavaMethod baseMethod = context.getJavaMethod(base.getTarget());
 			method = new JavaMethod(
 					cls,
 					baseMethod.kind,
@@ -323,6 +325,6 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			cls.empty = false;
 		}
 		
-		member.setTag(JavaMethod.class, method);
+		module.setMethodInfo(member, method);
 	}
 }

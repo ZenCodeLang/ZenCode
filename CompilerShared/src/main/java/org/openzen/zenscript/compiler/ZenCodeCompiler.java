@@ -13,6 +13,8 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
  * @author Hoofdgebruiker
  */
 public interface ZenCodeCompiler {
+	void addModule(SemanticModule module);
+	
 	void addDefinition(HighLevelDefinition definition, SemanticModule module);
 	
 	void addScriptBlock(ScriptBlock script);

@@ -106,10 +106,7 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 
     @Override
     public String visitDefinition(DefinitionTypeID definition) {
-		JavaClass cls = definition.definition.getTag(JavaClass.class);
-		if (cls == null)
-			throw new IllegalStateException("Class not yet initialized: " + definition.definition.name);
-		
+		JavaClass cls = context.getJavaClass(definition.definition);
 		return "L" + cls.internalName + ";";
     }
 

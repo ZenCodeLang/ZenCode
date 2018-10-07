@@ -31,6 +31,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaImplementation;
@@ -45,10 +46,12 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
 	
 	private final JavaContext context;
+	private final JavaCompiledModule module;
 	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
 	
-	public JavaPrepareExpansionMethodVisitor(JavaContext context, JavaClass cls, JavaNativeClass nativeClass) {
+	public JavaPrepareExpansionMethodVisitor(JavaContext context, JavaCompiledModule module, JavaClass cls, JavaNativeClass nativeClass) {
+		this.module = module;
 		this.cls = cls;
 		this.nativeClass = nativeClass;
 		this.context = context;
@@ -57,7 +60,8 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	
 	@Override
 	public Void visitConst(ConstMember member) {
-		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.type));
+		module.setFieldInfo(member, field);
 		
 		if (DEBUG_EMPTY && cls.empty)
 			System.out.println("Class " + cls.fullName + " not empty because of const");
@@ -69,7 +73,9 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitField(FieldMember member) {
 		// TODO: expansion fields
-		member.setTag(JavaField.class, new JavaField(cls, member.name, context.getDescriptor(member.type)));
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.type));
+		module.setFieldInfo(member, field);
+		
 		if (member.hasAutoGetter() || member.hasAutoSetter())
 			cls.empty = false;
 		return null;
@@ -135,7 +141,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
 		JavaClass implementationClass = new JavaClass(cls, JavaTypeNameVisitor.INSTANCE.process(member.type) + "Implementation", JavaClass.Kind.CLASS);
-		member.setTag(JavaImplementation.class, new JavaImplementation(false, implementationClass));
+		module.setImplementationInfo(member, new JavaImplementation(false, implementationClass));
 		for (IDefinitionMember implementedMember : member.members)
 			implementedMember.accept(this);
 		
@@ -170,7 +176,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 			cls.empty = false;
 		}
 		
-		member.setTag(JavaMethod.class, method);
+		module.setMethodInfo(member, method);
 	}
 	
 	private JavaMethod.Kind getKind(DefinitionMember member) {

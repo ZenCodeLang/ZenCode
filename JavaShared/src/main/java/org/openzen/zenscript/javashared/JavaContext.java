@@ -12,7 +12,13 @@ import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -31,6 +37,8 @@ public abstract class JavaContext {
 	private final Map<String, JavaSynthesizedFunction> functions = new HashMap<>();
 	private final Map<String, JavaSynthesizedRange> ranges = new HashMap<>();
 	private boolean useShared = false;
+	
+	private final Map<Module, JavaCompiledModule> modules = new HashMap<>();
 	
 	public JavaContext(GlobalTypeRegistry registry) {
 		this.registry = registry;
@@ -73,10 +81,78 @@ public abstract class JavaContext {
 	}
 	
 	protected abstract JavaSyntheticClassGenerator getTypeGenerator();
-			
+		
 	public abstract String getDescriptor(TypeID type);
 	
 	public abstract String getDescriptor(StoredType type);
+	
+	public void addModule(Module module) {
+		modules.put(module, new JavaCompiledModule(module));
+	}
+	
+	public JavaCompiledModule getJavaModule(Module module) {
+		JavaCompiledModule javaModule = modules.get(module);
+		if (javaModule == null)
+			throw new IllegalStateException("Module not yet registered: " + module.name);
+		
+		return javaModule;
+	}
+	
+	public JavaClass getJavaClass(HighLevelDefinition definition) {
+		return getJavaModule(definition.module).getClassInfo(definition);
+	}
+	
+	public JavaClass optJavaClass(HighLevelDefinition definition) {
+		return getJavaModule(definition.module).optClassInfo(definition);
+	}
+	
+	public JavaNativeClass getJavaNativeClass(HighLevelDefinition definition) {
+		return getJavaModule(definition.module).getNativeClassInfo(definition);
+	}
+	
+	public boolean hasJavaClass(HighLevelDefinition definition) {
+		return getJavaModule(definition.module).hasClassInfo(definition);
+	}
+	
+	public void setJavaClass(HighLevelDefinition definition, JavaClass cls) {
+		getJavaModule(definition.module).setClassInfo(definition, cls);
+	}
+	
+	public void setJavaNativeClass(HighLevelDefinition definition, JavaNativeClass cls) {
+		getJavaModule(definition.module).setNativeClassInfo(definition, cls);
+	}
+	
+	public boolean hasJavaField(DefinitionMemberRef member) {
+		HighLevelDefinition definition = member.getTarget().getDefinition();
+		return getJavaModule(definition.module).optFieldInfo(member.getTarget()) != null;
+	}
+	
+	public JavaField getJavaField(IDefinitionMember member) {
+		HighLevelDefinition definition = member.getDefinition();
+		return getJavaModule(definition.module).getFieldInfo(member);
+	}
+	
+	public JavaField getJavaField(DefinitionMemberRef member) {
+		return getJavaField(member.getTarget());
+	}
+	
+	public JavaMethod getJavaMethod(IDefinitionMember member) {
+		HighLevelDefinition definition = member.getDefinition();
+		return getJavaModule(definition.module).getMethodInfo(member);
+	}
+	
+	public JavaMethod getJavaMethod(DefinitionMemberRef member) {
+		return getJavaMethod(member.getTarget());
+	}
+	
+	public JavaVariantOption getJavaVariantOption(VariantDefinition.Option option) {
+		HighLevelDefinition definition = option.variant;
+		return getJavaModule(definition.module).getVariantOption(option);
+	}
+	
+	public JavaVariantOption getJavaVariantOption(VariantOptionRef member) {
+		return getJavaVariantOption(member.getOption());
+	}
 	
 	public void useShared() {
 		if (useShared)

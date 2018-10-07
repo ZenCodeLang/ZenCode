@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
@@ -66,7 +67,7 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 	}
 
 	@Override
-	public final <T> T getTag(Class<T> type) {
+	public final <T extends Tag> T getTag(Class<T> type) {
 		return member.getTag(type);
 	}
 	

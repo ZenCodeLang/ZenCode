@@ -38,8 +38,6 @@ public class FunctionScope extends StatementScope {
 		this.outer = outer;
 		this.header = header;
 		this.thisType = outer.getThisType() == null || header.storage == null ? outer.getThisType() : outer.getThisType().type.stored(header.storage);
-		if (header.storage != null)
-			System.out.println("Storage is " + header.storage);
 		
 		if (outer.getLocalTypeParameters() == null)
 			throw new NullPointerException();

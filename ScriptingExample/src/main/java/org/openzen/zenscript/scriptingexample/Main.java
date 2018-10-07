@@ -57,7 +57,7 @@ public class Main {
 		//formatFiles(pkg, module);
 		
 		if (semantic.isValid()) {
-			JavaModule javaModule = compileSemanticToJava(semantic);
+			JavaModule javaModule = compileSemanticToJava(registry, semantic);
 			javaModule.execute();
 		} else {
 			System.out.println("There were compilation errors");
@@ -127,8 +127,12 @@ public class Main {
 		return result;
 	}
 	
-	private static JavaModule compileSemanticToJava(SemanticModule module) {
+	private static JavaModule compileSemanticToJava(GlobalRegistry registry, SemanticModule module) {
 		JavaCompiler compiler = new JavaCompiler(module.compilationUnit.globalTypeRegistry, false, null);
+		registry.register(compiler.getContext());
+		
+		compiler.getContext().addModule(module.module);
+		
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			compiler.addDefinition(definition, module);
 		}

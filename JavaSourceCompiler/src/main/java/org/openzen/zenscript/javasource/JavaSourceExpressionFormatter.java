@@ -99,6 +99,8 @@ import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaNativeTranslator;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -118,10 +120,12 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	
 	public final JavaSourceStatementScope scope;
 	public final StatementFormattingTarget target;
+	private final JavaContext context;
 	
 	public JavaSourceExpressionFormatter(StatementFormattingTarget target, JavaSourceStatementScope scope) {
 		this.target = target;
 		this.scope = scope;
+		context = scope.context;
 	}
 
 	@Override
@@ -168,10 +172,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.member.getBuiltin() != null) {
 			return visitBuiltinCall(expression, expression.member.getBuiltin());
 		} else {
-			JavaMethod method = expression.member.getTag(JavaMethod.class);
-			if (method == null)
-				throw new IllegalStateException("No source method tag for " + expression.member.getCanonicalName() + "!");
-			
+			JavaMethod method = context.getJavaMethod(expression.member);
 			if (method.kind == JavaMethod.Kind.COMPILED) {
 				return (ExpressionString) method.translation.translate(expression, this);
 			} else {
@@ -208,7 +209,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.member.getBuiltin() != null)
 			return visitBuiltinCallStatic(expression, expression.member.getBuiltin());
 		
-		JavaMethod method = expression.member.getTag(JavaMethod.class);
+		JavaMethod method = context.getJavaMethod(expression.member);
 		if (method == null)
 			throw new IllegalStateException("No source method tag for " + expression.member.getCanonicalName() + "!");
 		
@@ -258,7 +259,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			}
 		}
 		
-		JavaMethod method = expression.member.getTag(JavaMethod.class);
+		JavaMethod method = context.getJavaMethod(expression.member);
 		if (method == null)
 			throw new RuntimeException(expression.position + ": No tag for caster");
 		
@@ -304,7 +305,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			return visitBuiltinConstant(expression, expression.constant.member.builtin);
 		
 		return new ExpressionString(
-				scope.type(expression.constant.member.definition.getTag(JavaClass.class)) + "." + expression.constant.member.name, 
+				scope.type(expression.constant.member.definition) + "." + expression.constant.member.name, 
 				JavaOperator.MEMBER);
 	}
 
@@ -451,7 +452,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitGetStaticField(GetStaticFieldExpression expression) {
-		JavaField field = expression.field.getTag(JavaField.class);
+		JavaField field = context.getJavaField(expression.field);
 		if (field == null)
 			throw new RuntimeException(expression.position + ": Missing field tag");
 		
@@ -464,15 +465,15 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			return visitBuiltinGetter(expression, expression.getter.member.builtin);
 		
 		ExpressionString target = expression.target.accept(this);
-		if (expression.getter.member.hasTag(JavaField.class)) {
-			JavaField field = expression.getter.member.getTag(JavaField.class);
+		if (context.hasJavaField(expression.getter)) {
+			JavaField field = context.getJavaField(expression.getter);
 			if (target.value.equals("this") && !scope.hasLocalVariable(field.name))
 				return new ExpressionString(field.name, JavaOperator.PRIMARY);
 			
 			return target.unaryPostfix(JavaOperator.MEMBER, "." + field.name);
 		}
 		
-		JavaMethod method = expression.getter.getTag(JavaMethod.class);
+		JavaMethod method = context.getJavaMethod(expression.getter);
 		StringBuilder result = new StringBuilder();
 		if (!target.value.equals("this") || scope.hasLocalVariable(method.name)) {
 			result.append(target.value);
@@ -551,7 +552,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			}
 		}
 		
-		JavaMethod method = expression.constructor.getTag(JavaMethod.class);
+		JavaMethod method = context.getJavaMethod(expression.constructor);
 		switch (method.kind) {
 			case EXPANSION: {
 				StringBuilder output = new StringBuilder();
@@ -637,7 +638,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitSetStaticField(SetStaticFieldExpression expression) {
-		JavaField field = expression.field.getTag(JavaField.class);
+		JavaField field = context.getJavaField(expression.field);
 		if (field == null)
 			throw new RuntimeException(expression.position + ": Missing field tag");
 		
@@ -708,7 +709,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 	
 	private String constructThisName(DefinitionTypeID type) {
-		JavaClass cls = type.definition.getTag(JavaClass.class);
+		JavaClass cls = context.getJavaClass(type.definition);
 		return cls.getClassName();
 	}
 
@@ -758,7 +759,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	
 	@Override
 	public ExpressionString visitVariantValue(VariantValueExpression expression) {
-		JavaVariantOption option = expression.option.getTag(JavaVariantOption.class);
+		JavaVariantOption option = context.getJavaVariantOption(expression.option);
 		
 		StringBuilder result = new StringBuilder();
 		result.append("new ").append(scope.type(option.variantOptionClass));

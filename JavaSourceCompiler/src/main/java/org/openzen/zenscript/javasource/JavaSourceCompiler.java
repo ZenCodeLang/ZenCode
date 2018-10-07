@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
+import org.openzen.zenscript.javashared.JavaBaseCompiler;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
 
@@ -22,7 +23,7 @@ import org.openzen.zenscript.javashared.JavaClass;
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceCompiler implements ZenCodeCompiler {
+public class JavaSourceCompiler extends JavaBaseCompiler implements ZenCodeCompiler {
 	public final JavaSourceFormattingSettings settings;
 	public final JavaSourceSyntheticHelperGenerator helperGenerator;
 	
@@ -42,16 +43,21 @@ public class JavaSourceCompiler implements ZenCodeCompiler {
 	}
 	
 	@Override
+	public void addModule(SemanticModule module) {
+		context.addModule(module.module);
+	}
+	
+	@Override
 	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
 		String filename = getFilename(definition);
-		JavaPrepareDefinitionVisitor prepare = new JavaPrepareDefinitionVisitor(filename, null);
+		JavaPrepareDefinitionVisitor prepare = new JavaPrepareDefinitionVisitor(context, context.getJavaModule(module.module), filename, null);
 		JavaClass cls = definition.accept(prepare);
 		
 		File file = new File(getDirectory(definition.pkg), cls.getName() + ".java");
 		System.out.println("Compiling " + definition.name + " as " + cls.fullName);
 		JavaSourceFile sourceFile = sourceFiles.get(file);
 		if (sourceFile == null)
-			sourceFiles.put(file, sourceFile = new JavaSourceFile(this, file, cls, definition.pkg));
+			sourceFiles.put(file, sourceFile = new JavaSourceFile(this, file, cls, module.module, definition.pkg));
 		
 		sourceFile.add(definition, module);
 	}

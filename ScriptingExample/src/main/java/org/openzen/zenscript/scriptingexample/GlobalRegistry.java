@@ -39,6 +39,8 @@ import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaContext;
 
 /**
  *
@@ -49,6 +51,12 @@ public class GlobalRegistry {
 	private final ZSPackage rootPackage = new ZSPackage(null, "");
 	private final ZSPackage javaIo = rootPackage.getOrCreatePackage("java").getOrCreatePackage("io");
 	private final ZSPackage javaLang = rootPackage.getOrCreatePackage("java").getOrCreatePackage("lang");
+	
+	private final Module MODULE = new Module("scriptingExample");
+	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaIo, "PrintStream", Modifiers.PUBLIC);
+	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaLang, "System", Modifiers.PUBLIC);
+	private final MethodMember PRINTSTREAM_PRINTLN;
+	private final GetterMember SYSTEM_OUT;
 	
 	public GlobalRegistry(GlobalTypeRegistry registry, ZSPackage globals) {
 		PRINTSTREAM_PRINTLN = new MethodMember(
@@ -66,31 +74,22 @@ public class GlobalRegistry {
 			"out",
 			DefinitionTypeID.forType(registry, SYSTEM).stored(AutoStorageTag.INSTANCE),
 			null);
+	}
+	
+	public void register(JavaContext context) {
+		context.addModule(MODULE);
+		JavaCompiledModule javaModule = context.getJavaModule(MODULE);
+		
+		JavaClass jSystem = new JavaClass("java.lang", "System", JavaClass.Kind.CLASS);
+		javaModule.setFieldInfo(SYSTEM_OUT, new JavaField(jSystem, "out", "Ljava/io/PrintStream;"));
 		
 		JavaClass jPrintStream = new JavaClass("java.io", "PrintStream", JavaClass.Kind.CLASS);
 		JavaMethod printstreamPrintln = JavaMethod.getNativeVirtual(jPrintStream, "println", "(Ljava/lang/String;)V");
-		PRINTSTREAM_PRINTLN.setTag(JavaMethod.class, printstreamPrintln);
-		
-		JavaClass jSystem = new JavaClass("java.lang", "System", JavaClass.Kind.CLASS);
-		SYSTEM_OUT.setTag(JavaField.class, new JavaField(jSystem, "out", "Ljava/io/PrintStream;"));
+		javaModule.setMethodInfo(PRINTSTREAM_PRINTLN, printstreamPrintln);
 	}
 	
 	public ZSPackage collectPackages() {
 		// register packages here
-		
-		{
-			// eg. package my.package with a class MyClass with a single native method test() returning a string
-			// the visitors can then during compilation check if a method is an instance of NativeMethodMember and treat it accordingly
-			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("test");
-			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, MODULE, packageMyPackage, "MyClass", Modifiers.PUBLIC, null);
-			JavaClass myClassInfo = new JavaClass("my.test", "MyClass", JavaClass.Kind.CLASS);
-			
-			MethodMember member = new MethodMember(CodePosition.NATIVE, myClassDefinition, Modifiers.PUBLIC, "test", new FunctionHeader(StringTypeID.UNIQUE), null);
-			member.setTag(JavaMethod.class, JavaMethod.getNativeVirtual(myClassInfo, "test", "()Ljava/lang/String;"));
-			myClassDefinition.addMember(member);
-			
-			packageMyPackage.register(myClassDefinition);
-		}
 		
 		return rootPackage;
 	}
@@ -109,12 +108,6 @@ public class GlobalRegistry {
 		
 		return globals;
 	}
-	
-	private final Module MODULE = new Module("scriptingExample");
-	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaIo, "PrintStream", Modifiers.PUBLIC);
-	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaLang, "System", Modifiers.PUBLIC);
-	private final MethodMember PRINTSTREAM_PRINTLN;
-	private final GetterMember SYSTEM_OUT;
 	
 	private class PrintlnSymbol implements ISymbol {
 

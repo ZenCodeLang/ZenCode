@@ -57,9 +57,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	}
 	
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
-		JavaMethod method = member.getTag(JavaMethod.class);
-		if (method == null)
-			throw new AssertionError();
+		JavaMethod method = scope.context.getJavaMethod(member);
 		if (!method.compile)
 			return;
 		

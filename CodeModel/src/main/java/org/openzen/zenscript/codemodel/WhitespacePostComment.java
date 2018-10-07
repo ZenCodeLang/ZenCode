@@ -7,13 +7,14 @@ package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.Tag;
 import stdlib.Strings;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class WhitespacePostComment {
+public class WhitespacePostComment implements Tag {
 	public static WhitespacePostComment fromWhitespace(String whitespace) {
 		List<String> comments = new ArrayList<>();
 		for (String line : Strings.split(whitespace, '\n')) {

@@ -35,7 +35,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 	
 	@Override
 	public void synthesizeFunction(JavaSynthesizedFunction function) {
-		JavaSourceImporter importer = new JavaSourceImporter(function.cls);
+		JavaSourceImporter importer = new JavaSourceImporter(context, function.cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, context);
 		
 		StringBuilder contents = new StringBuilder();
@@ -69,7 +69,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 	
 	@Override
 	public void synthesizeRange(JavaSynthesizedRange range) {
-		JavaSourceImporter importer = new JavaSourceImporter(range.cls);
+		JavaSourceImporter importer = new JavaSourceImporter(context, range.cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, context);
 		
 		StringBuilder contents = new StringBuilder();
@@ -95,7 +95,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 	
 	@Override
 	public void synthesizeShared() {
-		JavaSourceImporter importer = new JavaSourceImporter(JavaClass.SHARED);
+		JavaSourceImporter importer = new JavaSourceImporter(context, JavaClass.SHARED);
 		
 		StringBuilder contents = new StringBuilder();
 		contents.append("public final class Shared<T extends AutoCloseable> {\n");

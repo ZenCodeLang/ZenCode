@@ -10,12 +10,12 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 import java.util.List;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
 
@@ -26,29 +26,31 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
     private final HighLevelDefinition definition;
     private final JavaStatementVisitor clinitStatementVisitor;
     private EnumDefinition enumDefinition = null;
+	private final JavaCompiledModule javaModule;
 
     public JavaMemberVisitor(JavaBytecodeContext context, ClassWriter writer, JavaClass toClass, HighLevelDefinition definition) {
         this.writer = writer;
         this.toClass = toClass;
         this.definition = definition;
 		this.context = context;
+		javaModule = context.getJavaModule(definition.module);
 
         final JavaWriter javaWriter = new JavaWriter(writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
-        this.clinitStatementVisitor = new JavaStatementVisitor(context, javaWriter);
+        this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
         this.clinitStatementVisitor.start();
         CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
     }
 
 	@Override
 	public Void visitConst(ConstMember member) {
-		JavaField field = member.getTag(JavaField.class);
+		JavaField field = context.getJavaField(member);
         writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
         return null;
 	}
 
 	@Override
 	public Void visitField(FieldMember member) {
-		JavaField field = member.getTag(JavaField.class);
+		JavaField field = context.getJavaField(member);
         writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
         return null;
     }
@@ -56,23 +58,23 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
     @Override
     public Void visitConstructor(ConstructorMember member) {
         final boolean isEnum = definition instanceof EnumDefinition;
-        final JavaMethod method = member.getTag(JavaMethod.class);
+        final JavaMethod method = context.getJavaMethod(member);
 
         final Label constructorStart = new Label();
         final Label constructorEnd = new Label();
         final JavaWriter constructorWriter = new JavaWriter(writer, method, definition, context.getMethodSignature(member.header), null);
         constructorWriter.label(constructorStart);
-        CompilerUtils.tagConstructorParameters(context, member.header, isEnum);
+        CompilerUtils.tagConstructorParameters(context, javaModule, member.header, isEnum);
         for (FunctionParameter parameter : member.header.parameters) {
             constructorWriter.nameVariable(
-                    parameter.getTag(JavaParameterInfo.class).index,
+                    javaModule.getParameterInfo(parameter).index,
                     parameter.name,
                     constructorStart,
                     constructorEnd,
                     context.getType(parameter.type));
         }
 
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, constructorWriter);
+        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, constructorWriter);
         statementVisitor.start();
 
 		if (!member.isConstructorForwarded()) {
@@ -106,7 +108,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final JavaWriter destructorWriter = new JavaWriter(writer, method, definition, null, null);
 		destructorWriter.label(constructorStart);
 
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, destructorWriter);
+        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
         statementVisitor.start();
 		// TODO: destruction of members (to be done when memory tags are implemented)
 		member.body.accept(statementVisitor);
@@ -117,10 +119,10 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     @Override
     public Void visitMethod(MethodMember member) {
-        CompilerUtils.tagMethodParameters(context, member.header, member.isStatic());
+        CompilerUtils.tagMethodParameters(context, javaModule, member.header, member.isStatic());
 
         final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.getEffectiveModifiers());
-        final JavaMethod method = member.getTag(JavaMethod.class);
+        final JavaMethod method = context.getJavaMethod(member);
 
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
@@ -129,10 +131,10 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		for (final FunctionParameter parameter : member.header.parameters) {
 			methodWriter.nameParameter(0, parameter.name);
 			if (!isAbstract)
-				methodWriter.nameVariable(parameter.getTag(JavaParameterInfo.class).index, parameter.name, methodStart, methodEnd, context.getType(parameter.type));
+				methodWriter.nameVariable(javaModule.getParameterInfo(parameter).index, parameter.name, methodStart, methodEnd, context.getType(parameter.type));
 		}
 
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, methodWriter);
+        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
 
 		if (!isAbstract) {
 			statementVisitor.start();

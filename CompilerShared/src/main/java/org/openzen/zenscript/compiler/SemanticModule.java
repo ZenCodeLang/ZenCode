@@ -136,6 +136,7 @@ public class SemanticModule {
 		if (state != State.VALIDATED)
 			throw new IllegalStateException("Module is not yet validated");
 		
+		compiler.addModule(this);
 		for (HighLevelDefinition definition : definitions.getAll()) {
 			compiler.addDefinition(definition, this);
 		}

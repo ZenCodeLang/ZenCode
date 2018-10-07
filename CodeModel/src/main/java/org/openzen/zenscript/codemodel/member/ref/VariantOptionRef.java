@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.member.ref;
 
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.type.StoredType;
 
@@ -31,7 +32,7 @@ public class VariantOptionRef {
 		return types[index];
 	}
 	
-	public <T> T getTag(Class<T> type) {
+	public <T extends Tag> T getTag(Class<T> type) {
 		return option.getTag(type);
 	}
 

@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaModifiers;
@@ -30,13 +31,15 @@ import org.openzen.zenscript.javashared.JavaModifiers;
  */
 public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<JavaClass> {
 	private final JavaContext context;
+	private final JavaCompiledModule module;
 	
-	public JavaPrepareDefinitionMemberVisitor(JavaContext context) {
+	public JavaPrepareDefinitionMemberVisitor(JavaContext context, JavaCompiledModule module) {
 		this.context = context;
+		this.module = module;
 	}
 	
 	private boolean isPrepared(HighLevelDefinition definition) {
-		return definition.getTag(JavaClass.class).membersPrepared;
+		return context.getJavaClass(definition).membersPrepared;
 	}
 	
 	public void prepare(TypeID type) {
@@ -51,7 +54,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	@Override
 	public JavaClass visitClass(ClassDefinition definition) {
 		if (isPrepared(definition))
-			return definition.getTag(JavaClass.class);
+			return context.getJavaClass(definition);
 		
 		return visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
 	}
@@ -59,7 +62,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	@Override
 	public JavaClass visitInterface(InterfaceDefinition definition) {
 		if (isPrepared(definition))
-			return definition.getTag(JavaClass.class);
+			return context.getJavaClass(definition);
 		
 		for (TypeID baseType : definition.baseInterfaces)
 			prepare(baseType);
@@ -70,7 +73,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	@Override
 	public JavaClass visitEnum(EnumDefinition definition) {
 		if (isPrepared(definition))
-			return definition.getTag(JavaClass.class);
+			return context.getJavaClass(definition);
 		
 		return visitClassCompiled(definition, false, JavaClass.Kind.ENUM);
 	}
@@ -78,7 +81,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	@Override
 	public JavaClass visitStruct(StructDefinition definition) {
 		if (isPrepared(definition))
-			return definition.getTag(JavaClass.class);
+			return context.getJavaClass(definition);
 		
 		return visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
 	}
@@ -86,21 +89,21 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	@Override
 	public JavaClass visitFunction(FunctionDefinition definition) {
 		if (isPrepared(definition))
-			return definition.getTag(JavaClass.class);
+			return context.getJavaClass(definition);
 		
-		JavaClass cls = definition.getTag(JavaClass.class);
+		JavaClass cls = context.getJavaClass(definition);
 		JavaMethod method = JavaMethod.getStatic(cls, definition.name, context.getMethodDescriptor(definition.header), JavaModifiers.getJavaModifiers(definition.modifiers));
-		definition.caller.setTag(JavaMethod.class, method);
+		module.setMethodInfo(definition.caller, method);
 		return cls;
 	}
 
 	@Override
 	public JavaClass visitExpansion(ExpansionDefinition definition) {
 		if (isPrepared(definition))
-			return definition.getTag(JavaClass.class);
+			return context.getJavaClass(definition);
 		
-		JavaNativeClass nativeClass = definition.getTag(JavaNativeClass.class);
-		JavaClass cls = definition.getTag(JavaClass.class);
+		JavaNativeClass nativeClass = context.getJavaNativeClass(definition);
+		JavaClass cls = context.getJavaClass(definition);
 		visitExpansionMembers(definition, cls, nativeClass);
 		return cls;
 	}
@@ -113,10 +116,10 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 
 	@Override
 	public JavaClass visitVariant(VariantDefinition variant) {
-		if (isPrepared(variant))
-			return variant.getTag(JavaClass.class);
+		JavaClass cls = context.getJavaClass(variant);
+		if (cls.membersPrepared)
+			return cls;
 		
-		JavaClass cls = variant.getTag(JavaClass.class);
 		visitClassMembers(variant, cls, null, false);
 		return cls;
 	}
@@ -125,8 +128,8 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 		if (definition.getSuperType() != null)
 			prepare(definition.getSuperType());
 		
-		JavaNativeClass nativeClass = definition.getTag(JavaNativeClass.class);
-		JavaClass cls = definition.getTag(JavaClass.class);
+		JavaNativeClass nativeClass = context.getJavaNativeClass(definition);
+		JavaClass cls = context.getJavaClass(definition);
 		if (nativeClass == null) {
 			visitClassMembers(definition, cls, null, startsEmpty);
 		} else {
@@ -137,7 +140,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	
 	private void visitClassMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
 		System.out.println("Preparing " + cls.internalName);
-		JavaPrepareClassMethodVisitor methodVisitor = new JavaPrepareClassMethodVisitor(context, cls, nativeClass, this, startsEmpty);
+		JavaPrepareClassMethodVisitor methodVisitor = new JavaPrepareClassMethodVisitor(context, module, cls, nativeClass, this, startsEmpty);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
 		}
@@ -146,7 +149,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	
 	private void visitExpansionMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass) {
 		System.out.println("Preparing " + cls.internalName);
-		JavaPrepareExpansionMethodVisitor methodVisitor = new JavaPrepareExpansionMethodVisitor(context, cls, nativeClass);
+		JavaPrepareExpansionMethodVisitor methodVisitor = new JavaPrepareExpansionMethodVisitor(context, module, cls, nativeClass);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
 		}

@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
@@ -91,7 +92,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public <T> T getTag(Class<T> cls) {
+	public <T extends Tag> T getTag(Class<T> cls) {
 		return target.getTag(cls);
 	}
 	

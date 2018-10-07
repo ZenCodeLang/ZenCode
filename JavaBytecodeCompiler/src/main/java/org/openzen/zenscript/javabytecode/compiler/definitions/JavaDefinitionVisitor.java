@@ -45,7 +45,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	public byte[] visitClass(ClassDefinition definition) {
         final String superTypeInternalName = definition.getSuperType() == null ? "java/lang/Object" : context.getInternalName(definition.getSuperType());
 
-		JavaClass toClass = definition.getTag(JavaClass.class);
+		JavaClass toClass = context.getJavaClass(definition);
 		JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
         //TODO: Calculate signature from generic parameters
@@ -68,7 +68,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitInterface(InterfaceDefinition definition) {
-		JavaClass toClass = definition.getTag(JavaClass.class);
+		JavaClass toClass = context.getJavaClass(definition);
 		ClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
 		//TODO: Calculate signature from generic parameters
@@ -95,7 +95,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 		ClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-		JavaClass toClass = definition.getTag(JavaClass.class);
+		JavaClass toClass = context.getJavaClass(definition);
 		writer.visit(Opcodes.V1_8, Opcodes.ACC_ENUM | Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER | Opcodes.ACC_FINAL, toClass.internalName, "Ljava/lang/Enum<L" + toClass.internalName + ";>;", superTypeInternalName, null);
 
 		//Enum Stuff(required!)
@@ -136,14 +136,13 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitFunction(FunctionDefinition definition) {
-		CompilerUtils.tagMethodParameters(context, definition.header, true);
+		CompilerUtils.tagMethodParameters(context, context.getJavaModule(definition.module), definition.header, true);
 
         final String signature = context.getMethodSignature(definition.header);
-
-		final JavaMethod method = definition.caller.getTag(JavaMethod.class);
+		final JavaMethod method = context.getJavaMethod(definition.caller);
 
 		final JavaWriter writer = new JavaWriter(outerWriter, true, method, definition, signature, null);
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, writer);
+        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer);
         statementVisitor.start();
 		boolean returns = definition.caller.body.accept(statementVisitor);
 		if (!returns) {
@@ -171,7 +170,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitVariant(VariantDefinition variant) {
-		final JavaClass toClass = variant.getTag(JavaClass.class);
+		final JavaClass toClass = context.getJavaClass(variant);
 		final JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
 		final String variantName = variant.name;
@@ -188,7 +187,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final List<VariantDefinition.Option> options = variant.options;
 		//Each option is one of the possible child classes
 		for (final VariantDefinition.Option option : options) {
-			JavaVariantOption optionTag = option.getTag(JavaVariantOption.class);
+			JavaVariantOption optionTag = context.getJavaVariantOption(option);
 			final JavaClassWriter optionWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 			final String optionClassName = variantName + "$" + option.name;
 			JavaClassWriter.registerSuperClass(optionClassName, variantName);

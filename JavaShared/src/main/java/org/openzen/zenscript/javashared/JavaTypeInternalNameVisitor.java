@@ -88,7 +88,7 @@ public class JavaTypeInternalNameVisitor implements TypeVisitorWithContext<Store
 
     @Override
     public String visitDefinition(StoredType context, DefinitionTypeID definition) {
-		return definition.definition.getTag(JavaClass.class).internalName;
+		return this.context.getJavaClass(definition.definition).internalName;
     }
 
     @Override

@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
@@ -43,11 +44,11 @@ public interface IDefinitionMember {
 	
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor);
 	
-	public <T> T getTag(Class<T> tag);
+	public <T extends Tag> T getTag(Class<T> tag);
 	
-	public <T> void setTag(Class<T> tag, T value);
+	public <T extends Tag> void setTag(Class<T> tag, T value);
 
-	<T> boolean hasTag(Class<T> tag);
+	<T extends Tag> boolean hasTag(Class<T> tag);
 	
 	DefinitionMemberRef getOverrides();
 

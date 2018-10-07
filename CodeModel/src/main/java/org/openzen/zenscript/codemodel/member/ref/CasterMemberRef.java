@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
@@ -46,7 +47,7 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	}
 
 	@Override
-	public <T> T getTag(Class<T> type) {
+	public <T extends Tag> T getTag(Class<T> type) {
 		return member.getTag(type);
 	}
 	

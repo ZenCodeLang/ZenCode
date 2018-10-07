@@ -159,7 +159,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			
 			DefinitionTypeID variantType = statement.value.type.asDefinition();
 			HighLevelDefinition variant = variantType.definition;
-			String variantTypeName = scope.type(variant.getTag(JavaClass.class));
+			String variantTypeName = scope.type(variant);
 			for (SwitchCase switchCase : statement.cases) {
 				VariantOptionSwitchValue switchValue = (VariantOptionSwitchValue)switchCase.value;
 				String header = switchValue == null ? "default:" : "case " + switchValue.option.getName() + ":";

@@ -39,6 +39,8 @@ import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaImplementation;
 import org.openzen.zenscript.javashared.JavaMethod;
 
@@ -52,10 +54,13 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	private final List<FieldMember> fields = new ArrayList<>();
 	private final boolean isInterface;
 	private final Map<HighLevelDefinition, SemanticModule> modules;
+	private final JavaContext context;
 	public boolean hasDestructor = false;
+	private final JavaCompiledModule module;
 	
 	public JavaMemberCompiler(
 			JavaSourceCompiler compiler,
+			JavaCompiledModule module,
 			JavaSourceFile file,
 			JavaSourceFormattingSettings settings,
 			String indent,
@@ -71,12 +76,12 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		this.isInterface = isInterface;
 		this.compiler = compiler;
 		this.modules = modules;
+		this.context = compiler.context;
+		this.module = module;
 	}
 	
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
-		JavaMethod method = member.getTag(JavaMethod.class);
-		if (method == null)
-			throw new AssertionError();
+		JavaMethod method = module.getMethodInfo(member);
 		if (!method.compile)
 			return;
 		
@@ -222,7 +227,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
-		JavaImplementation implementation = member.getTag(JavaImplementation.class);
+		JavaImplementation implementation = module.getImplementationInfo(member);
 		if (implementation.inline) {
 			for (IDefinitionMember m : member.members) {
 				m.accept(this);
@@ -238,7 +243,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			
 			begin(ElementType.INNERCLASS);
 			output.append("private class ").append(implementationName).append(" implements ").append(scope.type(member.type)).append(" {\n");
-			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, file, settings, indent + settings.indent, output, scope, isInterface, definition, modules);
+			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, module, file, settings, indent + settings.indent, output, scope, isInterface, definition, modules);
 			for (IDefinitionMember m : member.members) {
 				m.accept(memberCompiler);
 			}
@@ -249,10 +254,14 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
-		JavaClass cls = member.innerDefinition.getTag(JavaClass.class);
+		JavaClass cls = context.optJavaClass(member.innerDefinition);
+		if (cls == null)
+			return null;
+		
 		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
-				indent,
+				indent, 
 				compiler,
+				module,
 				cls,
 				file,
 				output,

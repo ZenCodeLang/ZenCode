@@ -11,7 +11,6 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
@@ -26,6 +25,7 @@ import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaTypeUtils;
@@ -155,10 +155,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	protected final JavaWriter javaWriter;
 	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
 	private final JavaBytecodeContext context;
+	private final JavaCompiledModule module;
 
-    public JavaExpressionVisitor(JavaBytecodeContext context, JavaWriter javaWriter) {
+    public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
 		this.context = context;
+		this.module = module;
     }
 
     @Override
@@ -1427,9 +1429,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitConst(ConstExpression expression) {
 		BuiltinID builtin = expression.constant.member.builtin;
 		if (builtin == null) {
-			if (!checkAndGetFieldInfo(expression.constant, true))
-				throw new IllegalStateException("Call target has no field info!");
-
+			javaWriter.getStaticField(context.getJavaField(expression.constant));
 			return null;
 		}
 
@@ -1511,7 +1511,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case ENUM_VALUES: {
 				DefinitionTypeID type = (DefinitionTypeID) expression.type.type;
-				JavaClass cls = type.definition.getTag(JavaClass.class);
+				JavaClass cls = context.getJavaClass(type.definition);
 				javaWriter.invokeStatic(JavaMethod.getNativeStatic(cls, "values", "()[L" + cls.internalName + ";"));
 				break;
 			}
@@ -1651,12 +1651,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionExpression expression) {
-		CompilerUtils.tagMethodParameters(context, expression.header, false);
+		CompilerUtils.tagMethodParameters(context, module, expression.header, false);
 
-        if (expression.header.parameters.length == 0 && expression.body instanceof ReturnStatement && expression.body.hasTag(MatchExpression.class) && expression.closure.captures.isEmpty()) {
+        /*if (expression.header.parameters.length == 0 && expression.body instanceof ReturnStatement && expression.body.hasTag(MatchExpression.class) && expression.closure.captures.isEmpty()) {
             ((ReturnStatement) expression.body).value.accept(this);
             return null;
-        }
+        }*/
 		
 		final String descriptor = context.getMethodDescriptor(expression.header);
         final String signature = context.getMethodSignature(expression.header);
@@ -1702,7 +1702,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
         functionWriter.start();
 
 
-		final JavaStatementVisitor CSV = new JavaStatementVisitor(context, new JavaExpressionVisitor(context, functionWriter) {
+		final JavaStatementVisitor CSV = new JavaStatementVisitor(context, new JavaExpressionVisitor(context, module, functionWriter) {
 			@Override
 			public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
 				final int position = calculateMemberPosition(varExpression, expression);
@@ -1772,14 +1772,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetField(GetFieldExpression expression) {
 		expression.accept(this);
-		if (!checkAndGetFieldInfo(expression.field, false))
-			throw new IllegalStateException("Missing field info on a field member!");
+		getField(expression.field);
 		return null;
 	}
 
 	@Override
 	public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
-		JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
+		JavaParameterInfo parameter = module.getParameterInfo(expression.parameter);
 
 		if (parameter == null)
 			throw new RuntimeException(expression.position.toString() + ": Could not resolve lambda parameter" + expression.parameter);
@@ -1791,9 +1790,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
 		final Label label = new Label();
-		final JavaLocalVariableInfo tag = expression.variable.variable.getTag(JavaLocalVariableInfo.class);
-		if (tag == null)
-			throw new RuntimeException("Missing tag @ " + expression.position);
+		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.variable);
 		
 		tag.end = label;
 		javaWriter.load(tag.type, tag.local);
@@ -1805,7 +1802,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		javaWriter.loadObject(0);
 		final StoredType type = expression.value.option.getParameterType(expression.index);
-		final JavaVariantOption tag = expression.value.option.getTag(JavaVariantOption.class);
+		final JavaVariantOption tag = context.getJavaVariantOption(expression.value.option);
 		javaWriter.checkCast(tag.variantOptionClass.internalName);
 		javaWriter.getField(new JavaField(tag.variantOptionClass, "field" + expression.index, context.getDescriptor(type)));
 		return null;
@@ -1813,8 +1810,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetStaticField(GetStaticFieldExpression expression) {
-		if (!checkAndGetFieldInfo(expression.field, true))
-			throw new IllegalStateException("Missing field info on a field member!");
+		javaWriter.getStaticField(context.getJavaField(expression.field));
 		return null;
 	}
 
@@ -1824,8 +1820,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
-			if (expression.getter.hasTag(JavaField.class)) {
-				javaWriter.getField(expression.getter.getTag(JavaField.class));
+			if (context.hasJavaField(expression.getter)) {
+				javaWriter.getField(context.getJavaField(expression.getter));
 				return null;
 			}
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type))
@@ -2075,7 +2071,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		for (MatchExpression.Case aCase : expression.cases) {
 			if (aCase.key instanceof VariantOptionSwitchValue) {
 				VariantOptionSwitchValue variantOptionSwitchValue = (VariantOptionSwitchValue) aCase.key;
-				JavaVariantOption option = variantOptionSwitchValue.option.getTag(JavaVariantOption.class);
+				JavaVariantOption option = context.getJavaVariantOption(variantOptionSwitchValue.option);
 				javaWriter.invokeVirtual(JavaMethod.getNativeVirtual(option.variantClass, "getDenominator", "()I"));
 				break;
 			}
@@ -2132,7 +2128,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     @Override
     public Void visitNew(NewExpression expression) {
 		// TODO: this code is incorrect!
-		JavaMethod method = expression.constructor.getTag(JavaMethod.class);
+		JavaMethod method = context.getJavaMethod(expression.constructor);
 
         final String type;
         if (expression.type.type instanceof DefinitionTypeID)
@@ -2244,15 +2240,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitSetField(SetFieldExpression expression) {
 		expression.target.accept(this);
 		expression.value.accept(this);
-		if (!checkAndPutFieldInfo(expression.field, false))
-			throw new IllegalStateException("Missing field info on a field member!");
+		putField(expression.field);
 		return null;
 	}
 
     @Override
     public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
         expression.value.accept(this);
-        JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
+        JavaParameterInfo parameter = module.getParameterInfo(expression.parameter);
         javaWriter.store(context.getType(expression.type), parameter.index);
         return null;
     }
@@ -2262,7 +2257,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 		Label label = new Label();
 		javaWriter.label(label);
-		final JavaLocalVariableInfo tag = expression.variable.variable.getTag(JavaLocalVariableInfo.class);
+		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.variable);
 		tag.end = label;
 
 		javaWriter.store(tag.type, tag.local);
@@ -2273,10 +2268,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitSetStaticField(SetStaticFieldExpression expression) {
 		expression.value.accept(this);
-		
-		if (!checkAndPutFieldInfo(expression.field, true))
-			throw new IllegalStateException("Missing field info on a field member!");
-		
+		javaWriter.putStaticField(context.getJavaField(expression.field));
 		return null;
 	}
 
@@ -2289,8 +2281,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitStaticGetter(StaticGetterExpression expression) {
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
-			if (expression.getter.hasTag(JavaField.class)) {
-				javaWriter.getStaticField(expression.getter.getTag(JavaField.class));
+			if (context.hasJavaField(expression.getter)) {
+				javaWriter.getStaticField(context.getJavaField(expression.getter));
 				return null;
 			}
 			
@@ -2369,7 +2361,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				break;
 			case ENUM_VALUES: {
 				DefinitionTypeID type = (DefinitionTypeID) expression.type.type;
-				JavaClass cls = type.definition.getTag(JavaClass.class);
+				JavaClass cls = context.getJavaClass(type.definition);
 				javaWriter.invokeStatic(JavaMethod.getNativeStatic(cls, "values", "()[L" + cls.internalName + ";"));
 				break;
 			}
@@ -2441,7 +2433,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitVariantValue(VariantValueExpression expression) {
-		JavaVariantOption tag = expression.option.getTag(JavaVariantOption.class);
+		JavaVariantOption tag = context.getJavaVariantOption(expression.option);
 		final String internalName = tag.variantOptionClass.internalName;
 		javaWriter.newObject(internalName);
 		javaWriter.dup();
@@ -2475,7 +2467,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     //Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
     private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, StoredType resultType) {
-        JavaMethod methodInfo = member.getTag(JavaMethod.class);
+        JavaMethod methodInfo = context.getJavaMethod(member);
         if (methodInfo == null)
             return false;
 
@@ -2491,39 +2483,21 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
     }
 
     //Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
-    public boolean checkAndPutFieldInfo(FieldMemberRef field, boolean isStatic) {
-		JavaField fieldInfo = field.getTag(JavaField.class);
-        if (fieldInfo == null)
-            return false;
-        //TODO Remove isStatic
-        if (field.isStatic() || isStatic) {
+    public void putField(FieldMemberRef field) {
+		JavaField fieldInfo = context.getJavaField(field);
+        if (field.isStatic()) {
             getJavaWriter().putStaticField(fieldInfo);
         } else {
             getJavaWriter().putField(fieldInfo);
-        }
-        return true;
+		}
     }
 
-	public boolean checkAndGetFieldInfo(ConstMemberRef field, boolean isStatic) {
-		final JavaField fieldInfo = field.getTag(JavaField.class);
-		if (fieldInfo == null)
-			return false;
-
-		getJavaWriter().getStaticField(fieldInfo);
-		return true;
-	}
-
-	public boolean checkAndGetFieldInfo(FieldMemberRef field, boolean isStatic) {
-		final JavaField fieldInfo = field.getTag(JavaField.class);
-		if (fieldInfo == null)
-			return false;
-
-		//TODO Remove isStatic
-		if (field.isStatic() || isStatic) {
+	public void getField(FieldMemberRef field) {
+		final JavaField fieldInfo = context.getJavaField(field);
+		if (field.isStatic()) {
 			getJavaWriter().getStaticField(fieldInfo);
 		} else {
 			getJavaWriter().getField(fieldInfo);
 		}
-		return true;
 	}
 }

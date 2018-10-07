@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 
 public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     private final JavaWriter javaWriter;
@@ -18,10 +19,10 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     /**
      * @param javaWriter the method writer that compiles the statement
      */
-    public JavaStatementVisitor(JavaBytecodeContext context, JavaWriter javaWriter) {
+    public JavaStatementVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
 		this.context = context;
-        this.expressionVisitor = new JavaExpressionVisitor(context, javaWriter);
+        this.expressionVisitor = new JavaExpressionVisitor(context, module, javaWriter);
     }
 
     public JavaStatementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionVisitor) {
@@ -103,7 +104,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
             final Label variableStart = new Label();
             final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, javaWriter.local(type), variableStart, variable.name);
             info.end = end;
-            variable.variable.setTag(JavaLocalVariableInfo.class, info);
+			javaWriter.setLocalVariable(variable.variable, info);
             javaWriter.addVariableInfo(info);
         }
 
@@ -311,7 +312,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		final Label variableStart = new Label();
 		javaWriter.label(variableStart);
 		final JavaLocalVariableInfo info = new JavaLocalVariableInfo(type, local, variableStart, statement.name);
-		statement.variable.setTag(JavaLocalVariableInfo.class, info);
+		javaWriter.setLocalVariable(statement.variable, info);
 		javaWriter.addVariableInfo(info);
 		return false;
 	}

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
@@ -95,6 +96,10 @@ public class JavaSourceStatementScope {
 	
 	public String type(JavaClass cls) {
 		return fileScope.importer.importType(cls);
+	}
+	
+	public String type(HighLevelDefinition definition) {
+		return type(context.getJavaClass(definition));
 	}
 	
 	public void addLocalVariable(String localVariable) {

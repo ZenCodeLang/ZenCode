@@ -134,6 +134,10 @@ public class JavaClass implements Comparable<JavaClass> {
 		return kind == Kind.ENUM;
 	}
 	
+	public boolean isInterface() {
+		return kind == Kind.INTERFACE;
+	}
+	
 	public enum Kind {
 		CLASS,
 		INTERFACE,

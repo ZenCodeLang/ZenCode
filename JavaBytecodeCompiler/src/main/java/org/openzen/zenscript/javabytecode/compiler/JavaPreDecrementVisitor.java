@@ -8,8 +8,7 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
-import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
-import org.openzen.zenscript.javashared.JavaParameterInfo;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 
 /**
  *
@@ -18,11 +17,13 @@ import org.openzen.zenscript.javashared.JavaParameterInfo;
 public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 	private final JavaExpressionVisitor expressionCompiler;
 	private final JavaWriter javaWriter;
+	private final JavaCompiledModule module;
 	private final JavaBytecodeContext context;
 	
-	public JavaPreDecrementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionCompiler) {
+	public JavaPreDecrementVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaExpressionVisitor expressionCompiler) {
 		this.expressionCompiler = expressionCompiler;
 		this.context = context;
+		this.module = module;
 		javaWriter = expressionCompiler.getJavaWriter();
 	}
 
@@ -200,28 +201,25 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 		javaWriter.dup();
 		javaWriter.store(objectType, local);
 		
-        if (!expressionCompiler.checkAndGetFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
+        expressionCompiler.getField(expression.field);
 		
 		javaWriter.iConst1();
 		javaWriter.iSub();
 		
 		javaWriter.load(objectType, local);
-        if (!expressionCompiler.checkAndPutFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
-		
+        expressionCompiler.putField(expression.field);
 		return null;
 	}
 
 	@Override
 	public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
-		javaWriter.idec(expression.parameter.getTag(JavaParameterInfo.class).index);
+		javaWriter.idec(module.getParameterInfo(expression.parameter).index);
 		return null;
 	}
 	
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-		javaWriter.idec(expression.variable.variable.getTag(JavaLocalVariableInfo.class).local);
+		javaWriter.idec(javaWriter.getLocalVariable(expression.variable.variable).local);
 		return null;
 	}
 
@@ -232,15 +230,10 @@ public class JavaPreDecrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetStaticField(GetStaticFieldExpression expression) {
-		if (!expressionCompiler.checkAndGetFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
-		
+		expressionCompiler.getField(expression.field);
 		javaWriter.iConst1();
 		javaWriter.iAdd();
-		
-		if (!expressionCompiler.checkAndPutFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
-		
+		expressionCompiler.putField(expression.field);
 		return null;
 	}
 

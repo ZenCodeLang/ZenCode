@@ -10,6 +10,8 @@ import static org.objectweb.asm.Opcodes.*;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -32,7 +34,8 @@ public class JavaWriter {
     private boolean nameVariables = true;
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();
-
+	private final Map<VariableID, JavaLocalVariableInfo> localVariables = new HashMap<>();
+	
     public JavaWriter(
             ClassVisitor visitor,
             boolean nameVariables,
@@ -58,6 +61,18 @@ public class JavaWriter {
     public JavaWriter(ClassVisitor visitor, JavaMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
         this(visitor, true, method, forDefinition, signature, exceptions, annotations);
     }
+	
+	public void setLocalVariable(VariableID variable, JavaLocalVariableInfo info) {
+		localVariables.put(variable, info);
+	}
+	
+	public JavaLocalVariableInfo getLocalVariable(VariableID variable) {
+		JavaLocalVariableInfo result = localVariables.get(variable);
+		if (result == null)
+			throw new IllegalStateException("Local variable unknown");
+		
+		return result;
+	}
 
     public void enableDebug() {
         debug = true;

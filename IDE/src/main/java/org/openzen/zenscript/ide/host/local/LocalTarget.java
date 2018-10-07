@@ -104,6 +104,7 @@ public class LocalTarget implements IDETarget {
 			stdlib.validate(validationLogger);
 			if (!stdlib.isValid())
 				return compiler;
+			
 			stdlib.compile(compiler);
 			compiledModules.add(stdlib.name);
 			
