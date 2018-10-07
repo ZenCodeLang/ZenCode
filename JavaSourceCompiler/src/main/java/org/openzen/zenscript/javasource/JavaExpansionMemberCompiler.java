@@ -66,7 +66,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 		begin(ElementType.METHOD);
 		output.append(indent);
 		
-		modifiers(member.modifiers | Modifiers.STATIC);
+		modifiers(member.getEffectiveModifiers() | Modifiers.STATIC);
 		if (member.isStatic())
 			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
 		else
@@ -82,7 +82,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	@Override
 	public Void visitConst(ConstMember member) {
 		begin(ElementType.FIELD);
-		modifiers(member.modifiers | Modifiers.STATIC | Modifiers.FINAL);
+		modifiers(member.getEffectiveModifiers() | Modifiers.STATIC | Modifiers.FINAL);
 		output.append(scope.type(member.type));
 		output.append(" ");
 		output.append(member.name);

@@ -23,7 +23,7 @@ public final class AccessScope {
 	public boolean hasAccessTo(AccessScope other, int access) {
 		if (Modifiers.isPublic(access))
 			return true;
-		if (definition == other.definition)
+		if (definition == other.definition || definition.isOuterOf(other.definition) || other.definition.isOuterOf(definition))
 			return true;
 		if (Modifiers.isPrivate(access))
 			return false;

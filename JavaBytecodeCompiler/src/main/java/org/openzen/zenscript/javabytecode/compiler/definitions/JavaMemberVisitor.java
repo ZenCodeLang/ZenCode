@@ -1,6 +1,5 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
-import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -43,14 +42,14 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitConst(ConstMember member) {
 		JavaField field = member.getTag(JavaField.class);
-        writer.visitField(CompilerUtils.calcAccess(member.modifiers), field.name, field.descriptor, field.signature, null).visitEnd();
+        writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
         return null;
 	}
 
 	@Override
 	public Void visitField(FieldMember member) {
 		JavaField field = member.getTag(JavaField.class);
-        writer.visitField(CompilerUtils.calcAccess(member.modifiers), field.name, field.descriptor, field.signature, null).visitEnd();
+        writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
         return null;
     }
 
@@ -120,7 +119,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
     public Void visitMethod(MethodMember member) {
         CompilerUtils.tagMethodParameters(context, member.header, member.isStatic());
 
-        final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.modifiers);
+        final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.getEffectiveModifiers());
         final JavaMethod method = member.getTag(JavaMethod.class);
 
 		final Label methodStart = new Label();

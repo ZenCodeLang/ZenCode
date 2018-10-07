@@ -61,7 +61,7 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		if ((flags & MemberEncoding.FLAG_POSITION) > 0)
 			output.serialize(member.getPosition());
 		
-		output.writeUInt(member.getModifiers());
+		output.writeUInt(member.getSpecifiedModifiers());
 		
 		if (member.getAnnotations().length > 0) {
 			output.enqueueCode(output -> {

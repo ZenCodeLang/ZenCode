@@ -57,7 +57,7 @@ public class CallArguments {
 		CallArguments result = this;
 		
 		for (int i = 0; i < arguments.length; i++) {
-			arguments[i] = arguments[i].castImplicit(position, scope, header.parameters[i].type);
+			arguments[i] = arguments[i].normalize(scope).castImplicit(position, scope, header.parameters[i].type);
 		}
 		
 		if (arguments.length < header.parameters.length) {

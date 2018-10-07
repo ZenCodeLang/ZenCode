@@ -9,6 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -61,6 +62,15 @@ public class CallerMember extends FunctionalMember {
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitCaller(context, this);
+	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = super.getEffectiveModifiers();
+		if (overrides != null && overrides.getTarget().getDefinition().isInterface())
+			result |= Modifiers.PUBLIC;
+		
+		return result;
 	}
 	
 	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {

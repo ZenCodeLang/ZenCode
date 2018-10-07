@@ -92,7 +92,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		if (isInterface && hasBody)
 			output.append("default ");
 		
-		modifiers(member.modifiers);
+		modifiers(member.getEffectiveModifiers());
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
 		output.append(scope.typeVisitor.process(header.getReturnType()));
 		output.append(" ");
@@ -110,7 +110,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		begin(ElementType.FIELD);
 		
 		output.append(indent);
-		modifiers(member.modifiers | Modifiers.STATIC | Modifiers.FINAL);
+		modifiers(member.getEffectiveModifiers() | Modifiers.STATIC | Modifiers.FINAL);
 		output.append(scope.type(member.type));
 		output.append(" ");
 		output.append(member.name);
@@ -155,7 +155,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		begin(ElementType.CONSTRUCTOR);
 		
 		output.append(indent);
-		modifiers(member.modifiers);
+		modifiers(member.getEffectiveModifiers());
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, member.header.typeParameters, true);
 		output.append(scope.cls.getName());
 		formatParameters(member.isStatic(), member.header);
@@ -234,7 +234,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			
 			begin(ElementType.FIELD);
 			output.append(indent);
-			modifiers(member.modifiers);
+			modifiers(member.getEffectiveModifiers());
 			output.append("final ").append(scope.type(member.type)).append(" as").append(interfaceName).append(" = new ").append(implementationName).append("();\n");
 			
 			begin(ElementType.INNERCLASS);

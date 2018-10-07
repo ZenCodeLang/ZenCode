@@ -77,7 +77,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitConst(ConstMember member) {
 		ValidationUtils.validateModifiers(
 				validator,
-				member.modifiers,
+				member.getEffectiveModifiers(),
 				Modifiers.PUBLIC | Modifiers.PROTECTED | Modifiers.PRIVATE,
 				member.position,
 				"Invalid modifier");
@@ -87,6 +87,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 					member.position,
 					"Expression type doesn't match const type");
 		}
+		member.value.accept(new ExpressionValidator(validator, new FieldInitializerScope(member)));
 		return null;
 	}
 	
@@ -294,7 +295,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 	
 	private void validateFunctional(FunctionalMember member, StatementScope scope) {
-		if (Modifiers.isOverride(member.modifiers) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
+		if (Modifiers.isOverride(member.getEffectiveModifiers()) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
 			if (member.getOverrides() == null) {
 				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
 			} else {
@@ -310,7 +311,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 	
 	private void validateGetter(GetterMember member, StatementScope scope) {
-		if (Modifiers.isOverride(member.modifiers) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
+		if (Modifiers.isOverride(member.getEffectiveModifiers()) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
 			if (member.getOverrides() == null) {
 				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
 			}
@@ -325,7 +326,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 	
 	private void validateSetter(SetterMember member, StatementScope scope) {
-		if (Modifiers.isOverride(member.modifiers) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
+		if (Modifiers.isOverride(member.getEffectiveModifiers()) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
 			if (member.getOverrides() == null) {
 				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
 			}
@@ -339,9 +340,9 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 	
 	private class FieldInitializerScope implements ExpressionScope {
-		private final FieldMember field;
+		private final DefinitionMember field;
 		
-		public FieldInitializerScope(FieldMember field) {
+		public FieldInitializerScope(DefinitionMember field) {
 			this.field = field;
 		}
 		

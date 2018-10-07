@@ -227,4 +227,13 @@ public abstract class HighLevelDefinition extends Taggable {
 		
 		return null;
 	}
+
+	public boolean isOuterOf(HighLevelDefinition definition) {
+		if (definition.outerDefinition == this)
+			return true;
+		if (definition.outerDefinition == null)
+			return false;
+		
+		return isOuterOf(definition.outerDefinition);
+	}
 }

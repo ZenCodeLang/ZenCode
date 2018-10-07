@@ -76,6 +76,15 @@ public class CasterMember extends FunctionalMember {
 		return visitor.visitCaster(context, this);
 	}
 	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = super.getEffectiveModifiers();
+		if (overrides != null && overrides.getTarget().getDefinition().isInterface())
+			result |= Modifiers.PUBLIC;
+		
+		return result;
+	}
+	
 	public void setOverrides(GlobalTypeRegistry registry, CasterMemberRef overrides) {
 		this.overrides = overrides;
 	}

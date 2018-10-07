@@ -92,14 +92,15 @@ public class ConstructorMember extends FunctionalMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
-
+	
 	@Override
-	public void normalize(TypeScope scope) {
+	public int getEffectiveModifiers() {
+		int result = modifiers;
 		if (definition instanceof EnumDefinition)
-			modifiers |= Modifiers.PRIVATE;
-		else if (!Modifiers.hasAccess(modifiers))
-			modifiers |= Modifiers.INTERNAL;
+			result |= Modifiers.PRIVATE;
+		else if (!Modifiers.hasAccess(result))
+			result |= Modifiers.INTERNAL;
 		
-		super.normalize(scope);
+		return result;
 	}
 }

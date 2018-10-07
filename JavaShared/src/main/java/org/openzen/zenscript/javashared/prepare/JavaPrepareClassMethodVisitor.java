@@ -303,7 +303,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					baseMethod.name,
 					true,
 					context.getMethodDescriptor(header),
-					JavaModifiers.getJavaModifiers(member.modifiers),
+					JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 					header.getReturnType().type instanceof GenericTypeID);
 		} else if (method == null) {
 			method = new JavaMethod(
@@ -312,7 +312,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					name,
 					true,
 					context.getMethodDescriptor(header),
-					JavaModifiers.getJavaModifiers(member.modifiers),
+					JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 					header.getReturnType().type instanceof GenericTypeID);
 		}
 		

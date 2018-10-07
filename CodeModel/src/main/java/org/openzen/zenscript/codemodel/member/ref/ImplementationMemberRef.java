@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -20,9 +19,9 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public class ImplementationMemberRef implements DefinitionMemberRef {
 	public final ImplementationMember member;
 	private final StoredType type;
-	public final TypeID implementsType;
+	public final StoredType implementsType;
 	
-	public ImplementationMemberRef(ImplementationMember member, StoredType owner, TypeID implementsType) {
+	public ImplementationMemberRef(ImplementationMember member, StoredType owner, StoredType implementsType) {
 		this.member = member;
 		this.type = owner;
 		this.implementsType = implementsType;

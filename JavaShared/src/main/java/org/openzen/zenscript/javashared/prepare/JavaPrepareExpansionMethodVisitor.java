@@ -161,7 +161,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
 		if (method == null)
-			method = new JavaMethod(cls, getKind(member), name, true, context.getMethodDescriptor(header), JavaModifiers.getJavaModifiers(member.modifiers), header.getReturnType().type instanceof GenericTypeID); 
+			method = new JavaMethod(cls, getKind(member), name, true, context.getMethodDescriptor(header), JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()), header.getReturnType().type instanceof GenericTypeID); 
 		
 		if (method.compile) {
 			if (DEBUG_EMPTY && cls.empty)

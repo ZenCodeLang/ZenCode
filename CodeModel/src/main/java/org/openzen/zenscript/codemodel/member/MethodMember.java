@@ -59,6 +59,18 @@ public class MethodMember extends FunctionalMember {
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitMethod(context, this);
 	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = super.getEffectiveModifiers();
+		if (overrides != null) {
+			if (overrides.getTarget().isPublic())
+				result |= Modifiers.PUBLIC;
+			if (overrides.getTarget().isProtected())
+				result |= Modifiers.PROTECTED;
+		}
+		return result;
+	}
 
 	@Override
 	public FunctionalMemberRef getOverrides() {
@@ -68,10 +80,5 @@ public class MethodMember extends FunctionalMember {
 	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {
 		this.overrides = overrides;
 		header = header.inferFromOverride(registry, overrides.getHeader());
-		
-		if (overrides.getTarget().isPublic())
-			modifiers |= Modifiers.PUBLIC;
-		if (overrides.getTarget().isProtected())
-			modifiers |= Modifiers.PROTECTED;
 	}
 }

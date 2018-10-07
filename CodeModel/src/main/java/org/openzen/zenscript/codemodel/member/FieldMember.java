@@ -5,10 +5,12 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
+import java.lang.reflect.Modifier;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
@@ -121,6 +123,11 @@ public class FieldMember extends PropertyMember {
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
 		members.addField(new FieldMemberRef(members.type, this, mapper), priority);
+		
+		if (autoGetter != null)
+			autoGetter.registerTo(members, priority, mapper);
+		if (autoSetter != null)
+			autoSetter.registerTo(members, priority, mapper);
 	}
 	
 	@Override
@@ -146,6 +153,11 @@ public class FieldMember extends PropertyMember {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return null;
+	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		return modifiers;
 	}
 
 	@Override

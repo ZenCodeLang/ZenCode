@@ -79,12 +79,20 @@ public class SetterMember extends PropertyMember {
 	public SetterMemberRef getOverrides() {
 		return overrides;
 	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = modifiers;
+		if (definition.isInterface() || (overrides != null && overrides.getTarget().getDefinition().isInterface()))
+			result |= Modifiers.PUBLIC;
+		if (!Modifiers.hasAccess(result))
+			result |= Modifiers.INTERNAL;
+		
+		return result;
+	}
 
 	@Override
 	public void normalize(TypeScope scope) {
-		if (!Modifiers.hasAccess(modifiers))
-			modifiers |= Modifiers.INTERNAL;
-		
 		if (body != null)
 			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}

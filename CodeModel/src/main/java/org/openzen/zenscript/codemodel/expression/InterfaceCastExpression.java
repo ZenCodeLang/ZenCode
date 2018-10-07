@@ -6,8 +6,8 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -15,11 +15,13 @@ import org.openzen.zenscript.codemodel.type.StoredType;
  */
 public class InterfaceCastExpression extends Expression {
 	public final Expression value;
+	public final ImplementationMemberRef implementation;
 	
-	public InterfaceCastExpression(CodePosition position, Expression value, StoredType toType) {
-		super(position, toType, value.thrownType);
+	public InterfaceCastExpression(CodePosition position, Expression value, ImplementationMemberRef implementation) {
+		super(position, implementation.implementsType, value.thrownType);
 		
 		this.value = value;
+		this.implementation = implementation;
 	}
 
 	@Override
@@ -35,11 +37,11 @@ public class InterfaceCastExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
-		return value == tValue ? this : new InterfaceCastExpression(position, tValue, type);
+		return value == tValue ? this : new InterfaceCastExpression(position, tValue, implementation);
 	}
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		return new InterfaceCastExpression(position, value.normalize(scope), type.getNormalized());
+		return new InterfaceCastExpression(position, value.normalize(scope), implementation);
 	}
 }

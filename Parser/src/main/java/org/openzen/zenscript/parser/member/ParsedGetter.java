@@ -72,7 +72,6 @@ public class ParsedGetter extends ParsedDefinitionMember {
 	private void inferHeaders(BaseScope scope) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
 			fillOverride(scope, implementation.getCompiled().type.stored(BorrowStorageTag.THIS));
-			compiled.modifiers |= Modifiers.PUBLIC;
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");

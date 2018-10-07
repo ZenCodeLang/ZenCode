@@ -64,6 +64,17 @@ public class InnerDefinitionMember extends DefinitionMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = modifiers;
+		if (definition.isInterface())
+			result |= Modifiers.PUBLIC;
+		if (!Modifiers.hasAccess(result))
+			result |= Modifiers.INTERNAL;
+		
+		return result;
+	}
 
 	@Override
 	public void normalize(TypeScope scope) {

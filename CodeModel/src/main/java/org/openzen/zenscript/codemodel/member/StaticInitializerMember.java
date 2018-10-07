@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
@@ -59,6 +60,11 @@ public class StaticInitializerMember extends DefinitionMember {
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return null;
+	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		return modifiers;
 	}
 
 	@Override

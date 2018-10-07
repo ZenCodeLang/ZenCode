@@ -60,12 +60,20 @@ public abstract class FunctionalMember extends DefinitionMember {
 	public BuiltinID getBuiltin() {
 		return builtin;
 	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = modifiers;
+		if (definition.isInterface())
+			result |= Modifiers.PUBLIC;
+		if (!Modifiers.hasAccess(result))
+			result |= Modifiers.INTERNAL;
+		
+		return result;
+	}
 
 	@Override
 	public void normalize(TypeScope scope) {
-		if (!Modifiers.hasAccess(modifiers))
-			modifiers |= Modifiers.INTERNAL;
-		
 		header = header.normalize(scope.getTypeRegistry());
 		if (body != null)
 			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));

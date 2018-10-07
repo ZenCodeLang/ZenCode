@@ -25,7 +25,9 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public interface IDefinitionMember {
 	public CodePosition getPosition();
 	
-	public int getModifiers();
+	public int getSpecifiedModifiers();
+	
+	public int getEffectiveModifiers();
 	
 	public MemberAnnotation[] getAnnotations();
 	

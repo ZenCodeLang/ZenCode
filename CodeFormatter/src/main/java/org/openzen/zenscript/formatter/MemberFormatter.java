@@ -58,7 +58,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitConst(ConstMember member) {
 		visit(true);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		output.append("const")
 				.append(member.name)
 				.append(" as ")
@@ -72,7 +72,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitField(FieldMember member) {
 		visit(true);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		output.append(member.isFinal() ? "val " : "var ")
 				.append(member.name)
 				.append(" as ")
@@ -89,7 +89,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
 		visit(false);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		output.append("this");
 		FormattingUtils.formatHeader(output, settings, member.header, typeFormatter);
 		formatBody(member.body);
@@ -99,7 +99,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitDestructor(DestructorMember member) {
 		visit(false);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		output.append("this");
 		formatBody(member.body);
 		return null;
@@ -108,7 +108,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitMethod(MethodMember member) {
 		visit(false);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		output.append(member.name);
 		FormattingUtils.formatHeader(output, settings, member.header, typeFormatter);
 		formatBody(member.body);
@@ -118,7 +118,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterMember member) {
 		visit(false);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		output.append("get ");
 		output.append(member.name);
 		output.append(" as ");
@@ -130,7 +130,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitSetter(SetterMember member) {
 		visit(false);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		output.append("set ");
 		output.append(member.name);
 		output.append(" as ");
@@ -142,7 +142,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitOperator(OperatorMember member) {
 		visit(false);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		switch (member.operator) {
 			case ADD: output.append("+"); break;
 			case SUB: output.append("-"); break;
@@ -184,7 +184,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitCaster(CasterMember member) {
 		visit(false);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		output.append(" as ");
 		output.append(typeFormatter.format(member.toType));
 		formatBody(member.body);
@@ -200,7 +200,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitCaller(CallerMember member) {
 		visit(false);
-		FormattingUtils.formatModifiers(output, member.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, member.getSpecifiedModifiers());
 		FormattingUtils.formatHeader(output, settings, member.header, typeFormatter);
 		formatBody(member.body);
 		return null;
@@ -209,7 +209,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 	@Override
 	public Void visitImplementation(ImplementationMember implementation) {
 		visit(false);
-		FormattingUtils.formatModifiers(output, implementation.modifiers & ~Modifiers.FINAL);
+		FormattingUtils.formatModifiers(output, implementation.getSpecifiedModifiers());
 		output.append("implements ");
 		output.append(implementation.type.accept(typeFormatter));
 		if (settings.classBracketOnSameLine) {

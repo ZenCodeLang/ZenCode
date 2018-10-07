@@ -462,6 +462,10 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString visitGetter(GetterExpression expression) {
 		if (expression.getter.member.builtin != null)
 			return visitBuiltinGetter(expression, expression.getter.member.builtin);
+		if (expression.getter.member.hasTag(JavaField.class)) {
+			JavaField field = expression.getter.member.getTag(JavaField.class);
+			return expression.target.accept(this).unaryPostfix(JavaOperator.MEMBER, "." + field.name);
+		}
 		
 		JavaMethod method = expression.getter.getTag(JavaMethod.class);
 		StringBuilder result = new StringBuilder();

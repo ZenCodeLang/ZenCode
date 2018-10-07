@@ -94,9 +94,9 @@ public final class TypeMembers {
 		}
 		
 		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
-			if (implementation.member.implementsType.equals(other)) // TODO: for some reason duplicate types are generated
+			if (implementation.member.implementsType.type == other)
 				return true;
-			if (cache.get(implementation.member.implementsType.stored(type.getActualStorage())).extendsOrImplements(other))
+			if (cache.get(implementation.member.implementsType).extendsOrImplements(other))
 				return true;
 		}
 		
@@ -487,8 +487,8 @@ public final class TypeMembers {
 				return castEquivalent(position, caster.member.cast(position, value, implicit), toType);
 		}
 		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
-			if (implementation.member.implementsType.getNormalized() == toType.type)
-				return castEquivalent(position, new InterfaceCastExpression(position, value, toType.type.stored(type.getActualStorage())), toType);
+			if (implementation.member.implementsType.type.getNormalized() == toType.type)
+				return castEquivalent(position, new InterfaceCastExpression(position, value, implementation.member), toType);
 		}
 		if (extendsType(toType.type))
 			return new SupertypeCastExpression(position, value, toType);

@@ -251,7 +251,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			members.addConstructor(new ConstructorMember(
 					BUILTIN,
 					definition,
-					0,
+					Modifiers.PUBLIC,
 					new FunctionHeader(VOID.stored, indexGetParameters),
 					ARRAY_CONSTRUCTOR_SIZED).ref(type));
 		}
@@ -264,7 +264,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		new ConstructorMember(
 				BUILTIN,
 				definition,
-				0,
+				Modifiers.PUBLIC,
 				initialValueConstructorHeader,
 				ARRAY_CONSTRUCTOR_INITIAL_VALUE)
 				.registerTo(members, TypeMemberPriority.SPECIFIED, null);
@@ -279,7 +279,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		members.addConstructor(new ConstructorMember(
 				BUILTIN,
 				definition,
-				0,
+				Modifiers.PUBLIC,
 				lambdaConstructorHeader,
 				ARRAY_CONSTRUCTOR_LAMBDA).ref(type));
 		

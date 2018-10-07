@@ -336,7 +336,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterExpression expression) {
 		checkMemberAccess(expression.position, expression.getter);
-		checkStatic(expression.position, expression.getter);
+		checkNotStatic(expression.position, expression.getter);
 		return expression.target.accept(this);
 	}
 	
@@ -725,22 +725,23 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 	
 	private void checkMemberAccess(CodePosition position, DefinitionMemberRef member) {
-		if (!scope.getAccessScope().hasAccessTo(member.getTarget().getAccessScope(), member.getTarget().getModifiers()))
+		if (!scope.getAccessScope().hasAccessTo(member.getTarget().getAccessScope(), member.getTarget().getEffectiveModifiers())) {
 			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no access to " + member.describe());
+		}
 	}
 
 	private void checkFieldAccess(CodePosition position, FieldMemberRef field) {
-		if (!scope.getAccessScope().equals(field.getTarget().getAccessScope()))
+		if (!scope.getAccessScope().hasAccessTo(field.getTarget().getAccessScope(), Modifiers.PRIVATE))
 			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "fields are private");
 	}
 	
 	private void checkStatic(CodePosition position, DefinitionMemberRef member) {
-		if (!Modifiers.isStatic(member.getTarget().getModifiers()))
+		if (!Modifiers.isStatic(member.getTarget().getSpecifiedModifiers()))
 			validator.logError(ValidationLogEntry.Code.MUST_BE_STATIC, position, "Member is not static");
 	}
 	
 	private void checkNotStatic(CodePosition position, DefinitionMemberRef member) {
-		if (Modifiers.isStatic(member.getTarget().getModifiers()))
+		if (Modifiers.isStatic(member.getTarget().getSpecifiedModifiers()))
 			validator.logError(ValidationLogEntry.Code.MUST_NOT_BE_STATIC, position, "Member must not be static");
 	}
 	
