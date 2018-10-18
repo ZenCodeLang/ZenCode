@@ -47,6 +47,11 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 		return annotations;
 	}
 	
+	@Override
+	public String toString() {
+		return describe();
+	}
+	
 	public boolean isStatic() {
 		return Modifiers.isStatic(getEffectiveModifiers());
 	}

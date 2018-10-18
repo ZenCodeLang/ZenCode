@@ -25,6 +25,7 @@ import org.openzen.zenscript.formatter.ScriptFormattingSettings;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.compiler.ModuleSpace;
+import org.openzen.zenscript.compiler.ZenCodeCompilingModule;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -131,14 +132,15 @@ public class Main {
 		JavaCompiler compiler = new JavaCompiler(module.compilationUnit.globalTypeRegistry, false, null);
 		registry.register(compiler.getContext());
 		
-		compiler.getContext().addModule(module.module);
-		
+		ZenCodeCompilingModule compiling = compiler.addModule(module);
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			compiler.addDefinition(definition, module);
+			compiling.addDefinition(definition);
 		}
 		for (ScriptBlock script : module.scripts) {
-			compiler.addScriptBlock(script);
+			compiling.addScriptBlock(script);
 		}
+		compiling.finish();
+		
 		return compiler.finishAndGetModule();
 	}
 	

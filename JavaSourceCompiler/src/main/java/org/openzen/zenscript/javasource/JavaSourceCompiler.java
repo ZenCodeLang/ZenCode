@@ -6,7 +6,9 @@
 package org.openzen.zenscript.javasource;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -15,6 +17,7 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
+import org.openzen.zenscript.compiler.ZenCodeCompilingModule;
 import org.openzen.zenscript.javashared.JavaBaseCompiler;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -28,8 +31,8 @@ public class JavaSourceCompiler extends JavaBaseCompiler implements ZenCodeCompi
 	public final JavaSourceSyntheticHelperGenerator helperGenerator;
 	
 	private final File directory;
-	private final Map<File, JavaSourceFile> sourceFiles = new HashMap<>();
 	public final JavaSourceContext context;
+	private final List<SourceModule> modules = new ArrayList<>();
 	
 	public JavaSourceCompiler(File directory, CompilationUnit compilationUnit) {
 		if (!directory.exists())
@@ -43,39 +46,15 @@ public class JavaSourceCompiler extends JavaBaseCompiler implements ZenCodeCompi
 	}
 	
 	@Override
-	public void addModule(SemanticModule module) {
+	public ZenCodeCompilingModule addModule(SemanticModule module) {
 		context.addModule(module.module);
-	}
-	
-	@Override
-	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
-		String filename = getFilename(definition);
-		JavaPrepareDefinitionVisitor prepare = new JavaPrepareDefinitionVisitor(context, context.getJavaModule(module.module), filename, null);
-		JavaClass cls = definition.accept(prepare);
-		
-		File file = new File(getDirectory(definition.pkg), cls.getName() + ".java");
-		System.out.println("Compiling " + definition.name + " as " + cls.fullName);
-		JavaSourceFile sourceFile = sourceFiles.get(file);
-		if (sourceFile == null)
-			sourceFiles.put(file, sourceFile = new JavaSourceFile(this, file, cls, module.module, definition.pkg));
-		
-		sourceFile.add(definition, module);
-	}
-	
-	@Override
-	public void addScriptBlock(ScriptBlock script) {
-		
+		SourceModule result = new SourceModule(module);
+		modules.add(result);
+		return result;
 	}
 	
 	@Override
 	public void finish() {
-		for (JavaSourceFile sourceFile : sourceFiles.values()) {
-			sourceFile.prepare(context);
-		}
-		
-		for (JavaSourceFile sourceFile : sourceFiles.values())
-			sourceFile.write();
-		
 		helperGenerator.write();
 	}
 	
@@ -106,5 +85,46 @@ public class JavaSourceCompiler extends JavaBaseCompiler implements ZenCodeCompi
 		} else {
 			return definition.name == null ? "Expansion" : definition.name;
 		}
+	}
+	
+	private class SourceModule implements ZenCodeCompilingModule {
+		private final Map<File, JavaSourceFile> sourceFiles = new HashMap<>();
+		private final SemanticModule module;
+		
+		public SourceModule(SemanticModule module) {
+			this.module = module;
+		}
+
+		@Override
+		public void addDefinition(HighLevelDefinition definition) {
+			String filename = getFilename(definition);
+			JavaPrepareDefinitionVisitor prepare = new JavaPrepareDefinitionVisitor(context, context.getJavaModule(module.module), filename, null);
+			JavaClass cls = definition.accept(prepare);
+
+			File file = new File(getDirectory(definition.pkg), cls.getName() + ".java");
+			System.out.println("Compiling " + definition.name + " as " + cls.fullName);
+			JavaSourceFile sourceFile = sourceFiles.get(file);
+			if (sourceFile == null)
+				sourceFiles.put(file, sourceFile = new JavaSourceFile(JavaSourceCompiler.this, file, cls, module, definition.pkg));
+
+			sourceFile.add(definition);
+		}
+
+		@Override
+		public void addScriptBlock(ScriptBlock script) {
+			// TODO: implement this too
+		}
+
+		@Override
+		public void finish() {
+			for (JavaSourceFile sourceFile : sourceFiles.values()) {
+				sourceFile.prepare(context);
+			}
+
+			for (JavaSourceFile sourceFile : sourceFiles.values())
+				sourceFile.write();
+
+		}
+		
 	}
 }

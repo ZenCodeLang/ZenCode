@@ -7,7 +7,6 @@ package org.openzen.zenscript.javasource;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -33,7 +32,6 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.compiler.CompileScope;
 import org.openzen.zenscript.compiler.SemanticModule;
-import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -53,9 +51,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	private final JavaSourceFormattingSettings settings;
 	private final List<ExpansionDefinition> expansions;
 	private final StringBuilder output;
-	private final Map<HighLevelDefinition, SemanticModule> modules;
 	private final JavaContext context;
 	private final JavaCompiledModule module;
+	private final SemanticModule semanticModule;
 	
 	public JavaDefinitionVisitor(
 			String indent,
@@ -65,7 +63,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			JavaSourceFile file,
 			StringBuilder output,
 			List<ExpansionDefinition> expansions,
-			Map<HighLevelDefinition, SemanticModule> modules)
+			SemanticModule semanticModule)
 	{
 		this.indent = indent;
 		this.compiler = compiler;
@@ -74,17 +72,16 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		this.settings = compiler.settings;
 		this.output = output;
 		this.expansions = expansions;
-		this.modules = modules;
 		this.context = compiler.context;
 		this.module = module;
+		this.semanticModule = semanticModule;
 	}
 	
 	private JavaSourceFileScope createScope(HighLevelDefinition definition) {
-		SemanticModule module = modules.get(definition.getOutermost());
-		GlobalTypeRegistry typeRegistry = module.compilationUnit.globalTypeRegistry;
+		GlobalTypeRegistry typeRegistry = semanticModule.compilationUnit.globalTypeRegistry;
 		DefinitionTypeID thisType = typeRegistry.getForMyDefinition(definition);
 		
-		CompileScope scope = new CompileScope(module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations, module.storageTypes);
+		CompileScope scope = new CompileScope(semanticModule.compilationUnit.globalTypeRegistry, semanticModule.expansions, semanticModule.annotations, semanticModule.storageTypes);
 		return new JavaSourceFileScope(file.importer, compiler.helperGenerator, cls, scope, definition instanceof InterfaceDefinition, thisType, compiler.context);
 	}
 	
@@ -103,7 +100,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	@Override
 	public Void visitClass(ClassDefinition definition) {
 		JavaSourceFileScope scope = createScope(definition);
-		JavaClass cls = context.getJavaClass(definition);
+		JavaClass cls = context.getJavaExpansionClass(definition);
 		
 		output.append(indent);
 		convertModifiers(definition.modifiers);
@@ -401,7 +398,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				member.accept(memberCompiler);
 			memberCompiler.finish();
 		} else {
-			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, module, file, settings, indent + settings.indent, output, scope, scope.isInterface, definition, modules);
+			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, module, file, settings, indent + settings.indent, output, scope, scope.isInterface, definition, semanticModule);
 			for (IDefinitionMember member : definition.members)
 				member.accept(memberCompiler);
 			

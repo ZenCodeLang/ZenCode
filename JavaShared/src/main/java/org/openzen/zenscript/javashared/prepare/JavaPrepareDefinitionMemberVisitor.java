@@ -45,9 +45,18 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	public void prepare(TypeID type) {
 		if (!(type instanceof DefinitionTypeID))
 			return;
-			
+		
 		HighLevelDefinition definition = ((DefinitionTypeID)type).definition;
-		System.out.println("Preparing " + definition.name);
+		prepare(definition);
+	}
+	
+	public void prepare(HighLevelDefinition definition) {
+		if (isPrepared(definition))
+			return;
+		if (definition.module != module.module)
+			throw new IllegalArgumentException("Definition is not in the same module as the current module!");
+		
+		System.out.println("~~ Preparing " + definition.name);
 		definition.accept(this);
 	}
 	
@@ -103,7 +112,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 			return context.getJavaClass(definition);
 		
 		JavaNativeClass nativeClass = context.getJavaNativeClass(definition);
-		JavaClass cls = context.getJavaClass(definition);
+		JavaClass cls = context.getJavaExpansionClass(definition);
 		visitExpansionMembers(definition, cls, nativeClass);
 		return cls;
 	}
@@ -133,7 +142,10 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 		if (nativeClass == null) {
 			visitClassMembers(definition, cls, null, startsEmpty);
 		} else {
-			visitExpansionMembers(definition, cls, nativeClass);
+			cls.membersPrepared = true;
+			JavaClass expansionCls = context.getJavaExpansionClass(definition);
+			visitExpansionMembers(definition, expansionCls, nativeClass);
+			cls.empty = expansionCls.empty;
 		}
 		return cls;
 	}

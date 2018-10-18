@@ -8,6 +8,7 @@ package org.openzen.zenscript.javashared.prepare;
 import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.member.CallerMember;
@@ -298,6 +299,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		
 		if (member.getOverrides() != null) {
 			DefinitionMemberRef base = member.getOverrides();
+			
 			JavaMethod baseMethod = context.getJavaMethod(base.getTarget());
 			method = new JavaMethod(
 					cls,

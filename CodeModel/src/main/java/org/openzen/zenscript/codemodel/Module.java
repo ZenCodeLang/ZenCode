@@ -5,18 +5,21 @@
  */
 package org.openzen.zenscript.codemodel;
 
-import org.openzen.zencode.shared.Taggable;
-
 /**
  *
  * @author Hoofdgebruiker
  */
-public class Module extends Taggable {
+public class Module {
 	public static final Module BUILTIN = new Module("builtin");
 	
 	public final String name;
 	
 	public Module(String name) {
 		this.name = name;
+	}
+	
+	@Override
+	public String toString() {
+		return name;
 	}
 }

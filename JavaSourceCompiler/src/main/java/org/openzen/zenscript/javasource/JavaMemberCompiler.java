@@ -9,7 +9,6 @@ import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -53,10 +52,10 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	private final JavaSourceFile file;
 	private final List<FieldMember> fields = new ArrayList<>();
 	private final boolean isInterface;
-	private final Map<HighLevelDefinition, SemanticModule> modules;
 	private final JavaContext context;
 	public boolean hasDestructor = false;
 	private final JavaCompiledModule module;
+	private final SemanticModule semanticModule;
 	
 	public JavaMemberCompiler(
 			JavaSourceCompiler compiler,
@@ -68,16 +67,16 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			JavaSourceFileScope scope,
 			boolean isInterface,
 			HighLevelDefinition definition,
-			Map<HighLevelDefinition, SemanticModule> modules)
+			SemanticModule semanticModule)
 	{
 		super(settings, indent, output, scope, null, definition);
 		
 		this.file = file;
 		this.isInterface = isInterface;
 		this.compiler = compiler;
-		this.modules = modules;
 		this.context = compiler.context;
 		this.module = module;
+		this.semanticModule = semanticModule;
 	}
 	
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
@@ -243,7 +242,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			
 			begin(ElementType.INNERCLASS);
 			output.append("private class ").append(implementationName).append(" implements ").append(scope.type(member.type)).append(" {\n");
-			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, module, file, settings, indent + settings.indent, output, scope, isInterface, definition, modules);
+			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, module, file, settings, indent + settings.indent, output, scope, isInterface, definition, semanticModule);
 			for (IDefinitionMember m : member.members) {
 				m.accept(memberCompiler);
 			}
@@ -266,7 +265,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 				file,
 				output,
 				Collections.emptyList(),
-				modules);
+				semanticModule);
 		member.innerDefinition.accept(visitor);
 		return null;
 	}

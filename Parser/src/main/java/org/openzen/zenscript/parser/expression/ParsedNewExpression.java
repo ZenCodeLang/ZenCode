@@ -72,7 +72,7 @@ public class ParsedNewExpression extends ParsedExpression{
 					type,
 					member,
 					compiledArguments,
-					member.getHeader().fillGenericArguments(scope.getTypeRegistry(), compiledArguments.typeArguments, scope.getLocalTypeParameters()));
+					member.getHeader().fillGenericArguments(scope, compiledArguments.typeArguments));
 		} catch (CompileException ex) {
 			return new InvalidExpression(type, ex);
 		}

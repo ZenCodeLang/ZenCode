@@ -102,6 +102,10 @@ public abstract class JavaContext {
 		return getJavaModule(definition.module).getClassInfo(definition);
 	}
 	
+	public JavaClass getJavaExpansionClass(HighLevelDefinition definition) {
+		return getJavaModule(definition.module).getExpansionClassInfo(definition);
+	}
+	
 	public JavaClass optJavaClass(HighLevelDefinition definition) {
 		return getJavaModule(definition.module).optClassInfo(definition);
 	}
@@ -116,6 +120,10 @@ public abstract class JavaContext {
 	
 	public void setJavaClass(HighLevelDefinition definition, JavaClass cls) {
 		getJavaModule(definition.module).setClassInfo(definition, cls);
+	}
+	
+	public void setJavaExpansionClass(HighLevelDefinition definition, JavaClass cls) {
+		getJavaModule(definition.module).setExpansionClassInfo(definition, cls);
 	}
 	
 	public void setJavaNativeClass(HighLevelDefinition definition, JavaNativeClass cls) {

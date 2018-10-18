@@ -23,6 +23,7 @@ public class JavaCompiledModule {
 	public final Module module;
 	
 	private final Map<HighLevelDefinition, JavaClass> classes = new HashMap<>();
+	private final Map<HighLevelDefinition, JavaClass> expansionClasses = new HashMap<>();
 	private final Map<HighLevelDefinition, JavaNativeClass> nativeClasses = new HashMap<>();
 	private final Map<ImplementationMember, JavaImplementation> implementations = new HashMap<>();
 	private final Map<IDefinitionMember, JavaField> fields = new HashMap<>();
@@ -38,10 +39,22 @@ public class JavaCompiledModule {
 		classes.put(definition, cls);
 	}
 	
+	public void setExpansionClassInfo(HighLevelDefinition definition, JavaClass cls) {
+		expansionClasses.put(definition, cls);
+	}
+	
 	public JavaClass getClassInfo(HighLevelDefinition definition) {
 		JavaClass cls = classes.get(definition);
 		if (cls == null)
 			throw new IllegalStateException("Missing class info for class " + definition.name);
+		
+		return cls;
+	}
+	
+	public JavaClass getExpansionClassInfo(HighLevelDefinition definition) {
+		JavaClass cls = expansionClasses.get(definition);
+		if (cls == null)
+			return getClassInfo(definition);
 		
 		return cls;
 	}

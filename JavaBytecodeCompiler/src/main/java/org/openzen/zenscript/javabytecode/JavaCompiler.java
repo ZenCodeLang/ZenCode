@@ -19,6 +19,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
+import org.openzen.zenscript.compiler.ZenCodeCompilingModule;
 import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
 import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
@@ -64,21 +65,28 @@ public class JavaCompiler extends JavaBaseCompiler implements ZenCodeCompiler {
 	}
 	
 	@Override
-	public void addModule(SemanticModule module) {
+	public ZenCodeCompilingModule addModule(SemanticModule module) {
 		context.addModule(module.module);
-	}
-
-	@Override
-	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
-		JavaPrepareDefinitionVisitor preparer = new JavaPrepareDefinitionVisitor(context, context.getJavaModule(module.module), definition.position.getFilename(), null);
-		definition.accept(preparer);
 		
-		definitions.add(definition);
-	}
+		return new ZenCodeCompilingModule() {
+			@Override
+			public void addDefinition(HighLevelDefinition definition) {
+				JavaPrepareDefinitionVisitor preparer = new JavaPrepareDefinitionVisitor(context, context.getJavaModule(module.module), definition.position.getFilename(), null);
+				definition.accept(preparer);
 
-	@Override
-	public void addScriptBlock(ScriptBlock script) {
-		scripts.add(script);
+				definitions.add(definition);
+			}
+
+			@Override
+			public void addScriptBlock(ScriptBlock script) {
+				scripts.add(script);
+			}
+
+			@Override
+			public void finish() {
+				
+			}
+		};
 	}
 
 	private String getClassName(String filename) {

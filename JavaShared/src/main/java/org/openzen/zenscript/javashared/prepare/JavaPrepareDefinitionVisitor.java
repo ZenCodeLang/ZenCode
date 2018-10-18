@@ -347,9 +347,10 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.destructible = definition.isDestructible();
 			context.setJavaClass(definition, cls);
 		} else {
-			cls = outerClass == null ? new JavaClass(definition.pkg.fullName, filename, kind) : new JavaClass(outerClass, filename, kind);
+			cls = outerClass == null ? new JavaClass(definition.pkg.fullName, definition.name + "Expansion", kind) : new JavaClass(outerClass, definition.name + "Expansion", kind);
 			
 			context.setJavaClass(definition, nativeClass.cls);
+			context.setJavaExpansionClass(definition, cls);
 			context.setJavaNativeClass(definition, nativeClass);
 			
 			if (nativeClass.nonDestructible)

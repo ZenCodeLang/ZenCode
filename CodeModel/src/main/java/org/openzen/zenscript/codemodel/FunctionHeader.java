@@ -46,7 +46,7 @@ public class FunctionHeader {
 		
 		minParameters = 0;
 		maxParameters = 0;
-		hasUnknowns = returnType == BasicTypeID.UNDETERMINED.stored;
+		hasUnknowns = returnType.type == BasicTypeID.UNDETERMINED;
 	}
 	
 	public FunctionHeader(BasicTypeID returnType) {
@@ -123,7 +123,7 @@ public class FunctionHeader {
 	}
 	
 	public boolean isDenormalized() {
-		if (returnType.getNormalized() != returnType)
+		if (!returnType.getNormalized().equals(returnType))
 			return true;
 		for (FunctionParameter parameter : parameters)
 			if (parameter.type.getNormalized() != parameter.type)
@@ -138,7 +138,7 @@ public class FunctionHeader {
 		
 		FunctionParameter[] normalizedParameters = new FunctionParameter[parameters.length];
 		for (int i = 0; i < normalizedParameters.length; i++)
-			normalizedParameters[i] = parameters[i].normalized(registry);
+			normalizedParameters[i] = parameters[i].normalize(registry);
 		return new FunctionHeader(typeParameters, returnType.getNormalized(), thrownType == null ? null : thrownType.getNormalized(), storage, normalizedParameters);
 	}
 	
@@ -152,10 +152,6 @@ public class FunctionHeader {
 				return true;
 		
 		return false;
-	}
-	
-	public FunctionHeader withReturnType(StoredType returnType) {
-		return new FunctionHeader(typeParameters, returnType, thrownType, storage, parameters);
 	}
 	
 	public FunctionHeader inferFromOverride(GlobalTypeRegistry registry, FunctionHeader overridden) {
@@ -188,7 +184,7 @@ public class FunctionHeader {
 		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
 			return false;
 		
-		FunctionHeader header = fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
+		FunctionHeader header = fillGenericArguments(scope, arguments.typeArguments);
 		for (int i = 0; i < header.parameters.length; i++) {
 			if (!arguments.arguments[i].type.equals(header.parameters[i].type))
 				return false;
@@ -201,7 +197,7 @@ public class FunctionHeader {
 		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
 			return false;
 		
-		FunctionHeader header = fillGenericArguments(scope.getTypeRegistry(), arguments.typeArguments, scope.getLocalTypeParameters());
+		FunctionHeader header = fillGenericArguments(scope, arguments.typeArguments);
 		for (int i = 0; i < header.parameters.length; i++) {
 			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
 				return false;
@@ -221,6 +217,8 @@ public class FunctionHeader {
 			}
 			result.append('>');
 		}
+		if (storage != null)
+			result.append(storage);
 		result.append('(');
 		for (int i = 0; i < parameters.length; i++) {
 			if (i > 0)
@@ -388,12 +386,12 @@ public class FunctionHeader {
 		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), storage, parameters);
 	}
 	
-	public FunctionHeader fillGenericArguments(GlobalTypeRegistry registry, StoredType[] arguments, GenericMapper typeParameterMapping) {
+	public FunctionHeader fillGenericArguments(TypeScope scope, StoredType[] arguments) {
 		if (arguments == null || arguments.length == 0)
 			return this;
 		
 		Map<TypeParameter, StoredType> typeArguments = StoredType.getMapping(typeParameters, arguments);
-		GenericMapper mapper = typeParameterMapping.getInner(registry, typeArguments);
+		GenericMapper mapper = scope.getLocalTypeParameters().getInner(scope.getTypeRegistry(), typeArguments);
 		
 		StoredType returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
