@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
+import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
@@ -95,7 +96,10 @@ public class ParsedSetter extends ParsedDefinitionMember {
 		inferHeaders(scope);
 		
 		FunctionHeader header = new FunctionHeader(compiled.type);
-		FunctionScope innerScope = new FunctionScope(scope, header);
+		FunctionScope innerScope = new FunctionScope(
+				scope,
+				header,
+				position -> new GetFunctionParameterExpression(position, compiled.parameter));
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		compiled.setBody(body.compile(innerScope, header));
 	}

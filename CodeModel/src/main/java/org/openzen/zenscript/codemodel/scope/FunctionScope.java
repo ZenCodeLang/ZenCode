@@ -33,11 +33,17 @@ public class FunctionScope extends StatementScope {
 	private final FunctionHeader header;
 	private final GenericMapper typeParameterMap;
 	private final StoredType thisType;
+	private final DollarEvaluator dollar;
 	
 	public FunctionScope(BaseScope outer, FunctionHeader header) {
+		this(outer, header, null);
+	}
+	
+	public FunctionScope(BaseScope outer, FunctionHeader header, DollarEvaluator dollar) {
 		this.outer = outer;
 		this.header = header;
 		this.thisType = outer.getThisType() == null || header.storage == null ? outer.getThisType() : outer.getThisType().type.stored(header.storage);
+		this.dollar = dollar;
 		
 		if (outer.getLocalTypeParameters() == null)
 			throw new NullPointerException();
@@ -112,11 +118,12 @@ public class FunctionScope extends StatementScope {
 
 	@Override
 	public DollarEvaluator getDollar() {
-		for (FunctionParameter parameter : header.parameters)
+		return dollar;
+		/*for (FunctionParameter parameter : header.parameters)
 			if (parameter.name.equals("$"))
 				return position -> new GetFunctionParameterExpression(position, parameter);
 		
-		return null;
+		return null;*/
 	}
 	
 	@Override

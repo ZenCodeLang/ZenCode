@@ -31,7 +31,7 @@ public class SetterMember extends PropertyMember {
 	public final String name;
 	private SetterMemberRef overrides;
 	public Statement body;
-	public final FunctionParameter parameter;
+	public FunctionParameter parameter;
 	
 	public SetterMember(
 			CodePosition position,
@@ -105,8 +105,10 @@ public class SetterMember extends PropertyMember {
 	public void setOverrides(SetterMemberRef overrides) {
 		this.overrides = overrides;
 		
-		if (type.type == BasicTypeID.UNDETERMINED)
+		if (type.type == BasicTypeID.UNDETERMINED) {
 			type = overrides.getType();
+			parameter = new FunctionParameter(overrides.getType(), "value");
+		}
 	}
 
 	@Override
