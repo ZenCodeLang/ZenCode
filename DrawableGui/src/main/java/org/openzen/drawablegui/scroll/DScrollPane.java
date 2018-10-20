@@ -28,13 +28,15 @@ import org.openzen.drawablegui.style.DStyleClass;
 public class DScrollPane implements DComponent, DScrollContext {
 	private final DStyleClass styleClass;
 	private final DComponent contents;
-	private final DScrollBar scrollBar;
+	private final DScrollBar verticalScrollBar;
+	private final DScrollBar horizontalScrollBar;
 	
 	private DComponentContext context;
 	private DScrollPaneStyle style;
 	private DIRectangle bounds;
 	
 	private DDrawnShape shape;
+	private final LiveInt contentsWidth;
 	private final LiveInt contentsHeight;
 	private final LiveInt offsetX;
 	private final LiveInt offsetY;
@@ -42,6 +44,7 @@ public class DScrollPane implements DComponent, DScrollContext {
 	private final SimpleLiveObject<DSizing> sizing = new SimpleLiveObject<>(DSizing.EMPTY);
 	private final LiveObject<DScalableSize> size;
 	
+	private final ListenerHandle<LiveInt.Listener> contentsWidthListener;
 	private final ListenerHandle<LiveInt.Listener> contentsHeightListener;
 	private final ListenerHandle<LiveInt.Listener> offsetXListener;
 	private final ListenerHandle<LiveInt.Listener> offsetYListener;
@@ -56,12 +59,15 @@ public class DScrollPane implements DComponent, DScrollContext {
 		this.styleClass = styleClass;
 		this.contents = contents;
 		
+		contentsWidth = new SimpleLiveInt(0);
 		contentsHeight = new SimpleLiveInt(0);
 		offsetX = new SimpleLiveInt(0);
 		offsetY = new SimpleLiveInt(0);
 		
-		scrollBar = new DScrollBar(DStyleClass.EMPTY, contentsHeight, offsetY);
+		verticalScrollBar = new DScrollBar(DStyleClass.EMPTY, contentsHeight, offsetY, false);
+		horizontalScrollBar = new DScrollBar(DStyleClass.EMPTY, contentsWidth, offsetX, true);
 		
+		contentsWidthListener = contentsWidth.addListener(new ScrollListener());
 		contentsHeightListener = contentsHeight.addListener(new ScrollListener());
 		offsetXListener = offsetX.addListener(new ScrollListener());
 		offsetYListener = offsetY.addListener(new ScrollListener());
@@ -83,7 +89,8 @@ public class DScrollPane implements DComponent, DScrollContext {
 		subSurface = context.createSubSurface(1);
 		DComponentContext newContext = new DComponentContext(this, context.path, 0, subSurface);
 		contents.mount(newContext);
-		scrollBar.mount(context);
+		horizontalScrollBar.mount(context);
+		verticalScrollBar.mount(context);
 		
 		sizing.setValue(new DSizing(
 				size.getValue().width.evalInt(parent.getUIContext()),
@@ -98,7 +105,8 @@ public class DScrollPane implements DComponent, DScrollContext {
 		style.border.close();
 		
 		contents.unmount();
-		scrollBar.unmount();
+		horizontalScrollBar.unmount();
+		verticalScrollBar.unmount();
 	}
 
 	@Override
@@ -125,16 +133,29 @@ public class DScrollPane implements DComponent, DScrollContext {
 		shape = context.shadowPath(0, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 		style.border.update(context, style.margin.apply(bounds));
 		
+		int width = Math.max(
+				bounds.width - style.border.getPaddingHorizontal(),
+				contents.getSizing().getValue().preferredWidth);
 		int height = Math.max(
 				bounds.height - style.border.getPaddingHorizontal(),
 				contents.getSizing().getValue().preferredHeight);
-		int scrollBarWidth = scrollBar.getSizing().getValue().preferredWidth;
-		scrollBar.setBounds(new DIRectangle(
+		int scrollBarWidth = verticalScrollBar.getSizing().getValue().preferredWidth;
+		int scrollBarHeight = horizontalScrollBar.getSizing().getValue().preferredHeight;
+
+		verticalScrollBar.setBounds(new DIRectangle(
 				bounds.x + bounds.width - scrollBarWidth - style.border.getPaddingRight() - style.margin.right,
 				bounds.y + style.border.getPaddingTop() + style.margin.top,
 				scrollBarWidth,
 				bounds.height - style.border.getPaddingVertical() - style.margin.getVertical()));
-		contents.setBounds(new DIRectangle(0, 0, bounds.width - scrollBar.getBounds().width, height));
+		
+		horizontalScrollBar.setBounds(new DIRectangle(
+				bounds.x + style.border.getPaddingLeft() + style.margin.left,
+				bounds.y + bounds.height - scrollBarHeight - style.border.getPaddingBottom() - style.margin.bottom,
+				bounds.width - style.border.getPaddingHorizontal() - style.margin.getHorizontal(),
+				scrollBarHeight));
+		
+		contents.setBounds(new DIRectangle(0, 0, width, height));
+		contentsWidth.setValue(width);
 		contentsHeight.setValue(height);
 		
 		subSurface.setOffset(bounds.x - offsetX.getValue(), bounds.y - offsetY.getValue());
@@ -152,8 +173,10 @@ public class DScrollPane implements DComponent, DScrollContext {
 	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
-		if (e.x >= scrollBar.getBounds().x) {
-			setHovering(scrollBar, e);
+		if (e.x >= verticalScrollBar.getBounds().x) {
+			setHovering(verticalScrollBar, e);
+		} else if (e.y >= horizontalScrollBar.getBounds().y) {
+			setHovering(horizontalScrollBar, e);
 		} else {
 			setHovering(contents, e);
 		}
@@ -166,11 +189,17 @@ public class DScrollPane implements DComponent, DScrollContext {
 	
 	@Override
 	public void onMouseMove(DMouseEvent e) {
-		if (e.x >= scrollBar.getBounds().x) {
-			if (hovering != scrollBar) {
-				setHovering(scrollBar, e);
+		if (e.x >= verticalScrollBar.getBounds().x) {
+			if (hovering != verticalScrollBar) {
+				setHovering(verticalScrollBar, e);
 			} else {
-				scrollBar.onMouseMove(e);
+				verticalScrollBar.onMouseMove(e);
+			}
+		} else if (e.y >= horizontalScrollBar.getBounds().y) {
+			if (hovering != horizontalScrollBar) {
+				setHovering(horizontalScrollBar, e);
+			} else {
+				horizontalScrollBar.onMouseMove(e);
 			}
 		} else {
 			if (hovering != contents) {
@@ -261,6 +290,11 @@ public class DScrollPane implements DComponent, DScrollContext {
 
 	@Override
 	public void scrollInView(int x, int y, int width, int height) {
+		if (x < offsetX.getValue())
+			offsetX.setValue(x);
+		if (x + width > offsetX.getValue() + bounds.width)
+			offsetX.setValue(x + width - bounds.width);
+		
 		if (y < offsetY.getValue())
 			offsetY.setValue(y);
 		if (y + height > offsetY.getValue() + bounds.height)
@@ -281,14 +315,23 @@ public class DScrollPane implements DComponent, DScrollContext {
 
 		@Override
 		public void onChanged(int oldValue, int newValue) {
-			int value = offsetY.getValue();
-			if (value > contentsHeight.getValue() - bounds.height)
-				value = contentsHeight.getValue() - bounds.height;
-			if (value < 0)
-				value = 0;
+			int valueX = offsetX.getValue();
+			if (valueX > contentsWidth.getValue() - bounds.width)
+				valueX = contentsWidth.getValue() - bounds.width;
+			if (valueX < 0)
+				valueX = 0;
 			
-			if (value != offsetY.getValue())
-				offsetY.setValue(value);
+			if (valueX != offsetX.getValue())
+				offsetX.setValue(valueX);
+			
+			int valueY = offsetY.getValue();
+			if (valueY > contentsHeight.getValue() - bounds.height)
+				valueY = contentsHeight.getValue() - bounds.height;
+			if (valueY < 0)
+				valueY = 0;
+			
+			if (valueY != offsetY.getValue())
+				offsetY.setValue(valueY);
 			
 			subSurface.setOffset(bounds.x - offsetX.getValue(), bounds.y - offsetY.getValue());
 		}

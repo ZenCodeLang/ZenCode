@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**

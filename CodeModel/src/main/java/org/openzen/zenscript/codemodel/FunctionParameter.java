@@ -62,7 +62,7 @@ public class FunctionParameter extends Taggable {
 	
 	public FunctionParameter withGenericArguments(GenericMapper mapper) {
 		StoredType instanced = type.instance(mapper);
-		if (instanced == type)
+		if (instanced.equals(type))
 			return this;
 		
 		FunctionParameter result = new FunctionParameter(instanced, name, defaultValue, variadic);

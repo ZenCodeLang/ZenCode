@@ -17,7 +17,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialPackageExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 

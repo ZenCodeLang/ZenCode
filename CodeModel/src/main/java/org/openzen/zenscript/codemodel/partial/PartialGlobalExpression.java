@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
 import org.openzen.zenscript.codemodel.expression.GlobalExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**

@@ -18,7 +18,7 @@ import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**

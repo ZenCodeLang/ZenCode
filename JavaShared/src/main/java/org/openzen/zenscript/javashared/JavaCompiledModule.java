@@ -126,7 +126,7 @@ public class JavaCompiledModule {
 	public JavaMethod getMethodInfo(IDefinitionMember member) {
 		JavaMethod method = methods.get(member);
 		if (method == null)
-			throw new IllegalStateException("Missing field info for field " + member.getDefinition().name + "." + member.describe());
+			throw new IllegalStateException("Missing method info for method " + member.getDefinition().name + "." + member.describe());
 		
 		return method;
 	}

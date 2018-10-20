@@ -322,7 +322,7 @@ public class FunctionHeader {
 			return false;
 		
 		for (int i = 0; i < parameters.length; i++) {
-			if (parameters[i].type != other.parameters[i].type)
+			if (!parameters[i].type.equals(other.parameters[i].type))
 				return false;
 		}
 		
@@ -370,9 +370,9 @@ public class FunctionHeader {
 		}
 	}
 	
-	public FunctionHeader withGenericArguments(GlobalTypeRegistry registry, GenericMapper mapper) {
+	public FunctionHeader withGenericArguments(GenericMapper mapper) {
 		if (typeParameters.length > 0)
-			mapper = mapper.getInner(registry, StoredType.getSelfMapping(registry, typeParameters));
+			mapper = mapper.getInner(mapper.registry, StoredType.getSelfMapping(mapper.registry, typeParameters));
 		
 		return instance(mapper);
 	}

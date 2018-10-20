@@ -27,7 +27,7 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;

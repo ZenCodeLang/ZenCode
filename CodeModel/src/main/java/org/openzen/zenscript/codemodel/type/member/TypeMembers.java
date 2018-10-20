@@ -44,7 +44,7 @@ import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.partial.PartialVariantOptionExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
@@ -333,10 +333,18 @@ public final class TypeMembers {
 		return members.get(name);
 	}
 	
+	public TypeMemberGroup getGroup(String name) {
+		return members.get(name);
+	}
+	
 	public TypeMemberGroup getOrCreateGroup(OperatorType operator) {
 		if (!operators.containsKey(operator))
 			operators.put(operator, new TypeMemberGroup(false, operator.operator + " operator"));
 		
+		return operators.get(operator);
+	}
+	
+	public TypeMemberGroup getGroup(OperatorType operator) {
 		return operators.get(operator);
 	}
 	

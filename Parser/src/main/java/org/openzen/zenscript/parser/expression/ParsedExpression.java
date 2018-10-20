@@ -445,8 +445,15 @@ public abstract class ParsedExpression {
 			}
 			case T_IDENTIFIER: {
 				String name = parser.next().content;
+				if (name.startsWith("@"))
+					name = name.substring(1);
+				
 				List<IParsedType> genericParameters = IParsedType.parseTypeArguments(parser);
 				return new ParsedExpressionVariable(position, name, genericParameters);
+			}
+			case T_LOCAL_IDENTIFIER: {
+				String name = parser.next().content.substring(1);
+				return new ParsedLocalVariableExpression(position, name);
 			}
 			case K_THIS:
 				parser.next();

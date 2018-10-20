@@ -19,6 +19,8 @@ public final class TokenLine {
 	private final List<ZSToken> tokens = new ArrayList<>();
 	private int length = 0;
 	
+	public int lengthInPixels = 0; // used by SourceEditor
+	
 	public List<ZSToken> getTokens() {
 		return Collections.unmodifiableList(tokens);
 	}

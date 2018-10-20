@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.CatchClause;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.VariableID;

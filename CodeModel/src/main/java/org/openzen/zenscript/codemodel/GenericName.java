@@ -3,9 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.codemodel.type;
+package org.openzen.zenscript.codemodel;
 
 import java.util.List;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *

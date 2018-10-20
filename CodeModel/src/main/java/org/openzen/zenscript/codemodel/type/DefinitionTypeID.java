@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import org.openzen.zenscript.codemodel.GenericName;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;

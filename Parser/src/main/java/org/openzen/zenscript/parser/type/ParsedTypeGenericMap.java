@@ -11,7 +11,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;

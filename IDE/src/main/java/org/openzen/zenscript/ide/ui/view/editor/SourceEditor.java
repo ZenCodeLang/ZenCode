@@ -147,8 +147,6 @@ public class SourceEditor implements DComponent {
 		fullLineHeight = textLineHeight + fontMetrics.getLeading() + style.extraLineSpacing;
 		selectionLineHeight = textLineHeight + style.selectionPaddingTop + style.selectionPaddingBottom;
 		
-		sizing.setValue(new DSizing(0, fullLineHeight * tokens.getLineCount()));
-		
 		blinkTimer = context.getUIContext().setTimer(300, this::blink);
 		
 		selection = context.fillRect(2, DIRectangle.EMPTY, style.selectionColor);
@@ -158,11 +156,15 @@ public class SourceEditor implements DComponent {
 		for (int i = 0; i < tokens.getLineCount(); i++)
 			lineNumbers.add(context.drawText(3, font, style.lineBarTextColor, 0, 0, Integer.toString(i + 1)));
 		
-		for (TokenLine line : tokens.getLines())
+		for (TokenLine line : tokens.getLines()) {
 			drawnTokens.add(lineToTokens(line));
+			line.lengthInPixels = measureLineLength(line);
+		}
 		
 		window.aspectBar.toolbars.add(editToolbar);
 		window.aspectBar.active.setValue(editToolbar);
+		
+		updatePreferredSize();
 	}
 	
 	@Override
@@ -720,10 +722,6 @@ public class SourceEditor implements DComponent {
 		return token.type == ZSTokenType.T_WHITESPACE_TAB ? tab : token.content;
 	}
 	
-	private void onLinesUpdated() {
-		sizing.setValue(new DSizing(0, fullLineHeight * tokens.getLineCount()));
-	}
-	
 	private void layoutLines(int fromIndex) {
 		for (int i = fromIndex; i < drawnTokens.size(); i++) {
 			layoutLine(i);
@@ -750,35 +748,63 @@ public class SourceEditor implements DComponent {
 		return tokenLine;
 	}
 	
+	private int measureLineLength(TokenLine line) {
+		int result = 0;
+		for (ZSToken token : line.getTokens()) {
+			String content = getDisplayContent(token);
+			result += fontMetrics.getWidth(content);
+		}
+		return result;
+	}
+	
+	private void updatePreferredSize() {
+		int width = 0;
+		for (TokenLine line : tokens.getLines()) {
+			width = Math.max(width, line.lengthInPixels);
+		}
+		
+		DSizing sizing = new DSizing(width + lineBarWidth, fullLineHeight * tokens.getLineCount());
+		this.sizing.setValue(sizing);
+		System.out.println("Preferred size: " + sizing.preferredWidth + " x " + sizing.preferredHeight);
+	}
+	
 	private class TokenListener implements TokenModel.Listener {
 
 		@Override
 		public void onLineInserted(int index) {
-			onLinesUpdated();
-			
 			if (bounds != null) {
 				String str = Integer.toString(lineNumbers.size() + 1);
 				int x = bounds.x + lineBarWidth - style.lineBarSpacingRight - style.lineBarMargin - fontMetrics.getWidth(str);
 				int y = bounds.y + style.selectionPaddingTop + lineNumbers.size() * fullLineHeight + fontMetrics.getAscent();
 				lineNumbers.add(context.drawText(3, font, style.lineBarTextColor, x, y, str));
 				
-				drawnTokens.add(index, lineToTokens(tokens.getLine(index)));
+				TokenLine line = tokens.getLine(index);
+				drawnTokens.add(index, lineToTokens(line));
 				layoutLines(index);
+				
+				line.lengthInPixels = measureLineLength(line);
 			}
+			
+			updatePreferredSize();
 		}
 
 		@Override
 		public void onLineChanged(int index) {
 			if (bounds != null) {
 				Destructible.close(drawnTokens.get(index));
-				drawnTokens.set(index, lineToTokens(tokens.getLine(index)));
+				
+				TokenLine line = tokens.getLine(index);
+				drawnTokens.set(index, lineToTokens(line));
 				layoutLine(index);
+				
+				line.lengthInPixels = measureLineLength(line);
+				updatePreferredSize();
 			}
 		}
 
 		@Override
 		public void onLineDeleted(int index) {
-			onLinesUpdated();
+			updatePreferredSize();
 			
 			if (index >= lineNumbers.size())
 				return;

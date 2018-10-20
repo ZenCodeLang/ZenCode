@@ -8,7 +8,6 @@ package org.openzen.zenscript.codemodel;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -33,7 +32,7 @@ public class GenericMapper {
 		return mapping;
 	}
 	
-	public StoredType map(CodePosition position, StoredType original) {
+	public StoredType map(StoredType original) {
 		return mapping.isEmpty() ? original : original.instance(this);
 	}
 	
@@ -55,7 +54,7 @@ public class GenericMapper {
 	}
 	
 	public FunctionHeader map(FunctionHeader original) {
-		return mapping.isEmpty() ? original : original.withGenericArguments(registry, this);
+		return mapping.isEmpty() ? original : original.withGenericArguments(this);
 	}
 	
 	public GenericMapper getInner(GlobalTypeRegistry registry, Map<TypeParameter, StoredType> mapping) {

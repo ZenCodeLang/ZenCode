@@ -270,7 +270,7 @@ public class TypeMemberGroup {
 				for (StoredType resultHint : typeHints) {
 					Map<TypeParameter, StoredType> mapping = header.getReturnType().inferTypeParameters(scope.getMemberCache(), resultHint);
 					if (mapping != null) {
-						header = header.withGenericArguments(scope.getTypeRegistry(), scope.getLocalTypeParameters().getInner(scope.getTypeRegistry(), mapping));
+						header = header.withGenericArguments(scope.getLocalTypeParameters().getInner(scope.getTypeRegistry(), mapping));
 						break;
 					}
 				}
