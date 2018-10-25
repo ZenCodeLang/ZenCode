@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.formatter.FileFormatter;
@@ -24,6 +25,8 @@ import org.openzen.zenscript.formatter.ScriptFormattingSettings;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javabytecode.JavaModule;
 import org.openzen.zenscript.compiler.ModuleSpace;
+import org.openzen.zenscript.compiler.ZenCodeCompilingModule;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -36,7 +39,7 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws ParseException {
 		
 		System.out.println();
 		File inputDirectory = new File("scripts");
@@ -47,21 +50,22 @@ public class Main {
 		CompilingPackage compilingPkg = new CompilingPackage(pkg, module);
 		ParsedFile[] parsedFiles = parse(compilingPkg, inputFiles);
 		
+		CompilationUnit compileUnit = new CompilationUnit();
 		ZSPackage global = new ZSPackage(null, "");
-		GlobalRegistry registry = new GlobalRegistry(global);
-		SemanticModule semantic = compileSyntaxToSemantic(compilingPkg, parsedFiles, registry);
+		GlobalRegistry registry = new GlobalRegistry(compileUnit.globalTypeRegistry, global);
+		SemanticModule semantic = compileSyntaxToSemantic(compileUnit, compilingPkg, parsedFiles, registry);
 		
 		//formatFiles(pkg, module);
 		
 		if (semantic.isValid()) {
-			JavaModule javaModule = compileSemanticToJava(semantic);
+			JavaModule javaModule = compileSemanticToJava(registry, semantic);
 			javaModule.execute();
 		} else {
 			System.out.println("There were compilation errors");
 		}
     }
 	
-	private static ParsedFile[] parse(CompilingPackage compilingPkg, File[] files) throws IOException {
+	private static ParsedFile[] parse(CompilingPackage compilingPkg, File[] files) throws ParseException {
 		ParsedFile[] parsedFiles = new ParsedFile[files.length];
 		for (int i = 0; i < files.length; i++) {
 			parsedFiles[i] = ParsedFile.parse(compilingPkg, new TestBracketParser(), files[i]);
@@ -104,8 +108,8 @@ public class Main {
 		}
 	}
 	
-	private static SemanticModule compileSyntaxToSemantic(CompilingPackage compiling, ParsedFile[] files, GlobalRegistry registry) {
-		ModuleSpace space = new ModuleSpace(new CompilationUnit(), new ArrayList<>());
+	private static SemanticModule compileSyntaxToSemantic(CompilationUnit compileUnit, CompilingPackage compiling, ParsedFile[] files, GlobalRegistry registry) {
+		ModuleSpace space = new ModuleSpace(compileUnit, new ArrayList<>(), StorageType.getStandard());
 		for (Map.Entry<String, ISymbol> global : registry.collectGlobals().entrySet()) {
 			space.addGlobal(global.getKey(), global.getValue());
 		}
@@ -124,20 +128,25 @@ public class Main {
 		return result;
 	}
 	
-	private static JavaModule compileSemanticToJava(SemanticModule module) {
+	private static JavaModule compileSemanticToJava(GlobalRegistry registry, SemanticModule module) {
 		JavaCompiler compiler = new JavaCompiler(module.compilationUnit.globalTypeRegistry, false, null);
+		registry.register(compiler.getContext());
+		
+		ZenCodeCompilingModule compiling = compiler.addModule(module);
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			compiler.addDefinition(definition, module);
+			compiling.addDefinition(definition);
 		}
 		for (ScriptBlock script : module.scripts) {
-			compiler.addScriptBlock(script);
+			compiling.addScriptBlock(script);
 		}
+		compiling.finish();
+		
 		return compiler.finishAndGetModule();
 	}
 	
 	private static class TestBracketParser implements BracketExpressionParser {
 		@Override
-		public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) {
+		public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
 			StringBuilder result = new StringBuilder();
 			while (tokens.optional(ZSTokenType.T_GREATER) == null) {
 				ZSToken token = tokens.next();
@@ -145,7 +154,7 @@ public class Main {
 				result.append(tokens.getLastWhitespace());
 			}
 			
-			return new ParsedExpressionString(position.until(tokens.getPosition()), result.toString());
+			return new ParsedExpressionString(position.until(tokens.getPosition()), result.toString(), false);
 		}
 	}
 }

@@ -17,12 +17,13 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.parser.PrecompilationState;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -32,49 +33,43 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedCallArguments {
 	public static final ParsedCallArguments NONE = new ParsedCallArguments(null, Collections.emptyList());
 	
-	public static ParsedCallArguments parse(ZSTokenParser tokens) {
-		List<IParsedType> typeArguments = null;
-		if (tokens.optional(ZSTokenType.T_LESS) != null) {
-			typeArguments = new ArrayList<>();
-			do {
-				IParsedType type = IParsedType.parse(tokens);
-				typeArguments.add(type);
-			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
-			tokens.required(ZSTokenType.T_GREATER, "> expected");
-		}
+	public static ParsedCallArguments parse(ZSTokenParser tokens) throws ParseException {
+		List<IParsedType> typeArguments = IParsedType.parseTypeArgumentsForCall(tokens);
 		
 		tokens.required(ZSTokenType.T_BROPEN, "( expected");
 		
 		List<ParsedExpression> arguments = new ArrayList<>();
-		if (tokens.optional(ZSTokenType.T_BRCLOSE) == null) {
-			do {
-				arguments.add(ParsedExpression.parse(tokens));
-			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
-			tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
-		}
-		
-		return new ParsedCallArguments(typeArguments, arguments);
-	}
-	
-	public static ParsedCallArguments parseForAnnotation(ZSTokenParser tokens) {
-		List<IParsedType> typeArguments = null;
-		if (tokens.optional(ZSTokenType.T_LESS) != null) {
-			typeArguments = new ArrayList<>();
-			do {
-				IParsedType type = IParsedType.parse(tokens);
-				typeArguments.add(type);
-			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
-			tokens.required(ZSTokenType.T_GREATER, "> expected");
-		}
-		
-		List<ParsedExpression> arguments = new ArrayList<>();
-		if (tokens.isNext(ZSTokenType.T_BROPEN)) {
-			tokens.required(ZSTokenType.T_BROPEN, "( expected");
+		try {
 			if (tokens.optional(ZSTokenType.T_BRCLOSE) == null) {
 				do {
 					arguments.add(ParsedExpression.parse(tokens));
 				} while (tokens.optional(ZSTokenType.T_COMMA) != null);
 				tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
+			}
+		} catch (ParseException ex) {
+			tokens.logError(ex);
+			tokens.recoverUntilToken(ZSTokenType.T_BRCLOSE);
+		}
+		
+		return new ParsedCallArguments(typeArguments, arguments);
+	}
+	
+	public static ParsedCallArguments parseForAnnotation(ZSTokenParser tokens) throws ParseException {
+		List<IParsedType> typeArguments = IParsedType.parseTypeArgumentsForCall(tokens);
+		
+		List<ParsedExpression> arguments = new ArrayList<>();
+		if (tokens.isNext(ZSTokenType.T_BROPEN)) {
+			tokens.required(ZSTokenType.T_BROPEN, "( expected");
+			try {
+				if (tokens.optional(ZSTokenType.T_BRCLOSE) == null) {
+					do {
+						arguments.add(ParsedExpression.parse(tokens));
+					} while (tokens.optional(ZSTokenType.T_COMMA) != null);
+					tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
+				}
+			} catch (ParseException ex) {
+				tokens.logError(ex);
+				tokens.recoverUntilToken(ZSTokenType.T_BRCLOSE);
 			}
 		}
 		
@@ -92,8 +87,8 @@ public class ParsedCallArguments {
 	public CallArguments compileCall(
 			CodePosition position, 
 			ExpressionScope scope,
-			ITypeID[] genericParameters,
-			DefinitionMemberGroup member)
+			StoredType[] genericParameters,
+			TypeMemberGroup member) throws CompileException
 	{
 		List<FunctionHeader> possibleHeaders = member.getMethodMembers().stream()
 				.map(method -> method.member.getHeader())
@@ -104,18 +99,18 @@ public class ParsedCallArguments {
 	public CallArguments compileCall(
 			CodePosition position,
 			ExpressionScope scope,
-			ITypeID[] genericParameters,
-			List<FunctionHeader> candidateFunctions)
+			StoredType[] typeArguments,
+			List<FunctionHeader> candidateFunctions) throws CompileException
 	{
 		if (this.typeArguments != null) {
-			genericParameters = new ITypeID[typeArguments.size()];
-			for (int i = 0; i < typeArguments.size(); i++)
-				genericParameters[i] = typeArguments.get(i).compile(scope);
+			typeArguments = new StoredType[this.typeArguments.size()];
+			for (int i = 0; i < this.typeArguments.size(); i++)
+				typeArguments[i] = this.typeArguments.get(i).compile(scope);
 		}
 		
 		List<FunctionHeader> candidates = new ArrayList<>();
 		for (FunctionHeader header : candidateFunctions) {
-			if (isCompatibleWith(scope, header, genericParameters))
+			if (isCompatibleWith(scope, header, typeArguments))
 				candidates.add(header);
 		}
 		
@@ -140,7 +135,7 @@ public class ParsedCallArguments {
 			}
 		}
 		
-		List<ITypeID>[] predictedTypes = new List[arguments.size()];
+		List<StoredType>[] predictedTypes = new List[arguments.size()];
 		for (int i = 0; i < predictedTypes.length; i++)
 			predictedTypes[i] = new ArrayList<>();
 		
@@ -157,16 +152,16 @@ public class ParsedCallArguments {
 			cArguments[i] = cArgument.eval();
 		}
 		
-		ITypeID[] typeParameters = genericParameters;
-		if (typeParameters == null || typeParameters.length == 0) {
+		StoredType[] typeArguments2 = typeArguments;
+		if (typeArguments2 == null || typeArguments2.length == 0) {
 			for (FunctionHeader candidate : candidates) {
 				if (candidate.typeParameters != null) {
-					typeParameters = new ITypeID[candidate.typeParameters.length];
-					for (int i = 0; i < typeParameters.length; i++) {
+					typeArguments2 = new StoredType[candidate.typeParameters.length];
+					for (int i = 0; i < typeArguments2.length; i++) {
 						if (innerScope.genericInferenceMap.get(candidate.typeParameters[i]) == null)
-							throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + candidate.typeParameters[i].name);
+							typeArguments2[i] = new InvalidTypeID(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + candidate.typeParameters[i].name).stored();
 						else
-							typeParameters[i] = innerScope.genericInferenceMap.get(candidate.typeParameters[i]);
+							typeArguments2[i] = innerScope.genericInferenceMap.get(candidate.typeParameters[i]);
 					}
 
 					break;
@@ -174,19 +169,19 @@ public class ParsedCallArguments {
 			}
 		}
 		
-		return new CallArguments(typeParameters, cArguments);
+		return new CallArguments(typeArguments2, cArguments);
 	}
 	
 	
 	public CallArguments compileCall(
 			CodePosition position,
 			ExpressionScope scope,
-			ITypeID[] genericParameters,
-			FunctionHeader function)
+			StoredType[] typeArguments,
+			FunctionHeader function) throws CompileException
 	{
 		ExpressionScope innerScope = scope.forCall(function);
 		
-		List<ITypeID>[] predictedTypes = new List[arguments.size()];
+		List<StoredType>[] predictedTypes = new List[arguments.size()];
 		for (int i = 0; i < predictedTypes.length; i++) {
 			predictedTypes[i] = new ArrayList<>();
 			predictedTypes[i].add(function.parameters[i].type);
@@ -198,37 +193,37 @@ public class ParsedCallArguments {
 			cArguments[i] = cArgument.eval();
 		}
 		
-		ITypeID[] typeParameters = genericParameters;
-		if (typeParameters == null) {
+		StoredType[] typeArguments2 = typeArguments;
+		if (typeArguments2 == null) {
 			if (function.typeParameters != null) {
-				typeParameters = new ITypeID[function.typeParameters.length];
-				for (int i = 0; i < typeParameters.length; i++) {
+				typeArguments2 = new StoredType[function.typeParameters.length];
+				for (int i = 0; i < typeArguments2.length; i++) {
 					if (innerScope.genericInferenceMap.get(function.typeParameters[i]) == null)
 						throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer type parameter " + function.typeParameters[i].name);
 					else
-						typeParameters[i] = innerScope.genericInferenceMap.get(function.typeParameters[i]);
+						typeArguments2[i] = innerScope.genericInferenceMap.get(function.typeParameters[i]);
 				}
 			}
 		}
 		
-		return new CallArguments(typeParameters, cArguments);
+		return new CallArguments(typeArguments2, cArguments);
 	}
 	
-	private CallArguments compileCallNaive(CodePosition position, ExpressionScope scope) {
+	private CallArguments compileCallNaive(CodePosition position, ExpressionScope scope) throws CompileException {
 		Expression[] cArguments = new Expression[arguments.size()];
 		for (int i = 0; i < cArguments.length; i++) {
 			IPartialExpression cArgument = arguments.get(i).compile(scope);
 			cArguments[i] = cArgument.eval();
 		}
-		return new CallArguments(new ITypeID[0], cArguments);
+		return new CallArguments(StoredType.NONE, cArguments);
 	}
 	
-	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header, ITypeID[] typeParameters) {
+	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header, StoredType[] typeArguments) {
 		if (arguments.size() != header.parameters.length)
 			return false;
 		
 		for (int i = 0; i < arguments.size(); i++) {
-			if (typeParameters == null && header.typeParameters != null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
+			if (typeArguments == null && header.typeParameters != null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
 				return false;
 			
 			if (!arguments.get(i).isCompatibleWith(scope, header.parameters[i].type.getNormalized()))

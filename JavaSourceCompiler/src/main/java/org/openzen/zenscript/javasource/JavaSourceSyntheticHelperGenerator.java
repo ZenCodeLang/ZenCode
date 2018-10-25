@@ -19,13 +19,14 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -51,7 +52,7 @@ public class JavaSourceSyntheticHelperGenerator {
 	}
 	
 	public JavaMethod createArrayContains(ArrayTypeID type) {
-		ArrayKind kind = type.accept(new ArrayKindVisitor());
+		ArrayKind kind = type.elementType.type.accept(new ArrayKindVisitor());
 		if (existingContains.containsKey(kind))
 			return existingContains.get(kind);
 		
@@ -156,6 +157,11 @@ public class JavaSourceSyntheticHelperGenerator {
 					throw new UnsupportedOperationException("Invalid array base type: " + basic);
 			}
 		}
+		
+		@Override
+		public ArrayKind visitString(StringTypeID string) {
+			return ArrayKind.OBJECT;
+		}
 
 		@Override
 		public ArrayKind visitArray(ArrayTypeID array) {
@@ -198,7 +204,7 @@ public class JavaSourceSyntheticHelperGenerator {
 		}
 
 		@Override
-		public ArrayKind visitModified(ModifiedTypeID type) {
+		public ArrayKind visitOptional(OptionalTypeID type) {
 			return ArrayKind.OBJECT;
 		}
 	}

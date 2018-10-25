@@ -9,21 +9,21 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ConstructorThisCallExpression extends Expression {
-	public final ITypeID objectType;
+	public final StoredType objectType;
 	public final FunctionalMemberRef constructor;
 	public final CallArguments arguments;
 	
-	public ConstructorThisCallExpression(CodePosition position, ITypeID type, FunctionalMemberRef constructor, CallArguments arguments) {
-		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));
+	public ConstructorThisCallExpression(CodePosition position, StoredType type, FunctionalMemberRef constructor, CallArguments arguments) {
+		super(position, BasicTypeID.VOID.stored, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));
 		
-		if (type instanceof BasicTypeID)
+		if (type.type instanceof BasicTypeID)
 			throw new IllegalArgumentException("Type cannot be basic type");
 		
 		this.objectType = type;

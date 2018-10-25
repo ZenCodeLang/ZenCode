@@ -2,10 +2,7 @@
 package org.openzen.zenscript.lexer;
 
 import java.io.IOException;
-import java.util.Iterator;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.SourceFile;
 
 /**
@@ -18,7 +15,7 @@ import org.openzen.zencode.shared.SourceFile;
  * @param <T> token class
  * @param <TT> token type class
  */
-public class TokenParser<T extends Token<TT>, TT extends TokenType> implements Iterator<T>, TokenStream<TT, T>
+public class TokenParser<T extends Token<TT>, TT extends TokenType> implements TokenStream<TT, T>
 {
     private final CountingCharReader reader;
     private final CompiledDFA<TT> dfa;
@@ -71,7 +68,6 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements I
 		return reader.getPosition();
 	}
 	
-	@Override
 	public boolean hasNext() {
 		try {
 			return reader.peek() >= 0;
@@ -86,7 +82,7 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements I
 	}
 	
 	@Override
-    public T next()
+    public T next() throws ParseException
 	{
 		try {
 			if (reader.peek() < 0)
@@ -116,7 +112,7 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements I
 				return factory.create(invalid, value.toString());
             }
         } catch (IOException ex) {
-			throw new CompileException(getPosition(), CompileExceptionCode.INTERNAL_ERROR, ex.getMessage());
+			throw new ParseException(getPosition(), "I/O exception: " + ex.getMessage());
         }
     }
 }

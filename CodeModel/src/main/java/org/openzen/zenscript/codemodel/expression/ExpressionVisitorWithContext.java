@@ -94,6 +94,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 	
 	public R visitInterfaceCast(C context, InterfaceCastExpression expression);
 	
+	public R visitInvalid(C context, InvalidExpression expression);
+	
 	public R visitIs(C context, IsExpression expression);
 	
 	public R visitMakeConst(C context, MakeConstExpression expression);
@@ -129,6 +131,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 	public R visitStaticGetter(C context, StaticGetterExpression expression);
 	
 	public R visitStaticSetter(C context, StaticSetterExpression expression);
+	
+	public R visitStorageCast(C context, StorageCastExpression expression);
 	
 	public R visitSupertypeCast(C context, SupertypeCastExpression expression);
 	

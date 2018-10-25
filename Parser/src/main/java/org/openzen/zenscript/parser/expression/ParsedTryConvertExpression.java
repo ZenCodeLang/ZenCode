@@ -10,6 +10,7 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -29,7 +30,7 @@ public class ParsedTryConvertExpression extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression cValue = value.compile(scope).eval();
 		if (scope.getFunctionHeader() == null)
 			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_OUTSIDE_FUNCTION, "try? can only be used inside functions");
@@ -38,7 +39,7 @@ public class ParsedTryConvertExpression extends ParsedExpression {
 		if (cValue.thrownType != null) {
 			// this function throws
 			DefinitionTypeID resultType = scope.getTypeRegistry().getForDefinition(result, cValue.type, cValue.thrownType);
-			return new TryConvertExpression(position, resultType, cValue);
+			return new TryConvertExpression(position, resultType.stored(cValue.type.getActualStorage()), cValue);
 		} else {
 			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_ILLEGAL_TARGET, "try? can only be used on expressions that throw");
 		}

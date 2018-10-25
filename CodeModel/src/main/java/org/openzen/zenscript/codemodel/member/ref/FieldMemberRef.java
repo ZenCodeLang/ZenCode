@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class FieldMemberRef extends PropertyRef {
 	public final FieldMember member;
 	
-	public FieldMemberRef(ITypeID owner, FieldMember member, GenericMapper mapper) {
+	public FieldMemberRef(StoredType owner, FieldMember member, GenericMapper mapper) {
 		super(owner, member, mapper);
 		this.member = member;
 	}

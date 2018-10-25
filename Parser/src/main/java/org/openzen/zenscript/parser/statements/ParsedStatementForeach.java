@@ -9,13 +9,14 @@ import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.ForeachScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.statement.InvalidStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 public class ParsedStatementForeach extends ParsedStatement {
@@ -33,21 +34,25 @@ public class ParsedStatementForeach extends ParsedStatement {
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		Expression list = this.list.compile(new ExpressionScope(scope)).eval();
-		
-		TypeMembers members = scope.getTypeMembers(list.type);
-		IteratorMemberRef iterator = members.getIterator(varnames.length);
-		if (iterator == null)
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_ITERATOR, list.type + " doesn't have an iterator with " + varnames.length + " variables");
-		
-		ITypeID[] loopTypes = iterator.types;
-		VarStatement[] variables = new VarStatement[varnames.length];
-		for (int i = 0; i < variables.length; i++)
-			variables[i] = new VarStatement(position, varnames[i], loopTypes[i], null, true);
-		
-		ForeachStatement statement = new ForeachStatement(position, variables, iterator, list);
-		ForeachScope innerScope = new ForeachScope(statement, scope);
-		statement.content = this.body.compile(innerScope);
-		return result(statement, scope);
+		try {
+			Expression list = this.list.compile(new ExpressionScope(scope)).eval();
+
+			TypeMembers members = scope.getTypeMembers(list.type);
+			IteratorMemberRef iterator = members.getIterator(varnames.length);
+			if (iterator == null)
+				return new InvalidStatement(position, CompileExceptionCode.NO_SUCH_ITERATOR, list.type + " doesn't have an iterator with " + varnames.length + " variables");
+
+			StoredType[] loopTypes = iterator.types;
+			VarStatement[] variables = new VarStatement[varnames.length];
+			for (int i = 0; i < variables.length; i++)
+				variables[i] = new VarStatement(position, new VariableID(), varnames[i], loopTypes[i], null, true);
+
+			ForeachStatement statement = new ForeachStatement(position, variables, iterator, list);
+			ForeachScope innerScope = new ForeachScope(statement, scope);
+			statement.content = this.body.compile(innerScope);
+			return result(statement, scope);
+		} catch (CompileException ex) {
+			return result(new InvalidStatement(ex), scope);
+		}
 	}
 }

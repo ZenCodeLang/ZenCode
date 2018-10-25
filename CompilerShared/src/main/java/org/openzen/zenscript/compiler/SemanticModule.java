@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 
@@ -44,6 +45,7 @@ public class SemanticModule {
 	public final CompilationUnit compilationUnit;
 	public final List<ExpansionDefinition> expansions;
 	public final AnnotationDefinition[] annotations;
+	public final StorageType[] storageTypes;
 	
 	public SemanticModule(
 			String name,
@@ -56,7 +58,8 @@ public class SemanticModule {
 			List<ScriptBlock> scripts,
 			CompilationUnit compilationUnit,
 			List<ExpansionDefinition> expansions,
-			AnnotationDefinition[] annotations)
+			AnnotationDefinition[] annotations,
+			StorageType[] storageTypes)
 	{
 		this.name = name;
 		this.module = module;
@@ -71,6 +74,7 @@ public class SemanticModule {
 		this.compilationUnit = compilationUnit;
 		this.expansions = expansions;
 		this.annotations = annotations;
+		this.storageTypes = storageTypes;
 	}
 	
 	public boolean isValid() {
@@ -81,15 +85,16 @@ public class SemanticModule {
 		if (state != State.ASSEMBLED)
 			throw new IllegalStateException("Module is invalid");
 		
-		ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(compilationUnit.globalTypeRegistry, annotations, rootPackage, null, globals);
+		ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(compilationUnit.globalTypeRegistry, annotations, storageTypes, rootPackage, null, globals);
 		AnnotationProcessor annotationProcessor = new AnnotationProcessor(context, expansions);
 		List<ScriptBlock> processedScripts = new ArrayList<>();
+		FileScope fileScope = new FileScope(context, expansions, globals, member -> {});
+			
 		for (ScriptBlock block : scripts)
-			processedScripts.add(annotationProcessor.process(block));
+			processedScripts.add(annotationProcessor.process(block).normalize(fileScope));
+		
 		for (HighLevelDefinition definition : definitions.getAll()) {
 			annotationProcessor.process(definition);
-			
-			FileScope fileScope = new FileScope(context, expansions, globals, member -> {});
 			definition.normalize(fileScope);
 		}
 		
@@ -104,7 +109,8 @@ public class SemanticModule {
 				processedScripts,
 				compilationUnit,
 				expansions,
-				annotations);
+				annotations,
+				storageTypes);
 	}
 	
 	public boolean validate(Consumer<ValidationLogEntry> logger) {
@@ -130,12 +136,14 @@ public class SemanticModule {
 		if (state != State.VALIDATED)
 			throw new IllegalStateException("Module is not yet validated");
 		
+		ZenCodeCompilingModule module = compiler.addModule(this);
 		for (HighLevelDefinition definition : definitions.getAll()) {
-			compiler.addDefinition(definition, this);
+			module.addDefinition(definition);
 		}
 		for (ScriptBlock script : scripts) {
-			compiler.addScriptBlock(script);
+			module.addScriptBlock(script);
 		}
+		module.finish();
 	}
 	
 	public ModuleContext getContext() {

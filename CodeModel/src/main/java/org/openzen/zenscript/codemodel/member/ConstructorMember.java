@@ -38,7 +38,7 @@ public class ConstructorMember extends FunctionalMember {
 				position,
 				definition,
 				modifiers,
-				new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters),
+				new FunctionHeader(header.typeParameters, BasicTypeID.VOID.stored, header.thrownType, header.storage, header.parameters),
 				builtin);
 	}
 	
@@ -92,12 +92,15 @@ public class ConstructorMember extends FunctionalMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
-
+	
 	@Override
-	public void normalize(TypeScope scope) {
+	public int getEffectiveModifiers() {
+		int result = modifiers;
 		if (definition instanceof EnumDefinition)
-			modifiers |= Modifiers.PRIVATE;
+			result |= Modifiers.PRIVATE;
+		else if (!Modifiers.hasAccess(result))
+			result |= Modifiers.INTERNAL;
 		
-		super.normalize(scope);
+		return result;
 	}
 }

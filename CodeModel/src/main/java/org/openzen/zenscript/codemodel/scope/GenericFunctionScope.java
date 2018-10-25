@@ -8,20 +8,21 @@ package org.openzen.zenscript.codemodel.scope;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -45,7 +46,7 @@ public class GenericFunctionScope extends BaseScope {
 	}
 
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		if (parameters.containsKey(name.name) && name.hasNoArguments())
 			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameters.get(name.name)), name.arguments);
 		
@@ -53,11 +54,16 @@ public class GenericFunctionScope extends BaseScope {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
+	public TypeID getType(CodePosition position, List<GenericName> name) {
 		if (name.size() == 1 && parameters.containsKey(name.get(0).name) && name.get(0).hasNoArguments())
 			return getTypeRegistry().getGeneric(parameters.get(name.get(0).name));
 		
 		return outer.getType(position, name);
+	}
+
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return outer.getStorageTag(position, name, parameters);
 	}
 
 	@Override
@@ -71,17 +77,17 @@ public class GenericFunctionScope extends BaseScope {
 	}
 
 	@Override
-	public ITypeID getThisType() {
+	public StoredType getThisType() {
 		return outer.getThisType();
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		return outer.getDollar();
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);
 	}
 

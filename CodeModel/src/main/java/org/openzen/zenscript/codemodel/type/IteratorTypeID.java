@@ -7,19 +7,21 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class IteratorTypeID implements ITypeID {
-	public final ITypeID[] iteratorTypes;
+public class IteratorTypeID implements TypeID {
+	public final StoredType[] iteratorTypes;
 	private final IteratorTypeID normalized;
 	
-	public IteratorTypeID(GlobalTypeRegistry registry, ITypeID[] iteratorTypes) {
+	public IteratorTypeID(GlobalTypeRegistry registry, StoredType[] iteratorTypes) {
 		this.iteratorTypes = iteratorTypes;
 		
 		normalized = isDenormalized() ? normalize(registry) : this;
@@ -31,7 +33,7 @@ public class IteratorTypeID implements ITypeID {
 	}
 	
 	private boolean isDenormalized() {
-		for (ITypeID type : iteratorTypes)
+		for (StoredType type : iteratorTypes)
 			if (type.getNormalized() != type)
 				return true;
 		
@@ -39,24 +41,19 @@ public class IteratorTypeID implements ITypeID {
 	}
 	
 	private IteratorTypeID normalize(GlobalTypeRegistry registry) {
-		ITypeID[] normalizedTypes = new ITypeID[iteratorTypes.length];
+		StoredType[] normalizedTypes = new StoredType[iteratorTypes.length];
 		for (int i = 0; i < normalizedTypes.length; i++)
 			normalizedTypes[i] = iteratorTypes[i].getNormalized();
 		return registry.getIterator(normalizedTypes);
 	}
-
+	
 	@Override
-	public ITypeID getUnmodified() {
-		return this;
-	}
-
-	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitIterator(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitIterator(context, this);
 	}
 
@@ -64,28 +61,31 @@ public class IteratorTypeID implements ITypeID {
 	public boolean isOptional() {
 		return false;
 	}
-
+	
 	@Override
-	public boolean isConst() {
+	public boolean isDestructible() {
 		return false;
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return true;
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return false;
 	}
-
+	
 	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		ITypeID[] instanced = new ITypeID[iteratorTypes.length];
-		for (int i = 0; i < iteratorTypes.length; i++)
-			instanced[i] = iteratorTypes[i].instance(mapper);
-		return mapper.registry.getIterator(instanced);
+	public boolean isValueType() {
+		return false;
+	}
+	
+	@Override
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		StoredType[] instanced = mapper.map(iteratorTypes);
+		return mapper.registry.getIterator(instanced).stored(storage);
 	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		for (ITypeID type : iteratorTypes)
+		for (StoredType type : iteratorTypes)
 			if (type.hasInferenceBlockingTypeParameters(parameters))
 				return true;
 		
@@ -99,8 +99,8 @@ public class IteratorTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		for (ITypeID type : iteratorTypes)
-			type.extractTypeParameters(typeParameters);
+		for (StoredType type : iteratorTypes)
+			type.type.extractTypeParameters(typeParameters);
 	}
 
 	@Override
@@ -122,9 +122,6 @@ public class IteratorTypeID implements ITypeID {
 			return false;
 		}
 		final IteratorTypeID other = (IteratorTypeID) obj;
-		if (!Arrays.deepEquals(this.iteratorTypes, other.iteratorTypes)) {
-			return false;
-		}
-		return true;
+		return Arrays.deepEquals(this.iteratorTypes, other.iteratorTypes);
 	}
 }

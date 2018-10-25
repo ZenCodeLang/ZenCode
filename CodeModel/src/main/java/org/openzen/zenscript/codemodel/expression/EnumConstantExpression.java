@@ -10,7 +10,8 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -19,14 +20,14 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class EnumConstantExpression extends Expression {
 	public final EnumConstantMember value;
 	
-	public EnumConstantExpression(CodePosition position, ITypeID type, EnumConstantMember value) {
-		super(position, type, null);
+	public EnumConstantExpression(CodePosition position, TypeID type, EnumConstantMember value) {
+		super(position, type.stored(), null);
 		
 		this.value = value;
 	}
 	
 	public EnumConstantExpression(CodePosition position, GlobalTypeRegistry registry, EnumDefinition type, EnumConstantMember value) {
-		super(position, registry.getForDefinition(type), null);
+		super(position, registry.getForDefinition(type).stored(), null);
 		
 		this.value = value;
 	}

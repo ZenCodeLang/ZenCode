@@ -6,12 +6,11 @@
 package org.openzen.zenscript.codemodel.context;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
@@ -21,25 +20,25 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  */
 public class TypeContext {
 	protected final TypeParameter[] typeParameters;
-	public final ITypeID thisType;
+	public final StoredType thisType;
 	private final LocalMemberCache memberCache;
 	public final ModuleContext moduleContext;
 	
-	public TypeContext(ModuleContext context, TypeParameter[] parameters, ITypeID thisType) {
+	public TypeContext(ModuleContext context, TypeParameter[] parameters, StoredType thisType) {
 		this.typeParameters = parameters;
 		this.thisType = thisType;
 		memberCache = new LocalMemberCache(context.registry, context.expansions);
 		moduleContext = context;
 	}
 	
-	public TypeContext(TypeContext outer, ITypeID thisType, TypeParameter... inner) {
+	public TypeContext(TypeContext outer, StoredType thisType, TypeParameter... inner) {
 		typeParameters = concat(outer.typeParameters, inner);
 		this.thisType = thisType;
 		moduleContext = outer.moduleContext;
 		memberCache = new LocalMemberCache(moduleContext.registry, moduleContext.expansions);
 	}
 	
-	public TypeContext(TypeContext outer, ITypeID thisType, List<TypeParameter> inner) {
+	public TypeContext(TypeContext outer, StoredType thisType, List<TypeParameter> inner) {
 		this(outer, thisType, inner.toArray(new TypeParameter[inner.size()]));
 	}
 	
@@ -55,14 +54,12 @@ public class TypeContext {
 		return typeParameters[index];
 	}
 	
-	public TypeMembers getTypeMembers(ITypeID type) {
+	public TypeMembers getTypeMembers(StoredType type) {
 		return memberCache.get(type);
 	}
 	
 	public GenericMapper getMapper() {
-		Map<TypeParameter, ITypeID> mapper = new HashMap<>();
-		for (TypeParameter parameter : typeParameters)
-			mapper.put(parameter, moduleContext.registry.getGeneric(parameter));
+		Map<TypeParameter, StoredType> mapper = StoredType.getSelfMapping(moduleContext.registry, typeParameters);
 		return new GenericMapper(moduleContext.registry, mapper);
 	}
 	

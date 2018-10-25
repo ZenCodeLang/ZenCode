@@ -7,7 +7,6 @@ package org.openzen.zenscript.javasource;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -29,13 +28,16 @@ import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.compiler.CompileScope;
 import org.openzen.zenscript.compiler.SemanticModule;
-import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaContext;
+import org.openzen.zenscript.javashared.JavaImplementation;
 
 /**
  *
@@ -49,16 +51,19 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	private final JavaSourceFormattingSettings settings;
 	private final List<ExpansionDefinition> expansions;
 	private final StringBuilder output;
-	private final Map<HighLevelDefinition, SemanticModule> modules;
+	private final JavaContext context;
+	private final JavaCompiledModule module;
+	private final SemanticModule semanticModule;
 	
 	public JavaDefinitionVisitor(
 			String indent,
 			JavaSourceCompiler compiler,
+			JavaCompiledModule module,
 			JavaClass cls,
 			JavaSourceFile file,
 			StringBuilder output,
 			List<ExpansionDefinition> expansions,
-			Map<HighLevelDefinition, SemanticModule> modules)
+			SemanticModule semanticModule)
 	{
 		this.indent = indent;
 		this.compiler = compiler;
@@ -67,22 +72,35 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		this.settings = compiler.settings;
 		this.output = output;
 		this.expansions = expansions;
-		this.modules = modules;
+		this.context = compiler.context;
+		this.module = module;
+		this.semanticModule = semanticModule;
 	}
 	
 	private JavaSourceFileScope createScope(HighLevelDefinition definition) {
-		SemanticModule module = modules.get(definition.getOutermost());
-		GlobalTypeRegistry typeRegistry = module.compilationUnit.globalTypeRegistry;
+		GlobalTypeRegistry typeRegistry = semanticModule.compilationUnit.globalTypeRegistry;
 		DefinitionTypeID thisType = typeRegistry.getForMyDefinition(definition);
 		
-		CompileScope scope = new CompileScope(module.compilationUnit.globalTypeRegistry, module.expansions, module.annotations);
+		CompileScope scope = new CompileScope(semanticModule.compilationUnit.globalTypeRegistry, semanticModule.expansions, semanticModule.annotations, semanticModule.storageTypes);
 		return new JavaSourceFileScope(file.importer, compiler.helperGenerator, cls, scope, definition instanceof InterfaceDefinition, thisType, compiler.context);
+	}
+	
+	private List<ImplementationMember> getMergedImplementations(HighLevelDefinition definition) {
+		List<ImplementationMember> result = new ArrayList<>();
+		for (IDefinitionMember member : definition.members) {
+			if (member instanceof ImplementationMember) {
+				JavaImplementation implementation = module.getImplementationInfo((ImplementationMember) member);
+				if (implementation.inline)
+					result.add((ImplementationMember)member);
+			}
+		}
+		return result;
 	}
 
 	@Override
 	public Void visitClass(ClassDefinition definition) {
 		JavaSourceFileScope scope = createScope(definition);
-		JavaClass cls = definition.getTag(JavaClass.class);
+		JavaClass cls = context.getJavaExpansionClass(definition);
 		
 		output.append(indent);
 		convertModifiers(definition.modifiers);
@@ -92,14 +110,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			output.append(" extends ");
 			output.append(scope.type(definition.getSuperType()));
 		}
-		List<ImplementationMember> mergedImplementations = new ArrayList<>();
-		for (IDefinitionMember member : definition.members) {
-			if (member instanceof ImplementationMember) {
-				if (isImplementationMergable((ImplementationMember)member))
-					mergedImplementations.add((ImplementationMember)member);
-			}
-		}
 		
+		List<ImplementationMember> mergedImplementations = getMergedImplementations(definition);
 		if (mergedImplementations.size() > 0 || cls.destructible) {
 			output.append(" implements ");
 			boolean first = true;
@@ -133,7 +145,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	@Override
 	public Void visitInterface(InterfaceDefinition definition) {
 		JavaSourceFileScope scope = createScope(definition);
-		JavaClass cls = definition.getTag(JavaClass.class);
+		JavaClass cls = context.getJavaClass(definition);
 		
 		output.append(indent);
 		convertModifiers(definition.modifiers | Modifiers.VIRTUAL); // to prevent 'final'
@@ -147,7 +159,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			firstExtends = false;
 		}
 		
-		for (ITypeID base : definition.baseInterfaces) {
+		for (TypeID base : definition.baseInterfaces) {
 			if (firstExtends) {
 				firstExtends = false;
 				output.append(" extends ");
@@ -155,6 +167,17 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				output.append(", ");
 			}
 			output.append(scope.type(base));
+		}
+		
+		List<ImplementationMember> mergedImplementations = getMergedImplementations(definition);
+		for (ImplementationMember member : mergedImplementations) {
+			if (firstExtends) {
+				firstExtends = false;
+				output.append(" extends ");
+			} else {
+				output.append(", ");
+			}
+			output.append(scope.type(member.type));
 		}
 		
 		output.append(" {\n");
@@ -252,7 +275,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		output.append(" {\n");
 		output.append(indent).append(settings.indent).append("private ").append(cls.getName()).append("() {}\n");
 		
-		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.typeParameters, "\t", output, scope, definition);
+		JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target.type, definition.typeParameters, "\t", output, scope, definition);
 		for (IDefinitionMember member : definition.members)
 			member.accept(memberCompiler);
 		memberCompiler.finish();
@@ -341,7 +364,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	private void compileExpansions() {
 		for (ExpansionDefinition definition : expansions) {
 			JavaSourceFileScope scope = createScope(definition);
-			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target, definition.typeParameters, indent + settings.indent, output, scope, definition);
+			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, definition.target.type, definition.typeParameters, indent + settings.indent, output, scope, definition);
 			for (IDefinitionMember member : definition.members)
 				member.accept(memberCompiler);
 			memberCompiler.finish();
@@ -349,7 +372,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	}
 	
 	private void convertModifiers(int modifiers) {
-		if (Modifiers.isExport(modifiers) || Modifiers.isPublic(modifiers))
+		if (Modifiers.isPublic(modifiers) || Modifiers.isInternal(modifiers))
 			output.append("public ");
 		if (Modifiers.isPrivate(modifiers))
 			output.append("private ");
@@ -363,23 +386,19 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			output.append("final ");
 	}
 	
-	private boolean isImplementationMergable(ImplementationMember implementation) {
-		return true; // TODO: check merging conflicts
-	}
-	
 	private void compileMembers(JavaSourceFileScope scope, HighLevelDefinition definition) {
-		if (definition.hasTag(JavaNativeClass.class)) {
-			ITypeID[] typeParameters = new ITypeID[definition.getNumberOfGenericParameters()];
+		if (context.getJavaNativeClass(definition) != null) {
+			StoredType[] typeParameters = new StoredType[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < typeParameters.length; i++)
-				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]);
-			ITypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, typeParameters);
+				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]).stored(definition.typeParameters[i].storage);
+			TypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, typeParameters);
 			
 			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.typeParameters, indent + settings.indent, output, scope, definition);
 			for (IDefinitionMember member : definition.members)
 				member.accept(memberCompiler);
 			memberCompiler.finish();
 		} else {
-			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, file, settings, indent + settings.indent, output, scope, scope.isInterface, definition, modules);
+			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, module, file, settings, indent + settings.indent, output, scope, scope.isInterface, definition, semanticModule);
 			for (IDefinitionMember member : definition.members)
 				member.accept(memberCompiler);
 			

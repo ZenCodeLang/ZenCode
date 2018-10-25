@@ -9,11 +9,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -26,7 +27,7 @@ public class ConstMember extends PropertyMember {
 	public final String name;
 	public Expression value;
 	
-	public ConstMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, ITypeID type, BuiltinID builtin) {
+	public ConstMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, StoredType type, BuiltinID builtin) {
 		super(position, definition, modifiers, type, builtin);
 		
 		this.name = name;
@@ -56,6 +57,17 @@ public class ConstMember extends PropertyMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = modifiers;
+		if (definition.isInterface())
+			result |= Modifiers.PUBLIC;
+		if (!Modifiers.hasAccess(result))
+			result |= Modifiers.INTERNAL;
+		
+		return result;
+	}
 
 	@Override
 	public void normalize(TypeScope scope) {
@@ -69,7 +81,7 @@ public class ConstMember extends PropertyMember {
 	}
 
 	@Override
-	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
 		return new ConstMemberRef(type, this, mapper);
 	}
 	

@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import zsynthetic.FunctionTToBool;
-import zsynthetic.FunctionTToU;
-import zsynthetic.FunctionTToVoid;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import zsynthetic.FunctionUSizeTToBool;
 import zsynthetic.FunctionUSizeTToU;
 import zsynthetic.FunctionUSizeTToVoid;
@@ -31,24 +31,24 @@ public final class Arrays {
         }
     }
     
-    public static <U, T> U[] map(Class<T> typeOfT, T[] self, Class<U> typeOfU, FunctionTToU<U, T> projection) {
+    public static <U, T> U[] map(Class<T> typeOfT, T[] self, Class<U> typeOfU, Function<T, U> projection) {
         U[] temp1 = (U[])(Array.newInstance(typeOfU, self.length));
         for (int temp2 = 0; temp2 < temp1.length; temp2++)
-            temp1[temp2] = projection.invoke(self[temp2]);
+            temp1[temp2] = projection.apply(self[temp2]);
         return temp1;
     }
     
-    public static <U, T> U[] map(Class<T> typeOfT, T[] self, Class<U> typeOfU, FunctionUSizeTToU<U, T> projection) {
+    public static <U, T> U[] map(Class<T> typeOfT, T[] self, Class<U> typeOfU, FunctionUSizeTToU<T, U> projection) {
         U[] temp1 = (U[])(Array.newInstance(typeOfU, self.length));
         for (int temp2 = 0; temp2 < temp1.length; temp2++)
             temp1[temp2] = projection.invoke(temp2, self[temp2]);
         return temp1;
     }
     
-    public static <T> T[] filter(Class<T> typeOfT, T[] self, FunctionTToBool<T> predicate) {
+    public static <T> T[] filter(Class<T> typeOfT, T[] self, Predicate<T> predicate) {
         List<T> values = new ArrayList<T>();
         for (T value : self)
-            if (predicate.invoke(value))
+            if (predicate.test(value))
                 values.add(value);
         return values.toArray((T[])(Array.newInstance(typeOfT, values.size())));
     }
@@ -63,9 +63,9 @@ public final class Arrays {
         return values.toArray((T[])(Array.newInstance(typeOfT, values.size())));
     }
     
-    public static <T> void each(Class<T> typeOfT, T[] self, FunctionTToVoid<T> consumer) {
+    public static <T> void each(Class<T> typeOfT, T[] self, Consumer<T> consumer) {
         for (T value : self)
-            consumer.invoke(value);
+            consumer.accept(value);
     }
     
     public static <T> void each(Class<T> typeOfT, T[] self, FunctionUSizeTToVoid<T> consumer) {
@@ -75,9 +75,9 @@ public final class Arrays {
         }
     }
     
-    public static <T> boolean contains(Class<T> typeOfT, T[] self, FunctionTToBool<T> predicate) {
+    public static <T> boolean contains(Class<T> typeOfT, T[] self, Predicate<T> predicate) {
         for (T value : self)
-            if (predicate.invoke(value))
+            if (predicate.test(value))
                 return true;
         return false;
     }
@@ -91,9 +91,9 @@ public final class Arrays {
         return false;
     }
     
-    public static <T> boolean all(Class<T> typeOfT, T[] self, FunctionTToBool<T> predicate) {
+    public static <T> boolean all(Class<T> typeOfT, T[] self, Predicate<T> predicate) {
         for (T value : self)
-            if (!predicate.invoke(value))
+            if (!predicate.test(value))
                 return false;
         return true;
     }
@@ -107,9 +107,9 @@ public final class Arrays {
         return true;
     }
     
-    public static <T> T first(Class<T> typeOfT, T[] self, FunctionTToBool<T> predicate) {
+    public static <T> T first(Class<T> typeOfT, T[] self, Predicate<T> predicate) {
         for (T value : self)
-            if (predicate.invoke(value))
+            if (predicate.test(value))
                 return value;
         return null;
     }
@@ -123,11 +123,11 @@ public final class Arrays {
         return null;
     }
     
-    public static <T> T last(Class<T> typeOfT, T[] self, FunctionTToBool<T> predicate) {
+    public static <T> T last(Class<T> typeOfT, T[] self, Predicate<T> predicate) {
         int i = self.length;
         while (i > 0) {
             i--;
-            if (predicate.invoke(self[i]))
+            if (predicate.test(self[i]))
                 return self[i];
         }
         return null;
@@ -143,10 +143,10 @@ public final class Arrays {
         return null;
     }
     
-    public static <T> int count(Class<T> typeOfT, T[] self, FunctionTToBool<T> predicate) {
+    public static <T> int count(Class<T> typeOfT, T[] self, Predicate<T> predicate) {
         int result = 0;
         for (T value : self)
-            if (predicate.invoke(value))
+            if (predicate.test(value))
                 result++;
         return result;
     }
@@ -161,10 +161,10 @@ public final class Arrays {
         return result;
     }
     
-    public static <K, T> Map<K, T> index(Class<T> typeOfT, T[] self, Class<K> typeOfK, FunctionTToU<K, T> key) {
+    public static <K, T> Map<K, T> index(Class<T> typeOfT, T[] self, Class<K> typeOfK, Function<T, K> key) {
         Map<K, T> result = new HashMap<>();
         for (T value : self)
-            result.put(key.invoke(value), value);
+            result.put(key.apply(value), value);
         return result;
     }
 }

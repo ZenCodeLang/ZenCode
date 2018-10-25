@@ -17,6 +17,7 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.PrecompilationState;
@@ -28,7 +29,13 @@ import org.openzen.zenscript.parser.statements.ParsedStatement;
  * @author Stanneke
  */
 public class ParsedFunction extends ParsedDefinition {
-	public static ParsedFunction parseFunction(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser parser, HighLevelDefinition outerDefinition) {
+	public static ParsedFunction parseFunction(
+			CompilingPackage pkg,
+			CodePosition position,
+			int modifiers,
+			ParsedAnnotation[] annotations,
+			ZSTokenParser parser,
+			HighLevelDefinition outerDefinition) throws ParseException {
 		String name = parser.required(T_IDENTIFIER, "identifier expected").content;
 		ParsedFunctionHeader header = ParsedFunctionHeader.parse(parser);
 		ParsedFunctionBody body = ParsedStatement.parseFunctionBody(parser);
@@ -70,9 +77,8 @@ public class ParsedFunction extends ParsedDefinition {
 		FunctionScope innerScope = new FunctionScope(scope, compiled.header);
 		compiled.setCode(body.compile(innerScope, compiled.header));
 		
-		if (compiled.header.getReturnType() == BasicTypeID.UNDETERMINED) {
-			compiled.header.setReturnType(compiled.statement.getReturnType());
-		}
+		if (compiled.header.getReturnType().isBasic(BasicTypeID.UNDETERMINED))
+			compiled.header.setReturnType(compiled.caller.body.getReturnType());
 	}
 
 	@Override

@@ -1,10 +1,10 @@
 package live;
 
+import java.util.function.BiConsumer;
 import listeners.ListenerHandle;
-import zsynthetic.FunctionStringStringToVoid;
 
 public interface LiveString {
     String getValue();
     
-    ListenerHandle<FunctionStringStringToVoid> addListener(FunctionStringStringToVoid listener);
+    ListenerHandle<BiConsumer<String, String>> addListener(BiConsumer<String, String> listener);
 }

@@ -6,19 +6,22 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class AssocTypeID implements ITypeID {
-	public final ITypeID keyType;
-	public final ITypeID valueType;
+public class AssocTypeID implements TypeID {
+	public final StoredType keyType;
+	public final StoredType valueType;
 	private final AssocTypeID normalized;
 	
-	public AssocTypeID(GlobalTypeRegistry typeRegistry, ITypeID keyType, ITypeID valueType) {
+	public AssocTypeID(GlobalTypeRegistry typeRegistry, StoredType keyType, StoredType valueType) {
 		this.keyType = keyType;
 		this.valueType = valueType;
 		
@@ -29,10 +32,10 @@ public class AssocTypeID implements ITypeID {
 	}
 	
 	@Override
-	public AssocTypeID instance(GenericMapper mapper) {
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
 		return mapper.registry.getAssociative(
 				keyType.instance(mapper),
-				valueType.instance(mapper));
+				valueType.instance(mapper)).stored(storage);
 	}
 	
 	@Override
@@ -41,33 +44,33 @@ public class AssocTypeID implements ITypeID {
 	}
 	
 	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitAssoc(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitAssoc(context, this);
-	}
-	
-	@Override
-	public AssocTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
 	public boolean isOptional() {
 		return false;
 	}
-
+	
 	@Override
-	public boolean isConst() {
+	public boolean isValueType() {
 		return false;
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return true;
+	public boolean isDestructible() {
+		return keyType.isDestructible() || valueType.isDestructible();
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return keyType.isDestructible(scanning) || valueType.isDestructible(scanning);
 	}
 	
 	@Override
@@ -82,8 +85,8 @@ public class AssocTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		keyType.extractTypeParameters(typeParameters);
-		valueType.extractTypeParameters(typeParameters);
+		keyType.type.extractTypeParameters(typeParameters);
+		valueType.type.extractTypeParameters(typeParameters);
 	}
 
 	@Override
@@ -106,7 +109,8 @@ public class AssocTypeID implements ITypeID {
 			return false;
 		}
 		final AssocTypeID other = (AssocTypeID) obj;
-		return this.keyType == other.keyType && this.valueType == other.valueType;
+		return this.keyType.equals(other.keyType)
+				&& this.valueType.equals(other.valueType);
 	}
 	
 	@Override

@@ -7,13 +7,14 @@ package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openzen.zencode.shared.Tag;
 import stdlib.Strings;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class WhitespaceInfo {
+public class WhitespaceInfo implements Tag {
 	public static WhitespaceInfo from(String whitespaceBefore, String lineAfter, boolean skipLineBefore) {
 		int numNewLines = 0;
 		for (char c : whitespaceBefore.toCharArray())

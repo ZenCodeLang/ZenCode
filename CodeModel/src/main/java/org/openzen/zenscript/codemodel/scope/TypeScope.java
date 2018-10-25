@@ -8,7 +8,7 @@ package org.openzen.zenscript.codemodel.scope;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -20,7 +20,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public interface TypeScope extends TypeResolutionContext {
 	public LocalMemberCache getMemberCache();
 	
-	default TypeMembers getTypeMembers(ITypeID type) {
+	default TypeMembers getTypeMembers(StoredType type) {
 		return getMemberCache().get(type);
 	}
 	

@@ -6,14 +6,18 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
+import org.openzen.zenscript.codemodel.expression.PanicExpression;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 /**
@@ -31,6 +35,11 @@ public class ParsedStatementThrow extends ParsedStatement {
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		return result(new ThrowStatement(position, expression.compile(new ExpressionScope(scope)).eval()), scope);
+		try {
+			Expression value = expression.compile(new ExpressionScope(scope)).eval();
+			return result(new ThrowStatement(position, value), scope);
+		} catch (CompileException ex) {
+			return result(new ExpressionStatement(position, new PanicExpression(position, scope.getFunctionHeader().getReturnType(), new InvalidExpression(StringTypeID.SHARED, ex))), scope);
+		}
 	}
 }

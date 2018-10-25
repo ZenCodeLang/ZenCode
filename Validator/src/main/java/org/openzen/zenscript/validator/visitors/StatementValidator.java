@@ -7,6 +7,7 @@ package org.openzen.zenscript.validator.visitors;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
@@ -20,6 +21,7 @@ import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.IfStatement;
+import org.openzen.zenscript.codemodel.statement.InvalidStatement;
 import org.openzen.zenscript.codemodel.statement.LockStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -77,7 +79,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitDoWhile(DoWhileStatement statement) {
-		if (statement.condition.type != BasicTypeID.BOOL) {
+		if (!statement.condition.type.isBasic(BasicTypeID.BOOL)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					statement.position,
@@ -129,6 +131,12 @@ public class StatementValidator implements StatementVisitor<Void> {
 		firstStatement = false;
 		return null;
 	}
+	
+	@Override
+	public Void visitInvalid(InvalidStatement statement) {
+		validator.logError(ValidationLogEntry.Code.INVALID_STATEMENT, statement.position, statement.message);
+		return null;
+	}
 
 	@Override
 	public Void visitLock(LockStatement statement) {
@@ -152,10 +160,12 @@ public class StatementValidator implements StatementVisitor<Void> {
 					validator,
 					new StatementExpressionScope()));
 			
-			if (statement.value.type != scope.getFunctionHeader().getReturnType()) {
+			if (scope.getFunctionHeader().getReturnType().isBasic(BasicTypeID.VOID)) {
+				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Function return type is void; cannot return a value");
+			} else if (!statement.value.type.equals(scope.getFunctionHeader().getReturnType())) {
 				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type.toString());
 			}
-		} else if (scope.getFunctionHeader().getReturnType() != BasicTypeID.VOID) {
+		} else if (!scope.getFunctionHeader().getReturnType().isBasic(BasicTypeID.VOID)) {
 			validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Missing return value");
 		}
 		
@@ -168,6 +178,9 @@ public class StatementValidator implements StatementVisitor<Void> {
 		statement.value.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		
 		for (SwitchCase switchCase : statement.cases) {
+			for (Statement caseStatement : switchCase.statements)
+				caseStatement.accept(this);
+			
 			// TODO: finish this
 		}
 		
@@ -238,7 +251,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	private void validateCondition(Expression condition) {
 		condition.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		
-		if (condition.type != BasicTypeID.BOOL) {
+		if (!condition.type.isBasic(BasicTypeID.BOOL)) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					condition.position,
@@ -290,6 +303,11 @@ public class StatementValidator implements StatementVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return scope.getDefinition();
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return scope.getAccessScope();
 		}
 	}
 }

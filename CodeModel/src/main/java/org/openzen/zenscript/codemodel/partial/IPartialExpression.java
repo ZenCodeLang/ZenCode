@@ -13,32 +13,33 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface IPartialExpression {
-	default List<ITypeID> getAssignHints() {
+	default List<StoredType> getAssignHints() {
 		return Collections.emptyList();
 	}
 	
-	Expression eval();
+	Expression eval() throws CompileException;
 	
-	List<ITypeID>[] predictCallTypes(TypeScope scope, List<ITypeID> hints, int arguments);
+	List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException;
 	
-	List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<ITypeID> hints, int arguments);
+	List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException;
 	
-	IPartialExpression getMember(CodePosition position, TypeScope scope, List<ITypeID> hints, GenericName name);
+	IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException;
 	
-	Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments);
+	Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException;
 	
-	ITypeID[] getGenericCallTypes();
+	StoredType[] getTypeArguments();
 	
 	/**
 	 * Retrieves the (primary) member this expression refers to, or null if there is no primary target.
@@ -49,11 +50,11 @@ public interface IPartialExpression {
 		return null;
 	}
 	
-	default Expression assign(CodePosition position, TypeScope scope, Expression value) {
-		throw new CompileException(position, CompileExceptionCode.CANNOT_ASSIGN, "This expression is not assignable");
+	default Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
+		return new InvalidExpression(position, value.type, CompileExceptionCode.CANNOT_ASSIGN, "This expression is not assignable");
 	}
 	
-	default IPartialExpression capture(CodePosition position, LambdaClosure closure) {
+	default IPartialExpression capture(CodePosition position, LambdaClosure closure) throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.UNAVAILABLE_IN_CLOSURE, "expression not allowed in closure");
 	}
 }

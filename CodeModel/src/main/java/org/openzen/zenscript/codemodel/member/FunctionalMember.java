@@ -10,11 +10,12 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 /**
@@ -46,13 +47,29 @@ public abstract class FunctionalMember extends DefinitionMember {
 	
 	public abstract FunctionalKind getKind();
 	
-	public FunctionalMemberRef ref(ITypeID type, GenericMapper mapper) {
+	public FunctionalMemberRef ref(StoredType type) {
+		return new FunctionalMemberRef(this, type, null);
+	}
+	
+	@Override
+	public FunctionalMemberRef ref(StoredType type, GenericMapper mapper) {
 		return new FunctionalMemberRef(this, type, mapper);
 	}
 	
 	@Override
 	public BuiltinID getBuiltin() {
 		return builtin;
+	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = modifiers;
+		if (definition.isInterface())
+			result |= Modifiers.PUBLIC;
+		if (!Modifiers.hasAccess(result))
+			result |= Modifiers.INTERNAL;
+		
+		return result;
 	}
 
 	@Override

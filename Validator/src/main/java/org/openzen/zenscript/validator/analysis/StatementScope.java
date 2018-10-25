@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.validator.analysis;
 
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 
@@ -22,4 +23,6 @@ public interface StatementScope {
 	public boolean isStaticInitializer();
 	
 	public HighLevelDefinition getDefinition();
+	
+	public AccessScope getAccessScope();
 }

@@ -34,6 +34,7 @@ import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.serialization.DecodingOperation;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.ModuleRegistry;
 import org.openzen.zenscript.compiler.SemanticModule;
@@ -47,17 +48,20 @@ public class ModuleDeserializer {
 	private final ModuleRegistry modules;
 	private final CompilationUnit compilationUnit;
 	private final AnnotationDefinition[] annotations;
+	private final StorageType[] storageTypes;
 	private final ZSPackage rootPackage;
 	
 	public ModuleDeserializer(
 			ModuleRegistry modules,
 			CompilationUnit compilationUnit,
 			AnnotationDefinition[] annotations,
+			StorageType[] storageTypes,
 			ZSPackage rootPackage)
 	{
 		this.modules = modules;
 		this.compilationUnit = compilationUnit;
 		this.annotations = annotations;
+		this.storageTypes = storageTypes;
 		this.rootPackage = rootPackage;
 	}
 	
@@ -116,7 +120,8 @@ public class ModuleDeserializer {
 					dependencies,
 					rootPackage,
 					modulePackage,
-					annotations);
+					annotations,
+					storageTypes);
 			decoder.code.enqueue(new ModuleDecodeScriptsOperation(packagedModules[i]));
 			decoder.classes.enqueue(new ModuleDecodeClassesOperation(packagedModules[i], decoder));
 		}

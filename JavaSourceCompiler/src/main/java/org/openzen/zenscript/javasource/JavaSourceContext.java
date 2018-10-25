@@ -7,7 +7,8 @@ package org.openzen.zenscript.javasource;
 
 import java.io.File;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
@@ -28,8 +29,13 @@ public class JavaSourceContext extends JavaContext {
 	}
 	
 	@Override
-	public String getDescriptor(ITypeID type) {
-		return type.accept(typeDescriptorVisitor);
+	public String getDescriptor(TypeID type) {
+		return typeDescriptorVisitor.process(type);
+	}
+	
+	@Override
+	public String getDescriptor(StoredType type) {
+		return typeDescriptorVisitor.process(type);
 	}
 
 	@Override

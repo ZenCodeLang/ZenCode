@@ -2,7 +2,6 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.*;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +10,8 @@ import static org.objectweb.asm.Opcodes.*;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -33,7 +34,8 @@ public class JavaWriter {
     private boolean nameVariables = true;
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();
-
+	private final Map<VariableID, JavaLocalVariableInfo> localVariables = new HashMap<>();
+	
     public JavaWriter(
             ClassVisitor visitor,
             boolean nameVariables,
@@ -59,6 +61,18 @@ public class JavaWriter {
     public JavaWriter(ClassVisitor visitor, JavaMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
         this(visitor, true, method, forDefinition, signature, exceptions, annotations);
     }
+	
+	public void setLocalVariable(VariableID variable, JavaLocalVariableInfo info) {
+		localVariables.put(variable, info);
+	}
+	
+	public JavaLocalVariableInfo getLocalVariable(VariableID variable) {
+		JavaLocalVariableInfo result = localVariables.get(variable);
+		if (result == null)
+			throw new IllegalStateException("Local variable unknown");
+		
+		return result;
+	}
 
     public void enableDebug() {
         debug = true;
@@ -79,7 +93,12 @@ public class JavaWriter {
         if (debug)
             System.out.println("--end--");
 
-        visitor.visitMaxs(0, 0);
+		try {
+	        visitor.visitMaxs(0, 0);
+		} catch (ArrayIndexOutOfBoundsException ex) {
+			throw ex;
+		}
+		
         if (nameVariables) {
             for (JavaLocalVariableInfo info : localVariableInfos) {
                 nameVariable(info.local, info.name, info.start, info.end, info.type);
@@ -133,7 +152,7 @@ public class JavaWriter {
 
     public void aConstNull() {
         if (debug)
-            System.out.println("null");
+            System.out.println("aConstNull");
 
         visitor.visitInsn(ACONST_NULL);
     }
@@ -1112,6 +1131,14 @@ public class JavaWriter {
             keys[i] = switchLabels[i].key;
             labels[i] = switchLabels[i].label;
         }
+		
+		if (debug) {
+			System.out.println("lookupSwitch");
+			for (int i = 0; i < switchLabels.length; i++) {
+				System.out.println("  " + keys[i] + " -> " + getLabelName(labels[i]));
+			}
+			System.out.println("  default -> " + getLabelName(defaultLabel));
+		}
 
         visitor.visitLookupSwitchInsn(defaultLabel, keys, labels);
     }

@@ -8,8 +8,6 @@ package org.openzen.zenscript.lexer;
 import java.util.LinkedList;
 import java.util.Stack;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 
 /**
  *
@@ -22,7 +20,7 @@ public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> exte
     private int tokenMemoryOffset = 0;
     private int tokenMemoryCurrent = 0;
 	
-	public LLParserTokenStream(TokenStream<TT, T> stream) {
+	public LLParserTokenStream(TokenStream<TT, T> stream) throws ParseException {
 		super(stream);
 	}
 	
@@ -53,7 +51,7 @@ public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> exte
 	}
 	
 	@Override
-	public T next() {
+	public T next() throws ParseException {
 		if (tokenMemoryCurrent < tokenMemoryOffset + tokenMemory.size()) {
             return tokenMemory.get((tokenMemoryCurrent++) - tokenMemoryOffset).token;
         } else {
@@ -81,7 +79,7 @@ public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> exte
 		return peek().getType() == type;
 	}
 	
-	public T optional(TT type) {
+	public T optional(TT type) throws ParseException {
 		if (peek().getType() == type) {
             return next();
         } else {
@@ -89,17 +87,28 @@ public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> exte
         }
 	}
 	
-	public T required(TT type, String error) throws CompileException {
+	public T required(TT type, String error) throws ParseException {
 		T t = peek();
         if (t.getType() == type) {
             return next();
         } else {
-			throw new CompileException(getPosition(), CompileExceptionCode.UNEXPECTED_TOKEN, error);
+			throw new ParseException(getPosition(), error);
         }
     }
 	
 	public boolean hasNext() {
 		return peek().getType() != getEOF();
+	}
+	
+	public void recoverUntilTokenOrNewline(ZSTokenType type) throws ParseException {
+		CodePosition last = getPosition();
+		while (peek().getType() != type && getPosition().fromLine > last.fromLine)
+			next();
+	}
+
+	public void recoverUntilToken(ZSTokenType type) throws ParseException {
+		while (peek().getType() != type && peek().getType() != getEOF())
+			next();
 	}
 	
 	private class PositionedToken {

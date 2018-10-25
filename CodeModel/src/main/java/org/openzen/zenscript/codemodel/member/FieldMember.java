@@ -5,10 +5,12 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
+import java.lang.reflect.Modifier;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
@@ -21,7 +23,8 @@ import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
@@ -43,8 +46,8 @@ public class FieldMember extends PropertyMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
-			ITypeID thisType,
-			ITypeID type,
+			StoredType thisType,
+			StoredType type,
 			GlobalTypeRegistry registry,
 			int autoGetterAccess,
 			int autoSetterAccess,
@@ -56,9 +59,9 @@ public class FieldMember extends PropertyMember {
 		this.autoGetterAccess = autoGetterAccess;
 		this.autoSetterAccess = autoSetterAccess;
 		
-		ITypeID[] parameters = null;
+		TypeID[] parameters = null;
 		if (definition.typeParameters != null) {
-			parameters = new ITypeID[definition.typeParameters.length];
+			parameters = new TypeID[definition.typeParameters.length];
 			for (int i = 0; i < parameters.length; i++)
 				parameters[i] = registry.getGeneric(definition.typeParameters[i]);
 		}
@@ -89,7 +92,7 @@ public class FieldMember extends PropertyMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
-			ITypeID type,
+			StoredType type,
 			int autoGetterAccess,
 			int autoSetterAccess,
 			GetterMember autoGetter,
@@ -120,6 +123,11 @@ public class FieldMember extends PropertyMember {
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
 		members.addField(new FieldMemberRef(members.type, this, mapper), priority);
+		
+		if (autoGetter != null)
+			autoGetter.registerTo(members, priority, mapper);
+		if (autoSetter != null)
+			autoSetter.registerTo(members, priority, mapper);
 	}
 	
 	@Override
@@ -146,6 +154,11 @@ public class FieldMember extends PropertyMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		return modifiers;
+	}
 
 	@Override
 	public void normalize(TypeScope scope) {
@@ -160,7 +173,7 @@ public class FieldMember extends PropertyMember {
 	}
 
 	@Override
-	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
 		return new FieldMemberRef(type, this, mapper);
 	}
 	

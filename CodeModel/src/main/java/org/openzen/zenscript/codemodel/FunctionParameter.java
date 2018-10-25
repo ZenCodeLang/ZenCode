@@ -5,12 +5,13 @@
  */
 package org.openzen.zenscript.codemodel;
 
-import org.openzen.zenscript.codemodel.annotations.Annotation;
 import java.util.Objects;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.annotations.ParameterAnnotation;
 
 /**
  *
@@ -19,45 +20,49 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class FunctionParameter extends Taggable {
 	public static final FunctionParameter[] NONE = new FunctionParameter[0];
 	
-	public Annotation[] annotations;
-	public final ITypeID type;
+	public ParameterAnnotation[] annotations;
+	public final StoredType type;
 	public final String name;
 	public Expression defaultValue;
 	public final boolean variadic;
 	
-	public FunctionParameter(ITypeID type) {
-		this.annotations = Annotation.NONE;
+	public FunctionParameter(StoredType type) {
+		this.annotations = ParameterAnnotation.NONE;
 		this.type = type;
 		this.name = "";
 		this.defaultValue = null;
 		this.variadic = false;
 	}
 	
-	public FunctionParameter(ITypeID type, String name) {
-		this.annotations = Annotation.NONE;
+	public FunctionParameter(BasicTypeID type) {
+		this(type.stored);
+	}
+	
+	public FunctionParameter(StoredType type, String name) {
+		this.annotations = ParameterAnnotation.NONE;
 		this.type = type;
 		this.name = name;
 		this.defaultValue = null;
 		this.variadic = false;
 	}
 	
-	public FunctionParameter(ITypeID type, String name, Expression defaultValue, boolean variadic) {
-		this.annotations = Annotation.NONE;
+	public FunctionParameter(StoredType type, String name, Expression defaultValue, boolean variadic) {
+		this.annotations = ParameterAnnotation.NONE;
 		this.type = type;
 		this.name = name;
 		this.defaultValue = defaultValue;
 		this.variadic = variadic;
 	}
 	
-	public FunctionParameter normalized(GlobalTypeRegistry registry) {
+	public FunctionParameter normalize(GlobalTypeRegistry registry) {
 		FunctionParameter result = new FunctionParameter(type.getNormalized(), name, defaultValue, variadic);
 		result.annotations = this.annotations;
 		return result;
 	}
 	
 	public FunctionParameter withGenericArguments(GenericMapper mapper) {
-		ITypeID instanced = type.instance(mapper);
-		if (instanced == type)
+		StoredType instanced = type.instance(mapper);
+		if (instanced.equals(type))
 			return this;
 		
 		FunctionParameter result = new FunctionParameter(instanced, name, defaultValue, variadic);
@@ -91,12 +96,6 @@ public class FunctionParameter extends Taggable {
 			return false;
 		}
 		final FunctionParameter other = (FunctionParameter) obj;
-		if (this.variadic != other.variadic) {
-			return false;
-		}
-		if (!Objects.equals(this.type, other.type)) {
-			return false;
-		}
-		return true;
+		return this.variadic == other.variadic && this.type.equals(other.type);
 	}
 }

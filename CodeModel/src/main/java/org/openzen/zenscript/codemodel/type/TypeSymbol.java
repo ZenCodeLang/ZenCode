@@ -24,12 +24,12 @@ public class TypeSymbol implements ISymbol {
 	}
 	
 	@Override
-	public IPartialExpression getExpression(CodePosition position, BaseScope scope, ITypeID[] typeArguments) {
+	public IPartialExpression getExpression(CodePosition position, BaseScope scope, StoredType[] typeArguments) {
 		return new PartialTypeExpression(position, scope.getTypeRegistry().getForDefinition(definition, typeArguments), typeArguments);
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, TypeResolutionContext context, ITypeID[] typeArguments) {
+	public TypeID getType(CodePosition position, TypeResolutionContext context, StoredType[] typeArguments) {
 		return context.getTypeRegistry().getForDefinition(definition, typeArguments);
 	}
 }

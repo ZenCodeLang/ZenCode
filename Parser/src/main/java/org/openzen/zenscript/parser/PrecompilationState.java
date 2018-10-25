@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
@@ -30,7 +31,7 @@ public class PrecompilationState implements TypeMemberPreparer {
 		members.put(member.getCompiled(), new CompilableMember(member, definitionScope));
 	}
 	
-	public boolean precompile(IDefinitionMember member) {
+	public boolean precompile(IDefinitionMember member) throws CompileException {
 		if (!members.containsKey(member))
 			return true;
 		
@@ -49,7 +50,7 @@ public class PrecompilationState implements TypeMemberPreparer {
 	}
 
 	@Override
-	public void prepare(IDefinitionMember member) {
+	public void prepare(IDefinitionMember member) throws CompileException {
 		precompile(member);
 	}
 	

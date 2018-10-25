@@ -39,17 +39,17 @@ public final class CompactBytesDataInput implements CompactDataInput, AutoClosea
     
     @Override
     public boolean readBool() {
-        return this.readByte() != (byte)0;
+        return (this.readByte() & 0xFF) != (0 & 0xFF);
     }
     
     @Override
     public int readByte() {
-        return (data[offset++]) & 0xFF;
+        return data[offset++];
     }
     
     @Override
     public byte readSByte() {
-        return data[offset++];
+        return (byte)(data[offset++]);
     }
     
     @Override
@@ -190,19 +190,19 @@ public final class CompactBytesDataInput implements CompactDataInput, AutoClosea
             int bvalue = this.readByte();
             int remainingBits = result.length - 8 * i;
             if (remainingBits > 0)
-                result[i * 8 + 0] = (bvalue & (byte)1) > (byte)0;
+                result[i * 8 + 0] = ((bvalue & 1) & 0xFF) > (0 & 0xFF);
             if (remainingBits > 1)
-                result[i * 8 + 2] = (bvalue & (byte)4) > (byte)0;
+                result[i * 8 + 2] = ((bvalue & 4) & 0xFF) > (0 & 0xFF);
             if (remainingBits > 3)
-                result[i * 8 + 3] = (bvalue & (byte)8) > (byte)0;
+                result[i * 8 + 3] = ((bvalue & 8) & 0xFF) > (0 & 0xFF);
             if (remainingBits > 4)
-                result[i * 8 + 4] = (bvalue & (byte)16) > (byte)0;
+                result[i * 8 + 4] = ((bvalue & 16) & 0xFF) > (0 & 0xFF);
             if (remainingBits > 5)
-                result[i * 8 + 5] = (bvalue & (byte)32) > (byte)0;
+                result[i * 8 + 5] = ((bvalue & 32) & 0xFF) > (0 & 0xFF);
             if (remainingBits > 6)
-                result[i * 8 + 6] = (bvalue & (byte)64) > (byte)0;
+                result[i * 8 + 6] = ((bvalue & 64) & 0xFF) > (0 & 0xFF);
             if (remainingBits > 7)
-                result[i * 8 + 7] = (bvalue & (byte)-128) > (byte)0;
+                result[i * 8 + 7] = ((bvalue & 128) & 0xFF) > (0 & 0xFF);
         }
         return result;
     }

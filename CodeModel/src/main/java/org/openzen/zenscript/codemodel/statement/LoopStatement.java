@@ -6,7 +6,7 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import stdlib.EqualsComparable;
 
 /**
@@ -18,7 +18,7 @@ public abstract class LoopStatement extends Statement implements EqualsComparabl
 	
 	public String label;
 	
-	public LoopStatement(CodePosition position, String label, ITypeID thrownType) {
+	public LoopStatement(CodePosition position, String label, StoredType thrownType) {
 		super(position, thrownType);
 		
 		this.label = label;

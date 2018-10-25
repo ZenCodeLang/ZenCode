@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
@@ -22,10 +23,11 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 
 /**
@@ -44,54 +46,58 @@ public class ParsedExpressionCall extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		if (receiver instanceof ParsedExpressionVariable) {
 			ParsedExpressionVariable variable = (ParsedExpressionVariable) receiver;
-			for (ITypeID hint : scope.hints) {
+			for (StoredType hint : scope.hints) {
 				TypeMembers members = scope.getTypeMembers(hint);
 				if (members.getVariantOption(variable.name) != null) {
-					VariantOptionRef variantOption = members.getVariantOption(variable.name);
-					FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, variantOption.types);
-					CallArguments cArguments = arguments.compileCall(position, scope, null, header);
-					return new VariantValueExpression(position, hint, variantOption, cArguments.arguments);
+					try {
+						VariantOptionRef variantOption = members.getVariantOption(variable.name);
+						FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, variantOption.types);
+						CallArguments cArguments = arguments.compileCall(position, scope, null, header);
+						return new VariantValueExpression(position, hint, variantOption, cArguments.arguments);
+					} catch (CompileException ex) {
+						return new InvalidExpression(hint, ex);
+					}
 				}
 			}
 		}
 		
 		if (receiver instanceof ParsedExpressionSuper) {
 			// super call (intended as first call in constructor)
-			ITypeID targetType = scope.getThisType().getSuperType(scope.getTypeRegistry());
+			StoredType targetType = scope.getThisType().getSuperType(scope.getTypeRegistry());
 			if (targetType == null)
 				throw new CompileException(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Class has no superclass");
-			
-			DefinitionMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
+
+			TypeMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
 			FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
 			if (!member.isConstructor())
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
-			
+
 			return new ConstructorSuperCallExpression(position, targetType, member, callArguments);
 		} else if (receiver instanceof ParsedExpressionThis) {
 			// this call (intended as first call in constructor)
-			ITypeID targetType = scope.getThisType();
-			
-			DefinitionMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
+			StoredType targetType = scope.getThisType();
+
+			TypeMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
 			FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
 			if (!member.isConstructor())
 				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
-			
+
 			return new ConstructorThisCallExpression(position, scope.getThisType(), member, callArguments);
 		}
-		
+
 		IPartialExpression cReceiver = receiver.compile(scope.withoutHints());
 		List<FunctionHeader> headers = cReceiver.getPossibleFunctionHeaders(scope, scope.hints, arguments.arguments.size());
-		CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getGenericCallTypes(), headers);
+		CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getTypeArguments(), headers);
 		return cReceiver.call(position, scope, scope.hints, callArguments);
 	}
 	
 	@Override
-	public SwitchValue compileToSwitchValue(ITypeID type, ExpressionScope scope) {
+	public SwitchValue compileToSwitchValue(StoredType type, ExpressionScope scope) throws CompileException {
 		if (!(receiver instanceof ParsedExpressionVariable))
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
 		
@@ -104,9 +110,13 @@ public class ParsedExpressionCall extends ParsedExpression {
 			
 			String[] values = new String[arguments.arguments.size()];
 			for (int i = 0; i < values.length; i++) {
-				ParsedExpression argument = arguments.arguments.get(i);
-				ParsedFunctionParameter lambdaHeader = argument.toLambdaParameter();
-				values[i] = lambdaHeader.name;
+				try {
+					ParsedExpression argument = arguments.arguments.get(i);
+					ParsedFunctionParameter lambdaHeader = argument.toLambdaParameter();
+					values[i] = lambdaHeader.name;
+				} catch (ParseException ex) {
+					throw new CompileException(ex.position, CompileExceptionCode.INVALID_SWITCH_CASE, ex.getMessage());
+				}
 			}
 			
 			return new VariantOptionSwitchValue(option, values);

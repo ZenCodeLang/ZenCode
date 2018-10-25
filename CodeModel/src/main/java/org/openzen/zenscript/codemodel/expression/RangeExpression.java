@@ -7,8 +7,8 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -18,14 +18,14 @@ public class RangeExpression extends Expression {
 	public final Expression from;
 	public final Expression to;
 	
-	public RangeExpression(CodePosition position, RangeTypeID type, Expression from, Expression to) {
+	public RangeExpression(CodePosition position, StoredType type, Expression from, Expression to) {
 		super(position, type, binaryThrow(position, from.thrownType, to.thrownType));
 	
 		this.from = from;
 		this.to = to;
 	}
 	
-	private RangeExpression(CodePosition position, ITypeID type, Expression from, Expression to, ITypeID thrownType) {
+	private RangeExpression(CodePosition position, StoredType type, Expression from, Expression to, StoredType thrownType) {
 		super(position, type, thrownType);
 		
 		this.from = from;
@@ -51,11 +51,11 @@ public class RangeExpression extends Expression {
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		RangeTypeID rangeType = (RangeTypeID)type;
+		StoredType baseType = ((RangeTypeID)type.type).baseType;
 		return new RangeExpression(
 				position,
-				rangeType,
-				from.normalize(scope).castImplicit(position, scope, rangeType.baseType),
-				to.normalize(scope).castImplicit(position, scope, rangeType.baseType));
+				type.getNormalized(),
+				from.normalize(scope).castImplicit(position, scope, baseType),
+				to.normalize(scope).castImplicit(position, scope, baseType));
 	}
 }

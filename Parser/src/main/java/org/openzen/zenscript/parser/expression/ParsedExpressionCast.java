@@ -8,14 +8,15 @@ package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
+import org.openzen.zenscript.parser.type.ParsedStorageTag;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 /**
@@ -36,33 +37,33 @@ public class ParsedExpressionCast extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
-		ITypeID type = this.type.compile(scope);
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
+		StoredType type = this.type.compile(scope);
 		return value.compile(scope.withHint(type))
 				.eval()
 				.castExplicit(position, scope, type, optional);
 	}
 	
 	@Override
-	public ParsedFunctionHeader toLambdaHeader() {
+	public ParsedFunctionHeader toLambdaHeader() throws ParseException {
 		if (optional)
-			throw new CompileException(position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Not a valid lambda header");
+			throw new ParseException(position, "Not a valid lambda header");
 		
 		ParsedFunctionHeader header = value.toLambdaHeader();
 		if (header.returnType != ParsedTypeBasic.UNDETERMINED)
-			throw new CompileException(position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Lambda parameter already has a return type");
+			throw new ParseException(position, "Lambda parameter already has a return type");
 		
-		return new ParsedFunctionHeader(header.genericParameters, header.parameters, type, null);
+		return new ParsedFunctionHeader(position, header.genericParameters, header.parameters, type, null, ParsedStorageTag.NULL);
 	}
 	
 	@Override
-	public ParsedFunctionParameter toLambdaParameter() {
+	public ParsedFunctionParameter toLambdaParameter() throws ParseException {
 		if (optional)
-			throw new CompileException(position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Not a valid lambda header");
+			throw new ParseException(position, "Not a valid lambda header");
 		
 		ParsedFunctionParameter parameter = value.toLambdaParameter();
 		if (parameter.type != ParsedTypeBasic.UNDETERMINED)
-			throw new CompileException(position, CompileExceptionCode.LAMBDA_HEADER_INVALID, "Lambda parameter already has a type");
+			throw new ParseException(position, "Lambda parameter already has a type");
 		
 		return new ParsedFunctionParameter(ParsedAnnotation.NONE, parameter.name, type, null, false);
 	}

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -26,11 +27,14 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
@@ -50,7 +54,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PRIVATE | ABSTRACT | STATIC | PROTECTED | VIRTUAL,
+				PUBLIC | INTERNAL | PRIVATE | ABSTRACT | STATIC | PROTECTED | VIRTUAL,
 				definition.position,
 				"Invalid class modifier");
 		ValidationUtils.validateIdentifier(
@@ -70,7 +74,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid interface modifier");
 		ValidationUtils.validateIdentifier(
@@ -87,7 +91,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid enum modifier");
 		ValidationUtils.validateIdentifier(
@@ -101,7 +105,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 
 	@Override
 	public Void visitStruct(StructDefinition definition) {
-		int validModifiers = PUBLIC | EXPORT | PROTECTED | PRIVATE;
+		int validModifiers = PUBLIC | INTERNAL | PROTECTED | PRIVATE;
 		if (definition.outerDefinition != null)
 			validModifiers |= STATIC;
 		
@@ -125,7 +129,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid function modifier");
 		ValidationUtils.validateIdentifier(
@@ -133,8 +137,8 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				definition.position,
 				definition.name);
 				
-		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header));
-		definition.statement.accept(statementValidator);
+		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header, definition.getAccessScope()));
+		definition.caller.body.accept(statementValidator);
 		return null;
 	}
 
@@ -143,11 +147,11 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid expansion modifier");
 		
-		definition.target.accept(new TypeValidator(validator, definition.position));
+		new TypeValidator(validator, definition.position).validate(TypeContext.EXPANSION_TARGET_TYPE, definition.target);
 		validateMembers(definition, DefinitionMemberContext.EXPANSION);
 		return null;
 	}
@@ -157,7 +161,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid alias modifier");
 		ValidationUtils.validateIdentifier(
@@ -186,7 +190,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		ValidationUtils.validateModifiers(
 				validator,
 				variant.modifiers,
-				PUBLIC | EXPORT | PROTECTED | PRIVATE,
+				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				variant.position,
 				"Invalid variant modifier");
 		ValidationUtils.validateIdentifier(
@@ -194,8 +198,18 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				variant.position,
 				variant.name);
 		
+		for (VariantDefinition.Option option : variant.options)
+			validate(option);
+		
 		validateMembers(variant, DefinitionMemberContext.DEFINITION);
 		return null;
+	}
+	
+	private void validate(VariantDefinition.Option option) {
+		ValidationUtils.validateIdentifier(validator, option.position, option.name);
+		TypeValidator typeValidator = new TypeValidator(validator, option.position);
+		for (StoredType type : option.types)
+			typeValidator.validate(TypeContext.OPTION_MEMBER_TYPE, type);
 	}
 	
 	private class SimpleTypeScope implements TypeScope {
@@ -220,12 +234,17 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name) {
+		public TypeID getType(CodePosition position, List<GenericName> name) {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public ITypeID getThisType() {
+		public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public StoredType getThisType() {
 			throw new UnsupportedOperationException();
 		}
 
@@ -242,9 +261,11 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 	
 	private class FunctionStatementScope implements StatementScope {
 		private final FunctionHeader header;
+		private final AccessScope access;
 		
-		public FunctionStatementScope(FunctionHeader header) {
+		public FunctionStatementScope(FunctionHeader header, AccessScope access) {
 			this.header = header;
+			this.access = access;
 		}
 
 		@Override
@@ -270,6 +291,11 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return null;
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return access;
 		}
 	}
 }

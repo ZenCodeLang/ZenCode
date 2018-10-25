@@ -26,6 +26,10 @@ public interface StatementVisitorWithContext<C, R> {
 	
 	public R visitIf(C context, IfStatement statement);
 	
+	default R visitInvalid(C context, InvalidStatement statement) {
+		throw new UnsupportedOperationException("Invalid statement");
+	}
+	
 	public R visitLock(C context, LockStatement statement);
 	
 	public R visitReturn(C context, ReturnStatement statement);

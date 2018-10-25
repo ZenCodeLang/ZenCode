@@ -1,8 +1,8 @@
 package live;
 
+import java.util.function.BiConsumer;
 import listeners.DummyListenerHandle;
 import listeners.ListenerHandle;
-import zsynthetic.FunctionStringStringToVoid;
 
 public final class ImmutableLiveString implements LiveString {
     public final String value;
@@ -12,8 +12,8 @@ public final class ImmutableLiveString implements LiveString {
     }
     
     @Override
-    public ListenerHandle<FunctionStringStringToVoid> addListener(FunctionStringStringToVoid listener) {
-        return new DummyListenerHandle<FunctionStringStringToVoid>(listener);
+    public ListenerHandle<BiConsumer<String, String>> addListener(BiConsumer<String, String> listener) {
+        return new DummyListenerHandle<BiConsumer<String, String>>(listener);
     }
     
     public String getValue() {

@@ -43,7 +43,7 @@ public interface AnnotationDefinition {
 	
 	public StatementAnnotation createForStatement(CodePosition position, CallArguments arguments);
 	
-	public Annotation createForParameter(CodePosition position, CallArguments arguments);
+	public ParameterAnnotation createForParameter(CodePosition position, CallArguments arguments);
 	
 	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member);
 	
@@ -51,5 +51,5 @@ public interface AnnotationDefinition {
 	
 	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context);
 	
-	public Annotation deserializeForParameter(CodeSerializationInput input, TypeContext context);
+	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context);
 }

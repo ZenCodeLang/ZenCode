@@ -252,7 +252,7 @@ public class StatementFormatter implements StatementVisitor<Void> {
 		for (CatchClause catchClause : statement.catchClauses) {
 			output.append(indent).append("catch ");
 			if (catchClause.exceptionVariable != null)
-				output.append(catchClause.exceptionVariable.name).append(" as ").append(catchClause.exceptionVariable.type.accept(expressionFormatter.typeFormatter));
+				output.append(catchClause.exceptionVariable.name).append(" as ").append(expressionFormatter.typeFormatter.format(catchClause.exceptionVariable.type));
 			
 			format(ParentStatementType.CATCH, catchClause.content);
 		}
@@ -274,7 +274,7 @@ public class StatementFormatter implements StatementVisitor<Void> {
 		
 		if (statement.initializer == null || statement.initializer.type != statement.type) {
 			output.append(" as ");
-			output.append(statement.type.accept(expressionFormatter.typeFormatter));
+			output.append(expressionFormatter.typeFormatter.format(statement.type));
 		}
 		if (statement.initializer != null) {
 			output.append(" = ");

@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
@@ -37,6 +36,7 @@ import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.compiler.ModuleSpace;
 import org.openzen.zenscript.compiler.SemanticModule;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
 /**
@@ -72,6 +72,7 @@ public class ParsedFile {
 		ModuleTypeResolutionContext moduleContext = new ModuleTypeResolutionContext(
 				registry.compilationUnit.globalTypeRegistry,
 				registry.getAnnotations(),
+				registry.getStorageTypes(),
 				rootPackage,
 				pkg,
 				globals);
@@ -84,16 +85,11 @@ public class ParsedFile {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
-			try {
-				file.compileTypes(moduleContext, rootPackage, pkg);
-			} catch (CompileException ex) {
-				exceptionLogger.accept(ex);
-				failed = true;
-			}
+			file.compileTypes(moduleContext, rootPackage, pkg);
 		}
 		
 		if (failed)
-			return new SemanticModule(name, pkg.module, dependencies, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations());
+			return new SemanticModule(name, pkg.module, dependencies, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations(), registry.getStorageTypes());
 		
 		// scripts will store all the script blocks encountered in the files
 		PrecompilationState precompiler = new PrecompilationState();
@@ -106,35 +102,42 @@ public class ParsedFile {
 			// compileCode will convert the parsed statements and expressions
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
-			try {
-				file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals);
-			} catch (CompileException ex) {
-				exceptionLogger.accept(ex);
-				failed = true;
-			}
+			file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals, exceptionLogger);
 		}
 		
-		return new SemanticModule(name, pkg.module, dependencies, SemanticModule.State.ASSEMBLED, rootPackage, pkg.getPackage(), definitions, scripts, registry.compilationUnit, expansions, registry.getAnnotations());
+		return new SemanticModule(
+				name,
+				pkg.module,
+				dependencies,
+				SemanticModule.State.ASSEMBLED,
+				rootPackage,
+				pkg.getPackage(),
+				definitions,
+				scripts,
+				registry.compilationUnit,
+				expansions,
+				registry.getAnnotations(),
+				registry.getStorageTypes());
 	}
 	
-	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File file) throws IOException {
+	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File file) throws ParseException {
 		return parse(compilingPackage, bracketParser, new FileSourceFile(file.getName(), file));
 	}
 	
-	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, String filename, String content) {
+	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, String filename, String content) throws ParseException {
+		return parse(compilingPackage, bracketParser, new LiteralSourceFile(filename, content));
+	}
+	
+	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, SourceFile file) throws ParseException {
 		try {
-			return parse(compilingPackage, bracketParser, new LiteralSourceFile(filename, content));
+			ZSTokenParser tokens = ZSTokenParser.create(file, bracketParser, 4);
+			return parse(compilingPackage, tokens);
 		} catch (IOException ex) {
-			throw new AssertionError(); // shouldn't happen
+			throw new ParseException(new CodePosition(file, 0, 0, 0, 0), ex.getMessage());
 		}
 	}
 	
-	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, SourceFile file) throws IOException {
-		ZSTokenParser tokens = ZSTokenParser.create(file, bracketParser, 4);
-		return parse(compilingPackage, tokens);
-	}
-	
-	public static ParsedFile parse(CompilingPackage compilingPackage, ZSTokenParser tokens) {
+	public static ParsedFile parse(CompilingPackage compilingPackage, ZSTokenParser tokens) throws ParseException {
 		ParsedFile result = new ParsedFile(tokens.getFile());
 
 		while (true) {
@@ -149,8 +152,8 @@ public class ParsedFile {
 					case K_PRIVATE:
 						modifiers |= Modifiers.PRIVATE;
 						break;
-					case K_EXPORT:
-						modifiers |= Modifiers.EXPORT;
+					case K_INTERNAL:
+						modifiers |= Modifiers.INTERNAL;
 						break;
 					case K_EXTERN:
 						modifiers |= Modifiers.EXTERN;
@@ -192,6 +195,7 @@ public class ParsedFile {
 		}
 		
 		result.postComment = WhitespacePostComment.fromWhitespace(tokens.getLastWhitespace());
+		result.errors.addAll(tokens.getErrors());
 		return result;
 	}
 	
@@ -201,17 +205,18 @@ public class ParsedFile {
 	private final List<ParsedDefinition> definitions = new ArrayList<>();
 	private final List<ParsedStatement> statements = new ArrayList<>();
 	private WhitespacePostComment postComment = null;
+	private final List<ParseException> errors = new ArrayList<>();
 	
 	public ParsedFile(SourceFile file) {
 		this.file = file;
 	}
 	
 	public boolean hasErrors() {
-		return false;
+		return errors.size() > 0;
 	}
 	
-	public void printErrors() {
-		
+	public List<ParseException> getErrors() {
+		return errors;
 	}
 	
 	public void listDefinitions(PackageDefinitions definitions) {
@@ -273,13 +278,18 @@ public class ParsedFile {
 			CompilingPackage modulePackage,
 			List<ExpansionDefinition> expansions,
 			List<ScriptBlock> scripts,
-			Map<String, ISymbol> globals) {
+			Map<String, ISymbol> globals,
+			Consumer<CompileException> exceptionLogger) {
 		FileResolutionContext context = new FileResolutionContext(moduleContext, modulePackage);
 		loadImports(context, rootPackage, modulePackage);
 		
 		FileScope scope = new FileScope(context, expansions, globals, precompiler);
 		for (ParsedDefinition definition : this.definitions) {
-			definition.compile(scope);
+			try {
+				definition.compile(scope);
+			} catch (CompileException ex) {
+				exceptionLogger.accept(ex);
+			}
 		}
 		
 		if (!statements.isEmpty() || postComment != null) {
@@ -289,7 +299,7 @@ public class ParsedFile {
 				statements.add(statement.compile(statementScope));
 			}
 			
-			ScriptBlock block = new ScriptBlock(modulePackage.getPackage(), statements);
+			ScriptBlock block = new ScriptBlock(modulePackage.module, modulePackage.getPackage(), statements);
 			block.setTag(SourceFile.class, file);
 			block.setTag(WhitespacePostComment.class, postComment);
 			scripts.add(block);
@@ -305,8 +315,9 @@ public class ParsedFile {
 				definition = rootPackage.getImport(importEntry.getPath(), 0);
 			}
 			
-			if (definition == null)
-				throw new CompileException(importEntry.position, CompileExceptionCode.IMPORT_NOT_FOUND, "Could not find type " + importEntry.toString());
+			// TODO: how to signal this?
+			//if (definition == null)
+			//	importErrors.add(new CompileException(importEntry.position, CompileExceptionCode.IMPORT_NOT_FOUND, "Could not find type " + importEntry.toString()));
 			
 			context.addImport(importEntry.getName(), definition);
 		}

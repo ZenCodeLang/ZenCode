@@ -33,6 +33,8 @@ public class JavaClass implements Comparable<JavaClass> {
 	public static final JavaClass CHARACTER = new JavaClass("java.lang", "Character", Kind.CLASS);
 	public static final JavaClass COLLECTION = new JavaClass("java.util", "Collection", Kind.INTERFACE);
 	
+	public static final JavaClass SHARED = new JavaClass("zsynthetic", "Shared", Kind.CLASS);
+	
 	public static JavaClass fromInternalName(String internalName, Kind kind) {
 		if (kind == Kind.ARRAY)
 			return new JavaClass("", internalName, kind, new String[0]);
@@ -130,6 +132,10 @@ public class JavaClass implements Comparable<JavaClass> {
 
 	public boolean isEnum() {
 		return kind == Kind.ENUM;
+	}
+	
+	public boolean isInterface() {
+		return kind == Kind.INTERFACE;
 	}
 	
 	public enum Kind {

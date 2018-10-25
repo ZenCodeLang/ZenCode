@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public class ThrowExpression extends Expression {
 	public final Expression value;
 	
-	public ThrowExpression(CodePosition position, ITypeID type, Expression value) {
+	public ThrowExpression(CodePosition position, StoredType type, Expression value) {
 		super(position, type, value.type);
 		
 		this.value = value;

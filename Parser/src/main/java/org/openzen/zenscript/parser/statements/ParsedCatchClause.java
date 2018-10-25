@@ -6,22 +6,24 @@
 package org.openzen.zenscript.parser.statements;
 
 import java.util.List;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.CatchClause;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.statement.VariableID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 /**
@@ -42,7 +44,7 @@ public class ParsedCatchClause {
 	}
 	
 	public CatchClause compile(StatementScope scope) {
-		VarStatement exceptionVariable = new VarStatement(position, exceptionName, exceptionType.compile(scope), null, true);
+		VarStatement exceptionVariable = new VarStatement(position, new VariableID(), exceptionName, exceptionType.compile(scope), null, true);
 		CatchScope localScope = new CatchScope(scope, exceptionVariable);
 		return new CatchClause(position, exceptionVariable, content.compile(localScope));
 	}
@@ -57,7 +59,7 @@ public class ParsedCatchClause {
 		}
 	
 		@Override
-		public IPartialExpression get(CodePosition position, GenericName name) {
+		public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 			if (name.hasNoArguments() && exceptionVariable.name.equals(name.name))
 				return new GetLocalVariableExpression(position, exceptionVariable);
 
@@ -70,8 +72,13 @@ public class ParsedCatchClause {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name) {
+		public TypeID getType(CodePosition position, List<GenericName> name) {
 			return outer.getType(position, name);
+		}
+		
+		@Override
+		public StorageTag getStorageTag(CodePosition position, String name, String[] arguments) {
+			return outer.getStorageTag(position, name, arguments);
 		}
 
 		@Override
@@ -85,17 +92,17 @@ public class ParsedCatchClause {
 		}
 
 		@Override
-		public ITypeID getThisType() {
+		public StoredType getThisType() {
 			return outer.getThisType();
 		}
 
 		@Override
-		public Function<CodePosition, Expression> getDollar() {
+		public DollarEvaluator getDollar() {
 			return outer.getDollar();
 		}
 
 		@Override
-		public IPartialExpression getOuterInstance(CodePosition position) {
+		public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 			return outer.getOuterInstance(position);
 		}
 

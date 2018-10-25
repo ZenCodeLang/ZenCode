@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
@@ -23,14 +23,14 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  * @author Hoofdgebruiker
  */
 public class CasterMember extends FunctionalMember {
-	public ITypeID toType;
+	public StoredType toType;
 	public CasterMemberRef overrides;
 	
 	public CasterMember(
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
-			ITypeID toType,
+			StoredType toType,
 			BuiltinID builtin)
 	{
 		super(position, definition, modifiers, new FunctionHeader(toType), builtin);
@@ -50,7 +50,7 @@ public class CasterMember extends FunctionalMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addCaster(new CasterMemberRef(this, type.type, mapper == null ? toType : mapper.map(toType)), priority);
+		type.addCaster(new CasterMemberRef(this, type.type, mapper == null ? toType : toType.instance(mapper)), priority);
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class CasterMember extends FunctionalMember {
 		return "caster to " + toType.toString();
 	}
 	
-	public ITypeID getTargetType() {
+	public StoredType getTargetType() {
 		return toType;
 	}
 	
@@ -74,6 +74,15 @@ public class CasterMember extends FunctionalMember {
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitCaster(context, this);
+	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = super.getEffectiveModifiers();
+		if (overrides != null && overrides.getTarget().getDefinition().isInterface())
+			result |= Modifiers.PUBLIC;
+		
+		return result;
 	}
 	
 	public void setOverrides(GlobalTypeRegistry registry, CasterMemberRef overrides) {

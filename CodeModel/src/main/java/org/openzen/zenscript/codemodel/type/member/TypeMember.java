@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.type.member;
 
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 
 /**
@@ -23,11 +21,11 @@ public class TypeMember<T extends DefinitionMemberRef> {
 	}
 	
 	public TypeMember<T> resolve(TypeMember<T> other) {
-		if (priority == other.priority)
-			if (priority == TypeMemberPriority.SPECIFIED)
-				throw new CompileException(other.member.getPosition(), CompileExceptionCode.MEMBER_DUPLICATE, "Duplicate " + other.member.describe());
-			else
-				return this;
+		if (priority == other.priority) {
+			//if (priority == TypeMemberPriority.SPECIFIED)
+			//	throw new CompileException(other.member.getPosition(), CompileExceptionCode.MEMBER_DUPLICATE, "Duplicate " + other.member.describe());
+			return this;
+		}
 		
 		if (priority.compareTo(other.priority) < 0) {
 			return other;

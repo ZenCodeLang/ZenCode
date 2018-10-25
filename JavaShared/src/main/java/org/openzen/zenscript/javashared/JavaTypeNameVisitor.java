@@ -9,24 +9,37 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.TypeVisitor;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaTypeNameVisitor implements TypeVisitor<String> {
-	public JavaTypeNameVisitor() {}
+public class JavaTypeNameVisitor implements TypeVisitorWithContext<StoredType, String, RuntimeException> {
+	public static final JavaTypeNameVisitor INSTANCE = new JavaTypeNameVisitor();
+	
+	private JavaTypeNameVisitor() {}
 
+	public String process(StoredType type) {
+		return type.type.accept(type, this);
+	}
+	
+	public String process(TypeID type) {
+		return type.accept(null, this);
+	}
+	
 	@Override
-	public String visitBasic(BasicTypeID basic) {
+	public String visitBasic(StoredType context, BasicTypeID basic) {
 		switch (basic) {
 			case VOID: return "Void";
 			case BOOL: return "Bool";
@@ -40,72 +53,72 @@ public class JavaTypeNameVisitor implements TypeVisitor<String> {
 			case ULONG: return "ULong";
 			case FLOAT: return "Float";
 			case DOUBLE: return "Double";
-			case STRING: return "String";
 			case CHAR: return "Char";
 			default: throw new IllegalArgumentException("Invalid type: " + basic);
 		}
 	}
+	
+	@Override
+	public String visitString(StoredType context, StringTypeID string) {
+		return "String";
+	}
 
 	@Override
-	public String visitArray(ArrayTypeID array) {
+	public String visitArray(StoredType context, ArrayTypeID array) {
 		if (array.dimension == 1) {
-			return array.elementType.accept(this) + "Array";
+			return process(array.elementType) + "Array";
 		} else {
-			return array.elementType.accept(this) + array.dimension + "DArray";
+			return process(array.elementType) + array.dimension + "DArray";
 		}
 	}
 
 	@Override
-	public String visitAssoc(AssocTypeID assoc) {
-		return assoc.keyType.accept(this) + assoc.valueType.accept(this) + "Map";
+	public String visitAssoc(StoredType context, AssocTypeID assoc) {
+		return process(assoc.keyType) + process(assoc.valueType) + "Map";
 	}
 
 	@Override
-	public String visitGenericMap(GenericMapTypeID map) {
+	public String visitGenericMap(StoredType context, GenericMapTypeID map) {
 		return "GenericMap"; // TODO: make this better?
 	}
 
 	@Override
-	public String visitIterator(IteratorTypeID iterator) {
+	public String visitIterator(StoredType context, IteratorTypeID iterator) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
-	public String visitFunction(FunctionTypeID function) {
+	public String visitFunction(StoredType context, FunctionTypeID function) {
 		StringBuilder result = new StringBuilder();
 		for (FunctionParameter parameter : function.header.parameters)
-			result.append(parameter.type.accept(this));
+			result.append(process(parameter.type));
 		result.append("To");
-		result.append(function.header.getReturnType().accept(this));
+		result.append(process(function.header.getReturnType()));
 		result.append("Function");
 		return result.toString();
 	}
 
 	@Override
-	public String visitDefinition(DefinitionTypeID definition) {
+	public String visitDefinition(StoredType context, DefinitionTypeID definition) {
 		return definition.definition.name;
 	}
 
 	@Override
-	public String visitGeneric(GenericTypeID generic) {
+	public String visitGeneric(StoredType context, GenericTypeID generic) {
 		return generic.parameter.name;
 	}
 
 	@Override
-	public String visitRange(RangeTypeID range) {
-		return range.baseType.accept(this) + "Range";
+	public String visitRange(StoredType context, RangeTypeID range) {
+		return range.baseType.type.accept(range.baseType, this) + "Range";
 	}
 
 	@Override
-	public String visitModified(ModifiedTypeID type) {
+	public String visitModified(StoredType context, OptionalTypeID type) {
 		StringBuilder result = new StringBuilder();
-		if (type.isConst())
-			result.append("Const");
 		if (type.isOptional())
 			result.append("Optional");
-		if (type.isImmutable())
-			result.append("Immutable");
-		result.append(type.accept(this));
+		result.append(type.baseType.accept(context, this));
 		return result.toString();
 	}
 }

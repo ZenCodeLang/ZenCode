@@ -26,6 +26,10 @@ public interface StatementVisitor<T> {
 	
 	public T visitIf(IfStatement statement);
 	
+	default T visitInvalid(InvalidStatement statement) {
+		throw new UnsupportedOperationException("Invalid statement");
+	}
+	
 	public T visitLock(LockStatement statement);
 	
 	public T visitReturn(ReturnStatement statement);

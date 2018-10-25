@@ -1,15 +1,14 @@
 package stdlib;
 
-import zsynthetic.FunctionTToResultWithUV;
-import zsynthetic.FunctionTToU;
+import java.util.function.Function;
 
 public abstract class Result<T, E> {
-    public <R> Result<R, E> then(Class<R> typeOfR, FunctionTToResultWithUV<R, E, T> fn) {
+    public <R> Result<R, E> then(Class<R> typeOfR, Function<T, Result<R, E>> fn) {
         Result<R, E> temp1;
         switch (this.getDiscriminant()) {
             case Ok:
                 T result = ((Result.Ok<T, E>)this).value;
-                temp1 = fn.invoke(result);
+                temp1 = fn.apply(result);
                 break;
             case Error:
                 E error = ((Result.Error<T, E>)this).value;
@@ -21,7 +20,7 @@ public abstract class Result<T, E> {
         return temp1;
     }
     
-    public <X> Result<T, X> handle(Class<X> typeOfX, FunctionTToResultWithUV<T, X, E> handler) {
+    public <X> Result<T, X> handle(Class<X> typeOfX, Function<E, Result<T, X>> handler) {
         Result<T, X> temp1;
         switch (this.getDiscriminant()) {
             case Ok:
@@ -30,7 +29,7 @@ public abstract class Result<T, E> {
                 break;
             case Error:
                 E error = ((Result.Error<T, E>)this).value;
-                temp1 = handler.invoke(error);
+                temp1 = handler.apply(error);
                 break;
             default:
                 throw new AssertionError("Missing case");
@@ -71,7 +70,7 @@ public abstract class Result<T, E> {
         return temp1;
     }
     
-    public T orElse(FunctionTToU<T, E> other) {
+    public T orElse(Function<E, T> other) {
         T temp1;
         switch (this.getDiscriminant()) {
             case Ok:
@@ -80,7 +79,7 @@ public abstract class Result<T, E> {
                 break;
             case Error:
                 E error = ((Result.Error<T, E>)this).value;
-                temp1 = other.invoke(error);
+                temp1 = other.apply(error);
                 break;
             default:
                 throw new AssertionError("Missing case");

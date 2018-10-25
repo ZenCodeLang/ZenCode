@@ -27,7 +27,6 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.moduleserialization.SwitchValueEncoding;
 import org.openzen.zenscript.moduleserialization.TypeEncoding;
 import org.openzen.zenscript.moduleserialization.TypeParameterEncoding;
@@ -39,6 +38,8 @@ import org.openzen.zenscript.moduleserializer.encoder.SwitchValueSerializer;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.serialization.EncodingOperation;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.moduleserialization.CodePositionEncoding;
 import org.openzen.zenscript.moduleserialization.FunctionHeaderEncoding;
 import org.openzen.zenscript.moduleserializer.encoder.TypeParameterBoundSerializer;
@@ -243,12 +244,18 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 	
 	@Override
-	public void serialize(TypeContext context, ITypeID type) {
+	public void serialize(TypeContext context, TypeID type) {
 		if (type == null) {
 			writeUInt(TypeEncoding.TYPE_NONE);
 		} else {
 			type.accept(context, typeSerializer);
 		}
+	}
+	
+	@Override
+	public void serialize(TypeContext context, StoredType type) {
+		serialize(type.storage);
+		serialize(context, type.type);
 	}
 	
 	@Override
@@ -364,7 +371,7 @@ public class CodeWriter implements CodeSerializationOutput {
 		int flags = 0;
 		if (header.typeParameters.length > 0)
 			flags |= FunctionHeaderEncoding.FLAG_TYPE_PARAMETERS;
-		if (header.getReturnType() != BasicTypeID.VOID)
+		if (!header.getReturnType().isBasic(BasicTypeID.VOID))
 			flags |= FunctionHeaderEncoding.FLAG_RETURN_TYPE;
 		if (header.thrownType != null)
 			flags |= FunctionHeaderEncoding.FLAG_THROWS;
@@ -405,7 +412,7 @@ public class CodeWriter implements CodeSerializationOutput {
 	@Override
 	public void serialize(StatementContext context, CallArguments arguments) {
 		output.writeVarUInt(arguments.typeArguments.length);
-		for (ITypeID typeArgument : arguments.typeArguments)
+		for (TypeID typeArgument : arguments.typeArguments)
 			serialize(context, typeArgument);
 		
 		output.writeVarUInt(arguments.arguments.length);

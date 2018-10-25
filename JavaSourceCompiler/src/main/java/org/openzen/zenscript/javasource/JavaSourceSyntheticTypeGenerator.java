@@ -35,7 +35,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 	
 	@Override
 	public void synthesizeFunction(JavaSynthesizedFunction function) {
-		JavaSourceImporter importer = new JavaSourceImporter(function.cls);
+		JavaSourceImporter importer = new JavaSourceImporter(context, function.cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, context);
 		
 		StringBuilder contents = new StringBuilder();
@@ -45,7 +45,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		JavaSourceUtils.formatTypeParameters(typeVisitor, contents, function.typeParameters, false);
 		contents.append(" {\n");
 		contents.append(settings.indent);
-		contents.append(function.header.getReturnType().accept(typeVisitor));
+		contents.append(typeVisitor.process(function.header.getReturnType()));
 		contents.append(' ');
 		contents.append("invoke(");
 		boolean first = true;
@@ -55,7 +55,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 			} else {
 				contents.append(", ");
 			}
-			contents.append(parameter.type.accept(typeVisitor));
+			contents.append(typeVisitor.process(parameter.type));
 			contents.append(' ');
 			contents.append(parameter.name);
 			if (parameter.variadic)
@@ -69,21 +69,21 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 	
 	@Override
 	public void synthesizeRange(JavaSynthesizedRange range) {
-		JavaSourceImporter importer = new JavaSourceImporter(range.cls);
+		JavaSourceImporter importer = new JavaSourceImporter(context, range.cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, context);
 		
 		StringBuilder contents = new StringBuilder();
 		contents.append("public final class ").append(range.cls.getName()).append(" {\n");
-		contents.append(settings.indent).append("public final ").append(range.baseType.accept(typeVisitor)).append(" from;\n");
-		contents.append(settings.indent).append("public final ").append(range.baseType.accept(typeVisitor)).append(" to;\n");
+		contents.append(settings.indent).append("public final ").append(typeVisitor.process(range.baseType)).append(" from;\n");
+		contents.append(settings.indent).append("public final ").append(typeVisitor.process(range.baseType)).append(" to;\n");
 		contents.append(settings.indent).append("\n");
 		contents.append(settings.indent)
 				.append("public ")
 				.append(range.cls.getName())
 				.append("(")
-				.append(range.baseType.accept(typeVisitor))
+				.append(typeVisitor.process(range.baseType))
 				.append(" from, ")
-				.append(range.baseType.accept(typeVisitor))
+				.append(typeVisitor.process(range.baseType))
 				.append(" to) {\n");
 		contents.append(settings.indent).append(settings.indent).append("this.from = from;\n");
 		contents.append(settings.indent).append(settings.indent).append("this.to = to;\n");
@@ -91,6 +91,41 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		contents.append("}\n");
 		
 		writeFile(range.cls, importer, contents);
+	}
+	
+	@Override
+	public void synthesizeShared() {
+		JavaSourceImporter importer = new JavaSourceImporter(context, JavaClass.SHARED);
+		
+		StringBuilder contents = new StringBuilder();
+		contents.append("public final class Shared<T extends AutoCloseable> {\n");
+		contents.append(settings.indent).append("private final T value;\n");
+		contents.append(settings.indent).append("private int refcount = 1;\n");
+		contents.append(settings.indent).append("\n");
+		contents.append(settings.indent).append("public Shared(T value) {\n");
+		contents.append(settings.indent).append(settings.indent).append("this.value = value;\n");
+		contents.append(settings.indent).append("}\n");
+		contents.append(settings.indent).append("\n");
+		contents.append(settings.indent).append("public synchronized void addRef() {\n");
+		contents.append(settings.indent).append(settings.indent).append("refcount++;\n");
+		contents.append(settings.indent).append("}\n");
+		contents.append(settings.indent).append("\n");
+		contents.append(settings.indent).append("public synchronized void release() {\n");
+		contents.append(settings.indent).append(settings.indent).append("refcount--;\n");
+		contents.append(settings.indent).append(settings.indent).append("if (refcount == 0) {\n");
+		contents.append(settings.indent).append(settings.indent).append(settings.indent).append("try {\n");
+		contents.append(settings.indent).append(settings.indent).append(settings.indent).append(settings.indent).append("value.close();\n");
+		contents.append(settings.indent).append(settings.indent).append(settings.indent).append("} catch (Exception ex) {}\n");
+		contents.append(settings.indent).append(settings.indent).append("}\n");
+		contents.append(settings.indent).append("}\n");
+		contents.append("}\n");
+		
+		writeFile(JavaClass.SHARED, importer, contents);
+	}
+	
+	private void line(StringBuilder output, int level) {
+		for (int i = 0; i < level; i++)
+			output.append(settings.indent);
 	}
 	
 	private void writeFile(JavaClass cls, JavaSourceImporter importer, StringBuilder contents) {

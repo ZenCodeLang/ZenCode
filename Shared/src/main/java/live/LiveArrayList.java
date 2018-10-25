@@ -6,7 +6,7 @@ import java.util.List;
 import listeners.ListenerHandle;
 import listeners.ListenerList;
 
-final class LiveArrayList<T> implements MutableLiveList<T>, AutoCloseable {
+public final class LiveArrayList<T> implements MutableLiveList<T>, AutoCloseable {
     private final List<T> values = new ArrayList<T>();
     private final ListenerList<LiveList.Listener<T>> listeners = new ListenerList<LiveList.Listener<T>>();
     
@@ -50,7 +50,7 @@ final class LiveArrayList<T> implements MutableLiveList<T>, AutoCloseable {
     
     @Override
     public void clear() {
-        int i = this.getLength();
+        int i = getLength();
         while (i > 0) {
             i--;
             this.remove(i);

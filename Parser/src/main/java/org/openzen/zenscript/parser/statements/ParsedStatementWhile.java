@@ -6,17 +6,17 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LoopScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 /**
@@ -38,10 +38,15 @@ public class ParsedStatementWhile extends ParsedStatement {
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		Expression condition = this.condition
+		Expression condition;
+		try {
+			condition = this.condition
 				.compile(new ExpressionScope(scope, BasicTypeID.HINT_BOOL))
 				.eval()
-				.castImplicit(position, scope, BasicTypeID.BOOL);
+				.castImplicit(position, scope, BasicTypeID.BOOL.stored);
+		} catch (CompileException ex) {
+			condition = new InvalidExpression(BasicTypeID.BOOL.stored, ex);
+		}
 		
 		WhileStatement result = new WhileStatement(position, label, condition);
 		LoopScope innerScope = new LoopScope(result, scope);

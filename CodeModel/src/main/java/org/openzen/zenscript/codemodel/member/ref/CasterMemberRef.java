@@ -6,6 +6,7 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
@@ -13,7 +14,7 @@ import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -21,10 +22,10 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class CasterMemberRef implements DefinitionMemberRef {
 	public final CasterMember member;
-	public final ITypeID type;
-	public final ITypeID toType;
+	public final StoredType type;
+	public final StoredType toType;
 	
-	public CasterMemberRef(CasterMember member, ITypeID type, ITypeID toType) {
+	public CasterMemberRef(CasterMember member, StoredType type, StoredType toType) {
 		this.member = member;
 		this.type = type;
 		this.toType = toType;
@@ -36,7 +37,7 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public ITypeID getOwnerType() {
+	public StoredType getOwnerType() {
 		return type;
 	}
 
@@ -46,7 +47,7 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	}
 
 	@Override
-	public <T> T getTag(Class<T> type) {
+	public <T extends Tag> T getTag(Class<T> type) {
 		return member.getTag(type);
 	}
 	
@@ -55,7 +56,7 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	}
 	
 	public boolean isImplicit() {
-		return Modifiers.isImplicit(member.modifiers);
+		return Modifiers.isImplicit(member.getSpecifiedModifiers());
 	}
 
 	@Override

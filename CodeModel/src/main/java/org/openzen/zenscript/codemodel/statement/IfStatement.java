@@ -11,7 +11,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -68,8 +68,8 @@ public class IfStatement extends Statement {
 				: new IfStatement(position, tCondition, tOnThen, tOnElse);
 	}
 	
-	private static ITypeID getThrownType(Expression condition, Statement onThen, Statement onElse) {
-		ITypeID result = Expression.binaryThrow(onThen.position, condition.thrownType, onThen.thrownType);
+	private static StoredType getThrownType(Expression condition, Statement onThen, Statement onElse) {
+		StoredType result = Expression.binaryThrow(onThen.position, condition.thrownType, onThen.thrownType);
 		if (onElse != null)
 			result = Expression.binaryThrow(onElse.position, result, onElse.thrownType);
 		return result;
@@ -77,6 +77,10 @@ public class IfStatement extends Statement {
 
 	@Override
 	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return new IfStatement(position, condition.normalize(scope), onThen.normalize(scope, modified), onElse == null ? null : onElse.normalize(scope, modified));
+		return new IfStatement(
+				position,
+				condition.normalize(scope),
+				onThen.normalize(scope, modified),
+				onElse == null ? null : onElse.normalize(scope, modified));
 	}
 }

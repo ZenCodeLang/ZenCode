@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -17,11 +18,11 @@ public class ArrayExpression extends Expression {
 	public final Expression[] expressions;
 	public final ArrayTypeID arrayType;
 	
-	public ArrayExpression(CodePosition position, Expression[] expressions, ArrayTypeID type) {
+	public ArrayExpression(CodePosition position, Expression[] expressions, StoredType type) {
 		super(position, type, multiThrow(position, expressions));
 		
 		this.expressions = expressions;
-		this.arrayType = type;
+		this.arrayType = (ArrayTypeID)type.type;
 	}
 
 	@Override
@@ -37,7 +38,7 @@ public class ArrayExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression[] tExpressions = Expression.transform(expressions, transformer);
-		return tExpressions == expressions ? this : new ArrayExpression(position, tExpressions, (ArrayTypeID)type);
+		return tExpressions == expressions ? this : new ArrayExpression(position, tExpressions, type);
 	}
 
 	@Override
@@ -45,6 +46,6 @@ public class ArrayExpression extends Expression {
 		Expression[] normalized = new Expression[expressions.length];
 		for (int i = 0; i < normalized.length; i++)
 			normalized[i] = expressions[i].normalize(scope);
-		return new ArrayExpression(position, normalized, arrayType.getNormalized());
+		return new ArrayExpression(position, normalized, type.getNormalized());
 	}
 }

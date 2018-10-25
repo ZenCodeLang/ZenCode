@@ -8,7 +8,6 @@ package org.openzen.zenscript.codemodel.scope;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -17,16 +16,18 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialGlobalExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -57,7 +58,7 @@ public class FileScope extends BaseScope {
 
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) {
-		ITypeID type = context.getType(position, Collections.singletonList(name));
+		TypeID type = context.getType(position, Collections.singletonList(name));
 		if (type != null)
 			return new PartialTypeExpression(position, type, name.arguments);
 		
@@ -70,15 +71,15 @@ public class FileScope extends BaseScope {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
-		ITypeID type = context.getType(position, name);
+	public TypeID getType(CodePosition position, List<GenericName> name) {
+		TypeID type = context.getType(position, name);
 		if (type != null)
 			return type;
 		
 		if (globals.containsKey(name.get(0).name)) {
 			type = globals.get(name.get(0).name).getType(position, context, name.get(0).arguments);
 			for (int i = 1; i < name.size(); i++) {
-				type = getTypeMembers(type).getInnerType(position, name.get(i));
+				type = getTypeMembers(type.stored(StaticExpressionStorageTag.INSTANCE)).getInnerType(position, name.get(i));
 				if (type == null)
 					break;
 			}
@@ -88,6 +89,11 @@ public class FileScope extends BaseScope {
 		}
 		
 		return null;
+	}
+
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return context.getStorageTag(position, name, parameters);
 	}
 
 	@Override
@@ -101,17 +107,17 @@ public class FileScope extends BaseScope {
 	}
 
 	@Override
-	public ITypeID getThisType() {
+	public StoredType getThisType() {
 		return null;
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		return null;
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.NO_OUTER_BECAUSE_OUTSIDE_TYPE, "Not in an inner type");
 	}
 

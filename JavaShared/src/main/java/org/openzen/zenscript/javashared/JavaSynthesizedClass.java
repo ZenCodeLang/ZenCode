@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.javashared;
 
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -13,9 +13,9 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class JavaSynthesizedClass {
 	public final JavaClass cls;
-	public final ITypeID[] typeArguments;
+	public final TypeID[] typeArguments;
 	
-	public JavaSynthesizedClass(JavaClass cls, ITypeID[] typeArguments) {
+	public JavaSynthesizedClass(JavaClass cls, TypeID[] typeArguments) {
 		this.cls = cls;
 		this.typeArguments = typeArguments;
 	}

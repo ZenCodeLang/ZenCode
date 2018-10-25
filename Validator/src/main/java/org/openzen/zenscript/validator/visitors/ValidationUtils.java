@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -23,11 +24,14 @@ import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import static org.openzen.zenscript.validator.ValidationLogEntry.Code.*;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.InvalidStorageTag;
+import org.openzen.zenscript.validator.TypeContext;
 
 /**
  *
@@ -49,9 +53,14 @@ public class ValidationUtils {
 		}
 	}
 	
-	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header) {
+	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header, AccessScope access) {
 		TypeValidator typeValidator = new TypeValidator(target, position);
-		header.getReturnType().accept(typeValidator);
+		typeValidator.validate(TypeContext.RETURN_TYPE, header.getReturnType());
+		
+		if (header.storage instanceof InvalidStorageTag) {
+			InvalidStorageTag invalid = (InvalidStorageTag)header.storage;
+			target.logError(INVALID_TYPE, invalid.position, invalid.message);
+		}
 		
 		Set<String> parameterNames = new HashSet<>();
 		int i = 0;
@@ -61,10 +70,10 @@ public class ValidationUtils {
 			}
 			
 			parameterNames.add(parameter.name);
-			parameter.type.accept(typeValidator);
+			typeValidator.validate(TypeContext.PARAMETER_TYPE, parameter.type);
 			
 			if (parameter.defaultValue != null) {
-				parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope()));
+				parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope(access)));
 				if (parameter.defaultValue.type != parameter.type) {
 					target.logError(INVALID_TYPE, position, "default value does not match parameter type");
 				}
@@ -74,7 +83,7 @@ public class ValidationUtils {
 				if (i != header.parameters.length - 1) {
 					target.logError(VARIADIC_PARAMETER_MUST_BE_LAST, position, "variadic parameter must be the last parameter");
 				}
-				if (!(parameter.type instanceof ArrayTypeID)) {
+				if (!(parameter.type.type instanceof ArrayTypeID)) {
 					target.logError(INVALID_TYPE, position, "variadic parameter must be an array");
 				}
 			}
@@ -89,16 +98,16 @@ public class ValidationUtils {
 			CodePosition position,
 			String error)
 	{
-		if (Modifiers.isPublic(modifiers) && Modifiers.isExport(modifiers))
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and export");
+		if (Modifiers.isPublic(modifiers) && Modifiers.isInternal(modifiers))
+			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and internal");
 		if (Modifiers.isPublic(modifiers) && Modifiers.isPrivate(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and private");
 		if (Modifiers.isPublic(modifiers) && Modifiers.isProtected(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and protected");
-		if (Modifiers.isExport(modifiers) && Modifiers.isPrivate(modifiers))
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine export and private");
-		if (Modifiers.isExport(modifiers) && Modifiers.isProtected(modifiers))
-			target.logError(INVALID_MODIFIER, position, error + ": cannot combine export and protected");
+		if (Modifiers.isInternal(modifiers) && Modifiers.isPrivate(modifiers))
+			target.logError(INVALID_MODIFIER, position, error + ": cannot combine internal and private");
+		if (Modifiers.isInternal(modifiers) && Modifiers.isProtected(modifiers))
+			target.logError(INVALID_MODIFIER, position, error + ": cannot combine internal and protected");
 		if (Modifiers.isPrivate(modifiers) && Modifiers.isProtected(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine private and protected");
 		
@@ -115,8 +124,8 @@ public class ValidationUtils {
 		
 		if (Modifiers.isPublic(invalid))
 			target.logError(INVALID_MODIFIER, position, error + ": public");
-		if (Modifiers.isExport(invalid))
-			target.logError(INVALID_MODIFIER, position, error + ": export");
+		if (Modifiers.isInternal(invalid))
+			target.logError(INVALID_MODIFIER, position, error + ": internal");
 		if (Modifiers.isProtected(invalid))
 			target.logError(INVALID_MODIFIER, position, error + ": protected");
 		if (Modifiers.isPrivate(invalid))
@@ -139,7 +148,7 @@ public class ValidationUtils {
 			Validator target,
 			CodePosition position,
 			TypeParameter[] typeParameters,
-			ITypeID[] typeArguments)
+			StoredType[] typeArguments)
 	{
 		if (typeParameters == null || typeParameters.length == 0) {
 			if (typeArguments == null || typeArguments.length == 0) {
@@ -192,10 +201,10 @@ public class ValidationUtils {
 	}
 	
 	private static class TypeParameterBoundErrorVisitor implements GenericParameterBoundVisitor<String> {
-		private final ITypeID type;
+		private final TypeID type;
 		private final Validator target;
 		
-		public TypeParameterBoundErrorVisitor(ITypeID type, Validator target) {
+		public TypeParameterBoundErrorVisitor(TypeID type, Validator target) {
 			this.type = type;
 			this.target = target;
 		}
@@ -212,6 +221,11 @@ public class ValidationUtils {
 	}
 	
 	private static class DefaultParameterValueExpressionScope implements ExpressionScope {
+		private final AccessScope access;
+		
+		public DefaultParameterValueExpressionScope(AccessScope access) {
+			this.access = access;
+		}
 		
 		@Override
 		public boolean isConstructor() {
@@ -256,6 +270,11 @@ public class ValidationUtils {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return null;
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return access;
 		}
 	}
 }

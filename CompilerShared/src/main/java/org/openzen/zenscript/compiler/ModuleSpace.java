@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinit
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
 
 /**
  *
@@ -30,16 +31,18 @@ public final class ModuleSpace {
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
 	private final Map<String, ISymbol> globals = new HashMap<>();
 	private final AnnotationDefinition[] annotations;
+	private final StorageType[] storageTypes;
 	
-	public ModuleSpace(CompilationUnit compilationUnit, List<AnnotationDefinition> annotations) {
+	public ModuleSpace(CompilationUnit compilationUnit, List<AnnotationDefinition> annotations, StorageType[] storageTypes) {
 		this.compilationUnit = compilationUnit;
 		
 		annotations.add(NativeAnnotationDefinition.INSTANCE);
 		annotations.add(PreconditionAnnotationDefinition.INSTANCE);
 		this.annotations = annotations.toArray(new AnnotationDefinition[annotations.size()]);
+		this.storageTypes = storageTypes;
 	}
 	
-	public void addModule(String name, SemanticModule dependency) {
+	public void addModule(String name, SemanticModule dependency) throws CompileException {
 		rootPackage.add(name, dependency.modulePackage);
 		dependency.definitions.registerExpansionsTo(expansions);
 		
@@ -69,5 +72,9 @@ public final class ModuleSpace {
 	
 	public AnnotationDefinition[] getAnnotations() {
 		return annotations;
+	}
+	
+	public StorageType[] getStorageTypes() {
+		return storageTypes;
 	}
 }

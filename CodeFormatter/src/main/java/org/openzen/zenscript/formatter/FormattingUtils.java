@@ -30,7 +30,7 @@ import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -46,8 +46,8 @@ public class FormattingUtils {
 			output.append("protected ");
 		if (Modifiers.isPublic(modifiers))
 			output.append("public ");
-		if (Modifiers.isExport(modifiers))
-			output.append("export ");
+		if (Modifiers.isInternal(modifiers))
+			output.append("internal ");
 		if (Modifiers.isStatic(modifiers))
 			output.append("static ");
 		if (Modifiers.isAbstract(modifiers))
@@ -78,17 +78,17 @@ public class FormattingUtils {
 			if (parameter.variadic)
 				result.append("...");
 			
-			if (!settings.showAnyInFunctionHeaders || parameter.type != BasicTypeID.UNDETERMINED) {
+			if (!settings.showAnyInFunctionHeaders || !parameter.type.isBasic(BasicTypeID.UNDETERMINED)) {
 				result.append(" as ");
-				result.append(header.getReturnType().accept(typeFormatter));
+				result.append(typeFormatter.format(header.getReturnType()));
 			}
 			
 			parameterIndex++;
 		}
 		result.append(")");
-		if (!settings.showAnyInFunctionHeaders || header.getReturnType() != BasicTypeID.UNDETERMINED) {
+		if (!settings.showAnyInFunctionHeaders || !header.getReturnType().isBasic(BasicTypeID.UNDETERMINED)) {
 			result.append(" as ");
-			result.append(header.getReturnType().accept(typeFormatter));
+			result.append(typeFormatter.format(header.getReturnType()));
 		}
 	}
 	
@@ -128,10 +128,10 @@ public class FormattingUtils {
 			result.append("<");
 			
 			int index = 0;
-			for (ITypeID typeArgument : arguments.typeArguments) {
+			for (StoredType typeArgument : arguments.typeArguments) {
 				if (index > 0)
 					result.append(", ");
-				result.append(typeArgument.accept(typeFormatter));
+				result.append(typeFormatter.format(typeArgument));
 				index++;
 			}
 			result.append(">");

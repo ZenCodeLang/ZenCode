@@ -13,7 +13,7 @@ public class Modifiers {
 	private Modifiers() {}
 	
 	public static final int PUBLIC = 1;
-	public static final int EXPORT = 2;
+	public static final int INTERNAL = 2;
 	public static final int PRIVATE = 4;
 	public static final int ABSTRACT = 8;
 	public static final int FINAL = 16;
@@ -30,8 +30,8 @@ public class Modifiers {
 		return (modifiers & PUBLIC) > 0;
 	}
 	
-	public static boolean isExport(int modifiers) {
-		return (modifiers & EXPORT) > 0;
+	public static boolean isInternal(int modifiers) {
+		return (modifiers & INTERNAL) > 0;
 	}
 	
 	public static boolean isProtected(int modifiers) {
@@ -76,5 +76,9 @@ public class Modifiers {
 	
 	public static boolean isOverride(int modifiers) {
 		return (modifiers & OVERRIDE) > 0;
+	}
+	
+	public static boolean hasAccess(int modifiers) {
+		return (modifiers & (PRIVATE | PUBLIC | PROTECTED | INTERNAL)) > 0;
 	}
 }

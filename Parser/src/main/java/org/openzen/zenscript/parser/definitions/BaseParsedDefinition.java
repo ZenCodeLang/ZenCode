@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.CompilingType;
@@ -68,7 +69,7 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 	}
 
 	@Override
-	public void compile(BaseScope scope) {
+	public void compile(BaseScope scope) throws CompileException {
 		if (isCompiled)
 			return;
 		isCompiled = true;

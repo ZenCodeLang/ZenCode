@@ -26,7 +26,9 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -49,10 +51,10 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	@Override
 	public List<FunctionHeader> getInitializers(BaseScope scope) {
 		return Collections.singletonList(new FunctionHeader(
-				BasicTypeID.VOID,
-				scope.getType(CodePosition.BUILTIN, enforcementLevelName),
-				BasicTypeID.BOOL,
-				BasicTypeID.STRING));
+				BasicTypeID.VOID.stored,
+				scope.getType(CodePosition.BUILTIN, enforcementLevelName).stored(),
+				BasicTypeID.BOOL.stored,
+				StringTypeID.UNIQUE));
 	}
 
 	@Override
@@ -104,7 +106,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public Annotation createForParameter(CodePosition position, CallArguments arguments) {
+	public ParameterAnnotation createForParameter(CodePosition position, CallArguments arguments) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
@@ -129,7 +131,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public Annotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
+	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }

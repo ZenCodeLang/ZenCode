@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -45,19 +45,21 @@ public class VariantDefinition extends HighLevelDefinition {
 	}
 	
 	public static class Option extends Taggable {
+		public final CodePosition position;
 		public final VariantDefinition variant;
 		public final String name;
 		public final int ordinal;
-		public final ITypeID[] types;
+		public final StoredType[] types;
 		
-		public Option(VariantDefinition variant, String name, int ordinal, ITypeID[] types) {
+		public Option(CodePosition position, VariantDefinition variant, String name, int ordinal, StoredType[] types) {
+			this.position = position;
 			this.variant = variant;
 			this.name = name;
 			this.ordinal = ordinal;
 			this.types = types;
 		}
 		
-		public VariantOptionRef instance(ITypeID variantType, GenericMapper mapper) {
+		public VariantOptionRef instance(StoredType variantType, GenericMapper mapper) {
 			return new VariantOptionRef(this, variantType, mapper.map(types));
 		}
 	}

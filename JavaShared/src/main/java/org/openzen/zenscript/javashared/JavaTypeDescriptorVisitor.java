@@ -19,6 +19,19 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 		forOptional = optional ? this : new JavaTypeDescriptorVisitor(context, true);
 	}
 	
+	public String process(StoredType type) {
+		if (JavaTypeUtils.isShared(type)) {
+			context.useShared();
+			return "L" + JavaClass.SHARED.internalName + ";";
+		}
+		
+		return type.type.accept(this);
+	}
+	
+	public String process(TypeID type) {
+		return type.accept(this);
+	}
+	
     @Override
     public String visitBasic(BasicTypeID basic) {
 		if (optional) {
@@ -36,7 +49,6 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 				case USIZE: return "I"; // special case: optional usize fits in an int where null = -1
 				case FLOAT: return "Ljava/lang/Float;";
 				case DOUBLE: return "Ljava/lang/Double;";
-				case STRING: return "Ljava/lang/String;";
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}
@@ -56,21 +68,25 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 				case USIZE: return "I";
 				case FLOAT: return "F";
 				case DOUBLE: return "D";
-				case STRING: return "Ljava/lang/String;";
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}
 		}
     }
+	
+	@Override
+	public String visitString(StringTypeID string) {
+		return "Ljava/lang/String;";
+	}
 
     @Override
     public String visitArray(ArrayTypeID array) {
-		if (array.elementType == BasicTypeID.BYTE)
+		if (array.elementType.type == BasicTypeID.BYTE)
 			return "[B"; // instead of int[], save memory, save compatibility
-		else if (array.elementType == BasicTypeID.USHORT)
+		else if (array.elementType.type == BasicTypeID.USHORT)
 			return "[S"; // instead of int[], save memory
 		else
-			return "[" + array.elementType.accept(this);
+			return "[" + this.context.getDescriptor(array.elementType);
     }
 
     @Override
@@ -85,24 +101,20 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 
     @Override
     public String visitFunction(FunctionTypeID function) {
-        return "L" + context.getFunction(function).getCls().internalName + ";";
+        return "L" + this.context.getFunction(function).getCls().internalName + ";";
     }
 
     @Override
     public String visitDefinition(DefinitionTypeID definition) {
-		JavaClass cls = definition.definition.getTag(JavaClass.class);
-		if (cls == null)
-			throw new IllegalStateException("Class not yet initialized: " + definition.definition.name);
-		
+		JavaClass cls = context.getJavaClass(definition.definition);
 		return "L" + cls.internalName + ";";
     }
 
     @Override
     public String visitGeneric(GenericTypeID generic) {
 		for (TypeParameterBound bound : generic.parameter.bounds) {
-			if (bound instanceof ParameterTypeBound) {
-				return ((ParameterTypeBound) bound).type.accept(this);
-			}
+			if (bound instanceof ParameterTypeBound)
+				return process(((ParameterTypeBound) bound).type);
 		}
 		
 		return "Ljava/lang/Object;";
@@ -110,15 +122,12 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 
     @Override
     public String visitRange(RangeTypeID range) {
-		return "L" + context.getRange(range).cls.internalName + ";";
+		return "L" + this.context.getRange(range).cls.internalName + ";";
     }
 
     @Override
-    public String visitModified(ModifiedTypeID modified) {
-		if (modified.isOptional())
-			return modified.withoutOptional().accept(forOptional);
-		
-		return modified.baseType.accept(this);
+    public String visitOptional(OptionalTypeID modified) {
+		return modified.withoutOptional().accept(forOptional);
     }
 
 	@Override

@@ -17,7 +17,7 @@ public class ConstantUSizeExpression extends Expression {
 	public final long value;
 	
 	public ConstantUSizeExpression(CodePosition position, long value) {
-		super(position, BasicTypeID.USIZE, null);
+		super(position, BasicTypeID.USIZE.stored, null);
 		
 		this.value = value;
 	}

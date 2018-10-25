@@ -10,12 +10,12 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -49,7 +49,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 
 	@Override
 	public void linkTypes(TypeResolutionContext context) {
-		ITypeID[] loopVariableTypes = new ITypeID[header.parameters.size()];
+		StoredType[] loopVariableTypes = new StoredType[header.parameters.size()];
 		for (int i = 0; i < loopVariableTypes.length; i++)
 			loopVariableTypes[i] = header.parameters.get(i).type.compile(context);
 		
@@ -63,7 +63,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 
 	@Override
 	public void compile(BaseScope scope) {
-		FunctionHeader header = new FunctionHeader(scope.getTypeRegistry().getIterator(compiled.getLoopVariableTypes()));
+		FunctionHeader header = new FunctionHeader(scope.getTypeRegistry().getIterator(compiled.getLoopVariableTypes()).stored(UniqueStorageTag.INSTANCE));
 		StatementScope innerScope = new FunctionScope(scope, header);
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		compiled.setContent(body.compile(innerScope, header));

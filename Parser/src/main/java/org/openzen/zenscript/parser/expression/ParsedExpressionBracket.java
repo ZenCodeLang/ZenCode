@@ -12,8 +12,10 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
+import org.openzen.zenscript.parser.type.ParsedStorageTag;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 /**
@@ -30,7 +32,7 @@ public class ParsedExpressionBracket extends ParsedExpression {
 	}
 	
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		if (expressions.size() != 1) {
 			throw new CompileException(position, CompileExceptionCode.BRACKET_MULTIPLE_EXPRESSIONS, "Bracket expression may have only one expression");
 		} else {
@@ -39,12 +41,12 @@ public class ParsedExpressionBracket extends ParsedExpression {
 	}
 	
 	@Override
-	public ParsedFunctionHeader toLambdaHeader() {
+	public ParsedFunctionHeader toLambdaHeader() throws ParseException {
 		List<ParsedFunctionParameter> parameters = new ArrayList<>();
 		for (ParsedExpression expression : expressions)
 			parameters.add(expression.toLambdaParameter());
 		
-		return new ParsedFunctionHeader(parameters, ParsedTypeBasic.UNDETERMINED, null);
+		return new ParsedFunctionHeader(position, parameters, ParsedTypeBasic.UNDETERMINED);
 	}
 
 	@Override

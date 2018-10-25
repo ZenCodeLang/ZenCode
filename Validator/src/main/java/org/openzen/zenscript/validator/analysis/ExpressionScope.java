@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.validator.analysis;
 
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
@@ -15,21 +16,23 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
  * @author Hoofdgebruiker
  */
 public interface ExpressionScope {
-	public boolean isConstructor();
+	boolean isConstructor();
 	
-	public boolean isFirstStatement();
+	boolean isFirstStatement();
 	
-	public boolean hasThis();
+	boolean hasThis();
 	
-	public boolean isFieldInitialized(FieldMember field);
+	boolean isFieldInitialized(FieldMember field);
 	
-	public boolean isEnumConstantInitialized(EnumConstantMember member);
+	boolean isEnumConstantInitialized(EnumConstantMember member);
 	
-	public boolean isLocalVariableInitialized(VarStatement variable);
+	boolean isLocalVariableInitialized(VarStatement variable);
 	
-	public void markConstructorForwarded();
+	void markConstructorForwarded();
 	
-	public boolean isStaticInitializer();
+	boolean isStaticInitializer();
 	
-	public HighLevelDefinition getDefinition();
+	HighLevelDefinition getDefinition();
+	
+	AccessScope getAccessScope();
 }

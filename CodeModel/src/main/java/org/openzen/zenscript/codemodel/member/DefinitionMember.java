@@ -18,7 +18,7 @@ import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 public abstract class DefinitionMember extends Taggable implements IDefinitionMember {
 	public final CodePosition position;
 	public final HighLevelDefinition definition;
-	public int modifiers;
+	protected final int modifiers;
 	public MemberAnnotation[] annotations = MemberAnnotation.NONE;
 	
 	public DefinitionMember(CodePosition position, HighLevelDefinition definition, int modifiers) {
@@ -33,7 +33,7 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 	}
 	
 	@Override
-	public int getModifiers() {
+	public int getSpecifiedModifiers() {
 		return modifiers;
 	}
 	
@@ -42,31 +42,37 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 		return definition;
 	}
 	
+	@Override
 	public MemberAnnotation[] getAnnotations() {
 		return annotations;
 	}
 	
+	@Override
+	public String toString() {
+		return describe();
+	}
+	
 	public boolean isStatic() {
-		return Modifiers.isStatic(modifiers);
+		return Modifiers.isStatic(getEffectiveModifiers());
 	}
 	
 	public boolean isFinal() {
-		return Modifiers.isFinal(modifiers);
+		return Modifiers.isFinal(getEffectiveModifiers());
 	}
 	
 	public boolean isExtern() {
-		return Modifiers.isExtern(modifiers);
+		return Modifiers.isExtern(getEffectiveModifiers());
 	}
 	
 	public boolean isPrivate() {
-		return Modifiers.isPrivate(modifiers);
+		return Modifiers.isPrivate(getEffectiveModifiers());
 	}
 	
 	public boolean isPublic() {
-		return Modifiers.isPublic(modifiers);
+		return Modifiers.isPublic(getEffectiveModifiers());
 	}
 	
 	public boolean isProtected() {
-		return Modifiers.isProtected(modifiers);
+		return Modifiers.isProtected(getEffectiveModifiers());
 	}
 }

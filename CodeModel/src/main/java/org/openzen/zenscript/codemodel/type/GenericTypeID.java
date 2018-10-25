@@ -6,23 +6,29 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class GenericTypeID implements ITypeID {
+public class GenericTypeID implements TypeID {
 	public final TypeParameter parameter;
 
 	public GenericTypeID(TypeParameter parameter) {
 		this.parameter = parameter;
 	}
 	
-	public boolean matches(LocalMemberCache cache, ITypeID type) {
-		return parameter.matches(cache, type);
+	public boolean matches(LocalMemberCache cache, StoredType type) {
+		if (type.getSpecifiedStorage() != null && parameter.storage != null && !type.getActualStorage().equals(parameter.storage))
+			return false;
+		
+		return parameter.matches(cache, type.type);
 	}
 	
 	@Override
@@ -31,38 +37,44 @@ public class GenericTypeID implements ITypeID {
 	}
 	
 	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		return mapper.map(this);
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		StoredType mapped = mapper.map(this);
+		return new StoredType(mapped.type, StorageTag.union(mapped.getSpecifiedStorage(), storage));
 	}
-
+	
 	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitGeneric(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitGeneric(context, this);
-	}
-	
-	@Override
-	public GenericTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
 	public boolean isOptional() {
 		return false;
 	}
-
+	
 	@Override
-	public boolean isConst() {
+	public boolean isValueType() {
 		return false;
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return parameter.isObjectType();
+	public boolean isDestructible() {
+		return false; // TODO: actually depends on the type..?
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return false; // TODO: actually depends on the type..?
+	}
+	
+	@Override
+	public boolean isGeneric() {
+		return true;
 	}
 
 	@Override

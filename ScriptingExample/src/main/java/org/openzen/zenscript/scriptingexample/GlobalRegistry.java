@@ -19,20 +19,28 @@ import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
-import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
+import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialMemberGroupExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaContext;
 
 /**
  *
@@ -44,31 +52,44 @@ public class GlobalRegistry {
 	private final ZSPackage javaIo = rootPackage.getOrCreatePackage("java").getOrCreatePackage("io");
 	private final ZSPackage javaLang = rootPackage.getOrCreatePackage("java").getOrCreatePackage("lang");
 	
-	public GlobalRegistry(ZSPackage globals) {
-		JavaClass jPrintStream = new JavaClass("java.io", "PrintStream", JavaClass.Kind.CLASS);
-		JavaMethod printstreamPrintln = JavaMethod.getNativeVirtual(jPrintStream, "println", "(Ljava/lang/String;)V");
-		PRINTSTREAM_PRINTLN.setTag(JavaMethod.class, printstreamPrintln);
+	private final Module MODULE = new Module("scriptingExample");
+	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaIo, "PrintStream", Modifiers.PUBLIC);
+	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaLang, "System", Modifiers.PUBLIC);
+	private final MethodMember PRINTSTREAM_PRINTLN;
+	private final GetterMember SYSTEM_OUT;
+	
+	public GlobalRegistry(GlobalTypeRegistry registry, ZSPackage globals) {
+		PRINTSTREAM_PRINTLN = new MethodMember(
+			CodePosition.NATIVE,
+			PRINTSTREAM,
+			Modifiers.PUBLIC,
+			"println",
+			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(StringTypeID.BORROW)),
+			null);
+		
+		SYSTEM_OUT = new GetterMember(
+			CodePosition.NATIVE,
+			SYSTEM,
+			Modifiers.PUBLIC | Modifiers.FINAL | Modifiers.STATIC,
+			"out",
+			DefinitionTypeID.forType(registry, SYSTEM).stored(AutoStorageTag.INSTANCE),
+			null);
+	}
+	
+	public void register(JavaContext context) {
+		context.addModule(MODULE);
+		JavaCompiledModule javaModule = context.getJavaModule(MODULE);
 		
 		JavaClass jSystem = new JavaClass("java.lang", "System", JavaClass.Kind.CLASS);
-		SYSTEM_OUT.setTag(JavaField.class, new JavaField(jSystem, "out", "Ljava/io/PrintStream;"));
+		javaModule.setFieldInfo(SYSTEM_OUT, new JavaField(jSystem, "out", "Ljava/io/PrintStream;"));
+		
+		JavaClass jPrintStream = new JavaClass("java.io", "PrintStream", JavaClass.Kind.CLASS);
+		JavaMethod printstreamPrintln = JavaMethod.getNativeVirtual(jPrintStream, "println", "(Ljava/lang/String;)V");
+		javaModule.setMethodInfo(PRINTSTREAM_PRINTLN, printstreamPrintln);
 	}
 	
 	public ZSPackage collectPackages() {
 		// register packages here
-		
-		{
-			// eg. package my.package with a class MyClass with a single native method test() returning a string
-			// the visitors can then during compilation check if a method is an instance of NativeMethodMember and treat it accordingly
-			ZSPackage packageMyPackage = rootPackage.getOrCreatePackage("my").getOrCreatePackage("test");
-			ClassDefinition myClassDefinition = new ClassDefinition(CodePosition.NATIVE, MODULE, packageMyPackage, "MyClass", Modifiers.PUBLIC, null);
-			JavaClass myClassInfo = new JavaClass("my.test", "MyClass", JavaClass.Kind.CLASS);
-			
-			MethodMember member = new MethodMember(CodePosition.NATIVE, myClassDefinition, Modifiers.PUBLIC, "test", new FunctionHeader(BasicTypeID.STRING), null);
-			member.setTag(JavaMethod.class, JavaMethod.getNativeVirtual(myClassInfo, "test", "()Ljava/lang/String;"));
-			myClassDefinition.addMember(member);
-			
-			packageMyPackage.register(myClassDefinition);
-		}
 		
 		return rootPackage;
 	}
@@ -88,41 +109,22 @@ public class GlobalRegistry {
 		return globals;
 	}
 	
-	private final Module MODULE = new Module("scriptingExample");
-	private final ClassDefinition PRINTSTREAM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaIo, "PrintStream", Modifiers.EXPORT);
-	private final ClassDefinition SYSTEM = new ClassDefinition(CodePosition.NATIVE, MODULE, javaLang, "System", Modifiers.EXPORT);
-	private final MethodMember PRINTSTREAM_PRINTLN = new MethodMember(
-			CodePosition.NATIVE,
-			PRINTSTREAM,
-			Modifiers.EXPORT,
-			"println",
-			new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(BasicTypeID.STRING)),
-			null);
-	
-	private final FieldMember SYSTEM_OUT = new FieldMember(
-			CodePosition.NATIVE,
-			SYSTEM,
-			Modifiers.EXPORT | Modifiers.FINAL,
-			"out",
-			null,
-			DefinitionTypeID.forType(SYSTEM), null, 0, 0, null);
-	
 	private class PrintlnSymbol implements ISymbol {
 
 		@Override
-		public IPartialExpression getExpression(CodePosition position, BaseScope scope, ITypeID[] typeArguments) {
+		public IPartialExpression getExpression(CodePosition position, BaseScope scope, StoredType[] typeArguments) {
 			return new PartialMemberGroupExpression(
 					position,
 					scope,
-					new GetStaticFieldExpression(position, new FieldMemberRef(scope.getTypeRegistry().getForMyDefinition(SYSTEM), SYSTEM_OUT, GenericMapper.EMPTY)),
+					new StaticGetterExpression(position, new GetterMemberRef(scope.getTypeRegistry().getForMyDefinition(SYSTEM).stored(StaticExpressionStorageTag.INSTANCE), SYSTEM_OUT, GenericMapper.EMPTY)),
 					"println",
-					PRINTSTREAM_PRINTLN.ref(scope.getTypeRegistry().getForDefinition(PRINTSTREAM), GenericMapper.EMPTY),
+					PRINTSTREAM_PRINTLN.ref(scope.getTypeRegistry().getForDefinition(PRINTSTREAM).stored(BorrowStorageTag.INVOCATION), GenericMapper.EMPTY),
 					null,
 					false);
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, TypeResolutionContext context, ITypeID[] typeArguments) {
+		public TypeID getType(CodePosition position, TypeResolutionContext context, StoredType[] typeArguments) {
 			return null; // not a type
 		}
 	}

@@ -2,5 +2,5 @@ package zsynthetic;
 
 @FunctionalInterface
 public interface FunctionBoolBoolToVoid {
-    void invoke(boolean oldValue, boolean newValue);
+    void invoke(boolean a, boolean b);
 }

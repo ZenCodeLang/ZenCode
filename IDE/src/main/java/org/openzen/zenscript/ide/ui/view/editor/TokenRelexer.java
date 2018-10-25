@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.lexer.CharReader;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.TokenParser;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -43,7 +44,7 @@ public class TokenRelexer {
 		this.spacesPerTab = spacesPerTab;
 	}
 	
-	public List<ZSToken> relex() {
+	public List<ZSToken> relex() throws ParseException {
 		RelexCharReader reader = new RelexCharReader();
 		TokenParser<ZSToken, ZSTokenType> reparser = ZSTokenParser.createRaw(file, reader, spacesPerTab);
 		List<ZSToken> result = new ArrayList<>();

@@ -14,6 +14,8 @@ import java.util.Set;
 import org.openzen.drawablegui.listeners.ListenerHandle;
 import org.openzen.drawablegui.listeners.ListenerList;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.lexer.ParseException;
+import org.openzen.zenscript.lexer.TokenStream;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenType;
 
@@ -139,11 +141,41 @@ public class TokenModel {
 		}
 	}
 	
-	public void set(Iterator<ZSToken> tokens) {
+	public void set(TokenStream<ZSTokenType, ZSToken> tokens) {
 		lines.clear();
 		lines.add(new TokenLine());
 		
-		insertTokens(0, 0, tokens);
+		insertTokens(0, 0, new TokenIterator(tokens));
+	}
+	
+	private static class TokenIterator implements Iterator<ZSToken> {
+		private final TokenStream<ZSTokenType, ZSToken> stream;
+		private ZSToken next;
+		
+		public TokenIterator(TokenStream<ZSTokenType, ZSToken> stream) {
+			this.stream = stream;
+			try {
+				next = stream.next();
+			} catch (ParseException ex) {
+				throw new RuntimeException(ex);
+			}
+		}
+
+		@Override
+		public boolean hasNext() {
+			return next.type != stream.getEOF();
+		}
+
+		@Override
+		public ZSToken next() {
+			ZSToken token = next;
+			try {
+				next = stream.next();
+			} catch (ParseException ex) {
+				throw new RuntimeException(ex);
+			}
+			return token;
+		}
 	}
 	
 	public void deleteNewline(int lineIndex) {
@@ -211,9 +243,13 @@ public class TokenModel {
 	}
 	
 	private void relex(int fromLine, int fromToken, int toLine, int toToken) {
-		TokenRelexer reparser = new TokenRelexer(file, lines, fromLine, fromToken, toLine, toToken, spacesPerTab);
-		List<ZSToken> tokens = reparser.relex();
-		replaceTokens(fromLine, fromToken, reparser.getLine(), reparser.getToken(), tokens);
+		try {
+			TokenRelexer reparser = new TokenRelexer(file, lines, fromLine, fromToken, toLine, toToken, spacesPerTab);
+			List<ZSToken> tokens = reparser.relex();
+			replaceTokens(fromLine, fromToken, reparser.getLine(), reparser.getToken(), tokens);
+		} catch (ParseException ex) {
+			// TODO: signal this somewhere?
+		}
 	}
 	
 	private void replaceTokens(int fromLine, int fromToken, int toLine, int toToken, List<ZSToken> tokens) {

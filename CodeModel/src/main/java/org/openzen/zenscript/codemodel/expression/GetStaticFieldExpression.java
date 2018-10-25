@@ -11,7 +11,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -27,7 +27,7 @@ public class GetStaticFieldExpression extends Expression {
 	}
 	
 	@Override
-	public List<ITypeID> getAssignHints() {
+	public List<StoredType> getAssignHints() {
 		return Collections.singletonList(field.getType());
 	}
 	

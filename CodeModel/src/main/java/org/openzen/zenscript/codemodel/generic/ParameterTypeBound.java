@@ -8,9 +8,10 @@ package org.openzen.zenscript.codemodel.generic;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 
 /**
  *
@@ -18,9 +19,9 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  */
 public class ParameterTypeBound extends TypeParameterBound {
 	public final CodePosition position;
-	public final ITypeID type;
+	public final TypeID type;
 	
-	public ParameterTypeBound(CodePosition position, ITypeID type) {
+	public ParameterTypeBound(CodePosition position, TypeID type) {
 		this.position = position;
 		this.type = type;
 	}
@@ -31,18 +32,20 @@ public class ParameterTypeBound extends TypeParameterBound {
 	}
 
 	@Override
-	public void registerMembers(LocalMemberCache cache, TypeMembers type) {
-		cache.get(this.type).copyMembersTo(position, type, TypeMemberPriority.FROM_TYPE_BOUNDS);
+	public void registerMembers(LocalMemberCache cache, TypeMembers members) {
+		cache.get(this.type.stored(members.type.getSpecifiedStorage()))
+				.copyMembersTo(position, members, TypeMemberPriority.FROM_TYPE_BOUNDS);
 	}
 
 	@Override
-	public boolean matches(LocalMemberCache cache, ITypeID type) {
-		return cache.get(type).extendsOrImplements(this.type);
+	public boolean matches(LocalMemberCache cache, TypeID type) {
+		return cache.get(type.stored(BorrowStorageTag.THIS))
+				.extendsOrImplements(this.type);
 	}
 
 	@Override
 	public TypeParameterBound instance(GenericMapper mapper) {
-		return new ParameterTypeBound(position, type.instance(mapper));
+		return new ParameterTypeBound(position, type.instance(mapper, null).type);
 	}
 
 	@Override

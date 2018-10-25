@@ -13,21 +13,22 @@ import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class IteratorMember extends FunctionalMember {
-	private final ITypeID[] iteratorTypes;
+	private final StoredType[] iteratorTypes;
 	public Statement body;
 	public IteratorMemberRef overrides;
 	
-	public IteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID[] iteratorTypes, GlobalTypeRegistry registry, BuiltinID builtin) {
+	public IteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, StoredType[] iteratorTypes, GlobalTypeRegistry registry, BuiltinID builtin) {
 		super(position, definition, modifiers, createIteratorHeader(registry, iteratorTypes), builtin);
 		
 		this.iteratorTypes = iteratorTypes;
@@ -46,7 +47,7 @@ public class IteratorMember extends FunctionalMember {
 		return iteratorTypes.length;
 	}
 	
-	public ITypeID[] getLoopVariableTypes() {
+	public StoredType[] getLoopVariableTypes() {
 		return iteratorTypes;
 	}
 
@@ -84,7 +85,7 @@ public class IteratorMember extends FunctionalMember {
 		return FunctionalKind.ITERATOR;
 	}
 	
-	private static FunctionHeader createIteratorHeader(GlobalTypeRegistry registry, ITypeID[] iteratorTypes) {
-		return new FunctionHeader(registry.getIterator(iteratorTypes));
+	private static FunctionHeader createIteratorHeader(GlobalTypeRegistry registry, StoredType[] iteratorTypes) {
+		return new FunctionHeader(registry.getIterator(iteratorTypes).stored(UniqueStorageTag.INSTANCE));
 	}
 }

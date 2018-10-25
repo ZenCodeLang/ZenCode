@@ -32,7 +32,6 @@ public class JavaSourceObjectTypeVisitor extends JavaSourceTypeVisitor {
 			case FLOAT: return "Float";
 			case DOUBLE: return "Double";
 			case CHAR: return "Character";
-			case STRING: return "String";
 			default:
 				throw new IllegalArgumentException("Unknown basic type: " + basic);
 		}

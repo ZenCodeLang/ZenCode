@@ -53,6 +53,9 @@ public class JavaMethod {
 	public final boolean genericResult;
 	
 	public JavaMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers, boolean genericResult) {
+		if (descriptor.contains("<")) // fix signature bug
+			throw new IllegalArgumentException("Invalid descriptor!");
+		
 		this.cls = cls;
 		this.kind = kind;
 		this.name = name;

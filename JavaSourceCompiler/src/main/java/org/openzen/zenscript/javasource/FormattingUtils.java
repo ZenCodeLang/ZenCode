@@ -5,14 +5,11 @@
  */
 package org.openzen.zenscript.javasource;
 
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
@@ -23,32 +20,6 @@ import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
  */
 public class FormattingUtils {
 	private FormattingUtils() {}
-	
-	public static void formatHeader(StringBuilder result, JavaSourceFormattingSettings settings, FunctionHeader header, JavaSourceTypeVisitor typeFormatter) {
-		FormattingUtils.formatTypeParameters(result, header.typeParameters, typeFormatter);
-		result.append("(");
-		int parameterIndex = 0;
-		for (FunctionParameter parameter : header.parameters) {
-			if (parameterIndex > 0)
-				result.append(", ");
-			
-			result.append(parameter.name);
-			if (parameter.variadic)
-				result.append("...");
-			
-			if (!settings.showAnyInFunctionHeaders || parameter.type != BasicTypeID.UNDETERMINED) {
-				result.append(" as ");
-				result.append(header.getReturnType().accept(typeFormatter));
-			}
-			
-			parameterIndex++;
-		}
-		result.append(")");
-		if (!settings.showAnyInFunctionHeaders || header.getReturnType() != BasicTypeID.UNDETERMINED) {
-			result.append(" as ");
-			result.append(header.getReturnType().accept(typeFormatter));
-		}
-	}
 	
 	public static void formatTypeParameters(StringBuilder result, TypeParameter[] parameters, JavaSourceTypeVisitor typeFormatter) {
 		if (parameters != null) {
@@ -81,7 +52,7 @@ public class FormattingUtils {
 			result.append("<");
 			
 			int index = 0;
-			for (ITypeID typeArgument : arguments.typeArguments) {
+			for (StoredType typeArgument : arguments.typeArguments) {
 				if (index > 0)
 					result.append(", ");
 				result.append(scope.type(typeArgument));
@@ -108,7 +79,7 @@ public class FormattingUtils {
 			result.append("<");
 			
 			int index = 0;
-			for (ITypeID typeArgument : arguments.typeArguments) {
+			for (StoredType typeArgument : arguments.typeArguments) {
 				if (index > 0)
 					result.append(", ");
 				result.append(scope.type(typeArgument));

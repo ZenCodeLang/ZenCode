@@ -7,12 +7,11 @@ package org.openzen.zenscript.parser.definitions;
 
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -24,14 +23,26 @@ import org.openzen.zenscript.parser.type.IParsedType;
  * @author Hoofdgebruiker
  */
 public class ParsedExpansion extends BaseParsedDefinition {
-	public static ParsedExpansion parseExpansion(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedExpansion parseExpansion(
+			CompilingPackage pkg,
+			CodePosition position,
+			int modifiers,
+			ParsedAnnotation[] annotations,
+			ZSTokenParser tokens,
+			HighLevelDefinition outerDefinition) throws ParseException
+	{
 		List<ParsedTypeParameter> parameters = ParsedTypeParameter.parseAll(tokens);
 		IParsedType target = IParsedType.parse(tokens);
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
 		ParsedExpansion result = new ParsedExpansion(pkg, position, modifiers, annotations, parameters, target, outerDefinition);
-		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-			result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+		try {
+			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
+				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+			}
+		} catch (ParseException ex) {
+			tokens.logError(ex);
+			tokens.recoverUntilToken(ZSTokenType.T_ACLOSE);
 		}
 		return result;
 	}
@@ -60,7 +71,7 @@ public class ParsedExpansion extends BaseParsedDefinition {
 		ParsedTypeParameter.compile(context, compiled.typeParameters, this.parameters);
 		compiled.target = target.compile(context);
 		if (compiled.target == null)
-			throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Could not compile expansion target: " + target);
+			throw new RuntimeException(position + ": Could not compile expansion target: " + target);
 		
 		super.linkTypesLocal(context);
 	}

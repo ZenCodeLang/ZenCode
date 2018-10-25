@@ -7,14 +7,18 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public enum BasicTypeID implements ITypeID {
+public enum BasicTypeID implements TypeID {
 	VOID("void"),
 	NULL("null"),
 	BOOL("bool"),
@@ -30,16 +34,17 @@ public enum BasicTypeID implements ITypeID {
 	FLOAT("float"),
 	DOUBLE("double"),
 	CHAR("char"),
-	STRING("string"),
 	
 	UNDETERMINED("undetermined");
 	
-	public static final List<ITypeID> HINT_BOOL = Collections.singletonList(BOOL);
+	public static final List<StoredType> HINT_BOOL = Collections.singletonList(BOOL.stored);
 	
 	public final String name;
+	public final StoredType stored;
 	
 	BasicTypeID(String name) {
 		this.name = name;
+		stored = new StoredType(this, null);
 	}
 	
 	@Override
@@ -48,43 +53,43 @@ public enum BasicTypeID implements ITypeID {
 	}
 	
 	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		return this;
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return stored(storage);
 	}
 	
 	@Override
 	public String toString() {
 		return name;
 	}
-
+	
 	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitBasic(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitBasic(context, this);
-	}
-	
-	@Override
-	public BasicTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
 	public boolean isOptional() {
 		return false;
 	}
-
+	
 	@Override
-	public boolean isConst() {
+	public boolean isValueType() {
+		return true;
+	}
+	
+	@Override
+	public boolean isDestructible() {
 		return false;
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return this == STRING;
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return false;
 	}
 
 	@Override

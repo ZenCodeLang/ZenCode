@@ -12,11 +12,12 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.parser.PrecompilationState;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -32,18 +33,18 @@ public class ParsedExpressionArray extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
-		ITypeID asBaseType = null;
-		ArrayTypeID asType = null;
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
+		StoredType asBaseType = null;
+		StoredType asType = null;
 		boolean couldHintType = false;
 		
-		for (ITypeID hint : scope.hints) {
+		for (StoredType hint : scope.hints) {
 			// TODO: what if multiple hints fit?
-			if (hint.getUnmodified() instanceof ArrayTypeID) {
-				ArrayTypeID arrayHint = (ArrayTypeID) hint.getUnmodified();
+			if (hint.type instanceof ArrayTypeID) {
+				ArrayTypeID arrayHint = (ArrayTypeID) hint.type;
 				if (arrayHint.dimension == 1) {
 					asBaseType = arrayHint.elementType;
-					asType = arrayHint;
+					asType = hint;
 					couldHintType = true;
 				}
 			}
@@ -58,20 +59,24 @@ public class ParsedExpressionArray extends ParsedExpression {
 			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_ARRAY, "Empty array with unknown type");
 		} else {
 			ExpressionScope contentScope = scope.withoutHints();
-			ITypeID resultType = null;
+			StoredType resultType = null;
 			for (int i = 0; i < contents.size(); i++) {
 				cContents[i] = contents.get(i).compileKey(contentScope).eval();
-				resultType = resultType == null ? cContents[i].type : scope.getTypeMembers(resultType).union(cContents[i].type);
+				StoredType joinedType = resultType == null ? cContents[i].type : scope.getTypeMembers(resultType).union(cContents[i].type);
+				if (joinedType == null)
+					throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "Could not combine " + resultType + " with " + cContents[i].type);
+				
+				resultType = joinedType;
 			}
 			for (int i = 0; i < contents.size(); i++)
 				cContents[i] = cContents[i].castImplicit(position, scope, resultType);
-			asType = scope.getTypeRegistry().getArray(resultType, 1);
+			asType = scope.getTypeRegistry().getArray(resultType, 1).stored(UniqueStorageTag.INSTANCE);
 		}
 		return new ArrayExpression(position, cContents, asType);
 	}
 
 	@Override
-	public Expression compileKey(ExpressionScope scope) {
+	public Expression compileKey(ExpressionScope scope) throws CompileException {
 		if (contents.size() == 1) {
 			return contents.get(0).compile(scope).eval();
 		} else {

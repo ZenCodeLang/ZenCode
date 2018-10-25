@@ -8,6 +8,7 @@ package org.openzen.zenscript.parser;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
@@ -17,26 +18,31 @@ import static org.openzen.zenscript.lexer.ZSTokenType.*;
  * @author Hoofdgebruiker
  */
 public class ParsedImport {
-	public static ParsedImport parse(CodePosition position, ZSTokenParser tokens) {
-		boolean relative = tokens.optional(T_DOT) != null;
-		
-		List<String> importName = new ArrayList<>();
-		ZSToken tName = tokens.required(T_IDENTIFIER, "identifier expected");
-		importName.add(tName.content);
+	public static ParsedImport parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
+		try {
+			boolean relative = tokens.optional(T_DOT) != null;
 
-		while (tokens.optional(T_DOT) != null) {
-			ZSToken tNamePart = tokens.required(T_IDENTIFIER, "identifier expected");
-			importName.add(tNamePart.content);
+			List<String> importName = new ArrayList<>();
+			ZSToken tName = tokens.required(T_IDENTIFIER, "identifier expected");
+			importName.add(tName.content);
+
+			while (tokens.optional(T_DOT) != null) {
+				ZSToken tNamePart = tokens.required(T_IDENTIFIER, "identifier expected");
+				importName.add(tNamePart.content);
+			}
+
+			String rename = null;
+			if (tokens.optional(K_AS) != null) {
+				ZSToken tRename = tokens.required(T_IDENTIFIER, "identifier expected");
+				rename = tRename.content;
+			}
+
+			tokens.required(T_SEMICOLON, "; expected");
+			return new ParsedImport(position, relative, importName, rename);
+		} catch (ParseException ex) {
+			tokens.recoverUntilTokenOrNewline(T_SEMICOLON);
+			throw ex;
 		}
-
-		String rename = null;
-		if (tokens.optional(K_AS) != null) {
-			ZSToken tRename = tokens.required(T_IDENTIFIER, "identifier expected");
-			rename = tRename.content;
-		}
-
-		tokens.required(T_SEMICOLON, "; expected");
-		return new ParsedImport(position, relative, importName, rename);
 	}
 	
 	public final CodePosition position;

@@ -9,33 +9,18 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.*;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 
 public class CompilerUtils {
 	private CompilerUtils() {}
 
-	public static boolean isPrimitive(ITypeID id) {
-		if (id instanceof BasicTypeID) {
-			switch ((BasicTypeID) id) {
-				case BOOL:
-				case BYTE:
-				case SBYTE:
-				case SHORT:
-				case USHORT:
-				case INT:
-				case UINT:
-				case LONG:
-				case ULONG:
-				case FLOAT:
-				case DOUBLE:
-				case CHAR:
-					return true;
-			}
-		}
-		return false;
+	public static boolean isPrimitive(TypeID id) {
+		return id instanceof BasicTypeID
+				|| (id.isOptional() && id.withoutOptional() == BasicTypeID.USIZE);
 	}
 
 	public static int calcAccess(int modifiers) {
@@ -55,24 +40,24 @@ public class CompilerUtils {
 		return out;
 	}
 
-    public static void tagMethodParameters(JavaBytecodeContext context, FunctionHeader header, boolean isStatic) {
+    public static void tagMethodParameters(JavaBytecodeContext context, JavaCompiledModule module, FunctionHeader header, boolean isStatic) {
         for (int i = 0; i < header.parameters.length; i++) {
             FunctionParameter parameter = header.parameters[i];
             String parameterType = context.getDescriptor(parameter.type);
-            parameter.setTag(JavaParameterInfo.class, new JavaParameterInfo(isStatic ? i : i + 1, parameterType));
+            module.setParameterInfo(parameter, new JavaParameterInfo(isStatic ? i : i + 1, parameterType));
         }
     }
 
-    public static void tagConstructorParameters(JavaBytecodeContext context, FunctionHeader header, boolean isEnum) {
+    public static void tagConstructorParameters(JavaBytecodeContext context, JavaCompiledModule module, FunctionHeader header, boolean isEnum) {
         for (int i = 0; i < header.parameters.length; i++) {
             FunctionParameter parameter = header.parameters[i];
             String parameterType = context.getDescriptor(parameter.type);
-            parameter.setTag(JavaParameterInfo.class, new JavaParameterInfo(isEnum ? i + 3 : i + 1, parameterType));
+			module.setParameterInfo(parameter, new JavaParameterInfo(isEnum ? i + 3 : i + 1, parameterType));
         }
     }
 
     public static void writeDefaultFieldInitializers(JavaBytecodeContext context, JavaWriter constructorWriter, HighLevelDefinition definition, boolean staticFields) {
-        JavaExpressionVisitor expressionVisitor = new JavaExpressionVisitor(context, constructorWriter);
+        JavaExpressionVisitor expressionVisitor = new JavaExpressionVisitor(context, context.getJavaModule(definition.module), constructorWriter);
         for (final IDefinitionMember definitionMember : definition.members) {
             if (!(definitionMember instanceof FieldMember))
                 continue;

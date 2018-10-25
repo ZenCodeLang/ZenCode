@@ -12,11 +12,12 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.TypeVisitor;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 
 /**
  *
@@ -27,12 +28,12 @@ public class JavaTypeInfo {
 	private static final JavaTypeInfo OBJECT = new JavaTypeInfo(false);
 	private static final JavaTypeInfoVisitor VISITOR = new JavaTypeInfoVisitor();
 	
-	public static JavaTypeInfo get(ITypeID type) {
-		return type.accept(VISITOR);
+	public static JavaTypeInfo get(StoredType type) {
+		return type.type.accept(type, VISITOR);
 	}
 	
-	public static boolean isPrimitive(ITypeID type) {
-		return type.accept(VISITOR).primitive;
+	public static boolean isPrimitive(StoredType type) {
+		return type.type.accept(type, VISITOR).primitive;
 	}
 	
 	public final boolean primitive;
@@ -41,62 +42,61 @@ public class JavaTypeInfo {
 		this.primitive = primitive;
 	}
 	
-	private static class JavaTypeInfoVisitor implements TypeVisitor<JavaTypeInfo> {
+	private static class JavaTypeInfoVisitor implements TypeVisitorWithContext<StoredType, JavaTypeInfo, RuntimeException> {
 
 		@Override
-		public JavaTypeInfo visitBasic(BasicTypeID basic) {
-			switch (basic) {
-				case STRING:
-				case NULL:
-					return OBJECT;
-				default:
-					return PRIMITIVE;
-			}
+		public JavaTypeInfo visitBasic(StoredType context, BasicTypeID basic) {
+			return basic == BasicTypeID.NULL ? OBJECT : PRIMITIVE;
 		}
-
+		
 		@Override
-		public JavaTypeInfo visitArray(ArrayTypeID array) {
+		public JavaTypeInfo visitString(StoredType context, StringTypeID string) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitAssoc(AssocTypeID assoc) {
+		public JavaTypeInfo visitArray(StoredType context, ArrayTypeID array) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitGenericMap(GenericMapTypeID map) {
+		public JavaTypeInfo visitAssoc(StoredType context, AssocTypeID assoc) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitIterator(IteratorTypeID iterator) {
+		public JavaTypeInfo visitGenericMap(StoredType context, GenericMapTypeID map) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitFunction(FunctionTypeID function) {
+		public JavaTypeInfo visitIterator(StoredType context, IteratorTypeID iterator) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitDefinition(DefinitionTypeID definition) {
+		public JavaTypeInfo visitFunction(StoredType context, FunctionTypeID function) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitGeneric(GenericTypeID generic) {
+		public JavaTypeInfo visitDefinition(StoredType context, DefinitionTypeID definition) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitRange(RangeTypeID range) {
+		public JavaTypeInfo visitGeneric(StoredType context, GenericTypeID generic) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitModified(ModifiedTypeID type) {
-			return type.baseType.accept(this);
+		public JavaTypeInfo visitRange(StoredType context, RangeTypeID range) {
+			return OBJECT;
+		}
+
+		@Override
+		public JavaTypeInfo visitModified(StoredType context, OptionalTypeID type) {
+			return type.baseType.accept(null, this);
 		}
 	}
 }

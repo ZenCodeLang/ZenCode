@@ -6,21 +6,25 @@
 package org.openzen.zenscript.codemodel.scope;
 
 import java.util.List;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -43,13 +47,17 @@ public class LambdaScope extends StatementScope {
 	}
 	
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		IPartialExpression outer = this.outer.get(position, name);
 		if (outer == null) {
 			if (name.hasNoArguments()) {
 				for (FunctionParameter parameter : header.parameters) {
-					if (parameter.name.equals(name.name))
+					if (parameter.name.equals(name.name)) {
+						if (parameter.type.isBasic(BasicTypeID.UNDETERMINED))
+							throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "parameter with undetermined type");
+						
 						return new GetFunctionParameterExpression(position, parameter);
+					}
 				}
 			}
 
@@ -70,18 +78,23 @@ public class LambdaScope extends StatementScope {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
+	public TypeID getType(CodePosition position, List<GenericName> name) {
 		return outer.getType(position, name);
 	}
 
 	@Override
-	public ITypeID getThisType() {
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return outer.getStorageTag(position, name, parameters);
+	}
+
+	@Override
+	public StoredType getThisType() {
 		return outer.getThisType();
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
-		Function<CodePosition, Expression> outerDollar = outer.getDollar();
+	public DollarEvaluator getDollar() {
+		DollarEvaluator outerDollar = outer.getDollar();
 		if (outerDollar == null)
 			return null;
 		
@@ -89,7 +102,7 @@ public class LambdaScope extends StatementScope {
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);
 	}
 

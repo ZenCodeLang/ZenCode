@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -36,12 +37,16 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.validator.TypeContext;
 
 /**
  *
@@ -58,7 +63,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	private final Set<FieldMember> initializedFields = new HashSet<>();
 	private final List<FunctionHeader> constructors = new ArrayList<>();
 	private final Set<EnumConstantMember> initializedEnumConstants = new HashSet<>();
-	private final Set<ITypeID> implementedTypes = new HashSet<>();
+	private final Set<TypeID> implementedTypes = new HashSet<>();
 	private boolean hasDestructor = false;
 	
 	public DefinitionMemberValidator(Validator validator, HighLevelDefinition definition, TypeScope scope, DefinitionMemberContext context) {
@@ -72,7 +77,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	public Void visitConst(ConstMember member) {
 		ValidationUtils.validateModifiers(
 				validator,
-				member.modifiers,
+				member.getEffectiveModifiers(),
 				Modifiers.PUBLIC | Modifiers.PROTECTED | Modifiers.PRIVATE,
 				member.position,
 				"Invalid modifier");
@@ -82,6 +87,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 					member.position,
 					"Expression type doesn't match const type");
 		}
+		member.value.accept(new ExpressionValidator(validator, new FieldInitializerScope(member)));
 		return null;
 	}
 	
@@ -94,7 +100,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 					"Duplicate field name: " + member.name);
 		}
 		fieldNames.add(member.name);
-		member.type.accept(new TypeValidator(validator, member.position));
+		new TypeValidator(validator, member.position).validate(TypeContext.FIELD_TYPE, member.type);
 		
 		if (member.initializer != null) {
 			member.initializer.accept(new ExpressionValidator(validator, new FieldInitializerScope(member)));
@@ -111,13 +117,13 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			}
 		}
 		constructors.add(member.header);
-		ValidationUtils.validateHeader(validator, member.position, member.header);
+		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope());
 		
 		if (member.body == null && !member.isExtern()) {
 			validator.logError(ValidationLogEntry.Code.BODY_REQUIRED, member.position, "Constructors must have a body");
 			return null;
 		} else {
-			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header));
+			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header, member.getAccessScope()));
 			member.body.accept(statementValidator);
 			validateThrow(member, member.header, member.body);
 			
@@ -138,31 +144,31 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.header.thrownType != null)
 			validator.logError(ValidationLogEntry.Code.DESTRUCTOR_CANNOT_THROW, member.position, "Destructor cannot throw");
 		
-		validateFunctional(member, new MethodStatementScope(member.header));
+		validateFunctional(member, new MethodStatementScope(member.header, member.getAccessScope()));
 		return null;
 	}
 
 	@Override
 	public Void visitMethod(MethodMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		ValidationUtils.validateHeader(validator, member.position, member.header);
-		validateFunctional(member, new MethodStatementScope(member.header));
+		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope());
+		validateFunctional(member, new MethodStatementScope(member.header, member.getAccessScope()));
 		return null;
 	}
 
 	@Override
 	public Void visitGetter(GetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		member.type.accept(new TypeValidator(validator, member.position));
-		validateGetter(member, new MethodStatementScope(new FunctionHeader(member.type)));
+		new TypeValidator(validator, member.position).validate(TypeContext.GETTER_TYPE, member.type);
+		validateGetter(member, new MethodStatementScope(new FunctionHeader(member.type), member.getAccessScope()));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		member.type.accept(new TypeValidator(validator, member.position));
-		validateSetter(member, new MethodStatementScope(new FunctionHeader(BasicTypeID.VOID, member.parameter)));
+		new TypeValidator(validator, member.position).validate(TypeContext.SETTER_TYPE, member.type);
+		validateSetter(member, new MethodStatementScope(new FunctionHeader(BasicTypeID.VOID, member.parameter), member.getAccessScope()));
 		return null;
 	}
 	
@@ -180,30 +186,34 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		ValidationUtils.validateHeader(validator, member.position, member.header);
-		validateFunctional(member, new MethodStatementScope(member.header));
+		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope());
+		validateFunctional(member, new MethodStatementScope(member.header, member.getAccessScope()));
 		return null;
 	}
 
 	@Override
 	public Void visitCaster(CasterMember member) {
-		member.toType.accept(new TypeValidator(validator, member.position));
-		validateFunctional(member, new MethodStatementScope(member.header));
+		new TypeValidator(validator, member.position).validate(TypeContext.CASTER_TYPE, member.toType);
+		validateFunctional(member, new MethodStatementScope(member.header, member.getAccessScope()));
 		return null;
 	}
 
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
-		for (ITypeID type : member.getLoopVariableTypes())
-			type.accept(new TypeValidator(validator, member.position));
-		validateFunctional(member, new MethodStatementScope(new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes()))));
+		TypeValidator typeValidator = new TypeValidator(validator, member.position);
+		for (StoredType type : member.getLoopVariableTypes())
+			typeValidator.validate(TypeContext.ITERATOR_TYPE, type);
+		
+		validateFunctional(member, new MethodStatementScope(
+				new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes()).stored(UniqueStorageTag.INSTANCE)),
+				member.getAccessScope()));
 		return null;
 	}
 
 	@Override
 	public Void visitCaller(CallerMember member) {
-		ValidationUtils.validateHeader(validator, member.position, member.header);
-		validateFunctional(member, new MethodStatementScope(member.header));
+		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope());
+		validateFunctional(member, new MethodStatementScope(member.header, member.getAccessScope()));
 		return null;
 	}
 
@@ -244,7 +254,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			if (member.getOverrides() != null)
 				implemented.add(member.getOverrides().getTarget());
 		
-		TypeMembers members = scope.getTypeMembers(implementation.type);
+		TypeMembers members = scope.getTypeMembers(implementation.type.stored(BorrowStorageTag.THIS));
 		List<IDefinitionMember> unimplemented = members.getUnimplementedMembers(implemented);
 		if (unimplemented.size() == 1) {
 			validator.logError(ValidationLogEntry.Code.INCOMPLETE_IMPLEMENTATION, implementation.position, unimplemented.get(0).describe() + " not implemented");
@@ -273,7 +283,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
-		member.body.accept(new StatementValidator(validator, new StaticInitializerScope()));
+		member.body.accept(new StatementValidator(validator, new StaticInitializerScope(member.getAccessScope())));
 		if (member.body.thrownType != null)
 			validator.logError(ValidationLogEntry.Code.STATIC_INITIALIZER_CANNOT_THROW, member.position, "Static initializer cannot throw");
 		return null;
@@ -285,7 +295,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 	
 	private void validateFunctional(FunctionalMember member, StatementScope scope) {
-		if (Modifiers.isOverride(member.modifiers) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
+		if (Modifiers.isOverride(member.getEffectiveModifiers()) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
 			if (member.getOverrides() == null) {
 				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
 			} else {
@@ -301,7 +311,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 	
 	private void validateGetter(GetterMember member, StatementScope scope) {
-		if (Modifiers.isOverride(member.modifiers) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
+		if (Modifiers.isOverride(member.getEffectiveModifiers()) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
 			if (member.getOverrides() == null) {
 				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
 			}
@@ -316,7 +326,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 	
 	private void validateSetter(SetterMember member, StatementScope scope) {
-		if (Modifiers.isOverride(member.modifiers) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
+		if (Modifiers.isOverride(member.getEffectiveModifiers()) || (context == DefinitionMemberContext.IMPLEMENTATION && !member.isPrivate())) {
 			if (member.getOverrides() == null) {
 				validator.logError(ValidationLogEntry.Code.OVERRIDE_MISSING_BASE, member.position, "Overridden method not identified");
 			}
@@ -330,9 +340,9 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	}
 	
 	private class FieldInitializerScope implements ExpressionScope {
-		private final FieldMember field;
+		private final DefinitionMember field;
 		
-		public FieldInitializerScope(FieldMember field) {
+		public FieldInitializerScope(DefinitionMember field) {
 			this.field = field;
 		}
 		
@@ -380,13 +390,20 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		public HighLevelDefinition getDefinition() {
 			return definition;
 		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return field.getAccessScope();
+		}
 	}
 	
 	private class ConstructorStatementScope implements StatementScope {
 		private final FunctionHeader header;
+		private final AccessScope access;
 		
-		public ConstructorStatementScope(FunctionHeader header) {
+		public ConstructorStatementScope(FunctionHeader header, AccessScope access) {
 			this.header = header;
+			this.access = access;
 		}
 
 		@Override
@@ -412,14 +429,21 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return definition;
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return access;
 		}
 	}
 	
 	private class MethodStatementScope implements StatementScope {
 		private final FunctionHeader header;
+		private final AccessScope access;
 		
-		public MethodStatementScope(FunctionHeader header) {
+		public MethodStatementScope(FunctionHeader header, AccessScope access) {
 			this.header = header;
+			this.access = access;
 		}
 
 		@Override
@@ -445,11 +469,21 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return definition;
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return access;
 		}
 	}
 	
 	private class StaticInitializerScope implements StatementScope {
 		private final FunctionHeader header = new FunctionHeader(BasicTypeID.VOID);
+		private final AccessScope access;
+		
+		public StaticInitializerScope(AccessScope access) {
+			this.access = access;
+		}
 		
 		@Override
 		public boolean isConstructor() {
@@ -474,6 +508,11 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return definition;
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return access;
 		}
 	}
 	
@@ -526,6 +565,11 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		@Override
 		public HighLevelDefinition getDefinition() {
 			return definition;
+		}
+
+		@Override
+		public AccessScope getAccessScope() {
+			return definition.getAccessScope();
 		}
 	}
 }

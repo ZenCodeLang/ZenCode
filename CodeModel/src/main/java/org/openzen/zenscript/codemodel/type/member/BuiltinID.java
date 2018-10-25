@@ -152,6 +152,7 @@ public enum BuiltinID {
 	INT_INC,
 	INT_DEC,
 	INT_ADD_INT,
+	INT_ADD_USIZE,
 	INT_SUB_INT,
 	INT_MUL_INT,
 	INT_DIV_INT,

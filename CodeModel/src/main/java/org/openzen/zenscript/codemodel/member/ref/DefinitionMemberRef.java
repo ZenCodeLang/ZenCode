@@ -6,10 +6,11 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -20,9 +21,15 @@ public interface DefinitionMemberRef {
 	
 	String describe();
 	
-	<T> T getTag(Class<T> type);
+	default <T extends Tag> T getTag(Class<T> type) {
+		return getTarget().getTag(type);
+	}
 	
-	ITypeID getOwnerType();
+	default <T extends Tag> boolean hasTag(Class<T> type) {
+		return getTarget().hasTag(type);
+	}
+	
+	StoredType getOwnerType();
 	
 	DefinitionMemberRef getOverrides();
 	

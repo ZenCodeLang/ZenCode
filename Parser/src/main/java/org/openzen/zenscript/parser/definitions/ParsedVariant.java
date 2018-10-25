@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -23,7 +24,13 @@ import org.openzen.zenscript.parser.type.IParsedType;
  * @author Hoofdgebruiker
  */
 public class ParsedVariant extends BaseParsedDefinition {
-	public static ParsedVariant parseVariant(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedVariant parseVariant(
+			CompilingPackage pkg,
+			CodePosition position,
+			int modifiers,
+			ParsedAnnotation[] annotations,
+			ZSTokenParser tokens,
+			HighLevelDefinition outerDefinition) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> typeParameters = ParsedTypeParameter.parseAll(tokens);
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
@@ -32,6 +39,7 @@ public class ParsedVariant extends BaseParsedDefinition {
 		
 		int ordinal = 0;
 		while (!tokens.isNext(ZSTokenType.T_ACLOSE) && !tokens.isNext(ZSTokenType.T_SEMICOLON)) {
+			CodePosition optionPosition = tokens.getPosition();
 			String optionName = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 			List<IParsedType> types = new ArrayList<>();
 			if (tokens.optional(ZSTokenType.T_BROPEN) != null) {
@@ -41,14 +49,19 @@ public class ParsedVariant extends BaseParsedDefinition {
 				}
 				tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
 			}
-			result.addVariant(new ParsedVariantOption(optionName, ordinal++, types));
+			result.addVariant(new ParsedVariantOption(optionPosition, optionName, ordinal++, types));
 			if (tokens.optional(ZSTokenType.T_COMMA) == null)
 				break;
 		}
 		
 		if (tokens.optional(ZSTokenType.T_SEMICOLON) != null) {
-			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+			try {
+				while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
+					result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+				}
+			} catch (ParseException ex) {
+				tokens.logError(ex);
+				tokens.recoverUntilToken(ZSTokenType.T_ACLOSE);
 			}
 		} else {
 			tokens.required(ZSTokenType.T_ACLOSE, "} expected");

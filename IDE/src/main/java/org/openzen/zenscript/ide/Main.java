@@ -17,17 +17,28 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException {
-		Arguments arguments = new Arguments(args, new File("../../ZenCode")); // TODO: remove this and open a project chooser/creator instead
+    public static void main(String... args) throws IOException {
+		if (args.length == 0) {
+			// testing environment - TODO project chooser/creator
+			args = new String[] { "../../ZenCode", "SharedJavaSource" };
+		}
+		
+		Arguments arguments = new Arguments(args);
 		File directory = arguments.projectDirectory;
 		
 		Project project = new Project(directory);
 		DevelopmentHost host = new LocalProjectDevelopmentHost(project);
-		open(host, "SharedJavaSource");
+		open(host, arguments.defaultTarget);
     }
 	
 	public static void open(DevelopmentHost host, String target) {
 		IDEPropertyStore properties = host.getPropertyStore();
+		
+		IDEPropertyDirectory runState = properties.getRoot().getSubdirectory("runState");
+		if (target == null)
+			target = runState.getString("target", null);
+		if (target == null && host.getTargets().size() > 0)
+			target = host.getTargets().get(0).getName();
 		
 		IDEWindow window = new IDEWindow(host, target);
 		WindowView root = new WindowView(window, host);

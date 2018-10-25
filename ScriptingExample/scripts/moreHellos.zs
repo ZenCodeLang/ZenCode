@@ -72,7 +72,7 @@ for i, item in ["5", "ttt"] {
 }
 
 for i, item in [1, 5, 7] {
-	println(item + i);
+	println(item + (i as int));
 }
 
 for myI in 10 .. 20 {

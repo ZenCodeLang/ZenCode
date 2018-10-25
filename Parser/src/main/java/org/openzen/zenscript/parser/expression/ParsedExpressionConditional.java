@@ -13,9 +13,9 @@ import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -35,14 +35,14 @@ public class ParsedExpressionConditional extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression cIfThen = ifThen.compile(scope).eval();
 		Expression cIfElse = ifElse.compile(scope).eval();
 		
 		TypeMembers thenMembers = scope.getTypeMembers(cIfThen.type);
 		TypeMembers elseMembers = scope.getTypeMembers(cIfElse.type);
-		ITypeID resultType = null;
-		for (ITypeID hint : scope.hints) {
+		StoredType resultType = null;
+		for (StoredType hint : scope.hints) {
 			if (thenMembers.canCastImplicit(hint) && elseMembers.canCastImplicit(hint)) {
 				if (resultType != null)
 					throw new CompileException(position, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Not sure which type to use");
@@ -62,7 +62,7 @@ public class ParsedExpressionConditional extends ParsedExpression {
 		
 		return new ConditionalExpression(
 				position,
-				condition.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL),
+				condition.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL.stored),
 				cIfThen,
 				cIfElse,
 				resultType);

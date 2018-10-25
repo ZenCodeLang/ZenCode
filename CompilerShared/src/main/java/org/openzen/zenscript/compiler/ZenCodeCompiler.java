@@ -5,17 +5,12 @@
  */
 package org.openzen.zenscript.compiler;
 
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.ScriptBlock;
-
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface ZenCodeCompiler {
-	void addDefinition(HighLevelDefinition definition, SemanticModule module);
-	
-	void addScriptBlock(ScriptBlock script);
+	ZenCodeCompilingModule addModule(SemanticModule module);
 	
 	void finish();
 	

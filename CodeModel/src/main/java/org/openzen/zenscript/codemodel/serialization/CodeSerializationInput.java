@@ -13,12 +13,13 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -53,15 +54,17 @@ public interface CodeSerializationInput {
 	
 	HighLevelDefinition readDefinition();
 	
-	DefinitionMemberRef readMember(TypeContext context, ITypeID type);
+	DefinitionMemberRef readMember(TypeContext context, StoredType type);
 	
 	EnumConstantMember readEnumConstant(TypeContext context);
 	
-	VariantOptionRef readVariantOption(TypeContext context, ITypeID type);
+	VariantOptionRef readVariantOption(TypeContext context, StoredType type);
 	
 	AnnotationDefinition readAnnotationType();
 	
-	ITypeID deserializeType(TypeContext context);
+	TypeID deserializeTypeID(TypeContext context);
+	
+	StoredType deserializeType(TypeContext context);
 	
 	CodePosition deserializePosition();
 	

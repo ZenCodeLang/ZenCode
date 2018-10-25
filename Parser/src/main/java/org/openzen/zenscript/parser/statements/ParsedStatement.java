@@ -3,8 +3,6 @@ package org.openzen.zenscript.parser.statements;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -14,13 +12,14 @@ import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 public abstract class ParsedStatement {
-	public static ParsedFunctionBody parseLambdaBody(ZSTokenParser tokens, boolean inExpression) {
+	public static ParsedFunctionBody parseLambdaBody(ZSTokenParser tokens, boolean inExpression) throws ParseException {
 		CodePosition position = tokens.getPosition();
 		ZSToken start = tokens.peek();
 		if (tokens.optional(T_AOPEN) != null) {
@@ -37,7 +36,7 @@ public abstract class ParsedStatement {
 		}
 	}
 	
-	public static ParsedFunctionBody parseFunctionBody(ZSTokenParser tokens) {
+	public static ParsedFunctionBody parseFunctionBody(ZSTokenParser tokens) throws ParseException {
 		if (tokens.optional(T_LAMBDA) != null)
 			return parseLambdaBody(tokens, false);
 		else if (tokens.optional(T_SEMICOLON) != null)
@@ -46,7 +45,7 @@ public abstract class ParsedStatement {
 			return new ParsedStatementsFunctionBody(parseBlock(tokens, ParsedAnnotation.NONE, true));
 	}
 	
-	public static ParsedStatementBlock parseBlock(ZSTokenParser parser, ParsedAnnotation[] annotations, boolean isFirst) {
+	public static ParsedStatementBlock parseBlock(ZSTokenParser parser, ParsedAnnotation[] annotations, boolean isFirst) throws ParseException {
 		String ws = parser.getLastWhitespace();
 		CodePosition position = parser.getPosition();
 		parser.required(T_AOPEN, "{ expected");
@@ -65,16 +64,16 @@ public abstract class ParsedStatement {
 		return new ParsedStatementBlock(position, annotations, whitespace, postComment, statements);
 	}
 	
-	public static ParsedStatement parse(ZSTokenParser parser) {
+	public static ParsedStatement parse(ZSTokenParser parser) throws ParseException {
 		ParsedAnnotation[] annotations = ParsedAnnotation.parseAnnotations(parser);
 		return parse(parser, annotations);
 	}
 	
-	public static ParsedStatement parse(ZSTokenParser parser, ParsedAnnotation[] annotations) {
+	public static ParsedStatement parse(ZSTokenParser parser, ParsedAnnotation[] annotations) throws ParseException {
 		return parse(parser, annotations, false);
 	}
 	
-	public static ParsedStatement parse(ZSTokenParser parser, ParsedAnnotation[] annotations, boolean isFirst) {
+	public static ParsedStatement parse(ZSTokenParser parser, ParsedAnnotation[] annotations, boolean isFirst) throws ParseException {
 		String ws = parser.getLastWhitespace();
 		CodePosition position = parser.getPosition();
 		ZSToken next = parser.peek();
@@ -278,7 +277,7 @@ public abstract class ParsedStatement {
 						cases.add(currentCase);
 						parser.required(T_COLON, ": expected");
 					} else if (currentCase == null) {
-						throw new CompileException(parser.getPosition(), CompileExceptionCode.STATEMENT_OUTSIDE_SWITCH_CASE, "Statement in switch outside case");
+						throw new ParseException(parser.getPosition(), "Statement in switch outside case");
 					} else {
 						currentCase.statements.add(ParsedStatement.parse(parser));
 					}
@@ -325,7 +324,7 @@ public abstract class ParsedStatement {
 		return statement;
 	}
 
-	protected static ITypeID union(TypeScope scope, ITypeID a, ITypeID b) {
+	protected static StoredType union(TypeScope scope, StoredType a, StoredType b) {
 		if (a == null)
 			return b;
 		if (b == null)

@@ -6,23 +6,25 @@
 package org.openzen.zenscript.parser.statements;
 
 import java.util.List;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.SwitchStatement;
-import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.statement.InvalidStatement;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
@@ -45,14 +47,22 @@ public class ParsedStatementSwitch extends ParsedStatement {
 
 	@Override
 	public Statement compile(StatementScope scope) {
-		SwitchStatement result = new SwitchStatement(position, name, value.compile(new ExpressionScope(scope)).eval());
-		SwitchScope innerScope = new SwitchScope(scope, result);
-		
-		for (ParsedSwitchCase switchCase : cases) {
-			result.cases.add(switchCase.compile(result.value.type, innerScope));
+		try {
+			SwitchStatement result = new SwitchStatement(position, name, value.compile(new ExpressionScope(scope)).eval());
+			SwitchScope innerScope = new SwitchScope(scope, result);
+
+			for (ParsedSwitchCase switchCase : cases) {
+				try {
+					result.cases.add(switchCase.compile(result.value.type, innerScope));
+				} catch (CompileException ex) {
+					return result(new InvalidStatement(ex), scope);
+				}
+			}
+
+			return result;
+		} catch (CompileException ex) {
+			return result(new InvalidStatement(ex), scope);
 		}
-		
-		return result;
 	}
 	
 	private class SwitchScope extends StatementScope {
@@ -65,7 +75,7 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		}
 	
 		@Override
-		public IPartialExpression get(CodePosition position, GenericName name) {
+		public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 			IPartialExpression result = super.get(position, name);
 			if (result == null) {
 				return outer.get(position, name);
@@ -80,8 +90,13 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name) {
+		public TypeID getType(CodePosition position, List<GenericName> name) {
 			return outer.getType(position, name);
+		}
+		
+		@Override
+		public StorageTag getStorageTag(CodePosition position, String name, String[] arguments) {
+			return outer.getStorageTag(position, name, arguments);
 		}
 
 		@Override
@@ -95,17 +110,17 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		}
 
 		@Override
-		public ITypeID getThisType() {
+		public StoredType getThisType() {
 			return outer.getThisType();
 		}
 
 		@Override
-		public Function<CodePosition, Expression> getDollar() {
+		public DollarEvaluator getDollar() {
 			return outer.getDollar();
 		}
 
 		@Override
-		public IPartialExpression getOuterInstance(CodePosition position) {
+		public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 			return outer.getOuterInstance(position);
 		}
 

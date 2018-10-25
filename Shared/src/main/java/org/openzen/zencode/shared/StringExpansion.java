@@ -32,7 +32,7 @@ public final class StringExpansion {
 	public static Result<String, String> unescape(String self) {
 	    if (!(self.charAt(0) == self.charAt(self.length() - 1)))
 	        throw new AssertionError("Unbalanced quotes");
-	    if (!(self.charAt(0) == '@' && ArrayHelpers.contains(new String[] {"\"", "'"}, Character.toString(self.charAt(1))) || ArrayHelpers.contains(new String[] {"\"", "'"}, Character.toString(self.charAt(0)))))
+	    if (!(self.charAt(0) == '@' && ArrayHelpers.containsChar(new char[] {'"', '\''}, self.charAt(1)) || ArrayHelpers.containsChar(new char[] {'"', '\''}, self.charAt(0))))
 	        throw new AssertionError("String is not quoted");
 	    if (!(self.length() >= 2))
 	        throw new AssertionError("String is not quoted");
@@ -109,7 +109,7 @@ public final class StringExpansion {
 	                        return new Result.Error<>(((Result.Error<Integer, String>)temp5).value);
 	                    int hex3 = ((Result.Ok<Integer, String>)temp5).value;
 	                    i = i + 5;
-	                    result.append((char)hex0 << 12 | hex1 << 8 | hex2 << 4 | hex3);
+	                    result.append((char)(hex0 << 12 | hex1 << 8 | hex2 << 4 | hex3));
 	                    break;
 	                default:
 	                    return new Error("Illegal escape sequence");

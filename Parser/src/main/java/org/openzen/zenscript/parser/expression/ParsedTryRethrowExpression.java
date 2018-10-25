@@ -14,8 +14,8 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpressio
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -31,7 +31,7 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
+	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		HighLevelDefinition result = scope.getTypeRegistry().stdlib.getDefinition("Result");
 		
 		Expression cSource = source.compile(scope).eval();
@@ -42,15 +42,15 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 				return new TryRethrowAsExceptionExpression(position, cSource.type, cSource, cSource.thrownType);
 			} else {
 				// rethrow as result
-				ITypeID resultType = scope.getTypeRegistry().getForDefinition(result, cSource.type, cSource.thrownType);
+				StoredType resultType = scope.getTypeRegistry().getForDefinition(result, cSource.type, cSource.thrownType).stored(cSource.thrownType.getSpecifiedStorage());
 				return new TryRethrowAsResultExpression(position, resultType, cSource);
 			}
 		} else {
 			// expression
-			if (cSource.type instanceof DefinitionTypeID) {
-				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type;
+			if (cSource.type.type instanceof DefinitionTypeID) {
+				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type.type;
 				if (sourceType.definition == result) {
-					return new TryRethrowAsResultExpression(position, sourceType.typeParameters[0], cSource);
+					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0], cSource);
 				}
 			}
 			

@@ -5,10 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.scope;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
@@ -20,17 +21,21 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 
 /**
  *
@@ -39,9 +44,9 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public class DefinitionScope extends BaseScope {
 	private final BaseScope outer;
 	private final HighLevelDefinition definition;
-	private final ITypeID type;
+	private final StoredType type;
 	private final TypeMembers members;
-	private final Map<String, TypeParameter> genericParameters = new HashMap<>();
+	private final TypeParameter[] typeParameters;
 	private final Map<String, Supplier<HighLevelDefinition>> innerTypes = new HashMap<>();
 	private final GenericMapper typeParameterMap;
 	
@@ -53,26 +58,24 @@ public class DefinitionScope extends BaseScope {
 		this.outer = outer;
 		this.definition = definition;
 		
-		Map<TypeParameter, ITypeID> typeParameters = new HashMap<>();
+		Map<TypeParameter, StoredType> typeParameters = new HashMap<>();
 		if (definition instanceof ExpansionDefinition) {
 			ExpansionDefinition expansion = (ExpansionDefinition)definition;
 			type = expansion.target;
-			
-			for (TypeParameter parameter : expansion.typeParameters) {
-				genericParameters.put(parameter.name, parameter);
-				typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter));
-			}
+			this.typeParameters = expansion.typeParameters;
+			typeParameters = StoredType.getSelfMapping(outer.getTypeRegistry(), expansion.typeParameters);
 		} else {
 			DefinitionTypeID definitionType = outer.getTypeRegistry().getForMyDefinition(definition);
-			type = definitionType;
+			type = definitionType.stored();
 			
+			List<TypeParameter> typeParameterList = new ArrayList<>();
 			while (definitionType != null) {
-				for (TypeParameter parameter : definitionType.definition.typeParameters) {
-					genericParameters.put(parameter.name, parameter);
-					typeParameters.put(parameter, outer.getTypeRegistry().getGeneric(parameter));
-				}
+				typeParameters = StoredType.getSelfMapping(outer.getTypeRegistry(), definitionType.definition.typeParameters);
+				typeParameterList.addAll(Arrays.asList(definitionType.definition.typeParameters));
+				
 				definitionType = definitionType.definition.isStatic() ? null : definitionType.outer;
 			}
+			this.typeParameters = typeParameterList.toArray(new TypeParameter[typeParameterList.size()]);
 		}
 		
 		members = withMembers ? outer.getMemberCache().get(type) : null;
@@ -89,7 +92,7 @@ public class DefinitionScope extends BaseScope {
 	}
 
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		if (members != null) {
 			if (members.hasInnerType(name.name))
 				return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
@@ -98,31 +101,44 @@ public class DefinitionScope extends BaseScope {
 		} else if (innerTypes.containsKey(name.name)) {
 			return new PartialTypeExpression(position, getTypeRegistry().getForDefinition(innerTypes.get(name).get(), name.arguments), name.arguments);
 		}
-		if (genericParameters.containsKey(name.name) && !name.hasArguments())
-			return new PartialTypeExpression(position, getTypeRegistry().getGeneric(genericParameters.get(name.name)), name.arguments);
+		if (!name.hasArguments()) {
+			for (TypeParameter parameter : typeParameters)
+				if (parameter.name.equals(name.name))
+					return new PartialTypeExpression(position, getTypeRegistry().getGeneric(parameter), name.arguments);
+		}
 		
 		return outer.get(position, name);
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
+	public TypeID getType(CodePosition position, List<GenericName> name) {
 		if (members != null && members.hasInnerType(name.get(0).name)) {
-			ITypeID result = members.getInnerType(position, name.get(0));
+			TypeID result = members.getInnerType(position, name.get(0));
 			for (int i = 1; i < name.size(); i++) {
-				result = getTypeMembers(result).getInnerType(position, name.get(i));
+				result = getTypeMembers(result.stored(StaticExpressionStorageTag.INSTANCE)).getInnerType(position, name.get(i));
 			}
 			return result;
-		} else if (genericParameters.containsKey(name.get(0).name) && name.size() == 1 && !name.get(0).hasArguments()) {
-			return getTypeRegistry().getGeneric(genericParameters.get(name.get(0).name));
-		} else if (innerTypes.containsKey(name.get(0).name)) {
-			ITypeID result = getTypeRegistry().getForDefinition(innerTypes.get(name.get(0).name).get(), name.get(0).arguments);
+		} 
+		
+		if (name.size() == 1 && !name.get(0).hasArguments())
+			for (TypeParameter parameter : typeParameters)
+				if (parameter.name.equals(name.get(0).name))
+					return getTypeRegistry().getGeneric(parameter);
+		
+		if (innerTypes.containsKey(name.get(0).name)) {
+			TypeID result = getTypeRegistry().getForDefinition(innerTypes.get(name.get(0).name).get(), name.get(0).arguments);
 			for (int i = 1; i < name.size(); i++) {
-				result = getTypeMembers(result).getInnerType(position, name.get(i)); // TODO: this cannot be right, where did the type arguments go? the abyss?
+				result = getTypeMembers(result.stored(StaticExpressionStorageTag.INSTANCE)).getInnerType(position, name.get(i));
 			}
 			return result;
 		}
 		
 		return outer.getType(position, name);
+	}
+
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return outer.getStorageTag(position, name, parameters);
 	}
 
 	@Override
@@ -136,21 +152,21 @@ public class DefinitionScope extends BaseScope {
 	}
 
 	@Override
-	public ITypeID getThisType() {
+	public StoredType getThisType() {
 		return type;
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
+	public DollarEvaluator getDollar() {
 		return outer.getDollar();
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		if (!definition.isInnerDefinition()) {
 			throw new CompileException(position, CompileExceptionCode.NO_OUTER_BECAUSE_NOT_INNER, "Type is not an inner type; cannot access outer type");
 		} else if (definition.isStatic()) {
-			throw new CompileException(position, CompileExceptionCode.NO_OUTER_BECAUSE_STATIC, "Inner type is static; cannot access outer type reference");
+			return new InvalidExpression(position, outer.getThisType(), CompileExceptionCode.NO_OUTER_BECAUSE_STATIC, "Inner type is static; cannot access outer type reference");
 		} else {
 			// TODO
 			throw new UnsupportedOperationException("not yet supported");

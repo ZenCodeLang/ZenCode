@@ -9,6 +9,7 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 /**
@@ -18,11 +19,13 @@ import org.openzen.zenscript.javashared.JavaParameterInfo;
 public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 	private final JavaExpressionVisitor expressionCompiler;
 	private final JavaBytecodeContext context;
+	private final JavaCompiledModule module;
 	private final JavaWriter javaWriter;
 	
-	public JavaPreIncrementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionCompiler) {
+	public JavaPreIncrementVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaExpressionVisitor expressionCompiler) {
 		this.expressionCompiler = expressionCompiler;
 		this.context = context;
+		this.module = module;
 		javaWriter = expressionCompiler.getJavaWriter();
 	}
 
@@ -200,23 +203,20 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 		javaWriter.dup();
 		javaWriter.store(objectType, local);
 		
-        if (!expressionCompiler.checkAndGetFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
+        expressionCompiler.getField(expression.field);
 		
 		javaWriter.iConst1();
 		javaWriter.iAdd();
 		
 		javaWriter.load(objectType, local);
 		javaWriter.dupX1();
-        if (!expressionCompiler.checkAndPutFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
-		
+        expressionCompiler.putField(expression.field);
 		return null;
 	}
 
 	@Override
 	public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
-		JavaParameterInfo parameter = expression.parameter.getTag(JavaParameterInfo.class);
+		JavaParameterInfo parameter = module.getParameterInfo(expression.parameter);
 		javaWriter.iinc(parameter.index);
 		javaWriter.load(parameter);
 		return null;
@@ -224,7 +224,7 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
-		JavaLocalVariableInfo localVariable = expression.variable.getTag(JavaLocalVariableInfo.class);
+		JavaLocalVariableInfo localVariable = javaWriter.getLocalVariable(expression.variable.variable);
 		javaWriter.iinc(localVariable.local);
 		javaWriter.load(localVariable);
 		return null;
@@ -237,16 +237,11 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitGetStaticField(GetStaticFieldExpression expression) {
-		if (!expressionCompiler.checkAndGetFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
-		
+		expressionCompiler.getField(expression.field);
 		javaWriter.iConst1();
 		javaWriter.iAdd();
 		javaWriter.dup();
-		
-		if (!expressionCompiler.checkAndPutFieldInfo(expression.field, false))
-            throw new IllegalStateException("Missing field info on a field member!");
-		
+		expressionCompiler.putField(expression.field);
 		return null;
 	}
 
@@ -357,6 +352,11 @@ public class JavaPreIncrementVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitStaticSetter(StaticSetterExpression expression) {
+		throw new UnsupportedOperationException("Invalid increment target");
+	}
+	
+	@Override
+	public Void visitStorageCast(StorageCastExpression expression) {
 		throw new UnsupportedOperationException("Invalid increment target");
 	}
 	

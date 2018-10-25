@@ -22,6 +22,7 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 
 /**
  *
@@ -31,7 +32,7 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	public static final NativeAnnotationDefinition INSTANCE = new NativeAnnotationDefinition();
 	
 	private static final List<FunctionHeader> INITIALIZERS = Collections.singletonList(
-			new FunctionHeader(BasicTypeID.VOID, BasicTypeID.STRING));
+			new FunctionHeader(BasicTypeID.VOID, StringTypeID.UNIQUE));
 	
 	private NativeAnnotationDefinition() {}
 
@@ -85,7 +86,7 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public Annotation createForParameter(CodePosition position, CallArguments arguments) {
+	public ParameterAnnotation createForParameter(CodePosition position, CallArguments arguments) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
@@ -107,7 +108,7 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public Annotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
+	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 }

@@ -12,16 +12,20 @@ import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.AssocTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaSynthesizedFunctionInstance;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
+import org.openzen.zenscript.javashared.JavaTypeUtils;
 
 /**
  *
@@ -48,6 +52,17 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 			objectTypeVisitor = new JavaSourceObjectTypeVisitor(importer, context);
 		}
 	}
+	
+	public String process(StoredType type) {
+		if (JavaTypeUtils.isShared(type))
+			return importer.importType(JavaClass.SHARED) + "<" + type.type.accept(this) + ">";
+		
+		return type.type.accept(this);
+	}
+	
+	public String process(TypeID type) {
+		return type.accept(this);
+	}
 
 	@Override
 	public String visitBasic(BasicTypeID basic) {
@@ -66,22 +81,26 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 			case FLOAT: return "float";
 			case DOUBLE: return "double";
 			case CHAR: return "char";
-			case STRING: return "String";
 			default:
 				throw new IllegalArgumentException("Unknown basic type: " + basic);
 		}
+	}
+	
+	@Override
+	public String visitString(StringTypeID string) {
+		return "String";
 	}
 
 	@Override
 	public String visitArray(ArrayTypeID array) {
 		StringBuilder result = new StringBuilder();
 		
-		if (array.elementType == BasicTypeID.BYTE) {
+		if (array.elementType.type == BasicTypeID.BYTE) {
 			result.append("byte");
-		} else if (array.elementType == BasicTypeID.USHORT) {
+		} else if (array.elementType.type == BasicTypeID.USHORT) {
 			result.append("short");
 		} else {
-			result.append(array.elementType.accept(this));
+			result.append(process(array.elementType));
 		}
 		
 		for (int i = 0; i < array.dimension; i++)
@@ -93,7 +112,7 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 	@Override
 	public String visitAssoc(AssocTypeID assoc) {
 		String map = importer.importType(JavaClass.MAP);
-		return map + "<" + assoc.keyType.accept(new JavaSourceObjectTypeVisitor(importer, context)) + ", " + assoc.valueType.accept(new JavaSourceObjectTypeVisitor(importer, context)) + ">";
+		return map + "<" + new JavaSourceObjectTypeVisitor(importer, context).process(assoc.keyType) + ", " + new JavaSourceObjectTypeVisitor(importer, context).process(assoc.valueType) + ">";
 	}
 
 	@Override
@@ -104,7 +123,7 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 	@Override
 	public String visitIterator(IteratorTypeID iterator) {
 		if (iterator.iteratorTypes.length == 1) {
-			return importer.importType(JavaClass.ITERATOR) + "<" + iterator.iteratorTypes[0].accept(objectTypeVisitor) + '>';
+			return importer.importType(JavaClass.ITERATOR) + "<" + iterator.iteratorTypes[0].type.accept(objectTypeVisitor) + '>';
 		} else {
 			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 		}
@@ -144,12 +163,12 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 			output.append(cls == null ? importer.importType(type.definition) : importer.importType(cls));
 		}
 		
-		if (!isStatic && type.typeParameters.length > 0) {
+		if (!isStatic && type.typeArguments.length > 0) {
 			output.append("<");
-			for (int i = 0; i < type.typeParameters.length; i++) {
+			for (int i = 0; i < type.typeArguments.length; i++) {
 				if (i > 0)
 					output.append(", ");
-				output.append(type.typeParameters[i].accept(objectTypeVisitor));
+				output.append(type.typeArguments[i].type.accept(objectTypeVisitor));
 			}
 			output.append(">");
 		}
@@ -179,8 +198,8 @@ public class JavaSourceTypeVisitor implements TypeVisitor<String>, GenericParame
 	}
 
 	@Override
-	public String visitModified(ModifiedTypeID optional) {
-		if (optional.isOptional() && optional.withoutOptional() == BasicTypeID.USIZE)
+	public String visitOptional(OptionalTypeID optional) {
+		if (optional.withoutOptional() == BasicTypeID.USIZE)
 			return "int"; // usize? is an int
 		
 		return optional.baseType.accept(new JavaSourceObjectTypeVisitor(importer, context));

@@ -11,23 +11,25 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ImplementationMember extends DefinitionMember {
-	public final ITypeID type;
+	public final TypeID type;
 	public final List<IDefinitionMember> members = new ArrayList<>();
 	
-	public ImplementationMember(CodePosition position, HighLevelDefinition definition, int modifiers, ITypeID type) {
+	public ImplementationMember(CodePosition position, HighLevelDefinition definition, int modifiers, TypeID type) {
 		super(position, definition, modifiers);
 		
 		this.type = type;
@@ -39,10 +41,10 @@ public class ImplementationMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		ITypeID instancedType = mapper == null ? type : mapper.map(type);
-		members.addImplementation(new ImplementationMemberRef(this, members.type, instancedType), priority);
+		TypeID instancedType = mapper == null ? type : mapper.map(type.stored()).type;
+		members.addImplementation(new ImplementationMemberRef(this, members.type, instancedType.stored(members.type.getSpecifiedStorage())), priority);
 		
-		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType);
+		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType.stored(members.type.getActualStorage()));
 		interfaceTypeMembers.copyMembersTo(position, members, TypeMemberPriority.INTERFACE);
 	}
 
@@ -70,6 +72,17 @@ public class ImplementationMember extends DefinitionMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = modifiers;
+		if (definition.isInterface())
+			result |= Modifiers.PUBLIC;
+		if (!Modifiers.hasAccess(result))
+			result |= Modifiers.PUBLIC;
+		
+		return result;
+	}
 
 	@Override
 	public void normalize(TypeScope scope) {
@@ -83,7 +96,7 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
-	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
 		throw new UnsupportedOperationException("Cannot create an implementation reference");
 	}
 

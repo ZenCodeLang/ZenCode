@@ -5,11 +5,13 @@
  */
 package org.openzen.zenscript.codemodel.annotations;
 
+import org.openzen.zencode.shared.Tag;
+
 /**
  *
  * @author Hoofdgebruiker
  */
-public class NativeTag {
+public class NativeTag implements Tag {
 	public final String value;
 	
 	public NativeTag(String value) {

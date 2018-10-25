@@ -7,14 +7,16 @@ package org.openzen.zenscript.parser.type;
 
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 
 /**
@@ -22,33 +24,39 @@ import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
  * @author Hoofdgebruiker
  */
 public class ParsedTypeGenericMap implements IParsedType {
+	private final CodePosition position;
 	private final ParsedTypeParameter key;
 	private final IParsedType value;
-	private final int modifiers;
+	private final ParsedStorageTag storage;
 	
-	public ParsedTypeGenericMap(ParsedTypeParameter key, IParsedType value, int modifiers) {
+	public ParsedTypeGenericMap(CodePosition position, ParsedTypeParameter key, IParsedType value, ParsedStorageTag storage) {
+		this.position = position;
 		this.key = key;
 		this.value = value;
-		this.modifiers = modifiers;
+		this.storage = storage;
 	}
 
 	@Override
-	public IParsedType withOptional() {
-		return new ParsedTypeGenericMap(key, value, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL);
-	}
-
-	@Override
-	public IParsedType withModifiers(int modifiers) {
-		return new ParsedTypeGenericMap(key, value, modifiers | this.modifiers);
-	}
-
-	@Override
-	public ITypeID compile(TypeResolutionContext context) {
+	public StoredType compile(TypeResolutionContext context) {
 		TypeParameter cKey = key.compiled;
-		ITypeID valueType = this.value.compile(new GenericMapScope(context, cKey));
+		StoredType valueType = this.value.compile(new GenericMapScope(context, cKey));
 		
 		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return registry.getModified(modifiers, registry.getGenericMap(valueType, cKey));
+		StorageTag storage = this.storage.resolve(position, context);
+		return registry.getGenericMap(valueType, cKey).stored(storage);
+	}
+
+	@Override
+	public TypeID compileUnstored(TypeResolutionContext context) {
+		if (storage != ParsedStorageTag.NULL)
+			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage tag not supported here");
+		
+		TypeParameter cKey = key.compiled;
+		StoredType valueType = this.value.compile(new GenericMapScope(context, cKey));
+		
+		GlobalTypeRegistry registry = context.getTypeRegistry();
+		StorageTag storage = this.storage.resolve(position, context);
+		return registry.getGenericMap(valueType, cKey);
 	}
 	
 	private class GenericMapScope implements TypeResolutionContext {
@@ -66,7 +74,7 @@ public class ParsedTypeGenericMap implements IParsedType {
 		}
 
 		@Override
-		public ITypeID getType(CodePosition position, List<GenericName> name) {
+		public TypeID getType(CodePosition position, List<GenericName> name) {
 			if (name.get(0).name.equals(parameter.name) && name.size() == 1 && name.get(0).hasNoArguments())
 				return getTypeRegistry().getGeneric(parameter);
 			
@@ -74,7 +82,12 @@ public class ParsedTypeGenericMap implements IParsedType {
 		}
 		
 		@Override
-		public ITypeID getThisType() {
+		public StorageTag getStorageTag(CodePosition position, String name, String[] arguments) {
+			return outer.getStorageTag(position, name, arguments);
+		}
+		
+		@Override
+		public StoredType getThisType() {
 			return outer.getThisType();
 		}
 

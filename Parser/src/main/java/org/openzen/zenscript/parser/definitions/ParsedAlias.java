@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.PrecompilationState;
@@ -27,13 +28,25 @@ import org.openzen.zenscript.parser.type.IParsedType;
  * @author Hoofdgebruiker
  */
 public class ParsedAlias extends ParsedDefinition {
-	public static ParsedAlias parseAlias(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
-		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
-		List<ParsedTypeParameter> parameters = ParsedTypeParameter.parseAll(tokens);
-		tokens.required(ZSTokenType.K_AS, "as expected");
-		IParsedType type = IParsedType.parse(tokens);
-		tokens.required(ZSTokenType.T_SEMICOLON, "; expected");
-		return new ParsedAlias(pkg, position, modifiers, annotations, name, parameters, type, outerDefinition);
+	public static ParsedAlias parseAlias(
+			CompilingPackage pkg,
+			CodePosition position,
+			int modifiers,
+			ParsedAnnotation[] annotations,
+			ZSTokenParser tokens,
+			HighLevelDefinition outerDefinition) throws ParseException
+	{
+		try {
+			String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
+			List<ParsedTypeParameter> parameters = ParsedTypeParameter.parseAll(tokens);
+			tokens.required(ZSTokenType.K_AS, "as expected");
+			IParsedType type = IParsedType.parse(tokens);
+			tokens.required(ZSTokenType.T_SEMICOLON, "; expected");
+			return new ParsedAlias(pkg, position, modifiers, annotations, name, parameters, type, outerDefinition);
+		} catch (ParseException ex) {
+			tokens.recoverUntilTokenOrNewline(ZSTokenType.T_SEMICOLON);
+			throw ex;
+		}
 	}
 	
 	private final String name;
@@ -67,7 +80,7 @@ public class ParsedAlias extends ParsedDefinition {
 			return;
 		typesLinked = true;
 		
-		compiled.setType(type.compile(context));
+		compiled.setType(type.compileUnstored(context));
 		
 		for (int i = 0; i < compiled.typeParameters.length; i++) {
 			TypeParameter output = compiled.typeParameters[i];

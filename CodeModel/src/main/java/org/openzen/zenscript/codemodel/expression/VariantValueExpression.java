@@ -7,9 +7,10 @@ package org.openzen.zenscript.codemodel.expression;
 
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -19,11 +20,11 @@ public class VariantValueExpression extends Expression {
 	public final VariantOptionRef option;
 	public final Expression[] arguments;
 	
-	public VariantValueExpression(CodePosition position, ITypeID variantType, VariantOptionRef option) {
+	public VariantValueExpression(CodePosition position, StoredType variantType, VariantOptionRef option) {
 		this(position, variantType, option, Expression.NONE);
 	}
 	
-	public VariantValueExpression(CodePosition position, ITypeID variantType, VariantOptionRef option, Expression[] arguments) {
+	public VariantValueExpression(CodePosition position, StoredType variantType, VariantOptionRef option, Expression[] arguments) {
 		super(position, variantType, multiThrow(position, arguments));
 		
 		this.option = option;
@@ -35,7 +36,7 @@ public class VariantValueExpression extends Expression {
 	}
 	
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<ITypeID> hints, CallArguments arguments) {
+	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
 		if (arguments != null)
 			return super.call(position, scope, hints, arguments);
 		
@@ -62,7 +63,7 @@ public class VariantValueExpression extends Expression {
 	public Expression normalize(TypeScope scope) {
 		Expression[] normalized = new Expression[arguments.length];
 		for (int i = 0; i < normalized.length; i++)
-			normalized[i] = arguments[i].normalize(scope);
+			normalized[i] = arguments[i].normalize(scope).castImplicit(position, scope, option.types[i]);
 		return new VariantValueExpression(position, type, option, normalized);
 	}
 }

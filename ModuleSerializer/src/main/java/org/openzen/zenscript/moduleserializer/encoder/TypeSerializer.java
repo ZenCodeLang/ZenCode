@@ -15,10 +15,12 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.moduleserialization.TypeEncoding;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 
@@ -26,7 +28,7 @@ import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
  *
  * @author Hoofdgebruiker
  */
-public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void> {
+public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void, RuntimeException> {
 	private final CodeSerializationOutput output;
 	
 	public TypeSerializer(CodeSerializationOutput output) {
@@ -50,11 +52,16 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 			case FLOAT: output.writeUInt(TypeEncoding.TYPE_FLOAT); break;
 			case DOUBLE: output.writeUInt(TypeEncoding.TYPE_DOUBLE); break;
 			case CHAR: output.writeUInt(TypeEncoding.TYPE_CHAR); break;
-			case STRING: output.writeUInt(TypeEncoding.TYPE_STRING); break;
 			case UNDETERMINED: output.writeUInt(TypeEncoding.TYPE_UNDETERMINED); break;
 			case NULL: output.writeUInt(TypeEncoding.TYPE_NULL); break;
 			default: throw new IllegalArgumentException("Unknown basic type: " + basic);
 		}
+		return null;
+	}
+	
+	@Override
+	public Void visitString(TypeContext context, StringTypeID string) {
+		output.writeUInt(TypeEncoding.TYPE_STRING);
 		return null;
 	}
 
@@ -66,15 +73,15 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 			output.writeUInt(TypeEncoding.TYPE_ARRAY_MULTIDIMENSIONAL);
 			output.writeUInt(array.dimension);
 		}
-		array.elementType.accept(context, this);
+		output.serialize(context, array.elementType);
 		return null;
 	}
 
 	@Override
 	public Void visitAssoc(TypeContext context, AssocTypeID assoc) {
 		output.writeUInt(TypeEncoding.TYPE_ASSOC);
-		assoc.keyType.accept(context, this);
-		assoc.valueType.accept(context, this);
+		output.serialize(context, assoc.keyType);
+		output.serialize(context, assoc.valueType);
 		return null;
 	}
 
@@ -82,7 +89,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 	public Void visitGenericMap(TypeContext context, GenericMapTypeID map) {
 		output.writeUInt(TypeEncoding.TYPE_GENERIC_MAP);
 		output.serialize(context, map.key);
-		map.value.accept(new TypeContext(context, context.thisType, new TypeParameter[] { map.key }), this);
+		output.serialize(new TypeContext(context, context.thisType, new TypeParameter[] { map.key }), map.value);
 		return null;
 	}
 
@@ -90,8 +97,8 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 	public Void visitIterator(TypeContext context, IteratorTypeID iterator) {
 		output.writeUInt(TypeEncoding.TYPE_ITERATOR);
 		output.writeUInt(iterator.iteratorTypes.length);
-		for (ITypeID type : iterator.iteratorTypes)
-			type.accept(context, this);
+		for (StoredType type : iterator.iteratorTypes)
+			output.serialize(context, type);
 		return null;
 	}
 
@@ -106,8 +113,9 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 	public Void visitDefinition(TypeContext context, DefinitionTypeID definition) {
 		output.writeUInt(TypeEncoding.TYPE_DEFINITION);
 		output.write(definition.definition);
-		for (ITypeID type : definition.typeParameters)
+		for (TypeID type : definition.typeArguments)
 			type.accept(context, this);
+		
 		return null;
 	}
 
@@ -124,12 +132,12 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void>
 	@Override
 	public Void visitRange(TypeContext context, RangeTypeID range) {
 		output.writeUInt(TypeEncoding.TYPE_RANGE);
-		range.baseType.accept(context, this);
+		output.serialize(context, range.baseType);
 		return null;
 	}
 
 	@Override
-	public Void visitModified(TypeContext context, ModifiedTypeID type) {
+	public Void visitModified(TypeContext context, OptionalTypeID type) {
 		if (type.isOptional()) {
 			output.writeUInt(TypeEncoding.TYPE_OPTIONAL);
 			type.withoutOptional().accept(context, this);

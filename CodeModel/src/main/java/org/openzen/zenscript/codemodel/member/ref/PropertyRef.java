@@ -6,13 +6,14 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.PropertyMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -21,15 +22,15 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
 public abstract class PropertyRef implements DefinitionMemberRef {
 	private final PropertyMember member;
 	
-	private final ITypeID owner;
-	private ITypeID type;
+	private final StoredType owner;
+	private StoredType type;
 	private GenericMapper mapper;
 	
-	public PropertyRef(ITypeID owner, PropertyMember member, GenericMapper mapper) {
+	public PropertyRef(StoredType owner, PropertyMember member, GenericMapper mapper) {
 		this.owner = owner;
 		this.member = member;
 		
-		if (member.getType() == BasicTypeID.UNDETERMINED) {
+		if (member.getType().type == BasicTypeID.UNDETERMINED) {
 			type = null;
 			this.mapper = mapper;
 		} else {
@@ -39,13 +40,13 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public final ITypeID getOwnerType() {
+	public final StoredType getOwnerType() {
 		return owner;
 	}
 	
-	public final ITypeID getType() {
+	public final StoredType getType() {
 		if (type == null) {
-			if (member.getType() == BasicTypeID.UNDETERMINED)
+			if (member.getType().type == BasicTypeID.UNDETERMINED)
 				throw new IllegalStateException("Property is not yet resolved!");
 			
 			type = mapper == null ? member.getType() : member.getType().instance(mapper);
@@ -66,7 +67,7 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 	}
 
 	@Override
-	public final <T> T getTag(Class<T> type) {
+	public final <T extends Tag> T getTag(Class<T> type) {
 		return member.getTag(type);
 	}
 	

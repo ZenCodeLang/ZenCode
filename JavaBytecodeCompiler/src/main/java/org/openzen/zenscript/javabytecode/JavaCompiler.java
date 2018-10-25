@@ -7,26 +7,27 @@ package org.openzen.zenscript.javabytecode;
 
 import java.io.File;
 import java.util.ArrayList;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
+import org.openzen.zenscript.compiler.ZenCodeCompilingModule;
 import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
 import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.javashared.JavaBaseCompiler;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
@@ -34,7 +35,7 @@ import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 /**
  * @author Hoofdgebruiker
  */
-public class JavaCompiler implements ZenCodeCompiler {
+public class JavaCompiler extends JavaBaseCompiler implements ZenCodeCompiler {
 	private final JavaModule target;
 	private final Map<String, JavaScriptFile> scriptBlocks = new HashMap<>();
 	private final JavaClassWriter scriptsClassWriter;
@@ -58,18 +59,34 @@ public class JavaCompiler implements ZenCodeCompiler {
 		scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
 	}
-
-	@Override
-	public void addDefinition(HighLevelDefinition definition, SemanticModule module) {
-		JavaPrepareDefinitionVisitor preparer = new JavaPrepareDefinitionVisitor(definition.position.getFilename(), null);
-		definition.accept(preparer);
-		
-		definitions.add(definition);
+	
+	public JavaContext getContext() {
+		return context;
 	}
-
+	
 	@Override
-	public void addScriptBlock(ScriptBlock script) {
-		scripts.add(script);
+	public ZenCodeCompilingModule addModule(SemanticModule module) {
+		context.addModule(module.module);
+		
+		return new ZenCodeCompilingModule() {
+			@Override
+			public void addDefinition(HighLevelDefinition definition) {
+				JavaPrepareDefinitionVisitor preparer = new JavaPrepareDefinitionVisitor(context, context.getJavaModule(module.module), definition.position.getFilename(), null);
+				definition.accept(preparer);
+
+				definitions.add(definition);
+			}
+
+			@Override
+			public void addScriptBlock(ScriptBlock script) {
+				scripts.add(script);
+			}
+
+			@Override
+			public void finish() {
+				
+			}
+		};
 	}
 
 	private String getClassName(String filename) {
@@ -116,7 +133,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 		finished = true;
 		
 		for (HighLevelDefinition definition : definitions) {
-			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(context);
+			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(context, context.getJavaModule(definition.module));
 			definition.accept(memberPreparer);
 		}
 		
@@ -140,7 +157,7 @@ public class JavaCompiler implements ZenCodeCompiler {
 			JavaMethod method = JavaMethod.getStatic(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 			scriptFile.scriptMethods.add(method);
 
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, new JavaWriter(visitor, method, null, null, null));
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(visitor, method, null, null, null));
 			statementVisitor.start();
 			for (Statement statement : script.statements) {
 				statement.accept(statementVisitor);

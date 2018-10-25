@@ -12,11 +12,13 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
+import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -67,27 +69,26 @@ public class ParsedSetter extends ParsedDefinitionMember {
 		return compiled;
 	}
 	
-	private void inferHeaders(BaseScope scope) {
+	private void inferHeaders(BaseScope scope) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(scope, implementation.getCompiled().type);
-			compiled.modifiers |= Modifiers.PUBLIC;
+			fillOverride(scope, implementation.getCompiled().type.stored(scope.getThisType().getSpecifiedStorage()));
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 			
-			fillOverride(scope, definition.getSuperType());
+			fillOverride(scope, definition.getSuperType().stored(scope.getThisType().getSpecifiedStorage()));
 		}
 		
 		if (compiled == null)
 			throw new IllegalStateException("Types not yet linked");
 	}
 
-	private void fillOverride(TypeScope scope, ITypeID baseType) {
+	private void fillOverride(TypeScope scope, StoredType baseType) {
 		compiled.setOverrides(scope.getTypeMembers(baseType).getOrCreateGroup(name, true).getSetter());
 	}
 	
 	@Override
-	public final void compile(BaseScope scope) {
+	public final void compile(BaseScope scope) throws CompileException {
 		if (isCompiled)
 			return;
 		isCompiled = true;
@@ -95,7 +96,10 @@ public class ParsedSetter extends ParsedDefinitionMember {
 		inferHeaders(scope);
 		
 		FunctionHeader header = new FunctionHeader(compiled.type);
-		FunctionScope innerScope = new FunctionScope(scope, header);
+		FunctionScope innerScope = new FunctionScope(
+				scope,
+				header,
+				position -> new GetFunctionParameterExpression(position, compiled.parameter));
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		compiled.setBody(body.compile(innerScope, header));
 	}

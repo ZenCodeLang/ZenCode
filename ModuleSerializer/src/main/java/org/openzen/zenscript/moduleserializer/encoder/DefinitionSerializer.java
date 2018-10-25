@@ -84,7 +84,7 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 		for (InnerDefinitionMember innerDefinition : innerDefinitions) {
 			System.out.println("Inner definition: " + innerDefinition.definition.name);
 			output.serialize(innerDefinition.position);
-			output.writeUInt(innerDefinition.modifiers);
+			output.writeUInt(innerDefinition.getSpecifiedModifiers());
 			innerDefinition.innerDefinition.accept(moduleContext, this);
 		}
 		

@@ -5,49 +5,47 @@
  */
 package org.openzen.zenscript.parser.type;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ParsedTypeAssociative implements IParsedType {
+	private final CodePosition position;
 	public final IParsedType key;
 	public final IParsedType value;
-	public final int modifiers;
+	private final ParsedStorageTag storage;
 	
-	public ParsedTypeAssociative(IParsedType key, IParsedType value) {
+	public ParsedTypeAssociative(CodePosition position, IParsedType key, IParsedType value, ParsedStorageTag storage) {
+		this.position = position;
 		this.key = key;
 		this.value = value;
-		this.modifiers = 0;
-	}
-
-	private ParsedTypeAssociative(IParsedType key, IParsedType value, int modifiers) {
-		this.key = key;
-		this.value = value;
-		this.modifiers = modifiers;
-	}
-	
-	@Override
-	public IParsedType withOptional() {
-		return new ParsedTypeAssociative(key, value, modifiers | ModifiedTypeID.MODIFIER_OPTIONAL);
+		this.storage = storage;
 	}
 
 	@Override
-	public IParsedType withModifiers(int modifiers) {
-		return new ParsedTypeAssociative(key, value, this.modifiers | modifiers);
+	public StoredType compile(TypeResolutionContext context) {
+		StorageTag storage = this.storage.resolve(position, context);
+		StoredType key = this.key.compile(context);
+		StoredType value = this.value.compile(context);
+		return context.getTypeRegistry().getAssociative(key, value).stored(storage);
 	}
 
 	@Override
-	public ITypeID compile(TypeResolutionContext context) {
-		ITypeID key = this.key.compile(context);
-		ITypeID value = this.value.compile(context);
-		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return registry.getModified(modifiers, context.getTypeRegistry().getAssociative(key, value));
+	public TypeID compileUnstored(TypeResolutionContext context) {
+		if (storage != ParsedStorageTag.NULL)
+			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage tag not supported here");
+		
+		StorageTag storage = this.storage.resolve(position, context);
+		StoredType key = this.key.compile(context);
+		StoredType value = this.value.compile(context);
+		return context.getTypeRegistry().getAssociative(key, value);
 	}
 }

@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -22,7 +23,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
  * @author Stan Hebben
  */
 public class ParsedClass extends BaseParsedDefinition {
-	public static ParsedClass parseClass(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) {
+	public static ParsedClass parseClass(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> genericParameters = ParsedTypeParameter.parseAll(tokens);
 		
@@ -34,8 +35,13 @@ public class ParsedClass extends BaseParsedDefinition {
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 		
 		ParsedClass result = new ParsedClass(pkg, position, modifiers, annotations, name, genericParameters, superclass, outerDefinition);
-		while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-			result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+		try {
+			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
+				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+			}
+		} catch (ParseException ex) {
+			tokens.logError(ex);
+			tokens.recoverUntilToken(ZSTokenType.T_ACLOSE);
 		}
 		return result;
 	}
@@ -65,7 +71,7 @@ public class ParsedClass extends BaseParsedDefinition {
 		ParsedTypeParameter.compile(context, compiled.typeParameters, this.parameters);
 		
 		if (superclass != null)
-			compiled.setSuperType(superclass.compile(context));
+			compiled.setSuperType(superclass.compileUnstored(context));
 		
 		super.linkTypesLocal(context);
 	}

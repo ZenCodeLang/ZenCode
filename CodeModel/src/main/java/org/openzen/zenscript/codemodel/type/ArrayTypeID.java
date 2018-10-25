@@ -6,22 +6,31 @@
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class ArrayTypeID implements ITypeID {
-	public static final ArrayTypeID INT = new ArrayTypeID(null, BasicTypeID.INT, 1);
-	public static final ArrayTypeID CHAR = new ArrayTypeID(null, BasicTypeID.CHAR, 1);
+public class ArrayTypeID implements TypeID {
+	public static final ArrayTypeID INT = new ArrayTypeID(BasicTypeID.INT.stored, 1);
+	public static final ArrayTypeID CHAR = new ArrayTypeID(BasicTypeID.CHAR.stored, 1);
 	
-	public final ITypeID elementType;
+	public final StoredType elementType;
 	public final int dimension;
 	private final ArrayTypeID normalized;
 
-	public ArrayTypeID(GlobalTypeRegistry registry, ITypeID elementType, int dimension) {
+	private ArrayTypeID(StoredType elementType, int dimension) {
+		this.elementType = elementType;
+		this.dimension = dimension;
+		this.normalized = this;
+	}
+	
+	public ArrayTypeID(GlobalTypeRegistry registry, StoredType elementType, int dimension) {
 		this.elementType = elementType;
 		this.dimension = dimension;
 		this.normalized = elementType.getNormalized() == elementType ? this : registry.getArray(elementType.getNormalized(), dimension);
@@ -33,38 +42,38 @@ public class ArrayTypeID implements ITypeID {
 	}
 	
 	@Override
-	public <T> T accept(TypeVisitor<T> visitor) {
+	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitArray(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitArray(context, this);
-	}
-	
-	@Override
-	public ArrayTypeID getUnmodified() {
-		return this;
 	}
 
 	@Override
 	public boolean isOptional() {
 		return false;
 	}
-
+	
 	@Override
-	public boolean isConst() {
+	public boolean isValueType() {
 		return false;
 	}
 	
 	@Override
-	public boolean isObjectType() {
-		return true;
+	public boolean isDestructible() {
+		return elementType.type.isDestructible();
 	}
 	
 	@Override
-	public ArrayTypeID instance(GenericMapper mapper) {
-		return mapper.registry.getArray(elementType.instance(mapper), dimension);
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return elementType.type.isDestructible(scanning);
+	}
+	
+	@Override
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return mapper.registry.getArray(elementType.instance(mapper), dimension).stored(storage);
 	}
 
 	@Override
@@ -79,7 +88,7 @@ public class ArrayTypeID implements ITypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		elementType.extractTypeParameters(typeParameters);
+		elementType.type.extractTypeParameters(typeParameters);
 	}
 
 	@Override
@@ -102,7 +111,8 @@ public class ArrayTypeID implements ITypeID {
 			return false;
 		}
 		final ArrayTypeID other = (ArrayTypeID) obj;
-		return this.dimension == other.dimension && this.elementType == other.elementType;
+		return this.dimension == other.dimension
+				&& this.elementType.equals(other.elementType);
 	}
 
 	@Override

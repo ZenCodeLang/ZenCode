@@ -63,10 +63,14 @@ import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.ModifiedTypeID;
+import org.openzen.zenscript.codemodel.type.OptionalTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.moduleserialization.CodePositionEncoding;
 import org.openzen.zenscript.moduleserialization.ExpressionEncoding;
 import org.openzen.zenscript.moduleserialization.FunctionHeaderEncoding;
@@ -214,7 +218,7 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public DefinitionMemberRef readMember(TypeContext context, ITypeID type) {
+	public DefinitionMemberRef readMember(TypeContext context, StoredType type) {
 		int memberId = input.readVarUInt();
 		if (memberId == 0) {
 			return null;
@@ -237,7 +241,7 @@ public class CodeReader implements CodeSerializationInput {
 	}
 	
 	@Override
-	public VariantOptionRef readVariantOption(TypeContext context, ITypeID type) {
+	public VariantOptionRef readVariantOption(TypeContext context, StoredType type) {
 		return variantOptions.get(readUInt()).instance(type, context.getMapper());
 	}
 	
@@ -247,7 +251,7 @@ public class CodeReader implements CodeSerializationInput {
 	}
 
 	@Override
-	public ITypeID deserializeType(TypeContext context) {
+	public TypeID deserializeTypeID(TypeContext context) {
 		int type = input.readVarUInt();
 		switch (type) {
 			case TypeEncoding.TYPE_NONE:
@@ -281,22 +285,22 @@ public class CodeReader implements CodeSerializationInput {
 			case TypeEncoding.TYPE_CHAR:
 				return BasicTypeID.CHAR;
 			case TypeEncoding.TYPE_STRING:
-				return BasicTypeID.STRING;
+				return StringTypeID.INSTANCE;
 			case TypeEncoding.TYPE_UNDETERMINED:
 				return BasicTypeID.UNDETERMINED;
 			case TypeEncoding.TYPE_DEFINITION: {
 				HighLevelDefinition definition = readDefinition();
-				ITypeID[] arguments = new ITypeID[definition.typeParameters.length];
+				TypeID[] arguments = new TypeID[definition.typeParameters.length];
 				for (int i = 0; i < arguments.length; i++)
-					arguments[i] = deserializeType(context);
+					arguments[i] = deserializeTypeID(context);
 				return registry.getForDefinition(definition, arguments);
 			}
 			case TypeEncoding.TYPE_DEFINITION_INNER: {
-				DefinitionTypeID outer = (DefinitionTypeID)deserializeType(context);
+				DefinitionTypeID outer = (DefinitionTypeID)deserializeTypeID(context);
 				HighLevelDefinition definition = readDefinition();
-				ITypeID[] arguments = new ITypeID[definition.typeParameters.length];
+				TypeID[] arguments = new TypeID[definition.typeParameters.length];
 				for (int i = 0; i < arguments.length; i++)
-					arguments[i] = deserializeType(context);
+					arguments[i] = deserializeTypeID(context);
 				return registry.getForDefinition(definition, arguments, outer);
 			}
 			case TypeEncoding.TYPE_GENERIC:
@@ -306,38 +310,43 @@ public class CodeReader implements CodeSerializationInput {
 			case TypeEncoding.TYPE_ARRAY:
 				return registry.getArray(deserializeType(context), 1);
 			case TypeEncoding.TYPE_ARRAY_MULTIDIMENSIONAL: {
-				ITypeID baseType = deserializeType(context);
+				StoredType baseType = deserializeType(context);
 				int dimension = input.readVarUInt();
 				return registry.getArray(baseType, dimension);
 			}
 			case TypeEncoding.TYPE_ASSOC: {
-				ITypeID key = deserializeType(context);
-				ITypeID value = deserializeType(context);
+				StoredType key = deserializeType(context);
+				StoredType value = deserializeType(context);
 				return registry.getAssociative(key, value);
 			}
 			case TypeEncoding.TYPE_GENERIC_MAP: {
 				TypeParameter parameter = deserializeTypeParameter(context);
 				TypeContext inner = new TypeContext(context, context.thisType, parameter);
-				ITypeID value = deserializeType(inner);
+				StoredType value = deserializeType(inner);
 				return registry.getGenericMap(value, parameter);
 			}
 			case TypeEncoding.TYPE_RANGE:
 				return registry.getRange(deserializeType(context));
 			case TypeEncoding.TYPE_ITERATOR: {
-				ITypeID[] values = new ITypeID[input.readVarUInt()];
+				StoredType[] values = new StoredType[input.readVarUInt()];
 				for (int i = 0; i < values.length; i++)
 					values[i] = deserializeType(context);
 				return registry.getIterator(values);
 			}
 			case TypeEncoding.TYPE_OPTIONAL:
-				return registry.getOptional(deserializeType(context));
+				return registry.getOptional(deserializeTypeID(context));
 			case TypeEncoding.TYPE_CONST:
-				return registry.getModified(ModifiedTypeID.MODIFIER_CONST, deserializeType(context));
+				return registry.getModified(OptionalTypeID.MODIFIER_CONST, deserializeTypeID(context));
 			case TypeEncoding.TYPE_IMMUTABLE:
-				return registry.getModified(ModifiedTypeID.MODIFIER_IMMUTABLE, deserializeType(context));
+				return registry.getModified(OptionalTypeID.MODIFIER_IMMUTABLE, deserializeTypeID(context));
 			default:
 				throw new IllegalArgumentException("Unknown type: " + type);
 		}
+	}
+	
+	@Override
+	public StoredType deserializeType(TypeContext context) {
+		
 	}
 
 	@Override
@@ -379,11 +388,11 @@ public class CodeReader implements CodeSerializationInput {
 			inner = context;
 		}
 		
-		ITypeID returnType = BasicTypeID.VOID;
+		StoredType returnType = BasicTypeID.VOID.stored;
 		if ((flags & FunctionHeaderEncoding.FLAG_RETURN_TYPE) > 0)
 			returnType = deserializeType(inner);
 		
-		ITypeID thrownType = null;
+		StoredType thrownType = null;
 		if ((flags & FunctionHeaderEncoding.FLAG_THROWS) > 0)
 			thrownType = deserializeType(inner);
 		
@@ -392,7 +401,7 @@ public class CodeReader implements CodeSerializationInput {
 			parameters = new FunctionParameter[readUInt()];
 			StatementContext statementContext = new StatementContext(context);
 			for (int i = 0; i < parameters.length; i++) {
-				ITypeID type = deserializeType(inner);
+				StoredType type = deserializeType(inner);
 				String name = readString();
 				FunctionParameter parameter = new FunctionParameter(type, name, null, (i == parameters.length - 1) && ((flags & FunctionHeaderEncoding.FLAG_VARIADIC) > 0));
 				parameters[i] = parameter;
@@ -471,9 +480,9 @@ public class CodeReader implements CodeSerializationInput {
 
 	@Override
 	public CallArguments deserializeArguments(StatementContext context) {
-		ITypeID[] typeArguments = new ITypeID[readUInt()];
+		TypeID[] typeArguments = new TypeID[readUInt()];
 		for (int i = 0; i < typeArguments.length; i++)
-			typeArguments[i] = deserializeType(context);
+			typeArguments[i] = deserializeTypeID(context);
 		
 		Expression[] arguments = new Expression[readUInt()];
 		for (int i = 0; i < arguments.length; i++)
@@ -579,7 +588,7 @@ public class CodeReader implements CodeSerializationInput {
 			case StatementEncoding.TYPE_TRY_CATCH:
 				throw new UnsupportedOperationException("Not supported yet");
 			case StatementEncoding.TYPE_VAR: {
-				ITypeID varType = deserializeType(context);
+				StoredType varType = deserializeType(context);
 				String name = (flags & StatementEncoding.FLAG_NAME) > 0 ? readString() : null;
 				Expression initializer = deserializeExpression(context);
 				VarStatement result = new VarStatement(position, name, varType, initializer, (flags & StatementEncoding.FLAG_FINAL) > 0);
@@ -613,9 +622,9 @@ public class CodeReader implements CodeSerializationInput {
 				return new AndAndExpression(position, left, right);
 			}
 			case ExpressionEncoding.TYPE_ARRAY: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				Expression[] expressions = new Expression[readUInt()];
-				return new ArrayExpression(position, expressions, (ArrayTypeID)type);
+				return new ArrayExpression(position, expressions, type);
 			}
 			case ExpressionEncoding.TYPE_COMPARE: {
 				CompareType comparison = readComparator();
@@ -632,8 +641,8 @@ public class CodeReader implements CodeSerializationInput {
 				return new CallExpression(position, target, member, instancedHeader, arguments);
 			}
 			case ExpressionEncoding.TYPE_CALL_STATIC: {
-				ITypeID type = deserializeType(context);
-				FunctionalMemberRef member = (FunctionalMemberRef)readMember(context, type);
+				TypeID type = deserializeTypeID(context);
+				FunctionalMemberRef member = (FunctionalMemberRef)readMember(context, type.stored(StaticExpressionStorageTag.INSTANCE));
 				CallArguments arguments = deserializeArguments(context);
 				FunctionHeader instancedHeader = member.getHeader().instanceForCall(registry, arguments);
 				return new CallStaticExpression(position, type, member, instancedHeader, arguments);
@@ -658,7 +667,7 @@ public class CodeReader implements CodeSerializationInput {
 				return new CapturedThisExpression(position, context.thisType, context.getLambdaClosure());
 			}
 			case ExpressionEncoding.TYPE_CAST: {
-				ITypeID toType = deserializeType(context);
+				StoredType toType = deserializeType(context);
 				Expression value = deserializeExpression(context);
 				CasterMemberRef member = (CasterMemberRef)readMember(context, toType);
 				return new CastExpression(position, value, member, (flags & ExpressionEncoding.FLAG_IMPLICIT) > 0);
@@ -674,13 +683,13 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_CONDITIONAL: {
 				Expression condition = deserializeExpression(context);
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				Expression onThen = deserializeExpression(context);
 				Expression onElse = deserializeExpression(context);
 				return new ConditionalExpression(position, condition, onThen, onElse, type);
 			}
 			case ExpressionEncoding.TYPE_CONST: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				ConstMemberRef member = (ConstMemberRef)readMember(context, type);
 				return new ConstExpression(position, member);
 			}
@@ -720,7 +729,7 @@ public class CodeReader implements CodeSerializationInput {
 				return new ConstructorThisCallExpression(position, context.thisType, constructor, arguments);
 			}
 			case ExpressionEncoding.TYPE_CONSTRUCTOR_SUPER_CALL: {
-				ITypeID superType = context.thisType.getSuperType(registry);
+				StoredType superType = context.thisType.getSuperType(registry);
 				FunctionalMemberRef constructor = (FunctionalMemberRef)readMember(context, superType);
 				CallArguments arguments = deserializeArguments(context);
 				return new ConstructorSuperCallExpression(position, superType, constructor, arguments);
@@ -734,7 +743,7 @@ public class CodeReader implements CodeSerializationInput {
 				LambdaClosure closure = new LambdaClosure();
 				StatementContext inner = new StatementContext(context, header, closure);
 				Statement body = deserializeStatement(inner);
-				return new FunctionExpression(position, registry.getFunction(header), closure, header, body);
+				return new FunctionExpression(position, registry.getFunction(header).stored(UniqueStorageTag.INSTANCE), closure, header, body);
 			}
 			case ExpressionEncoding.TYPE_GET_FIELD: {
 				Expression target = deserializeExpression(context);
@@ -753,7 +762,7 @@ public class CodeReader implements CodeSerializationInput {
 				return new GetMatchingVariantField(position, context.variantOptionSwitchValue, kind);
 			}
 			case ExpressionEncoding.TYPE_GET_STATIC_FIELD: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				FieldMemberRef field = (FieldMemberRef)readMember(context, type);
 				return new GetStaticFieldExpression(position, field);
 			}
@@ -775,21 +784,21 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_INTERFACE_CAST: {
 				Expression value = deserializeExpression(context);
-				ITypeID toType = deserializeType(context);
+				StoredType toType = deserializeType(context);
 				return new InterfaceCastExpression(position, value, toType);
 			}
 			case ExpressionEncoding.TYPE_IS: {
 				Expression value = deserializeExpression(context);
-				ITypeID type = deserializeType(context);
+				TypeID type = deserializeTypeID(context);
 				return new IsExpression(position, value, type);
 			}
 			case ExpressionEncoding.TYPE_MAKE_CONST: {
 				Expression value = deserializeExpression(context);
-				ITypeID constType = registry.getModified(ModifiedTypeID.MODIFIER_CONST, value.type);
+				StoredType constType = registry.getModified(OptionalTypeID.MODIFIER_CONST, value.type.type).stored(value.type.getActualStorage());
 				return new MakeConstExpression(position, value, constType);
 			}
 			case ExpressionEncoding.TYPE_MAP: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				Expression[] keys = new Expression[readUInt()];
 				Expression[] values = new Expression[keys.length];
 				for (int i = 0; i < keys.length; i++) {
@@ -802,7 +811,7 @@ public class CodeReader implements CodeSerializationInput {
 				boolean localVariableNames = (flags & ExpressionEncoding.FLAG_NAMES) > 0;
 				
 				Expression value = deserializeExpression(context);
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				MatchExpression.Case[] cases = new MatchExpression.Case[readUInt()];
 				for (int i = 0; i < cases.length; i++) {
 					SwitchValue key = deserializeSwitchValue(context, localVariableNames);
@@ -812,13 +821,13 @@ public class CodeReader implements CodeSerializationInput {
 				return new MatchExpression(position, value, type, cases);
 			}
 			case ExpressionEncoding.TYPE_NEW: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				FunctionalMemberRef member = (FunctionalMemberRef)readMember(context, type);
 				CallArguments arguments = deserializeArguments(context);
 				return new NewExpression(position, type, member, arguments);
 			}
 			case ExpressionEncoding.TYPE_NULL: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				return new NullExpression(position, type);
 			}
 			case ExpressionEncoding.TYPE_OR_OR: {
@@ -828,7 +837,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_PANIC: {
 				Expression value = deserializeExpression(context);
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				return new PanicExpression(position, type, value);
 			}
 			case ExpressionEncoding.TYPE_POST_CALL: {
@@ -839,7 +848,7 @@ public class CodeReader implements CodeSerializationInput {
 			case ExpressionEncoding.TYPE_RANGE: {
 				Expression from = deserializeExpression(context);
 				Expression to = deserializeExpression(context);
-				return new RangeExpression(position, registry.getRange(from.type), from, to);
+				return new RangeExpression(position, registry.getRange(from.type).stored, from, to);
 			}
 			case ExpressionEncoding.TYPE_SAME_OBJECT: {
 				Expression left = deserializeExpression(context);
@@ -864,7 +873,7 @@ public class CodeReader implements CodeSerializationInput {
 				return new SetLocalVariableExpression(position, variable, value);
 			}
 			case ExpressionEncoding.TYPE_SET_STATIC_FIELD: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				FieldMemberRef member = (FieldMemberRef)readMember(context, type);
 				Expression value = deserializeExpression(context);
 				return new SetStaticFieldExpression(position, member, value);
@@ -876,46 +885,46 @@ public class CodeReader implements CodeSerializationInput {
 				return new SetterExpression(position, target, setter, value);
 			}
 			case ExpressionEncoding.TYPE_STATIC_GETTER: {
-				ITypeID target = deserializeType(context);
+				StoredType target = deserializeType(context);
 				GetterMemberRef getter = (GetterMemberRef)readMember(context, target);
 				return new StaticGetterExpression(position, getter);
 			}
 			case ExpressionEncoding.TYPE_STATIC_SETTER: {
-				ITypeID target = deserializeType(context);
+				StoredType target = deserializeType(context);
 				SetterMemberRef setter = (SetterMemberRef)readMember(context, target);
 				Expression value = deserializeExpression(context);
 				return new StaticSetterExpression(position, setter, value);
 			}
 			case ExpressionEncoding.TYPE_SUPERTYPE_CAST: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				Expression value = deserializeExpression(context);
 				return new SupertypeCastExpression(position, value, type);
 			}
 			case ExpressionEncoding.TYPE_THIS:
 				return new ThisExpression(position, context.thisType);
 			case ExpressionEncoding.TYPE_THROW: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				Expression value = deserializeExpression(context);
 				return new ThrowExpression(position, type, value);
 			}
 			case ExpressionEncoding.TYPE_TRY_CONVERT: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				Expression value = deserializeExpression(context);
 				return new TryConvertExpression(position, type, value);
 			}
 			case ExpressionEncoding.TYPE_TRY_RETHROW_AS_EXCEPTION: {
-				ITypeID type = deserializeType(context);
-				ITypeID thrownType = deserializeType(context);
+				StoredType type = deserializeType(context);
+				StoredType thrownType = deserializeType(context);
 				Expression value = deserializeExpression(context);
 				return new TryRethrowAsExceptionExpression(position, type, value, thrownType);
 			}
 			case ExpressionEncoding.TYPE_TRY_RETHROW_AS_RESULT: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				Expression value = deserializeExpression(context);
 				return new TryRethrowAsResultExpression(position, type, value);
 			}
 			case ExpressionEncoding.TYPE_VARIANT_VALUE: {
-				ITypeID type = deserializeType(context);
+				StoredType type = deserializeType(context);
 				VariantOptionRef option = readVariantOption(context, type);
 				Expression[] arguments = new Expression[option.types.length];
 				for (int i = 0; i < arguments.length; i++)
@@ -924,7 +933,7 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case ExpressionEncoding.TYPE_WRAP_OPTIONAL: {
 				Expression value = deserializeExpression(context);
-				ITypeID optionalType = registry.getOptional(value.type);
+				StoredType optionalType = registry.getOptional(value.type.type).stored(value.type.getActualStorage());
 				return new WrapOptionalExpression(position, value, optionalType);
 			}
 			default:
@@ -966,7 +975,7 @@ public class CodeReader implements CodeSerializationInput {
 			case SwitchValueEncoding.TYPE_ENUM:
 				return new EnumConstantSwitchValue(readEnumConstant(context));
 			case SwitchValueEncoding.TYPE_VARIANT_OPTION: {
-				ITypeID t = deserializeType(context);
+				StoredType t = deserializeType(context);
 				VariantOptionRef option = readVariantOption(context, t);
 				String[] names = new String[option.types.length];
 				if (localVariableNames)
@@ -993,9 +1002,9 @@ public class CodeReader implements CodeSerializationInput {
 		int type = readUInt();
 		switch (type) {
 			case TypeParameterEncoding.TYPE_SUPER_BOUND:
-				return new ParameterSuperBound(deserializeType(context));
+				return new ParameterSuperBound(deserializeTypeID(context));
 			case TypeParameterEncoding.TYPE_TYPE_BOUND:
-				return new ParameterTypeBound(CodePosition.UNKNOWN, deserializeType(context));
+				return new ParameterTypeBound(CodePosition.UNKNOWN, deserializeTypeID(context));
 			default:
 				throw new IllegalArgumentException("Not a valid parameter bound type: " + type);
 		}

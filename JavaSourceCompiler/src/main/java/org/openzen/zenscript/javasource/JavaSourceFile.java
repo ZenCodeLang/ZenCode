@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -14,12 +15,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.compiler.SemanticModule;
@@ -37,27 +35,26 @@ public class JavaSourceFile {
 	private final JavaClass cls;
 	private final StringBuilder contents = new StringBuilder();
 	private final ZSPackage pkg;
+	private final SemanticModule module;
 	
 	private HighLevelDefinition mainDefinition;
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
 	
-	private final Map<HighLevelDefinition, SemanticModule> modules = new HashMap<>();
-	private final Set<String> existing = new HashSet<>();
-	
-	public JavaSourceFile(JavaSourceCompiler compiler, File file, JavaClass cls, ZSPackage pkg) {
+	public JavaSourceFile(JavaSourceCompiler compiler, File file, JavaClass cls, SemanticModule module, ZSPackage pkg) {
 		this.compiler = compiler;
 		this.pkg = pkg;
 		this.cls = cls;
+		this.module = module;
 		this.file = file;
 		
-		importer = new JavaSourceImporter(cls);
+		importer = new JavaSourceImporter(compiler.context, cls);
 	}
 	
 	public String getName() {
 		return cls.getName();
 	}
 	
-	public void add(HighLevelDefinition definition, SemanticModule module) {
+	public void add(HighLevelDefinition definition) {
 		if (definition instanceof ExpansionDefinition) {
 			expansions.add((ExpansionDefinition)definition);
 		} else if (mainDefinition != null) {
@@ -65,12 +62,10 @@ public class JavaSourceFile {
 		} else {
 			mainDefinition = definition;
 		}
-		
-		modules.put(definition, module);
 	}
 	
 	public void prepare(JavaContext context) {
-		JavaPrepareDefinitionMemberVisitor visitor = new JavaPrepareDefinitionMemberVisitor(context);
+		JavaPrepareDefinitionMemberVisitor visitor = new JavaPrepareDefinitionMemberVisitor(context, context.getJavaModule(module.module));
 		
 		if (mainDefinition != null)
 			mainDefinition.accept(visitor);
@@ -79,10 +74,21 @@ public class JavaSourceFile {
 			expansion.accept(visitor);
 	}
 	
+	private boolean isEmpty(HighLevelDefinition definition) {
+		JavaClass cls = compiler.context.getJavaClass(definition);
+		if (!cls.empty)
+			return false;
+		
+		if (cls.isInterface() && definition.getTag(NativeTag.class) == null)
+			return false;
+		
+		return true;
+	}
+	
 	public void write() {
 		System.out.println("Calling write on " + file.getName());
 		
-		if (mainDefinition == null || mainDefinition.getTag(JavaClass.class).empty) {
+		if (mainDefinition == null || isEmpty(mainDefinition)) {
 			if (expansions.isEmpty())
 				return;
 			
@@ -93,11 +99,12 @@ public class JavaSourceFile {
 		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
 				"",
 				compiler,
+				compiler.context.getJavaModule(module.module),
 				cls,
 				this,
 				contents,
 				expansions,
-				modules);
+				module);
 		definition.accept(visitor);
 		
 		if (!file.getParentFile().exists())

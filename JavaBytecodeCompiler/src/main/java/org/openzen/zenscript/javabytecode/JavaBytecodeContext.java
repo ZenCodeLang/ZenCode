@@ -8,10 +8,9 @@ package org.openzen.zenscript.javabytecode;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -20,6 +19,7 @@ import org.openzen.zenscript.javashared.JavaSynthesizedRange;
 import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
 import org.openzen.zenscript.javashared.JavaTypeInternalNameVisitor;
+import org.openzen.zenscript.javashared.JavaTypeUtils;
 
 /**
  *
@@ -48,15 +48,27 @@ public class JavaBytecodeContext extends JavaContext {
 	}
 	
 	@Override
-	public String getDescriptor(ITypeID type) {
+	public String getDescriptor(StoredType type) {
+		if (JavaTypeUtils.isShared(type))
+			return "Lzsynthetic/Shared";
+		
+		return type.type.accept(descriptorVisitor);
+	}
+	
+	@Override
+	public String getDescriptor(TypeID type) {
 		return type.accept(descriptorVisitor);
 	}
 	
-	public String getInternalName(ITypeID type) {
-		return type.accept(internalNameVisitor);
+	public String getInternalName(StoredType type) {
+		return type.type.accept(type, internalNameVisitor);
 	}
 	
-	public Type getType(ITypeID type) {
+	public String getInternalName(TypeID type) {
+		return type.accept(null, internalNameVisitor);
+	}
+	
+	public Type getType(StoredType type) {
 		return Type.getType(getDescriptor(type));
 	}
 	
@@ -104,6 +116,10 @@ public class JavaBytecodeContext extends JavaContext {
 		
 		register(range.cls.internalName, rangeWriter.toByteArray());
 	}
+	
+	private void createSharedClass() {
+		// TODO
+	}
 
     public String getLambdaCounter() {
         return "lambda" + ++lambdaCounter;
@@ -119,6 +135,11 @@ public class JavaBytecodeContext extends JavaContext {
 		@Override
 		public void synthesizeRange(JavaSynthesizedRange range) {
 			createRangeClass(range);
+		}
+		
+		@Override
+		public void synthesizeShared() {
+			createSharedClass();
 		}
 	}
 }

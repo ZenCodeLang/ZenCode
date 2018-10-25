@@ -21,12 +21,13 @@ import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
@@ -108,7 +109,7 @@ public class ParsedExpressionInt extends ParsedExpression {
 	}
 	
 	@Override
-	public Expression compile(ExpressionScope scope) {
+	public Expression compile(ExpressionScope scope) throws CompileException {
 		if (suffix.equals("L") || suffix.equals("l"))
 			return new ConstantLongExpression(position, value);
 		if (suffix.equals("UL") || suffix.equals("ul"))
@@ -116,9 +117,9 @@ public class ParsedExpressionInt extends ParsedExpression {
 		if (suffix.equals("U") || suffix.equals("u"))
 			return new ConstantUIntExpression(position, (int)value);
 		
-		for (ITypeID hint : scope.hints) {
-			if (suffix.isEmpty() && (hint instanceof BasicTypeID)) {
-				switch ((BasicTypeID) hint) {
+		for (StoredType hint : scope.hints) {
+			if (suffix.isEmpty() && (hint.type instanceof BasicTypeID)) {
+				switch ((BasicTypeID) hint.type) {
 					case SBYTE:
 						return new ConstantSByteExpression(position, (byte) value);
 					case BYTE:
@@ -163,9 +164,13 @@ public class ParsedExpressionInt extends ParsedExpression {
 				TypeMembers members = scope.getTypeMembers(hint);
 				FunctionalMemberRef method = members.getOrCreateGroup(suffix, true).getStaticMethod(1, hint);
 				if (method != null) {
-					ParsedCallArguments parsedArguments = new ParsedCallArguments(Collections.emptyList(), Collections.singletonList(new ParsedExpressionInt(position, negative, value, "")));
-					CallArguments arguments = parsedArguments.compileCall(position, scope, ITypeID.NONE, method.getHeader());
-					method.callStatic(position, hint, method.getHeader(), arguments, scope);
+					try {
+						ParsedCallArguments parsedArguments = new ParsedCallArguments(Collections.emptyList(), Collections.singletonList(new ParsedExpressionInt(position, negative, value, "")));
+						CallArguments arguments = parsedArguments.compileCall(position, scope, StoredType.NONE, method.getHeader());
+						method.callStatic(position, hint.type, method.getHeader(), arguments, scope);
+					} catch (CompileException ex) {
+						return new InvalidExpression(hint, ex);
+					}
 				}
 			}
 		}
@@ -181,7 +186,7 @@ public class ParsedExpressionInt extends ParsedExpression {
 	}
 	
 	@Override
-	public SwitchValue compileToSwitchValue(ITypeID type, ExpressionScope scope) {
+	public SwitchValue compileToSwitchValue(StoredType type, ExpressionScope scope) throws CompileException {
 		if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE)
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "value is too large for a switch case");
 		

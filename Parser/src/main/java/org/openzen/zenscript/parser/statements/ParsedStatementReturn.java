@@ -2,12 +2,11 @@ package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
@@ -29,17 +28,17 @@ public class ParsedStatementReturn extends ParsedStatement {
 	@Override
 	public Statement compile(StatementScope scope) {
 		if (expression == null) {
-			if (scope.getFunctionHeader().getReturnType() == BasicTypeID.VOID)
-				return new ReturnStatement(position, null);
-			else
-				throw new CompileException(position, CompileExceptionCode.RETURN_VALUE_REQUIRED, "Return value is required");
-		} else if (scope.getFunctionHeader().getReturnType() == BasicTypeID.VOID) {
-			throw new CompileException(position, CompileExceptionCode.RETURN_VALUE_VOID, "Cannot return a value from a void function");
+			return new ReturnStatement(position, null);
 		} else {
-			Expression value = expression
+			Expression value;
+			try {
+				value = expression
 					.compile(new ExpressionScope(scope, scope.getFunctionHeader().getReturnType()))
 					.eval()
 					.castImplicit(position, scope, scope.getFunctionHeader().getReturnType());
+			} catch (CompileException ex) {
+				value = new InvalidExpression(scope.getFunctionHeader().getReturnType(), ex);
+			}
 			return result(new ReturnStatement(position, value), scope);
 		}
 	}

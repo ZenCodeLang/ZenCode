@@ -9,7 +9,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -17,11 +17,11 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class CallStaticExpression extends Expression {
 	public final FunctionalMemberRef member;
-	public final ITypeID target;
+	public final TypeID target;
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
 	
-	public CallStaticExpression(CodePosition position, ITypeID target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments) {
+	public CallStaticExpression(CodePosition position, TypeID target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments) {
 		super(position, instancedHeader.getReturnType(), multiThrow(position, arguments.arguments));
 		
 		this.member = member;

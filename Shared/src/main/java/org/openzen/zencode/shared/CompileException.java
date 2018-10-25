@@ -1,6 +1,6 @@
 package org.openzen.zencode.shared;
 
-public final class CompileException extends RuntimeException {
+public final class CompileException extends Exception {
     public static CompileException internalError(String message) {
         return new CompileException(CodePosition.BUILTIN, CompileExceptionCode.INTERNAL_ERROR, message);
     }

@@ -8,7 +8,6 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.compiler.*;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -18,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.JavaVariantOption;
@@ -45,7 +45,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	public byte[] visitClass(ClassDefinition definition) {
         final String superTypeInternalName = definition.getSuperType() == null ? "java/lang/Object" : context.getInternalName(definition.getSuperType());
 
-		JavaClass toClass = definition.getTag(JavaClass.class);
+		JavaClass toClass = context.getJavaClass(definition);
 		JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
         //TODO: Calculate signature from generic parameters
@@ -68,7 +68,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitInterface(InterfaceDefinition definition) {
-		JavaClass toClass = definition.getTag(JavaClass.class);
+		JavaClass toClass = context.getJavaClass(definition);
 		ClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
 		//TODO: Calculate signature from generic parameters
@@ -95,7 +95,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 		ClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-		JavaClass toClass = definition.getTag(JavaClass.class);
+		JavaClass toClass = context.getJavaClass(definition);
 		writer.visit(Opcodes.V1_8, Opcodes.ACC_ENUM | Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER | Opcodes.ACC_FINAL, toClass.internalName, "Ljava/lang/Enum<L" + toClass.internalName + ";>;", superTypeInternalName, null);
 
 		//Enum Stuff(required!)
@@ -136,21 +136,20 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitFunction(FunctionDefinition definition) {
-		CompilerUtils.tagMethodParameters(context, definition.header, true);
+		CompilerUtils.tagMethodParameters(context, context.getJavaModule(definition.module), definition.header, true);
 
         final String signature = context.getMethodSignature(definition.header);
-
-		final JavaMethod method = definition.caller.getTag(JavaMethod.class);
+		final JavaMethod method = context.getJavaMethod(definition.caller);
 
 		final JavaWriter writer = new JavaWriter(outerWriter, true, method, definition, signature, null);
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, writer);
+        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer);
         statementVisitor.start();
-		boolean returns = definition.statement.accept(statementVisitor);
+		boolean returns = definition.caller.body.accept(statementVisitor);
 		if (!returns) {
-			ITypeID type = definition.header.getReturnType();
-			if (CompilerUtils.isPrimitive(type))
+			StoredType type = definition.header.getReturnType();
+			if (CompilerUtils.isPrimitive(type.type))
 				writer.iConst0();
-			else if (type != BasicTypeID.VOID)
+			else if (type.type != BasicTypeID.VOID)
 				writer.aConstNull();
 			writer.returnType(context.getType(type));
 		}
@@ -171,7 +170,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitVariant(VariantDefinition variant) {
-		final JavaClass toClass = variant.getTag(JavaClass.class);
+		final JavaClass toClass = context.getJavaClass(variant);
 		final JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
 		final String variantName = variant.name;
@@ -188,7 +187,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final List<VariantDefinition.Option> options = variant.options;
 		//Each option is one of the possible child classes
 		for (final VariantDefinition.Option option : options) {
-			JavaVariantOption optionTag = option.getTag(JavaVariantOption.class);
+			JavaVariantOption optionTag = context.getJavaVariantOption(option);
 			final JavaClassWriter optionWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 			final String optionClassName = variantName + "$" + option.name;
 			JavaClassWriter.registerSuperClass(optionClassName, variantName);
@@ -201,17 +200,17 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				StringBuilder builder = new StringBuilder();
 				//TODO check if this can be changed to what Stan was up to
 				builder.append("<");
-				for (final ITypeID type : option.types) {
-					builder.append(javaTypeGenericVisitor.getSignatureWithBound(type));
+				for (final StoredType type : option.types) {
+					builder.append(javaTypeGenericVisitor.getSignatureWithBound(type.type));
 				}
 				builder.append(">");
 				builder.append("L").append(toClass.internalName).append("<");
 
 				for (final TypeParameter genericParameter : variant.typeParameters) {
 					boolean t = true;
-					for (final ITypeID type : option.types)
-						if (type instanceof GenericTypeID) {
-							final GenericTypeID genericTypeID = (GenericTypeID) type;
+					for (final StoredType type : option.types)
+						if (type.type instanceof GenericTypeID) {
+							final GenericTypeID genericTypeID = (GenericTypeID) type.type;
 							if (genericParameter == genericTypeID.parameter) {
 								builder.append("T").append(genericParameter.name).append(";");
 								t = false;
@@ -231,12 +230,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			final StringBuilder optionInitDescBuilder = new StringBuilder("(");
 			final StringBuilder optionInitSignatureBuilder = new StringBuilder("(");
 
-			ITypeID[] types = option.types;
+			StoredType[] types = option.types;
 			for (int i = 0; i < types.length; ++i) {
 				final String descriptor = context.getDescriptor(types[i]);
 				optionInitDescBuilder.append(descriptor);
-				optionInitSignatureBuilder.append("T").append(((GenericTypeID) types[i]).parameter.name).append(";");
-				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "field" + i, descriptor, "T" + ((GenericTypeID) types[i]).parameter.name + ";", null).visitEnd();
+				optionInitSignatureBuilder.append("T").append(((GenericTypeID) types[i].type).parameter.name).append(";");
+				optionWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "field" + i, descriptor, "T" + ((GenericTypeID) types[i].type).parameter.name + ";", null).visitEnd();
 			}
 			optionInitDescBuilder.append(")V");
 			optionInitSignatureBuilder.append(")V");

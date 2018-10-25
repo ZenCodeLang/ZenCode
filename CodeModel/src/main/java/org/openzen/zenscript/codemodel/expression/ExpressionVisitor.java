@@ -94,6 +94,10 @@ public interface ExpressionVisitor<T> {
 	
 	public T visitInterfaceCast(InterfaceCastExpression expression);
 	
+	public default T visitInvalid(InvalidExpression expression) {
+		throw new RuntimeException("Invalid expression");
+	}
+	
 	public T visitIs(IsExpression expression);
 	
 	public T visitMakeConst(MakeConstExpression expression);
@@ -129,6 +133,8 @@ public interface ExpressionVisitor<T> {
 	public T visitStaticGetter(StaticGetterExpression expression);
 	
 	public T visitStaticSetter(StaticSetterExpression expression);
+	
+	public T visitStorageCast(StorageCastExpression expression);
 	
 	public T visitSupertypeCast(SupertypeCastExpression expression);
 	

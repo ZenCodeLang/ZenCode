@@ -6,11 +6,12 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -18,10 +19,10 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class ImplementationMemberRef implements DefinitionMemberRef {
 	public final ImplementationMember member;
-	private final ITypeID type;
-	public final ITypeID implementsType;
+	private final StoredType type;
+	public final StoredType implementsType;
 	
-	public ImplementationMemberRef(ImplementationMember member, ITypeID owner, ITypeID implementsType) {
+	public ImplementationMemberRef(ImplementationMember member, StoredType owner, StoredType implementsType) {
 		this.member = member;
 		this.type = owner;
 		this.implementsType = implementsType;
@@ -33,7 +34,7 @@ public class ImplementationMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public ITypeID getOwnerType() {
+	public StoredType getOwnerType() {
 		return type;
 	}
 
@@ -43,7 +44,7 @@ public class ImplementationMemberRef implements DefinitionMemberRef {
 	}
 
 	@Override
-	public <T> T getTag(Class<T> type) {
+	public <T extends Tag> T getTag(Class<T> type) {
 		return member.getTag(type);
 	}
 

@@ -22,7 +22,8 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 import org.openzen.zenscript.moduleserializer.EncodingDefinition;
 import org.openzen.zenscript.moduleserializer.SerializationOptions;
@@ -63,7 +64,7 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 		visit(context, definition);
 		
 		output.writeUInt(definition.baseInterfaces.size());
-		for (ITypeID baseInterface : definition.baseInterfaces)
+		for (TypeID baseInterface : definition.baseInterfaces)
 			output.serialize(context, baseInterface);
 		
 		return null;
@@ -114,11 +115,6 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 
 	@Override
 	public Void visitAlias(TypeContext context, AliasDefinition definition) {
-		EncodingDefinition encoding = definition.getTag(EncodingDefinition.class);
-		for (DefinitionAnnotation annotation : definition.annotations) {
-			// TODO: how to serialize annotations?
-		}
-		
 		output.serialize(context, definition.type);
 		return null;
 	}
@@ -131,7 +127,7 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 		for (VariantDefinition.Option option : variant.options) {
 			output.writeString(option.name);
 			output.writeUInt(option.types.length);
-			for (ITypeID type : option.types)
+			for (StoredType type : option.types)
 				output.serialize(context, type);
 		}
 		return null;

@@ -6,6 +6,9 @@
 package org.openzen.zenscript.lexer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.parser.BracketExpressionParser;
@@ -27,13 +30,14 @@ public class ZSTokenParser extends LLParserTokenStream<ZSTokenType, ZSToken> {
 				new ZSTokenFactory(spacesPerTab));
 	}
 	
-	public static ZSTokenParser create(SourceFile file, BracketExpressionParser bracketParser, int spacesPerTab) throws IOException {
+	public static ZSTokenParser create(SourceFile file, BracketExpressionParser bracketParser, int spacesPerTab) throws IOException, ParseException {
 		return new ZSTokenParser(createRaw(file, new ReaderCharReader(file.open()), spacesPerTab), bracketParser);
 	}
 	
 	public final BracketExpressionParser bracketParser;
+	private final List<ParseException> parseErrors = new ArrayList<>();
 	
-	public ZSTokenParser(TokenStream<ZSTokenType, ZSToken> parser, BracketExpressionParser bracketParser) {
+	public ZSTokenParser(TokenStream<ZSTokenType, ZSToken> parser, BracketExpressionParser bracketParser) throws ParseException {
 		super(parser);
 		
 		this.bracketParser = bracketParser;
@@ -45,5 +49,13 @@ public class ZSTokenParser extends LLParserTokenStream<ZSTokenType, ZSToken> {
 	
 	public WhitespaceInfo collectWhitespaceInfo(String whitespace, boolean skipLineBefore) {
 		return WhitespaceInfo.from(whitespace, grabWhitespaceLine(), skipLineBefore);
+	}
+	
+	public void logError(ParseException error) {
+		parseErrors.add(error);
+	}
+
+	public List<ParseException> getErrors() {
+		return parseErrors;
 	}
 }

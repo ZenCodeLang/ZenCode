@@ -8,9 +8,11 @@ package org.openzen.zenscript.codemodel.context;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -21,7 +23,9 @@ public interface TypeResolutionContext {
 	
 	AnnotationDefinition getAnnotation(String name);
 	
-	ITypeID getType(CodePosition position, List<GenericName> name);
+	TypeID getType(CodePosition position, List<GenericName> name);
 	
-	ITypeID getThisType();
+	StorageTag getStorageTag(CodePosition position, String name, String[] parameters);
+	
+	StoredType getThisType();
 }

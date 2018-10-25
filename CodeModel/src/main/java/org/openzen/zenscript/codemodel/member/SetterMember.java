@@ -11,13 +11,14 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -30,14 +31,14 @@ public class SetterMember extends PropertyMember {
 	public final String name;
 	private SetterMemberRef overrides;
 	public Statement body;
-	public final FunctionParameter parameter;
+	public FunctionParameter parameter;
 	
 	public SetterMember(
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
-			ITypeID type,
+			StoredType type,
 			BuiltinID builtin)
 	{
 		super(position,
@@ -78,6 +79,17 @@ public class SetterMember extends PropertyMember {
 	public SetterMemberRef getOverrides() {
 		return overrides;
 	}
+	
+	@Override
+	public int getEffectiveModifiers() {
+		int result = modifiers;
+		if (definition.isInterface() || (overrides != null && overrides.getTarget().getDefinition().isInterface()))
+			result |= Modifiers.PUBLIC;
+		if (!Modifiers.hasAccess(result))
+			result |= Modifiers.INTERNAL;
+		
+		return result;
+	}
 
 	@Override
 	public void normalize(TypeScope scope) {
@@ -93,12 +105,14 @@ public class SetterMember extends PropertyMember {
 	public void setOverrides(SetterMemberRef overrides) {
 		this.overrides = overrides;
 		
-		if (type == BasicTypeID.UNDETERMINED)
+		if (type.type == BasicTypeID.UNDETERMINED) {
 			type = overrides.getType();
+			parameter = new FunctionParameter(overrides.getType(), "value");
+		}
 	}
 
 	@Override
-	public DefinitionMemberRef ref(ITypeID type, GenericMapper mapper) {
+	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
 		return new SetterMemberRef(type, this, mapper);
 	}
 	

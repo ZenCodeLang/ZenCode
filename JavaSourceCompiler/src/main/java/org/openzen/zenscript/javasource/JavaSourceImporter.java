@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaContext;
 
 /**
  *
@@ -21,17 +22,15 @@ public class JavaSourceImporter {
 	private final JavaClass cls;
 	private final Map<String, JavaClass> imports = new HashMap<>();
 	private final Set<JavaClass> usedImports = new HashSet<>();
+	private final JavaContext context;
 	
-	public JavaSourceImporter(JavaClass cls) {
+	public JavaSourceImporter(JavaContext context, JavaClass cls) {
 		this.cls = cls;
+		this.context = context;
 	}
 	
 	public String importType(HighLevelDefinition definition) {
-		JavaClass cls = definition.getTag(JavaClass.class);
-		if (cls == null)
-			throw new IllegalStateException("Missing source class tag on " + definition.name);
-		
-		return importType(cls);
+		return importType(context.getJavaClass(definition));
 	}
 	
 	public String importType(JavaClass cls) {

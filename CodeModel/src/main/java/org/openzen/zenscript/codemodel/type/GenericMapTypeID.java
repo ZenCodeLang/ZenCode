@@ -7,19 +7,22 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class GenericMapTypeID implements ITypeID {
-	public final ITypeID value;
+public class GenericMapTypeID implements TypeID {
+	public final StoredType value;
 	public final TypeParameter key;
 	private final GenericMapTypeID normalized;
 	
-	public GenericMapTypeID(GlobalTypeRegistry registry, ITypeID value, TypeParameter key) {
+	public GenericMapTypeID(GlobalTypeRegistry registry, StoredType value, TypeParameter key) {
 		this.value = value;
 		this.key = key;
 		
@@ -32,17 +35,12 @@ public class GenericMapTypeID implements ITypeID {
 	}
 
 	@Override
-	public ITypeID getUnmodified() {
-		return this;
-	}
-
-	@Override
 	public <T> T accept(TypeVisitor<T> visitor) {
 		return visitor.visitGenericMap(this);
 	}
 	
 	@Override
-	public <C, R> R accept(C context, TypeVisitorWithContext<C, R> visitor) {
+	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitGenericMap(context, this);
 	}
 
@@ -50,15 +48,25 @@ public class GenericMapTypeID implements ITypeID {
 	public boolean isOptional() {
 		return false;
 	}
-
+	
 	@Override
-	public boolean isConst() {
+	public boolean isValueType() {
 		return false;
 	}
-
+	
 	@Override
-	public ITypeID instance(GenericMapper mapper) {
-		return mapper.registry.getGenericMap(value.instance(mapper), key);
+	public boolean isDestructible() {
+		return value.isDestructible();
+	}
+	
+	@Override
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		return value.isDestructible(scanning);
+	}
+	
+	@Override
+	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+		return mapper.registry.getGenericMap(value.instance(mapper), key).stored(storage);
 	}
 
 	@Override
@@ -70,15 +78,10 @@ public class GenericMapTypeID implements ITypeID {
 	public boolean hasDefaultValue() {
 		return true;
 	}
-	
-	@Override
-	public boolean isObjectType() {
-		return true;
-	}
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		value.extractTypeParameters(typeParameters);
+		value.type.extractTypeParameters(typeParameters);
 		typeParameters.remove(key);
 	}
 	
@@ -102,22 +105,15 @@ public class GenericMapTypeID implements ITypeID {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
+		
 		final GenericMapTypeID other = (GenericMapTypeID) obj;
-		if (!Objects.equals(this.value, other.value)) {
-			return false;
-		}
-		if (!Objects.equals(this.key, other.key)) {
-			return false;
-		}
-		return true;
+		return Objects.equals(this.value, other.value)
+				&& Objects.equals(this.key, other.key);
 	}
 }

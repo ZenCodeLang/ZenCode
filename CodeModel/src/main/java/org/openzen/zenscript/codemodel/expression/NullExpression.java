@@ -8,7 +8,7 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -16,10 +16,10 @@ import org.openzen.zenscript.codemodel.type.ITypeID;
  */
 public class NullExpression extends Expression {
 	public NullExpression(CodePosition position) {
-		super(position, BasicTypeID.NULL, null);
+		super(position, BasicTypeID.NULL.stored, null);
 	}
 	
-	public NullExpression(CodePosition position, ITypeID optionalType) {
+	public NullExpression(CodePosition position, StoredType optionalType) {
 		super(position, optionalType, null);
 	}
 

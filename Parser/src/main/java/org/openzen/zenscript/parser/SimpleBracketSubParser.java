@@ -13,7 +13,8 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
@@ -24,7 +25,7 @@ import org.openzen.zenscript.parser.expression.ParsedExpression;
  */
 public class SimpleBracketSubParser implements BracketExpressionParser {
 	private final FunctionalMemberRef method;
-	private final ITypeID targetType;
+	private final TypeID targetType;
 	
 	public SimpleBracketSubParser(GlobalTypeRegistry registry, FunctionalMemberRef method) {
 		if (!method.isStatic())
@@ -37,7 +38,7 @@ public class SimpleBracketSubParser implements BracketExpressionParser {
 	}
 
 	@Override
-	public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) {
+	public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
 		StringBuilder string = new StringBuilder();
 		while (tokens.optional(ZSTokenType.T_GREATER) == null) {
 			string.append(tokens.next().content);

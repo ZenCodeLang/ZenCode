@@ -9,11 +9,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.InvalidTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -44,24 +48,33 @@ public class FileResolutionContext implements TypeResolutionContext {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
+	public TypeID getType(CodePosition position, List<GenericName> name) {
 		if (imports.containsKey(name.get(0).name)) {
+			HighLevelDefinition definition = imports.get(name.get(0).name);
+			if (definition.getNumberOfGenericParameters() != name.get(0).arguments.length)
+				return new InvalidTypeID(position, CompileExceptionCode.INVALID_TYPE_ARGUMENTS, "Invalid number of type arguments");
+			
 			return GenericName.getInnerType(
 					getTypeRegistry(),
-					getTypeRegistry().getForDefinition(imports.get(name.get(0).name), name.get(0).arguments),
+					getTypeRegistry().getForDefinition(definition, name.get(0).arguments),
 					name,
 					1);
 		}
 		
-		ITypeID moduleType = modulePackage.getType(this, name);
+		TypeID moduleType = modulePackage.getType(this, name);
 		if (moduleType != null)
 			return moduleType;
 		
 		return module.getType(position, name);
 	}
+	
+	@Override
+	public StorageTag getStorageTag(CodePosition position, String name, String[] arguments) {
+		return module.getStorageTag(position, name, arguments);
+	}
 
 	@Override
-	public ITypeID getThisType() {
+	public StoredType getThisType() {
 		return null;
 	}
 }

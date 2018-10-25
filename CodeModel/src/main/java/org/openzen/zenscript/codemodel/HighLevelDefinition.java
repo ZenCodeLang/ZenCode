@@ -6,7 +6,9 @@
 package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
@@ -25,7 +27,8 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -42,7 +45,7 @@ public abstract class HighLevelDefinition extends Taggable {
 	public DefinitionAnnotation[] annotations = DefinitionAnnotation.NONE;
 	
 	public HighLevelDefinition outerDefinition;
-	private ITypeID superType;
+	private TypeID superType;
 	
 	private boolean isDestructible = false;
 	
@@ -72,14 +75,24 @@ public abstract class HighLevelDefinition extends Taggable {
 		return pkg.fullName + '.' + name;
 	}
 	
-	public ITypeID getSuperType() {
+	public TypeID getSuperType() {
 		return superType;
 	}
 	
-	public void setSuperType(ITypeID superType) {
+	public void setSuperType(TypeID superType) {
 		this.superType = superType;
 		if (outerDefinition != null)
 			isDestructible |= outerDefinition.isDestructible;
+	}
+	
+	public boolean isSubclassOf(HighLevelDefinition other) {
+		if (superType.isDefinition(other))
+			return true;
+		if (superType == null || !(superType instanceof DefinitionTypeID))
+			return false;
+		
+		DefinitionTypeID superDefinition = (DefinitionTypeID)superType;
+		return superDefinition.definition.isSubclassOf(other);
 	}
 	
 	public int getNumberOfGenericParameters() {
@@ -113,20 +126,39 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 	
 	public boolean isDestructible() {
+		Set<HighLevelDefinition> scanning = new HashSet<>();
+		return isDestructible(scanning);
+	}
+	
+	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
+		if (scanning.contains(this))
+			return false;
+		
+		scanning.add(this);
+		
 		boolean isDestructible = false;
 		for (IDefinitionMember member : members) {
 			if (member instanceof DestructorMember)
 				isDestructible = true;
-			if ((member instanceof FieldMember) && ((FieldMember)member).type.isDestructible())
-				isDestructible = true;
+			if (member instanceof FieldMember) {
+				FieldMember field = (FieldMember)member;
+				if (field.type.isDestructible(scanning))
+					isDestructible = true;
+			}
 			if ((member instanceof ImplementationMember) && ((ImplementationMember)member).type.isDestructible())
 				isDestructible = true;
 		}
+		
+		scanning.remove(this);
 		return isDestructible;
 	}
 	
 	public void setTypeParameters(TypeParameter[] typeParameters) {
 		this.typeParameters = typeParameters;
+	}
+	
+	public AccessScope getAccessScope() {
+		return new AccessScope(module, this);
 	}
 	
 	public List<FieldMember> getFields() {
@@ -194,5 +226,14 @@ public abstract class HighLevelDefinition extends Taggable {
 		}
 		
 		return null;
+	}
+
+	public boolean isOuterOf(HighLevelDefinition definition) {
+		if (definition.outerDefinition == this)
+			return true;
+		if (definition.outerDefinition == null)
+			return false;
+		
+		return isOuterOf(definition.outerDefinition);
 	}
 }

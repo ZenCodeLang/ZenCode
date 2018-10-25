@@ -6,22 +6,23 @@
 package org.openzen.zenscript.codemodel.scope;
 
 import java.util.List;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.type.GenericName;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -31,10 +32,18 @@ public class FunctionScope extends StatementScope {
 	private final BaseScope outer;
 	private final FunctionHeader header;
 	private final GenericMapper typeParameterMap;
+	private final StoredType thisType;
+	private final DollarEvaluator dollar;
 	
 	public FunctionScope(BaseScope outer, FunctionHeader header) {
+		this(outer, header, null);
+	}
+	
+	public FunctionScope(BaseScope outer, FunctionHeader header, DollarEvaluator dollar) {
 		this.outer = outer;
 		this.header = header;
+		this.thisType = outer.getThisType() == null || header.storage == null ? outer.getThisType() : outer.getThisType().type.stored(header.storage);
+		this.dollar = dollar;
 		
 		if (outer.getLocalTypeParameters() == null)
 			throw new NullPointerException();
@@ -60,7 +69,7 @@ public class FunctionScope extends StatementScope {
 	}
 
 	@Override
-	public IPartialExpression get(CodePosition position, GenericName name) {
+	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		IPartialExpression fromSuper = super.get(position, name);
 		if (fromSuper != null)
 			return fromSuper;
@@ -84,7 +93,7 @@ public class FunctionScope extends StatementScope {
 	}
 
 	@Override
-	public ITypeID getType(CodePosition position, List<GenericName> name) {
+	public TypeID getType(CodePosition position, List<GenericName> name) {
 		if (name.size() == 1 && name.get(0).hasNoArguments()) {
 			if (header.typeParameters != null) {
 				for (TypeParameter parameter : header.typeParameters) {
@@ -98,21 +107,27 @@ public class FunctionScope extends StatementScope {
 	}
 
 	@Override
-	public ITypeID getThisType() {
-		return outer.getThisType();
+	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
+		return outer.getStorageTag(position, name, parameters);
 	}
 
 	@Override
-	public Function<CodePosition, Expression> getDollar() {
-		for (FunctionParameter parameter : header.parameters)
+	public StoredType getThisType() {
+		return thisType;
+	}
+
+	@Override
+	public DollarEvaluator getDollar() {
+		return dollar;
+		/*for (FunctionParameter parameter : header.parameters)
 			if (parameter.name.equals("$"))
 				return position -> new GetFunctionParameterExpression(position, parameter);
 		
-		return null;
+		return null;*/
 	}
 	
 	@Override
-	public IPartialExpression getOuterInstance(CodePosition position) {
+	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);
 	}
 

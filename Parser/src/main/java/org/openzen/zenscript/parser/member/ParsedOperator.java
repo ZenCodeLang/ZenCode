@@ -6,6 +6,7 @@
 package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
@@ -13,8 +14,8 @@ import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ITypeID;
-import org.openzen.zenscript.codemodel.type.member.DefinitionMemberGroup;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -55,8 +56,8 @@ public class ParsedOperator extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, ITypeID baseType) {
-		DefinitionMemberGroup group = scope.getTypeMembers(baseType).getOrCreateGroup(operator);
+	protected void fillOverride(TypeScope scope, StoredType baseType) throws CompileException {
+		TypeMemberGroup group = scope.getTypeMembers(baseType).getOrCreateGroup(operator);
 		FunctionalMemberRef override = group.getOverride(position, scope, compiled);
 		if (override == null)
 			return;

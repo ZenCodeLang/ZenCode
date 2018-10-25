@@ -26,6 +26,6 @@ public class ParsedTypeBound extends ParsedGenericBound {
 
 	@Override
 	public TypeParameterBound compile(TypeResolutionContext context) {
-		return new ParameterTypeBound(position, type.compile(context));
+		return new ParameterTypeBound(position, type.compileUnstored(context));
 	}
 }

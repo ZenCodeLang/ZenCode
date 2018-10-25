@@ -17,9 +17,9 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialPackageExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GenericName;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ITypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -50,7 +50,7 @@ public class ZSPackage {
 		subPackages.put(name, subPackage);
 	}
 	
-	public IPartialExpression getMember(CodePosition position, GlobalTypeRegistry registry, GenericName name) {
+	public IPartialExpression getMember(CodePosition position, GlobalTypeRegistry registry, GenericName name) throws CompileException {
 		if (subPackages.containsKey(name.name) && name.hasNoArguments())
 			return new PartialPackageExpression(position, subPackages.get(name.name));
 		
@@ -85,11 +85,11 @@ public class ZSPackage {
 		return null;
 	}
 	
-	public ITypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts) {
+	public TypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts) {
 		return getType(position, context, nameParts, 0);
 	}
 	
-	public ITypeID getType(CodePosition position, TypeResolutionContext context, GenericName name) {
+	public TypeID getType(CodePosition position, TypeResolutionContext context, GenericName name) {
 		if (types.containsKey(name.name)) {
 			return context.getTypeRegistry().getForDefinition(types.get(name.name), name.arguments);
 		}
@@ -97,7 +97,7 @@ public class ZSPackage {
 		return null;
 	}
 	
-	private ITypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts, int depth) {
+	private TypeID getType(CodePosition position, TypeResolutionContext context, List<GenericName> nameParts, int depth) {
 		if (depth >= nameParts.size())
 			return null;
 		

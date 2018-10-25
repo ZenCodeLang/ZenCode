@@ -25,6 +25,8 @@ import org.openzen.zenscript.constructor.JSONUtils;
 import org.openzen.zenscript.constructor.ParsedModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.codemodel.type.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedFile;
 
 /**
@@ -72,13 +74,18 @@ public class DirectoryModuleReference implements ModuleReference {
 			}
 
 			// TODO: annotation type registration
-			ModuleSpace space = new ModuleSpace(unit, new ArrayList<>());
+			ModuleSpace space = new ModuleSpace(unit, new ArrayList<>(), StorageType.getStandard());
 			SemanticModule[] dependencies = new SemanticModule[dependencyNames.size()];
 			for (int i = 0; i < dependencies.length; i++) {
 				String dependencyName = dependencyNames.get(i);
 				SemanticModule module = loader.getModule(dependencyName);
 				dependencies[i] = module;
-				space.addModule(dependencyName, module);
+				
+				try {
+					space.addModule(dependencyName, module);
+				} catch (CompileException ex) {
+					throw new ConstructorException("Error: exception during compilation", ex);
+				}
 			}
 
 			ParsedModule parsedModule = new ParsedModule(moduleName, directory, jsonFile, exceptionLogger);
@@ -105,6 +112,8 @@ public class DirectoryModuleReference implements ModuleReference {
 			
 			return result;
 		} catch (IOException ex) {
+			throw new ConstructorException("Loading module files failed: " + ex.getMessage(), ex);
+		} catch (ParseException ex) {
 			throw new ConstructorException("Loading module files failed: " + ex.getMessage(), ex);
 		}
 	}
