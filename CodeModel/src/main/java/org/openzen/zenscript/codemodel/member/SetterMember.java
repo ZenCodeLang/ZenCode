@@ -105,8 +105,8 @@ public class SetterMember extends PropertyMember {
 	public void setOverrides(SetterMemberRef overrides) {
 		this.overrides = overrides;
 		
-		if (type.type == BasicTypeID.UNDETERMINED) {
-			type = overrides.getType();
+		if (getType().type == BasicTypeID.UNDETERMINED) {
+			setType(overrides.getType());
 			parameter = new FunctionParameter(overrides.getType(), "value");
 		}
 	}
@@ -118,6 +118,6 @@ public class SetterMember extends PropertyMember {
 	
 	@Override
 	public FunctionHeader getHeader() {
-		return new FunctionHeader(BasicTypeID.VOID, type);
+		return new FunctionHeader(BasicTypeID.VOID, getType());
 	}
 }

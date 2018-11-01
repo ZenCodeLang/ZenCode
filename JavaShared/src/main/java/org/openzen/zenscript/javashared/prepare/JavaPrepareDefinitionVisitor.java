@@ -130,6 +130,8 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
 			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
 			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
+			cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
+			cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");
 			cls.addMethod("fromAsciiBytes", new JavaMethod((expression, translator) -> {
 				CallStaticExpression call = (CallStaticExpression)expression;
 				return translator.bytesAsciiToString(call.arguments.arguments[0]);

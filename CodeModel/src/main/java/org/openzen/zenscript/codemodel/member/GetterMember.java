@@ -46,8 +46,11 @@ public class GetterMember extends PropertyMember {
 	public void setBody(Statement body) {
 		this.body = body;
 		
-		if (type.type == BasicTypeID.UNDETERMINED)
-			type = body.getReturnType();
+		if (getType().type == BasicTypeID.UNDETERMINED) {
+			StoredType returnType = body.getReturnType();
+			if (returnType != null)
+				setType(returnType);
+		}
 	}
 	
 	@Override
@@ -100,8 +103,8 @@ public class GetterMember extends PropertyMember {
 	public void setOverrides(GetterMemberRef override) {
 		this.overrides = override;
 		
-		if (type.type == BasicTypeID.UNDETERMINED)
-			type = override.getType();
+		if (getType().type == BasicTypeID.UNDETERMINED)
+			setType(override.getType());
 	}
 
 	@Override
@@ -111,6 +114,6 @@ public class GetterMember extends PropertyMember {
 	
 	@Override
 	public FunctionHeader getHeader() {
-		return new FunctionHeader(type);
+		return new FunctionHeader(getType());
 	}
 }

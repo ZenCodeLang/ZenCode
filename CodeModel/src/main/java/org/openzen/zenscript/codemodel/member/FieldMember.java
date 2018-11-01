@@ -162,7 +162,7 @@ public class FieldMember extends PropertyMember {
 
 	@Override
 	public void normalize(TypeScope scope) {
-		type = type.getNormalized();
+		setType(getType().getNormalized());
 		if (initializer != null)
 			initializer = initializer.normalize(scope);
 	}

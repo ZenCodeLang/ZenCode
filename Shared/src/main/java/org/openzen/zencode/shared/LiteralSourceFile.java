@@ -23,6 +23,7 @@ public final class LiteralSourceFile implements SourceFile {
         throw new AssertionError("Cannot update literal source files");
     }
     
+	@Override
     public String getFilename() {
         return filename;
     }

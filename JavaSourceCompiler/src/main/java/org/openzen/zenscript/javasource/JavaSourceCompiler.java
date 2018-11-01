@@ -14,7 +14,7 @@ import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.compiler.CompilationUnit;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.compiler.ZenCodeCompilingModule;
@@ -34,12 +34,12 @@ public class JavaSourceCompiler extends JavaBaseCompiler implements ZenCodeCompi
 	public final JavaSourceContext context;
 	private final List<SourceModule> modules = new ArrayList<>();
 	
-	public JavaSourceCompiler(File directory, CompilationUnit compilationUnit) {
+	public JavaSourceCompiler(File directory, GlobalTypeRegistry registry) {
 		if (!directory.exists())
 			directory.mkdirs();
 		
 		settings = new JavaSourceFormattingSettings.Builder().build();
-		context = new JavaSourceContext(compilationUnit.globalTypeRegistry, directory, settings);
+		context = new JavaSourceContext(registry, directory, settings);
 		helperGenerator = new JavaSourceSyntheticHelperGenerator(context, directory, settings);
 		
 		this.directory = directory;

@@ -28,13 +28,13 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 
 /**
@@ -84,6 +84,11 @@ public class DefinitionScope extends BaseScope {
 	
 	public void addInnerType(String name, Supplier<HighLevelDefinition> innerType) {
 		innerTypes.put(name, innerType);
+	}
+	
+	@Override
+	public ZSPackage getRootPackage() {
+		return outer.getRootPackage();
 	}
 	
 	@Override

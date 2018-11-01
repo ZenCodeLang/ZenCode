@@ -28,7 +28,7 @@ public class JavaSourceTarget implements Target {
 
 	@Override
 	public ZenCodeCompiler createCompiler(SemanticModule module) {
-		return new JavaSourceCompiler(output, module.compilationUnit);
+		return new JavaSourceCompiler(output, module.registry);
 	}
 
 	@Override

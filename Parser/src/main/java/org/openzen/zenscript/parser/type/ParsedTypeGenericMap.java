@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
@@ -66,6 +67,11 @@ public class ParsedTypeGenericMap implements IParsedType {
 		public GenericMapScope(TypeResolutionContext outer, TypeParameter parameter) {
 			this.outer = outer;
 			this.parameter = parameter;
+		}
+
+		@Override
+		public ZSPackage getRootPackage() {
+			return outer.getRootPackage();
 		}
 		
 		@Override

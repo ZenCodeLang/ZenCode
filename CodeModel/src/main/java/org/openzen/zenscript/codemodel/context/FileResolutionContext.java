@@ -13,6 +13,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
@@ -27,14 +28,24 @@ public class FileResolutionContext implements TypeResolutionContext {
 	private final ModuleTypeResolutionContext module;
 	private final CompilingPackage modulePackage;
 	private final Map<String, HighLevelDefinition> imports = new HashMap<>();
+	private final ZSPackage root;
 	
-	public FileResolutionContext(ModuleTypeResolutionContext module, CompilingPackage modulePackage) {
+	public FileResolutionContext(ModuleTypeResolutionContext module, ZSPackage root, CompilingPackage modulePackage) {
 		this.module = module;
+		this.root = root;
 		this.modulePackage = modulePackage;
 	}
 	
 	public void addImport(String name, HighLevelDefinition definition) {
+		if (definition == null)
+			throw new NullPointerException();
+		
 		imports.put(name, definition);
+	}
+	
+	@Override
+	public ZSPackage getRootPackage() {
+		return root;
 	}
 
 	@Override
@@ -51,7 +62,7 @@ public class FileResolutionContext implements TypeResolutionContext {
 	public TypeID getType(CodePosition position, List<GenericName> name) {
 		if (imports.containsKey(name.get(0).name)) {
 			HighLevelDefinition definition = imports.get(name.get(0).name);
-			if (definition.getNumberOfGenericParameters() != name.get(0).arguments.length)
+			if (definition.getNumberOfGenericParameters() != name.get(0).getNumberOfArguments())
 				return new InvalidTypeID(position, CompileExceptionCode.INVALID_TYPE_ARGUMENTS, "Invalid number of type arguments");
 			
 			return GenericName.getInnerType(
@@ -59,6 +70,8 @@ public class FileResolutionContext implements TypeResolutionContext {
 					getTypeRegistry().getForDefinition(definition, name.get(0).arguments),
 					name,
 					1);
+		} else if (root.contains(name.get(0).name)) {
+			return root.getType(position, this, name);
 		}
 		
 		TypeID moduleType = modulePackage.getType(this, name);

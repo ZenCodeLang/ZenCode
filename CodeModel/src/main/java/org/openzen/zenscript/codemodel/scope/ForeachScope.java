@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -34,6 +35,11 @@ public class ForeachScope extends StatementScope {
 	public ForeachScope(ForeachStatement statement, StatementScope outer) {
 		this.statement = statement;
 		this.outer = outer;
+	}
+	
+	@Override
+	public ZSPackage getRootPackage() {
+		return outer.getRootPackage();
 	}
 
 	@Override

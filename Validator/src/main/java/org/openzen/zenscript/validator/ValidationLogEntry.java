@@ -24,6 +24,11 @@ public class ValidationLogEntry {
 		this.message = message;
 	}
 	
+	@Override
+	public String toString() {
+		return kind + " " + position + ": " + message; 
+	}
+	
 	public static enum Kind {
 		ERROR,
 		WARNING

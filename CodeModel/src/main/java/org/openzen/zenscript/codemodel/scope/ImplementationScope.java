@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -40,6 +41,11 @@ public class ImplementationScope extends BaseScope {
 		this.implementation = implementation;
 		
 		members = outer.getTypeMembers(implementation.type.stored(BorrowStorageTag.THIS));
+	}
+	
+	@Override
+	public ZSPackage getRootPackage() {
+		return outer.getRootPackage();
 	}
 
 	@Override

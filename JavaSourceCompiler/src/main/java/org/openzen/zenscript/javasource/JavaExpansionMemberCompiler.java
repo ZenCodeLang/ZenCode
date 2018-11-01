@@ -81,7 +81,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	public Void visitConst(ConstMember member) {
 		begin(ElementType.FIELD);
 		modifiers(member.getEffectiveModifiers() | Modifiers.STATIC | Modifiers.FINAL);
-		output.append(scope.type(member.type));
+		output.append(scope.type(member.getType()));
 		output.append(" ");
 		output.append(member.name);
 		output.append(" = ");
@@ -107,7 +107,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 		
 		this.modifiers(modifiers);
 		
-		output.append(scope.type(member.type));
+		output.append(scope.type(member.getType()));
 		output.append(" ");
 		output.append(member.name);
 		if (member.initializer != null) {
@@ -139,13 +139,13 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		compileMethod(member, new FunctionHeader(member.type), member.body);
+		compileMethod(member, new FunctionHeader(member.getType()), member.body);
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		compileMethod(member, new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(member.type, "value")), member.body);
+		compileMethod(member, new FunctionHeader(BasicTypeID.VOID, new FunctionParameter(member.getType(), "value")), member.body);
 		return null;
 	}
 

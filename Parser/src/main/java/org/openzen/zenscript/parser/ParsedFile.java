@@ -45,7 +45,6 @@ import org.openzen.zenscript.parser.statements.ParsedStatement;
  */
 public class ParsedFile {
 	public static SemanticModule compileSyntaxToSemantic(
-			String name,
 			SemanticModule[] dependencies,
 			CompilingPackage pkg,
 			ParsedFile[] files,
@@ -70,7 +69,7 @@ public class ParsedFile {
 		boolean failed = false;
 		
 		ModuleTypeResolutionContext moduleContext = new ModuleTypeResolutionContext(
-				registry.compilationUnit.globalTypeRegistry,
+				registry.registry,
 				registry.getAnnotations(),
 				registry.getStorageTypes(),
 				rootPackage,
@@ -89,7 +88,7 @@ public class ParsedFile {
 		}
 		
 		if (failed)
-			return new SemanticModule(name, pkg.module, dependencies, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.compilationUnit, expansions, registry.getAnnotations(), registry.getStorageTypes());
+			return new SemanticModule(pkg.module, dependencies, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.registry, expansions, registry.getAnnotations(), registry.getStorageTypes());
 		
 		// scripts will store all the script blocks encountered in the files
 		PrecompilationState precompiler = new PrecompilationState();
@@ -106,7 +105,6 @@ public class ParsedFile {
 		}
 		
 		return new SemanticModule(
-				name,
 				pkg.module,
 				dependencies,
 				SemanticModule.State.ASSEMBLED,
@@ -114,7 +112,7 @@ public class ParsedFile {
 				pkg.getPackage(),
 				definitions,
 				scripts,
-				registry.compilationUnit,
+				registry.registry,
 				expansions,
 				registry.getAnnotations(),
 				registry.getStorageTypes());
@@ -229,7 +227,7 @@ public class ParsedFile {
 			ModuleTypeResolutionContext moduleContext,
 			ZSPackage rootPackage,
 			CompilingPackage modulePackage) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext, modulePackage);
+		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
 		loadImports(context, rootPackage, modulePackage);
 		
 		for (ParsedDefinition definition : this.definitions) {
@@ -242,7 +240,7 @@ public class ParsedFile {
 			ModuleTypeResolutionContext moduleContext,
 			ZSPackage rootPackage,
 			CompilingPackage modulePackage) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext, modulePackage);
+		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
 		loadImports(context, rootPackage, modulePackage);
 		
 		for (ParsedDefinition definition : this.definitions) {
@@ -262,7 +260,7 @@ public class ParsedFile {
 			CompilingPackage modulePackage,
 			List<ExpansionDefinition> expansions,
 			Map<String, ISymbol> globals) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext, modulePackage);
+		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
 		loadImports(context, rootPackage, modulePackage);
 		
 		FileScope scope = new FileScope(context, expansions, globals, precompiler);
@@ -280,7 +278,7 @@ public class ParsedFile {
 			List<ScriptBlock> scripts,
 			Map<String, ISymbol> globals,
 			Consumer<CompileException> exceptionLogger) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext, modulePackage);
+		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
 		loadImports(context, rootPackage, modulePackage);
 		
 		FileScope scope = new FileScope(context, expansions, globals, precompiler);
@@ -319,7 +317,8 @@ public class ParsedFile {
 			//if (definition == null)
 			//	importErrors.add(new CompileException(importEntry.position, CompileExceptionCode.IMPORT_NOT_FOUND, "Could not find type " + importEntry.toString()));
 			
-			context.addImport(importEntry.getName(), definition);
+			if (definition != null)
+				context.addImport(importEntry.getName(), definition);
 		}
 	}
 }

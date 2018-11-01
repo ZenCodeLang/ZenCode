@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -84,7 +85,9 @@ public class ParsedGetter extends ParsedDefinitionMember {
 	}
 
 	private void fillOverride(TypeScope scope, StoredType baseType) {
-		compiled.setOverrides(scope.getTypeMembers(baseType).getOrCreateGroup(name, false).getGetter());
+		GetterMemberRef getter = scope.getTypeMembers(baseType).getOrCreateGroup(name, false).getGetter();
+		if (getter != null)
+			compiled.setOverrides(getter);
 	}
 	
 	@Override
@@ -95,12 +98,9 @@ public class ParsedGetter extends ParsedDefinitionMember {
 		
 		inferHeaders(scope);
 		
-		FunctionHeader header = new FunctionHeader(compiled.type);
+		FunctionHeader header = new FunctionHeader(compiled.getType());
 		FunctionScope innerScope = new FunctionScope(scope, header);
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		compiled.setBody(body.compile(innerScope, header));
-		
-		if (compiled.type.isBasic(BasicTypeID.UNDETERMINED))
-			compiled.type = compiled.body.getReturnType();
 	}
 }

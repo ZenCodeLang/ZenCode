@@ -37,7 +37,7 @@ public class ZSPackage {
 	public ZSPackage(ZSPackage parent, String name) {
 		this.parent = parent;
 		this.name = name;
-		this.fullName = parent == null ? name : parent.fullName + "." + name;
+		this.fullName = parent == null || parent.fullName.isEmpty() ? name : parent.fullName + "." + name;
 	}
 	
 	private final Map<String, ZSPackage> subPackages = new HashMap<>();

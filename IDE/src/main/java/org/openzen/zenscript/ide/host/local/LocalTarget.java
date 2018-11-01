@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.Target;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.constructor.Library;
@@ -18,7 +20,6 @@ import org.openzen.zenscript.constructor.Project;
 import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.compiler.SemanticModule;
-import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.ide.host.IDETarget;
 import org.openzen.zenscript.ide.ui.view.output.ErrorOutputSpan;
 import org.openzen.zenscript.ide.ui.view.output.OutputLine;
@@ -66,8 +67,11 @@ public class LocalTarget implements IDETarget {
 	}
 	
 	private ZenCodeCompiler buildInternal(Consumer<OutputLine> output) {
-		CompilationUnit compilationUnit = new CompilationUnit();
-		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit, exception -> {
+		ZSPackage root = ZSPackage.createRoot();
+		ZSPackage stdlibPackage = new ZSPackage(root, "stdlib");
+		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlibPackage);
+		
+		ModuleLoader moduleLoader = new ModuleLoader(registry, exception -> {
 			String[] lines = Strings.split(exception.getMessage(), '\n');
 			for (String line : lines) {
 				output.accept(new OutputLine(new ErrorOutputSpan(line)));

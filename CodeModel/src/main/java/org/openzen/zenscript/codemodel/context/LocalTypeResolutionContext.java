@@ -11,12 +11,12 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -31,6 +31,11 @@ public class LocalTypeResolutionContext implements TypeResolutionContext {
 		this.outer = outer;
 		this.type = type;
 		this.parameters = parameters;
+	}
+	
+	@Override
+	public ZSPackage getRootPackage() {
+		return outer.getRootPackage();
 	}
 
 	@Override

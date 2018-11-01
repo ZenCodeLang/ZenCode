@@ -1,7 +1,6 @@
 package org.openzen.zenscript.scriptingexample;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,9 +15,9 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
-import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.formatter.FileFormatter;
 import org.openzen.zenscript.formatter.ScriptFormattingSettings;
@@ -50,10 +49,13 @@ public class Main {
 		CompilingPackage compilingPkg = new CompilingPackage(pkg, module);
 		ParsedFile[] parsedFiles = parse(compilingPkg, inputFiles);
 		
-		CompilationUnit compileUnit = new CompilationUnit();
+		ZSPackage root = ZSPackage.createRoot();
+		ZSPackage stdlib = new ZSPackage(root, "stdlib");
+		GlobalTypeRegistry typeRegistry = new GlobalTypeRegistry(stdlib);
+		
 		ZSPackage global = new ZSPackage(null, "");
-		GlobalRegistry registry = new GlobalRegistry(compileUnit.globalTypeRegistry, global);
-		SemanticModule semantic = compileSyntaxToSemantic(compileUnit, compilingPkg, parsedFiles, registry);
+		GlobalRegistry registry = new GlobalRegistry(typeRegistry, global);
+		SemanticModule semantic = compileSyntaxToSemantic(typeRegistry, compilingPkg, parsedFiles, registry);
 		
 		//formatFiles(pkg, module);
 		
@@ -108,13 +110,12 @@ public class Main {
 		}
 	}
 	
-	private static SemanticModule compileSyntaxToSemantic(CompilationUnit compileUnit, CompilingPackage compiling, ParsedFile[] files, GlobalRegistry registry) {
-		ModuleSpace space = new ModuleSpace(compileUnit, new ArrayList<>(), StorageType.getStandard());
+	private static SemanticModule compileSyntaxToSemantic(GlobalTypeRegistry typeRegistry, CompilingPackage compiling, ParsedFile[] files, GlobalRegistry registry) {
+		ModuleSpace space = new ModuleSpace(typeRegistry, new ArrayList<>(), StorageType.getStandard());
 		for (Map.Entry<String, ISymbol> global : registry.collectGlobals().entrySet()) {
 			space.addGlobal(global.getKey(), global.getValue());
 		}
 		SemanticModule result = ParsedFile.compileSyntaxToSemantic(
-				"scripts",
 				new SemanticModule[0],
 				compiling,
 				files,
@@ -129,7 +130,7 @@ public class Main {
 	}
 	
 	private static JavaModule compileSemanticToJava(GlobalRegistry registry, SemanticModule module) {
-		JavaCompiler compiler = new JavaCompiler(module.compilationUnit.globalTypeRegistry, false, null);
+		JavaCompiler compiler = new JavaCompiler(module.registry, false, null);
 		registry.register(compiler.getContext());
 		
 		ZenCodeCompilingModule compiling = compiler.addModule(module);

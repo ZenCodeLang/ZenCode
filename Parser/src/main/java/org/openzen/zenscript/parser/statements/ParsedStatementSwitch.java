@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
@@ -72,6 +73,11 @@ public class ParsedStatementSwitch extends ParsedStatement {
 		public SwitchScope(StatementScope outer, SwitchStatement target) {
 			this.outer = outer;
 			this.target = target;
+		}
+
+		@Override
+		public ZSPackage getRootPackage() {
+			return outer.getRootPackage();
 		}
 	
 		@Override

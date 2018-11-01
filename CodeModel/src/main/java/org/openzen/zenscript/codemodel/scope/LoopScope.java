@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -31,6 +32,11 @@ public class LoopScope extends StatementScope {
 	public LoopScope(LoopStatement statement, StatementScope outer) {
 		this.statement = statement;
 		this.outer = outer;
+	}
+	
+	@Override
+	public ZSPackage getRootPackage() {
+		return outer.getRootPackage();
 	}
 
 	@Override

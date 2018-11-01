@@ -95,7 +95,7 @@ public class ParsedSetter extends ParsedDefinitionMember {
 		
 		inferHeaders(scope);
 		
-		FunctionHeader header = new FunctionHeader(compiled.type);
+		FunctionHeader header = new FunctionHeader(compiled.getType());
 		FunctionScope innerScope = new FunctionScope(
 				scope,
 				header,

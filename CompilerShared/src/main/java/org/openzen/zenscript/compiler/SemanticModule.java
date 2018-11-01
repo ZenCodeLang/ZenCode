@@ -21,6 +21,7 @@ import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.scope.FileScope;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.validator.ValidationLogEntry;
@@ -31,6 +32,8 @@ import org.openzen.zenscript.validator.Validator;
  * @author Hoofdgebruiker
  */
 public class SemanticModule {
+	public static final SemanticModule[] NONE = new SemanticModule[0];
+	
 	public final String name;
 	public final SemanticModule[] dependencies;
 	
@@ -42,13 +45,12 @@ public class SemanticModule {
 	public final List<ScriptBlock> scripts;
 	public final Map<String, ISymbol> globals = new HashMap<>();
 	
-	public final CompilationUnit compilationUnit;
+	public final GlobalTypeRegistry registry;
 	public final List<ExpansionDefinition> expansions;
 	public final AnnotationDefinition[] annotations;
 	public final StorageType[] storageTypes;
 	
 	public SemanticModule(
-			String name,
 			Module module,
 			SemanticModule[] dependencies,
 			State state,
@@ -56,12 +58,12 @@ public class SemanticModule {
 			ZSPackage modulePackage,
 			PackageDefinitions definitions,
 			List<ScriptBlock> scripts,
-			CompilationUnit compilationUnit,
+			GlobalTypeRegistry registry,
 			List<ExpansionDefinition> expansions,
 			AnnotationDefinition[] annotations,
 			StorageType[] storageTypes)
 	{
-		this.name = name;
+		this.name = module.name;
 		this.module = module;
 		this.dependencies = dependencies;
 		
@@ -71,7 +73,7 @@ public class SemanticModule {
 		this.definitions = definitions;
 		this.scripts = scripts;
 		
-		this.compilationUnit = compilationUnit;
+		this.registry = registry;
 		this.expansions = expansions;
 		this.annotations = annotations;
 		this.storageTypes = storageTypes;
@@ -85,7 +87,7 @@ public class SemanticModule {
 		if (state != State.ASSEMBLED)
 			throw new IllegalStateException("Module is invalid");
 		
-		ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(compilationUnit.globalTypeRegistry, annotations, storageTypes, rootPackage, null, globals);
+		ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, annotations, storageTypes, rootPackage, null, globals);
 		AnnotationProcessor annotationProcessor = new AnnotationProcessor(context, expansions);
 		List<ScriptBlock> processedScripts = new ArrayList<>();
 		FileScope fileScope = new FileScope(context, expansions, globals, member -> {});
@@ -99,7 +101,6 @@ public class SemanticModule {
 		}
 		
 		return new SemanticModule(
-				name,
 				module,
 				dependencies,
 				State.NORMALIZED,
@@ -107,7 +108,7 @@ public class SemanticModule {
 				modulePackage,
 				definitions,
 				processedScripts,
-				compilationUnit,
+				registry,
 				expansions,
 				annotations,
 				storageTypes);
@@ -117,7 +118,7 @@ public class SemanticModule {
 		if (state != State.NORMALIZED)
 			throw new IllegalStateException("Module is not yet normalized");
 		
-		Validator validator = new Validator(compilationUnit.globalTypeRegistry, expansions, annotations);
+		Validator validator = new Validator(registry, expansions, annotations);
 		for (ScriptBlock script : scripts) {
 			validator.validate(script);
 		}
@@ -147,7 +148,7 @@ public class SemanticModule {
 	}
 	
 	public ModuleContext getContext() {
-		return new ModuleContext(compilationUnit.globalTypeRegistry, module, expansions, rootPackage);
+		return new ModuleContext(registry, module, expansions, rootPackage);
 	}
 	
 	public enum State {

@@ -1,5 +1,6 @@
 package org.openzen.zenscript.javashared;
 
+import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.compiler.ZenCodeCompiler;
 
 /*
@@ -13,5 +14,5 @@ import org.openzen.zenscript.compiler.ZenCodeCompiler;
  * @author Hoofdgebruiker
  */
 public abstract class JavaBaseCompiler implements ZenCodeCompiler {
-	
+	//public abstract JavaCompiledModule compile(SemanticModule module, JavaCompileSpace space);
 }

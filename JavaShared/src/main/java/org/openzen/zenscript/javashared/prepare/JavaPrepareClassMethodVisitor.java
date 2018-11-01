@@ -8,7 +8,6 @@ package org.openzen.zenscript.javashared.prepare;
 import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.member.CallerMember;
@@ -76,13 +75,13 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			System.out.println("Class " + cls.fullName + " not empty because of const " + member.name);
 		
 		cls.empty = false;
-		module.setFieldInfo(member, new JavaField(cls, member.name, context.getDescriptor(member.type)));
+		module.setFieldInfo(member, new JavaField(cls, member.name, context.getDescriptor(member.getType())));
 		return null;
 	}
 	
 	@Override
 	public Void visitField(FieldMember member) {
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.type));
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()));
 		module.setFieldInfo(member, field);
 		if (member.hasAutoGetter()) {
 			visitGetter(member.autoGetter);
@@ -119,13 +118,13 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitGetter(GetterMember member) {
-		visitFunctional(member, new FunctionHeader(member.type), "get" + StringExpansion.capitalize(member.name));
+		visitFunctional(member, new FunctionHeader(member.getType()), "get" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
-		visitFunctional(member, new FunctionHeader(BasicTypeID.VOID, member.type), "set" + StringExpansion.capitalize(member.name));
+		visitFunctional(member, new FunctionHeader(BasicTypeID.VOID, member.getType()), "set" + StringExpansion.capitalize(member.name));
 		return null;
 	}
 

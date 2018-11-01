@@ -27,6 +27,8 @@ import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
 import org.openzen.zenscript.javashared.JavaBaseCompiler;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompileSpace;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
@@ -62,6 +64,55 @@ public class JavaCompiler extends JavaBaseCompiler implements ZenCodeCompiler {
 	
 	public JavaContext getContext() {
 		return context;
+	}
+	
+	//@Override
+	public JavaBytecodeModule compile(SemanticModule module, JavaCompileSpace space) {
+		context.addModule(module.module);
+		
+		JavaBytecodeModule target = new JavaBytecodeModule(module.module);
+		for (HighLevelDefinition definition : module.definitions.getAll()) {
+			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(context, context.getJavaModule(definition.module));
+			definition.accept(memberPreparer);
+		}
+		
+		for (HighLevelDefinition definition : module.definitions.getAll()) {
+			String className = getClassName(definition.position.getFilename());
+			JavaScriptFile scriptFile = getScriptFile(className);
+			
+			target.addClass(definition.name, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
+		}
+		
+		for (ScriptBlock script : module.scripts) {
+			final SourceFile sourceFile = script.getTag(SourceFile.class);
+			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
+			JavaScriptFile scriptFile = getScriptFile(script.pkg.fullName + "/" + className);
+
+			String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
+
+			// convert scripts into methods (add them to a Scripts class?)
+			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
+			final JavaClassWriter visitor = scriptFile.classWriter;
+			JavaMethod method = JavaMethod.getStatic(new JavaClass(script.pkg.fullName, className, JavaClass.Kind.CLASS), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+			scriptFile.scriptMethods.add(method);
+
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(visitor, method, null, null, null));
+			statementVisitor.start();
+			for (Statement statement : script.statements) {
+				statement.accept(statementVisitor);
+			}
+			statementVisitor.end();
+		}
+		
+		for (Map.Entry<String, JavaScriptFile> entry : scriptBlocks.entrySet()) {
+			for (JavaMethod method : entry.getValue().scriptMethods)
+				target.addScript(method);
+
+			entry.getValue().classWriter.visitEnd();
+			target.addClass(entry.getKey(), entry.getValue().classWriter.toByteArray());
+		}
+
+		return target;
 	}
 	
 	@Override

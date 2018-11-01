@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.formatter;
 
-import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstMember;
@@ -62,7 +61,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append("const")
 				.append(member.name)
 				.append(" as ")
-				.append(typeFormatter.format(member.type))
+				.append(typeFormatter.format(member.getType()))
 				.append(" = ")
 				.append(member.value.accept(new ExpressionFormatter(settings, typeFormatter, indent)))
 				.append(";\n");
@@ -76,7 +75,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append(member.isFinal() ? "val " : "var ")
 				.append(member.name)
 				.append(" as ")
-				.append(typeFormatter.format(member.type));
+				.append(typeFormatter.format(member.getType()));
 		
 		if (member.initializer != null) {
 			output.append(" = ")
@@ -122,7 +121,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append("get ");
 		output.append(member.name);
 		output.append(" as ");
-		output.append(typeFormatter.format(member.type));
+		output.append(typeFormatter.format(member.getType()));
 		formatBody(member.body);
 		return null;
 	}
@@ -134,7 +133,7 @@ public class MemberFormatter implements MemberVisitor<Void> {
 		output.append("set ");
 		output.append(member.name);
 		output.append(" as ");
-		output.append(typeFormatter.format(member.type));
+		output.append(typeFormatter.format(member.getType()));
 		formatBody(member.body);
 		return null;
 	}

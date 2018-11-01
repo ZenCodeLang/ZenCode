@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.annotations.NativeAnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
 
@@ -25,16 +26,16 @@ import org.openzen.zenscript.codemodel.type.storage.StorageType;
  * @author Hoofdgebruiker
  */
 public final class ModuleSpace {
-	private final ZSPackage rootPackage = new ZSPackage(null, "");
-	public final CompilationUnit compilationUnit;
+	public final ZSPackage rootPackage = new ZSPackage(null, "");
+	public final GlobalTypeRegistry registry;
 	public final ZSPackage globalsPackage = new ZSPackage(null, "");
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
 	private final Map<String, ISymbol> globals = new HashMap<>();
 	private final AnnotationDefinition[] annotations;
 	private final StorageType[] storageTypes;
 	
-	public ModuleSpace(CompilationUnit compilationUnit, List<AnnotationDefinition> annotations, StorageType[] storageTypes) {
-		this.compilationUnit = compilationUnit;
+	public ModuleSpace(GlobalTypeRegistry registry, List<AnnotationDefinition> annotations, StorageType[] storageTypes) {
+		this.registry = registry;
 		
 		annotations.add(NativeAnnotationDefinition.INSTANCE);
 		annotations.add(PreconditionAnnotationDefinition.INSTANCE);

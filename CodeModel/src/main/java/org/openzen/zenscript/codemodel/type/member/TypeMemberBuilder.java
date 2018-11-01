@@ -481,7 +481,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 					FunctionParameter[] parameters = new FunctionParameter[fields.size()];
 					for (int i = 0; i < parameters.length; i++) {
 						FieldMember field = fields.get(i);
-						parameters[i] = new FunctionParameter(field.type, field.name, field.initializer, false);
+						parameters[i] = new FunctionParameter(field.getType(), field.name, field.initializer, false);
 					}
 					
 					constructors.addMethod(new ConstructorMember(
