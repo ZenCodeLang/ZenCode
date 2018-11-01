@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -29,6 +30,11 @@ public class BlockScope extends StatementScope {
 	
 	public BlockScope(StatementScope parent) {
 		this.parent = parent;
+	}
+	
+	@Override
+	public ZSPackage getRootPackage() {
+		return parent.getRootPackage();
 	}
 	
 	@Override

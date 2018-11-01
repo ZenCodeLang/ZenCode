@@ -43,7 +43,7 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 			return;
 		typesCompiled = true;
 		
-		System.out.println("compileTypes " + definition.name + "::" + innerDefinition.getCompiled().name);
+		//System.out.println("compileTypes " + definition.name + "::" + innerDefinition.getCompiled().name);
 		innerDefinition.linkTypes(context);
 	}
 

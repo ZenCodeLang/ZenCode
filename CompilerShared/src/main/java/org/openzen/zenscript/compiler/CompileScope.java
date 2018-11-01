@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -33,11 +34,13 @@ public class CompileScope implements TypeScope {
 	private final GlobalTypeRegistry globalRegistry;
 	private final List<ExpansionDefinition> expansions;
 	private final LocalMemberCache cache;
+	private final ZSPackage rootPackage;
 	private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
 	private final Map<String, StorageType> storageTypes = new HashMap<>();
 	
-	public CompileScope(GlobalTypeRegistry globalRegistry, List<ExpansionDefinition> expansions, AnnotationDefinition[] annotations, StorageType[] storageTypes) {
+	public CompileScope(GlobalTypeRegistry globalRegistry, ZSPackage rootPackage, List<ExpansionDefinition> expansions, AnnotationDefinition[] annotations, StorageType[] storageTypes) {
 		this.globalRegistry = globalRegistry;
+		this.rootPackage = rootPackage;
 		this.expansions = expansions;
 		this.cache = new LocalMemberCache(globalRegistry, expansions);
 		
@@ -45,6 +48,11 @@ public class CompileScope implements TypeScope {
 			this.annotations.put(annotation.getAnnotationName(), annotation);
 		for (StorageType type : storageTypes)
 			this.storageTypes.put(type.getName(), type);
+	}
+	
+	@Override
+	public ZSPackage getRootPackage() {
+		return rootPackage;
 	}
 
 	@Override

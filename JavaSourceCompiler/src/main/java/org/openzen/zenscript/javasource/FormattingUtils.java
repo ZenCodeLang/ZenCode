@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
+import org.openzen.zenscript.javashared.JavaTypeUtils;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 
 /**

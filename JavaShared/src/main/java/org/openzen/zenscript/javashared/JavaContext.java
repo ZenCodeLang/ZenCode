@@ -86,6 +86,10 @@ public abstract class JavaContext {
 	
 	public abstract String getDescriptor(StoredType type);
 	
+	public void registerModule(JavaCompiledModule module) {
+		modules.put(module.module, module);
+	}
+	
 	public void addModule(Module module) {
 		modules.put(module, new JavaCompiledModule(module));
 	}

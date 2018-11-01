@@ -32,7 +32,7 @@ public class InvalidStatement extends Statement {
 		super(ex.position, null);
 		
 		this.code = ex.code;
-		this.message = ex.getMessage();
+		this.message = ex.message;
 	}
 
 	@Override

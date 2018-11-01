@@ -467,8 +467,8 @@ public final class TypeMembers {
 		if (toType.equals(value.type))
 			return value;
 		
-		if (!(toType.type instanceof StringTypeID))
-			System.out.println(position + ": " + value.type.getActualStorage() + " -> " + toType.getActualStorage());
+		//if (!(toType.type instanceof StringTypeID))
+		//	System.out.println(position + ": " + value.type.getActualStorage() + " -> " + toType.getActualStorage());
 		
 		return new StorageCastExpression(position, value, toType);
 	}

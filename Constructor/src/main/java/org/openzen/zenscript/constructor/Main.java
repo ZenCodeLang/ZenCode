@@ -1,10 +1,11 @@
 package org.openzen.zenscript.constructor;
 
 import java.io.File;
-import org.openzen.zenscript.compiler.CompilationUnit;
 import java.io.IOException;
 import java.util.function.Consumer;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 
@@ -23,9 +24,11 @@ public class Main {
 		Consumer<CompileException> exceptionLogger = exception -> System.err.println(exception.toString());
 		
 		File currentDirectory = new File(arguments.directory);
-		CompilationUnit compilationUnit = new CompilationUnit();
+		ZSPackage root = ZSPackage.createRoot();
+		ZSPackage stdlib = new ZSPackage(root, "stdlib");
+		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
 		
-		ModuleLoader moduleLoader = new ModuleLoader(compilationUnit, exceptionLogger);
+		ModuleLoader moduleLoader = new ModuleLoader(registry, exceptionLogger);
 		moduleLoader.register("stdlib", new DirectoryModuleReference("stdlib", new File("../../StdLibs/stdlib"), true));
 		
 		Project project = new Project(currentDirectory);

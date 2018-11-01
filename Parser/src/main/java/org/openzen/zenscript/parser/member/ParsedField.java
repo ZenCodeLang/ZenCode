@@ -92,14 +92,14 @@ public class ParsedField extends ParsedDefinitionMember {
 		
 		if (expression != null) {
 			Expression initializer = expression
-					.compile(new ExpressionScope(scope, compiled.type))
+					.compile(new ExpressionScope(scope, compiled.getType()))
 					.eval()
-					.castImplicit(position, scope, compiled.type);
+					.castImplicit(position, scope, compiled.getType());
 			compiled.setInitializer(initializer);
 			
-			if (compiled.type.isBasic(BasicTypeID.UNDETERMINED))
-				compiled.type = initializer.type;
-		} else if (compiled.type.isBasic(BasicTypeID.UNDETERMINED)) {
+			if (compiled.getType().isBasic(BasicTypeID.UNDETERMINED))
+				compiled.setType(initializer.type);
+		} else if (compiled.getType().isBasic(BasicTypeID.UNDETERMINED)) {
 			throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not infer type since no initializer is given");
 		}
 	}

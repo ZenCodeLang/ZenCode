@@ -212,7 +212,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 			if (member.body == null)
 				return null;
 			
-			StatementScope scope = new FunctionScope(this.scope, new FunctionHeader(member.type));
+			StatementScope scope = new FunctionScope(this.scope, new FunctionHeader(member.getType()));
 			member.body = process(member.body, scope);
 			return null;
 		}

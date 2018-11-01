@@ -142,7 +142,7 @@ public abstract class HighLevelDefinition extends Taggable {
 				isDestructible = true;
 			if (member instanceof FieldMember) {
 				FieldMember field = (FieldMember)member;
-				if (field.type.isDestructible(scanning))
+				if (field.getType().isDestructible(scanning))
 					isDestructible = true;
 			}
 			if ((member instanceof ImplementationMember) && ((ImplementationMember)member).type.isDestructible())

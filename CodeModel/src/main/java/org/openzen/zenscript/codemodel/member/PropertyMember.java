@@ -15,11 +15,14 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
  * @author Hoofdgebruiker
  */
 public abstract class PropertyMember extends DefinitionMember {
-	public StoredType type;
+	private StoredType type;
 	public final BuiltinID builtin;
 	
 	public PropertyMember(CodePosition position, HighLevelDefinition definition, int modifiers, StoredType type, BuiltinID builtin) {
 		super(position, definition, modifiers);
+		
+		if (type == null)
+			throw new NullPointerException();
 		
 		this.type = type;
 		this.builtin = builtin;
@@ -27,6 +30,13 @@ public abstract class PropertyMember extends DefinitionMember {
 	
 	public StoredType getType() {
 		return type;
+	}
+	
+	public void setType(StoredType type) {
+		if (type == null)
+			throw new NullPointerException();
+		
+		this.type = type;
 	}
 	
 	@Override

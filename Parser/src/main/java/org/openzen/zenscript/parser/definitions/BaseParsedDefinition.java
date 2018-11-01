@@ -48,7 +48,7 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 			return;
 		typesCompiled = true;
 		
-		System.out.println("compileTypes " + getCompiled().name);
+		//System.out.println("compileTypes " + getCompiled().name);
 		linkTypesLocal(context);
 	}
 	

@@ -71,7 +71,7 @@ public class ConstMember extends PropertyMember {
 
 	@Override
 	public void normalize(TypeScope scope) {
-		type = type.getNormalized();
+		setType(getType().getNormalized());
 		value = value.normalize(scope);
 	}
 

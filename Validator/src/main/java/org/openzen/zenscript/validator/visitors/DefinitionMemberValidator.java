@@ -81,7 +81,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 				Modifiers.PUBLIC | Modifiers.PROTECTED | Modifiers.PRIVATE,
 				member.position,
 				"Invalid modifier");
-		if (member.type != member.value.type) {
+		if (member.getType() != member.value.type) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_TYPE,
 					member.position,
@@ -100,7 +100,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 					"Duplicate field name: " + member.name);
 		}
 		fieldNames.add(member.name);
-		new TypeValidator(validator, member.position).validate(TypeContext.FIELD_TYPE, member.type);
+		new TypeValidator(validator, member.position).validate(TypeContext.FIELD_TYPE, member.getType());
 		
 		if (member.initializer != null) {
 			member.initializer.accept(new ExpressionValidator(validator, new FieldInitializerScope(member)));
@@ -159,15 +159,15 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		new TypeValidator(validator, member.position).validate(TypeContext.GETTER_TYPE, member.type);
-		validateGetter(member, new MethodStatementScope(new FunctionHeader(member.type), member.getAccessScope()));
+		new TypeValidator(validator, member.position).validate(TypeContext.GETTER_TYPE, member.getType());
+		validateGetter(member, new MethodStatementScope(new FunctionHeader(member.getType()), member.getAccessScope()));
 		return null;
 	}
 
 	@Override
 	public Void visitSetter(SetterMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		new TypeValidator(validator, member.position).validate(TypeContext.SETTER_TYPE, member.type);
+		new TypeValidator(validator, member.position).validate(TypeContext.SETTER_TYPE, member.getType());
 		validateSetter(member, new MethodStatementScope(new FunctionHeader(BasicTypeID.VOID, member.parameter), member.getAccessScope()));
 		return null;
 	}
@@ -321,7 +321,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			StatementValidator statementValidator = new StatementValidator(validator, scope);
 			member.body.accept(statementValidator);
 			
-			validateThrow(member, new FunctionHeader(member.type), member.body);
+			validateThrow(member, new FunctionHeader(member.getType()), member.body);
 		}
 	}
 	
@@ -335,7 +335,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		if (member.body != null) {
 			StatementValidator statementValidator = new StatementValidator(validator, scope);
 			member.body.accept(statementValidator);
-			validateThrow(member, new FunctionHeader(BasicTypeID.VOID, member.type), member.body);
+			validateThrow(member, new FunctionHeader(BasicTypeID.VOID, member.getType()), member.body);
 		}
 	}
 	

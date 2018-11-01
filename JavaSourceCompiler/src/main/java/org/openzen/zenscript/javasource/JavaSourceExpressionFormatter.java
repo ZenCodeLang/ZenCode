@@ -127,6 +127,13 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		this.scope = scope;
 		context = scope.context;
 	}
+	
+	private ExpressionString getValue(Expression expression) {
+		ExpressionString source = expression.accept(this);
+		if (JavaTypeUtils.isShared(expression.type) && !(expression instanceof ThisExpression))
+			source = source.unaryPostfix(JavaOperator.CALL, ".get()");
+		return source;
+	}
 
 	@Override
 	public ExpressionString visitAndAnd(AndAndExpression expression) {
@@ -157,7 +164,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 			return visitBuiltinCompare(expression, expression.operator.getBuiltin());
 		
 		StringBuilder output = new StringBuilder();
-		output.append(expression.left.accept(this).value);
+		output.append(getValue(expression.left).value);
 		output.append(".compareTo(");
 		output.append(expression.right.accept(this));
 		output.append(") ");
@@ -188,12 +195,12 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				output.append(scope.type(method.cls));
 				output.append('.');
 				output.append(method.name);
-				FormattingUtils.formatExpansionCall(output, this.target, scope, target.accept(this), arguments);
+				FormattingUtils.formatExpansionCall(output, this.target, scope, getValue(target), arguments);
 				return new ExpressionString(output.toString(), JavaOperator.CALL);
 			}
 			case INSTANCE: {
 				StringBuilder output = new StringBuilder();
-				output.append(target.accept(this).value);
+				output.append(getValue(target).value);
 				output.append('.');
 				output.append(method.name);
 				FormattingUtils.formatCall(output, this.target, scope, arguments);
@@ -428,7 +435,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	public ExpressionString visitGetField(GetFieldExpression expression) {
 		StringBuilder result = new StringBuilder();
 		if (!(expression.target instanceof ThisExpression && !scope.hasLocalVariable(expression.field.member.name))) {
-			result.append(expression.target.accept(this));
+			result.append(getValue(expression.target));
 			result.append('.');
 		}
 		result.append(expression.field.member.name);
@@ -464,7 +471,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		if (expression.getter.member.builtin != null)
 			return visitBuiltinGetter(expression, expression.getter.member.builtin);
 		
-		ExpressionString target = expression.target.accept(this);
+		ExpressionString target = getValue(expression.target);
 		if (context.hasJavaField(expression.getter)) {
 			JavaField field = context.getJavaField(expression.getter);
 			if (target.value.equals("this") && !scope.hasLocalVariable(field.name))
@@ -656,7 +663,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	@Override
 	public ExpressionString visitSetter(SetterExpression expression) {
 		return new ExpressionString(
-				expression.target.accept(this) + "." + expression.setter.member.name + " = " + expression.value.accept(this),
+				getValue(expression.target) + "." + expression.setter.member.name + " = " + expression.value.accept(this),
 				JavaOperator.ASSIGN);
 	}
 

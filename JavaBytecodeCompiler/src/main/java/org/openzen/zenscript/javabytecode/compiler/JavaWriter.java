@@ -30,7 +30,7 @@ public class JavaWriter {
     private final LocalVariablesSorter visitor;
     private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
     public final ClassVisitor clazzVisitor;
-    private boolean debug = true;
+    private boolean debug = false;
     private boolean nameVariables = true;
     private int labelIndex = 1;
     private Map<Label, String> labelNames = new HashMap<>();

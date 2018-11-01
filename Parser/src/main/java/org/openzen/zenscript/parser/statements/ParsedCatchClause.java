@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.statement.CatchClause;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.VariableID;
@@ -57,7 +58,12 @@ public class ParsedCatchClause {
 			this.outer = outer;
 			this.exceptionVariable = exceptionVariable;
 		}
-	
+
+		@Override
+		public ZSPackage getRootPackage() {
+			return outer.getRootPackage();
+		}
+		
 		@Override
 		public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 			if (name.hasNoArguments() && exceptionVariable.name.equals(name.name))

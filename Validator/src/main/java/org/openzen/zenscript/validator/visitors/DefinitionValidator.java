@@ -28,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -221,6 +222,11 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 			
 			for (AnnotationDefinition annotation : annotations)
 				this.annotations.put(annotation.getAnnotationName(), annotation);
+		}
+
+		@Override
+		public ZSPackage getRootPackage() {
+			throw new UnsupportedOperationException();
 		}
 		
 		@Override

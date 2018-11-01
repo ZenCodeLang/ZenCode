@@ -21,6 +21,9 @@ import org.openzen.zenscript.codemodel.partial.PartialGlobalExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -35,6 +38,7 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
  */
 public class FileScope extends BaseScope {
 	private final TypeResolutionContext context;
+	private final ZSPackage root;
 	private final LocalMemberCache memberCache;
 	private final Map<String, ISymbol> globals;
 	private final TypeMemberPreparer preparer;
@@ -47,8 +51,14 @@ public class FileScope extends BaseScope {
 		this.context = context;
 		this.globals = globals;
 		this.preparer = preparer;
+		this.root = context.getRootPackage();
 		
 		memberCache = new LocalMemberCache(context.getTypeRegistry(), expansions);
+	}
+	
+	@Override
+	public ZSPackage getRootPackage() {
+		return root;
 	}
 	
 	@Override
@@ -65,6 +75,12 @@ public class FileScope extends BaseScope {
 		if (globals.containsKey(name.name)) {
 			IPartialExpression resolution = globals.get(name.name).getExpression(position, this, name.arguments);
 			return new PartialGlobalExpression(position, name.name, resolution, name.arguments);
+		} else if (root.contains(name.name)) {
+			try {
+				return root.getMember(position, context.getTypeRegistry(), name);
+			} catch (CompileException ex) {
+				return new InvalidExpression(BasicTypeID.UNDETERMINED.stored, ex);
+			}
 		}
 		
 		return null;

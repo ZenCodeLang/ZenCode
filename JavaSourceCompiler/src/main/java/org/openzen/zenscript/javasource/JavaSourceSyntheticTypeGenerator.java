@@ -106,6 +106,10 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		contents.append(settings.indent).append(settings.indent).append("this.value = value;\n");
 		contents.append(settings.indent).append("}\n");
 		contents.append(settings.indent).append("\n");
+		contents.append(settings.indent).append("public T get() {\n");
+		contents.append(settings.indent).append(settings.indent).append("return value;\n");
+		contents.append(settings.indent).append("}\n");
+		contents.append(settings.indent).append("\n");
 		contents.append(settings.indent).append("public synchronized void addRef() {\n");
 		contents.append(settings.indent).append(settings.indent).append("refcount++;\n");
 		contents.append(settings.indent).append("}\n");

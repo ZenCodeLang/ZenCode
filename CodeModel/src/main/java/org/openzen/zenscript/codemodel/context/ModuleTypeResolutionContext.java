@@ -54,6 +54,11 @@ public class ModuleTypeResolutionContext implements TypeResolutionContext {
 	}
 	
 	@Override
+	public ZSPackage getRootPackage() {
+		return rootPackage;
+	}
+	
+	@Override
 	public GlobalTypeRegistry getTypeRegistry() {
 		return registry;
 	}
