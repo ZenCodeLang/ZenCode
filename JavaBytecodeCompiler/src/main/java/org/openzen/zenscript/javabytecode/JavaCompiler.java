@@ -191,7 +191,7 @@ public class JavaCompiler extends JavaBaseCompiler implements ZenCodeCompiler {
 		for (HighLevelDefinition definition : definitions) {
 			String className = getClassName(definition.position.getFilename());
 			JavaScriptFile scriptFile = getScriptFile(className);
-			
+
 			target.register(definition.name, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
 		}
  
