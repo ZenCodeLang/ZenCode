@@ -33,6 +33,7 @@ public final class ModuleSpace {
 	private final Map<String, ISymbol> globals = new HashMap<>();
 	private final AnnotationDefinition[] annotations;
 	private final StorageType[] storageTypes;
+	private final Map<String, SemanticModule> modules = new HashMap<>();
 	
 	public ModuleSpace(GlobalTypeRegistry registry, List<AnnotationDefinition> annotations, StorageType[] storageTypes) {
 		this.registry = registry;
@@ -44,6 +45,7 @@ public final class ModuleSpace {
 	}
 	
 	public void addModule(String name, SemanticModule dependency) throws CompileException {
+		modules.put(name, dependency);
 		rootPackage.add(name, dependency.modulePackage);
 		dependency.definitions.registerExpansionsTo(expansions);
 		
@@ -57,6 +59,10 @@ public final class ModuleSpace {
 	
 	public void addGlobal(String name, ISymbol global) {
 		globals.put(name, global);
+	}
+	
+	public SemanticModule getModule(String name) {
+		return modules.get(name);
 	}
 	
 	public ZSPackage collectPackages() {
