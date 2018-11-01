@@ -108,7 +108,7 @@ public class GetterMember extends PropertyMember {
 	}
 
 	@Override
-	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
+	public GetterMemberRef ref(StoredType type, GenericMapper mapper) {
 		return new GetterMemberRef(type, this, mapper);
 	}
 	
