@@ -1,6 +1,7 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
-import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
+import org.openzen.zenscript.codemodel.member.MethodMember;
+import org.openzen.zenscript.javashared.*;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zenscript.codemodel.definition.*;
@@ -10,7 +11,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.compiler.*;
-import org.openzen.zenscript.javashared.JavaClass;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,9 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
-import org.openzen.zenscript.javashared.JavaVariantOption;
 
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
@@ -56,7 +53,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		}
         String signature = null;
 
-        writer.visit(Opcodes.V1_8, definition.modifiers, toClass.internalName, signature, superTypeInternalName, interfaces.toArray(new String[interfaces.size()]));
+        writer.visit(Opcodes.V1_8, definition.modifiers, toClass.internalName, signature, superTypeInternalName, interfaces.toArray(new String[0]));
 		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(context, writer, toClass, definition);
         for (IDefinitionMember member : definition.members) {
             member.accept(memberVisitor);
@@ -160,7 +157,21 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitExpansion(ExpansionDefinition definition) {
-		return null;
+
+		JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+		final JavaClass expansionClassInfo = context.getJavaModule(definition.module).getExpansionClassInfo(definition);
+		final String internalName = expansionClassInfo.internalName;
+
+		writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC |Opcodes.ACC_STATIC, internalName, null, "java/lang/Object", null);
+		JavaExpansionMemberVisitor memberVisitor = new JavaExpansionMemberVisitor(context, writer, expansionClassInfo, definition);
+
+		for (IDefinitionMember member : definition.members) {
+			member.accept(memberVisitor);
+		}
+		memberVisitor.end();
+		writer.visitEnd();
+
+		return writer.toByteArray();
 	}
 
 	@Override
