@@ -10,10 +10,10 @@ import org.openzen.zenscript.javashared.JavaContext;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 

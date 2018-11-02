@@ -3,18 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.compiler;
+package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
-import org.openzen.zenscript.codemodel.PackageDefinitions;
-import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.annotations.AnnotationProcessor;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
@@ -24,8 +19,6 @@ import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
-import org.openzen.zenscript.validator.ValidationLogEntry;
-import org.openzen.zenscript.validator.Validator;
 
 /**
  *
@@ -37,7 +30,7 @@ public class SemanticModule {
 	public final String name;
 	public final SemanticModule[] dependencies;
 	
-	private State state;
+	public final State state;
 	public final Module module;
 	public final ZSPackage rootPackage;
 	public final ZSPackage modulePackage;
@@ -112,32 +105,6 @@ public class SemanticModule {
 				expansions,
 				annotations,
 				storageTypes);
-	}
-	
-	public boolean validate(Consumer<ValidationLogEntry> logger) {
-		if (state != State.NORMALIZED)
-			throw new IllegalStateException("Module is not yet normalized");
-		
-		Validator validator = new Validator(registry, expansions, annotations);
-		for (ScriptBlock script : scripts) {
-			validator.validate(script);
-		}
-		for (HighLevelDefinition definition : definitions.getAll()) {
-			validator.validate(definition);
-		}
-		
-		for (ValidationLogEntry entry : validator.getLog()) {
-			logger.accept(entry);
-		}
-		state = validator.hasErrors() ? State.INVALID : State.VALIDATED;
-		return !validator.hasErrors();
-	}
-	
-	public void compile(ZenCodeCompiler compiler) {
-		if (state != State.VALIDATED)
-			throw new IllegalStateException("Module is not yet validated");
-		
-		compiler.addModule(this);
 	}
 	
 	public ModuleContext getContext() {

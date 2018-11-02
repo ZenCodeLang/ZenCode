@@ -1,8 +1,5 @@
 package org.openzen.zenscript.javashared;
 
-import org.openzen.zenscript.compiler.SemanticModule;
-import org.openzen.zenscript.compiler.ZenCodeCompiler;
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -13,6 +10,6 @@ import org.openzen.zenscript.compiler.ZenCodeCompiler;
  *
  * @author Hoofdgebruiker
  */
-public abstract class JavaBaseCompiler implements ZenCodeCompiler {
+public abstract class JavaBaseCompiler {
 	//public abstract JavaCompiledModule compile(SemanticModule module, JavaCompileSpace space);
 }

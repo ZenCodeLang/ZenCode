@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.compiler;
+package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
 import java.util.HashMap;

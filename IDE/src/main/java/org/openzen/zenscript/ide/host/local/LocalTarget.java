@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.Target;
@@ -19,11 +20,11 @@ import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.Project;
 import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
-import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.ide.host.IDETarget;
 import org.openzen.zenscript.ide.ui.view.output.ErrorOutputSpan;
 import org.openzen.zenscript.ide.ui.view.output.OutputLine;
 import org.openzen.zenscript.validator.ValidationLogEntry;
+import org.openzen.zenscript.validator.Validator;
 import stdlib.Strings;
 
 /**
@@ -96,27 +97,25 @@ public class LocalTarget implements IDETarget {
 			}
 			
 			SemanticModule module = moduleLoader.getModule(target.getModule());
-			module = module.normalize();
-			module.validate(validationLogger);
+			module = Validator.validate(module.normalize(), validationLogger);
 			
 			ZenCodeCompiler compiler = target.createCompiler(module);
 			if (!module.isValid())
 				return compiler;
 			
 			SemanticModule stdlib = moduleLoader.getModule("stdlib");
-			stdlib = stdlib.normalize();
-			stdlib.validate(validationLogger);
+			stdlib = Validator.validate(stdlib.normalize(), validationLogger);
 			if (!stdlib.isValid())
 				return compiler;
 			
-			stdlib.compile(compiler);
+			compiler.addModule(stdlib);
 			compiledModules.add(stdlib.name);
 			
 			boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, new Stack<>(), module, validationLogger);
 			if (!isValid)
 				return compiler;
 			
-			module.compile(compiler);
+			compiler.addModule(module);
 			compiler.finish();
 			return compiler;
 		} catch (Exception ex) {
@@ -159,8 +158,7 @@ public class LocalTarget implements IDETarget {
 				return false;
 			}
 			
-			dependency = dependency.normalize();
-			dependency.validate(logger);
+			dependency = Validator.validate(dependency.normalize(), logger);
 			if (!dependency.isValid()) {
 				compilingModules.pop();
 				return false;
@@ -171,7 +169,7 @@ public class LocalTarget implements IDETarget {
 				return false;
 			}
 			
-			dependency.compile(compiler);
+			compiler.addModule(dependency);
 			compilingModules.pop();
 		}
 		

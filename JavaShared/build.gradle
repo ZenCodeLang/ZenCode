@@ -15,5 +15,4 @@ if (!hasProperty('mainClass')) {
 
 dependencies {
 	compile project(':CodeModel')
-	compile project(':CompilerShared')
 }

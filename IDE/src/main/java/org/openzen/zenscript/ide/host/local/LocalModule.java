@@ -6,12 +6,13 @@
 package org.openzen.zenscript.ide.host.local;
 
 import java.util.function.Consumer;
-import org.openzen.zenscript.compiler.SemanticModule;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.ide.codemodel.IDECodeError;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEPackage;
+import org.openzen.zenscript.validator.Validator;
 
 /**
  *
@@ -39,6 +40,6 @@ public class LocalModule implements IDEModule {
 	@Override
 	public void prebuild(ModuleLoader loader, Consumer<IDECodeError> errors) {
 		SemanticModule module = loader.getModule(this.module.getName());
-		module.validate(entry -> errors.accept(new IDECodeError(null, entry.position, entry.message)));
+		Validator.validate(module, entry -> errors.accept(new IDECodeError(null, entry.position, entry.message)));
 	}
 }

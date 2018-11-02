@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.function.Consumer;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.module.ModuleReference;
-import org.openzen.zenscript.compiler.SemanticModule;
 
 /**
  *

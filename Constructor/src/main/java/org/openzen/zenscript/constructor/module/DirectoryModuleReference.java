@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.constructor.module;
 
-import org.openzen.zenscript.compiler.ModuleSpace;
-import org.openzen.zenscript.compiler.SemanticModule;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +15,8 @@ import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.ModuleSpace;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;

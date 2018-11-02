@@ -18,10 +18,10 @@ import java.util.zip.ZipInputStream;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.ModuleSpace;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.compiler.ModuleSpace;
-import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.lexer.ParseException;
 
 /**

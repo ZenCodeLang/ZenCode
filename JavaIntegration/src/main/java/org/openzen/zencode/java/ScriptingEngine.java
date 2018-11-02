@@ -13,13 +13,13 @@ import java.util.Map;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.ModuleSpace;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
-import org.openzen.zenscript.compiler.ModuleSpace;
-import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javabytecode.JavaBytecodeRunUnit;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javashared.SimpleJavaCompileSpace;
@@ -27,6 +27,7 @@ import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.ParsedFile;
 import org.openzen.zenscript.parser.ZippedPackage;
+import org.openzen.zenscript.validator.Validator;
 
 /**
  *
@@ -47,7 +48,7 @@ public class ScriptingEngine {
 		try {
 			ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.zip"));
 			SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, new SemanticModule[0], stdlib);
-			stdlibModule.validate(error -> System.out.println(error.toString()));
+			stdlibModule = Validator.validate(stdlibModule, error -> System.out.println(error.toString()));
 			space.addModule("stdlib", stdlibModule);
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
@@ -64,8 +65,10 @@ public class ScriptingEngine {
 	}
 	
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {
-		SemanticModule semantic = module.toSemantic(space);
-		if (!semantic.validate(entry -> System.out.println(entry)))
+		SemanticModule semantic = Validator.validate(
+				module.toSemantic(space),
+				entry -> System.out.println(entry));
+		if (!semantic.isValid())
 			return;
 		
 		space.addModule(module.module.name, semantic);
@@ -102,11 +105,9 @@ public class ScriptingEngine {
 		if (!scripts.isValid())
 			return scripts;
 		
-		scripts = scripts.normalize();
-		if (!scripts.validate(error -> System.out.println(error.toString())))
-			return scripts;
-		
-		return scripts;
+		return Validator.validate(
+				scripts.normalize(),
+				error -> System.out.println(error.toString()));
 	}
 	
 	public void registerCompiled(SemanticModule module) {

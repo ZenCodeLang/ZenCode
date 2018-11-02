@@ -7,8 +7,8 @@ package org.openzen.zenscript.constructor.module;
 
 import java.util.function.Consumer;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
 
 /**

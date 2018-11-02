@@ -8,11 +8,13 @@ package org.openzen.zenscript.validator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -26,6 +28,37 @@ import org.openzen.zenscript.validator.visitors.StatementValidator;
  * @author Hoofdgebruiker
  */
 public class Validator {
+	public static SemanticModule validate(SemanticModule module, Consumer<ValidationLogEntry> logger) {
+		if (module.state != SemanticModule.State.NORMALIZED)
+			throw new IllegalStateException("Module is not yet normalized");
+		
+		Validator validator = new Validator(module.registry, module.expansions, module.annotations);
+		for (ScriptBlock script : module.scripts) {
+			validator.validate(script);
+		}
+		for (HighLevelDefinition definition : module.definitions.getAll()) {
+			validator.validate(definition);
+		}
+		
+		for (ValidationLogEntry entry : validator.getLog()) {
+			logger.accept(entry);
+		}
+		
+		SemanticModule.State state = validator.hasErrors() ? SemanticModule.State.INVALID : SemanticModule.State.VALIDATED;
+		return new SemanticModule(
+				module.module,
+				module.dependencies,
+				state,
+				module.rootPackage,
+				module.modulePackage,
+				module.definitions,
+				module.scripts,
+				module.registry,
+				module.expansions,
+				module.annotations,
+				module.storageTypes);
+	}
+	
 	private final List<ValidationLogEntry> log = new ArrayList<>();
 	public final GlobalTypeRegistry registry;
 	public final List<ExpansionDefinition> expansions;

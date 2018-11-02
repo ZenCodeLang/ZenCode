@@ -13,6 +13,7 @@ import java.util.Stack;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.SemanticModule;
 
 /**
  *
