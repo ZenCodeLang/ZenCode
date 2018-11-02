@@ -119,9 +119,11 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		constructors.add(member.header);
 		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope());
 		
-		if (member.body == null && !member.isExtern()) {
-			validator.logError(ValidationLogEntry.Code.BODY_REQUIRED, member.position, "Constructors must have a body");
-			return null;
+		if (member.body == null) {
+			if (!member.isExtern()) {
+				validator.logError(ValidationLogEntry.Code.BODY_REQUIRED, member.position, "Constructors must have a body");
+				return null;
+			}
 		} else {
 			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header, member.getAccessScope()));
 			member.body.accept(statementValidator);

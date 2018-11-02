@@ -63,7 +63,7 @@ public class ScriptingEngine {
 	
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(testPackage, name, basePackage, registry, false);
+		return new JavaNativeModule(testPackage, name, basePackage, registry, false, dependencies);
 	}
 	
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {

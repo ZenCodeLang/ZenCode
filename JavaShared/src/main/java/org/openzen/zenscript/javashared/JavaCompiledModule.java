@@ -9,11 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 /**
  *
@@ -125,6 +127,8 @@ public class JavaCompiledModule {
 	
 	public JavaMethod getMethodInfo(IDefinitionMember member) {
 		JavaMethod method = methods.get(member);
+		if (member.getBuiltin() == BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) // TODO: handle this differently
+			return new JavaMethod(getClassInfo(member.getDefinition()), JavaMethod.Kind.CONSTRUCTOR, "<init>", true, "()V", Modifiers.PUBLIC, false);
 		if (method == null)
 			throw new IllegalStateException("Missing method info for method " + member.getDefinition().name + "." + member.describe());
 		

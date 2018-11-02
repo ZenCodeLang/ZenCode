@@ -49,6 +49,7 @@ import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -76,11 +77,22 @@ public class JavaNativeModule {
 	
 	public final Map<String, ISymbol> globals = new HashMap<>();
 	
-	public JavaNativeModule(ZSPackage pkg, String name, String basePackage, GlobalTypeRegistry registry, boolean allowNonAnnotated) {
+	public JavaNativeModule(
+			ZSPackage pkg,
+			String name,
+			String basePackage,
+			GlobalTypeRegistry registry,
+			boolean allowNonAnnotated,
+			JavaNativeModule[] dependencies)
+	{
 		this.pkg = pkg;
 		this.basePackage = basePackage;
 		module = new Module(name);
 		this.registry = registry;
+		
+		for (JavaNativeModule dependency : dependencies) {
+			definitionByClass.putAll(dependency.definitionByClass);
+		}
 		
 		this.allowNonAnnonated = allowNonAnnotated;
 		compiled = new JavaCompiledModule(module);
@@ -262,13 +274,21 @@ public class JavaNativeModule {
 			compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), getDescriptor(field.getType())));
 		}
 		
+		boolean hasConstructor = false;
 		for (java.lang.reflect.Constructor constructor : cls.getConstructors()) {
 			ZenCodeType.Constructor constructorAnnotation = (ZenCodeType.Constructor)constructor.getAnnotation(ZenCodeType.Constructor.class);
 			if (constructorAnnotation != null || !annotated) {
 				ConstructorMember member = asConstructor(definition, constructor);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, constructor));
+				hasConstructor = true;
 			}
+		}
+		
+		if (!hasConstructor) {
+			// no constructor! make a private constructor so the compiler doesn't add one
+			ConstructorMember member = new ConstructorMember(CodePosition.BUILTIN, definition, Modifiers.PRIVATE, new FunctionHeader(BasicTypeID.VOID), BuiltinID.CLASS_DEFAULT_CONSTRUCTOR);
+			definition.addMember(member);
 		}
 		
 		for (Method method : cls.getDeclaredMethods()) {

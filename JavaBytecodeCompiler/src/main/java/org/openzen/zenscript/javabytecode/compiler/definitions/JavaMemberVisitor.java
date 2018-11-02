@@ -57,7 +57,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     @Override
     public Void visitConstructor(ConstructorMember member) {
-        final boolean isEnum = definition instanceof EnumDefinition;
+		final boolean isEnum = definition instanceof EnumDefinition;
         final JavaMethod method = context.getJavaMethod(member);
 
         final Label constructorStart = new Label();
@@ -93,7 +93,10 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			}
         }
 
-		member.body.accept(statementVisitor);
+		if (member.body != null) {
+			member.body.accept(statementVisitor);
+		}
+		
 		constructorWriter.label(constructorEnd);
 		statementVisitor.end();
 		return null;

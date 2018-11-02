@@ -21,6 +21,7 @@ import org.openzen.zenscript.parser.expression.ParsedExpressionString;
 public class Main {
 	public static void main(String[] args) throws CompileException, ParseException, IOException {
 		ScriptingEngine scriptingEngine = new ScriptingEngine();
+		scriptingEngine.debug = true;
 		
 		JavaNativeModule example = scriptingEngine.createNativeModule("example", "org.openzen.zenscript.scriptingexample");
 		example.addGlobals(Globals.class);
