@@ -56,6 +56,9 @@ public class JavaBytecodeRunUnit {
 	public void dump(File directory) {
 		writeScripts();
 		
+		if (!directory.exists())
+			directory.mkdirs();
+		
 		for (Map.Entry<String, byte[]> classEntry : classes.entrySet()) {
 			File output = new File(directory, classEntry.getKey() + ".class");
 			try (FileOutputStream outputStream = new FileOutputStream(output)) {

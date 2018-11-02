@@ -22,9 +22,10 @@ public class Main {
 	public static void main(String[] args) throws CompileException, ParseException, IOException {
 		ScriptingEngine scriptingEngine = new ScriptingEngine();
 		
-		JavaNativeModule module = scriptingEngine.createNativeModule("globals", "org.openzen.zenscript.scriptingexample");
-		module.addGlobals(Globals.class);
-		scriptingEngine.registerNativeProvided(module);
+		JavaNativeModule example = scriptingEngine.createNativeModule("example", "org.openzen.zenscript.scriptingexample");
+		example.addGlobals(Globals.class);
+		example.addClass(TestClass.class);
+		scriptingEngine.registerNativeProvided(example);
 		
 		File inputDirectory = new File("scripts");
 		File[] inputFiles = Optional.ofNullable(inputDirectory.listFiles((dir, name) -> name.endsWith(".zs"))).orElseGet(() -> new File[0]);

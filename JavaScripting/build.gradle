@@ -1,0 +1,20 @@
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	compile 'org.ow2.asm:asm-debug-all:6.0_BETA'
+}
+
+def javaScriptingProjects = [':JavaIntegration',':JavaAnnotations',':JavaBytecodeCompiler', ':JavaShared', ':Validator', ':Parser', ':CodeModel', ':Shared']
+jar {
+	dependsOn javaScriptingProjects.collect{ it+":compileJava"}
+    from files(javaScriptingProjects.collect{ project(it).sourceSets.main.output })
+}
+
+install {
+	repositories.mavenInstaller {
+		pom.artifactId = 'zencode-javascripting'
+	}
+}

@@ -262,14 +262,16 @@ public class JavaNativeModule {
 			compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), getDescriptor(field.getType())));
 		}
 		
-		for (Method method : cls.getDeclaredMethods()) {
-			ZenCodeType.Constructor constructorAnnotation = method.getAnnotation(ZenCodeType.Constructor.class);
-			if (constructorAnnotation != null || (!annotated && method.getName().equals("<init>"))) {
-				ConstructorMember member = asConstructor(definition, method);
+		for (java.lang.reflect.Constructor constructor : cls.getConstructors()) {
+			ZenCodeType.Constructor constructorAnnotation = (ZenCodeType.Constructor)constructor.getAnnotation(ZenCodeType.Constructor.class);
+			if (constructorAnnotation != null || !annotated) {
+				ConstructorMember member = asConstructor(definition, constructor);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, method, BasicTypeID.VOID.stored));
+				compiled.setMethodInfo(member, getMethod(javaClass, constructor));
 			}
-			
+		}
+		
+		for (Method method : cls.getDeclaredMethods()) {
 			ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
 			if (methodAnnotation != null) {
 				MethodMember member = asMethod(definition, method, methodAnnotation);
@@ -338,12 +340,12 @@ public class JavaNativeModule {
 		return name;
 	}
 	
-	private ConstructorMember asConstructor(HighLevelDefinition definition, Method method) {
+	private ConstructorMember asConstructor(HighLevelDefinition definition, java.lang.reflect.Constructor method) {
 		FunctionHeader header = getHeader(method);
 		return new ConstructorMember(
 				CodePosition.NATIVE,
 				definition,
-				getMethodModifiers(method),
+				Modifiers.PUBLIC,
 				header,
 				null);
 	}
@@ -412,16 +414,35 @@ public class JavaNativeModule {
 		return new CasterMember(CodePosition.NATIVE, definition, modifiers, toType, null);
 	}
 	
+	private FunctionHeader getHeader(java.lang.reflect.Constructor constructor) {
+		return getHeader(
+				null,
+				constructor.getAnnotatedParameterTypes(),
+				constructor.getTypeParameters(),
+				constructor.getAnnotatedExceptionTypes());
+	}
+	
 	private FunctionHeader getHeader(Method method) {
-		StoredType returnType = loadStoredType(method.getAnnotatedReturnType());
+		return getHeader(
+				method.getAnnotatedReturnType(),
+				method.getAnnotatedParameterTypes(),
+				method.getTypeParameters(),
+				method.getAnnotatedExceptionTypes());
+	}
+	
+	private FunctionHeader getHeader(
+			AnnotatedType javaReturnType,
+			AnnotatedType[] parameterTypes,
+			TypeVariable<Method>[] javaTypeParameters,
+			AnnotatedType[] exceptionTypes)
+	{
+		StoredType returnType = javaReturnType == null ? BasicTypeID.VOID.stored : loadStoredType(javaReturnType);
 		
-		FunctionParameter[] parameters = new FunctionParameter[method.getParameterCount()];
-		AnnotatedType[] parameterTypes = method.getAnnotatedParameterTypes();
+		FunctionParameter[] parameters = new FunctionParameter[parameterTypes.length];
 		for (int i = 0; i < parameters.length; i++) {
 			parameters[i] = new FunctionParameter(loadStoredType(parameterTypes[i]));
 		}
 		
-		TypeVariable<Method>[] javaTypeParameters = method.getTypeParameters();
 		TypeParameter[] typeParameters = new TypeParameter[javaTypeParameters.length];
 		for (int i = 0; i < javaTypeParameters.length; i++) {
 			TypeVariable<Method> javaTypeParameter = javaTypeParameters[i];
@@ -431,7 +452,6 @@ public class JavaNativeModule {
 				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, loadType(bound)));
 		}
 		
-		AnnotatedType[] exceptionTypes = method.getAnnotatedExceptionTypes();
 		if (exceptionTypes.length > 1)
 			throw new IllegalArgumentException("A method can only throw a single exception type!");
 		
@@ -518,8 +538,23 @@ public class JavaNativeModule {
 		return org.objectweb.asm.Type.getDescriptor(cls);
 	}
 	
+	private static String getMethodDescriptor(java.lang.reflect.Constructor constructor) {
+		return org.objectweb.asm.Type.getConstructorDescriptor(constructor);
+	}
+	
 	private static String getMethodDescriptor(Method method) {
 		return org.objectweb.asm.Type.getMethodDescriptor(method);
+	}
+	
+	private static JavaMethod getMethod(JavaClass cls, java.lang.reflect.Constructor constructor) {
+		return new JavaMethod(
+				cls,
+				JavaMethod.Kind.CONSTRUCTOR,
+				"<init>",
+				false,
+				getMethodDescriptor(constructor),
+				constructor.getModifiers(),
+				false);
 	}
 	
 	private static JavaMethod getMethod(JavaClass cls, Method method, StoredType result) {

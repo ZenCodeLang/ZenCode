@@ -42,6 +42,8 @@ public class ScriptingEngine {
 	private final List<JavaNativeModule> nativeModules = new ArrayList<>();
 	private final List<SemanticModule> compiledModules = new ArrayList<>();
 	
+	public boolean debug = false;
+	
 	public ScriptingEngine() {
 		space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
 		
@@ -124,7 +126,8 @@ public class ScriptingEngine {
 		JavaBytecodeRunUnit runUnit = new JavaBytecodeRunUnit();
 		for (SemanticModule compiled : compiledModules)
 			runUnit.add(compiler.compile(compiled.name, compiled, javaSpace));
-		runUnit.dump(new File("classes"));
+		if (debug)
+			runUnit.dump(new File("classes"));
 		runUnit.run();
 	}
 }

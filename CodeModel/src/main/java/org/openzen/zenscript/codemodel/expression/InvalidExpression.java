@@ -27,7 +27,7 @@ public class InvalidExpression extends Expression {
 	}
 	
 	public InvalidExpression(StoredType type, CompileException cause) {
-		this(cause.position, type, cause.code, cause.getMessage());
+		this(cause.position, type, cause.code, cause.message);
 	}
 
 	@Override
