@@ -34,7 +34,7 @@ public class ExpressionBuilder {
 		this.scope = scope;
 	}
 	
-	public Expression constructNew(String typename, Expression... arguments) throws CompileException {
+	public Expression constructNew(CodePosition position, String typename, Expression... arguments) throws CompileException {
 		String[] nameParts = Strings.split(typename, '.');
 		List<GenericName> name = new ArrayList<>();
 		for (String namePart : nameParts)
@@ -43,12 +43,12 @@ public class ExpressionBuilder {
 		if (type == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "No such type: " + typename);
 		
-		return constructNew(type.stored(UniqueStorageTag.INSTANCE), arguments);
+		return constructNew(position, type.stored(UniqueStorageTag.INSTANCE), arguments);
 	}
 	
-	public Expression constructNew(StoredType type, Expression... arguments) throws CompileException {
+	public Expression constructNew(CodePosition position, StoredType type, Expression... arguments) throws CompileException {
 		TypeMemberGroup constructors = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CONSTRUCTOR);
-		List<StoredType>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.length);
+		List<StoredType>[] predictedTypes = constructors.predictCallTypes(position, scope, scope.hints, arguments.length);
 		CallArguments compiledArguments = new CallArguments(arguments);
 		FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 		if (member == null)
@@ -61,7 +61,7 @@ public class ExpressionBuilder {
 				type,
 				member,
 				compiledArguments,
-				compiledArguments.getNumberOfTypeArguments() == 0 ? member.getHeader() : member.getHeader().fillGenericArguments(scope, compiledArguments.typeArguments));
+				compiledArguments.getNumberOfTypeArguments() == 0 ? member.getHeader() : member.getHeader().fillGenericArguments(CodePosition.BUILTIN, scope, compiledArguments.typeArguments));
 	}
 	
 	public Expression not(Expression value) throws CompileException {

@@ -104,7 +104,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			if (mapping == null)
 				continue;
 			
-			GenericMapper mapper = new GenericMapper(registry, mapping);
+			GenericMapper mapper = new GenericMapper(definition.position, registry, mapping);
 			for (IDefinitionMember member : expansion.members)
 				member.registerTo(members, TypeMemberPriority.SPECIFIED, mapper);
 		}
@@ -387,7 +387,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	public Void visitGenericMap(Void context, GenericMapTypeID map) {
 		TypeParameter functionParameter = new TypeParameter(BUILTIN, "T");
 		Map<TypeParameter, StoredType> parameterFilled = Collections.singletonMap(map.key, registry.getGeneric(functionParameter).stored());
-		StoredType valueType = map.value.instance(new GenericMapper(registry, parameterFilled));
+		StoredType valueType = map.value.instance(new GenericMapper(CodePosition.BUILTIN, registry, parameterFilled));
 		
 		FunctionHeader getOptionalHeader = new FunctionHeader(
 				new TypeParameter[] { functionParameter },
@@ -447,7 +447,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		GenericMapper mapper = null;
 		if (definitionType.hasTypeParameters() || (definitionType.outer != null && definitionType.outer.hasTypeParameters())) {
 			Map<TypeParameter, StoredType> mapping = definitionType.getTypeParameterMapping();
-			mapper = new GenericMapper(registry, mapping);
+			mapper = new GenericMapper(CodePosition.BUILTIN, registry, mapping);
 		}
 		
 		for (IDefinitionMember member : definition.members) {

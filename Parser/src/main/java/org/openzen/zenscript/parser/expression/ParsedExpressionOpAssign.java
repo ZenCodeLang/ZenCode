@@ -40,11 +40,11 @@ public class ParsedExpressionOpAssign extends ParsedExpression {
 		TypeMemberGroup members = typeMembers.getOrCreateGroup(operator);
 		if (members.getMethodMembers().isEmpty()) {
 			members = typeMembers.getOrCreateGroup(operator.assignOperatorFor);
-			Expression cRight = right.compile(scope.withHints(members.predictCallTypes(scope, scope.hints, 1)[0])).eval();
+			Expression cRight = right.compile(scope.withHints(members.predictCallTypes(position, scope, scope.hints, 1)[0])).eval();
 			Expression value = members.call(position, scope, cLeft, new CallArguments(cRight), false);
 			return cLeft.assign(position, scope, value);
 		} else {
-			Expression cRight = right.compile(scope.withHints(members.predictCallTypes(scope, scope.hints, 1)[0])).eval();
+			Expression cRight = right.compile(scope.withHints(members.predictCallTypes(position, scope, scope.hints, 1)[0])).eval();
 			return members.call(position, scope, cLeft, new CallArguments(cRight), false);
 		}
 	}

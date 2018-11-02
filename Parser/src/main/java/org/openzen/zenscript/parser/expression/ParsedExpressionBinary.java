@@ -36,7 +36,7 @@ public class ParsedExpressionBinary extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression cLeft = left.compile(scope).eval();
 		TypeMemberGroup members = scope.getTypeMembers(cLeft.type).getOrCreateGroup(this.operator);
-		ExpressionScope innerScope = scope.withHints(members.predictCallTypes(scope, scope.getResultTypeHints(), 1)[0]);
+		ExpressionScope innerScope = scope.withHints(members.predictCallTypes(position, scope, scope.getResultTypeHints(), 1)[0]);
 		
 		Expression cRight = right.compile(innerScope).eval();
 		CallArguments arguments = new CallArguments(cRight);

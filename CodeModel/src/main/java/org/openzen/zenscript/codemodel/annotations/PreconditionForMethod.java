@@ -109,7 +109,7 @@ public class PreconditionForMethod implements MemberAnnotation {
 	public void serialize(CodeSerializationOutput output, IDefinitionMember member, TypeContext context) {
 		output.serialize(position);
 		output.writeString(enforcement);
-		StatementContext statementContext = new StatementContext(context, member.getHeader());
+		StatementContext statementContext = new StatementContext(position, context, member.getHeader());
 		output.serialize(statementContext, condition);
 		output.serialize(statementContext, message);
 	}

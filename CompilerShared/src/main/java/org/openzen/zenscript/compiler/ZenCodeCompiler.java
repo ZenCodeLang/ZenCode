@@ -10,7 +10,7 @@ package org.openzen.zenscript.compiler;
  * @author Hoofdgebruiker
  */
 public interface ZenCodeCompiler {
-	ZenCodeCompilingModule addModule(SemanticModule module);
+	void addModule(SemanticModule module);
 	
 	void finish();
 	

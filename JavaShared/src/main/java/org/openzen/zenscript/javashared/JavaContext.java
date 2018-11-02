@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -38,10 +39,18 @@ public abstract class JavaContext {
 	private final Map<String, JavaSynthesizedRange> ranges = new HashMap<>();
 	private boolean useShared = false;
 	
+	private final JavaCompileSpace space;
 	private final Map<Module, JavaCompiledModule> modules = new HashMap<>();
 	
-	public JavaContext(GlobalTypeRegistry registry) {
-		this.registry = registry;
+	public final ZSPackage modulePackage;
+	public final String basePackage;
+	
+	public JavaContext(JavaCompileSpace space, ZSPackage modulePackage, String basePackage) {
+		this.space = space;
+		this.registry = space.getRegistry();
+		
+		this.modulePackage = modulePackage;
+		this.basePackage = basePackage;
 		
 		{
 			TypeParameter t = new TypeParameter(CodePosition.BUILTIN, "T");
@@ -80,22 +89,31 @@ public abstract class JavaContext {
 		}
 	}
 	
+	public String getPackageName(ZSPackage pkg) {
+		if (pkg == null)
+			throw new IllegalArgumentException("Package not part of this module");
+		
+		if (pkg == modulePackage)
+			return basePackage;
+		
+		return getPackageName(pkg.parent) + "/" + pkg.name;
+	}
+	
 	protected abstract JavaSyntheticClassGenerator getTypeGenerator();
 		
 	public abstract String getDescriptor(TypeID type);
 	
 	public abstract String getDescriptor(StoredType type);
 	
-	public void registerModule(JavaCompiledModule module) {
-		modules.put(module.module, module);
-	}
-	
-	public void addModule(Module module) {
-		modules.put(module, new JavaCompiledModule(module));
+	public void addModule(Module module, JavaCompiledModule target) {
+		modules.put(module, target);
 	}
 	
 	public JavaCompiledModule getJavaModule(Module module) {
-		JavaCompiledModule javaModule = modules.get(module);
+		if (modules.containsKey(module))
+			return modules.get(module);
+		
+		JavaCompiledModule javaModule = space.getCompiled(module);
 		if (javaModule == null)
 			throw new IllegalStateException("Module not yet registered: " + module.name);
 		

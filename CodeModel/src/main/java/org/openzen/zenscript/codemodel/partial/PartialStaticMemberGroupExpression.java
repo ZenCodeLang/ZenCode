@@ -52,8 +52,8 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) {
-		return group.predictCallTypes(scope, hints, arguments);
+	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
+		return group.predictCallTypes(position, scope, hints, arguments);
 	}
 	
 	@Override

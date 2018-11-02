@@ -93,7 +93,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		}
 		
 		StoredType functionType = scope.getTypeRegistry()
-				.getFunction(genericHeader.withGenericArguments(new GenericMapper(scope.getTypeRegistry(), scope.genericInferenceMap)))
+				.getFunction(genericHeader.withGenericArguments(new GenericMapper(position, scope.getTypeRegistry(), scope.genericInferenceMap)))
 				.stored(storage);
 		return new FunctionExpression(position, functionType, closure, header, statements);
 	}

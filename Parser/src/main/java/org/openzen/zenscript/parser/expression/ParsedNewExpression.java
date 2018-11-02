@@ -19,8 +19,6 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.codemodel.type.member.TypeMember;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -59,7 +57,7 @@ public class ParsedNewExpression extends ParsedExpression{
 					System.out.println("X");
 			}*/
 
-			List<StoredType>[] predictedTypes = constructors.predictCallTypes(scope, scope.hints, arguments.arguments.size());
+			List<StoredType>[] predictedTypes = constructors.predictCallTypes(position, scope, scope.hints, arguments.arguments.size());
 			CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
 			FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 			if (member == null)
@@ -72,7 +70,7 @@ public class ParsedNewExpression extends ParsedExpression{
 					type,
 					member,
 					compiledArguments,
-					member.getHeader().fillGenericArguments(scope, compiledArguments.typeArguments));
+					member.getHeader().fillGenericArguments(position, scope, compiledArguments.typeArguments));
 		} catch (CompileException ex) {
 			return new InvalidExpression(type, ex);
 		}

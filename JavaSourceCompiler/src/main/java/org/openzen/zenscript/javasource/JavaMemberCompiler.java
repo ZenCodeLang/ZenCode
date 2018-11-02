@@ -39,7 +39,6 @@ import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaImplementation;
 import org.openzen.zenscript.javashared.JavaMethod;
 
@@ -52,13 +51,14 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	private final JavaSourceFile file;
 	private final List<FieldMember> fields = new ArrayList<>();
 	private final boolean isInterface;
-	private final JavaContext context;
+	private final JavaSourceContext context;
 	public boolean hasDestructor = false;
 	private final JavaCompiledModule module;
 	private final SemanticModule semanticModule;
 	
 	public JavaMemberCompiler(
 			JavaSourceCompiler compiler,
+			JavaSourceContext context,
 			JavaCompiledModule module,
 			JavaSourceFile file,
 			JavaSourceFormattingSettings settings,
@@ -74,7 +74,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		this.file = file;
 		this.isInterface = isInterface;
 		this.compiler = compiler;
-		this.context = compiler.context;
+		this.context = context;
 		this.module = module;
 		this.semanticModule = semanticModule;
 	}
@@ -242,7 +242,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			
 			begin(ElementType.INNERCLASS);
 			output.append("private class ").append(implementationName).append(" implements ").append(scope.type(member.type)).append(" {\n");
-			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, module, file, settings, indent + settings.indent, output, scope, isInterface, definition, semanticModule);
+			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, context, module, file, settings, indent + settings.indent, output, scope, isInterface, definition, semanticModule);
 			for (IDefinitionMember m : member.members) {
 				m.accept(memberCompiler);
 			}
@@ -260,6 +260,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
 				indent, 
 				compiler,
+				context,
 				module,
 				cls,
 				file,

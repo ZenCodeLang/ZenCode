@@ -5,6 +5,9 @@
  */
 package org.openzen.zenscript.javabytecode;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,19 +42,34 @@ public class JavaBytecodeRunUnit {
 	}
 	
 	public void run() {
-		if (!scriptsWritten)
-			writeScripts();
+		writeScripts();
 		
 		ScriptClassLoader classLoader = new ScriptClassLoader();
 
 		try {
 			classLoader.loadClass("Scripts").getMethod("run").invoke(null);
 		} catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
-			Logger.getLogger(JavaModule.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(JavaBytecodeRunUnit.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
+	public void dump(File directory) {
+		writeScripts();
+		
+		for (Map.Entry<String, byte[]> classEntry : classes.entrySet()) {
+			File output = new File(directory, classEntry.getKey() + ".class");
+			try (FileOutputStream outputStream = new FileOutputStream(output)) {
+				outputStream.write(classEntry.getValue());
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 	
 	private void writeScripts() {
+		if (scriptsWritten)
+			return;
+		
 		JavaClassWriter scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
 		
@@ -65,6 +83,7 @@ public class JavaBytecodeRunUnit {
 		runWriter.end();
 		
 		classes.put("Scripts", scriptsClassWriter.toByteArray());
+		scriptsWritten = true;
 	}
 
 	public class ScriptClassLoader extends ClassLoader {

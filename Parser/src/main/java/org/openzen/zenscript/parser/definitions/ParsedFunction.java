@@ -74,7 +74,7 @@ public class ParsedFunction extends ParsedDefinition {
 
 	@Override
 	public void compile(BaseScope scope) {
-		FunctionScope innerScope = new FunctionScope(scope, compiled.header);
+		FunctionScope innerScope = new FunctionScope(position, scope, compiled.header);
 		compiled.setCode(body.compile(innerScope, compiled.header));
 		
 		if (compiled.header.getReturnType().isBasic(BasicTypeID.UNDETERMINED))

@@ -45,6 +45,6 @@ public class ParsedStaticInitializer extends ParsedDefinitionMember {
 	@Override
 	public void compile(BaseScope scope) {
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
-		compiled.body = body.compile(new FunctionScope(scope, new FunctionHeader(BasicTypeID.VOID)));
+		compiled.body = body.compile(new FunctionScope(compiled.position, scope, new FunctionHeader(BasicTypeID.VOID)));
 	}
 }

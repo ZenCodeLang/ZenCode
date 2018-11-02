@@ -5,13 +5,6 @@
  */
 package org.openzen.zenscript.javasource;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,16 +31,16 @@ import org.openzen.zenscript.codemodel.type.TypeVisitor;
  */
 public class JavaSourceSyntheticHelperGenerator {
 	private final JavaContext context;
-	private final File directory;
 	private final JavaSourceFormattingSettings settings;
 	private final Map<String, List<String>> members = new HashMap<>();
 	private final JavaClass arrayHelpers = new JavaClass("zsynthetic", "ArrayHelpers", JavaClass.Kind.CLASS);
 	private final Map<ArrayKind, JavaMethod> existingContains = new HashMap<>();
 	private final Map<ArrayKind, JavaMethod> existingIndexOf = new HashMap<>();
+	private final JavaSourceModule helpers;
 	
-	public JavaSourceSyntheticHelperGenerator(JavaContext context, File directory, JavaSourceFormattingSettings settings) {
+	public JavaSourceSyntheticHelperGenerator(JavaSourceModule helpers, JavaContext context, JavaSourceFormattingSettings settings) {
+		this.helpers = helpers;
 		this.context = context;
-		this.directory = new File(directory, "zsynthetic");
 		this.settings = settings;
 	}
 	
@@ -111,13 +104,8 @@ public class JavaSourceSyntheticHelperGenerator {
 			}
 			contents.append("}\n");
 			
-			File target = new File(directory, filename + ".java");
-			
-			try (Writer output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target), StandardCharsets.UTF_8))) {
-				output.write(contents.toString());
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
+			String target = "zsynthetic/" + filename + ".java";
+			helpers.addFile(target, contents.toString());
 		}
 	}
 	

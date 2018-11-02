@@ -5,13 +5,6 @@
  */
 package org.openzen.zenscript.javasource;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaSynthesizedFunction;
@@ -23,12 +16,12 @@ import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
  * @author Hoofdgebruiker
  */
 public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGenerator {
-	private final File directory;
+	private final JavaSourceModule helpers;
 	private final JavaSourceFormattingSettings settings;
 	private final JavaSourceContext context;
 	
-	public JavaSourceSyntheticTypeGenerator(File directory, JavaSourceFormattingSettings settings, JavaSourceContext context) {
-		this.directory = new File(directory, "zsynthetic");
+	public JavaSourceSyntheticTypeGenerator(JavaSourceModule helpers, JavaSourceFormattingSettings settings, JavaSourceContext context) {
+		this.helpers = helpers;
 		this.settings = settings;
 		this.context = context;
 	}
@@ -133,31 +126,27 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 	}
 	
 	private void writeFile(JavaClass cls, JavaSourceImporter importer, StringBuilder contents) {
-		if (!directory.exists())
-			directory.mkdirs();
-		
-		File file = new File(directory, cls.getName() + ".java");
-		try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8)) {
-			writer.write("package zsynthetic;\n");
-			
-			JavaClass[] imports = importer.getUsedImports();
-			if (imports.length > 0) {
-				for (JavaClass import_ : imports) {
-					if (import_.pkg.equals("java.lang"))
-						continue;
-					
-					writer.write("import ");
-					writer.write(import_.fullName);
-					writer.write(";\n");
-				}
+		StringBuilder output = new StringBuilder();
+		output.append("package zsynthetic;\n");
 
-				writer.write("\n");
+		JavaClass[] imports = importer.getUsedImports();
+		if (imports.length > 0) {
+			for (JavaClass import_ : imports) {
+				if (import_.pkg.equals("java.lang"))
+					continue;
+
+				output.append("import ");
+				output.append(import_.fullName);
+				output.append(";\n");
 			}
-			
-			writer.write('\n');
-			writer.write(contents.toString());
-		} catch (IOException ex) {
-			ex.printStackTrace();
+
+			output.append("\n");
 		}
+
+		output.append('\n');
+		output.append(contents.toString());
+		
+		String target = "zsynthetic/" + cls.getName() + ".java";
+		helpers.addFile(target, output.toString());
 	}
 }

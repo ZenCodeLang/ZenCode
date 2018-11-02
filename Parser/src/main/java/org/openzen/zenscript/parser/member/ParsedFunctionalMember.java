@@ -71,7 +71,7 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 		
 		inferHeaders(scope);
 		
-		FunctionScope innerScope = new FunctionScope(scope, getCompiled().header);
+		FunctionScope innerScope = new FunctionScope(position, scope, getCompiled().header);
 		getCompiled().annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		getCompiled().setBody(body.compile(innerScope, getCompiled().header));
 		

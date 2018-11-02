@@ -5,11 +5,8 @@
  */
 package org.openzen.zenscript.javashared;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
@@ -17,8 +14,6 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.statement.BlockStatement;
-import org.openzen.zenscript.codemodel.statement.Statement;
 
 /**
  *
@@ -39,13 +34,6 @@ public class JavaCompiledModule {
 	public JavaCompiledModule(Module module) {
 		this.module = module;
 	}
-	
-	/*public Statement generateModuleDefinitionMethod() {
-		List<Statement> statements = new ArrayList<>();
-		
-		
-		return new BlockStatement(CodePosition.GENERATED, statements.toArray(new Statement[statements.size()]));
-	}*/
 	
 	public void setClassInfo(HighLevelDefinition definition, JavaClass cls) {
 		classes.put(definition, cls);

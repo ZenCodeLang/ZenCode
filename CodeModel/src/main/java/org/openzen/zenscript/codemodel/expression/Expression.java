@@ -101,8 +101,8 @@ public abstract class Expression implements IPartialExpression {
 	}
 	
 	@Override
-	public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) {
-		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).predictCallTypes(scope, hints, arguments);
+	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
+		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).predictCallTypes(position, scope, hints, arguments);
 	}
 	
 	@Override

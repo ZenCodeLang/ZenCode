@@ -40,8 +40,8 @@ public class PartialGlobalExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException {
-		return resolution.predictCallTypes(scope, hints, arguments);
+	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) throws CompileException {
+		return resolution.predictCallTypes(position, scope, hints, arguments);
 	}
 
 	@Override

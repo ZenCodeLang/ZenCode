@@ -31,16 +31,15 @@ public class JavaSourceFileScope {
 	public final JavaSourceContext context;
 	
 	public JavaSourceFileScope(
-			JavaSourceImporter importer, 
-			JavaSourceSyntheticHelperGenerator helperGenerator,
+			JavaSourceImporter importer,
+			JavaSourceContext context,
 			JavaClass cls,
 			TypeScope semanticScope,
 			boolean isInterface,
-			TypeID thisType,
-			JavaSourceContext context)
+			TypeID thisType)
 	{
 		this.importer = importer;
-		this.helperGenerator = helperGenerator;
+		this.helperGenerator = context.helperGenerator;
 		this.cls = cls;
 		this.semanticScope = semanticScope;
 		this.isInterface = isInterface;

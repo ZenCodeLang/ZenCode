@@ -6,11 +6,14 @@
 package org.openzen.zenscript.javashared;
 
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public interface JavaCompileSpace {
+	public GlobalTypeRegistry getRegistry();
+	
 	public JavaCompiledModule getCompiled(Module module);
 }

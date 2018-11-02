@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel.context;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
@@ -30,8 +31,8 @@ public class StatementContext extends TypeContext {
 	
 	public VariantOptionSwitchValue variantOptionSwitchValue;
 	
-	public StatementContext(ModuleContext module, StoredType thisType) {
-		super(module, TypeParameter.NONE, thisType);
+	public StatementContext(CodePosition position, ModuleContext module, StoredType thisType) {
+		super(position, module, TypeParameter.NONE, thisType);
 		
 		loops = LoopStatement.NONE;
 		header = null;
@@ -39,8 +40,8 @@ public class StatementContext extends TypeContext {
 		lambdaOuter = null;
 	}
 	
-	public StatementContext(ModuleContext module, StoredType thisType, FunctionHeader header) {
-		super(module, header.typeParameters, thisType);
+	public StatementContext(CodePosition position, ModuleContext module, StoredType thisType, FunctionHeader header) {
+		super(position, module, header.typeParameters, thisType);
 		
 		loops = LoopStatement.NONE;
 		this.header = header;
@@ -48,16 +49,18 @@ public class StatementContext extends TypeContext {
 		lambdaOuter = null;
 	}
 	
-	public StatementContext(TypeContext outer) {
-		super(outer.moduleContext, outer.typeParameters, outer.thisType);
+	public StatementContext(CodePosition position, TypeContext outer) {
+		super(position, outer.moduleContext, outer.typeParameters, outer.thisType);
+		
 		loops = LoopStatement.NONE;
 		header = null;
 		closure = null;
 		lambdaOuter = null;
 	}
 	
-	public StatementContext(TypeContext outer, FunctionHeader header) {
-		super(outer, outer.thisType, header == null ? TypeParameter.NONE : header.typeParameters);
+	public StatementContext(CodePosition position, TypeContext outer, FunctionHeader header) {
+		super(position, outer, outer.thisType, header == null ? TypeParameter.NONE : header.typeParameters);
+		
 		loops = LoopStatement.NONE;
 		this.header = header;
 		closure = null;
@@ -65,7 +68,7 @@ public class StatementContext extends TypeContext {
 	}
 	
 	public StatementContext(StatementContext outer) {
-		super(outer.moduleContext, outer.typeParameters, outer.thisType);
+		super(outer.position, outer.moduleContext, outer.typeParameters, outer.thisType);
 		
 		variables.addAll(outer.variables);
 		loops = outer.loops;
@@ -75,7 +78,7 @@ public class StatementContext extends TypeContext {
 	}
 	
 	public StatementContext(StatementContext outer, LoopStatement loop) {
-		super(outer.moduleContext, outer.typeParameters, outer.thisType);
+		super(outer.position, outer.moduleContext, outer.typeParameters, outer.thisType);
 		
 		variables.addAll(outer.variables);
 		loops = Arrays.copyOf(outer.loops, outer.loops.length + 1);
@@ -86,7 +89,7 @@ public class StatementContext extends TypeContext {
 	}
 	
 	public StatementContext(StatementContext outer, FunctionHeader lambdaHeader, LambdaClosure lambdaClosure) {
-		super(outer, outer.thisType, lambdaHeader.typeParameters);
+		super(outer.position, outer, outer.thisType, lambdaHeader.typeParameters);
 		
 		loops = LoopStatement.NONE;
 		header = lambdaHeader;

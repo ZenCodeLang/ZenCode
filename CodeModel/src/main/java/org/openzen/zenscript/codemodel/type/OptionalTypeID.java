@@ -37,7 +37,7 @@ public class OptionalTypeID implements TypeID {
 	@Override
 	public StoredType instance(GenericMapper mapper, StorageTag storage) {
 		StoredType base = baseType.instance(mapper, storage);
-		return mapper.registry.getOptional(base.type).stored(StorageTag.union(base.getSpecifiedStorage(), storage));
+		return mapper.registry.getOptional(base.type).stored(StorageTag.union(mapper.position, base.getSpecifiedStorage(), storage));
 	}
 	
 	@Override

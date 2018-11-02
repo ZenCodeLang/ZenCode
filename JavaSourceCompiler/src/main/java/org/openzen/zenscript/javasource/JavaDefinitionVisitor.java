@@ -36,7 +36,6 @@ import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaImplementation;
 
 /**
@@ -51,13 +50,14 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	private final JavaSourceFormattingSettings settings;
 	private final List<ExpansionDefinition> expansions;
 	private final StringBuilder output;
-	private final JavaContext context;
+	private final JavaSourceContext context;
 	private final JavaCompiledModule module;
 	private final SemanticModule semanticModule;
 	
 	public JavaDefinitionVisitor(
 			String indent,
 			JavaSourceCompiler compiler,
+			JavaSourceContext context,
 			JavaCompiledModule module,
 			JavaClass cls,
 			JavaSourceFile file,
@@ -72,7 +72,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		this.settings = compiler.settings;
 		this.output = output;
 		this.expansions = expansions;
-		this.context = compiler.context;
+		this.context = context;
 		this.module = module;
 		this.semanticModule = semanticModule;
 	}
@@ -87,7 +87,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				semanticModule.expansions,
 				semanticModule.annotations,
 				semanticModule.storageTypes);
-		return new JavaSourceFileScope(file.importer, compiler.helperGenerator, cls, scope, definition instanceof InterfaceDefinition, thisType, compiler.context);
+		return new JavaSourceFileScope(file.importer, context, cls, scope, definition instanceof InterfaceDefinition, thisType);
 	}
 	
 	private List<ImplementationMember> getMergedImplementations(HighLevelDefinition definition) {
@@ -403,7 +403,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				member.accept(memberCompiler);
 			memberCompiler.finish();
 		} else {
-			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, module, file, settings, indent + settings.indent, output, scope, scope.isInterface, definition, semanticModule);
+			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, context, module, file, settings, indent + settings.indent, output, scope, scope.isInterface, definition, semanticModule);
 			for (IDefinitionMember member : definition.members)
 				member.accept(memberCompiler);
 			

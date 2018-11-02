@@ -5,74 +5,70 @@
  */
 package org.openzen.zenscript.javasource;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.ScriptBlock;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.SemanticModule;
-import org.openzen.zenscript.compiler.ZenCodeCompiler;
-import org.openzen.zenscript.compiler.ZenCodeCompilingModule;
-import org.openzen.zenscript.javashared.JavaBaseCompiler;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompileSpace;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class JavaSourceCompiler extends JavaBaseCompiler implements ZenCodeCompiler {
+public class JavaSourceCompiler {
 	public final JavaSourceFormattingSettings settings;
-	public final JavaSourceSyntheticHelperGenerator helperGenerator;
+	public final JavaSourceModule helpers;
 	
-	private final File directory;
-	public final JavaSourceContext context;
-	private final List<SourceModule> modules = new ArrayList<>();
-	
-	public JavaSourceCompiler(File directory, GlobalTypeRegistry registry) {
-		if (!directory.exists())
-			directory.mkdirs();
-		
+	public JavaSourceCompiler(GlobalTypeRegistry registry) {
+		helpers = new JavaSourceModule(new Module("helpers"));
 		settings = new JavaSourceFormattingSettings.Builder().build();
-		context = new JavaSourceContext(registry, directory, settings);
-		helperGenerator = new JavaSourceSyntheticHelperGenerator(context, directory, settings);
+	}
+	
+	public JavaSourceModule compile(SemanticModule module, JavaCompileSpace space, String basePackage) {
+		JavaSourceContext context = new JavaSourceContext(helpers, settings, space, module.modulePackage, basePackage);
 		
-		this.directory = directory;
-	}
-	
-	@Override
-	public ZenCodeCompilingModule addModule(SemanticModule module) {
-		context.addModule(module.module);
-		SourceModule result = new SourceModule(module);
-		modules.add(result);
+		JavaSourceModule result = new JavaSourceModule(module.module);
+		context.addModule(module.module, result);
+		
+		Map<String, JavaSourceFile> sourceFiles = new HashMap<>();
+		for (HighLevelDefinition definition : module.definitions.getAll()) {
+			String name = getFilename(definition);
+			JavaPrepareDefinitionVisitor prepare = new JavaPrepareDefinitionVisitor(context, context.getJavaModule(module.module), name, null);
+			JavaClass cls = definition.accept(prepare);
+
+			String filename = cls.getName() + ".java";
+			System.out.println("Compiling " + definition.name + " as " + cls.fullName);
+			JavaSourceFile sourceFile = sourceFiles.get(filename);
+			if (sourceFile == null)
+				sourceFiles.put(filename, sourceFile = new JavaSourceFile(JavaSourceCompiler.this, context, cls, module, definition.pkg));
+
+			sourceFile.add(definition);
+		}
+		
+		for (ScriptBlock scriptBlock : module.scripts) {
+			// TODO
+		}
+		
+		for (JavaSourceFile sourceFile : sourceFiles.values()) {
+			sourceFile.prepare(context);
+		}
+
+		String baseDirectory = basePackage.replace('.', '/');
+		for (Map.Entry<String, JavaSourceFile> entry : sourceFiles.entrySet())
+			result.addFile(baseDirectory + "/" + entry.getKey(), entry.getValue().generate());
+		
+		context.helperGenerator.write(); // TODO: move this elsewhere
 		return result;
-	}
-	
-	@Override
-	public void finish() {
-		helperGenerator.write();
-	}
-	
-	@Override
-	public void run() {
-		throw new UnsupportedOperationException("Cannot run this target");
 	}
 	
 	public String getFullName(HighLevelDefinition definition) {
 		return definition.pkg.fullName + "." + definition.name;
-	}
-	
-	private File getDirectory(ZSPackage pkg) {
-		if (pkg == null)
-			return directory;
-		
-		File base = getDirectory(pkg.parent);
-		return new File(base, pkg.name.replace('.', '/'));
 	}
 	
 	private String getFilename(HighLevelDefinition definition) {
@@ -85,46 +81,5 @@ public class JavaSourceCompiler extends JavaBaseCompiler implements ZenCodeCompi
 		} else {
 			return definition.name == null ? "Expansion" : definition.name;
 		}
-	}
-	
-	private class SourceModule implements ZenCodeCompilingModule {
-		private final Map<File, JavaSourceFile> sourceFiles = new HashMap<>();
-		private final SemanticModule module;
-		
-		public SourceModule(SemanticModule module) {
-			this.module = module;
-		}
-
-		@Override
-		public void addDefinition(HighLevelDefinition definition) {
-			String filename = getFilename(definition);
-			JavaPrepareDefinitionVisitor prepare = new JavaPrepareDefinitionVisitor(context, context.getJavaModule(module.module), filename, null);
-			JavaClass cls = definition.accept(prepare);
-
-			File file = new File(getDirectory(definition.pkg), cls.getName() + ".java");
-			System.out.println("Compiling " + definition.name + " as " + cls.fullName);
-			JavaSourceFile sourceFile = sourceFiles.get(file);
-			if (sourceFile == null)
-				sourceFiles.put(file, sourceFile = new JavaSourceFile(JavaSourceCompiler.this, file, cls, module, definition.pkg));
-
-			sourceFile.add(definition);
-		}
-
-		@Override
-		public void addScriptBlock(ScriptBlock script) {
-			// TODO: implement this too
-		}
-
-		@Override
-		public void finish() {
-			for (JavaSourceFile sourceFile : sourceFiles.values()) {
-				sourceFile.prepare(context);
-			}
-
-			for (JavaSourceFile sourceFile : sourceFiles.values())
-				sourceFile.write();
-
-		}
-		
 	}
 }

@@ -26,6 +26,9 @@ public class JavaBytecodeModule extends JavaCompiledModule {
 	}
 	
 	public void addClass(String name, byte[] bytecode) {
+		if (bytecode == null)
+			return;
+		
 		classes.put(name, bytecode);
 	}
 	

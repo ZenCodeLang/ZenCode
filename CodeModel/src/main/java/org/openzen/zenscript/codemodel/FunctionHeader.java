@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -180,11 +181,11 @@ public class FunctionHeader {
 		return new FunctionHeader(resultTypeParameters, resultReturnType, resultThrownType, resultStorage, resultParameters);
 	}
 	
-	public boolean matchesExactly(CallArguments arguments, TypeScope scope) {
+	public boolean matchesExactly(CodePosition position, CallArguments arguments, TypeScope scope) {
 		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
 			return false;
 		
-		FunctionHeader header = fillGenericArguments(scope, arguments.typeArguments);
+		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
 		for (int i = 0; i < header.parameters.length; i++) {
 			if (!arguments.arguments[i].type.equals(header.parameters[i].type))
 				return false;
@@ -193,11 +194,11 @@ public class FunctionHeader {
 		return true;
 	}
 	
-	public boolean matchesImplicitly(CallArguments arguments, TypeScope scope) {
+	public boolean matchesImplicitly(CodePosition position, CallArguments arguments, TypeScope scope) {
 		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
 			return false;
 		
-		FunctionHeader header = fillGenericArguments(scope, arguments.typeArguments);
+		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
 		for (int i = 0; i < header.parameters.length; i++) {
 			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
 				return false;
@@ -361,10 +362,10 @@ public class FunctionHeader {
 		return true;
 	}
 	
-	public FunctionHeader instanceForCall(GlobalTypeRegistry registry, CallArguments arguments) {
+	public FunctionHeader instanceForCall(CodePosition position, GlobalTypeRegistry registry, CallArguments arguments) {
 		if (arguments.getNumberOfTypeArguments() > 0) {
 			Map<TypeParameter, StoredType> typeParameters = StoredType.getMapping(this.typeParameters, arguments.typeArguments);
-			return instance(new GenericMapper(registry, typeParameters));
+			return instance(new GenericMapper(position, registry, typeParameters));
 		} else {
 			return this;
 		}
@@ -372,7 +373,7 @@ public class FunctionHeader {
 	
 	public FunctionHeader withGenericArguments(GenericMapper mapper) {
 		if (typeParameters.length > 0)
-			mapper = mapper.getInner(mapper.registry, StoredType.getSelfMapping(mapper.registry, typeParameters));
+			mapper = mapper.getInner(mapper.position, mapper.registry, StoredType.getSelfMapping(mapper.registry, typeParameters));
 		
 		return instance(mapper);
 	}
@@ -386,12 +387,12 @@ public class FunctionHeader {
 		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), storage, parameters);
 	}
 	
-	public FunctionHeader fillGenericArguments(TypeScope scope, StoredType[] arguments) {
+	public FunctionHeader fillGenericArguments(CodePosition position, TypeScope scope, StoredType[] arguments) {
 		if (arguments == null || arguments.length == 0)
 			return this;
 		
 		Map<TypeParameter, StoredType> typeArguments = StoredType.getMapping(typeParameters, arguments);
-		GenericMapper mapper = scope.getLocalTypeParameters().getInner(scope.getTypeRegistry(), typeArguments);
+		GenericMapper mapper = scope.getLocalTypeParameters().getInner(position, scope.getTypeRegistry(), typeArguments);
 		
 		StoredType returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];

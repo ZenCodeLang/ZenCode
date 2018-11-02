@@ -64,7 +64,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 	@Override
 	public void compile(BaseScope scope) {
 		FunctionHeader header = new FunctionHeader(scope.getTypeRegistry().getIterator(compiled.getLoopVariableTypes()).stored(UniqueStorageTag.INSTANCE));
-		StatementScope innerScope = new FunctionScope(scope, header);
+		StatementScope innerScope = new FunctionScope(position, scope, header);
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		compiled.setContent(body.compile(innerScope, header));
 	}

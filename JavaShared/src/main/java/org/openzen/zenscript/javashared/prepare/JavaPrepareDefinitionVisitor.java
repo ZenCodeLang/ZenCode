@@ -295,7 +295,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		if (isPrepared(definition))
 			return context.getJavaClass(definition);
 		
-		JavaClass cls = new JavaClass(definition.pkg.fullName, JavaClass.getNameFromFile(filename), JavaClass.Kind.CLASS);
+		JavaClass cls = new JavaClass(context.getPackageName(definition.pkg), JavaClass.getNameFromFile(filename), JavaClass.Kind.CLASS);
 		context.setJavaClass(definition, cls);
 		return cls;
 	}
@@ -310,7 +310,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			context.setJavaNativeClass(definition, nativeClasses.get(nativeTag.value));
 		}
 		
-		JavaClass cls = new JavaClass(definition.pkg.fullName, JavaClass.getNameFromFile(filename), JavaClass.Kind.CLASS);
+		JavaClass cls = new JavaClass(context.getPackageName(definition.pkg), JavaClass.getNameFromFile(filename), JavaClass.Kind.CLASS);
 		context.setJavaClass(definition, cls);
 		return cls;
 	}
@@ -326,7 +326,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		if (isPrepared(variant))
 			return context.getJavaClass(variant);
 		
-		JavaClass cls = new JavaClass(variant.pkg.fullName, variant.name, JavaClass.Kind.CLASS);
+		JavaClass cls = new JavaClass(context.getPackageName(variant.pkg), variant.name, JavaClass.Kind.CLASS);
 		context.setJavaClass(variant, cls);
 		
 		for (VariantDefinition.Option option : variant.options) {
@@ -345,11 +345,11 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		JavaNativeClass nativeClass = nativeTag == null ? null : nativeClasses.get(nativeTag.value);
 		JavaClass cls;
 		if (nativeClass == null) {
-			cls = outerClass == null ? new JavaClass(definition.pkg.fullName, definition.name, kind) : new JavaClass(outerClass, definition.name, kind);
+			cls = outerClass == null ? new JavaClass(context.getPackageName(definition.pkg), definition.name, kind) : new JavaClass(outerClass, definition.name, kind);
 			cls.destructible = definition.isDestructible();
 			context.setJavaClass(definition, cls);
 		} else {
-			cls = outerClass == null ? new JavaClass(definition.pkg.fullName, definition.name + "Expansion", kind) : new JavaClass(outerClass, definition.name + "Expansion", kind);
+			cls = outerClass == null ? new JavaClass(context.getPackageName(definition.pkg), definition.name + "Expansion", kind) : new JavaClass(outerClass, definition.name + "Expansion", kind);
 			
 			context.setJavaClass(definition, nativeClass.cls);
 			context.setJavaExpansionClass(definition, cls);

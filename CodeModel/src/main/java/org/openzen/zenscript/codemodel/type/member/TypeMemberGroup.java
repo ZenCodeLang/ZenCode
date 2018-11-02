@@ -256,7 +256,7 @@ public class TypeMemberGroup {
 		}
 	}
 	
-	public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> typeHints, int arguments) {
+	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> typeHints, int arguments) {
 		List<StoredType>[] result = (List<StoredType>[])(new List[arguments]);
 		for (int i = 0; i < result.length; i++)
 			result[i] = new ArrayList<>();
@@ -270,7 +270,7 @@ public class TypeMemberGroup {
 				for (StoredType resultHint : typeHints) {
 					Map<TypeParameter, StoredType> mapping = header.getReturnType().inferTypeParameters(scope.getMemberCache(), resultHint);
 					if (mapping != null) {
-						header = header.withGenericArguments(scope.getLocalTypeParameters().getInner(scope.getTypeRegistry(), mapping));
+						header = header.withGenericArguments(scope.getLocalTypeParameters().getInner(position, scope.getTypeRegistry(), mapping));
 						break;
 					}
 				}
@@ -287,7 +287,7 @@ public class TypeMemberGroup {
 	
 	public Expression call(CodePosition position, TypeScope scope, Expression target, CallArguments arguments, boolean allowStaticUsage) throws CompileException {
 		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, allowStaticUsage);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope, arguments.typeArguments);
+		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(position, scope, arguments.typeArguments);
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			arguments.arguments[i] = arguments.arguments[i].castImplicit(position, scope, instancedHeader.parameters[i].type);
 		}
@@ -316,13 +316,13 @@ public class TypeMemberGroup {
 			CompareType compareType) throws CompileException
 	{
 		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, false);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope, arguments.typeArguments);
+		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(position, scope, arguments.typeArguments);
 		return method.callWithComparator(position, compareType, target, instancedHeader, arguments, scope);
 	}
 	
 	public Expression callStatic(CodePosition position, TypeID target, TypeScope scope, CallArguments arguments) throws CompileException {
 		FunctionalMemberRef method = selectMethod(position, scope, arguments, false, true);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope, arguments.typeArguments);
+		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(position, scope, arguments.typeArguments);
 		return method.callStatic(position, target, instancedHeader, arguments, scope);
 	}
 	
@@ -332,8 +332,8 @@ public class TypeMemberGroup {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
 			
-			FunctionHeader header = method.member.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
-			if (header.matchesExactly(arguments, scope))
+			FunctionHeader header = method.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
+			if (header.matchesExactly(position, arguments, scope))
 				return method.member;
 		}
 		
@@ -347,13 +347,13 @@ public class TypeMemberGroup {
 			
 			scope.getPreparer().prepare(method.member.getTarget());
 			
-			FunctionHeader header = method.member.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
-			if (!header.matchesImplicitly(arguments, scope))
+			FunctionHeader header = method.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
+			if (!header.matchesImplicitly(position, arguments, scope))
 				continue;
 			
 			if (selected != null) {
 				StringBuilder explanation = new StringBuilder();
-				FunctionHeader selectedHeader = selected.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
+				FunctionHeader selectedHeader = selected.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
 				explanation.append("Function A: ").append(selectedHeader.toString()).append("\n");
 				explanation.append("Function B: ").append(header.toString());
 				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, "Ambiguous call; multiple methods match:\n" + explanation.toString());
@@ -375,7 +375,7 @@ public class TypeMemberGroup {
 					continue;
 				}
 				
-				FunctionHeader instancedHeader = method.member.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
+				FunctionHeader instancedHeader = method.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
 				message.append(instancedHeader.explainWhyIncompatible(scope, arguments)).append("\n");
 			}
 			

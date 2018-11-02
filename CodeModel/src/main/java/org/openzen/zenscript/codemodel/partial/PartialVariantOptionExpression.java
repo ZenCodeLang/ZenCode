@@ -42,7 +42,7 @@ public class PartialVariantOptionExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
 		if (arguments != option.getOption().types.length)
 			return new List[0];
 		

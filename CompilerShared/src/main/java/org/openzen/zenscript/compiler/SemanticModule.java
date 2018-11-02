@@ -137,14 +137,7 @@ public class SemanticModule {
 		if (state != State.VALIDATED)
 			throw new IllegalStateException("Module is not yet validated");
 		
-		ZenCodeCompilingModule module = compiler.addModule(this);
-		for (HighLevelDefinition definition : definitions.getAll()) {
-			module.addDefinition(definition);
-		}
-		for (ScriptBlock script : scripts) {
-			module.addScriptBlock(script);
-		}
-		module.finish();
+		compiler.addModule(this);
 	}
 	
 	public ModuleContext getContext() {

@@ -2127,16 +2127,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitNew(NewExpression expression) {
-		// TODO: this code is incorrect!
 		JavaMethod method = context.getJavaMethod(expression.constructor);
-
-        final String type;
-        if (expression.type.type instanceof DefinitionTypeID)
-            type = ((DefinitionTypeID) expression.type.type).definition.name;
-        else
-            type = context.getDescriptor(expression.type);
-
-        javaWriter.newObject(type);
+        javaWriter.newObject(method.cls.internalName);
         javaWriter.dup();
 
 		for (Expression argument : expression.arguments.arguments) {

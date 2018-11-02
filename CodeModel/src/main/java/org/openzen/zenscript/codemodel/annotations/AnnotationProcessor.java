@@ -176,7 +176,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 
 		@Override
 		public Void visitStaticInitializer(StaticInitializerMember member) {
-			StatementScope scope = new FunctionScope(this.scope, new FunctionHeader(BasicTypeID.VOID));
+			StatementScope scope = new FunctionScope(member.position, this.scope, new FunctionHeader(BasicTypeID.VOID));
 			if (member.body == null) {
 				throw new IllegalStateException("No body in static initializer @ " + member.position);
 			} else {
@@ -196,7 +196,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 			if (member.body == null)
 				return null;
 			
-			StatementScope scope = new FunctionScope(this.scope, member.header);
+			StatementScope scope = new FunctionScope(member.position, this.scope, member.header);
 			member.body = process(member.body, scope);
 			return null;
 		}
@@ -212,7 +212,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 			if (member.body == null)
 				return null;
 			
-			StatementScope scope = new FunctionScope(this.scope, new FunctionHeader(member.getType()));
+			StatementScope scope = new FunctionScope(member.position, this.scope, new FunctionHeader(member.getType()));
 			member.body = process(member.body, scope);
 			return null;
 		}
@@ -228,7 +228,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 			if (member.body == null)
 				return null;
 			
-			StatementScope scope = new FunctionScope(this.scope, new FunctionHeader(BasicTypeID.VOID, member.parameter));
+			StatementScope scope = new FunctionScope(member.position, this.scope, new FunctionHeader(BasicTypeID.VOID, member.parameter));
 			member.body = process(member.body, scope);
 			return null;
 		}

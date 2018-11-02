@@ -31,7 +31,7 @@ public interface IPartialExpression {
 	
 	Expression eval() throws CompileException;
 	
-	List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException;
+	List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) throws CompileException;
 	
 	List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException;
 	

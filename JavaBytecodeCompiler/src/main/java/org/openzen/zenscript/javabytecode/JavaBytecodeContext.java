@@ -8,10 +8,11 @@ package org.openzen.zenscript.javabytecode;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
+import org.openzen.zenscript.javashared.JavaCompileSpace;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaSynthesizedFunction;
@@ -26,16 +27,16 @@ import org.openzen.zenscript.javashared.JavaTypeUtils;
  * @author Hoofdgebruiker
  */
 public class JavaBytecodeContext extends JavaContext {
-	private final JavaModule module;
+	private final JavaBytecodeModule target;
 	private final TypeGenerator typeGenerator;
 	private final JavaTypeInternalNameVisitor internalNameVisitor;
 	private final JavaTypeDescriptorVisitor descriptorVisitor;
 	private int lambdaCounter = 0;
 	
-	public JavaBytecodeContext(GlobalTypeRegistry registry, JavaModule module) {
-		super(registry);
+	public JavaBytecodeContext(JavaBytecodeModule target, JavaCompileSpace space, ZSPackage modulePackage, String basePackage) {
+		super(space, modulePackage, basePackage);
 		
-		this.module = module;
+		this.target = target;
 		
 		typeGenerator = new TypeGenerator();
 		internalNameVisitor = new JavaTypeInternalNameVisitor(this);
@@ -73,7 +74,7 @@ public class JavaBytecodeContext extends JavaContext {
 	}
 	
 	public void register(String name, byte[] bytecode) {
-		module.register(name, bytecode);
+		target.addClass(name, bytecode);
 	}
 
     private void createLambdaInterface(JavaSynthesizedFunction function) {

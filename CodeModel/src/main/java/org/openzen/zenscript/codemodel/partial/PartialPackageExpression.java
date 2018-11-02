@@ -37,7 +37,7 @@ public class PartialPackageExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<StoredType>[] predictCallTypes(TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
 		return new List[arguments];
 	}
 	

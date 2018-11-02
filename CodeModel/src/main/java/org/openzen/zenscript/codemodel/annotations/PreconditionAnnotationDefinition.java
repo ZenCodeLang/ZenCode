@@ -61,7 +61,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	public ExpressionScope getScopeForMember(IDefinitionMember member, BaseScope scope) {
 		if (member instanceof FunctionalMember) {
 			FunctionHeader header = ((FunctionalMember)member).header;
-			return new ExpressionScope(new FunctionScope(scope, header));
+			return new ExpressionScope(new FunctionScope(((FunctionalMember) member).position, scope, header));
 		} else {
 			throw new UnsupportedOperationException("Can only assign preconditions to methods");
 		}
@@ -71,7 +71,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	public ExpressionScope getScopeForType(HighLevelDefinition definition, BaseScope scope) {
 		if (definition instanceof FunctionDefinition) {
 			FunctionHeader header = ((FunctionDefinition)definition).header;
-			return new ExpressionScope(new FunctionScope(scope, header));
+			return new ExpressionScope(new FunctionScope(((FunctionDefinition) definition).position, scope, header));
 		} else {
 			throw new UnsupportedOperationException("Can only assign preconditions to functions");
 		}
@@ -114,7 +114,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member) {
 		CodePosition position = input.deserializePosition();
 		String enforcement = input.readString();
-		StatementContext statementContext = new StatementContext(context, member.getHeader());
+		StatementContext statementContext = new StatementContext(position, context, member.getHeader());
 		Expression condition = input.deserializeExpression(statementContext);
 		Expression message = input.deserializeExpression(statementContext);
 		return new PreconditionForMethod(position, enforcement, condition, message);

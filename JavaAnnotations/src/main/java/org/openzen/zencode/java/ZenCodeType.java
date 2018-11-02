@@ -38,6 +38,10 @@ public interface ZenCodeType {
 	}
 	
 	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.CONSTRUCTOR)
+	@interface Constructor {}
+	
+	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
 	@interface Method {
 		String value() default "";

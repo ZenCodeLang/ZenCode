@@ -5,6 +5,9 @@
  */
 package org.openzen.zenscript.codemodel.type.storage;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileExceptionCode;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -22,13 +25,13 @@ public interface StorageTag {
 	
 	boolean isImmutable();
 	
-	static StorageTag union(StorageTag minor, StorageTag major) {
+	static StorageTag union(CodePosition position, StorageTag minor, StorageTag major) {
 		if (minor == AutoStorageTag.INSTANCE || minor == null)
 			return major;
 		if (major == AutoStorageTag.INSTANCE || major == null)
 			return minor;
 		if (!minor.equals(major))
-			throw new IllegalArgumentException("Could not unite storage types: " + minor + " and " + major); // TODO: proper reporting
+			return new InvalidStorageTag(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "Could not unite storage types: " + minor + " and " + major);
 		
 		return major;
 	}

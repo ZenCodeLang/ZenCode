@@ -39,7 +39,7 @@ public class GenericTypeID implements TypeID {
 	@Override
 	public StoredType instance(GenericMapper mapper, StorageTag storage) {
 		StoredType mapped = mapper.map(this);
-		return new StoredType(mapped.type, StorageTag.union(mapped.getSpecifiedStorage(), storage));
+		return new StoredType(mapped.type, StorageTag.union(mapper.position, mapped.getSpecifiedStorage(), storage));
 	}
 	
 	@Override

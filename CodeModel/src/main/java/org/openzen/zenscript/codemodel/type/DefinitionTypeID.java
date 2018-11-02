@@ -86,7 +86,7 @@ public class DefinitionTypeID implements TypeID {
 			Map<TypeParameter, StoredType> typeMapping = new HashMap<>();
 			for (int i = 0; i < definition.typeParameters.length; i++)
 				typeMapping.put(definition.typeParameters[i], typeArguments[i].getNormalized());
-			GenericMapper mapper = new GenericMapper(typeRegistry, typeMapping);
+			GenericMapper mapper = new GenericMapper(definition.position, typeRegistry, typeMapping);
 			TypeID result = alias.type.instance(mapper, null).type.getNormalized();
 			return result;
 		}
@@ -153,7 +153,7 @@ public class DefinitionTypeID implements TypeID {
 	
 	@Override
 	public TypeID getSuperType(GlobalTypeRegistry registry) {
-		return definition.getSuperType() == null ? null : definition.getSuperType().instance(new GenericMapper(registry, getTypeParameterMapping()), null).type;
+		return definition.getSuperType() == null ? null : definition.getSuperType().instance(new GenericMapper(definition.position, registry, getTypeParameterMapping()), null).type;
 	}
 	
 	@Override

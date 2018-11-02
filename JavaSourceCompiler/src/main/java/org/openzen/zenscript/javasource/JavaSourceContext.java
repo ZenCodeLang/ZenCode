@@ -5,10 +5,10 @@
  */
 package org.openzen.zenscript.javasource;
 
-import java.io.File;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.javashared.JavaCompileSpace;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
@@ -20,12 +20,14 @@ import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
 public class JavaSourceContext extends JavaContext {
 	private final JavaTypeDescriptorVisitor typeDescriptorVisitor;
 	private final JavaSyntheticClassGenerator generator;
+	public final JavaSourceSyntheticHelperGenerator helperGenerator;
 	
-	public JavaSourceContext(GlobalTypeRegistry registry, File directory, JavaSourceFormattingSettings settings) {
-		super(registry);
+	public JavaSourceContext(JavaSourceModule helpers, JavaSourceFormattingSettings settings, JavaCompileSpace space, ZSPackage modulePackage, String basePackage) {
+		super(space, modulePackage, basePackage);
 		
 		typeDescriptorVisitor = new JavaTypeDescriptorVisitor(this);
-		this.generator = new JavaSourceSyntheticTypeGenerator(directory, settings, this);
+		this.generator = new JavaSourceSyntheticTypeGenerator(helpers, settings, this);
+		helperGenerator = new JavaSourceSyntheticHelperGenerator(helpers, this, settings);
 	}
 	
 	@Override

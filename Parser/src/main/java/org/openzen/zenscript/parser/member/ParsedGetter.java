@@ -99,7 +99,7 @@ public class ParsedGetter extends ParsedDefinitionMember {
 		inferHeaders(scope);
 		
 		FunctionHeader header = new FunctionHeader(compiled.getType());
-		FunctionScope innerScope = new FunctionScope(scope, header);
+		FunctionScope innerScope = new FunctionScope(position, scope, header);
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		compiled.setBody(body.compile(innerScope, header));
 	}

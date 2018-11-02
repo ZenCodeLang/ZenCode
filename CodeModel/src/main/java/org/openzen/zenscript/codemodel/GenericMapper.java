@@ -8,6 +8,7 @@ package org.openzen.zenscript.codemodel;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -18,12 +19,14 @@ import org.openzen.zenscript.codemodel.type.StoredType;
  * @author Hoofdgebruiker
  */
 public class GenericMapper {
-	public static final GenericMapper EMPTY = new GenericMapper(null, Collections.emptyMap());
+	public static final GenericMapper EMPTY = new GenericMapper(CodePosition.BUILTIN, null, Collections.emptyMap());
 	
+	public final CodePosition position;
 	public final GlobalTypeRegistry registry;
 	private final Map<TypeParameter, StoredType> mapping;
 	
-	public GenericMapper(GlobalTypeRegistry registry, Map<TypeParameter, StoredType> mapping) {
+	public GenericMapper(CodePosition position, GlobalTypeRegistry registry, Map<TypeParameter, StoredType> mapping) {
+		this.position = position;
 		this.registry = registry;
 		this.mapping = mapping;
 	}
@@ -57,17 +60,17 @@ public class GenericMapper {
 		return mapping.isEmpty() ? original : original.withGenericArguments(this);
 	}
 	
-	public GenericMapper getInner(GlobalTypeRegistry registry, Map<TypeParameter, StoredType> mapping) {
+	public GenericMapper getInner(CodePosition position, GlobalTypeRegistry registry, Map<TypeParameter, StoredType> mapping) {
 		Map<TypeParameter, StoredType> resultMap = new HashMap<>(this.mapping);
 		resultMap.putAll(mapping);
-		return new GenericMapper(registry, resultMap);
+		return new GenericMapper(position, registry, resultMap);
 	}
 	
-	public GenericMapper getInner(GlobalTypeRegistry registry, TypeParameter[] parameters) {
+	public GenericMapper getInner(CodePosition position, GlobalTypeRegistry registry, TypeParameter[] parameters) {
 		Map<TypeParameter, StoredType> resultMap = new HashMap<>(this.mapping);
 		for (TypeParameter parameter : parameters)
 			resultMap.put(parameter, new StoredType(registry.getGeneric(parameter), null));
-		return new GenericMapper(registry, resultMap);
+		return new GenericMapper(position, registry, resultMap);
 	}
 	
 	@Override

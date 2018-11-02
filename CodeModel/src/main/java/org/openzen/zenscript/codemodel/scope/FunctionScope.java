@@ -36,11 +36,11 @@ public class FunctionScope extends StatementScope {
 	private final StoredType thisType;
 	private final DollarEvaluator dollar;
 	
-	public FunctionScope(BaseScope outer, FunctionHeader header) {
-		this(outer, header, null);
+	public FunctionScope(CodePosition position, BaseScope outer, FunctionHeader header) {
+		this(position, outer, header, null);
 	}
 	
-	public FunctionScope(BaseScope outer, FunctionHeader header, DollarEvaluator dollar) {
+	public FunctionScope(CodePosition position, BaseScope outer, FunctionHeader header, DollarEvaluator dollar) {
 		this.outer = outer;
 		this.header = header;
 		this.thisType = outer.getThisType() == null || header.storage == null ? outer.getThisType() : outer.getThisType().type.stored(header.storage);
@@ -51,7 +51,7 @@ public class FunctionScope extends StatementScope {
 		if (header == null)
 			throw new NullPointerException();
 		
-		typeParameterMap = outer.getLocalTypeParameters().getInner(outer.getTypeRegistry(), header.typeParameters);
+		typeParameterMap = outer.getLocalTypeParameters().getInner(position, outer.getTypeRegistry(), header.typeParameters);
 	}
 	
 	@Override
