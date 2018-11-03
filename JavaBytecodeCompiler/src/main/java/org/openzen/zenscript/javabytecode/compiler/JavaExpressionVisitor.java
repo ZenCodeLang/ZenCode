@@ -1,6 +1,7 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import org.openzen.zenscript.javashared.JavaParameterInfo;
+import org.openzen.zenscript.javashared.*;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.StringJoiner;
@@ -13,7 +14,6 @@ import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
-import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javabytecode.*;
@@ -24,12 +24,6 @@ import java.lang.reflect.Modifier;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaTypeUtils;
-import org.openzen.zenscript.javashared.JavaVariantOption;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
@@ -96,6 +90,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaField CHARACTER_MIN_VALUE = new JavaField(JavaClass.CHARACTER, "MIN_VALUE", "C");
 	private static final JavaField CHARACTER_MAX_VALUE = new JavaField(JavaClass.CHARACTER, "MAX_VALUE", "C");
 	private static final JavaMethod CHARACTER_TO_STRING = JavaMethod.getNativeStatic(JavaClass.CHARACTER, "toString", "(C)Ljava/lang/String;");
+	private static final JavaMethod STRING_INIT_CHARACTERS = JavaMethod.getNativeConstructor(JavaClass.STRING, "([C)V");
 	private static final JavaMethod STRING_COMPARETO = JavaMethod.getNativeVirtual(JavaClass.STRING, "compareTo", "(Ljava/lang/String;)I");
 	private static final JavaMethod STRING_CONCAT = JavaMethod.getNativeVirtual(JavaClass.STRING, "concat", "(Ljava/lang/String;)Ljava/lang/String;");
 	private static final JavaMethod STRING_CHAR_AT = JavaMethod.getNativeVirtual(JavaClass.STRING, "charAt", "(I)C");
@@ -109,6 +104,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaMethod ENUM_COMPARETO = JavaMethod.getNativeVirtual(JavaClass.ENUM, "compareTo", "(Ljava/lang/Enum;)I");
 	private static final JavaMethod ENUM_NAME = JavaMethod.getNativeVirtual(JavaClass.ENUM, "name", "()Ljava/lang/String;");
 	private static final JavaMethod ENUM_ORDINAL = JavaMethod.getNativeVirtual(JavaClass.ENUM, "ordinal", "()I");
+	private static final JavaMethod HASHMAP_INIT = JavaMethod.getNativeConstructor(JavaClass.HASHMAP, "()V");
 	private static final JavaMethod MAP_GET = JavaMethod.getNativeVirtual(JavaClass.MAP, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 	private static final JavaMethod MAP_PUT = JavaMethod.getNativeVirtual(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 	private static final JavaMethod MAP_CONTAINS_KEY = JavaMethod.getNativeVirtual(JavaClass.MAP, "containsKey", "(Ljava/lang/Object;)Z");
@@ -2128,8 +2124,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
     @Override
     public Void visitNew(NewExpression expression) {
+		if (expression.constructor.getBuiltin() != null) {
+			visitBuiltinConstructor(expression);
+			return null;
+		}
+
 		JavaMethod method = context.getJavaMethod(expression.constructor);
-        javaWriter.newObject(method.cls.internalName);
+        javaWriter.newObject(method.cls);
         javaWriter.dup();
 
 		for (Expression argument : expression.arguments.arguments) {
@@ -2138,6 +2139,130 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
         javaWriter.invokeSpecial(method);
 		return null;
+	}
+
+	private void visitBuiltinConstructor(NewExpression expression) {
+		switch (expression.constructor.getBuiltin()) {
+			case STRING_CONSTRUCTOR_CHARACTERS:
+				javaWriter.newObject(JavaClass.STRING);
+				javaWriter.dup();
+				expression.arguments.arguments[0].accept(this);
+				javaWriter.invokeSpecial(STRING_INIT_CHARACTERS);
+				return;
+			case ASSOC_CONSTRUCTOR:
+			case GENERICMAP_CONSTRUCTOR: {
+				javaWriter.newObject(JavaClass.HASHMAP);
+				javaWriter.dup();
+				javaWriter.invokeSpecial(HASHMAP_INIT);
+				return;
+			}
+			case ARRAY_CONSTRUCTOR_SIZED: {
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
+				if (type.dimension == 1) {
+					// new T[arguments[0]]
+					expression.arguments.arguments[0].accept(this);
+					javaWriter.newArray(context.getType(type.elementType));
+					return;
+				} else {
+					// TODO: implement multidimensional arrays
+					throw new UnsupportedOperationException("Not yet supported!");
+				}
+			}
+			case ARRAY_CONSTRUCTOR_INITIAL_VALUE: {
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
+
+				if (type.dimension == 1) {
+					// array = new T[arguments[0]]
+					// value = arguments[1]
+					// for (int i = 0; i < array.length; i++)
+					//    array[i] = value;
+
+					expression.arguments.arguments[0].accept(this); // array size
+					javaWriter.newArray(context.getType(type.elementType));
+
+					int i = javaWriter.local(int.class);
+					javaWriter.iConst0();
+					javaWriter.storeInt(i);
+
+					Type valueType = context.getType(expression.arguments.arguments[1].type);
+
+					expression.arguments.arguments[1].accept(this); // initializer value
+					javaWriter.store(valueType, i);
+
+					// TODO: implement in bytecode
+					return;
+				} else {
+					// TODO: implement
+					throw new UnsupportedOperationException("Not yet supported!");
+				}
+			}
+			case ARRAY_CONSTRUCTOR_LAMBDA: {
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
+
+				if (type.dimension == 1) {
+					// array = new T[arguments[0]]
+					// lambda = arguments[1]
+					// for (int i = 0; i < array.length; i++)
+					//    array[i] = lambda.invoke(i);
+					//
+					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
+
+					// TODO: implement in bytecode
+
+					return;
+				} else {
+					// TODO: implement
+					throw new UnsupportedOperationException("Not yet supported!");
+				}
+			}
+			case ARRAY_CONSTRUCTOR_PROJECTED: {
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
+
+				if (type.dimension == 1) {
+					// original = arguments[0] (this is an array)
+					// projector = arguments[1] (this is a lambda with 1 parameter)
+					// array = new T[original.length]
+					// for (int i = 0; i < array.length; i++)
+					//    array[i] = projector(original[i]);
+					//
+					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
+
+					// TODO: implement in bytecode
+
+					return;
+				} else {
+					// TODO: implement
+					throw new UnsupportedOperationException("Not yet supported!");
+				}
+			}
+			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
+
+				if (type.dimension == 1) {
+					// original = arguments[0] (this is an array)
+					// projector = arguments[1] (this is a lambda with 2 parameters)
+					// array = new T[original.length]
+					// for (int i = 0; i < array.length; i++)
+					//   array[i] = projector(i, original[i]);
+					//
+					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
+
+					// TODO: implement in bytecode
+
+					return;
+				} else {
+					// TODO: implement
+					throw new UnsupportedOperationException("Not yet supported!");
+				}
+			}
+			case CLASS_DEFAULT_CONSTRUCTOR:
+				javaWriter.newObject(context.getInternalName(expression.type));
+				javaWriter.dup();
+				javaWriter.invokeSpecial(context.getJavaMethod(expression.constructor));
+				return;
+		}
+
+		throw new UnsupportedOperationException("Unknown builtin constructor: " + expression.constructor.getBuiltin());
 	}
 
 	@Override
