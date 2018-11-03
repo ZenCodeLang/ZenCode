@@ -26,13 +26,6 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
  * @author Hoofdgebruiker
  */
 public class DefinitionTypeID implements TypeID {
-	public static DefinitionTypeID forType(GlobalTypeRegistry registry, HighLevelDefinition definition) {
-		if (definition.typeParameters != null && definition.typeParameters.length > 0)
-			throw new IllegalArgumentException("Definition has type arguments!");
-		
-		return new DefinitionTypeID(registry, definition, StoredType.NONE);
-	}
-	
 	public final HighLevelDefinition definition;
 	public final StoredType[] typeArguments;
 	public final DefinitionTypeID outer;

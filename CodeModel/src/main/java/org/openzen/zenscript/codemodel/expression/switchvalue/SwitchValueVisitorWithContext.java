@@ -10,13 +10,13 @@ package org.openzen.zenscript.codemodel.expression.switchvalue;
  * @author Hoofdgebruiker
  */
 public interface SwitchValueVisitorWithContext <C, R> {
-	public R acceptInt(C context, IntSwitchValue value);
+	R acceptInt(C context, IntSwitchValue value);
 	
-	public R acceptChar(C context, CharSwitchValue value);
+	R acceptChar(C context, CharSwitchValue value);
 	
-	public R acceptString(C context, StringSwitchValue value);
+	R acceptString(C context, StringSwitchValue value);
 	
-	public R acceptEnumConstant(C context, EnumConstantSwitchValue value);
+	R acceptEnumConstant(C context, EnumConstantSwitchValue value);
 	
-	public R acceptVariantOption(C context, VariantOptionSwitchValue value);
+	R acceptVariantOption(C context, VariantOptionSwitchValue value);
 }

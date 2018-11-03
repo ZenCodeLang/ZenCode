@@ -30,21 +30,15 @@ public class TypeParameter extends Taggable {
 		this.name = name;
 	}
 	
-	private TypeParameter(CodePosition position, String name, List<TypeParameterBound> bounds) {
-		this.position = position;
-		this.name = name;
-		bounds.addAll(bounds);
-	}
-	
 	public void addBound(TypeParameterBound bound) {
 		bounds.add(bound);
 	}
-	
+
 	public boolean isObjectType() {
 		for (TypeParameterBound bound : bounds)
 			if (bound.isObjectType())
 				return true;
-		
+
 		return false;
 	}
 	

@@ -45,7 +45,7 @@ public class ImplementationMember extends DefinitionMember {
 		members.addImplementation(new ImplementationMemberRef(this, members.type, instancedType.stored(members.type.getSpecifiedStorage())), priority);
 		
 		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType.stored(members.type.getActualStorage()));
-		interfaceTypeMembers.copyMembersTo(position, members, TypeMemberPriority.INTERFACE);
+		interfaceTypeMembers.copyMembersTo(members, TypeMemberPriority.INTERFACE);
 	}
 
 	@Override

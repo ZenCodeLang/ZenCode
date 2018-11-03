@@ -20,7 +20,7 @@ import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
  * @author Hoofdgebruiker
  */
 public interface TypeID {
-	public static final TypeID[] NONE = new TypeID[0];
+	TypeID[] NONE = new TypeID[0];
 	
 	default TypeID getSuperType(GlobalTypeRegistry registry) {
 		return null;

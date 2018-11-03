@@ -47,8 +47,7 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 		if (typesCompiled)
 			return;
 		typesCompiled = true;
-		
-		//System.out.println("compileTypes " + getCompiled().name);
+
 		linkTypesLocal(context);
 	}
 	
@@ -89,7 +88,7 @@ public abstract class BaseParsedDefinition extends ParsedDefinition {
 	private class Compiling implements CompilingType {
 		private final TypeResolutionContext context;
 		
-		public Compiling(TypeResolutionContext context) {
+		private Compiling(TypeResolutionContext context) {
 			this.context = new LocalTypeResolutionContext(context, this, getCompiled().typeParameters);
 		}
 		

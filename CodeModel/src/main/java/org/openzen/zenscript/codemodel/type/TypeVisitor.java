@@ -10,29 +10,29 @@ package org.openzen.zenscript.codemodel.type;
  * @author Hoofdgebruiker
  */
 public interface TypeVisitor<T> {
-	public T visitBasic(BasicTypeID basic);
+	T visitBasic(BasicTypeID basic);
 	
-	public T visitString(StringTypeID string);
+	T visitString(StringTypeID string);
 	
-	public T visitArray(ArrayTypeID array);
+	T visitArray(ArrayTypeID array);
 	
-	public T visitAssoc(AssocTypeID assoc);
+	T visitAssoc(AssocTypeID assoc);
 	
-	public T visitGenericMap(GenericMapTypeID map);
+	T visitGenericMap(GenericMapTypeID map);
 	
-	public T visitIterator(IteratorTypeID iterator);
+	T visitIterator(IteratorTypeID iterator);
 	
-	public T visitFunction(FunctionTypeID function);
+	T visitFunction(FunctionTypeID function);
 	
-	public T visitDefinition(DefinitionTypeID definition);
+	T visitDefinition(DefinitionTypeID definition);
 	
-	public T visitGeneric(GenericTypeID generic);
+	T visitGeneric(GenericTypeID generic);
 	
-	public T visitRange(RangeTypeID range);
+	T visitRange(RangeTypeID range);
 	
-	public T visitOptional(OptionalTypeID type);
+	T visitOptional(OptionalTypeID type);
 	
-	public default T visitInvalid(InvalidTypeID type) {
+	default T visitInvalid(InvalidTypeID type) {
 		throw new UnsupportedOperationException("Invalid type: " + type.message);
 	}
 }

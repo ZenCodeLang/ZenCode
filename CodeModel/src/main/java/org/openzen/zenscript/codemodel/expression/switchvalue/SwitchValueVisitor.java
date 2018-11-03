@@ -10,13 +10,13 @@ package org.openzen.zenscript.codemodel.expression.switchvalue;
  * @author Hoofdgebruiker
  */
 public interface SwitchValueVisitor <T> {
-	public T acceptInt(IntSwitchValue value);
+	T acceptInt(IntSwitchValue value);
 	
-	public T acceptChar(CharSwitchValue value);
+	T acceptChar(CharSwitchValue value);
 	
-	public T acceptString(StringSwitchValue value);
+	T acceptString(StringSwitchValue value);
 	
-	public T acceptEnumConstant(EnumConstantSwitchValue value);
+	T acceptEnumConstant(EnumConstantSwitchValue value);
 	
-	public T acceptVariantOption(VariantOptionSwitchValue value);
+	T acceptVariantOption(VariantOptionSwitchValue value);
 }

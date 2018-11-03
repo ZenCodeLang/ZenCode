@@ -9,7 +9,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
  *
@@ -50,7 +49,7 @@ public class GetterExpression extends Expression {
 	@Override
 	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 		return scope.getTypeMembers(getter.getOwnerType())
-				.getOrCreateGroup(getter.member.name, false)
+				.getGroup(getter.member.name)
 				.setter(position, scope, target, value, false);
 	}
 }

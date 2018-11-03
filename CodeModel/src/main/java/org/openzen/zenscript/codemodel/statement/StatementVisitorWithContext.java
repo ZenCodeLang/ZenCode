@@ -10,37 +10,37 @@ package org.openzen.zenscript.codemodel.statement;
  * @author Hoofdgebruiker
  */
 public interface StatementVisitorWithContext<C, R> {
-	public R visitBlock(C context, BlockStatement statement);
+	R visitBlock(C context, BlockStatement statement);
 	
-	public R visitBreak(C context, BreakStatement statement);
+	R visitBreak(C context, BreakStatement statement);
 	
-	public R visitContinue(C context, ContinueStatement statement);
+	R visitContinue(C context, ContinueStatement statement);
 	
-	public R visitDoWhile(C context, DoWhileStatement statement);
+	R visitDoWhile(C context, DoWhileStatement statement);
 	
-	public R visitEmpty(C context, EmptyStatement statement);
+	R visitEmpty(C context, EmptyStatement statement);
 	
-	public R visitExpression(C context, ExpressionStatement statement);
+	R visitExpression(C context, ExpressionStatement statement);
 	
-	public R visitForeach(C context, ForeachStatement statement);
+	R visitForeach(C context, ForeachStatement statement);
 	
-	public R visitIf(C context, IfStatement statement);
+	R visitIf(C context, IfStatement statement);
 	
 	default R visitInvalid(C context, InvalidStatement statement) {
 		throw new UnsupportedOperationException("Invalid statement");
 	}
 	
-	public R visitLock(C context, LockStatement statement);
+	R visitLock(C context, LockStatement statement);
 	
-	public R visitReturn(C context, ReturnStatement statement);
+	R visitReturn(C context, ReturnStatement statement);
 	
-	public R visitSwitch(C context, SwitchStatement statement);
+	R visitSwitch(C context, SwitchStatement statement);
 	
-	public R visitThrow(C context, ThrowStatement statement);
+	R visitThrow(C context, ThrowStatement statement);
 	
-	public R visitTryCatch(C context, TryCatchStatement statement);
+	R visitTryCatch(C context, TryCatchStatement statement);
 	
-	public R visitVar(C context, VarStatement statement);
+	R visitVar(C context, VarStatement statement);
 	
-	public R visitWhile(C context, WhileStatement statement);
+	R visitWhile(C context, WhileStatement statement);
 }

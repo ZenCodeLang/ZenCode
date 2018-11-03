@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
@@ -35,6 +36,23 @@ public class JavaCompiledModule {
 	
 	public JavaCompiledModule(Module module) {
 		this.module = module;
+	}
+	
+	public void loadMappings(String mappings) {
+		
+	}
+	
+	public String generateMappings() {
+		JavaMappingWriter writer = new JavaMappingWriter(this);
+		for (HighLevelDefinition definition : classes.keySet()) {
+			if (!(definition instanceof ExpansionDefinition))
+				definition.accept(writer);
+		}
+		for (HighLevelDefinition definition : expansionClasses.keySet()) {
+			definition.accept(writer);
+		}
+		
+		return writer.getOutput();
 	}
 	
 	public void setClassInfo(HighLevelDefinition definition, JavaClass cls) {
@@ -119,6 +137,10 @@ public class JavaCompiledModule {
 	
 	public void setMethodInfo(IDefinitionMember member, JavaMethod method) {
 		methods.put(member, method);
+	}
+	
+	public JavaMethod optMethodInfo(IDefinitionMember member) {
+		return methods.get(member);
 	}
 	
 	public JavaMethod getMethodInfo(DefinitionMemberRef member) {

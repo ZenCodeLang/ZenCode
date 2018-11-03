@@ -114,7 +114,7 @@ public class ParsedAlias extends ParsedDefinition {
 	private class Compiling implements CompilingType {
 		private final TypeResolutionContext context;
 		
-		public Compiling(TypeResolutionContext context) {
+		private Compiling(TypeResolutionContext context) {
 			this.context = new LocalTypeResolutionContext(context, this, compiled.typeParameters);
 		}
 		

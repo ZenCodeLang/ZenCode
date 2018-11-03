@@ -17,7 +17,7 @@ import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
  *
  * @author Hoofdgebruiker
  */
-public class ParameterTypeBound extends TypeParameterBound {
+public final class ParameterTypeBound implements TypeParameterBound {
 	public final CodePosition position;
 	public final TypeID type;
 	
@@ -33,8 +33,8 @@ public class ParameterTypeBound extends TypeParameterBound {
 
 	@Override
 	public void registerMembers(LocalMemberCache cache, TypeMembers members) {
-		cache.get(this.type.stored(members.type.getSpecifiedStorage()))
-				.copyMembersTo(position, members, TypeMemberPriority.FROM_TYPE_BOUNDS);
+		cache.get(type.stored(members.type.getSpecifiedStorage()))
+				.copyMembersTo(members, TypeMemberPriority.FROM_TYPE_BOUNDS);
 	}
 
 	@Override

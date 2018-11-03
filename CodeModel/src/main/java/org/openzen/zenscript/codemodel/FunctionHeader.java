@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
@@ -207,7 +208,7 @@ public class FunctionHeader {
 		return true;
 	}
 	
-	public String getCanonical() {
+	public String getCanonicalWithoutReturnType() {
 		StringBuilder result = new StringBuilder();
 		if (getNumberOfTypeParameters() > 0) {
 			result.append('<');
@@ -218,8 +219,8 @@ public class FunctionHeader {
 			}
 			result.append('>');
 		}
-		if (storage != null)
-			result.append(storage);
+		if (storage != null && storage != AutoStorageTag.INSTANCE)
+			result.append('`').append(storage);
 		result.append('(');
 		for (int i = 0; i < parameters.length; i++) {
 			if (i > 0)
@@ -230,44 +231,8 @@ public class FunctionHeader {
 		return result.toString();
 	}
 	
-	public StoredType[] inferTypes(LocalMemberCache cache, CallArguments arguments, List<StoredType> resultHint) {
-		if (arguments.arguments.length != this.parameters.length)
-			return null;
-		
-		Map<TypeParameter, StoredType> mapping = new HashMap<>();
-		if (!resultHint.isEmpty()) {
-			for (StoredType hint : resultHint) {
-				Map<TypeParameter, StoredType> temp = returnType.inferTypeParameters(cache, hint);
-				if (temp != null) {
-					mapping = temp;
-					break;
-				}
-			}
-		}
-		
-		// TODO: lambda header inference
-		for (int i = 0; i < parameters.length; i++) {
-			Map<TypeParameter, StoredType> forParameter = parameters[i].type.inferTypeParameters(cache, arguments.arguments[i].type);
-			if (forParameter == null)
-				return null;
-			
-			mapping.putAll(forParameter);
-		}
-		
-		if (mapping.size() > typeParameters.length)
-			return null;
-		
-		StoredType[] result = new StoredType[typeParameters.length];
-		for (int i = 0; i < typeParameters.length; i++) {
-			TypeParameter typeParameter = typeParameters[i];
-			if (!mapping.containsKey(typeParameter)) {
-				return null;
-			} else {
-				result[i] = mapping.get(typeParameter);
-			}
-		}
-		
-		return result;
+	public String getCanonical() {
+		return getCanonicalWithoutReturnType() + returnType.type.toString();
 	}
 	
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {

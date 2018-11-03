@@ -40,6 +40,8 @@ import org.openzen.zenscript.codemodel.type.TypeID;
  * @author Hoofdgebruiker
  */
 public class TypeMemberGroup {
+	public static final TypeMemberGroup EMPTY = new TypeMemberGroup(false, "");
+
 	public static TypeMemberGroup forMethod(String name, FunctionalMemberRef member) {
 		TypeMemberGroup instance = new TypeMemberGroup(member.isStatic(), name);
 		instance.addMethod(member, TypeMemberPriority.SPECIFIED);
@@ -59,7 +61,7 @@ public class TypeMemberGroup {
 		this.name = name;
 	}
 	
-	public void merge(CodePosition position, TypeMemberGroup other, TypeMemberPriority priority) {
+	public void merge(TypeMemberGroup other, TypeMemberPriority priority) {
 		if (other.constant != null)
 			setConst(other.constant.member, priority);
 		if (other.field != null)
@@ -198,9 +200,6 @@ public class TypeMemberGroup {
 			scope.getPreparer().prepare(setter.member.member);
 			return new SetterExpression(position, target, setter.member, value.castImplicit(position, scope, setter.member.getType()));
 		} else if (field != null) {
-			// TODO: perform proper checks on val fields
-			//if (field.isFinal)
-			//	throw new CompileException(position, "This field cannot be modified");
 			if (field.member.isStatic()) {
 				if (!allowStaticUsage)
 					return new InvalidExpression(position, field.member.getType(), CompileExceptionCode.USING_STATIC_ON_INSTANCE, "This field is static");
@@ -244,8 +243,6 @@ public class TypeMemberGroup {
 			scope.getPreparer().prepare(setter.member.member);
 			return new StaticSetterExpression(position, setter.member, value.castImplicit(position, scope, setter.member.getType()));
 		} else if (field != null) {
-			//if (field.member.isFinal)
-			//	throw new CompileException(position, CompileExceptionCode.MEMBER_IS_FINAL, "This field cannot be modified");
 			if (!field.member.isStatic())
 				return new InvalidExpression(position, field.member.getType(), CompileExceptionCode.MEMBER_NOT_STATIC, "This field is not static");
 

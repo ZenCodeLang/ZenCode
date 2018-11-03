@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *

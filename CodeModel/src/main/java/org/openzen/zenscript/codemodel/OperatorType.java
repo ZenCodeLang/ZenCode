@@ -59,13 +59,13 @@ public enum OperatorType {
 	public final String operator;
 	public final String compiledName;
 	
-	private OperatorType(String operator, String compiledName) {
+	OperatorType(String operator, String compiledName) {
 		this.operator = operator;
 		this.compiledName = compiledName;
 		assignOperatorFor = null;
 	}
 	
-	private OperatorType(String operator, String compiledName, OperatorType assignOperatorFor) {
+	OperatorType(String operator, String compiledName, OperatorType assignOperatorFor) {
 		this.operator = operator;
 		this.compiledName = compiledName;
 		this.assignOperatorFor = assignOperatorFor;

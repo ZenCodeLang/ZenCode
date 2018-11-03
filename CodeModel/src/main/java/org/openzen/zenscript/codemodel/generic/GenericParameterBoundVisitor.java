@@ -10,7 +10,7 @@ package org.openzen.zenscript.codemodel.generic;
  * @author Hoofdgebruiker
  */
 public interface GenericParameterBoundVisitor<T> {
-	public T visitSuper(ParameterSuperBound bound);
+	T visitSuper(ParameterSuperBound bound);
 	
-	public T visitType(ParameterTypeBound bound);
+	T visitType(ParameterTypeBound bound);
 }

@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -47,7 +46,6 @@ public class DefinitionScope extends BaseScope {
 	private final StoredType type;
 	private final TypeMembers members;
 	private final TypeParameter[] typeParameters;
-	private final Map<String, Supplier<HighLevelDefinition>> innerTypes = new HashMap<>();
 	private final GenericMapper typeParameterMap;
 	
 	public DefinitionScope(BaseScope outer, HighLevelDefinition definition) {
@@ -82,10 +80,6 @@ public class DefinitionScope extends BaseScope {
 		typeParameterMap = outer.getLocalTypeParameters().getInner(definition.position, getTypeRegistry(), typeParameters);
 	}
 	
-	public void addInnerType(String name, Supplier<HighLevelDefinition> innerType) {
-		innerTypes.put(name, innerType);
-	}
-	
 	@Override
 	public ZSPackage getRootPackage() {
 		return outer.getRootPackage();
@@ -103,8 +97,6 @@ public class DefinitionScope extends BaseScope {
 				return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
 			if (members.hasMember(name.name) && !name.hasArguments())
 				return members.getMemberExpression(position, this, new ThisExpression(position, type), name, true);
-		} else if (innerTypes.containsKey(name.name)) {
-			return new PartialTypeExpression(position, getTypeRegistry().getForDefinition(innerTypes.get(name).get(), name.arguments), name.arguments);
 		}
 		if (!name.hasArguments()) {
 			for (TypeParameter parameter : typeParameters)
@@ -129,15 +121,7 @@ public class DefinitionScope extends BaseScope {
 			for (TypeParameter parameter : typeParameters)
 				if (parameter.name.equals(name.get(0).name))
 					return getTypeRegistry().getGeneric(parameter);
-		
-		if (innerTypes.containsKey(name.get(0).name)) {
-			TypeID result = getTypeRegistry().getForDefinition(innerTypes.get(name.get(0).name).get(), name.get(0).arguments);
-			for (int i = 1; i < name.size(); i++) {
-				result = getTypeMembers(result.stored(StaticExpressionStorageTag.INSTANCE)).getInnerType(position, name.get(i));
-			}
-			return result;
-		}
-		
+
 		return outer.getType(position, name);
 	}
 

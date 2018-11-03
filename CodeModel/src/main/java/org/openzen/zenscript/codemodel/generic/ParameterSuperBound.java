@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
  *
  * @author Hoofdgebruiker
  */
-public class ParameterSuperBound extends TypeParameterBound {
+public final class ParameterSuperBound implements TypeParameterBound {
 	public final TypeID type;
 	
 	public ParameterSuperBound(TypeID type) {

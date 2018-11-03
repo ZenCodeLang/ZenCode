@@ -15,13 +15,13 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
  * @author Hoofdgebruiker
  */
 public interface DefinitionAnnotation {
-	public static final DefinitionAnnotation[] NONE = new DefinitionAnnotation[0];
+	DefinitionAnnotation[] NONE = new DefinitionAnnotation[0];
 	
-	public AnnotationDefinition getDefinition();
+	AnnotationDefinition getDefinition();
 	
-	public void apply(HighLevelDefinition definition, BaseScope scope);
+	void apply(HighLevelDefinition definition, BaseScope scope);
 	
-	public void applyOnSubtype(HighLevelDefinition definition, BaseScope scope);
+	void applyOnSubtype(HighLevelDefinition definition, BaseScope scope);
 	
-	public void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeContext context);
+	void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeContext context);
 }

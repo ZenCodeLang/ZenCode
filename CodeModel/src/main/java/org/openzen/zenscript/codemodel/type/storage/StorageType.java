@@ -12,7 +12,7 @@ import org.openzen.zencode.shared.CodePosition;
  * @author Hoofdgebruiker
  */
 public interface StorageType {
-	public static StorageType[] getStandard() {
+	static StorageType[] getStandard() {
 		return new StorageType[] {
 			AutoStorageType.INSTANCE,
 			BorrowStorageType.INSTANCE,

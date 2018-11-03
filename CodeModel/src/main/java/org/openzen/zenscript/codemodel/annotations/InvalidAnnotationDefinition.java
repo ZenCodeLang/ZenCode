@@ -42,61 +42,61 @@ public class InvalidAnnotationDefinition implements AnnotationDefinition {
 
 	@Override
 	public ExpressionScope getScopeForMember(IDefinitionMember member, BaseScope scope) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public ExpressionScope getScopeForType(HighLevelDefinition definition, BaseScope scope) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public ExpressionScope getScopeForStatement(Statement statement, StatementScope scope) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public ExpressionScope getScopeForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public MemberAnnotation createForMember(CodePosition position, CallArguments arguments) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public DefinitionAnnotation createForDefinition(CodePosition position, CallArguments arguments) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public StatementAnnotation createForStatement(CodePosition position, CallArguments arguments) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public ParameterAnnotation createForParameter(CodePosition position, CallArguments arguments) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeContext context) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 
 	@Override
 	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 }

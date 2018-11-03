@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.partial;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.openzen.zencode.shared.CodePosition;
@@ -20,6 +21,7 @@ import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 
 /**
@@ -44,15 +46,19 @@ public class PartialTypeExpression implements IPartialExpression {
 
 	@Override
 	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
-		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).predictCallTypes(position, scope, hints, arguments);
+		TypeMemberGroup group = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL);
+		if (group == null)
+			return new List[0];
+
+		return group.predictCallTypes(position, scope, hints, arguments);
 	}
 	
 	@Override
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
-		return scope.getTypeMembers(type)
-				.getOrCreateGroup(OperatorType.CALL)
+		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
+		return group
 				.getMethodMembers().stream()
-				.filter(method -> method.member.getHeader().parameters.length == arguments && method.member.isStatic())
+				.filter(method -> method.member.getHeader().accepts(arguments) && method.member.isStatic())
 				.map(method -> method.member.getHeader())
 				.collect(Collectors.toList());
 	}
@@ -66,8 +72,12 @@ public class PartialTypeExpression implements IPartialExpression {
 	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
 		if (arguments.getNumberOfTypeArguments() == 0 && (typeArguments != null && typeArguments.length > 0))
 			arguments = new CallArguments(typeArguments, arguments.arguments);
-		
-		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).callStatic(position, type.type, scope, arguments);
+
+		TypeMemberGroup group = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL);
+		if (group == null)
+			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "This type has not call operator");
+
+		return group.callStatic(position, type.type, scope, arguments);
 	}
 
 	@Override

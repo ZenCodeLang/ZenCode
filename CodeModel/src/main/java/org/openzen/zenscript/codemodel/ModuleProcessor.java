@@ -10,7 +10,7 @@ package org.openzen.zenscript.codemodel;
  * @author Hoofdgebruiker
  */
 public interface ModuleProcessor {
-	public ScriptBlock process(ScriptBlock block);
+	ScriptBlock process(ScriptBlock block);
 	
-	public void process(HighLevelDefinition definition);
+	void process(HighLevelDefinition definition);
 }

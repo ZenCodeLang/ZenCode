@@ -14,18 +14,18 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
  *
  * @author Hoofdgebruiker
  */
-public abstract class TypeParameterBound {
-	public abstract boolean isObjectType();
+public interface TypeParameterBound {
+	boolean isObjectType();
 	
-	public abstract <T> T accept(GenericParameterBoundVisitor<T> visitor);
+	<T> T accept(GenericParameterBoundVisitor<T> visitor);
 	
-	public abstract <C, R> R accept(C context, GenericParameterBoundVisitorWithContext<C, R> visitor);
+	<C, R> R accept(C context, GenericParameterBoundVisitorWithContext<C, R> visitor);
 	
-	public abstract void registerMembers(LocalMemberCache cache, TypeMembers type);
+	void registerMembers(LocalMemberCache cache, TypeMembers type);
 	
-	public abstract boolean matches(LocalMemberCache cache, TypeID type);
+	boolean matches(LocalMemberCache cache, TypeID type);
 	
-	public abstract TypeParameterBound instance(GenericMapper mapper);
+	TypeParameterBound instance(GenericMapper mapper);
 	
-	public abstract String getCanonical();
+	String getCanonical();
 }

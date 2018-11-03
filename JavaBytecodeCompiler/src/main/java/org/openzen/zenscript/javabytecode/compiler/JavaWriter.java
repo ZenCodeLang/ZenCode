@@ -868,6 +868,13 @@ public class JavaWriter {
         visitor.visitTypeInsn(NEW, internalName);
     }
 
+    public void newObject(JavaClass cls) {
+        if (debug)
+            System.out.println("newObject " + cls.internalName);
+
+        visitor.visitTypeInsn(NEW, cls.internalName);
+    }
+
     public void goTo(Label lbl) {
         if (debug)
             System.out.println("goTo " + getLabelName(lbl));

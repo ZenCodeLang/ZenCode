@@ -523,12 +523,12 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			InterfaceDefinition interfaceDefinition = (InterfaceDefinition)definition;
 			for (TypeID baseType : interfaceDefinition.baseInterfaces)
 				cache.get(baseType.instance(mapper, type.getSpecifiedStorage()))
-						.copyMembersTo(definitionType.definition.position, members, TypeMemberPriority.INHERITED);
+						.copyMembersTo(members, TypeMemberPriority.INHERITED);
 		}
 		
 		if (definitionType.superType != null) {
 			cache.get(definitionType.superType.stored(type.getSpecifiedStorage()))
-					.copyMembersTo(definitionType.definition.position, members, TypeMemberPriority.INHERITED);
+					.copyMembersTo(members, TypeMemberPriority.INHERITED);
 		} else {
 			getter(definition, OBJECT_HASHCODE, "objectHashCode", INT.stored);
 		}

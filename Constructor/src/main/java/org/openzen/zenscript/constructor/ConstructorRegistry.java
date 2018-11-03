@@ -6,6 +6,10 @@
 package org.openzen.zenscript.constructor;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +25,7 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeModule;
 import org.openzen.zenscript.javabytecode.JavaBytecodeRunUnit;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javashared.JavaCompileSpace;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.SimpleJavaCompileSpace;
 import org.openzen.zenscript.javasource.JavaDirectoryOutput;
 import org.openzen.zenscript.javasource.JavaSourceCompiler;
@@ -112,6 +117,8 @@ public class ConstructorRegistry {
 		@Override
 		public void addModule(SemanticModule module) {
 			JavaSourceModule result = compiler.compile(module, space, module.modulePackage.fullName);
+			writeMappings(result);
+			
 			modules.add(result);
 			space.register(result);
 		}
@@ -127,6 +134,15 @@ public class ConstructorRegistry {
 		@Override
 		public void run() {
 			throw new UnsupportedOperationException();
+		}
+		
+		private void writeMappings(JavaCompiledModule module) {
+			String mappings = module.generateMappings();
+			try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(new File(output, "java.map")), StandardCharsets.UTF_8)) {
+				writer.write(mappings);
+			} catch (IOException ex) {
+				
+			}
 		}
 	}
 	

@@ -64,13 +64,6 @@ public abstract class HighLevelDefinition extends Taggable {
 			pkg.register(this);
 	}
 	
-	public HighLevelDefinition getOutermost() {
-		HighLevelDefinition result = this;
-		while (result.outerDefinition != null)
-			result = result.outerDefinition;
-		return result;
-	}
-	
 	public String getFullName() {
 		return pkg.fullName + '.' + name;
 	}
@@ -102,7 +95,11 @@ public abstract class HighLevelDefinition extends Taggable {
 	public void setOuterDefinition(HighLevelDefinition outerDefinition) {
 		this.outerDefinition = outerDefinition;
 	}
-	
+
+	public boolean isExpansion() {
+		return this instanceof ExpansionDefinition;
+	}
+
 	public boolean isInnerDefinition() {
 		return outerDefinition != null;
 	}
@@ -187,7 +184,7 @@ public abstract class HighLevelDefinition extends Taggable {
 	
 	public void normalize(TypeScope scope) {
 		DestructorMember destructor = null;
-		List<FieldMember> fields = new ArrayList();
+		List<FieldMember> fields = new ArrayList<>();
 		
 		for (IDefinitionMember member : members) {
 			member.normalize(scope);

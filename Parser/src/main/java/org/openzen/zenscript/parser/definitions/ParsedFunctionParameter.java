@@ -40,9 +40,10 @@ public class ParsedFunctionParameter {
 		
 		StoredType cType = type.compile(context);
 		Expression cDefaultValue = null;
-		return compiled = new FunctionParameter(cType, name, cDefaultValue, variadic);
+		return compiled = new FunctionParameter(cType, name, null, variadic);
 	}
-	
+
+	// TODO: this isn't called!
 	public void compileInitializer(BaseScope scope, PrecompilationState state) {
 		if (defaultValue != null) {
 			try {

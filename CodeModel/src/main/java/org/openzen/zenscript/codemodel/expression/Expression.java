@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -102,22 +103,23 @@ public abstract class Expression implements IPartialExpression {
 	
 	@Override
 	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
-		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).predictCallTypes(position, scope, hints, arguments);
+		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
+		return group.predictCallTypes(position, scope, hints, arguments);
 	}
 	
 	@Override
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
-		return scope.getTypeMembers(type)
-				.getOrCreateGroup(OperatorType.CALL)
-				.getMethodMembers().stream()
-				.filter(method -> method.member.getHeader().parameters.length == arguments && !method.member.isStatic())
+		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
+		return group.getMethodMembers().stream()
+				.filter(method -> method.member.getHeader().accepts(arguments) && !method.member.isStatic())
 				.map(method -> method.member.getHeader())
 				.collect(Collectors.toList());
 	}
 	
 	@Override
 	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
-		return scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL).call(position, scope, this, arguments, false);
+		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
+		return group.call(position, scope, this, arguments, false);
 	}
 	
 	@Override

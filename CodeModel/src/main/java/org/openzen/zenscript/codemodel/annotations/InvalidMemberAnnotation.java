@@ -26,12 +26,6 @@ public class InvalidMemberAnnotation implements MemberAnnotation {
 	public final CompileExceptionCode code;
 	public final String message;
 	
-	public InvalidMemberAnnotation(CodePosition position, CompileExceptionCode code, String message) {
-		this.position = position;
-		this.code = code;
-		this.message = message;
-	}
-	
 	public InvalidMemberAnnotation(CompileException ex) {
 		this.position = ex.position;
 		this.code = ex.code;
@@ -65,6 +59,8 @@ public class InvalidMemberAnnotation implements MemberAnnotation {
 
 	@Override
 	public void serialize(CodeSerializationOutput output, IDefinitionMember member, TypeContext context) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		output.serialize(position);
+		output.writeUInt(code.ordinal());
+		output.writeString(message);
 	}
 }

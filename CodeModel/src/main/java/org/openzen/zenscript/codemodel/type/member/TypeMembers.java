@@ -48,7 +48,6 @@ import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -120,7 +119,7 @@ public final class TypeMembers {
 		return cache.getRegistry();
 	}
 	
-	public void copyMembersTo(CodePosition position, TypeMembers other, TypeMemberPriority priority) {
+	public void copyMembersTo(TypeMembers other, TypeMemberPriority priority) {
 		other.casters.addAll(casters);
 		other.iterators.addAll(iterators);
 		
@@ -129,11 +128,11 @@ public final class TypeMembers {
 		for (Map.Entry<String, VariantOptionRef> entry : variantOptions.entrySet())
 			other.addVariantOption(entry.getValue());
 		for (Map.Entry<String, TypeMemberGroup> entry : members.entrySet())
-			other.getOrCreateGroup(entry.getKey(), entry.getValue().isStatic).merge(position, entry.getValue(), priority);
+			other.getOrCreateGroup(entry.getKey(), entry.getValue().isStatic).merge(entry.getValue(), priority);
 		for (Map.Entry<String, InnerDefinition> entry : innerTypes.entrySet())
 			other.innerTypes.put(entry.getKey(), entry.getValue());
 		for (Map.Entry<OperatorType, TypeMemberGroup> entry : operators.entrySet())
-			other.getOrCreateGroup(entry.getKey()).merge(position, entry.getValue(), priority);
+			other.getOrCreateGroup(entry.getKey()).merge(entry.getValue(), priority);
 	}
 	
 	public DefinitionMemberRef getBuiltin(BuiltinID builtin) {
@@ -256,26 +255,14 @@ public final class TypeMembers {
 		group.setField(member, priority);
 	}
 	
-	public void addGetter(GetterMemberRef member) throws CompileException {
-		addGetter(member, TypeMemberPriority.SPECIFIED);
-	}
-	
 	public void addGetter(GetterMemberRef member, TypeMemberPriority priority) {
 		TypeMemberGroup group = getOrCreateGroup(member.member.name, member.isStatic());
 		group.setGetter(member, priority);
 	}
 	
-	public void addSetter(SetterMemberRef member) throws CompileException {
-		addSetter(member, TypeMemberPriority.SPECIFIED);
-	}
-	
 	public void addSetter(SetterMemberRef member, TypeMemberPriority priority) {
 		TypeMemberGroup group = getOrCreateGroup(member.member.name, member.isStatic());
 		group.setSetter(member, priority);
-	}
-	
-	public void addMethod(String name, FunctionalMemberRef member) {
-		addMethod(name, member, TypeMemberPriority.SPECIFIED);
 	}
 	
 	public void addMethod(String name, FunctionalMemberRef member, TypeMemberPriority priority) {
@@ -334,6 +321,9 @@ public final class TypeMembers {
 	}
 	
 	public TypeMemberGroup getGroup(String name) {
+		if (!members.containsKey(name))
+			return new TypeMemberGroup(false, name);
+
 		return members.get(name);
 	}
 	
@@ -345,6 +335,9 @@ public final class TypeMembers {
 	}
 	
 	public TypeMemberGroup getGroup(OperatorType operator) {
+		if (!operators.containsKey(operator))
+			return new TypeMemberGroup(false, operator.operator + " operator");
+
 		return operators.get(operator);
 	}
 	

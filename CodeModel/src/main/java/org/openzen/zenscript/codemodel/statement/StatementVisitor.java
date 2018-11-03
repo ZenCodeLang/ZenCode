@@ -10,37 +10,37 @@ package org.openzen.zenscript.codemodel.statement;
  * @author Hoofdgebruiker
  */
 public interface StatementVisitor<T> {
-	public T visitBlock(BlockStatement statement);
+	T visitBlock(BlockStatement statement);
 	
-	public T visitBreak(BreakStatement statement);
+	T visitBreak(BreakStatement statement);
 	
-	public T visitContinue(ContinueStatement statement);
+	T visitContinue(ContinueStatement statement);
 	
-	public T visitDoWhile(DoWhileStatement statement);
+	T visitDoWhile(DoWhileStatement statement);
 	
-	public T visitEmpty(EmptyStatement statement);
+	T visitEmpty(EmptyStatement statement);
 	
-	public T visitExpression(ExpressionStatement statement);
+	T visitExpression(ExpressionStatement statement);
 	
-	public T visitForeach(ForeachStatement statement);
+	T visitForeach(ForeachStatement statement);
 	
-	public T visitIf(IfStatement statement);
+	T visitIf(IfStatement statement);
 	
 	default T visitInvalid(InvalidStatement statement) {
 		throw new UnsupportedOperationException("Invalid statement");
 	}
 	
-	public T visitLock(LockStatement statement);
+	T visitLock(LockStatement statement);
 	
-	public T visitReturn(ReturnStatement statement);
+	T visitReturn(ReturnStatement statement);
 	
-	public T visitSwitch(SwitchStatement statement);
+	T visitSwitch(SwitchStatement statement);
 	
-	public T visitThrow(ThrowStatement statement);
+	T visitThrow(ThrowStatement statement);
 	
-	public T visitTryCatch(TryCatchStatement statement);
+	T visitTryCatch(TryCatchStatement statement);
 	
-	public T visitVar(VarStatement statement);
+	T visitVar(VarStatement statement);
 	
-	public T visitWhile(WhileStatement statement);
+	T visitWhile(WhileStatement statement);
 }
