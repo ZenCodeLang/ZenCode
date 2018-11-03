@@ -44,19 +44,36 @@ public class JavaWriter {
             String signature,
             String[] exceptions,
             String... annotations) {
+        this(visitor, nameVariables, method, forDefinition, false, signature, method.descriptor, exceptions, annotations);
+    }
+
+
+    public JavaWriter(
+            ClassVisitor visitor,
+            boolean nameVariables,
+            JavaMethod method,
+            HighLevelDefinition forDefinition,
+            boolean isExtension,
+            String signature,
+            String descriptor,
+            String[] exceptions,
+            String... annotations) {
         this.clazzVisitor = visitor;
         this.method = method;
         this.forDefinition = forDefinition;
 
-        final MethodVisitor methodVisitor = visitor.visitMethod(method.modifiers, method.name, method.descriptor, signature, exceptions);
+        final MethodVisitor methodVisitor = visitor.visitMethod(isExtension ? method.modifiers | Opcodes.ACC_STATIC : method.modifiers, method.name, descriptor, signature, exceptions);
 
         for (String annotation : annotations) {
             methodVisitor.visitAnnotation(annotation, true).visitEnd();
         }
 
-        this.visitor = new LocalVariablesSorter(method.modifiers, method.descriptor, methodVisitor);
+        this.visitor = new LocalVariablesSorter(isExtension ? method.modifiers | Opcodes.ACC_STATIC : method.modifiers, descriptor, methodVisitor);
         this.nameVariables = nameVariables;
     }
+
+
+
 
     public JavaWriter(ClassVisitor visitor, JavaMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
         this(visitor, true, method, forDefinition, signature, exceptions, annotations);

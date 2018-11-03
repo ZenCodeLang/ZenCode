@@ -130,12 +130,6 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
 	    final JavaWriter methodWriter = new JavaWriter(writer, method, definition, context.getMethodSignature(member.header), null);
-		methodWriter.label(methodStart);
-		for (final FunctionParameter parameter : member.header.parameters) {
-			methodWriter.nameParameter(0, parameter.name);
-			if (!isAbstract)
-				methodWriter.nameVariable(javaModule.getParameterInfo(parameter).index, parameter.name, methodStart, methodEnd, context.getType(parameter.type));
-		}
 
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
 

@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -163,7 +164,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final String internalName = expansionClassInfo.internalName;
 
 		writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC |Opcodes.ACC_STATIC, internalName, null, "java/lang/Object", null);
-		JavaExpansionMemberVisitor memberVisitor = new JavaExpansionMemberVisitor(context, writer, expansionClassInfo, definition);
+		JavaExpansionMemberVisitor memberVisitor = new JavaExpansionMemberVisitor(context, writer, definition.target, definition);
 
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberVisitor);
@@ -171,7 +172,16 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		memberVisitor.end();
 		writer.visitEnd();
 
-		return writer.toByteArray();
+
+		final byte[] classBytes = writer.toByteArray();
+
+		try (FileOutputStream out = new FileOutputStream("ttt.class")) {
+			out.write(classBytes);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return classBytes;
 	}
 
 	@Override
