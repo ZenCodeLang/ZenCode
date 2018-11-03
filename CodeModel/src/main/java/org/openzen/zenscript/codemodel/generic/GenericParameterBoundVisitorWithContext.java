@@ -10,7 +10,7 @@ package org.openzen.zenscript.codemodel.generic;
  * @author Hoofdgebruiker
  */
 public interface GenericParameterBoundVisitorWithContext<C, R> {
-	public R visitSuper(C context, ParameterSuperBound bound);
+	R visitSuper(C context, ParameterSuperBound bound);
 	
-	public R visitType(C context, ParameterTypeBound bound);
+	R visitType(C context, ParameterTypeBound bound);
 }

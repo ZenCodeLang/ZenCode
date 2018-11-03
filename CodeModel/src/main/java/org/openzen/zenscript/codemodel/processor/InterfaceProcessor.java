@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.member.ImplementationMember;
  * @author Hoofdgebruiker
  */
 public interface InterfaceProcessor {
-	public void apply(ImplementationMember implementation);
+	void apply(ImplementationMember implementation);
 
-	public void applyOnSubclass(HighLevelDefinition definition, ImplementationMember implementation);
+	void applyOnSubclass(HighLevelDefinition definition, ImplementationMember implementation);
 }

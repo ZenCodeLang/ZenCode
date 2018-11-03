@@ -172,7 +172,7 @@ public enum ZSTokenType implements TokenType {
 	public final boolean isKeyword;
 	public final boolean multiline;
 	
-	private ZSTokenType() {
+	ZSTokenType() {
 		this.regexp = null;
 		this.whitespace = false;
 		this.isKeyword = false;
@@ -180,7 +180,7 @@ public enum ZSTokenType implements TokenType {
 		this.multiline = false;
 	}
 	
-	private ZSTokenType(String regexp) {
+	ZSTokenType(String regexp) {
 		this.regexp = regexp;
 		this.whitespace = false;
 		this.isKeyword = false;
@@ -188,7 +188,7 @@ public enum ZSTokenType implements TokenType {
 		this.multiline = false;
 	}
 	
-	private ZSTokenType(String regexp, boolean whitespace) {
+	ZSTokenType(String regexp, boolean whitespace) {
 		this.regexp = regexp;
 		this.whitespace = whitespace;
 		this.isKeyword = false;
@@ -196,7 +196,7 @@ public enum ZSTokenType implements TokenType {
 		this.multiline = false;
 	}
 	
-	private ZSTokenType(String regexp, boolean whitespace, boolean multiline) {
+	ZSTokenType(String regexp, boolean whitespace, boolean multiline) {
 		this.regexp = regexp;
 		this.whitespace = whitespace;
 		this.isKeyword = false;
@@ -204,7 +204,7 @@ public enum ZSTokenType implements TokenType {
 		this.multiline = multiline;
 	}
 	
-	private ZSTokenType(String regexp, String content) {
+	ZSTokenType(String regexp, String content) {
 		this.regexp = regexp;
 		this.whitespace = false;
 		this.isKeyword = false;
@@ -212,7 +212,7 @@ public enum ZSTokenType implements TokenType {
 		this.multiline = false;
 	}
 	
-	private ZSTokenType(boolean isWhitespace, String regexp, String content) {
+	ZSTokenType(boolean isWhitespace, String regexp, String content) {
 		this.regexp = regexp;
 		this.whitespace = isWhitespace;
 		this.isKeyword = false;
@@ -220,7 +220,7 @@ public enum ZSTokenType implements TokenType {
 		this.multiline = false;
 	}
 	
-	private ZSTokenType(boolean isWhitespace, String regexp, String content, boolean multiline) {
+	ZSTokenType(boolean isWhitespace, String regexp, String content, boolean multiline) {
 		this.regexp = regexp;
 		this.whitespace = isWhitespace;
 		this.isKeyword = false;
@@ -228,7 +228,7 @@ public enum ZSTokenType implements TokenType {
 		this.multiline = multiline;
 	}
 	
-	private ZSTokenType(boolean isKeyword, String content) {
+	ZSTokenType(boolean isKeyword, String content) {
 		this.regexp = null;
 		this.whitespace = false;
 		this.isKeyword = isKeyword;

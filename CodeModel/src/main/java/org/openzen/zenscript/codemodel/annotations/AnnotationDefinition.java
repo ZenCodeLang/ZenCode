@@ -25,31 +25,31 @@ import org.openzen.zenscript.codemodel.statement.Statement;
  * @author Hoofdgebruiker
  */
 public interface AnnotationDefinition {
-	public String getAnnotationName();
+	String getAnnotationName();
 	
-	public List<FunctionHeader> getInitializers(BaseScope scope);
+	List<FunctionHeader> getInitializers(BaseScope scope);
 	
-	public ExpressionScope getScopeForMember(IDefinitionMember member, BaseScope scope);
+	ExpressionScope getScopeForMember(IDefinitionMember member, BaseScope scope);
 	
-	public ExpressionScope getScopeForType(HighLevelDefinition definition, BaseScope scope);
+	ExpressionScope getScopeForType(HighLevelDefinition definition, BaseScope scope);
 	
-	public ExpressionScope getScopeForStatement(Statement statement, StatementScope scope);
+	ExpressionScope getScopeForStatement(Statement statement, StatementScope scope);
 	
-	public ExpressionScope getScopeForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope);
+	ExpressionScope getScopeForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope);
 	
-	public MemberAnnotation createForMember(CodePosition position, CallArguments arguments);
+	MemberAnnotation createForMember(CodePosition position, CallArguments arguments);
 	
-	public DefinitionAnnotation createForDefinition(CodePosition position, CallArguments arguments);
+	DefinitionAnnotation createForDefinition(CodePosition position, CallArguments arguments);
 	
-	public StatementAnnotation createForStatement(CodePosition position, CallArguments arguments);
+	StatementAnnotation createForStatement(CodePosition position, CallArguments arguments);
 	
-	public ParameterAnnotation createForParameter(CodePosition position, CallArguments arguments);
+	ParameterAnnotation createForParameter(CodePosition position, CallArguments arguments);
 	
-	public MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member);
+	MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member);
 	
-	public DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeContext context);
+	DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeContext context);
 	
-	public StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context);
+	StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context);
 	
-	public ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context);
+	ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context);
 }

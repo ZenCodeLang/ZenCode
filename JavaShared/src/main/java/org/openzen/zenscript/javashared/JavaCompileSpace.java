@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
  * @author Hoofdgebruiker
  */
 public interface JavaCompileSpace {
-	public GlobalTypeRegistry getRegistry();
+	GlobalTypeRegistry getRegistry();
 	
-	public JavaCompiledModule getCompiled(Module module);
+	JavaCompiledModule getCompiled(Module module);
 }

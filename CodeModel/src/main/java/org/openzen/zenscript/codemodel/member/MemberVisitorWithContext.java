@@ -10,31 +10,31 @@ package org.openzen.zenscript.codemodel.member;
  * @author Hoofdgebruiker
  */
 public interface MemberVisitorWithContext<C, R> {
-	public R visitConst(C context, ConstMember member);
+	R visitConst(C context, ConstMember member);
 	
-	public R visitField(C context, FieldMember member);
+	R visitField(C context, FieldMember member);
 	
-	public R visitConstructor(C context, ConstructorMember member);
+	R visitConstructor(C context, ConstructorMember member);
 	
-	public R visitDestructor(C context, DestructorMember member);
+	R visitDestructor(C context, DestructorMember member);
 	
-	public R visitMethod(C context, MethodMember member);
+	R visitMethod(C context, MethodMember member);
 	
-	public R visitGetter(C context, GetterMember member);
+	R visitGetter(C context, GetterMember member);
 	
-	public R visitSetter(C context, SetterMember member);
+	R visitSetter(C context, SetterMember member);
 	
-	public R visitOperator(C context, OperatorMember member);
+	R visitOperator(C context, OperatorMember member);
 	
-	public R visitCaster(C context, CasterMember member);
+	R visitCaster(C context, CasterMember member);
 	
-	public R visitIterator(C context, IteratorMember member);
+	R visitIterator(C context, IteratorMember member);
 	
-	public R visitCaller(C context, CallerMember member);
+	R visitCaller(C context, CallerMember member);
 	
-	public R visitImplementation(C context, ImplementationMember member);
+	R visitImplementation(C context, ImplementationMember member);
 	
-	public R visitInnerDefinition(C context, InnerDefinitionMember member);
+	R visitInnerDefinition(C context, InnerDefinitionMember member);
 	
-	public R visitStaticInitializer(C context, StaticInitializerMember member);
+	R visitStaticInitializer(C context, StaticInitializerMember member);
 }

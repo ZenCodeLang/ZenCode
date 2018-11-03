@@ -115,11 +115,6 @@ public class AssocTypeID implements TypeID {
 	
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append(valueType.toString());
-		result.append('[');
-		result.append(keyType.toString());
-		result.append(']');
-		return result.toString();
+		return valueType.toString() + '[' + keyType.toString() + ']';
 	}
 }

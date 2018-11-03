@@ -10,7 +10,7 @@ package org.openzen.zenscript.codemodel.expression.switchvalue;
  * @author Hoofdgebruiker
  */
 public interface SwitchValue {
-	public <T> T accept(SwitchValueVisitor<T> visitor);
+	<T> T accept(SwitchValueVisitor<T> visitor);
 	
-	public <C, R> R accept(C context, SwitchValueVisitorWithContext<C, R> visitor);
+	<C, R> R accept(C context, SwitchValueVisitorWithContext<C, R> visitor);
 }

@@ -10,145 +10,145 @@ package org.openzen.zenscript.codemodel.expression;
  * @author Hoofdgebruiker
  */
 public interface ExpressionVisitor<T> {
-	public T visitAndAnd(AndAndExpression expression);
+	T visitAndAnd(AndAndExpression expression);
 	
-	public T visitArray(ArrayExpression expression);
+	T visitArray(ArrayExpression expression);
 	
-	public T visitCompare(CompareExpression expression);
+	T visitCompare(CompareExpression expression);
 	
-	public T visitCall(CallExpression expression);
+	T visitCall(CallExpression expression);
 	
-	public T visitCallStatic(CallStaticExpression expression);
+	T visitCallStatic(CallStaticExpression expression);
 	
-	public T visitCapturedClosure(CapturedClosureExpression expression);
+	T visitCapturedClosure(CapturedClosureExpression expression);
 	
-	public T visitCapturedDirect(CapturedDirectExpression expression);
+	T visitCapturedDirect(CapturedDirectExpression expression);
 	
-	public T visitCapturedLocalVariable(CapturedLocalVariableExpression expression);
+	T visitCapturedLocalVariable(CapturedLocalVariableExpression expression);
 	
-	public T visitCapturedParameter(CapturedParameterExpression expression);
+	T visitCapturedParameter(CapturedParameterExpression expression);
 	
-	public T visitCapturedThis(CapturedThisExpression expression);
+	T visitCapturedThis(CapturedThisExpression expression);
 	
-	public T visitCast(CastExpression expression);
+	T visitCast(CastExpression expression);
 	
-	public T visitCheckNull(CheckNullExpression expression);
+	T visitCheckNull(CheckNullExpression expression);
 	
-	public T visitCoalesce(CoalesceExpression expression);
+	T visitCoalesce(CoalesceExpression expression);
 	
-	public T visitConditional(ConditionalExpression expression);
+	T visitConditional(ConditionalExpression expression);
 	
-	public T visitConst(ConstExpression expression);
+	T visitConst(ConstExpression expression);
 	
-	public T visitConstantBool(ConstantBoolExpression expression);
+	T visitConstantBool(ConstantBoolExpression expression);
 	
-	public T visitConstantByte(ConstantByteExpression expression);
+	T visitConstantByte(ConstantByteExpression expression);
 	
-	public T visitConstantChar(ConstantCharExpression expression);
+	T visitConstantChar(ConstantCharExpression expression);
 	
-	public T visitConstantDouble(ConstantDoubleExpression expression);
+	T visitConstantDouble(ConstantDoubleExpression expression);
 	
-	public T visitConstantFloat(ConstantFloatExpression expression);
+	T visitConstantFloat(ConstantFloatExpression expression);
 	
-	public T visitConstantInt(ConstantIntExpression expression);
+	T visitConstantInt(ConstantIntExpression expression);
 	
-	public T visitConstantLong(ConstantLongExpression expression);
+	T visitConstantLong(ConstantLongExpression expression);
 	
-	public T visitConstantSByte(ConstantSByteExpression expression);
+	T visitConstantSByte(ConstantSByteExpression expression);
 	
-	public T visitConstantShort(ConstantShortExpression expression);
+	T visitConstantShort(ConstantShortExpression expression);
 	
-	public T visitConstantString(ConstantStringExpression expression);
+	T visitConstantString(ConstantStringExpression expression);
 	
-	public T visitConstantUInt(ConstantUIntExpression expression);
+	T visitConstantUInt(ConstantUIntExpression expression);
 	
-	public T visitConstantULong(ConstantULongExpression expression);
+	T visitConstantULong(ConstantULongExpression expression);
 	
-	public T visitConstantUShort(ConstantUShortExpression expression);
+	T visitConstantUShort(ConstantUShortExpression expression);
 	
-	public T visitConstantUSize(ConstantUSizeExpression expression);
+	T visitConstantUSize(ConstantUSizeExpression expression);
 	
-	public T visitConstructorThisCall(ConstructorThisCallExpression expression);
+	T visitConstructorThisCall(ConstructorThisCallExpression expression);
 	
-	public T visitConstructorSuperCall(ConstructorSuperCallExpression expression);
+	T visitConstructorSuperCall(ConstructorSuperCallExpression expression);
 	
-	public T visitEnumConstant(EnumConstantExpression expression);
+	T visitEnumConstant(EnumConstantExpression expression);
 	
-	public T visitFunction(FunctionExpression expression);
+	T visitFunction(FunctionExpression expression);
 	
-	public T visitGetField(GetFieldExpression expression);
+	T visitGetField(GetFieldExpression expression);
 	
-	public T visitGetFunctionParameter(GetFunctionParameterExpression expression);
+	T visitGetFunctionParameter(GetFunctionParameterExpression expression);
 	
-	public T visitGetLocalVariable(GetLocalVariableExpression expression);
+	T visitGetLocalVariable(GetLocalVariableExpression expression);
 	
-	public T visitGetMatchingVariantField(GetMatchingVariantField expression);
+	T visitGetMatchingVariantField(GetMatchingVariantField expression);
 	
-	public T visitGetStaticField(GetStaticFieldExpression expression);
+	T visitGetStaticField(GetStaticFieldExpression expression);
 	
-	public T visitGetter(GetterExpression expression);
+	T visitGetter(GetterExpression expression);
 	
-	public T visitGlobal(GlobalExpression expression);
+	T visitGlobal(GlobalExpression expression);
 	
-	public T visitGlobalCall(GlobalCallExpression expression);
+	T visitGlobalCall(GlobalCallExpression expression);
 	
-	public T visitInterfaceCast(InterfaceCastExpression expression);
+	T visitInterfaceCast(InterfaceCastExpression expression);
 	
-	public default T visitInvalid(InvalidExpression expression) {
+	default T visitInvalid(InvalidExpression expression) {
 		throw new RuntimeException("Invalid expression");
 	}
 	
-	public T visitIs(IsExpression expression);
+	T visitIs(IsExpression expression);
 	
-	public T visitMakeConst(MakeConstExpression expression);
+	T visitMakeConst(MakeConstExpression expression);
 	
-	public T visitMap(MapExpression expression);
+	T visitMap(MapExpression expression);
 	
-	public T visitMatch(MatchExpression expression);
+	T visitMatch(MatchExpression expression);
 	
-	public T visitNew(NewExpression expression);
+	T visitNew(NewExpression expression);
 	
-	public T visitNull(NullExpression expression);
+	T visitNull(NullExpression expression);
 	
-	public T visitOrOr(OrOrExpression expression);
+	T visitOrOr(OrOrExpression expression);
 	
-	public T visitPanic(PanicExpression expression);
+	T visitPanic(PanicExpression expression);
 	
-	public T visitPostCall(PostCallExpression expression);
+	T visitPostCall(PostCallExpression expression);
 	
-	public T visitRange(RangeExpression expression);
+	T visitRange(RangeExpression expression);
 	
-	public T visitSameObject(SameObjectExpression expression);
+	T visitSameObject(SameObjectExpression expression);
 	
-	public T visitSetField(SetFieldExpression expression);
+	T visitSetField(SetFieldExpression expression);
 	
-	public T visitSetFunctionParameter(SetFunctionParameterExpression expression);
+	T visitSetFunctionParameter(SetFunctionParameterExpression expression);
 	
-	public T visitSetLocalVariable(SetLocalVariableExpression expression);
+	T visitSetLocalVariable(SetLocalVariableExpression expression);
 	
-	public T visitSetStaticField(SetStaticFieldExpression expression);
+	T visitSetStaticField(SetStaticFieldExpression expression);
 	
-	public T visitSetter(SetterExpression expression);
+	T visitSetter(SetterExpression expression);
 	
-	public T visitStaticGetter(StaticGetterExpression expression);
+	T visitStaticGetter(StaticGetterExpression expression);
 	
-	public T visitStaticSetter(StaticSetterExpression expression);
+	T visitStaticSetter(StaticSetterExpression expression);
 	
-	public T visitStorageCast(StorageCastExpression expression);
+	T visitStorageCast(StorageCastExpression expression);
 	
-	public T visitSupertypeCast(SupertypeCastExpression expression);
+	T visitSupertypeCast(SupertypeCastExpression expression);
 	
-	public T visitThis(ThisExpression expression);
+	T visitThis(ThisExpression expression);
 	
-	public T visitThrow(ThrowExpression expression);
+	T visitThrow(ThrowExpression expression);
 	
-	public T visitTryConvert(TryConvertExpression expression);
+	T visitTryConvert(TryConvertExpression expression);
 	
-	public T visitTryRethrowAsException(TryRethrowAsExceptionExpression expression);
+	T visitTryRethrowAsException(TryRethrowAsExceptionExpression expression);
 	
-	public T visitTryRethrowAsResult(TryRethrowAsResultExpression expression);
+	T visitTryRethrowAsResult(TryRethrowAsResultExpression expression);
 	
-	public T visitVariantValue(VariantValueExpression expression);
+	T visitVariantValue(VariantValueExpression expression);
 	
-	public T visitWrapOptional(WrapOptionalExpression expression);
+	T visitWrapOptional(WrapOptionalExpression expression);
 }

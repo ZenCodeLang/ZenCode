@@ -78,6 +78,20 @@ public class JavaMethod {
 		this.genericResult = false;
 	}
 	
+	public String getMapping(JavaClass definition) {
+		if (cls == null)
+			return "!TODO";
+		
+		StringBuilder result = new StringBuilder();
+		result.append(name);
+		result.append(descriptor);
+		
+		if (definition == null || !definition.internalName.equals(cls.internalName))
+			result.append('@').append(cls.internalName);
+		
+		return result.toString();
+	}
+	
 	public enum Kind {
 		STATIC,
 		STATICINIT,

@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
  *
  * @author Hoofdgebruiker
  */
+@FunctionalInterface
 public interface JavaNativeTranslation<T> {
-	public T translate(Expression expression, JavaNativeTranslator<T> translator);
+	T translate(Expression expression, JavaNativeTranslator<T> translator);
 }

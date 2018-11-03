@@ -26,12 +26,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
  * @author Hoofdgebruiker
  */
 public class PartialStaticMemberGroupExpression implements IPartialExpression {
-	public static PartialStaticMemberGroupExpression forMethod(CodePosition position, TypeScope scope, String name, TypeID target, FunctionalMemberRef method, StoredType[] typeArguments) {
-		TypeMemberGroup group = new TypeMemberGroup(true, name);
-		group.addMethod(method, TypeMemberPriority.SPECIFIED);
-		return new PartialStaticMemberGroupExpression(position, scope, target, group, typeArguments);
-	}
-	
 	private final CodePosition position;
 	private final TypeScope scope;
 	private final TypeID target;

@@ -21,12 +21,9 @@ public class TypeMember<T extends DefinitionMemberRef> {
 	}
 	
 	public TypeMember<T> resolve(TypeMember<T> other) {
-		if (priority == other.priority) {
-			//if (priority == TypeMemberPriority.SPECIFIED)
-			//	throw new CompileException(other.member.getPosition(), CompileExceptionCode.MEMBER_DUPLICATE, "Duplicate " + other.member.describe());
-			return this;
-		}
-		
+		if (priority == other.priority)
+			return this; // this is actually an error; but that error will be reported through the validator
+
 		if (priority.compareTo(other.priority) < 0) {
 			return other;
 		} else {

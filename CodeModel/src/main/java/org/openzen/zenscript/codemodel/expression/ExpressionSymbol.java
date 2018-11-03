@@ -6,7 +6,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;

@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
  * @author Hoofdgebruiker
  */
 public interface ISymbol {
-	public IPartialExpression getExpression(CodePosition position, BaseScope scope, StoredType[] typeArguments);
+	IPartialExpression getExpression(CodePosition position, BaseScope scope, StoredType[] typeArguments);
 	
-	public TypeID getType(CodePosition position, TypeResolutionContext context, StoredType[] typeArguments);
+	TypeID getType(CodePosition position, TypeResolutionContext context, StoredType[] typeArguments);
 }

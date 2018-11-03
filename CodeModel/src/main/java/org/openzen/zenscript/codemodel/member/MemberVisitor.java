@@ -10,31 +10,31 @@ package org.openzen.zenscript.codemodel.member;
  * @author Hoofdgebruiker
  */
 public interface MemberVisitor<T> {
-	public T visitConst(ConstMember member);
+	T visitConst(ConstMember member);
 	
-	public T visitField(FieldMember member);
+	T visitField(FieldMember member);
 	
-	public T visitConstructor(ConstructorMember member);
+	T visitConstructor(ConstructorMember member);
 	
-	public T visitDestructor(DestructorMember member);
+	T visitDestructor(DestructorMember member);
 	
-	public T visitMethod(MethodMember member);
+	T visitMethod(MethodMember member);
 	
-	public T visitGetter(GetterMember member);
+	T visitGetter(GetterMember member);
 	
-	public T visitSetter(SetterMember member);
+	T visitSetter(SetterMember member);
 	
-	public T visitOperator(OperatorMember member);
+	T visitOperator(OperatorMember member);
 	
-	public T visitCaster(CasterMember member);
+	T visitCaster(CasterMember member);
 	
-	public T visitCustomIterator(IteratorMember member);
+	T visitCustomIterator(IteratorMember member);
 	
-	public T visitCaller(CallerMember member);
+	T visitCaller(CallerMember member);
 	
-	public T visitImplementation(ImplementationMember member);
+	T visitImplementation(ImplementationMember member);
 	
-	public T visitInnerDefinition(InnerDefinitionMember member);
+	T visitInnerDefinition(InnerDefinitionMember member);
 	
-	public T visitStaticInitializer(StaticInitializerMember member);
+	T visitStaticInitializer(StaticInitializerMember member);
 }

@@ -42,7 +42,7 @@ public class ExpressionScope extends BaseScope {
 	
 	public final List<StoredType> hints;
 	public final Map<TypeParameter, StoredType> genericInferenceMap;
-	public final Map<String, Function<CodePosition, Expression>> innerVariables = new HashMap<>();
+	private final Map<String, Function<CodePosition, Expression>> innerVariables = new HashMap<>();
 	
 	public ExpressionScope(BaseScope outer) {
 		this.outer = outer;
@@ -76,10 +76,6 @@ public class ExpressionScope extends BaseScope {
 		this.dollar = dollar;
 		this.genericInferenceMap = genericInferenceMap;
 		this.innerVariables.putAll(innerVariables);
-	}
-	
-	public void addInnerVariable(VarStatement variable) {
-		innerVariables.put(variable.name, position -> new GetLocalVariableExpression(position, variable));
 	}
 	
 	public void addMatchingVariantOption(String name, int index, VariantOptionSwitchValue value) {

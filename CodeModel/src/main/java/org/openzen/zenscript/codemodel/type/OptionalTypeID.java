@@ -20,11 +20,9 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 public class OptionalTypeID implements TypeID {
 	public final TypeID baseType;
 	private final TypeID normalized;
-	private final GlobalTypeRegistry registry;
 	
 	public OptionalTypeID(GlobalTypeRegistry registry, TypeID baseType) {
 		this.baseType = baseType;
-		this.registry = registry;
 		
 		normalized = baseType.getNormalized() == baseType ? this : registry.getOptional(baseType.getNormalized());
 	}
@@ -116,9 +114,6 @@ public class OptionalTypeID implements TypeID {
 	
 	@Override
 	public String toString(StorageTag storage) {
-		StringBuilder result = new StringBuilder();
-		result.append(baseType.toString(storage));
-		result.append("?");
-		return result.toString();
+		return baseType.toString(storage) + '?';
 	}
 }

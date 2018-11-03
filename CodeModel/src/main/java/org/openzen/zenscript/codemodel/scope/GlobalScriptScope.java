@@ -78,7 +78,7 @@ public class GlobalScriptScope extends StatementScope {
 
 	@Override
 	public DollarEvaluator getDollar() {
-		return null; // script arguments?
+		return null;
 	}
 
 	@Override

@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -127,11 +126,7 @@ public class StoredType {
 	public boolean isEnum() {
 		return type.isEnum();
 	}
-	
-	public boolean isDefinition(HighLevelDefinition definition) {
-		return type.isDefinition(definition);
-	}
-	
+
 	public DefinitionTypeID asDefinition() {
 		return (DefinitionTypeID)type;
 	}
@@ -159,157 +154,5 @@ public class StoredType {
 	@Override
 	public String toString() {
 		return storage == null ? type.toString() : type.toString(storage);
-	}
-	
-	public static class MatchingTypeVisitor implements TypeVisitor<Boolean> {
-		private final TypeID type;
-		private final Map<TypeParameter, StoredType> mapping;
-		private final LocalMemberCache cache;
-		
-		public MatchingTypeVisitor(LocalMemberCache cache, TypeID type, Map<TypeParameter, StoredType> mapping) {
-			this.type = type;
-			this.mapping = mapping;
-			this.cache = cache;
-		}
-
-		@Override
-		public Boolean visitBasic(BasicTypeID basic) {
-			return basic == type;
-		}
-		
-		@Override
-		public Boolean visitString(StringTypeID string) {
-			return string == type;
-		}
-
-		@Override
-		public Boolean visitArray(ArrayTypeID array) {
-			if (type instanceof ArrayTypeID) {
-				ArrayTypeID arrayType = (ArrayTypeID) type;
-				if (arrayType.dimension != array.dimension)
-					return false;
-				
-				return match(arrayType.elementType, array.elementType);
-			} else {
-				return false;
-			}
-		}
-
-		@Override
-		public Boolean visitAssoc(AssocTypeID assoc) {
-			if (type instanceof AssocTypeID) {
-				AssocTypeID assocType = (AssocTypeID) type;
-				return match(assocType.keyType, assoc.keyType)
-						&& match(assocType.valueType, assoc.valueType);
-			} else {
-				return false;
-			}
-		}
-		
-		@Override
-		public Boolean visitIterator(IteratorTypeID iterator) {
-			if (type instanceof IteratorTypeID) {
-				IteratorTypeID iteratorType = (IteratorTypeID) type;
-				if (iteratorType.iteratorTypes.length != iterator.iteratorTypes.length)
-					return false;
-				
-				boolean result = true;
-				for (int i = 0; i < iteratorType.iteratorTypes.length; i++)
-					result = result && match(iterator.iteratorTypes[i], iteratorType.iteratorTypes[i]);
-				
-				return result;
-			} else {
-				return false;
-			}
-		}
-
-		@Override
-		public Boolean visitFunction(FunctionTypeID function) {
-			if (type instanceof FunctionTypeID) {
-				FunctionTypeID functionType = (FunctionTypeID) type;
-				if (functionType.header.parameters.length != function.header.parameters.length)
-					return false;
-				
-				if (!match(functionType.header.getReturnType(), function.header.getReturnType()))
-					return false;
-				
-				for (int i = 0; i < function.header.parameters.length; i++) {
-					if (!match(functionType.header.parameters[i].type, function.header.parameters[i].type))
-						return false;
-				}
-				
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		@Override
-		public Boolean visitDefinition(DefinitionTypeID definition) {
-			if (type instanceof DefinitionTypeID) {
-				DefinitionTypeID definitionType = (DefinitionTypeID) type;
-				if (definitionType.definition != definition.definition)
-					return false;
-				
-				if (definition.typeArguments != null) {
-					for (int i = 0; i < definitionType.typeArguments.length; i++) {
-						if (!match(definitionType.typeArguments[i], definition.typeArguments[i]))
-							return false;
-					}
-				}
-				
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		@Override
-		public Boolean visitGeneric(GenericTypeID generic) {
-			if (mapping.containsKey(generic.parameter)) {
-				return mapping.get(generic.parameter) == type;
-			} else if (type == generic || generic.matches(cache, type.stored())) {
-				mapping.put(generic.parameter, type.stored());
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		@Override
-		public Boolean visitRange(RangeTypeID range) {
-			if (type instanceof RangeTypeID) {
-				RangeTypeID rangeType = (RangeTypeID) type;
-				return match(rangeType.baseType, range.baseType);
-			} else {
-				return false;
-			}
-		}
-
-		@Override
-		public Boolean visitOptional(OptionalTypeID type) {
-			if (this.type instanceof OptionalTypeID) {
-				OptionalTypeID constType = (OptionalTypeID) this.type;
-				return match(constType.baseType, type.baseType.stored());
-			} else {
-				return false;
-			}
-		}
-		
-		private boolean match(StoredType type, StoredType pattern) {
-			if (pattern.storage != null && type.storage != pattern.storage)
-				return false;
-			
-			return TypeMatcher.match(cache, type, pattern) != null;
-		}
-		
-		private boolean match(TypeID type, StoredType pattern) {
-			return TypeMatcher.match(cache, type.stored(), pattern) != null;
-		}
-
-		@Override
-		public Boolean visitGenericMap(GenericMapTypeID map) {
-			return map == type; // TODO: improve this
-		}
 	}
 }

@@ -18,17 +18,17 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
  * @author Hoofdgebruiker
  */
 public interface MemberAnnotation {
-	public static final MemberAnnotation[] NONE = new MemberAnnotation[0];
+	MemberAnnotation[] NONE = new MemberAnnotation[0];
 	
-	public AnnotationDefinition getDefinition();
+	AnnotationDefinition getDefinition();
 	
-	public void apply(IDefinitionMember member, BaseScope scope);
+	void apply(IDefinitionMember member, BaseScope scope);
 	
-	public void applyOnOverridingMethod(FunctionalMember member, BaseScope scope);
+	void applyOnOverridingMethod(FunctionalMember member, BaseScope scope);
 	
-	public void applyOnOverridingGetter(GetterMember member, BaseScope scope);
+	void applyOnOverridingGetter(GetterMember member, BaseScope scope);
 	
-	public void applyOnOverridingSetter(SetterMember member, BaseScope scope);
+	void applyOnOverridingSetter(SetterMember member, BaseScope scope);
 	
-	public void serialize(CodeSerializationOutput output, IDefinitionMember member, TypeContext context);
+	void serialize(CodeSerializationOutput output, IDefinitionMember member, TypeContext context);
 }

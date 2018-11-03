@@ -24,35 +24,35 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
  * @author Hoofdgebruiker
  */
 public interface IDefinitionMember {
-	public CodePosition getPosition();
+	CodePosition getPosition();
 	
-	public int getSpecifiedModifiers();
+	int getSpecifiedModifiers();
 	
-	public int getEffectiveModifiers();
+	int getEffectiveModifiers();
 	
-	public MemberAnnotation[] getAnnotations();
+	MemberAnnotation[] getAnnotations();
 	
-	public HighLevelDefinition getDefinition();
+	HighLevelDefinition getDefinition();
 	
-	public String describe();
+	String describe();
 	
-	public BuiltinID getBuiltin();
+	BuiltinID getBuiltin();
 	
-	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper);
+	void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper);
 	
-	public <T> T accept(MemberVisitor<T> visitor);
+	<T> T accept(MemberVisitor<T> visitor);
 	
-	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor);
+	<C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor);
 	
-	public <T extends Tag> T getTag(Class<T> tag);
+	<T extends Tag> T getTag(Class<T> tag);
 	
-	public <T extends Tag> void setTag(Class<T> tag, T value);
+	<T extends Tag> void setTag(Class<T> tag, T value);
 
 	<T extends Tag> boolean hasTag(Class<T> tag);
 	
 	DefinitionMemberRef getOverrides();
 
-	public void normalize(TypeScope scope);
+	void normalize(TypeScope scope);
 	
 	boolean isAbstract();
 	

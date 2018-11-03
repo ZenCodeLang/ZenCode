@@ -10,19 +10,19 @@ package org.openzen.zenscript.codemodel.definition;
  * @author Hoofdgebruiker
  */
 public interface DefinitionVisitor<T> {
-	public T visitClass(ClassDefinition definition);
+	T visitClass(ClassDefinition definition);
 	
-	public T visitInterface(InterfaceDefinition definition);
+	T visitInterface(InterfaceDefinition definition);
 	
-	public T visitEnum(EnumDefinition definition);
+	T visitEnum(EnumDefinition definition);
 	
-	public T visitStruct(StructDefinition definition);
+	T visitStruct(StructDefinition definition);
 	
-	public T visitFunction(FunctionDefinition definition);
+	T visitFunction(FunctionDefinition definition);
 	
-	public T visitExpansion(ExpansionDefinition definition);
+	T visitExpansion(ExpansionDefinition definition);
 	
-	public T visitAlias(AliasDefinition definition);
+	T visitAlias(AliasDefinition definition);
 	
-	public T visitVariant(VariantDefinition variant);
+	T visitVariant(VariantDefinition variant);
 }

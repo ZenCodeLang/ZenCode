@@ -125,11 +125,6 @@ public class FunctionScope extends StatementScope {
 	@Override
 	public DollarEvaluator getDollar() {
 		return dollar;
-		/*for (FunctionParameter parameter : header.parameters)
-			if (parameter.name.equals("$"))
-				return position -> new GetFunctionParameterExpression(position, parameter);
-		
-		return null;*/
 	}
 	
 	@Override
