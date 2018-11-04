@@ -1,10 +1,5 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import org.openzen.zenscript.javashared.*;
-
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.StringJoiner;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -16,14 +11,20 @@ import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.javabytecode.*;
+import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javashared.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.StringJoiner;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
@@ -142,64 +143,64 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public static final JavaMethod OBJECT_HASHCODE = JavaMethod.getNativeVirtual(JavaClass.OBJECT, "hashCode", "()I");
 	private static final JavaMethod COLLECTION_SIZE = JavaMethod.getNativeVirtual(JavaClass.COLLECTION, "size", "()I");
 	private static final JavaMethod COLLECTION_TOARRAY = JavaMethod.getNativeVirtual(JavaClass.COLLECTION, "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;");
-	
+
 	private static final JavaMethod SHARED_INIT = JavaMethod.getConstructor(JavaClass.SHARED, "(Ljava/lang/Object;)V", Modifier.PUBLIC);
 	private static final JavaMethod SHARED_GET = JavaMethod.getNativeVirtual(JavaClass.SHARED, "get", "()Ljava/lang/Object;");
 	private static final JavaMethod SHARED_ADDREF = JavaMethod.getNativeVirtual(JavaClass.SHARED, "addRef", "()V");
 	private static final JavaMethod SHARED_RELEASE = JavaMethod.getNativeVirtual(JavaClass.SHARED, "release", "()V");
-	
+
 	protected final JavaWriter javaWriter;
 	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
 	private final JavaBytecodeContext context;
 	private final JavaCompiledModule module;
 
-    public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
-        this.javaWriter = javaWriter;
+	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
+		this.javaWriter = javaWriter;
 		this.context = context;
 		this.module = module;
-    }
+	}
 
-    @Override
-    public Void visitAndAnd(AndAndExpression expression) {
-        Label end = new Label();
-        Label onFalse = new Label();
+	@Override
+	public Void visitAndAnd(AndAndExpression expression) {
+		Label end = new Label();
+		Label onFalse = new Label();
 
-        expression.left.accept(this);
+		expression.left.accept(this);
 
-        javaWriter.ifEQ(onFalse);
-        expression.right.accept(this);
+		javaWriter.ifEQ(onFalse);
+		expression.right.accept(this);
 
-        // //these two calls are redundant but make decompiled code look better. Keep?
-        // javaWriter.ifEQ(onFalse);
-        // javaWriter.iConst1();
+		// //these two calls are redundant but make decompiled code look better. Keep?
+		// javaWriter.ifEQ(onFalse);
+		// javaWriter.iConst1();
 
-        javaWriter.goTo(end);
+		javaWriter.goTo(end);
 
-        javaWriter.label(onFalse);
-        javaWriter.iConst0();
+		javaWriter.label(onFalse);
+		javaWriter.iConst0();
 
 
-        javaWriter.label(end);
+		javaWriter.label(end);
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public Void visitArray(ArrayExpression expression) {
-        javaWriter.constant(expression.expressions.length);
-        Type type = context.getType(((ArrayTypeID)expression.type.type).elementType);
-        javaWriter.newArray(type);
-        for (int i = 0; i < expression.expressions.length; i++) {
-            javaWriter.dup();
-            javaWriter.constant(i);
-            expression.expressions[i].accept(this);
-            javaWriter.arrayStore(type);
-        }
-        return null;
-    }
+	@Override
+	public Void visitArray(ArrayExpression expression) {
+		javaWriter.constant(expression.expressions.length);
+		Type type = context.getType(((ArrayTypeID) expression.type.type).elementType);
+		javaWriter.newArray(type);
+		for (int i = 0; i < expression.expressions.length; i++) {
+			javaWriter.dup();
+			javaWriter.constant(i);
+			expression.expressions[i].accept(this);
+			javaWriter.arrayStore(type);
+		}
+		return null;
+	}
 
-    @Override
-    public Void visitCompare(CompareExpression expression) {
+	@Override
+	public Void visitCompare(CompareExpression expression) {
 		if (expression.operator.getBuiltin() != null) {
 			switch (expression.operator.getBuiltin()) {
 				case BYTE_COMPARE:
@@ -378,16 +379,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
-			
+
 			if (expression.member.getTarget().header.getReturnType().isGeneric())
 				javaWriter.checkCast(context.getInternalName(expression.type));
-			
+
 			return null;
 		}
 
 		switch (builtin) {
 			case STRING_RANGEGET:
 			case ARRAY_INDEXGETRANGE:
+			case ARRAY_INDEXGET:
 				break;
 			default:
 				expression.target.accept(this);
@@ -773,10 +775,19 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				throw new UnsupportedOperationException("Not yet supported!");
 			case ARRAY_INDEXGET: {
 				ArrayTypeID type = (ArrayTypeID) expression.target.type.type;
-				javaWriter.arrayLoad(context.getType(type.elementType));
+				expression.target.accept(this);
+
+				final Expression[] arguments = expression.arguments.arguments;
+				Type asmType = context.getType(expression.target.type);
+				for (Expression argument : arguments) {
+					asmType = Type.getType(asmType.getDescriptor().substring(1));
+					argument.accept(this);
+					javaWriter.arrayLoad(asmType);
+				}
 				break;
 			}
 			case ARRAY_INDEXSET: {
+				//TODO multi-dim arrays?
 				ArrayTypeID type = (ArrayTypeID) expression.target.type.type;
 				javaWriter.arrayStore(context.getType(type.elementType));
 				break;
@@ -1378,19 +1389,19 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-    @Override
-    public Void visitCheckNull(CheckNullExpression expression) {
-        final Label end = new Label();
-        expression.value.accept(this);
-        javaWriter.dup();
-        javaWriter.ifNonNull(end);
-        javaWriter.pop();
-        javaWriter.newObject("java/lang/NullPointerException");
-        javaWriter.dup();
-        javaWriter.constant("Tried to convert a null value to nonnull type " + context.getType(expression.type).getClassName());
-        javaWriter.invokeSpecial(NullPointerException.class, "<init>", "(Ljava/lang/String;)V");
-        javaWriter.aThrow();
-        javaWriter.label(end);
+	@Override
+	public Void visitCheckNull(CheckNullExpression expression) {
+		final Label end = new Label();
+		expression.value.accept(this);
+		javaWriter.dup();
+		javaWriter.ifNonNull(end);
+		javaWriter.pop();
+		javaWriter.newObject("java/lang/NullPointerException");
+		javaWriter.dup();
+		javaWriter.constant("Tried to convert a null value to nonnull type " + context.getType(expression.type).getClassName());
+		javaWriter.invokeSpecial(NullPointerException.class, "<init>", "(Ljava/lang/String;)V");
+		javaWriter.aThrow();
+		javaWriter.label(end);
 
 		return null;
 	}
@@ -1601,12 +1612,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitConstantUSize(ConstantUSizeExpression expression) {
-		getJavaWriter().constant((int)expression.value);
+		getJavaWriter().constant((int) expression.value);
 		return null;
 	}
 
-    @Override
-    public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
+	@Override
+	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
 		javaWriter.loadObject(0);
 		if (javaWriter.method.cls.isEnum()) {
 			javaWriter.loadObject(1);
@@ -1617,33 +1628,33 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 			argument.accept(this);
 		}
 		String internalName = context.getInternalName(expression.objectType);
-        javaWriter.invokeSpecial(internalName, "<init>", javaWriter.method.cls.isEnum()
+		javaWriter.invokeSpecial(internalName, "<init>", javaWriter.method.cls.isEnum()
 				? context.getEnumConstructorDescriptor(expression.constructor.getHeader())
 				: context.getMethodDescriptor(expression.constructor.getHeader()));
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
-        javaWriter.loadObject(0);
-        for (Expression argument : expression.arguments.arguments) {
-            argument.accept(this);
-        }
-        //No super calls in enums possible, and that's already handled in the enum constructor itself.
-        javaWriter.invokeSpecial(
+	@Override
+	public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
+		javaWriter.loadObject(0);
+		for (Expression argument : expression.arguments.arguments) {
+			argument.accept(this);
+		}
+		//No super calls in enums possible, and that's already handled in the enum constructor itself.
+		javaWriter.invokeSpecial(
 				context.getInternalName(expression.objectType),
 				"<init>",
 				context.getMethodDescriptor(expression.constructor.getHeader()));
 
-        CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, javaWriter.forDefinition, false);
-        return null;
-    }
+		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, javaWriter.forDefinition, false);
+		return null;
+	}
 
-    @Override
-    public Void visitEnumConstant(EnumConstantExpression expression) {
-        javaWriter.getStaticField(context.getInternalName(expression.type), expression.value.name, context.getDescriptor(expression.type));
-        return null;
-    }
+	@Override
+	public Void visitEnumConstant(EnumConstantExpression expression) {
+		javaWriter.getStaticField(context.getInternalName(expression.type), expression.value.name, context.getDescriptor(expression.type));
+		return null;
+	}
 
 	@Override
 	public Void visitFunction(FunctionExpression expression) {
@@ -1653,9 +1664,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
             ((ReturnStatement) expression.body).value.accept(this);
             return null;
         }*/
-		
+
 		final String descriptor = context.getMethodDescriptor(expression.header);
-        final String signature = context.getMethodSignature(expression.header);
+		final String signature = context.getMethodSignature(expression.header);
 		final String signature2 = context.getMethodDescriptor(expression.header);
 		final String name = context.getLambdaCounter();
 
@@ -1696,7 +1707,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		constructorWriter.end();
 
 
-        functionWriter.start();
+		functionWriter.start();
 
 
 		final JavaStatementVisitor CSV = new JavaStatementVisitor(context, new JavaExpressionVisitor(context, module, functionWriter) {
@@ -1719,7 +1730,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		expression.body.accept(CSV);
 
-        functionWriter.ret();
+		functionWriter.ret();
 		functionWriter.end();
 		lambdaCW.visitEnd();
 
@@ -1749,7 +1760,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 	private static int calculateMemberPosition(CapturedParameterExpression functionParameterExpression, FunctionExpression expression) {
 		int h = 1;//expression.header.parameters.length;
-    	for (CapturedExpression capture : expression.closure.captures) {
+		for (CapturedExpression capture : expression.closure.captures) {
 			if (capture instanceof CapturedParameterExpression && ((CapturedParameterExpression) capture).parameter == functionParameterExpression.parameter)
 				return h;
 			h++;
@@ -1757,14 +1768,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		throw new RuntimeException(functionParameterExpression.position.toString() + ": Captured Statement error");
 	}
 
-    private String calcFunctionSignature(LambdaClosure closure) {
-        StringJoiner joiner = new StringJoiner("", "(", ")V");
-	    for (CapturedExpression capture : closure.captures) {
-            String descriptor = context.getDescriptor(capture.type);
-            joiner.add(descriptor);
-        }
-        return joiner.toString();
-    }
+	private String calcFunctionSignature(LambdaClosure closure) {
+		StringJoiner joiner = new StringJoiner("", "(", ")V");
+		for (CapturedExpression capture : closure.captures) {
+			String descriptor = context.getDescriptor(capture.type);
+			joiner.add(descriptor);
+		}
+		return joiner.toString();
+	}
 
 	@Override
 	public Void visitGetField(GetFieldExpression expression) {
@@ -1779,16 +1790,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		if (parameter == null)
 			throw new RuntimeException(expression.position.toString() + ": Could not resolve lambda parameter" + expression.parameter);
-		
-        javaWriter.load(context.getType(expression.parameter.type), parameter.index);
-        return null;
-    }
+
+		javaWriter.load(context.getType(expression.parameter.type), parameter.index);
+		return null;
+	}
 
 	@Override
 	public Void visitGetLocalVariable(GetLocalVariableExpression expression) {
 		final Label label = new Label();
 		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.variable);
-		
+
 		tag.end = label;
 		javaWriter.load(tag.type, tag.local);
 		javaWriter.label(label);
@@ -1814,7 +1825,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterExpression expression) {
 		expression.target.accept(this);
-		
+
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
 			if (context.hasJavaField(expression.getter)) {
@@ -1993,13 +2004,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.invokeVirtual(OBJECT_HASHCODE);
 				break;
 			case RANGE_FROM: {
-				RangeTypeID type = (RangeTypeID)expression.target.type.type;
+				RangeTypeID type = (RangeTypeID) expression.target.type.type;
 				Type jType = context.getType(expression.target.type);
 				javaWriter.getField(jType.getInternalName(), "from", context.getDescriptor(type.baseType));
 				break;
 			}
 			case RANGE_TO:
-				RangeTypeID type = (RangeTypeID)expression.target.type.type;
+				RangeTypeID type = (RangeTypeID) expression.target.type.type;
 				Type jType = context.getType(expression.target.type);
 				javaWriter.getField(jType.getInternalName(), "to", context.getDescriptor(type.baseType));
 				break;
@@ -2018,39 +2029,39 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return expression.resolution.accept(this);
 	}
 
-    @Override
-    public Void visitInterfaceCast(InterfaceCastExpression expression) {
-        expression.value.accept(this);
-        javaWriter.checkCast(context.getInternalName(expression.type));
-        return null;
-    }
+	@Override
+	public Void visitInterfaceCast(InterfaceCastExpression expression) {
+		expression.value.accept(this);
+		javaWriter.checkCast(context.getInternalName(expression.type));
+		return null;
+	}
 
-    @Override
-    public Void visitIs(IsExpression expression) {
-        expression.value.accept(this);
-        javaWriter.instanceOf(context.getInternalName(expression.isType.stored(BorrowStorageTag.INVOCATION)));
-        return null;
-    }
+	@Override
+	public Void visitIs(IsExpression expression) {
+		expression.value.accept(this);
+		javaWriter.instanceOf(context.getInternalName(expression.isType.stored(BorrowStorageTag.INVOCATION)));
+		return null;
+	}
 
 	@Override
 	public Void visitMakeConst(MakeConstExpression expression) {
 		return null;
 	}
 
-    @Override
-    public Void visitMap(MapExpression expression) {
-        javaWriter.newObject("java/util/HashMap");
-        javaWriter.dup();
-        javaWriter.invokeSpecial("java/util/HashMap", "<init>", "()V");
-        for (int i = 0; i < expression.keys.length; i++) {
-            javaWriter.dup();
-            expression.keys[i].accept(this);
-            expression.values[i].accept(this);
-            javaWriter.invokeInterface(MAP_PUT);
-            javaWriter.pop();
-        }
-        return null;
-    }
+	@Override
+	public Void visitMap(MapExpression expression) {
+		javaWriter.newObject("java/util/HashMap");
+		javaWriter.dup();
+		javaWriter.invokeSpecial("java/util/HashMap", "<init>", "()V");
+		for (int i = 0; i < expression.keys.length; i++) {
+			javaWriter.dup();
+			expression.keys[i].accept(this);
+			expression.values[i].accept(this);
+			javaWriter.invokeInterface(MAP_PUT);
+			javaWriter.pop();
+		}
+		return null;
+	}
 
 	@Override
 	public Void visitMatch(MatchExpression expression) {
@@ -2122,33 +2133,898 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return true;
 	}
 
-    @Override
-    public Void visitNew(NewExpression expression) {
+	@Override
+	public Void visitNew(NewExpression expression) {
 		if (expression.constructor.getBuiltin() != null) {
 			visitBuiltinConstructor(expression);
 			return null;
 		}
 
 		JavaMethod method = context.getJavaMethod(expression.constructor);
-        javaWriter.newObject(method.cls);
-        javaWriter.dup();
+		javaWriter.newObject(method.cls);
+		javaWriter.dup();
 
 		for (Expression argument : expression.arguments.arguments) {
 			argument.accept(this);
 		}
 
-        javaWriter.invokeSpecial(method);
+		javaWriter.invokeSpecial(method);
 		return null;
 	}
 
 	private void visitBuiltinConstructor(NewExpression expression) {
-		switch (expression.constructor.getBuiltin()) {
+		final BuiltinID builtin = expression.constructor.getBuiltin();
+		switch (builtin) {
+			case BOOL_NOT:
+				break;
+			case BOOL_AND:
+				break;
+			case BOOL_OR:
+				break;
+			case BOOL_XOR:
+				break;
+			case BOOL_EQUALS:
+				break;
+			case BOOL_NOTEQUALS:
+				break;
+			case BOOL_TO_STRING:
+				break;
+			case BOOL_PARSE:
+				break;
+			case BYTE_NOT:
+				break;
+			case BYTE_INC:
+				break;
+			case BYTE_DEC:
+				break;
+			case BYTE_ADD_BYTE:
+				break;
+			case BYTE_SUB_BYTE:
+				break;
+			case BYTE_MUL_BYTE:
+				break;
+			case BYTE_DIV_BYTE:
+				break;
+			case BYTE_MOD_BYTE:
+				break;
+			case BYTE_AND_BYTE:
+				break;
+			case BYTE_OR_BYTE:
+				break;
+			case BYTE_XOR_BYTE:
+				break;
+			case BYTE_SHL:
+				break;
+			case BYTE_SHR:
+				break;
+			case BYTE_COMPARE:
+				break;
+			case BYTE_TO_SBYTE:
+				break;
+			case BYTE_TO_SHORT:
+				break;
+			case BYTE_TO_USHORT:
+				break;
+			case BYTE_TO_INT:
+				break;
+			case BYTE_TO_UINT:
+				break;
+			case BYTE_TO_LONG:
+				break;
+			case BYTE_TO_ULONG:
+				break;
+			case BYTE_TO_USIZE:
+				break;
+			case BYTE_TO_FLOAT:
+				break;
+			case BYTE_TO_DOUBLE:
+				break;
+			case BYTE_TO_CHAR:
+				break;
+			case BYTE_TO_STRING:
+				break;
+			case BYTE_PARSE:
+				break;
+			case BYTE_PARSE_WITH_BASE:
+				break;
+			case BYTE_GET_MIN_VALUE:
+				break;
+			case BYTE_GET_MAX_VALUE:
+				break;
+			case SBYTE_NOT:
+				break;
+			case SBYTE_NEG:
+				break;
+			case SBYTE_INC:
+				break;
+			case SBYTE_DEC:
+				break;
+			case SBYTE_ADD_SBYTE:
+				break;
+			case SBYTE_SUB_SBYTE:
+				break;
+			case SBYTE_MUL_SBYTE:
+				break;
+			case SBYTE_DIV_SBYTE:
+				break;
+			case SBYTE_MOD_SBYTE:
+				break;
+			case SBYTE_AND_SBYTE:
+				break;
+			case SBYTE_OR_SBYTE:
+				break;
+			case SBYTE_XOR_SBYTE:
+				break;
+			case SBYTE_SHL:
+				break;
+			case SBYTE_SHR:
+				break;
+			case SBYTE_USHR:
+				break;
+			case SBYTE_COMPARE:
+				break;
+			case SBYTE_TO_BYTE:
+				break;
+			case SBYTE_TO_SHORT:
+				break;
+			case SBYTE_TO_USHORT:
+				break;
+			case SBYTE_TO_INT:
+				break;
+			case SBYTE_TO_UINT:
+				break;
+			case SBYTE_TO_LONG:
+				break;
+			case SBYTE_TO_ULONG:
+				break;
+			case SBYTE_TO_USIZE:
+				break;
+			case SBYTE_TO_FLOAT:
+				break;
+			case SBYTE_TO_DOUBLE:
+				break;
+			case SBYTE_TO_CHAR:
+				break;
+			case SBYTE_TO_STRING:
+				break;
+			case SBYTE_PARSE:
+				break;
+			case SBYTE_PARSE_WITH_BASE:
+				break;
+			case SBYTE_GET_MIN_VALUE:
+				break;
+			case SBYTE_GET_MAX_VALUE:
+				break;
+			case SHORT_NOT:
+				break;
+			case SHORT_NEG:
+				break;
+			case SHORT_INC:
+				break;
+			case SHORT_DEC:
+				break;
+			case SHORT_ADD_SHORT:
+				break;
+			case SHORT_SUB_SHORT:
+				break;
+			case SHORT_MUL_SHORT:
+				break;
+			case SHORT_DIV_SHORT:
+				break;
+			case SHORT_MOD_SHORT:
+				break;
+			case SHORT_AND_SHORT:
+				break;
+			case SHORT_OR_SHORT:
+				break;
+			case SHORT_XOR_SHORT:
+				break;
+			case SHORT_SHL:
+				break;
+			case SHORT_SHR:
+				break;
+			case SHORT_USHR:
+				break;
+			case SHORT_COMPARE:
+				break;
+			case SHORT_TO_BYTE:
+				break;
+			case SHORT_TO_SBYTE:
+				break;
+			case SHORT_TO_USHORT:
+				break;
+			case SHORT_TO_INT:
+				break;
+			case SHORT_TO_UINT:
+				break;
+			case SHORT_TO_LONG:
+				break;
+			case SHORT_TO_ULONG:
+				break;
+			case SHORT_TO_USIZE:
+				break;
+			case SHORT_TO_FLOAT:
+				break;
+			case SHORT_TO_DOUBLE:
+				break;
+			case SHORT_TO_CHAR:
+				break;
+			case SHORT_TO_STRING:
+				break;
+			case SHORT_PARSE:
+				break;
+			case SHORT_PARSE_WITH_BASE:
+				break;
+			case SHORT_GET_MIN_VALUE:
+				break;
+			case SHORT_GET_MAX_VALUE:
+				break;
+			case USHORT_NOT:
+				break;
+			case USHORT_INC:
+				break;
+			case USHORT_DEC:
+				break;
+			case USHORT_ADD_USHORT:
+				break;
+			case USHORT_SUB_USHORT:
+				break;
+			case USHORT_MUL_USHORT:
+				break;
+			case USHORT_DIV_USHORT:
+				break;
+			case USHORT_MOD_USHORT:
+				break;
+			case USHORT_AND_USHORT:
+				break;
+			case USHORT_OR_USHORT:
+				break;
+			case USHORT_XOR_USHORT:
+				break;
+			case USHORT_SHL:
+				break;
+			case USHORT_SHR:
+				break;
+			case USHORT_COMPARE:
+				break;
+			case USHORT_TO_BYTE:
+				break;
+			case USHORT_TO_SBYTE:
+				break;
+			case USHORT_TO_SHORT:
+				break;
+			case USHORT_TO_INT:
+				break;
+			case USHORT_TO_UINT:
+				break;
+			case USHORT_TO_LONG:
+				break;
+			case USHORT_TO_ULONG:
+				break;
+			case USHORT_TO_USIZE:
+				break;
+			case USHORT_TO_FLOAT:
+				break;
+			case USHORT_TO_DOUBLE:
+				break;
+			case USHORT_TO_CHAR:
+				break;
+			case USHORT_TO_STRING:
+				break;
+			case USHORT_PARSE:
+				break;
+			case USHORT_PARSE_WITH_BASE:
+				break;
+			case USHORT_GET_MIN_VALUE:
+				break;
+			case USHORT_GET_MAX_VALUE:
+				break;
+			case INT_NOT:
+				break;
+			case INT_NEG:
+				break;
+			case INT_INC:
+				break;
+			case INT_DEC:
+				break;
+			case INT_ADD_INT:
+				break;
+			case INT_ADD_USIZE:
+				break;
+			case INT_SUB_INT:
+				break;
+			case INT_MUL_INT:
+				break;
+			case INT_DIV_INT:
+				break;
+			case INT_MOD_INT:
+				break;
+			case INT_AND_INT:
+				break;
+			case INT_OR_INT:
+				break;
+			case INT_XOR_INT:
+				break;
+			case INT_SHL:
+				break;
+			case INT_SHR:
+				break;
+			case INT_USHR:
+				break;
+			case INT_COMPARE:
+				break;
+			case INT_TO_BYTE:
+				break;
+			case INT_TO_SBYTE:
+				break;
+			case INT_TO_SHORT:
+				break;
+			case INT_TO_USHORT:
+				break;
+			case INT_TO_UINT:
+				break;
+			case INT_TO_LONG:
+				break;
+			case INT_TO_ULONG:
+				break;
+			case INT_TO_USIZE:
+				break;
+			case INT_TO_FLOAT:
+				break;
+			case INT_TO_DOUBLE:
+				break;
+			case INT_TO_CHAR:
+				break;
+			case INT_TO_STRING:
+				break;
+			case INT_PARSE:
+				break;
+			case INT_PARSE_WITH_BASE:
+				break;
+			case INT_GET_MIN_VALUE:
+				break;
+			case INT_GET_MAX_VALUE:
+				break;
+			case INT_COUNT_LOW_ZEROES:
+				break;
+			case INT_COUNT_HIGH_ZEROES:
+				break;
+			case INT_COUNT_LOW_ONES:
+				break;
+			case INT_COUNT_HIGH_ONES:
+				break;
+			case INT_HIGHEST_ONE_BIT:
+				break;
+			case INT_LOWEST_ONE_BIT:
+				break;
+			case INT_HIGHEST_ZERO_BIT:
+				break;
+			case INT_LOWEST_ZERO_BIT:
+				break;
+			case INT_BIT_COUNT:
+				break;
+			case UINT_NOT:
+				break;
+			case UINT_INC:
+				break;
+			case UINT_DEC:
+				break;
+			case UINT_ADD_UINT:
+				break;
+			case UINT_SUB_UINT:
+				break;
+			case UINT_MUL_UINT:
+				break;
+			case UINT_DIV_UINT:
+				break;
+			case UINT_MOD_UINT:
+				break;
+			case UINT_AND_UINT:
+				break;
+			case UINT_OR_UINT:
+				break;
+			case UINT_XOR_UINT:
+				break;
+			case UINT_SHL:
+				break;
+			case UINT_SHR:
+				break;
+			case UINT_COMPARE:
+				break;
+			case UINT_TO_BYTE:
+				break;
+			case UINT_TO_SBYTE:
+				break;
+			case UINT_TO_SHORT:
+				break;
+			case UINT_TO_USHORT:
+				break;
+			case UINT_TO_INT:
+				break;
+			case UINT_TO_LONG:
+				break;
+			case UINT_TO_ULONG:
+				break;
+			case UINT_TO_USIZE:
+				break;
+			case UINT_TO_FLOAT:
+				break;
+			case UINT_TO_DOUBLE:
+				break;
+			case UINT_TO_CHAR:
+				break;
+			case UINT_TO_STRING:
+				break;
+			case UINT_PARSE:
+				break;
+			case UINT_PARSE_WITH_BASE:
+				break;
+			case UINT_GET_MIN_VALUE:
+				break;
+			case UINT_GET_MAX_VALUE:
+				break;
+			case UINT_COUNT_LOW_ZEROES:
+				break;
+			case UINT_COUNT_HIGH_ZEROES:
+				break;
+			case UINT_COUNT_LOW_ONES:
+				break;
+			case UINT_COUNT_HIGH_ONES:
+				break;
+			case UINT_HIGHEST_ONE_BIT:
+				break;
+			case UINT_LOWEST_ONE_BIT:
+				break;
+			case UINT_HIGHEST_ZERO_BIT:
+				break;
+			case UINT_LOWEST_ZERO_BIT:
+				break;
+			case UINT_BIT_COUNT:
+				break;
+			case LONG_NOT:
+				break;
+			case LONG_NEG:
+				break;
+			case LONG_INC:
+				break;
+			case LONG_DEC:
+				break;
+			case LONG_ADD_LONG:
+				break;
+			case LONG_SUB_LONG:
+				break;
+			case LONG_MUL_LONG:
+				break;
+			case LONG_DIV_LONG:
+				break;
+			case LONG_MOD_LONG:
+				break;
+			case LONG_AND_LONG:
+				break;
+			case LONG_OR_LONG:
+				break;
+			case LONG_XOR_LONG:
+				break;
+			case LONG_SHL:
+				break;
+			case LONG_SHR:
+				break;
+			case LONG_USHR:
+				break;
+			case LONG_COMPARE:
+				break;
+			case LONG_COMPARE_INT:
+				break;
+			case LONG_TO_BYTE:
+				break;
+			case LONG_TO_SBYTE:
+				break;
+			case LONG_TO_SHORT:
+				break;
+			case LONG_TO_USHORT:
+				break;
+			case LONG_TO_INT:
+				break;
+			case LONG_TO_UINT:
+				break;
+			case LONG_TO_ULONG:
+				break;
+			case LONG_TO_USIZE:
+				break;
+			case LONG_TO_FLOAT:
+				break;
+			case LONG_TO_DOUBLE:
+				break;
+			case LONG_TO_CHAR:
+				break;
+			case LONG_TO_STRING:
+				break;
+			case LONG_PARSE:
+				break;
+			case LONG_PARSE_WITH_BASE:
+				break;
+			case LONG_GET_MIN_VALUE:
+				break;
+			case LONG_GET_MAX_VALUE:
+				break;
+			case LONG_COUNT_LOW_ZEROES:
+				break;
+			case LONG_COUNT_HIGH_ZEROES:
+				break;
+			case LONG_COUNT_LOW_ONES:
+				break;
+			case LONG_COUNT_HIGH_ONES:
+				break;
+			case LONG_HIGHEST_ONE_BIT:
+				break;
+			case LONG_LOWEST_ONE_BIT:
+				break;
+			case LONG_HIGHEST_ZERO_BIT:
+				break;
+			case LONG_LOWEST_ZERO_BIT:
+				break;
+			case LONG_BIT_COUNT:
+				break;
+			case ULONG_NOT:
+				break;
+			case ULONG_INC:
+				break;
+			case ULONG_DEC:
+				break;
+			case ULONG_ADD_ULONG:
+				break;
+			case ULONG_SUB_ULONG:
+				break;
+			case ULONG_MUL_ULONG:
+				break;
+			case ULONG_DIV_ULONG:
+				break;
+			case ULONG_MOD_ULONG:
+				break;
+			case ULONG_AND_ULONG:
+				break;
+			case ULONG_OR_ULONG:
+				break;
+			case ULONG_XOR_ULONG:
+				break;
+			case ULONG_SHL:
+				break;
+			case ULONG_SHR:
+				break;
+			case ULONG_COMPARE:
+				break;
+			case ULONG_COMPARE_UINT:
+				break;
+			case ULONG_COMPARE_USIZE:
+				break;
+			case ULONG_TO_BYTE:
+				break;
+			case ULONG_TO_SBYTE:
+				break;
+			case ULONG_TO_SHORT:
+				break;
+			case ULONG_TO_USHORT:
+				break;
+			case ULONG_TO_INT:
+				break;
+			case ULONG_TO_UINT:
+				break;
+			case ULONG_TO_LONG:
+				break;
+			case ULONG_TO_USIZE:
+				break;
+			case ULONG_TO_FLOAT:
+				break;
+			case ULONG_TO_DOUBLE:
+				break;
+			case ULONG_TO_CHAR:
+				break;
+			case ULONG_TO_STRING:
+				break;
+			case ULONG_PARSE:
+				break;
+			case ULONG_PARSE_WITH_BASE:
+				break;
+			case ULONG_GET_MIN_VALUE:
+				break;
+			case ULONG_GET_MAX_VALUE:
+				break;
+			case ULONG_COUNT_LOW_ZEROES:
+				break;
+			case ULONG_COUNT_HIGH_ZEROES:
+				break;
+			case ULONG_COUNT_LOW_ONES:
+				break;
+			case ULONG_COUNT_HIGH_ONES:
+				break;
+			case ULONG_HIGHEST_ONE_BIT:
+				break;
+			case ULONG_LOWEST_ONE_BIT:
+				break;
+			case ULONG_HIGHEST_ZERO_BIT:
+				break;
+			case ULONG_LOWEST_ZERO_BIT:
+				break;
+			case ULONG_BIT_COUNT:
+				break;
+			case USIZE_NOT:
+				break;
+			case USIZE_INC:
+				break;
+			case USIZE_DEC:
+				break;
+			case USIZE_ADD_USIZE:
+				break;
+			case USIZE_SUB_USIZE:
+				break;
+			case USIZE_MUL_USIZE:
+				break;
+			case USIZE_DIV_USIZE:
+				break;
+			case USIZE_MOD_USIZE:
+				break;
+			case USIZE_AND_USIZE:
+				break;
+			case USIZE_OR_USIZE:
+				break;
+			case USIZE_XOR_USIZE:
+				break;
+			case USIZE_SHL:
+				break;
+			case USIZE_SHR:
+				break;
+			case USIZE_COMPARE:
+				break;
+			case USIZE_COMPARE_UINT:
+				break;
+			case USIZE_TO_BYTE:
+				break;
+			case USIZE_TO_SBYTE:
+				break;
+			case USIZE_TO_SHORT:
+				break;
+			case USIZE_TO_USHORT:
+				break;
+			case USIZE_TO_INT:
+				break;
+			case USIZE_TO_UINT:
+				break;
+			case USIZE_TO_LONG:
+				break;
+			case USIZE_TO_ULONG:
+				break;
+			case USIZE_TO_FLOAT:
+				break;
+			case USIZE_TO_DOUBLE:
+				break;
+			case USIZE_TO_CHAR:
+				break;
+			case USIZE_TO_STRING:
+				break;
+			case USIZE_PARSE:
+				break;
+			case USIZE_PARSE_WITH_BASE:
+				break;
+			case USIZE_GET_MIN_VALUE:
+				break;
+			case USIZE_GET_MAX_VALUE:
+				break;
+			case USIZE_COUNT_LOW_ZEROES:
+				break;
+			case USIZE_COUNT_HIGH_ZEROES:
+				break;
+			case USIZE_COUNT_LOW_ONES:
+				break;
+			case USIZE_COUNT_HIGH_ONES:
+				break;
+			case USIZE_HIGHEST_ONE_BIT:
+				break;
+			case USIZE_LOWEST_ONE_BIT:
+				break;
+			case USIZE_HIGHEST_ZERO_BIT:
+				break;
+			case USIZE_LOWEST_ZERO_BIT:
+				break;
+			case USIZE_BIT_COUNT:
+				break;
+			case USIZE_BITS:
+				break;
+			case FLOAT_NEG:
+				break;
+			case FLOAT_INC:
+				break;
+			case FLOAT_DEC:
+				break;
+			case FLOAT_ADD_FLOAT:
+				break;
+			case FLOAT_SUB_FLOAT:
+				break;
+			case FLOAT_MUL_FLOAT:
+				break;
+			case FLOAT_DIV_FLOAT:
+				break;
+			case FLOAT_MOD_FLOAT:
+				break;
+			case FLOAT_COMPARE:
+				break;
+			case FLOAT_TO_BYTE:
+				break;
+			case FLOAT_TO_SBYTE:
+				break;
+			case FLOAT_TO_SHORT:
+				break;
+			case FLOAT_TO_USHORT:
+				break;
+			case FLOAT_TO_INT:
+				break;
+			case FLOAT_TO_UINT:
+				break;
+			case FLOAT_TO_LONG:
+				break;
+			case FLOAT_TO_ULONG:
+				break;
+			case FLOAT_TO_USIZE:
+				break;
+			case FLOAT_TO_DOUBLE:
+				break;
+			case FLOAT_TO_STRING:
+				break;
+			case FLOAT_BITS:
+				break;
+			case FLOAT_FROM_BITS:
+				break;
+			case FLOAT_PARSE:
+				break;
+			case FLOAT_GET_MIN_VALUE:
+				break;
+			case FLOAT_GET_MAX_VALUE:
+				break;
+			case DOUBLE_NEG:
+				break;
+			case DOUBLE_INC:
+				break;
+			case DOUBLE_DEC:
+				break;
+			case DOUBLE_ADD_DOUBLE:
+				break;
+			case DOUBLE_SUB_DOUBLE:
+				break;
+			case DOUBLE_MUL_DOUBLE:
+				break;
+			case DOUBLE_DIV_DOUBLE:
+				break;
+			case DOUBLE_MOD_DOUBLE:
+				break;
+			case DOUBLE_COMPARE:
+				break;
+			case DOUBLE_TO_BYTE:
+				break;
+			case DOUBLE_TO_SBYTE:
+				break;
+			case DOUBLE_TO_SHORT:
+				break;
+			case DOUBLE_TO_USHORT:
+				break;
+			case DOUBLE_TO_INT:
+				break;
+			case DOUBLE_TO_UINT:
+				break;
+			case DOUBLE_TO_LONG:
+				break;
+			case DOUBLE_TO_ULONG:
+				break;
+			case DOUBLE_TO_USIZE:
+				break;
+			case DOUBLE_TO_FLOAT:
+				break;
+			case DOUBLE_TO_STRING:
+				break;
+			case DOUBLE_BITS:
+				break;
+			case DOUBLE_FROM_BITS:
+				break;
+			case DOUBLE_PARSE:
+				break;
+			case DOUBLE_GET_MIN_VALUE:
+				break;
+			case DOUBLE_GET_MAX_VALUE:
+				break;
+			case CHAR_ADD_INT:
+				break;
+			case CHAR_SUB_INT:
+				break;
+			case CHAR_SUB_CHAR:
+				break;
+			case CHAR_COMPARE:
+				break;
+			case CHAR_TO_BYTE:
+				break;
+			case CHAR_TO_SBYTE:
+				break;
+			case CHAR_TO_SHORT:
+				break;
+			case CHAR_TO_USHORT:
+				break;
+			case CHAR_TO_INT:
+				break;
+			case CHAR_TO_UINT:
+				break;
+			case CHAR_TO_LONG:
+				break;
+			case CHAR_TO_ULONG:
+				break;
+			case CHAR_TO_USIZE:
+				break;
+			case CHAR_TO_STRING:
+				break;
+			case CHAR_GET_MIN_VALUE:
+				break;
+			case CHAR_GET_MAX_VALUE:
+				break;
+			case CHAR_REMOVE_DIACRITICS:
+				break;
+			case CHAR_TO_LOWER_CASE:
+				break;
+			case CHAR_TO_UPPER_CASE:
+				break;
 			case STRING_CONSTRUCTOR_CHARACTERS:
 				javaWriter.newObject(JavaClass.STRING);
 				javaWriter.dup();
 				expression.arguments.arguments[0].accept(this);
 				javaWriter.invokeSpecial(STRING_INIT_CHARACTERS);
 				return;
+			case STRING_ADD_STRING:
+				break;
+			case STRING_COMPARE:
+				break;
+			case STRING_LENGTH:
+				break;
+			case STRING_INDEXGET:
+				break;
+			case STRING_RANGEGET:
+				break;
+			case STRING_CHARACTERS:
+				break;
+			case STRING_ISEMPTY:
+				break;
+			case STRING_REMOVE_DIACRITICS:
+				break;
+			case STRING_TRIM:
+				break;
+			case STRING_TO_LOWER_CASE:
+				break;
+			case STRING_TO_UPPER_CASE:
+				break;
+			case STRING_CONTAINS_CHAR:
+				break;
+			case STRING_CONTAINS_STRING:
+				break;
+			case ASSOC_INDEXGET:
+				break;
+			case ASSOC_INDEXSET:
+				break;
+			case ASSOC_CONTAINS:
+				break;
+			case ASSOC_GETORDEFAULT:
+				break;
+			case ASSOC_SIZE:
+				break;
+			case ASSOC_ISEMPTY:
+				break;
+			case ASSOC_KEYS:
+				break;
+			case ASSOC_VALUES:
+				break;
+			case ASSOC_HASHCODE:
+				break;
+			case ASSOC_EQUALS:
+				break;
+			case ASSOC_NOTEQUALS:
+				break;
+			case ASSOC_SAME:
+				break;
+			case ASSOC_NOTSAME:
+				break;
 			case ASSOC_CONSTRUCTOR:
 			case GENERICMAP_CONSTRUCTOR: {
 				javaWriter.newObject(JavaClass.HASHMAP);
@@ -2156,50 +3032,100 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.invokeSpecial(HASHMAP_INIT);
 				return;
 			}
-			case ARRAY_CONSTRUCTOR_SIZED: {
-				ArrayTypeID type = (ArrayTypeID) expression.type.type;
-				if (type.dimension == 1) {
-					// new T[arguments[0]]
-					expression.arguments.arguments[0].accept(this);
-					javaWriter.newArray(context.getType(type.elementType));
-					return;
-				} else {
-					// TODO: implement multidimensional arrays
-					throw new UnsupportedOperationException("Not yet supported!");
-				}
-			}
+			case GENERICMAP_GETOPTIONAL:
+				break;
+			case GENERICMAP_PUT:
+				break;
+			case GENERICMAP_CONTAINS:
+				break;
+			case GENERICMAP_ADDALL:
+				break;
+			case GENERICMAP_SIZE:
+				break;
+			case GENERICMAP_ISEMPTY:
+				break;
+			case GENERICMAP_HASHCODE:
+				break;
+			case GENERICMAP_EQUALS:
+				break;
+			case GENERICMAP_NOTEQUALS:
+				break;
+			case GENERICMAP_SAME:
+				break;
+			case GENERICMAP_NOTSAME:
+				break;
+			case ARRAY_CONSTRUCTOR_SIZED:
 			case ARRAY_CONSTRUCTOR_INITIAL_VALUE: {
 				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 
-				if (type.dimension == 1) {
-					// array = new T[arguments[0]]
-					// value = arguments[1]
-					// for (int i = 0; i < array.length; i++)
-					//    array[i] = value;
+				//D1Array = new T[arguments[0]];
+				//value = arguments[last];
+				//Arrays.fill(D1Array, value);
 
-					expression.arguments.arguments[0].accept(this); // array size
-					javaWriter.newArray(context.getType(type.elementType));
+				//D2Array = new T[arguments[1]][];
+				//Arrays.fill(D2Array, D1Array);
 
-					int i = javaWriter.local(int.class);
-					javaWriter.iConst0();
-					javaWriter.storeInt(i);
-
-					Type valueType = context.getType(expression.arguments.arguments[1].type);
-
-					expression.arguments.arguments[1].accept(this); // initializer value
-					javaWriter.store(valueType, i);
-
-					// TODO: implement in bytecode
-					return;
-				} else {
-					// TODO: implement
-					throw new UnsupportedOperationException("Not yet supported!");
+				final Type ASMType;
+				{
+					final char[] chars = new char[type.dimension];
+					Arrays.fill(chars, '[');
+					ASMType = Type.getType(new String(chars) + context.getDescriptor(type.elementType));
 				}
+				final Type ASMElementType = context.getType(type.elementType);
+
+				final Label begin = new Label();
+				final Label end = new Label();
+
+				javaWriter.label(begin);
+				final int defaultValueLocation = javaWriter.local(ASMElementType);
+
+				if(builtin == BuiltinID.ARRAY_CONSTRUCTOR_SIZED) {
+					if(CompilerUtils.isPrimitive(type.elementType.type))
+						if (type.elementType.type == BasicTypeID.FLOAT) javaWriter.constant(0f);
+						else if (type.elementType.type == BasicTypeID.DOUBLE) javaWriter.constant(0D);
+						else javaWriter.iConst0();
+					else
+						javaWriter.aConstNull();
+				} else {
+					expression.arguments.arguments[expression.arguments.arguments.length - 1].accept(this);
+				}
+				javaWriter.store(ASMElementType, defaultValueLocation);
+
+
+				final int[] arraySizes;
+				{
+					final ArrayList<Integer> list = new ArrayList<>();
+					for (int i = 0; i < type.dimension; i++) {
+						final int location = javaWriter.local(int.class);
+						expression.arguments.arguments[i].accept(this);
+						javaWriter.storeInt(location);
+						list.add(location);
+					}
+					arraySizes = new int[list.size()];
+					for (int i = 0; i < list.size(); i++) {
+						arraySizes[i] = list.get(i);
+					}
+				}
+
+
+				visitMultiDimArray(type.dimension, defaultValueLocation, ASMType, arraySizes);
+
+
+				javaWriter.label(end);
+
+				//naming the variables
+				javaWriter.nameVariable(defaultValueLocation, "defaultValue", begin, end, ASMElementType);
+				for (int i = 0; i < arraySizes.length; i++) {
+					javaWriter.nameVariable(arraySizes[i], "size" + (arraySizes.length - i), begin, end, Type.getType(int.class));
+				}
+				return;
 			}
 			case ARRAY_CONSTRUCTOR_LAMBDA: {
 				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 
 				if (type.dimension == 1) {
+
+
 					// array = new T[arguments[0]]
 					// lambda = arguments[1]
 					// for (int i = 0; i < array.length; i++)
@@ -2255,14 +3181,149 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					throw new UnsupportedOperationException("Not yet supported!");
 				}
 			}
+			case ARRAY_INDEXGET:
+				break;
+			case ARRAY_INDEXSET:
+				break;
+			case ARRAY_INDEXGETRANGE:
+				break;
+			case ARRAY_CONTAINS:
+				break;
+			case ARRAY_LENGTH:
+				break;
+			case ARRAY_ISEMPTY:
+				break;
+			case ARRAY_HASHCODE:
+				break;
+			case ARRAY_EQUALS:
+				break;
+			case ARRAY_NOTEQUALS:
+				break;
+			case ARRAY_SAME:
+				break;
+			case ARRAY_NOTSAME:
+				break;
+			case SBYTE_ARRAY_AS_BYTE_ARRAY:
+				break;
+			case BYTE_ARRAY_AS_SBYTE_ARRAY:
+				break;
+			case SHORT_ARRAY_AS_USHORT_ARRAY:
+				break;
+			case USHORT_ARRAY_AS_SHORT_ARRAY:
+				break;
+			case INT_ARRAY_AS_UINT_ARRAY:
+				break;
+			case UINT_ARRAY_AS_INT_ARRAY:
+				break;
+			case LONG_ARRAY_AS_ULONG_ARRAY:
+				break;
+			case ULONG_ARRAY_AS_LONG_ARRAY:
+				break;
+			case FUNCTION_CALL:
+				break;
+			case FUNCTION_SAME:
+				break;
+			case FUNCTION_NOTSAME:
+				break;
 			case CLASS_DEFAULT_CONSTRUCTOR:
 				javaWriter.newObject(context.getInternalName(expression.type));
 				javaWriter.dup();
 				javaWriter.invokeSpecial(context.getJavaMethod(expression.constructor));
 				return;
+			case STRUCT_EMPTY_CONSTRUCTOR:
+				break;
+			case STRUCT_VALUE_CONSTRUCTOR:
+				break;
+			case ENUM_EMPTY_CONSTRUCTOR:
+				break;
+			case ENUM_NAME:
+				break;
+			case ENUM_ORDINAL:
+				break;
+			case ENUM_VALUES:
+				break;
+			case ENUM_TO_STRING:
+				break;
+			case ENUM_COMPARE:
+				break;
+			case OBJECT_HASHCODE:
+				break;
+			case OBJECT_SAME:
+				break;
+			case OBJECT_NOTSAME:
+				break;
+			case RANGE_FROM:
+				break;
+			case RANGE_TO:
+				break;
+			case OPTIONAL_IS_NULL:
+				break;
+			case OPTIONAL_IS_NOT_NULL:
+				break;
+			case AUTOOP_NOTEQUALS:
+				break;
+			case ITERATOR_INT_RANGE:
+				break;
+			case ITERATOR_ARRAY_VALUES:
+				break;
+			case ITERATOR_ARRAY_KEY_VALUES:
+				break;
+			case ITERATOR_ASSOC_KEYS:
+				break;
+			case ITERATOR_ASSOC_KEY_VALUES:
+				break;
+			case ITERATOR_STRING_CHARS:
+				break;
 		}
 
-		throw new UnsupportedOperationException("Unknown builtin constructor: " + expression.constructor.getBuiltin());
+		throw new UnsupportedOperationException("Unknown builtin constructor: " + builtin);
+	}
+
+	private void visitMultiDimArray(int dim, int defaultLocation, Type currentArrayType, int[] sizeLocations) {
+		final Label begin = new Label();
+		final Label end = new Label();
+		javaWriter.label(begin);
+
+		final int currentArraySizeLocation = sizeLocations[sizeLocations.length - dim];
+		javaWriter.loadInt(currentArraySizeLocation);
+		final Type elementType = Type.getType(currentArrayType.getDescriptor().substring(1));
+		javaWriter.newArray(elementType);
+		//javaWriter.dup();
+
+		final int forLoopCounter = javaWriter.local(int.class);
+		javaWriter.iConst0();
+		javaWriter.storeInt(forLoopCounter);
+
+
+		final Label loopStart = new Label();
+		final Label loopEnd = new Label();
+
+		javaWriter.label(loopStart);
+
+		javaWriter.loadInt(forLoopCounter);
+		javaWriter.loadInt(currentArraySizeLocation);
+		javaWriter.ifICmpGE(loopEnd);
+
+		//Loop content
+		javaWriter.dup();
+		javaWriter.loadInt(forLoopCounter);
+		if (dim == 1) {
+			javaWriter.load(elementType, defaultLocation);
+		} else {
+			visitMultiDimArray(dim - 1, defaultLocation, elementType, sizeLocations);
+		}
+		javaWriter.arrayStore(elementType);
+
+		//Return to the start
+		javaWriter.iinc(forLoopCounter);
+		javaWriter.goTo(loopStart);
+		javaWriter.label(loopEnd);
+		//javaWriter.pop();
+
+		//Naming the variables
+		javaWriter.nameVariable(forLoopCounter, "i" + dim, loopStart, loopEnd, Type.getType(int.class));
+
+		javaWriter.label(end);
 	}
 
 	@Override
@@ -2319,9 +3380,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-    @Override
-    public Void visitRange(RangeExpression expression) {
-		RangeTypeID type = (RangeTypeID)expression.type.type;
+	@Override
+	public Void visitRange(RangeExpression expression) {
+		RangeTypeID type = (RangeTypeID) expression.type.type;
 		Type cls = context.getType(expression.type);
 		javaWriter.newObject(cls.getInternalName());
 		javaWriter.dup();
@@ -2362,13 +3423,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-    @Override
-    public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
-        expression.value.accept(this);
-        JavaParameterInfo parameter = module.getParameterInfo(expression.parameter);
-        javaWriter.store(context.getType(expression.type), parameter.index);
-        return null;
-    }
+	@Override
+	public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
+		expression.value.accept(this);
+		JavaParameterInfo parameter = module.getParameterInfo(expression.parameter);
+		javaWriter.store(context.getType(expression.type), parameter.index);
+		return null;
+	}
 
 	@Override
 	public Void visitSetLocalVariable(SetLocalVariableExpression expression) {
@@ -2403,7 +3464,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.getStaticField(context.getJavaField(expression.getter));
 				return null;
 			}
-			
+
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type))
 				throw new IllegalStateException("Call target has no method info!");
 
@@ -2494,11 +3555,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitStaticSetter(StaticSetterExpression expression) {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
-	
+
 	@Override
 	public Void visitStorageCast(StorageCastExpression expression) {
 		expression.value.accept(this);
-		
+
 		if (expression.type.isDestructible()) { // only destructible types matter here; nondestructible types never need conversion
 			StorageTag fromTag = expression.value.type.getActualStorage();
 			StorageTag toTag = expression.type.getActualStorage();
@@ -2512,7 +3573,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.invokeSpecial(SHARED_INIT);
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -2579,36 +3640,36 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		return null;
 	}
 
-    public JavaWriter getJavaWriter() {
-        return javaWriter;
-    }
+	public JavaWriter getJavaWriter() {
+		return javaWriter;
+	}
 
-    //Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
-    private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, StoredType resultType) {
-        JavaMethod methodInfo = context.getJavaMethod(member);
-        if (methodInfo == null)
-            return false;
+	//Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
+	private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, StoredType resultType) {
+		JavaMethod methodInfo = context.getJavaMethod(member);
+		if (methodInfo == null)
+			return false;
 
-        if (methodInfo.kind == JavaMethod.Kind.STATIC) {
-            getJavaWriter().invokeStatic(methodInfo);
-        } else {
-            getJavaWriter().invokeVirtual(methodInfo);
-        }
+		if (methodInfo.kind == JavaMethod.Kind.STATIC) {
+			getJavaWriter().invokeStatic(methodInfo);
+		} else {
+			getJavaWriter().invokeVirtual(methodInfo);
+		}
 		if (methodInfo.genericResult)
 			getJavaWriter().checkCast(context.getInternalName(resultType));
 
-        return true;
-    }
+		return true;
+	}
 
-    //Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
-    public void putField(FieldMemberRef field) {
+	//Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
+	public void putField(FieldMemberRef field) {
 		JavaField fieldInfo = context.getJavaField(field);
-        if (field.isStatic()) {
-            getJavaWriter().putStaticField(fieldInfo);
-        } else {
-            getJavaWriter().putField(fieldInfo);
+		if (field.isStatic()) {
+			getJavaWriter().putStaticField(fieldInfo);
+		} else {
+			getJavaWriter().putField(fieldInfo);
 		}
-    }
+	}
 
 	public void getField(FieldMemberRef field) {
 		final JavaField fieldInfo = context.getJavaField(field);

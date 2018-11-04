@@ -4,6 +4,8 @@ import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.type.*;
 
+import java.util.Arrays;
+
 public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 	private final JavaTypeDescriptorVisitor forOptional;
 	private final JavaContext context;
@@ -85,8 +87,11 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 			return "[B"; // instead of int[], save memory, save compatibility
 		else if (array.elementType.type == BasicTypeID.USHORT)
 			return "[S"; // instead of int[], save memory
-		else
-			return "[" + this.context.getDescriptor(array.elementType);
+		else {
+			char[] arrayDepth = new char[array.dimension];
+			Arrays.fill(arrayDepth, '[');
+			return new String(arrayDepth) + this.context.getDescriptor(array.elementType);
+		}
     }
 
     @Override
