@@ -126,8 +126,9 @@ public class ParsedCallArguments {
 		if (candidates.size() == 1) {
 			innerScope = scope.forCall(candidates.get(0));
 		} else {
+			int givenTypeArguments = typeArguments == null ? 0 : typeArguments.length;
 			candidates = candidates.stream()
-					.filter(candidate -> candidate.getNumberOfTypeParameters() == 0)
+					.filter(candidate -> candidate.getNumberOfTypeParameters() == givenTypeArguments)
 					.collect(Collectors.toList());
 			
 			if (candidates.isEmpty()) {
