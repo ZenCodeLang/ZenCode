@@ -5,9 +5,9 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
 public class ArrayInitializerHelper {
-	public static void visitProjected(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, int originArrayLocation, Type originArrayType, int functionLocation, Type functionType, Type currentArrayType) {
+	public static void visitProjected(JavaWriter javaWriter, int[] sizeLocations, int dim, int originArrayLocation, Type originArrayType, int functionLocation, Type functionType, Type currentArrayType) {
 
-		visitMultiDimArray(javaWriter, sizeLocations, counterLocations, dim, currentArrayType, (elementType1, counterLocations1, sizeLocations1) -> {
+		visitMultiDimArray(javaWriter, sizeLocations, dim, currentArrayType, (elementType, counterLocations) -> {
 			//Load origin array
 			javaWriter.loadObject(originArrayLocation);
 
@@ -29,11 +29,15 @@ public class ArrayInitializerHelper {
 
 
 	public static void visitMultiDimArrayWithDefaultValue(JavaWriter javaWriter, int dim, int defaultLocation, Type currentArrayType, int[] sizeLocations) {
-		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, (elementType, counterLocations, sizeLocations1) -> javaWriter.load(elementType, defaultLocation));
+		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, (elementType, counterLocations) -> javaWriter.load(elementType, defaultLocation));
+	}
+
+	public static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int dim, Type currentArrayType, InnermostFunction innermostFunction){
+		visitMultiDimArray(javaWriter, sizeLocations, new int[dim], dim, currentArrayType, innermostFunction);
 	}
 
 
-	public static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, Type currentArrayType, InnermostFunction innermostFunction) {
+	private static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, Type currentArrayType, InnermostFunction innermostFunction) {
 		final Label begin = new Label();
 		final Label end = new Label();
 		javaWriter.label(begin);
@@ -63,7 +67,7 @@ public class ArrayInitializerHelper {
 		javaWriter.dup();
 		javaWriter.loadInt(forLoopCounter);
 		if (dim == 1) {
-			innermostFunction.apply(elementType, counterLocations, sizeLocations);
+			innermostFunction.apply(elementType, counterLocations);
 		} else {
 			visitMultiDimArray(javaWriter, sizeLocations, counterLocations, dim - 1, elementType, innermostFunction);
 		}
@@ -79,11 +83,15 @@ public class ArrayInitializerHelper {
 		javaWriter.nameVariable(forLoopCounter, "i" + dim, loopStart, loopEnd, Type.getType(int.class));
 
 		javaWriter.label(end);
+
+		for (int i = 0; i < sizeLocations.length; i++) {
+			javaWriter.nameVariable(sizeLocations[i], "size" + (sizeLocations.length - i), begin, end, Type.getType(int.class));
+		}
 	}
 
 	@FunctionalInterface
 	public interface InnermostFunction {
-		void apply(Type elementType, int[] counterLocations, int[] sizeLocations);
+		void apply(Type elementType, int[] counterLocations);
 	}
 }
 

@@ -3062,12 +3062,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				//D2Array = new T[arguments[1]][];
 				//Arrays.fill(D2Array, D1Array);
 
-				final Type ASMType;
-				{
-					final char[] chars = new char[type.dimension];
-					Arrays.fill(chars, '[');
-					ASMType = Type.getType(new String(chars) + context.getDescriptor(type.elementType));
-				}
+				final Type ASMType = context.getType(expression.type);
 				final Type ASMElementType = context.getType(type.elementType);
 
 				final Label begin = new Label();
@@ -3077,6 +3072,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final int defaultValueLocation = javaWriter.local(ASMElementType);
 
 				if (builtin == BuiltinID.ARRAY_CONSTRUCTOR_SIZED) {
+					//TODO type.elementType.type.accept(JavaDefaultExpressionVisitor.Instance).accept(this);
+					//TODO I still need to write that one, I guess
 					if (CompilerUtils.isPrimitive(type.elementType.type))
 						if (type.elementType.type == BasicTypeID.FLOAT) javaWriter.constant(0f);
 						else if (type.elementType.type == BasicTypeID.DOUBLE) javaWriter.constant(0D);
@@ -3112,9 +3109,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 				//naming the variables
 				javaWriter.nameVariable(defaultValueLocation, "defaultValue", begin, end, ASMElementType);
-				for (int i = 0; i < arraySizes.length; i++) {
-					javaWriter.nameVariable(arraySizes[i], "size" + (arraySizes.length - i), begin, end, Type.getType(int.class));
-				}
 				return;
 			}
 			case ARRAY_CONSTRUCTOR_LAMBDA: {
@@ -3153,7 +3147,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final int functionLocation = javaWriter.local(functionType);
 				javaWriter.storeObject(functionLocation);
 
-				int[] variableCounterLocations = new int[type.dimension];
 				Type destinationArrayType = context.getType(expression.type);
 
 
@@ -3183,15 +3176,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				}
 
 
-				ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, variableCounterLocations, type.dimension, originArrayLocation, originArrayType, functionLocation, functionType, destinationArrayType);
+				ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, type.dimension, originArrayLocation, originArrayType, functionLocation, functionType, destinationArrayType);
 
 				javaWriter.label(end);
 
 				//naming the variables
 				javaWriter.nameVariable(functionLocation, "projectionFunction", begin, end, functionType);
-				for (int i = 0; i < arraySizes.length; i++) {
-					javaWriter.nameVariable(arraySizes[i], "size" + (arraySizes.length - i), begin, end, Type.getType(int.class));
-				}
 				return;
 
 			}
