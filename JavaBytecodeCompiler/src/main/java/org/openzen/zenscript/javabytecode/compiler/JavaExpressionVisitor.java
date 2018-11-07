@@ -21,12 +21,9 @@ import org.openzen.zenscript.javashared.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.StringJoiner;
+import java.util.*;
 
-public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
+public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativeTranslator<Void> {
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
 	private static final JavaMethod BOOLEAN_TO_STRING = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "toString", "(Z)Ljava/lang/String;");
 	private static final JavaMethod BYTE_PARSE = JavaMethod.getNativeStatic(JavaClass.BYTE, "parseByte", "(Ljava/lang/String;)B");
@@ -293,7 +290,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 					throw new UnsupportedOperationException("Unknown builtin comparator: " + expression.operator.getBuiltin());
 			}
 		} else {
-			if (!checkAndExecuteMethodInfo(expression.operator, expression.type))
+			if (!checkAndExecuteMethodInfo(expression.operator, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
 			expression.left.accept(this);
@@ -377,7 +374,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				argument.accept(this);
 			}
 
-			if (!checkAndExecuteMethodInfo(expression.member, expression.type))
+			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
 			if (expression.member.getTarget().header.getReturnType().isGeneric())
@@ -921,7 +918,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		BuiltinID builtin = expression.member.getBuiltin();
 		if (builtin == null) {
-			if (!checkAndExecuteMethodInfo(expression.member, expression.type))
+			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
@@ -1030,7 +1027,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 
 		BuiltinID builtin = expression.member.member.builtin;
 		if (builtin == null) {
-			if (!checkAndExecuteMethodInfo(expression.member, expression.type))
+			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
@@ -1832,7 +1829,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.getField(context.getJavaField(expression.getter));
 				return null;
 			}
-			if (!checkAndExecuteMethodInfo(expression.getter, expression.type))
+			if (!checkAndExecuteMethodInfo(expression.getter, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
@@ -3079,8 +3076,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				javaWriter.label(begin);
 				final int defaultValueLocation = javaWriter.local(ASMElementType);
 
-				if(builtin == BuiltinID.ARRAY_CONSTRUCTOR_SIZED) {
-					if(CompilerUtils.isPrimitive(type.elementType.type))
+				if (builtin == BuiltinID.ARRAY_CONSTRUCTOR_SIZED) {
+					if (CompilerUtils.isPrimitive(type.elementType.type))
 						if (type.elementType.type == BasicTypeID.FLOAT) javaWriter.constant(0f);
 						else if (type.elementType.type == BasicTypeID.DOUBLE) javaWriter.constant(0D);
 						else javaWriter.iConst0();
@@ -3108,7 +3105,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				}
 
 
-				visitMultiDimArray(type.dimension, defaultValueLocation, ASMType, arraySizes);
+				ArrayInitializerHelper.visitMultiDimArrayWithDefaultValue(javaWriter, type.dimension, defaultValueLocation, ASMType, arraySizes);
 
 
 				javaWriter.label(end);
@@ -3124,42 +3121,79 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 
 				if (type.dimension == 1) {
-
-
 					// array = new T[arguments[0]]
 					// lambda = arguments[1]
 					// for (int i = 0; i < array.length; i++)
 					//    array[i] = lambda.invoke(i);
 					//
 					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
-
-					// TODO: implement in bytecode
-
-					return;
+					throw new UnsupportedOperationException("Not yet supported!");
 				} else {
 					// TODO: implement
 					throw new UnsupportedOperationException("Not yet supported!");
 				}
 			}
 			case ARRAY_CONSTRUCTOR_PROJECTED: {
+
+
 				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 
-				if (type.dimension == 1) {
-					// original = arguments[0] (this is an array)
-					// projector = arguments[1] (this is a lambda with 1 parameter)
-					// array = new T[original.length]
-					// for (int i = 0; i < array.length; i++)
-					//    array[i] = projector(original[i]);
-					//
-					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
+				final Label begin = new Label();
+				final Label end = new Label();
 
-					// TODO: implement in bytecode
+				javaWriter.label(begin);
+				expression.arguments.arguments[0].accept(this); //Origin array
+				final Type originArrayType = context.getType(expression.arguments.arguments[0].type);
+				final int originArrayLocation = javaWriter.local(originArrayType);
+				javaWriter.storeObject(originArrayLocation);
 
-					return;
-				} else {
-					// TODO: implement
-					throw new UnsupportedOperationException("Not yet supported!");
+
+				expression.arguments.arguments[1].accept(this); //Projection Function
+				final Type functionType = context.getType(expression.arguments.arguments[1].type);
+				final int functionLocation = javaWriter.local(functionType);
+				javaWriter.storeObject(functionLocation);
+
+				int[] variableCounterLocations = new int[type.dimension];
+				Type destinationArrayType = context.getType(expression.type);
+
+
+				final int[] arraySizes;
+				{
+					final ArrayList<Integer> list = new ArrayList<>();
+					javaWriter.loadObject(originArrayLocation);
+					Type currentElementType = originArrayType;
+					for (int i = 0; i < type.dimension; i++) {
+						currentElementType = Type.getType(currentElementType.getDescriptor().substring(1));
+						final int location = javaWriter.local(int.class);
+						javaWriter.dup();
+						javaWriter.arrayLength();
+						javaWriter.storeInt(location);
+						list.add(location);
+
+						if (i < type.dimension - 1) {
+							javaWriter.iConst0();
+							javaWriter.arrayLoad(currentElementType);
+						}
+					}
+					javaWriter.pop();
+					arraySizes = new int[list.size()];
+					for (int i = 0; i < list.size(); i++) {
+						arraySizes[i] = list.get(i);
+					}
 				}
+
+
+				ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, variableCounterLocations, type.dimension, originArrayLocation, originArrayType, functionLocation, functionType, destinationArrayType);
+
+				javaWriter.label(end);
+
+				//naming the variables
+				javaWriter.nameVariable(functionLocation, "projectionFunction", begin, end, functionType);
+				for (int i = 0; i < arraySizes.length; i++) {
+					javaWriter.nameVariable(arraySizes[i], "size" + (arraySizes.length - i), begin, end, Type.getType(int.class));
+				}
+				return;
+
 			}
 			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
 				ArrayTypeID type = (ArrayTypeID) expression.type.type;
@@ -3279,52 +3313,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		throw new UnsupportedOperationException("Unknown builtin constructor: " + builtin);
 	}
 
-	private void visitMultiDimArray(int dim, int defaultLocation, Type currentArrayType, int[] sizeLocations) {
-		final Label begin = new Label();
-		final Label end = new Label();
-		javaWriter.label(begin);
-
-		final int currentArraySizeLocation = sizeLocations[sizeLocations.length - dim];
-		javaWriter.loadInt(currentArraySizeLocation);
-		final Type elementType = Type.getType(currentArrayType.getDescriptor().substring(1));
-		javaWriter.newArray(elementType);
-		//javaWriter.dup();
-
-		final int forLoopCounter = javaWriter.local(int.class);
-		javaWriter.iConst0();
-		javaWriter.storeInt(forLoopCounter);
-
-
-		final Label loopStart = new Label();
-		final Label loopEnd = new Label();
-
-		javaWriter.label(loopStart);
-
-		javaWriter.loadInt(forLoopCounter);
-		javaWriter.loadInt(currentArraySizeLocation);
-		javaWriter.ifICmpGE(loopEnd);
-
-		//Loop content
-		javaWriter.dup();
-		javaWriter.loadInt(forLoopCounter);
-		if (dim == 1) {
-			javaWriter.load(elementType, defaultLocation);
-		} else {
-			visitMultiDimArray(dim - 1, defaultLocation, elementType, sizeLocations);
-		}
-		javaWriter.arrayStore(elementType);
-
-		//Return to the start
-		javaWriter.iinc(forLoopCounter);
-		javaWriter.goTo(loopStart);
-		javaWriter.label(loopEnd);
-		//javaWriter.pop();
-
-		//Naming the variables
-		javaWriter.nameVariable(forLoopCounter, "i" + dim, loopStart, loopEnd, Type.getType(int.class));
-
-		javaWriter.label(end);
-	}
 
 	@Override
 	public Void visitNull(NullExpression expression) {
@@ -3374,7 +3362,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	public Void visitPostCall(PostCallExpression expression) {
 		expression.target.accept(this);
 		javaWriter.dup(context.getType(expression.type));
-		if (!checkAndExecuteMethodInfo(expression.member, expression.type))
+		if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
 			throw new IllegalStateException("Call target has no method info!");
 
 		return null;
@@ -3465,7 +3453,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 				return null;
 			}
 
-			if (!checkAndExecuteMethodInfo(expression.getter, expression.type))
+			if (!checkAndExecuteMethodInfo(expression.getter, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
 			return null;
@@ -3645,13 +3633,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 	}
 
 	//Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
-	private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, StoredType resultType) {
+	@SuppressWarnings({"Raw", "unchecked"})
+	private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, StoredType resultType, Expression expression) {
 		JavaMethod methodInfo = context.getJavaMethod(member);
 		if (methodInfo == null)
 			return false;
 
 		if (methodInfo.kind == JavaMethod.Kind.STATIC) {
 			getJavaWriter().invokeStatic(methodInfo);
+		} else if (methodInfo.kind == JavaMethod.Kind.COMPILED) {
+			Objects.requireNonNull(methodInfo.translation).translate(expression, this);
 		} else {
 			getJavaWriter().invokeVirtual(methodInfo);
 		}
@@ -3678,5 +3669,67 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void> {
 		} else {
 			getJavaWriter().getField(fieldInfo);
 		}
+	}
+
+	@Override
+	public Void isEmptyAsLengthZero(Expression value) {
+		return null;
+	}
+
+	@Override
+	public Void listToArray(CastExpression value) {
+		//value.target.accept(this);
+		javaWriter.iConst0();
+		final Type type = context.getType(((ArrayTypeID) value.type.type).elementType);
+		javaWriter.newArray(type);
+		final JavaMethod toArray = new JavaMethod(JavaClass.COLLECTION, JavaMethod.Kind.INSTANCE, "toArray", true, "([Ljava/lang/Object;)[Ljava/lang/Object;", 0, true);
+		javaWriter.invokeInterface(toArray);
+		javaWriter.checkCast(context.getType(value.type));
+		return null;
+	}
+
+	@Override
+	public Void containsAsIndexOf(Expression target, Expression value) {
+		return null;
+	}
+
+	@Override
+	public Void sorted(Expression value) {
+		return null;
+	}
+
+	@Override
+	public Void sortedWithComparator(Expression value, Expression comparator) {
+		return null;
+	}
+
+	@Override
+	public Void copy(Expression value) {
+		return null;
+	}
+
+	@Override
+	public Void copyTo(CallExpression call) {
+		return null;
+	}
+
+	@Override
+	public Void stringToAscii(Expression value) {
+		return null;
+	}
+
+	@Override
+	public Void stringToUTF8(Expression value) {
+		return null;
+	}
+
+	@Override
+	public Void bytesAsciiToString(Expression value) {
+		return null;
+	}
+
+	@Override
+	public Void bytesUTF8ToString(Expression value) {
+		return null;
 	}
 }
