@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
@@ -21,7 +22,10 @@ import org.openzen.zenscript.javashared.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativeTranslator<Void> {
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
@@ -3055,13 +3059,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case ARRAY_CONSTRUCTOR_INITIAL_VALUE: {
 				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 
-				//D1Array = new T[arguments[0]];
-				//value = arguments[last];
-				//Arrays.fill(D1Array, value);
-
-				//D2Array = new T[arguments[1]][];
-				//Arrays.fill(D2Array, D1Array);
-
 				final Type ASMType = context.getType(expression.type);
 				final Type ASMElementType = context.getType(type.elementType);
 
@@ -3070,45 +3067,21 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 				javaWriter.label(begin);
 				final int defaultValueLocation = javaWriter.local(ASMElementType);
+				javaWriter.addVariableInfo(new JavaLocalVariableInfo(ASMElementType, defaultValueLocation, begin, "defaultValue", end));
+
 
 				if (builtin == BuiltinID.ARRAY_CONSTRUCTOR_SIZED) {
-					//TODO type.elementType.type.accept(JavaDefaultExpressionVisitor.Instance).accept(this);
-					//TODO I still need to write that one, I guess
-					if (CompilerUtils.isPrimitive(type.elementType.type))
-						if (type.elementType.type == BasicTypeID.FLOAT) javaWriter.constant(0f);
-						else if (type.elementType.type == BasicTypeID.DOUBLE) javaWriter.constant(0D);
-						else javaWriter.iConst0();
-					else
-						javaWriter.aConstNull();
+					type.elementType.type.accept(JavaDefaultExpressionTypeVisitor.INSTANCE).accept(this);
 				} else {
 					expression.arguments.arguments[expression.arguments.arguments.length - 1].accept(this);
 				}
 				javaWriter.store(ASMElementType, defaultValueLocation);
 
 
-				final int[] arraySizes;
-				{
-					final ArrayList<Integer> list = new ArrayList<>();
-					for (int i = 0; i < type.dimension; i++) {
-						final int location = javaWriter.local(int.class);
-						expression.arguments.arguments[i].accept(this);
-						javaWriter.storeInt(location);
-						list.add(location);
-					}
-					arraySizes = new int[list.size()];
-					for (int i = 0; i < list.size(); i++) {
-						arraySizes[i] = list.get(i);
-					}
-				}
-
-
-				ArrayInitializerHelper.visitMultiDimArrayWithDefaultValue(javaWriter, type.dimension, defaultValueLocation, ASMType, arraySizes);
-
+				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(type.dimension, expression.arguments.arguments, this);
+				ArrayInitializerHelper.visitMultiDimArrayWithDefaultValue(javaWriter, arraySizes, type.dimension, ASMType, defaultValueLocation);
 
 				javaWriter.label(end);
-
-				//naming the variables
-				javaWriter.nameVariable(defaultValueLocation, "defaultValue", begin, end, ASMElementType);
 				return;
 			}
 			case ARRAY_CONSTRUCTOR_LAMBDA: {
@@ -3140,48 +3113,65 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final Type originArrayType = context.getType(expression.arguments.arguments[0].type);
 				final int originArrayLocation = javaWriter.local(originArrayType);
 				javaWriter.storeObject(originArrayLocation);
-
-
-				expression.arguments.arguments[1].accept(this); //Projection Function
-				final Type functionType = context.getType(expression.arguments.arguments[1].type);
-				final int functionLocation = javaWriter.local(functionType);
-				javaWriter.storeObject(functionLocation);
-
 				Type destinationArrayType = context.getType(expression.type);
 
 
-				final int[] arraySizes;
-				{
-					final ArrayList<Integer> list = new ArrayList<>();
-					javaWriter.loadObject(originArrayLocation);
-					Type currentElementType = originArrayType;
-					for (int i = 0; i < type.dimension; i++) {
-						currentElementType = Type.getType(currentElementType.getDescriptor().substring(1));
-						final int location = javaWriter.local(int.class);
-						javaWriter.dup();
-						javaWriter.arrayLength();
-						javaWriter.storeInt(location);
-						list.add(location);
-
-						if (i < type.dimension - 1) {
-							javaWriter.iConst0();
-							javaWriter.arrayLoad(currentElementType);
-						}
-					}
-					javaWriter.pop();
-					arraySizes = new int[list.size()];
-					for (int i = 0; i < list.size(); i++) {
-						arraySizes[i] = list.get(i);
-					}
+				final boolean canBeInlined = ArrayInitializerHelper.canBeInlined(expression.arguments.arguments[1]);
+				final Type functionType;    //Only used if not inline able
+				final int functionLocation; //Only used if not inline able
+				if (!canBeInlined) {
+					expression.arguments.arguments[1].accept(this); //Projection Function
+					functionType = context.getType(expression.arguments.arguments[1].type);
+					functionLocation = javaWriter.local(functionType);
+					javaWriter.storeObject(functionLocation);
+					javaWriter.addVariableInfo(new JavaLocalVariableInfo(functionType, functionLocation, begin, "projectionFunction", end));
 				}
 
+				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsProjected(type.dimension, originArrayType, originArrayLocation, javaWriter);
+				ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, type.dimension, originArrayLocation, originArrayType, destinationArrayType,
+						(elementType, counterLocations) -> {
+							if (canBeInlined) {
+								Label inlineBegin = new Label();
+								Label inlineEnd = new Label();
+								javaWriter.label(inlineBegin);
+								final Type projectedElementType = Type.getType(originArrayType.getDescriptor().substring(type.dimension));
+								final int projectedElementLocal = javaWriter.local(projectedElementType);
+								javaWriter.store(projectedElementType, projectedElementLocal);
 
-				ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, type.dimension, originArrayLocation, originArrayType, functionLocation, functionType, destinationArrayType);
+
+								JavaExpressionVisitor visitor = new JavaExpressionVisitor(context, module, javaWriter) {
+									@Override
+									public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
+										javaWriter.load(projectedElementType, projectedElementLocal);
+										return null;
+									}
+								};
+
+								Expression funcExpression = expression.arguments.arguments[1];
+								while (funcExpression instanceof StorageCastExpression) {
+									funcExpression = ((StorageCastExpression) funcExpression).value;
+								}
+
+								if (funcExpression instanceof FunctionExpression && ((FunctionExpression) funcExpression).body instanceof ReturnStatement) {
+									((ReturnStatement) ((FunctionExpression) funcExpression).body).value.accept(visitor);
+									javaWriter.addVariableInfo(new JavaLocalVariableInfo(projectedElementType, projectedElementLocal, inlineBegin, ((FunctionExpression) funcExpression).header.parameters[0].name, inlineEnd));
+								} else throw new IllegalStateException("Trying to inline a non-inlineable expression");
+
+
+								javaWriter.label(inlineEnd);
+							} else {
+								//Apply function here
+								//javaWriter.loadObject(functionLocation);
+								//javaWriter.swap();
+
+								//TODO invoke?
+								//javaWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName("lambda1", JavaClass.Kind.CLASS), JavaMethod.Kind.INSTANCE, "accept", true, "(Ljava/lang/String;)Ljava/lang/String;", 0, false));
+								throw new UnsupportedOperationException("Cannot use projection functions yet!");
+							}
+						});
+
 
 				javaWriter.label(end);
-
-				//naming the variables
-				javaWriter.nameVariable(functionLocation, "projectionFunction", begin, end, functionType);
 				return;
 
 			}
