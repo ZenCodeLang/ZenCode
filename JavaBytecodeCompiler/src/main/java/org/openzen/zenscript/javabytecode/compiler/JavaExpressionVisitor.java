@@ -3432,7 +3432,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.getStaticField(context.getJavaField(expression.getter));
 				return null;
 			}
-
+			
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 

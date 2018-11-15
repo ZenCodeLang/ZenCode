@@ -4,9 +4,9 @@ import org.openzen.zenscript.codemodel.expression.*;
 
 public class JavaCapturedExpressionVisitor implements CapturedExpressionVisitor<Void> {
 
-	public final JavaExpressionVisitor expressionVisitor;
+	public final ExpressionVisitor<Void> expressionVisitor;
 
-	public JavaCapturedExpressionVisitor(JavaExpressionVisitor expressionVisitor) {
+	public JavaCapturedExpressionVisitor(ExpressionVisitor<Void> expressionVisitor) {
 		this.expressionVisitor = expressionVisitor;
 	}
 
