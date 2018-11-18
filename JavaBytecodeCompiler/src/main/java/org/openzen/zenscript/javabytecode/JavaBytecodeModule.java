@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -19,10 +20,10 @@ import org.openzen.zenscript.javashared.JavaMethod;
  */
 public class JavaBytecodeModule extends JavaCompiledModule {
 	private final Map<String, byte[]> classes = new HashMap<>();
-	private final List<JavaMethod> scripts = new ArrayList<>();
+	private final List<JavaScriptMethod> scripts = new ArrayList<>();
 	
-	public JavaBytecodeModule(Module module) {
-		super(module);
+	public JavaBytecodeModule(Module module, FunctionParameter[] parameters) {
+		super(module, parameters);
 	}
 	
 	public void addClass(String name, byte[] bytecode) {
@@ -32,7 +33,7 @@ public class JavaBytecodeModule extends JavaCompiledModule {
 		classes.put(name, bytecode);
 	}
 	
-	public void addScript(JavaMethod method) {
+	public void addScript(JavaScriptMethod method) {
 		scripts.add(method);
 	}
 	
@@ -40,7 +41,7 @@ public class JavaBytecodeModule extends JavaCompiledModule {
 		return classes;
 	}
 	
-	public List<JavaMethod> getScripts() {
+	public List<JavaScriptMethod> getScripts() {
 		return scripts;
 	}
 }

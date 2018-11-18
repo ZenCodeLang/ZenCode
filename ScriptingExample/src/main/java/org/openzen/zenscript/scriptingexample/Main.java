@@ -2,6 +2,9 @@ package org.openzen.zenscript.scriptingexample;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import org.openzen.zencode.java.JavaNativeModule;
 import org.openzen.zencode.java.ScriptingEngine;
@@ -9,7 +12,9 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.SemanticModule;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -34,12 +39,16 @@ public class Main {
 		for (int i = 0; i < inputFiles.length; i++)
 			sourceFiles[i] = new FileSourceFile(inputFiles[i].getName(), inputFiles[i]);
 		
-		SemanticModule scripts = scriptingEngine.createScriptedModule("script", sourceFiles, new TestBracketParser());
+		FunctionParameter parameter = new FunctionParameter(scriptingEngine.registry.getArray(StringTypeID.AUTO, 1).stored(), "args");
+		SemanticModule scripts = scriptingEngine.createScriptedModule("script", sourceFiles, new TestBracketParser(), new FunctionParameter[] { parameter });
 		if (!scripts.isValid())
 			return;
 		
 		scriptingEngine.registerCompiled(scripts);
-		scriptingEngine.run();
+		
+		Map<FunctionParameter, Object> scriptArgs = new HashMap<>();
+		scriptArgs.put(parameter, new String[] { "hello", "world", "example" });
+		scriptingEngine.run(scriptArgs);
 	}
 	
 	private static class TestBracketParser implements BracketExpressionParser {

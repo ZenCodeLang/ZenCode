@@ -14,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.FileSourceFile;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
@@ -94,7 +95,7 @@ public class DirectoryModuleReference implements ModuleReference {
 			CompilingPackage compilingPackage = new CompilingPackage(pkg, module);
 			
 			ParsedFile[] parsedFiles = parsedModule.parse(compilingPackage);
-			SemanticModule result = ParsedFile.compileSyntaxToSemantic(dependencies, compilingPackage, parsedFiles, space, exceptionLogger);
+			SemanticModule result = ParsedFile.compileSyntaxToSemantic(dependencies, compilingPackage, parsedFiles, space, FunctionParameter.NONE, exceptionLogger);
 			
 			JSONObject globals = json.optJSONObject("globals");
 			if (globals != null) {

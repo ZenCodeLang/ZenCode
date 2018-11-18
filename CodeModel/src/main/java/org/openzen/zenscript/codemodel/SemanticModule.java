@@ -29,6 +29,7 @@ public class SemanticModule {
 	
 	public final String name;
 	public final SemanticModule[] dependencies;
+	public final FunctionParameter[] parameters;
 	
 	public final State state;
 	public final Module module;
@@ -46,6 +47,7 @@ public class SemanticModule {
 	public SemanticModule(
 			Module module,
 			SemanticModule[] dependencies,
+			FunctionParameter[] parameters,
 			State state,
 			ZSPackage rootPackage,
 			ZSPackage modulePackage,
@@ -59,6 +61,7 @@ public class SemanticModule {
 		this.name = module.name;
 		this.module = module;
 		this.dependencies = dependencies;
+		this.parameters = parameters;
 		
 		this.state = state;
 		this.rootPackage = rootPackage;
@@ -96,6 +99,7 @@ public class SemanticModule {
 		return new SemanticModule(
 				module,
 				dependencies,
+				parameters,
 				State.NORMALIZED,
 				rootPackage,
 				modulePackage,

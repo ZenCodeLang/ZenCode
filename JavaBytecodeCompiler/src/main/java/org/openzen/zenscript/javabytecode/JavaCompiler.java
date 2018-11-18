@@ -11,11 +11,14 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
 import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
@@ -24,6 +27,7 @@ import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVis
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompileSpace;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
@@ -38,7 +42,7 @@ public class JavaCompiler {
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space) {
 		Map<String, JavaScriptFile> scriptBlocks = new HashMap<>();
 		
-		JavaBytecodeModule target = new JavaBytecodeModule(module.module);
+		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters);
 		JavaBytecodeContext context = new JavaBytecodeContext(target, space, module.modulePackage, packageName);
 		context.addModule(module.module, target);
 		
@@ -61,8 +65,18 @@ public class JavaCompiler {
 			target.addClass(cls.internalName, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
 		}
 		
+		FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, module.parameters);
+		String scriptDescriptor = context.getMethodDescriptor(scriptHeader);
+		JavaParameterInfo[] javaScriptParameters = new JavaParameterInfo[module.parameters.length];
+		for (int i = 0; i < module.parameters.length; i++) {
+			FunctionParameter parameter = module.parameters[i];
+			JavaParameterInfo javaParameter = new JavaParameterInfo(i, context.getDescriptor(parameter.type));
+			target.setParameterInfo(parameter, javaParameter);
+			javaScriptParameters[i] = javaParameter;
+		}
+		
 		for (ScriptBlock script : module.scripts) {
-			final SourceFile sourceFile = script.getTag(SourceFile.class);
+			final SourceFile sourceFile = script.file;
 			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
 			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
 
@@ -71,8 +85,8 @@ public class JavaCompiler {
 			// convert scripts into methods (add them to a Scripts class?)
 			// (TODO: can we break very long scripts into smaller methods? for the extreme scripts)
 			final JavaClassWriter visitor = scriptFile.classWriter;
-			JavaMethod method = JavaMethod.getStatic(new JavaClass(context.getPackageName(script.pkg), className, JavaClass.Kind.CLASS), methodName, "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-			scriptFile.scriptMethods.add(method);
+			JavaMethod method = JavaMethod.getStatic(new JavaClass(context.getPackageName(script.pkg), className, JavaClass.Kind.CLASS), methodName, scriptDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+			scriptFile.scriptMethods.add(new JavaScriptMethod(method, module.parameters, javaScriptParameters));
 
 			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(CodePosition.UNKNOWN, visitor, method, null, null, null));
 			statementVisitor.start();
@@ -83,7 +97,7 @@ public class JavaCompiler {
 		}
 		
 		for (Map.Entry<String, JavaScriptFile> entry : scriptBlocks.entrySet()) {
-			for (JavaMethod method : entry.getValue().scriptMethods)
+			for (JavaScriptMethod method : entry.getValue().scriptMethods)
 				target.addScript(method);
 
 			entry.getValue().classWriter.visitEnd();
@@ -94,7 +108,7 @@ public class JavaCompiler {
 	}
 	
 	private String getFilename(HighLevelDefinition definition) {
-		SourceFile source = definition.getTag(SourceFile.class);
+		SourceFile source = definition.position.file;
 		if (source != null) {
 			int slash = Math.max(source.getFilename().lastIndexOf('/'), source.getFilename().lastIndexOf('\\'));
 			String filename = source.getFilename().substring(slash < 0 ? 0 : slash + 1);

@@ -17,6 +17,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
@@ -56,11 +57,11 @@ public class ZippedPackage {
 		}
 	}
 	
-	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies) throws ParseException {
-		return loadModule(space, name, bracketParser, dependencies, new ZSPackage(space.rootPackage, name));
+	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, FunctionParameter[] scriptParameters) throws ParseException {
+		return loadModule(space, name, bracketParser, dependencies, scriptParameters, new ZSPackage(space.rootPackage, name));
 	}
 	
-	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, ZSPackage pkg) throws ParseException {
+	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, FunctionParameter[] scriptParameters, ZSPackage pkg) throws ParseException {
 		List<SourceFile> sourceFiles = files.get(name);
 		if (sourceFiles == null)
 			return null; // no such module
@@ -76,6 +77,7 @@ public class ZippedPackage {
 				scriptPackage,
 				files,
 				space,
+				scriptParameters,
 				ex -> ex.printStackTrace());
 		return scripts.normalize();
 	}

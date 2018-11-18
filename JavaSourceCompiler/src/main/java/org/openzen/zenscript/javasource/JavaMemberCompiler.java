@@ -35,6 +35,7 @@ import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -155,6 +156,9 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
+		if (member.body == null)
+			return null; // happens with default constructors
+		
 		begin(ElementType.CONSTRUCTOR);
 		
 		output.append(indent);

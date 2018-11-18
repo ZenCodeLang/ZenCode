@@ -8,10 +8,12 @@ package org.openzen.zencode.java;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
@@ -49,7 +51,7 @@ public class ScriptingEngine {
 		
 		try {
 			ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.zip"));
-			SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, new SemanticModule[0], stdlib);
+			SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, new SemanticModule[0], FunctionParameter.NONE, stdlib);
 			stdlibModule = Validator.validate(stdlibModule, error -> System.out.println(error.toString()));
 			space.addModule("stdlib", stdlibModule);
 		} catch (IOException ex) {
@@ -81,10 +83,16 @@ public class ScriptingEngine {
 	}
 	
 	public SemanticModule createScriptedModule(String name, SourceFile[] sources, String... dependencies) throws ParseException {
-		return createScriptedModule(name, sources, null, dependencies);
+		return createScriptedModule(name, sources, null, FunctionParameter.NONE, dependencies);
 	}
 	
-	public SemanticModule createScriptedModule(String name, SourceFile[] sources, BracketExpressionParser bracketParser, String... dependencies) throws ParseException {
+	public SemanticModule createScriptedModule(
+			String name,
+			SourceFile[] sources,
+			BracketExpressionParser bracketParser,
+			FunctionParameter[] scriptParameters,
+			String... dependencies) throws ParseException
+	{
 		Module scriptModule = new Module(name);
 		CompilingPackage scriptPackage = new CompilingPackage(new ZSPackage(space.rootPackage, name), scriptModule);
 		
@@ -103,6 +111,7 @@ public class ScriptingEngine {
 				scriptPackage,
 				files,
 				space,
+				scriptParameters,
 				ex -> ex.printStackTrace());
 		if (!scripts.isValid())
 			return scripts;
@@ -117,6 +126,10 @@ public class ScriptingEngine {
 	}
 	
 	public void run() {
+		run(Collections.emptyMap());
+	}
+	
+	public void run(Map<FunctionParameter, Object> arguments) {
 		SimpleJavaCompileSpace javaSpace = new SimpleJavaCompileSpace(registry);
 		for (JavaNativeModule nativeModule : nativeModules)
 			javaSpace.register(nativeModule.getCompiled());
@@ -128,6 +141,6 @@ public class ScriptingEngine {
 			runUnit.add(compiler.compile(compiled.name, compiled, javaSpace));
 		if (debug)
 			runUnit.dump(new File("classes"));
-		runUnit.run();
+		runUnit.run(arguments);
 	}
 }

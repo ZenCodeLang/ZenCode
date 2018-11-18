@@ -17,6 +17,8 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.ModuleSpace;
@@ -36,6 +38,7 @@ import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.scope.GlobalScriptScope;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
@@ -49,6 +52,7 @@ public class ParsedFile {
 			CompilingPackage pkg,
 			ParsedFile[] files,
 			ModuleSpace registry,
+			FunctionParameter[] parameters,
 			Consumer<CompileException> exceptionLogger) {
 		// We are considering all these files to be in the same package, so make
 		// a single PackageDefinition instance. If these files were in multiple
@@ -88,7 +92,7 @@ public class ParsedFile {
 		}
 		
 		if (failed)
-			return new SemanticModule(pkg.module, dependencies, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.registry, expansions, registry.getAnnotations(), registry.getStorageTypes());
+			return new SemanticModule(pkg.module, dependencies, parameters, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.registry, expansions, registry.getAnnotations(), registry.getStorageTypes());
 		
 		// scripts will store all the script blocks encountered in the files
 		PrecompilationState precompiler = new PrecompilationState();
@@ -97,16 +101,18 @@ public class ParsedFile {
 		}
 		
 		List<ScriptBlock> scripts = new ArrayList<>();
+		FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, parameters);
 		for (ParsedFile file : files) {
 			// compileCode will convert the parsed statements and expressions
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
-			file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals, exceptionLogger);
+			file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals, scriptHeader, exceptionLogger);
 		}
 		
 		return new SemanticModule(
 				pkg.module,
 				dependencies,
+				parameters,
 				SemanticModule.State.ASSEMBLED,
 				rootPackage,
 				pkg.getPackage(),
@@ -187,7 +193,6 @@ public class ParsedFile {
 					result.statements.add(ParsedStatement.parse(tokens, annotations));
 				} else {
 					result.definitions.add(definition);
-					definition.getCompiled().setTag(SourceFile.class, tokens.getFile());
 				}
 			}
 		}
@@ -277,6 +282,7 @@ public class ParsedFile {
 			List<ExpansionDefinition> expansions,
 			List<ScriptBlock> scripts,
 			Map<String, ISymbol> globals,
+			FunctionHeader scriptHeader,
 			Consumer<CompileException> exceptionLogger) {
 		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
 		loadImports(context, rootPackage, modulePackage);
@@ -291,14 +297,13 @@ public class ParsedFile {
 		}
 		
 		if (!statements.isEmpty() || postComment != null) {
-			StatementScope statementScope = new GlobalScriptScope(scope);
+			StatementScope statementScope = new GlobalScriptScope(scope, scriptHeader);
 			List<Statement> statements = new ArrayList<>();
 			for (ParsedStatement statement : this.statements) {
 				statements.add(statement.compile(statementScope));
 			}
 			
-			ScriptBlock block = new ScriptBlock(modulePackage.module, modulePackage.getPackage(), statements);
-			block.setTag(SourceFile.class, file);
+			ScriptBlock block = new ScriptBlock(file, modulePackage.module, modulePackage.getPackage(), scriptHeader, statements);
 			block.setTag(WhitespacePostComment.class, postComment);
 			scripts.add(block);
 		}

@@ -95,7 +95,7 @@ public class JavaNativeModule {
 		}
 		
 		this.allowNonAnnonated = allowNonAnnotated;
-		compiled = new JavaCompiledModule(module);
+		compiled = new JavaCompiledModule(module, FunctionParameter.NONE);
 		
 		typeByClass.put(void.class, BasicTypeID.VOID);
 		typeByClass.put(boolean.class, BasicTypeID.BOOL);
@@ -128,6 +128,7 @@ public class JavaNativeModule {
 		return new SemanticModule(
 				module,
 				SemanticModule.NONE,
+				FunctionParameter.NONE,
 				SemanticModule.State.NORMALIZED,
 				space.rootPackage,
 				pkg,

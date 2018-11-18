@@ -24,6 +24,7 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
  */
 public class JavaCompiledModule {
 	public final Module module;
+	public final FunctionParameter[] scriptParameters;
 	
 	private final Map<HighLevelDefinition, JavaClass> classes = new HashMap<>();
 	private final Map<HighLevelDefinition, JavaClass> expansionClasses = new HashMap<>();
@@ -34,8 +35,9 @@ public class JavaCompiledModule {
 	private final Map<FunctionParameter, JavaParameterInfo> parameters = new HashMap<>();
 	private final Map<VariantDefinition.Option, JavaVariantOption> variantOptions = new HashMap<>();
 	
-	public JavaCompiledModule(Module module) {
+	public JavaCompiledModule(Module module, FunctionParameter[] scriptParameters) {
 		this.module = module;
+		this.scriptParameters = scriptParameters;
 	}
 	
 	public void loadMappings(String mappings) {

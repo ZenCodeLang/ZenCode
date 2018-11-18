@@ -8,6 +8,7 @@ package org.openzen.zenscript.javasource;
 import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.ScriptBlock;
@@ -26,14 +27,14 @@ public class JavaSourceCompiler {
 	public final JavaSourceModule helpers;
 	
 	public JavaSourceCompiler(GlobalTypeRegistry registry) {
-		helpers = new JavaSourceModule(new Module("helpers"));
+		helpers = new JavaSourceModule(new Module("helpers"), FunctionParameter.NONE);
 		settings = new JavaSourceFormattingSettings.Builder().build();
 	}
 	
 	public JavaSourceModule compile(SemanticModule module, JavaCompileSpace space, String basePackage) {
 		JavaSourceContext context = new JavaSourceContext(helpers, settings, space, module.modulePackage, basePackage);
 		
-		JavaSourceModule result = new JavaSourceModule(module.module);
+		JavaSourceModule result = new JavaSourceModule(module.module, module.parameters);
 		context.addModule(module.module, result);
 		
 		Map<String, JavaSourceFile> sourceFiles = new HashMap<>();
@@ -72,7 +73,7 @@ public class JavaSourceCompiler {
 	}
 	
 	private String getFilename(HighLevelDefinition definition) {
-		SourceFile source = definition.getTag(SourceFile.class);
+		SourceFile source = definition.position.file;
 		if (source != null) {
 			int slash = Math.max(source.getFilename().lastIndexOf('/'), source.getFilename().lastIndexOf('\\'));
 			String filename = source.getFilename().substring(slash < 0 ? 0 : slash + 1);

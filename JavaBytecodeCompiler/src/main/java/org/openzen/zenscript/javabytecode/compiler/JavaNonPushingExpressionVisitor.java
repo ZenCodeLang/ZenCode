@@ -429,7 +429,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		}
 
 		for (Expression argument : expression.arguments.arguments) {
-			argument.accept(this);
+			argument.accept(original);
 		}
 		String internalName = context.getInternalName(expression.objectType);
 		javaWriter.invokeSpecial(internalName, "<init>", javaWriter.method.cls.isEnum()

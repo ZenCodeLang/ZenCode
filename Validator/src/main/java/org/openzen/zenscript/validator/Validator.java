@@ -48,6 +48,7 @@ public class Validator {
 		return new SemanticModule(
 				module.module,
 				module.dependencies,
+				module.parameters,
 				state,
 				module.rootPackage,
 				module.modulePackage,

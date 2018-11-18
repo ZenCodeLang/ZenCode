@@ -10,11 +10,13 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -27,9 +29,11 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
  */
 public class GlobalScriptScope extends StatementScope {
 	private final BaseScope file;
+	private final FunctionHeader header;
 	
-	public GlobalScriptScope(BaseScope file) {
+	public GlobalScriptScope(BaseScope file, FunctionHeader scriptHeader) {
 		this.file = file;
+		header = scriptHeader;
 	}
 	
 	@Override
@@ -47,6 +51,14 @@ public class GlobalScriptScope extends StatementScope {
 		IPartialExpression result = super.get(position, name);
 		if (result != null)
 			return result;
+		
+		if (name.hasNoArguments()) {
+			for (FunctionParameter parameter : header.parameters) {
+				if (parameter.name.equals(name.name)) {
+					return new GetFunctionParameterExpression(position, parameter);
+				}
+			}
+		}
 		
 		return file.get(position, name);
 	}
@@ -68,7 +80,7 @@ public class GlobalScriptScope extends StatementScope {
 
 	@Override
 	public FunctionHeader getFunctionHeader() {
-		return null;
+		return header;
 	}
 
 	@Override

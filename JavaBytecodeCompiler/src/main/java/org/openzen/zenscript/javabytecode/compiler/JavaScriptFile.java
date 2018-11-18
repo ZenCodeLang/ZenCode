@@ -7,14 +7,14 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javabytecode.JavaScriptMethod;
 
 /**
  * @author Hoofdgebruiker
  */
 public class JavaScriptFile {
 	public final JavaClassWriter classWriter;
-	public final List<JavaMethod> scriptMethods;
+	public final List<JavaScriptMethod> scriptMethods;
 
 	public JavaScriptFile(JavaClassWriter classWriter) {
 		this.classWriter = classWriter;

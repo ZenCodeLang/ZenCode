@@ -58,7 +58,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 	@Override
 	public ScriptBlock process(ScriptBlock block) {
 		FileScope fileScope = new FileScope(context, expansions, new HashMap<>(), member -> {});
-		StatementScope scope = new GlobalScriptScope(fileScope);
+		StatementScope scope = new GlobalScriptScope(fileScope, block.scriptHeader);
 		List<Statement> transformed = new ArrayList<>();
 		boolean unchanged = true;
 		for (Statement statement : block.statements) {
