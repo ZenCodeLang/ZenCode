@@ -442,11 +442,11 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
 		javaWriter.loadObject(0);
 		for (Expression argument : expression.arguments.arguments) {
-			argument.accept(this);
+			argument.accept(original);
 		}
 		//No super calls in enums possible, and that's already handled in the enum constructor itself.
 		javaWriter.invokeSpecial(
-				context.getInternalName(expression.objectType),
+				context.getInternalName(expression.constructor.getOwnerType()),
 				"<init>",
 				context.getMethodDescriptor(expression.constructor.getHeader()));
 
