@@ -1035,6 +1035,22 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			case AUTOOP_NOTEQUALS:
 				throw new UnsupportedOperationException("Not yet supported!");
+			case OPTIONAL_IS_NULL:
+			case OPTIONAL_IS_NOT_NULL:
+				final Label isFalse = new Label();
+				final Label end = new Label();
+
+				if(builtin == BuiltinID.OPTIONAL_IS_NULL)
+					javaWriter.ifNonNull(isFalse);
+				else
+					javaWriter.ifNull(isFalse);
+				javaWriter.iConst1();
+				javaWriter.goTo(end);
+				javaWriter.label(isFalse);
+				javaWriter.iConst0();
+				javaWriter.label(end);
+				break;
+
 			default:
 				throw new UnsupportedOperationException("Unknown builtin: " + builtin);
 		}
