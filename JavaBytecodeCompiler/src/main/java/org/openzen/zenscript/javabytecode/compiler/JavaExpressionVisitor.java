@@ -3269,7 +3269,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 								//TODO invoke?
 								//javaWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName("lambda1", JavaClass.Kind.CLASS), JavaMethod.Kind.INSTANCE, "accept", true, "(Ljava/lang/String;)Ljava/lang/String;", 0, false));
-								throw new UnsupportedOperationException("Cannot use projection functions yet!");
+
+								//FIXME Critical! Currently returning the same object!
+								//throw new UnsupportedOperationException("Cannot use projection functions yet!");
 							}
 						});
 

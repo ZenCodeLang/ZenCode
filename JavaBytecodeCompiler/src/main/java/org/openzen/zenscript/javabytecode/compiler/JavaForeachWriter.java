@@ -1,9 +1,15 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaMethod;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class JavaForeachWriter {
 
@@ -83,6 +89,29 @@ public class JavaForeachWriter {
 	}
 
 	public void visitAssocKeyValueIterator() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.MAP, "entrySet", "()Ljava/util/Set;", 0));
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.COLLECTION, "iterator", "()Ljava/util/Iterator;", 0));
+
+		javaWriter.label(startLabel);
+		javaWriter.dup();
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
+		javaWriter.ifEQ(endLabel);
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+		javaWriter.checkCast(Type.getType(Map.Entry.class));
+		javaWriter.dup(false);
+
+
+		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
+		final JavaLocalVariableInfo valueVariable = javaWriter.getLocalVariable(variables[1].variable);
+
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getKey", "()Ljava/lang/Object;", 0));
+		javaWriter.store(keyVariable.type, keyVariable.local);
+
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getValue", "()Ljava/lang/Object;", 0));
+		javaWriter.store(valueVariable.type, valueVariable.local);
+		content.accept(statementVisitor);
+
+
+		//throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }

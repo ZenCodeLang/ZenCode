@@ -393,6 +393,9 @@ public class JavaWriter {
                 case Type.DOUBLE:
                     type = Opcodes.T_DOUBLE;
                     break;
+                case Type.CHAR:
+                    type = Opcodes.T_CHAR;
+                    break;
                 default:
                     throw new RuntimeException("Unsupported array type: " + componentType);
             }
