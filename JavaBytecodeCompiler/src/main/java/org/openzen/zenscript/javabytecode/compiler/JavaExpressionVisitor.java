@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.StringJoiner;
+import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativeTranslator<Void> {
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
@@ -392,6 +393,132 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case ARRAY_INDEXGETRANGE:
 			case ARRAY_INDEXGET:
 				break;
+			case BYTE_INC:
+				modify(expression.target, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.constant(0xFF);
+					javaWriter.iAnd();
+				}, PushOption.AFTER);
+				return null;
+			case BYTE_DEC:
+				modify(expression.target, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.constant(0xFF);
+					javaWriter.iAnd();
+				}, PushOption.AFTER);
+				return null;
+			case SBYTE_INC:
+				modify(expression.target, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.i2b();
+				}, PushOption.AFTER);
+				return null;
+			case SBYTE_DEC:
+				modify(expression.target, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.i2b();
+				}, PushOption.AFTER);
+				return null;
+			case SHORT_INC:
+				modify(expression.target, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.i2s();
+				}, PushOption.AFTER);
+				return null;
+			case SHORT_DEC:
+				modify(expression.target, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.i2s();
+				}, PushOption.AFTER);
+				return null;
+			case USHORT_INC:
+				modify(expression.target, () -> {
+					javaWriter.iConst1();
+					javaWriter.iAdd();
+					javaWriter.constant(0xFFFF);
+					javaWriter.iAnd();
+				}, PushOption.AFTER);
+				return null;
+			case USHORT_DEC:
+				modify(expression.target, () -> {
+					javaWriter.iConst1();
+					javaWriter.iSub();
+					javaWriter.constant(0xFFFF);
+					javaWriter.iAnd();
+				}, PushOption.AFTER);
+				return null;
+			case INT_INC:
+			case UINT_INC:
+			case USIZE_INC:
+				if (expression.target instanceof GetLocalVariableExpression) {
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)expression.target).variable.variable);
+					javaWriter.iinc(local.local);
+					javaWriter.load(local);
+				} else {
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iAdd();
+					}, PushOption.AFTER);
+				}
+				return null;
+			case INT_DEC:
+			case UINT_DEC:
+			case USIZE_DEC:
+				if (expression.target instanceof GetLocalVariableExpression) {
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)expression.target).variable.variable);
+					javaWriter.iinc(local.local, -1);
+					javaWriter.load(local);
+				} else {
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iSub();
+					}, PushOption.AFTER);
+				}
+				return null;
+			case LONG_INC:
+			case ULONG_INC:
+				modify(expression.target, () -> {
+					javaWriter.constant(1l);
+					javaWriter.iAdd();
+				}, PushOption.AFTER);
+				return null;
+			case LONG_DEC:
+			case ULONG_DEC:
+				modify(expression.target, () -> {
+					javaWriter.constant(1l);
+					javaWriter.iSub();
+				}, PushOption.AFTER);
+				return null;
+			case FLOAT_INC:
+				modify(expression.target, () -> {
+					javaWriter.constant(1f);
+					javaWriter.iAdd();
+				}, PushOption.AFTER);
+				return null;
+			case FLOAT_DEC:
+				modify(expression.target, () -> {
+					javaWriter.constant(1f);
+					javaWriter.iSub();
+				}, PushOption.AFTER);
+				return null;
+			case DOUBLE_INC:
+				modify(expression.target, () -> {
+					javaWriter.constant(1d);
+					javaWriter.iAdd();
+				}, PushOption.AFTER);
+				return null;
+			case DOUBLE_DEC:
+				modify(expression.target, () -> {
+					javaWriter.constant(1d);
+					javaWriter.iSub();
+				}, PushOption.AFTER);
+				return null;
 			default:
 				expression.target.accept(this);
 				for (Expression argument : expression.arguments.arguments) {
@@ -3337,14 +3464,150 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.aThrow();
 		return null;
 	}
+	
+	private void modify(Expression source, Runnable modification, PushOption push) {
+		source.accept(new JavaModificationExpressionVisitor(context, module, javaWriter, this, modification, push));
+	}
 
 	@Override
 	public Void visitPostCall(PostCallExpression expression) {
-		expression.target.accept(this);
-		javaWriter.dup(context.getType(expression.type));
-		if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
-			throw new IllegalStateException("Call target has no method info!");
-
+		if (expression.member.getBuiltin() != null) {
+			switch (expression.member.getBuiltin()) {
+				case BYTE_INC:
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iAdd();
+						javaWriter.constant(255);
+						javaWriter.iAnd();
+					}, PushOption.BEFORE);
+					return null;
+				case BYTE_DEC:
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iSub();
+						javaWriter.constant(255);
+						javaWriter.iAnd();
+					}, PushOption.BEFORE);
+				case SBYTE_INC:
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iAdd();
+						javaWriter.i2b();
+					}, PushOption.BEFORE);
+					return null;
+				case SBYTE_DEC:
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iSub();
+						javaWriter.i2b();
+					}, PushOption.BEFORE);
+					return null;
+				case SHORT_INC:
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iAdd();
+						javaWriter.i2s();
+					}, PushOption.BEFORE);
+					return null;
+				case SHORT_DEC:
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iSub();
+						javaWriter.i2s();
+					}, PushOption.BEFORE);
+					return null;
+				case USHORT_INC:
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iAdd();
+						javaWriter.constant(0xFFFF);
+						javaWriter.iAnd();
+					}, PushOption.BEFORE);
+					return null;
+				case USHORT_DEC:
+					modify(expression.target, () -> {
+						javaWriter.iConst1();
+						javaWriter.iSub();
+						javaWriter.constant(0xFFFF);
+						javaWriter.iAnd();
+					}, PushOption.BEFORE);
+					return null;
+				case INT_INC:
+				case UINT_INC:
+				case USIZE_INC:
+					if (expression.target instanceof GetLocalVariableExpression) {
+						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)expression.target).variable.variable);
+						javaWriter.load(local);
+						javaWriter.iinc(local.local);
+					} else {
+						modify(expression.target, () -> {
+							javaWriter.iConst1();
+							javaWriter.iAdd();
+						}, PushOption.BEFORE);
+					}
+					return null;
+				case INT_DEC:
+				case UINT_DEC:
+				case USIZE_DEC:
+					if (expression.target instanceof GetLocalVariableExpression) {
+						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)expression.target).variable.variable);
+						javaWriter.load(local);
+						javaWriter.iinc(local.local, -1);
+					} else {
+						modify(expression.target, () -> {
+							javaWriter.iConst1();
+							javaWriter.iSub();
+						}, PushOption.BEFORE);
+					}
+					return null;
+				case LONG_INC:
+				case ULONG_INC:
+					modify(expression.target, () -> {
+						javaWriter.constant(1l);
+						javaWriter.lAdd();
+					}, PushOption.BEFORE);
+					return null;
+				case LONG_DEC:
+				case ULONG_DEC:
+					modify(expression.target, () -> {
+						javaWriter.constant(1l);
+						javaWriter.lSub();
+					}, PushOption.BEFORE);
+					return null;
+				case FLOAT_INC:
+					modify(expression.target, () -> {
+						javaWriter.constant(1f);
+						javaWriter.fAdd();
+					}, PushOption.BEFORE);
+					return null;
+				case FLOAT_DEC:
+					modify(expression.target, () -> {
+						javaWriter.constant(1f);
+						javaWriter.fSub();
+					}, PushOption.BEFORE);
+					return null;
+				case DOUBLE_INC:
+					modify(expression.target, () -> {
+						javaWriter.constant(1d);
+						javaWriter.dAdd();
+					}, PushOption.BEFORE);
+					return null;
+				case DOUBLE_DEC:
+					modify(expression.target, () -> {
+						javaWriter.constant(1d);
+						javaWriter.dSub();
+					}, PushOption.BEFORE);
+					return null;
+				default:
+					throw new IllegalArgumentException("Unknown postcall builtin: " + expression.member.getBuiltin());
+			}
+		}
+		
+		modify(expression.target, () -> {
+			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
+				throw new IllegalStateException("Call target has no method info!");
+		}, PushOption.BEFORE);
+		
 		return null;
 	}
 

@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.*;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
@@ -16,6 +17,7 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 
 public class CompilerUtils {
+
 	private CompilerUtils() {}
 
 	public static boolean isPrimitive(TypeID id) {
@@ -23,6 +25,10 @@ public class CompilerUtils {
 				|| (id.isOptional() && id.withoutOptional() == BasicTypeID.USIZE);
 	}
 
+	public static boolean isLarge(StoredType type) {
+		return type.type == BasicTypeID.DOUBLE || type.type == BasicTypeID.DOUBLE;
+	}
+	
 	public static int calcAccess(int modifiers) {
 		int out = 0;
 		if (Modifiers.isStatic(modifiers))

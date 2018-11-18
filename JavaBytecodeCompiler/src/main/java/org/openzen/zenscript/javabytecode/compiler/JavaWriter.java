@@ -112,7 +112,8 @@ public class JavaWriter {
 
 		try {
 	        visitor.visitMaxs(0, 0);
-		} catch (ArrayIndexOutOfBoundsException ex) {
+		} catch (ArrayIndexOutOfBoundsException | NegativeArraySizeException ex) {
+			//ex.printStackTrace();
 			throw ex;
 		}
 		

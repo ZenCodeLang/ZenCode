@@ -7,6 +7,7 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
@@ -80,6 +81,11 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	@Override
 	public Boolean visitExpression(ExpressionStatement statement) {
 		statement.expression.accept(expressionVisitor);
+		
+		// TODO: make the expression not push anything
+		if (statement.expression.type.type != BasicTypeID.VOID)
+			javaWriter.pop(CompilerUtils.isLarge(statement.expression.type));
+		
 		return false;
 	}
 

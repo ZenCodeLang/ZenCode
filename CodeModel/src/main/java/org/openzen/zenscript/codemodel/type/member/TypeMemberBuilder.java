@@ -773,8 +773,8 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		
 		invert(builtin, INT_NOT, INT);
 		neg(builtin, INT_NEG, INT);
-		inc(builtin, INT_DEC, INT);
-		dec(builtin, INT_INC, INT);
+		inc(builtin, INT_INC, INT);
+		dec(builtin, INT_DEC, INT);
 
 		add(builtin, INT_ADD_INT, INT, INT);
 		add(builtin, LONG_ADD_LONG, LONG, LONG, INT_TO_LONG);
@@ -853,8 +853,8 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "uint", Modifiers.PUBLIC, null);
 		
 		invert(builtin, UINT_NOT, INT);
-		inc(builtin, UINT_DEC, INT);
-		dec(builtin, UINT_INC, INT);
+		inc(builtin, UINT_INC, INT);
+		dec(builtin, UINT_DEC, INT);
 
 		add(builtin, UINT_ADD_UINT, UINT, UINT);
 		add(builtin, ULONG_ADD_ULONG, USIZE, ULONG, UINT_TO_ULONG);
@@ -934,8 +934,8 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		
 		invert(builtin, LONG_NOT, LONG);
 		neg(builtin, LONG_NEG, LONG);
-		inc(builtin, LONG_DEC, LONG);
-		dec(builtin, LONG_INC, LONG);
+		inc(builtin, LONG_INC, LONG);
+		dec(builtin, LONG_DEC, LONG);
 
 		add(builtin, LONG_ADD_LONG, LONG, LONG);
 		add(builtin, FLOAT_ADD_FLOAT, FLOAT, FLOAT, LONG_TO_FLOAT);
@@ -1006,8 +1006,8 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "ulong", Modifiers.PUBLIC, null);
 		
 		invert(builtin, ULONG_NOT, ULONG);
-		inc(builtin, ULONG_DEC, ULONG);
-		dec(builtin, ULONG_INC, ULONG);
+		inc(builtin, ULONG_INC, ULONG);
+		dec(builtin, ULONG_DEC, ULONG);
 
 		add(builtin, ULONG_ADD_ULONG, ULONG, ULONG);
 		add(builtin, FLOAT_ADD_FLOAT, FLOAT, FLOAT, ULONG_TO_FLOAT);
@@ -1078,8 +1078,8 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "usize", Modifiers.PUBLIC, null);
 		
 		invert(builtin, USIZE_NOT, USIZE);
-		inc(builtin, USIZE_DEC, USIZE);
-		dec(builtin, USIZE_INC, USIZE);
+		inc(builtin, USIZE_INC, USIZE);
+		dec(builtin, USIZE_DEC, USIZE);
 
 		add(builtin, USIZE_ADD_USIZE, USIZE, USIZE);
 		add(builtin, ULONG_ADD_ULONG, ULONG, ULONG, USIZE_TO_ULONG);
@@ -1155,8 +1155,8 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "float", Modifiers.PUBLIC, null);
 		
 		neg(builtin, FLOAT_NEG, FLOAT);
-		inc(builtin, FLOAT_DEC, FLOAT);
-		dec(builtin, FLOAT_INC, FLOAT);
+		inc(builtin, FLOAT_INC, FLOAT);
+		dec(builtin, FLOAT_DEC, FLOAT);
 
 		add(builtin, FLOAT_ADD_FLOAT, FLOAT, FLOAT);
 		add(builtin, DOUBLE_ADD_DOUBLE, DOUBLE, DOUBLE, FLOAT_TO_DOUBLE);
@@ -1200,8 +1200,8 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "double", Modifiers.PUBLIC, null);
 		
 		neg(builtin, DOUBLE_NEG, DOUBLE);
-		inc(builtin, DOUBLE_DEC, DOUBLE);
-		dec(builtin, DOUBLE_INC, DOUBLE);
+		inc(builtin, DOUBLE_INC, DOUBLE);
+		dec(builtin, DOUBLE_DEC, DOUBLE);
 
 		add(builtin, DOUBLE_ADD_DOUBLE, DOUBLE, DOUBLE);
 		sub(builtin, DOUBLE_SUB_DOUBLE, DOUBLE, DOUBLE);
