@@ -41,6 +41,4 @@ public class TypeEncoding {
 	public static final int TYPE_RANGE = 26;
 	public static final int TYPE_ITERATOR = 27;
 	public static final int TYPE_OPTIONAL = 28;
-	public static final int TYPE_CONST = 29;
-	public static final int TYPE_IMMUTABLE = 30;
 }

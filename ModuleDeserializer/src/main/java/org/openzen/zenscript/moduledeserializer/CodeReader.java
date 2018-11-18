@@ -58,8 +58,8 @@ import org.openzen.zenscript.codemodel.statement.SwitchCase;
 import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.statement.ThrowStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -70,6 +70,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.moduleserialization.CodePositionEncoding;
 import org.openzen.zenscript.moduleserialization.ExpressionEncoding;
@@ -249,7 +250,7 @@ public class CodeReader implements CodeSerializationInput {
 	public AnnotationDefinition readAnnotationType() {
 		return annotations[readUInt()];
 	}
-
+	
 	@Override
 	public TypeID deserializeTypeID(TypeContext context) {
 		int type = input.readVarUInt();
@@ -290,17 +291,17 @@ public class CodeReader implements CodeSerializationInput {
 				return BasicTypeID.UNDETERMINED;
 			case TypeEncoding.TYPE_DEFINITION: {
 				HighLevelDefinition definition = readDefinition();
-				TypeID[] arguments = new TypeID[definition.typeParameters.length];
+				StoredType[] arguments = new StoredType[definition.typeParameters.length];
 				for (int i = 0; i < arguments.length; i++)
-					arguments[i] = deserializeTypeID(context);
+					arguments[i] = deserializeType(context);
 				return registry.getForDefinition(definition, arguments);
 			}
 			case TypeEncoding.TYPE_DEFINITION_INNER: {
 				DefinitionTypeID outer = (DefinitionTypeID)deserializeTypeID(context);
 				HighLevelDefinition definition = readDefinition();
-				TypeID[] arguments = new TypeID[definition.typeParameters.length];
+				StoredType[] arguments = new StoredType[definition.typeParameters.length];
 				for (int i = 0; i < arguments.length; i++)
-					arguments[i] = deserializeTypeID(context);
+					arguments[i] = deserializeStoredType(context);
 				return registry.getForDefinition(definition, arguments, outer);
 			}
 			case TypeEncoding.TYPE_GENERIC:
@@ -335,10 +336,6 @@ public class CodeReader implements CodeSerializationInput {
 			}
 			case TypeEncoding.TYPE_OPTIONAL:
 				return registry.getOptional(deserializeTypeID(context));
-			case TypeEncoding.TYPE_CONST:
-				return registry.getModified(OptionalTypeID.MODIFIER_CONST, deserializeTypeID(context));
-			case TypeEncoding.TYPE_IMMUTABLE:
-				return registry.getModified(OptionalTypeID.MODIFIER_IMMUTABLE, deserializeTypeID(context));
 			default:
 				throw new IllegalArgumentException("Unknown type: " + type);
 		}
@@ -396,6 +393,10 @@ public class CodeReader implements CodeSerializationInput {
 		if ((flags & FunctionHeaderEncoding.FLAG_THROWS) > 0)
 			thrownType = deserializeType(inner);
 		
+		StorageTag storage = null;
+		if ((flags & FunctionHeaderEncoding.FLAG_STORAGE) > 0)
+			storage = deserializeStorage();
+		
 		FunctionParameter[] parameters = FunctionParameter.NONE;
 		if ((flags & FunctionHeaderEncoding.FLAG_PARAMETERS) > 0) {
 			parameters = new FunctionParameter[readUInt()];
@@ -415,7 +416,7 @@ public class CodeReader implements CodeSerializationInput {
 				}
 			}
 		}
-		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
+		return new FunctionHeader(typeParameters, returnType, thrownType, storage, parameters);
 	}
 	
 	@Override
@@ -480,9 +481,9 @@ public class CodeReader implements CodeSerializationInput {
 
 	@Override
 	public CallArguments deserializeArguments(StatementContext context) {
-		TypeID[] typeArguments = new TypeID[readUInt()];
+		StoredType[] typeArguments = new StoredType[readUInt()];
 		for (int i = 0; i < typeArguments.length; i++)
-			typeArguments[i] = deserializeTypeID(context);
+			typeArguments[i] = deserializeType(context);
 		
 		Expression[] arguments = new Expression[readUInt()];
 		for (int i = 0; i < arguments.length; i++)
@@ -536,7 +537,7 @@ public class CodeReader implements CodeSerializationInput {
 				VarStatement[] loopVariables = new VarStatement[iterator.getLoopVariableCount()];
 				for (int i = 0; i < loopVariables.length; i++) {
 					String name = ((flags & StatementEncoding.FLAG_NAME) > 0) ? readString() : null;
-					loopVariables[i] = new VarStatement(position, name, iterator.types[i], null, true);
+					loopVariables[i] = new VarStatement(position, new VariableID(), name, iterator.types[i], null, true);
 				}
 				ForeachStatement loop = new ForeachStatement(position, loopVariables, iterator, list);
 				StatementContext inner = new StatementContext(context, loop);
@@ -591,7 +592,7 @@ public class CodeReader implements CodeSerializationInput {
 				StoredType varType = deserializeType(context);
 				String name = (flags & StatementEncoding.FLAG_NAME) > 0 ? readString() : null;
 				Expression initializer = deserializeExpression(context);
-				VarStatement result = new VarStatement(position, name, varType, initializer, (flags & StatementEncoding.FLAG_FINAL) > 0);
+				VarStatement result = new VarStatement(position, new VariableID(), name, varType, initializer, (flags & StatementEncoding.FLAG_FINAL) > 0);
 				context.add(result);
 				return result;
 			}
@@ -637,14 +638,14 @@ public class CodeReader implements CodeSerializationInput {
 				Expression target = deserializeExpression(context);
 				FunctionalMemberRef member = (FunctionalMemberRef)readMember(context, target.type);
 				CallArguments arguments = deserializeArguments(context);
-				FunctionHeader instancedHeader = member.getHeader().instanceForCall(registry, arguments);
+				FunctionHeader instancedHeader = member.getHeader().instanceForCall(position, registry, arguments);
 				return new CallExpression(position, target, member, instancedHeader, arguments);
 			}
 			case ExpressionEncoding.TYPE_CALL_STATIC: {
 				TypeID type = deserializeTypeID(context);
 				FunctionalMemberRef member = (FunctionalMemberRef)readMember(context, type.stored(StaticExpressionStorageTag.INSTANCE));
 				CallArguments arguments = deserializeArguments(context);
-				FunctionHeader instancedHeader = member.getHeader().instanceForCall(registry, arguments);
+				FunctionHeader instancedHeader = member.getHeader().instanceForCall(position, registry, arguments);
 				return new CallStaticExpression(position, type, member, instancedHeader, arguments);
 			}
 			case ExpressionEncoding.TYPE_CAPTURED_CLOSURE: {
@@ -792,11 +793,11 @@ public class CodeReader implements CodeSerializationInput {
 				TypeID type = deserializeTypeID(context);
 				return new IsExpression(position, value, type);
 			}
-			case ExpressionEncoding.TYPE_MAKE_CONST: {
+			/*case ExpressionEncoding.TYPE_MAKE_CONST: {
 				Expression value = deserializeExpression(context);
-				StoredType constType = registry.getModified(OptionalTypeID.MODIFIER_CONST, value.type.type).stored(value.type.getActualStorage());
+				StoredType constType = registry.get(OptionalTypeID.MODIFIER_CONST, value.type.type).stored(value.type.getActualStorage());
 				return new MakeConstExpression(position, value, constType);
-			}
+			}*/
 			case ExpressionEncoding.TYPE_MAP: {
 				StoredType type = deserializeType(context);
 				Expression[] keys = new Expression[readUInt()];
