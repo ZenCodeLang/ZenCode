@@ -78,7 +78,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		}
 
 
-		final JavaWriter methodWriter = new JavaWriter(writer, true, method, definition, true, methodSignature, methodSignature, null);
+		final JavaWriter methodWriter = new JavaWriter(member.position, writer, true, method, definition, true, methodSignature, methodSignature, null);
 		methodWriter.label(methodStart);
 
 		if (!isStatic) {

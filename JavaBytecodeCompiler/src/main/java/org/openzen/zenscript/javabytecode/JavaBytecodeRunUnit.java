@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -77,7 +78,7 @@ public class JavaBytecodeRunUnit {
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
 		
 		JavaMethod runMethod = JavaMethod.getStatic(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", "()V", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-		final JavaWriter runWriter = new JavaWriter(scriptsClassWriter, runMethod, null, null, null);
+		final JavaWriter runWriter = new JavaWriter(CodePosition.GENERATED, scriptsClassWriter, runMethod, null, null, null);
 		runWriter.start();
 		for (JavaMethod method : scripts)
 			runWriter.invokeStatic(method);

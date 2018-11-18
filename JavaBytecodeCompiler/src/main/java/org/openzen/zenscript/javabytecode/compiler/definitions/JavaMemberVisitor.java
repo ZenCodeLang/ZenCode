@@ -35,7 +35,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-        final JavaWriter javaWriter = new JavaWriter(writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
+        final JavaWriter javaWriter = new JavaWriter(definition.position, writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
         this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
         this.clinitStatementVisitor.start();
         CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -62,7 +62,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
         final Label constructorStart = new Label();
         final Label constructorEnd = new Label();
-        final JavaWriter constructorWriter = new JavaWriter(writer, method, definition, context.getMethodSignature(member.header), null);
+        final JavaWriter constructorWriter = new JavaWriter(member.position, writer, method, definition, context.getMethodSignature(member.header), null);
         constructorWriter.label(constructorStart);
         CompilerUtils.tagConstructorParameters(context, javaModule, member.header, isEnum);
         for (FunctionParameter parameter : member.header.parameters) {
@@ -108,7 +108,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		final Label constructorStart = new Label();
 		final Label constructorEnd = new Label();
-		final JavaWriter destructorWriter = new JavaWriter(writer, method, definition, null, null);
+		final JavaWriter destructorWriter = new JavaWriter(member.position, writer, method, definition, null, null);
 		destructorWriter.label(constructorStart);
 
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
@@ -129,7 +129,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		final Label methodStart = new Label();
 		final Label methodEnd = new Label();
-	    final JavaWriter methodWriter = new JavaWriter(writer, method, definition, context.getMethodSignature(member.header), null);
+	    final JavaWriter methodWriter = new JavaWriter(member.position, writer, method, definition, context.getMethodSignature(member.header), null);
 
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
 

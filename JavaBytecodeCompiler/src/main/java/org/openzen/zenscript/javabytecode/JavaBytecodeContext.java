@@ -8,6 +8,7 @@ package org.openzen.zenscript.javabytecode;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -101,7 +102,7 @@ public class JavaBytecodeContext extends JavaContext {
 		rangeWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, "to", getDescriptor(range.baseType), null, null).visitEnd();
 		
 		JavaMethod method = JavaMethod.getConstructor(range.cls, "(" + getDescriptor(range.baseType) + getDescriptor(range.baseType) + ")V", Opcodes.ACC_PUBLIC);
-		JavaWriter constructorWriter = new JavaWriter(rangeWriter, method, null, method.descriptor, null);
+		JavaWriter constructorWriter = new JavaWriter(CodePosition.GENERATED, rangeWriter, method, null, method.descriptor, null);
 		constructorWriter.loadObject(0);
 		constructorWriter.invokeSpecial("java/lang/Object", "<init>", "()V");
 		constructorWriter.loadObject(0);

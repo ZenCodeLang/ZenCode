@@ -10,7 +10,6 @@ import static org.objectweb.asm.Opcodes.*;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
@@ -26,6 +25,7 @@ public class JavaWriter {
 
     public final JavaMethod method;
     public final HighLevelDefinition forDefinition;
+	private final CodePosition position;
 
     private final LocalVariablesSorter visitor;
     private final List<JavaLocalVariableInfo> localVariableInfos = new ArrayList<>();
@@ -37,6 +37,7 @@ public class JavaWriter {
 	private final Map<VariableID, JavaLocalVariableInfo> localVariables = new HashMap<>();
 	
     public JavaWriter(
+			CodePosition position,
             ClassVisitor visitor,
             boolean nameVariables,
             JavaMethod method,
@@ -44,11 +45,12 @@ public class JavaWriter {
             String signature,
             String[] exceptions,
             String... annotations) {
-        this(visitor, nameVariables, method, forDefinition, false, signature, method.descriptor, exceptions, annotations);
+        this(position, visitor, nameVariables, method, forDefinition, false, signature, method.descriptor, exceptions, annotations);
     }
 
 
     public JavaWriter(
+			CodePosition position,
             ClassVisitor visitor,
             boolean nameVariables,
             JavaMethod method,
@@ -61,6 +63,7 @@ public class JavaWriter {
         this.clazzVisitor = visitor;
         this.method = method;
         this.forDefinition = forDefinition;
+		this.position = position;
 
         final MethodVisitor methodVisitor = visitor.visitMethod(isExtension ? method.modifiers | Opcodes.ACC_STATIC : method.modifiers, method.name, descriptor, signature, exceptions);
 
@@ -75,8 +78,8 @@ public class JavaWriter {
 
 
 
-    public JavaWriter(ClassVisitor visitor, JavaMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
-        this(visitor, true, method, forDefinition, signature, exceptions, annotations);
+    public JavaWriter(CodePosition position, ClassVisitor visitor, JavaMethod method, HighLevelDefinition forDefinition, String signature, String[] exceptions, String... annotations) {
+        this(position, visitor, true, method, forDefinition, signature, exceptions, annotations);
     }
 	
 	public void setLocalVariable(VariableID variable, JavaLocalVariableInfo info) {
@@ -233,6 +236,17 @@ public class JavaWriter {
 
         visitor.visitInsn(DUP_X1);
     }
+	
+	public void dupX1(boolean tosLarge, boolean large) {
+		if (debug)
+            System.out.println("dupx1");
+
+		if (tosLarge) {
+	        visitor.visitInsn(large ? DUP2_X2 : DUP_X2);
+		} else {
+	        visitor.visitInsn(large ? DUP2_X1 : DUP_X1);
+		}
+	}
 
     public void dupX2() {
         if (debug)

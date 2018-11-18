@@ -1746,36 +1746,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitConstructorThisCall(ConstructorThisCallExpression expression) {
-		javaWriter.loadObject(0);
-		if (javaWriter.method.cls.isEnum()) {
-			javaWriter.loadObject(1);
-			javaWriter.loadInt(2);
-		}
-
-		for (Expression argument : expression.arguments.arguments) {
-			argument.accept(this);
-		}
-		String internalName = context.getInternalName(expression.objectType);
-		javaWriter.invokeSpecial(internalName, "<init>", javaWriter.method.cls.isEnum()
-				? context.getEnumConstructorDescriptor(expression.constructor.getHeader())
-				: context.getMethodDescriptor(expression.constructor.getHeader()));
-		return null;
+		throw new UnsupportedOperationException("Invalid usage");
 	}
 
 	@Override
 	public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
-		javaWriter.loadObject(0);
-		for (Expression argument : expression.arguments.arguments) {
-			argument.accept(this);
-		}
-		//No super calls in enums possible, and that's already handled in the enum constructor itself.
-		javaWriter.invokeSpecial(
-				context.getInternalName(expression.objectType),
-				"<init>",
-				context.getMethodDescriptor(expression.constructor.getHeader()));
-
-		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, javaWriter.forDefinition, false);
-		return null;
+		throw new UnsupportedOperationException("Invalid usage");
 	}
 
 	@Override
@@ -1801,7 +1777,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", descriptor);
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))});
-		final JavaWriter functionWriter = new JavaWriter(lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
+		final JavaWriter functionWriter = new JavaWriter(expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 
 		javaWriter.newObject(name);
 		javaWriter.dup();
@@ -1809,7 +1785,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final String constructorDesc = calcFunctionSignature(expression.closure);
 
 
-		final JavaWriter constructorWriter = new JavaWriter(lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
+		final JavaWriter constructorWriter = new JavaWriter(expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
 		constructorWriter.start();
 		constructorWriter.loadObject(0);
 		constructorWriter.dup();
@@ -3488,6 +3464,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 						javaWriter.constant(255);
 						javaWriter.iAnd();
 					}, PushOption.BEFORE);
+					return null;
 				case SBYTE_INC:
 					modify(expression.target, () -> {
 						javaWriter.iConst1();
@@ -3648,8 +3625,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitSetField(SetFieldExpression expression) {
-		expression.target.accept(this);
 		expression.value.accept(this);
+		expression.target.accept(this);
+		javaWriter.dupX1(false, CompilerUtils.isLarge(expression.type));
 		putField(expression.field);
 		return null;
 	}
@@ -3657,6 +3635,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	@Override
 	public Void visitSetFunctionParameter(SetFunctionParameterExpression expression) {
 		expression.value.accept(this);
+		javaWriter.dup(CompilerUtils.isLarge(expression.value.type));
 		JavaParameterInfo parameter = module.getParameterInfo(expression.parameter);
 		javaWriter.store(context.getType(expression.type), parameter.index);
 		return null;
@@ -3670,14 +3649,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final JavaLocalVariableInfo tag = javaWriter.getLocalVariable(expression.variable.variable);
 		tag.end = label;
 
+		javaWriter.dup(CompilerUtils.isLarge(expression.value.type));
 		javaWriter.store(tag.type, tag.local);
-
 		return null;
 	}
 
 	@Override
 	public Void visitSetStaticField(SetStaticFieldExpression expression) {
 		expression.value.accept(this);
+		javaWriter.dup(CompilerUtils.isLarge(expression.value.type));
 		javaWriter.putStaticField(context.getJavaField(expression.field));
 		return null;
 	}

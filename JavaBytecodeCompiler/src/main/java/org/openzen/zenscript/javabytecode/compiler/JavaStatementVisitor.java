@@ -16,6 +16,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     private final JavaWriter javaWriter;
 	private final JavaBytecodeContext context;
     public JavaExpressionVisitor expressionVisitor;
+	public JavaNonPushingExpressionVisitor nonPushingExpressionVisitor;
 
     /**
      * @param javaWriter the method writer that compiles the statement
@@ -24,6 +25,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         this.javaWriter = javaWriter;
 		this.context = context;
         this.expressionVisitor = new JavaExpressionVisitor(context, module, javaWriter);
+		nonPushingExpressionVisitor = new JavaNonPushingExpressionVisitor(context, module, javaWriter, expressionVisitor);
     }
 
     public JavaStatementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionVisitor) {
@@ -80,12 +82,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitExpression(ExpressionStatement statement) {
-		statement.expression.accept(expressionVisitor);
-		
-		// TODO: make the expression not push anything
-		if (statement.expression.type.type != BasicTypeID.VOID)
-			javaWriter.pop(CompilerUtils.isLarge(statement.expression.type));
-		
+		statement.expression.accept(nonPushingExpressionVisitor);
 		return false;
 	}
 
