@@ -1883,7 +1883,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitGetField(GetFieldExpression expression) {
-		expression.accept(this);
+		expression.target.accept(this);
 		getField(expression.field);
 		return null;
 	}

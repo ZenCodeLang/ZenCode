@@ -104,7 +104,13 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitDestructor(DestructorMember member) {
-		final JavaMethod method = JavaMethod.getVirtual(toClass, "close", "()V", Opcodes.ACC_PUBLIC);
+		int modifiers = Opcodes.ACC_PUBLIC;
+		if (member.body == null)
+			modifiers |= Opcodes.ACC_ABSTRACT;
+		
+		final JavaMethod method = JavaMethod.getVirtual(toClass, "close", "()V", modifiers);
+		if (member.body == null)
+			return null;
 
 		final Label constructorStart = new Label();
 		final Label constructorEnd = new Label();

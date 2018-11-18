@@ -200,12 +200,13 @@ public class ConstructorRegistry {
 		
 		private final JavaCompiler compiler = new JavaCompiler();
 		private final List<JavaBytecodeModule> modules = new ArrayList<>();
-		private final JavaCompileSpace space = new SimpleJavaCompileSpace(registry);
+		private final SimpleJavaCompileSpace space = new SimpleJavaCompileSpace(registry);
 
 		@Override
 		public void addModule(SemanticModule module) {
 			JavaBytecodeModule result = compiler.compile(module.modulePackage.fullName, module, space);
 			modules.add(result);
+			space.register(result);
 		}
 
 		@Override
