@@ -541,7 +541,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 					argument.accept(this);
 				}
 		}
-
+		
 		switch (builtin) {
 			case BOOL_NOT:
 				javaWriter.iConst1();

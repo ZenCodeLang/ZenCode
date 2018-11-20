@@ -35,7 +35,7 @@ public class ParsedExpressionFloat extends ParsedExpression {
 		while (isLetter(value.charAt(split - 1)))
 			split--;
 		
-		this.value = Long.parseLong(value.substring(0, split));
+		this.value = Double.parseDouble(value.substring(0, split));
 		suffix = value.substring(split);
 	}
 	
