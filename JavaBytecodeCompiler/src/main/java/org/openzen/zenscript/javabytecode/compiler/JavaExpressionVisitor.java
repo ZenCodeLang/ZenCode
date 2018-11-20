@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
+import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 import org.openzen.zenscript.javashared.*;
 
 import java.io.FileOutputStream;
@@ -26,7 +27,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.StringJoiner;
-import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativeTranslator<Void> {
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
@@ -392,6 +392,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case STRING_RANGEGET:
 			case ARRAY_INDEXGETRANGE:
 			case ARRAY_INDEXGET:
+			case ARRAY_CONTAINS:
 				break;
 			case BYTE_INC:
 				modify(expression.target, () -> {
@@ -457,7 +458,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case UINT_INC:
 			case USIZE_INC:
 				if (expression.target instanceof GetLocalVariableExpression) {
-					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)expression.target).variable.variable);
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.variable);
 					javaWriter.iinc(local.local);
 					javaWriter.load(local);
 				} else {
@@ -471,7 +472,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case UINT_DEC:
 			case USIZE_DEC:
 				if (expression.target instanceof GetLocalVariableExpression) {
-					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)expression.target).variable.variable);
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.variable);
 					javaWriter.iinc(local.local, -1);
 					javaWriter.load(local);
 				} else {
@@ -525,7 +526,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final Label isFalse = new Label();
 				final Label end = new Label();
 
-				if(builtin == BuiltinID.OPTIONAL_IS_NULL)
+				if (builtin == BuiltinID.OPTIONAL_IS_NULL)
 					javaWriter.ifNonNull(isFalse);
 				else
 					javaWriter.ifNull(isFalse);
@@ -995,7 +996,64 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			}
 			case ARRAY_CONTAINS:
-				throw new UnsupportedOperationException("Not yet supported!");
+				expression.target.accept(this);
+				final Label loopStart = new Label();
+				final Label loopEnd = new Label();
+				final Label isTrue = new Label();
+				final Label expressionEnd = new Label();
+
+				final int counterLocation = javaWriter.local(int.class);
+				javaWriter.iConst0();
+				javaWriter.storeInt(counterLocation);
+
+				javaWriter.label(loopStart);
+				javaWriter.dup();
+				javaWriter.arrayLength();
+
+				javaWriter.loadInt(counterLocation);
+
+				javaWriter.ifICmpLE(loopEnd);
+				javaWriter.dup();
+				javaWriter.loadInt(counterLocation);
+				final StoredType itemType = expression.arguments.arguments[0].type;
+				javaWriter.arrayLoad(context.getType(itemType));
+				javaWriter.iinc(counterLocation);
+				expression.arguments.arguments[0].accept(this);
+
+
+				if (CompilerUtils.isPrimitive(itemType.type)) {
+					//Compare non-int types beforehand
+					if (itemType.type == BasicTypeID.LONG || itemType.type == BasicTypeID.ULONG) {
+						javaWriter.lCmp();
+						javaWriter.ifNE(loopStart);
+					} else if (itemType.type == BasicTypeID.FLOAT) {
+						javaWriter.fCmp();
+						javaWriter.ifNE(loopStart);
+					} else if (itemType.type == BasicTypeID.DOUBLE) {
+						javaWriter.dCmp();
+						javaWriter.ifNE(loopStart);
+					} else
+						javaWriter.ifICmpNE(loopStart);
+				} else {
+					//If equals, use Object.equals in case of null
+					javaWriter.invokeStatic(new JavaMethod(JavaClass.fromInternalName("java/util/Objects", JavaClass.Kind.CLASS), JavaMethod.Kind.STATIC, "equals", false, "(Ljava/lang/Object;Ljava/lang/Object;)Z", 0, false));
+					javaWriter.ifNE(loopStart);
+					// If ==
+					// javaWriter.ifACmpNe(loopStart);
+				}
+
+				javaWriter.label(isTrue);
+
+				javaWriter.pop();
+				javaWriter.iConst1();
+				javaWriter.goTo(expressionEnd);
+
+				javaWriter.label(loopEnd);
+				javaWriter.pop();
+				javaWriter.iConst0();
+				javaWriter.label(expressionEnd);
+
+				break;
 			case ARRAY_EQUALS:
 			case ARRAY_NOTEQUALS: {
 				ArrayTypeID type = (ArrayTypeID) expression.target.type.type;
@@ -3459,7 +3517,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.aThrow();
 		return null;
 	}
-	
+
 	private void modify(Expression source, Runnable modification, PushOption push) {
 		source.accept(new JavaModificationExpressionVisitor(context, module, javaWriter, this, modification, push));
 	}
@@ -3532,7 +3590,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				case UINT_INC:
 				case USIZE_INC:
 					if (expression.target instanceof GetLocalVariableExpression) {
-						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)expression.target).variable.variable);
+						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.variable);
 						javaWriter.load(local);
 						javaWriter.iinc(local.local);
 					} else {
@@ -3546,7 +3604,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				case UINT_DEC:
 				case USIZE_DEC:
 					if (expression.target instanceof GetLocalVariableExpression) {
-						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)expression.target).variable.variable);
+						JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) expression.target).variable.variable);
 						javaWriter.load(local);
 						javaWriter.iinc(local.local, -1);
 					} else {
@@ -3598,12 +3656,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 					throw new IllegalArgumentException("Unknown postcall builtin: " + expression.member.getBuiltin());
 			}
 		}
-		
+
 		modify(expression.target, () -> {
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 		}, PushOption.BEFORE);
-		
+
 		return null;
 	}
 
@@ -3694,7 +3752,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.getStaticField(context.getJavaField(expression.getter));
 				return null;
 			}
-			
+
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
@@ -3876,7 +3934,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	//Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
 	@SuppressWarnings({"Raw", "unchecked"})
-	private boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, StoredType resultType, Expression expression) {
+	boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, StoredType resultType, Expression expression) {
 		JavaMethod methodInfo = context.getJavaMethod(member);
 		if (methodInfo == null)
 			return false;

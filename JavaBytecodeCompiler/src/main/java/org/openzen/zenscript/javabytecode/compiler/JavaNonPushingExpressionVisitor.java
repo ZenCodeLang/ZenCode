@@ -623,7 +623,10 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 
 	@Override
 	public Void visitSetter(SetterExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		expression.target.accept(original);
+		expression.value.accept(original);
+		original.checkAndExecuteMethodInfo(expression.setter, expression.type, expression);
+		return null;
 	}
 
 	@Override

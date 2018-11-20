@@ -23,15 +23,23 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	private final HighLevelDefinition definition;
 	private final JavaCompiledModule javaModule;
 
+	private final JavaStatementVisitor clinitStatementVisitor;
+
 	public JavaExpansionMemberVisitor(JavaBytecodeContext context, ClassWriter writer, StoredType expandedClass, HighLevelDefinition definition) {
 		this.writer = writer;
 		this.expandedClass = expandedClass;
 		this.definition = definition;
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
+
+		final JavaWriter javaWriter = new JavaWriter(definition.position, writer, new JavaMethod(context.getJavaClass(definition), JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
+		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
+		this.clinitStatementVisitor.start();
+		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
 	}
 
 	public void end() {
+		clinitStatementVisitor.end();
 	}
 
 	@Override
@@ -43,7 +51,15 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitField(FieldMember member) {
-		throw new IllegalStateException("Cannot add fields via expansions");
+		if (!member.isStatic())
+			throw new IllegalStateException("Cannot add fields via expansions");
+
+		JavaField field = context.getJavaField(member);
+		writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
+
+		return null;
+
+
 	}
 
 	@Override
@@ -150,6 +166,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
-		throw new IllegalStateException("Cannot add Static initializers via expansions");
+		member.body.accept(clinitStatementVisitor);
+		return null;
 	}
 }
