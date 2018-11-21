@@ -558,7 +558,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	public Void visitPanic(PanicExpression expression) {
 		javaWriter.newObject("java/lang/AssertionError");
 		javaWriter.dup();
-		expression.value.accept(this);
+		expression.value.accept(original);
 		javaWriter.invokeSpecial(AssertionError.class, "<init>", "(Ljava/lang/String;)V");
 		javaWriter.aThrow();
 		return null;

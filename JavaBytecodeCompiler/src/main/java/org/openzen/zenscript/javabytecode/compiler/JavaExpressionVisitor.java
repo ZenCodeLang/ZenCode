@@ -3890,12 +3890,35 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitTryRethrowAsException(TryRethrowAsExceptionExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		expression.value.accept(this);
+		javaWriter.dup();
+		//FIXME better way of finding the error
+		final String internalName = context.getInternalName(expression.value.type) + "$Error";
+		javaWriter.instanceOf(internalName);
+		final Label end = new Label();
+		javaWriter.ifNE(end);
+		javaWriter.newObject(Type.getInternalName(Exception.class));
+		javaWriter.dup();
+		javaWriter.invokeSpecial(Type.getInternalName(Exception.class), "<init>", "()V");
+		javaWriter.label(end);
+		return null;
 	}
 
 	@Override
 	public Void visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		expression.value.accept(this);
+		javaWriter.dup();
+		//FIXME better way of finding the error
+		final String internalName = context.getInternalName(expression.value.type) + "$Error";
+		javaWriter.instanceOf(internalName);
+		final Label end = new Label();
+		javaWriter.ifNE(end);
+		javaWriter.newObject(internalName);
+		javaWriter.dupX1();
+		javaWriter.swap();
+		javaWriter.invokeSpecial(internalName, "<init>", "(Ljava/lang/Object;)V");
+		javaWriter.label(end);
+		return null;
 	}
 
 	@Override
