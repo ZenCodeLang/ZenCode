@@ -110,6 +110,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	private static final JavaMethod HASHMAP_INIT = JavaMethod.getNativeConstructor(JavaClass.HASHMAP, "()V");
 	private static final JavaMethod MAP_GET = JavaMethod.getNativeVirtual(JavaClass.MAP, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 	private static final JavaMethod MAP_PUT = JavaMethod.getNativeVirtual(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+	private static final JavaMethod MAP_PUT_ALL = JavaMethod.getNativeVirtual(JavaClass.MAP, "putAll", "(Ljava/util/Map;)V");
 	private static final JavaMethod MAP_CONTAINS_KEY = JavaMethod.getNativeVirtual(JavaClass.MAP, "containsKey", "(Ljava/lang/Object;)Z");
 	private static final JavaMethod MAP_SIZE = JavaMethod.getNativeVirtual(JavaClass.MAP, "size", "()I");
 	private static final JavaMethod MAP_ISEMPTY = JavaMethod.getNativeVirtual(JavaClass.MAP, "isEmpty", "()Z");
@@ -542,7 +543,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 					argument.accept(this);
 				}
 		}
-		
+
 		switch (builtin) {
 			case BOOL_NOT:
 				javaWriter.iConst1();
@@ -907,6 +908,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			}
 			case GENERICMAP_PUT: {
+				//FIXME dirty check for typeOfT
+				if (expression.arguments.arguments.length == 1) {
+					javaWriter.dup();
+					javaWriter.invokeVirtual(JavaMethod.getVirtual(JavaClass.OBJECT, "getClass", "()Ljava/lang/Class;", 0));
+					javaWriter.swap();
+				}
+
 				javaWriter.invokeVirtual(MAP_PUT);
 				javaWriter.pop();
 				break;
@@ -918,6 +926,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				throw new UnsupportedOperationException("Not yet supported!");
 			case GENERICMAP_NOTEQUALS:
 				throw new UnsupportedOperationException("Not yet supported!");
+			case GENERICMAP_ADDALL:
+				javaWriter.invokeInterface(MAP_PUT_ALL);
+				break;
 			case ARRAY_INDEXGET: {
 				ArrayTypeID type = (ArrayTypeID) expression.target.type.type;
 				expression.target.accept(this);
