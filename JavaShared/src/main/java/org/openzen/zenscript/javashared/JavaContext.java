@@ -314,6 +314,9 @@ public abstract class JavaContext {
 	
 	private String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor) {
         StringBuilder descBuilder = new StringBuilder("(");
+		for (int i = 0; i < header.getNumberOfTypeParameters(); i++)
+			descBuilder.append("Ljava/lang/Class;");
+		
         if (isEnumConstructor)
             descBuilder.append("Ljava/lang/String;I");
 		
