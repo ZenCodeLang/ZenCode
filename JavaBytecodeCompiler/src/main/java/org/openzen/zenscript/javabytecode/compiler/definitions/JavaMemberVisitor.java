@@ -64,7 +64,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         final Label constructorEnd = new Label();
         final JavaWriter constructorWriter = new JavaWriter(member.position, writer, method, definition, context.getMethodSignature(member.header), null);
         constructorWriter.label(constructorStart);
-        CompilerUtils.tagConstructorParameters(context, javaModule, member.header, isEnum);
+        CompilerUtils.tagConstructorParameters(context, javaModule, member.definition, member.header, isEnum);
         for (FunctionParameter parameter : member.header.parameters) {
             constructorWriter.nameVariable(
                     javaModule.getParameterInfo(parameter).index,

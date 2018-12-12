@@ -28,7 +28,7 @@ import org.openzen.zenscript.javashared.JavaTypeUtils;
  * @author Hoofdgebruiker
  */
 public class JavaBytecodeContext extends JavaContext {
-	private final JavaBytecodeModule target;
+	public final JavaBytecodeModule target;
 	private final TypeGenerator typeGenerator;
 	private final JavaTypeInternalNameVisitor internalNameVisitor;
 	private final JavaTypeDescriptorVisitor descriptorVisitor;

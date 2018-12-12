@@ -113,6 +113,14 @@ public class FunctionHeader {
 		hasUnknowns = hasUnknowns(parameters, returnType);
 	}
 	
+	public boolean[] useTypeParameters() {
+		boolean[] useTypeParameters = new boolean[typeParameters.length];
+		for (int i = 0; i < useTypeParameters.length; i++)
+			useTypeParameters[i] = true;
+		
+		return useTypeParameters;
+	}
+	
 	public StoredType getReturnType() {
 		return returnType;
 	}

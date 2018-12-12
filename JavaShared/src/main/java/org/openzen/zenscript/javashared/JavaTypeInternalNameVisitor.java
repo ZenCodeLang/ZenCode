@@ -108,7 +108,7 @@ public class JavaTypeInternalNameVisitor implements TypeVisitorWithContext<Store
     }
 
     @Override
-    public String visitModified(StoredType context, OptionalTypeID modified) {
+    public String visitOptional(StoredType context, OptionalTypeID modified) {
 		if (modified.isOptional())
 			return modified.withoutOptional().accept(context, forOptional);
 		

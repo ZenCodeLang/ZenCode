@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -32,6 +33,7 @@ public class JavaCompiledModule {
 	private final Map<ImplementationMember, JavaImplementation> implementations = new HashMap<>();
 	private final Map<IDefinitionMember, JavaField> fields = new HashMap<>();
 	private final Map<IDefinitionMember, JavaMethod> methods = new HashMap<>();
+	private final Map<TypeParameter, JavaTypeParameterInfo> typeParameters = new HashMap<>();
 	private final Map<FunctionParameter, JavaParameterInfo> parameters = new HashMap<>();
 	private final Map<VariantDefinition.Option, JavaVariantOption> variantOptions = new HashMap<>();
 	
@@ -157,6 +159,18 @@ public class JavaCompiledModule {
 			throw new IllegalStateException("Missing method info for method " + member.getDefinition().name + "." + member.describe());
 		
 		return method;
+	}
+	
+	public void setTypeParameterInfo(TypeParameter parameter, JavaTypeParameterInfo info) {
+		typeParameters.put(parameter, info);
+	}
+	
+	public JavaTypeParameterInfo getTypeParameterInfo(TypeParameter parameter) {
+		JavaTypeParameterInfo info = typeParameters.get(parameter);
+		if (info == null)
+			throw new IllegalStateException("Missing parameter info for type parameter " + parameter);
+		
+		return info;
 	}
 	
 	public void setParameterInfo(FunctionParameter parameter, JavaParameterInfo info) {

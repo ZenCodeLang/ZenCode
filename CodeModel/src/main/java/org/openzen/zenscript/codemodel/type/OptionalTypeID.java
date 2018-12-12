@@ -45,7 +45,7 @@ public class OptionalTypeID implements TypeID {
 	
 	@Override
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
-		return visitor.visitModified(context, this);
+		return visitor.visitOptional(context, this);
 	}
 
 	@Override

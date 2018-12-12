@@ -376,6 +376,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		BuiltinID builtin = expression.member.getBuiltin();
 		if (builtin == null) {
 			expression.target.accept(this);
+			
+			JavaMethod methodInfo = context.getJavaMethod(expression.member);
+			for (int i = 0; i < expression.arguments.typeArguments.length; i++) {
+				if (methodInfo.typeParameterArguments[i]) {
+					StoredType arguments = expression.arguments.typeArguments[i];
+					
+				}
+			}
 			for (Expression argument : expression.arguments.arguments) {
 				argument.accept(this);
 			}

@@ -300,6 +300,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			DefinitionMemberRef base = member.getOverrides();
 			
 			JavaMethod baseMethod = context.getJavaMethod(base.getTarget());
+			
 			method = new JavaMethod(
 					cls,
 					baseMethod.kind,
@@ -307,7 +308,8 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					true,
 					context.getMethodDescriptor(header),
 					JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-					header.getReturnType().type instanceof GenericTypeID);
+					header.getReturnType().type instanceof GenericTypeID,
+					header.useTypeParameters());
 		} else if (method == null) {
 			method = new JavaMethod(
 					cls,
@@ -316,7 +318,8 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					true,
 					context.getMethodDescriptor(header),
 					JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-					header.getReturnType().type instanceof GenericTypeID);
+					header.getReturnType().type instanceof GenericTypeID,
+					header.useTypeParameters());
 		}
 		
 		if (method.compile && member.getBuiltin() != BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) {

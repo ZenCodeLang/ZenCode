@@ -148,7 +148,7 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	}
 
 	@Override
-	public Boolean visitModified(Matching context, OptionalTypeID type) {
+	public Boolean visitOptional(Matching context, OptionalTypeID type) {
 		if (context.type.type instanceof OptionalTypeID) {
 			OptionalTypeID modified = (OptionalTypeID) context.type.type;
 			return match(context, modified.baseType.stored(), type.baseType.stored());

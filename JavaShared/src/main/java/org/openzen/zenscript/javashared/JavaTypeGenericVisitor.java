@@ -142,7 +142,7 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 	}
 
 	@Override
-	public String visitModified(StoredType context, OptionalTypeID type) {
+	public String visitOptional(StoredType context, OptionalTypeID type) {
 		return type.baseType.accept(context, this);
 	}
 }

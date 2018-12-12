@@ -95,7 +95,7 @@ public class JavaTypeInfo {
 		}
 
 		@Override
-		public JavaTypeInfo visitModified(StoredType context, OptionalTypeID type) {
+		public JavaTypeInfo visitOptional(StoredType context, OptionalTypeID type) {
 			return type.baseType.accept(null, this);
 		}
 	}

@@ -51,8 +51,13 @@ public class JavaMethod {
 	public final String descriptor;
 	public final int modifiers;
 	public final boolean genericResult;
+	public final boolean[] typeParameterArguments;
 	
 	public JavaMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers, boolean genericResult) {
+		this(cls, kind, name, compile, descriptor, modifiers, genericResult, new boolean[0]);
+	}
+	
+	public JavaMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers, boolean genericResult, boolean[] typeParameterArguments) {
 		if (descriptor.contains("<")) // fix signature bug
 			throw new IllegalArgumentException("Invalid descriptor!");
 		
@@ -65,6 +70,7 @@ public class JavaMethod {
 		this.descriptor = descriptor;
 		this.modifiers = modifiers;
 		this.genericResult = genericResult;
+		this.typeParameterArguments = typeParameterArguments;
 	}
 	
 	public JavaMethod(JavaNativeTranslation<?> translation) {
@@ -76,6 +82,7 @@ public class JavaMethod {
 		this.descriptor = "";
 		this.modifiers = 0;
 		this.genericResult = false;
+		this.typeParameterArguments = new boolean[0];
 	}
 	
 	public String getMapping(JavaClass definition) {

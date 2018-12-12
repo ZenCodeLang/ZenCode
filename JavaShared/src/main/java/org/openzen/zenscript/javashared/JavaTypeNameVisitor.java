@@ -114,7 +114,7 @@ public class JavaTypeNameVisitor implements TypeVisitorWithContext<StoredType, S
 	}
 
 	@Override
-	public String visitModified(StoredType context, OptionalTypeID type) {
+	public String visitOptional(StoredType context, OptionalTypeID type) {
 		StringBuilder result = new StringBuilder();
 		if (type.isOptional())
 			result.append("Optional");

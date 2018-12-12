@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.switchvalue.*;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -15,6 +16,7 @@ import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaTypeParameterInfo;
 
 public class CompilerUtils {
 
@@ -48,7 +50,10 @@ public class CompilerUtils {
 
     public static void tagMethodParameters(JavaBytecodeContext context, JavaCompiledModule module, FunctionHeader header, boolean isStatic) {
 		int index = header.getNumberOfTypeParameters();
-		
+		for (int i = 0; i < header.typeParameters.length; i++) {
+			TypeParameter parameter = header.typeParameters[i];
+			module.setTypeParameterInfo(parameter, new JavaTypeParameterInfo(index++));
+		}
         for (int i = 0; i < header.parameters.length; i++) {
             FunctionParameter parameter = header.parameters[i];
             String parameterType = context.getDescriptor(parameter.type);
@@ -57,7 +62,17 @@ public class CompilerUtils {
         }
     }
 
-    public static void tagConstructorParameters(JavaBytecodeContext context, JavaCompiledModule module, FunctionHeader header, boolean isEnum) {
+    public static void tagConstructorParameters(JavaBytecodeContext context, JavaCompiledModule module, HighLevelDefinition definition, FunctionHeader header, boolean isEnum) {
+		int index = header.getNumberOfTypeParameters();
+		for (int i = 0; i < definition.typeParameters.length; i++) {
+			JavaTypeParameterInfo info = module.getTypeParameterInfo(definition.typeParameters[i]);
+			if (info.field != null)
+				index++;
+		}
+		for (int i = 0; i < header.typeParameters.length; i++) {
+			TypeParameter parameter = header.typeParameters[i];
+			module.setTypeParameterInfo(parameter, new JavaTypeParameterInfo(index++));
+		}
         for (int i = 0; i < header.parameters.length; i++) {
             FunctionParameter parameter = header.parameters[i];
             String parameterType = context.getDescriptor(parameter.type);

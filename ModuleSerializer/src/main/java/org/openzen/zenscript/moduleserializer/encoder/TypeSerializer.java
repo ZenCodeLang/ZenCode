@@ -137,7 +137,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void,
 	}
 
 	@Override
-	public Void visitModified(TypeContext context, OptionalTypeID type) {
+	public Void visitOptional(TypeContext context, OptionalTypeID type) {
 		if (type.isOptional()) {
 			output.writeUInt(TypeEncoding.TYPE_OPTIONAL);
 			type.withoutOptional().accept(context, this);

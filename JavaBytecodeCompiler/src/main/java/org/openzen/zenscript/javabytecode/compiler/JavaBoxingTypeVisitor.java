@@ -122,7 +122,7 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<StoredType,
 	}
 
 	@Override
-	public Void visitModified(StoredType context, OptionalTypeID type) {
+	public Void visitOptional(StoredType context, OptionalTypeID type) {
 		//NO-OP
 		return null;
 	}

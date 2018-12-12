@@ -60,14 +60,13 @@ import stdlib.Strings;
 
 /**
  *
- * @author Hoofdgebruiker
+ * @author Stan Hebben
  */
 public class JavaNativeModule {
 	public final Module module;
 	private final ZSPackage pkg;
 	private final String basePackage;
 	private final GlobalTypeRegistry registry;
-	private final boolean allowNonAnnonated;
 	private final PackageDefinitions definitions = new PackageDefinitions();
 	private final JavaCompiledModule compiled;
 	
@@ -82,7 +81,6 @@ public class JavaNativeModule {
 			String name,
 			String basePackage,
 			GlobalTypeRegistry registry,
-			boolean allowNonAnnotated,
 			JavaNativeModule[] dependencies)
 	{
 		this.pkg = pkg;
@@ -94,7 +92,6 @@ public class JavaNativeModule {
 			definitionByClass.putAll(dependency.definitionByClass);
 		}
 		
-		this.allowNonAnnonated = allowNonAnnotated;
 		compiled = new JavaCompiledModule(module, FunctionParameter.NONE);
 		
 		typeByClass.put(void.class, BasicTypeID.VOID);
@@ -148,7 +145,7 @@ public class JavaNativeModule {
 		if (definitionByClass.containsKey(cls))
 			return definitionByClass.get(cls);
 		
-		HighLevelDefinition result = addClass(cls, ZenCodeType.class.isAssignableFrom(cls));
+		HighLevelDefinition result = convertClass(cls);
 		definitionByClass.put(cls, result);
 		return result;
 	}
@@ -213,9 +210,7 @@ public class JavaNativeModule {
 		return classPkg;
 	}
 	
-	private <T> HighLevelDefinition addClass(Class<T> cls, boolean annotated) {
-		if (!annotated && !allowNonAnnonated)
-			throw new IllegalArgumentException("This class is not annotated as ZenCode class");
+	private <T> HighLevelDefinition convertClass(Class<T> cls) {
 		if ((cls.getModifiers() & Modifier.PUBLIC) == 0)
 			throw new IllegalArgumentException("Class must be public");
 		
@@ -260,7 +255,7 @@ public class JavaNativeModule {
 		StoredType thisType = new StoredType(registry.getForMyDefinition(definition), AutoStorageTag.INSTANCE);
 		for (Field field : cls.getDeclaredFields()) {
 			ZenCodeType.Field annotation = field.getAnnotation(ZenCodeType.Field.class);
-			if (annotated && annotation == null)
+			if (annotation == null)
 				continue;
 			if (!isPublic(field.getModifiers()))
 				continue;
@@ -278,7 +273,7 @@ public class JavaNativeModule {
 		boolean hasConstructor = false;
 		for (java.lang.reflect.Constructor constructor : cls.getConstructors()) {
 			ZenCodeType.Constructor constructorAnnotation = (ZenCodeType.Constructor)constructor.getAnnotation(ZenCodeType.Constructor.class);
-			if (constructorAnnotation != null || !annotated) {
+			if (constructorAnnotation != null) {
 				ConstructorMember member = asConstructor(definition, constructor);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, constructor));
@@ -302,7 +297,7 @@ public class JavaNativeModule {
 			}
 			
 			ZenCodeType.Getter getter = method.getAnnotation(ZenCodeType.Getter.class);
-			if (getter != null || (!annotated && isGetterName(method.getName()) && method.getParameterCount() == 0)) {
+			if (getter != null) {
 				GetterMember member = asGetter(definition, method, getter);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.getType()));
@@ -310,7 +305,7 @@ public class JavaNativeModule {
 			}
 			
 			ZenCodeType.Setter setter = method.getAnnotation(ZenCodeType.Setter.class);
-			if (setter != null || (!annotated && method.getName().startsWith("set") && method.getParameterCount() == 1)) {
+			if (setter != null) {
 				SetterMember member = asSetter(definition, method, setter);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, BasicTypeID.VOID.stored));
@@ -333,11 +328,11 @@ public class JavaNativeModule {
 				continue;
 			}
 			
-			if (!annotated) {
+			/*if (!annotated) {
 				MethodMember member = asMethod(definition, method, null);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
-			}
+			}*/
 		}
 		
 		return definition;

@@ -576,7 +576,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 
 	@Override
-	public Void visitModified(Void context, OptionalTypeID modified) {
+	public Void visitOptional(Void context, OptionalTypeID modified) {
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "modified", Modifiers.PUBLIC, null);
 		modified.baseType.accept(context, this);
 		

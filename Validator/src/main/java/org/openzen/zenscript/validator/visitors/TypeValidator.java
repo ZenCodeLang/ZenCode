@@ -125,7 +125,7 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 	}
 
 	@Override
-	public Void visitModified(TypeContext context, OptionalTypeID type) {
+	public Void visitOptional(TypeContext context, OptionalTypeID type) {
 		// TODO: detect duplicate const
 		validate(context, type.baseType);
 		return null;
