@@ -38,18 +38,18 @@ public class JavaBytecodeRunUnit {
 	private final List<JavaScriptMethod> scripts = new ArrayList<>();
 	private final List<FunctionParameter> scriptParameters = new ArrayList<>();
 	private final List<JavaParameterInfo> scriptParameterInfo = new ArrayList<>();
-	
+
 	private boolean scriptsWritten = false;
-	
+
 	public void add(JavaBytecodeModule module) {
 		scriptsWritten = false;
-		
+
 		for (Map.Entry<String, byte[]> classEntry : module.getClasses().entrySet())
 			classes.put(classEntry.getKey().replace('/', '.'), classEntry.getValue());
-		
+
 		for (JavaScriptMethod script : module.getScripts()) {
 			scripts.add(script);
-			
+
 			for (int i = 0; i < script.parameters.length; i++) {
 				FunctionParameter parameter = script.parameters[i];
 				if (!scriptParameters.contains(parameter)) {
@@ -59,22 +59,26 @@ public class JavaBytecodeRunUnit {
 			}
 		}
 	}
-	
+
 	public void run() {
-		run(Collections.emptyMap());
+		run(Collections.emptyMap(), this.getClass().getClassLoader());
 	}
-	
+
 	public void run(Map<FunctionParameter, Object> arguments) {
+		run(arguments, this.getClass().getClassLoader());
+	}
+
+	public void run(Map<FunctionParameter, Object> arguments, ClassLoader parentClassLoader) {
 		writeScripts();
-		
-		ScriptClassLoader classLoader = new ScriptClassLoader();
+
+		ScriptClassLoader classLoader = new ScriptClassLoader(parentClassLoader);
 
 		Object[] argumentsArray = new Object[scriptParameters.size()];
 		for (int i = 0; i < scriptParameters.size(); i++) {
 			FunctionParameter parameter = scriptParameters.get(i);
 			if (!arguments.containsKey(parameter))
 				throw new IllegalArgumentException("Missing script argument for parameter " + parameter.name);
-			
+
 			argumentsArray[i] = arguments.get(parameter);
 		}
 		try {
@@ -86,13 +90,13 @@ public class JavaBytecodeRunUnit {
 			Logger.getLogger(JavaBytecodeRunUnit.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
+
 	public void dump(File directory) {
 		writeScripts();
-		
+
 		if (!directory.exists())
 			directory.mkdirs();
-		
+
 		for (Map.Entry<String, byte[]> classEntry : classes.entrySet()) {
 			File output = new File(directory, classEntry.getKey() + ".class");
 			try (FileOutputStream outputStream = new FileOutputStream(output)) {
@@ -102,18 +106,18 @@ public class JavaBytecodeRunUnit {
 			}
 		}
 	}
-	
+
 	private int getParameterIndex(FunctionParameter parameter) {
 		return scriptParameters.indexOf(parameter);
 	}
-	
+
 	private void writeScripts() {
 		if (scriptsWritten)
 			return;
-		
+
 		JavaClassWriter scriptsClassWriter = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		scriptsClassWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "Scripts", null, "java/lang/Object", null);
-		
+
 		FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, scriptParameters.toArray(new FunctionParameter[scriptParameters.size()]));
 		StringBuilder headerBuilder = new StringBuilder();
 		headerBuilder.append('(');
@@ -121,7 +125,7 @@ public class JavaBytecodeRunUnit {
 			headerBuilder.append(scriptParameterInfo.get(i).typeDescriptor);
 		}
 		headerBuilder.append(")V");
-		
+
 		JavaMethod runMethod = JavaMethod.getStatic(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", headerBuilder.toString(), Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 		final JavaWriter runWriter = new JavaWriter(CodePosition.GENERATED, scriptsClassWriter, runMethod, null, null, null);
 		runWriter.start();
@@ -131,10 +135,10 @@ public class JavaBytecodeRunUnit {
 			}
 			runWriter.invokeStatic(method.method);
 		}
-		
+
 		runWriter.ret();
 		runWriter.end();
-		
+
 		classes.put("Scripts", scriptsClassWriter.toByteArray());
 		scriptsWritten = true;
 	}
@@ -142,10 +146,18 @@ public class JavaBytecodeRunUnit {
 	public class ScriptClassLoader extends ClassLoader {
 		private final Map<String, Class> customClasses = new HashMap<>();
 
+		ScriptClassLoader() {
+			super();
+		}
+
+		public ScriptClassLoader(ClassLoader parent) {
+			super(parent);
+		}
+
 		@Override
 		public Class<?> loadClass(String name) throws ClassNotFoundException {
 			//System.out.println("LoadClass " + name);
-			
+
 			if (customClasses.containsKey(name))
 				return customClasses.get(name);
 			if (classes.containsKey(name)) {
@@ -156,7 +168,7 @@ public class JavaBytecodeRunUnit {
 			return super.loadClass(name);
 		}
 	}
-	
+
 	private static Class<?> loadClass(ClassLoader classLoader, String descriptor) throws ClassNotFoundException {
 		switch (descriptor) {
 			case "Z": return boolean.class;
@@ -172,10 +184,10 @@ public class JavaBytecodeRunUnit {
 			case "[Ljava/lang/Object;": return Object[].class;
 			case "[Ljava/lang/String;": return String[].class;
 		}
-		
+
 		return classLoader.loadClass(getClassName(descriptor));
 	}
-	
+
 	private static String getClassName(String descriptor) {
 		if (descriptor.startsWith("[")) {
 			return "[" + getClassName(descriptor.substring(1));
