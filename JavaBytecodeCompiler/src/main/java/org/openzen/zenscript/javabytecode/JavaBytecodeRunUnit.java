@@ -5,17 +5,6 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -29,8 +18,16 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaBytecodeRunUnit {
@@ -145,18 +142,26 @@ public class JavaBytecodeRunUnit {
 
 	public class ScriptClassLoader extends ClassLoader {
 		private final Map<String, Class> customClasses = new HashMap<>();
-
-		ScriptClassLoader() {
-			super();
-		}
+		private final ClassLoader parent;
 
 		public ScriptClassLoader(ClassLoader parent) {
 			super(parent);
+			this.parent = parent;
 		}
 
 		@Override
 		public Class<?> loadClass(String name) throws ClassNotFoundException {
 			//System.out.println("LoadClass " + name);
+
+			if (findLoadedClassMethod != null) {
+				try {
+					Class<?> clazz = (Class<?>) findLoadedClassMethod.invoke(this.parent, name);
+					if (clazz != null)
+						return clazz;
+				} catch (IllegalAccessException | InvocationTargetException e) {
+					e.printStackTrace();
+				}
+			}
 
 			if (customClasses.containsKey(name))
 				return customClasses.get(name);
@@ -168,6 +173,21 @@ public class JavaBytecodeRunUnit {
 			return super.loadClass(name);
 		}
 	}
+
+
+	static {
+		Method method;
+		try {
+			method = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+			method.setAccessible(true);
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+			method = null;
+		}
+		findLoadedClassMethod = method;
+	}
+
+	private static final Method findLoadedClassMethod;
 
 	private static Class<?> loadClass(ClassLoader classLoader, String descriptor) throws ClassNotFoundException {
 		switch (descriptor) {
