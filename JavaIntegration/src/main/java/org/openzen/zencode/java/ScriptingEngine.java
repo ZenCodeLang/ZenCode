@@ -128,19 +128,23 @@ public class ScriptingEngine {
 	public void run() {
 		run(Collections.emptyMap());
 	}
-	
+
 	public void run(Map<FunctionParameter, Object> arguments) {
+		run(arguments, this.getClass().getClassLoader());
+	}
+
+	public void run(Map<FunctionParameter, Object> arguments, ClassLoader parentClassLoader) {
 		SimpleJavaCompileSpace javaSpace = new SimpleJavaCompileSpace(registry);
 		for (JavaNativeModule nativeModule : nativeModules)
 			javaSpace.register(nativeModule.getCompiled());
-		
+
 		JavaCompiler compiler = new JavaCompiler();
-		
+
 		JavaBytecodeRunUnit runUnit = new JavaBytecodeRunUnit();
 		for (SemanticModule compiled : compiledModules)
 			runUnit.add(compiler.compile(compiled.name, compiled, javaSpace));
 		if (debug)
 			runUnit.dump(new File("classes"));
-		runUnit.run(arguments);
+		runUnit.run(arguments, parentClassLoader);
 	}
 }
