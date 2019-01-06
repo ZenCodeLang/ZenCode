@@ -167,7 +167,9 @@ public class JavaNativeModule {
 			String name = global.value().isEmpty() ? field.getName() : global.value();
 			FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, thisType, type, registry, Modifiers.PUBLIC, 0, null);
 			definition.addMember(fieldMember);
-			compiled.setFieldInfo(fieldMember, new JavaField(jcls, name, getDescriptor(field.getType())));
+			JavaField javaField = new JavaField(jcls, field.getName(), getDescriptor(field.getType()));
+			compiled.setFieldInfo(fieldMember, javaField);
+			compiled.setFieldInfo(fieldMember.autoGetter, javaField);
 			globals.put(name, new ExpressionSymbol((position, scope) -> new StaticGetterExpression(CodePosition.BUILTIN, fieldMember.autoGetter.ref(thisType, GenericMapper.EMPTY))));
 		}
 		
@@ -183,7 +185,7 @@ public class JavaNativeModule {
 			definition.addMember(methodMember);
 			
 			boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
-			compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, name, false, getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+			compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), isGenericResult));
 			globals.put(name, new ExpressionSymbol((position, scope) -> {
 				TypeMembers members = scope.getTypeMembers(thisType);
 				return new PartialStaticMemberGroupExpression(position, scope, thisType.type, members.getGroup(name), StoredType.NONE);

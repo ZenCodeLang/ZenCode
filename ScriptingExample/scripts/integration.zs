@@ -15,3 +15,5 @@ class TestOperators {
 
 val testInstance = new TestOperators();
 //testInstance("something");
+
+something.dump();

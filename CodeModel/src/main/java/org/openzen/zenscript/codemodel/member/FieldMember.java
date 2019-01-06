@@ -5,11 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.member;
 
-import java.lang.reflect.Modifier;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
@@ -65,8 +65,9 @@ public class FieldMember extends PropertyMember {
 				parameters[i] = registry.getGeneric(definition.typeParameters[i]);
 		}
 		
+		int autoMemberModifiers = modifiers & Modifiers.STATIC;
 		if (autoGetterAccess != 0) {
-			this.autoGetter = new GetterMember(position, definition, autoGetterAccess, name, type, null);
+			this.autoGetter = new GetterMember(position, definition, autoGetterAccess | autoMemberModifiers, name, type, null);
 			this.autoGetter.setBody(new ReturnStatement(position, new GetFieldExpression(
 					position,
 					new ThisExpression(position, thisType),
@@ -75,7 +76,7 @@ public class FieldMember extends PropertyMember {
 			this.autoGetter = null;
 		}
 		if (autoSetterAccess != 0) {
-			this.autoSetter = new SetterMember(position, definition, autoSetterAccess, name, type, null);
+			this.autoSetter = new SetterMember(position, definition, autoSetterAccess | autoMemberModifiers, name, type, null);
 			this.autoSetter.setBody(new ExpressionStatement(position, new SetFieldExpression(
 					position,
 					new ThisExpression(position, thisType),

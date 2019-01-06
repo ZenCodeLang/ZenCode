@@ -15,6 +15,9 @@ public class Globals implements ZenCodeGlobals {
 	private Globals() {}
 	
 	@Global
+	public static TestClass something = new TestClass("hello");
+	
+	@Global
 	public static void println(String message) {
 		System.out.println(message);
 	}

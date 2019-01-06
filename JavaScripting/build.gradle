@@ -12,7 +12,9 @@ jar {
 	dependsOn javaScriptingProjects.collect{ it+":compileJava"}
     from files(javaScriptingProjects.collect{ project(it).sourceSets.main.output })
 }
-
+sourcesJar {
+    from files(javaScriptingProjects.collect { project(it).sourceSets.main.allSource })
+}
 install {
 	repositories.mavenInstaller {
 		pom.artifactId = 'zencode-javascripting'
