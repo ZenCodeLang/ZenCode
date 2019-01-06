@@ -156,7 +156,7 @@ public class JavaBytecodeRunUnit {
 				customClasses.put(name, defineClass(name, bytes, 0, bytes.length, null));
 				return customClasses.get(name);
 			}
-			return super.loadClass(name);
+			return getParent().loadClass(name);
 		}
 	}
 
