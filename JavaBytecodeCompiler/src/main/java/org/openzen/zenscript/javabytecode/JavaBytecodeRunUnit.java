@@ -142,27 +142,13 @@ public class JavaBytecodeRunUnit {
 
 	public class ScriptClassLoader extends ClassLoader {
 		private final Map<String, Class> customClasses = new HashMap<>();
-		private final ClassLoader parent;
 
 		public ScriptClassLoader(ClassLoader parent) {
 			super(parent);
-			this.parent = parent;
 		}
 
 		@Override
 		public Class<?> loadClass(String name) throws ClassNotFoundException {
-			//System.out.println("LoadClass " + name);
-
-			if (findLoadedClassMethod != null) {
-				try {
-					Class<?> clazz = (Class<?>) findLoadedClassMethod.invoke(this.parent, name);
-					if (clazz != null)
-						return clazz;
-				} catch (IllegalAccessException | InvocationTargetException e) {
-					e.printStackTrace();
-				}
-			}
-
 			if (customClasses.containsKey(name))
 				return customClasses.get(name);
 			if (classes.containsKey(name)) {
@@ -174,20 +160,6 @@ public class JavaBytecodeRunUnit {
 		}
 	}
 
-
-	static {
-		Method method;
-		try {
-			method = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
-			method.setAccessible(true);
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-			method = null;
-		}
-		findLoadedClassMethod = method;
-	}
-
-	private static final Method findLoadedClassMethod;
 
 	private static Class<?> loadClass(ClassLoader classLoader, String descriptor) throws ClassNotFoundException {
 		switch (descriptor) {
