@@ -883,9 +883,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			case ASSOC_EQUALS:
 				javaWriter.invokeVirtual(OBJECT_EQUALS);
+				break;
 			case ASSOC_NOTEQUALS:
 				javaWriter.invokeVirtual(OBJECT_EQUALS);
 				javaWriter.iXorVs1();
+				break;
 			case ASSOC_SAME:
 			case GENERICMAP_SAME:
 			case ARRAY_SAME:
