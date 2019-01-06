@@ -14,9 +14,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -193,6 +191,20 @@ public class JavaNativeModule {
 				return new PartialStaticMemberGroupExpression(position, scope, thisType.type, members.getGroup(name), StoredType.NONE);
 			}));
 		}
+	}
+	
+	public FunctionalMemberRef loadStaticMethod(Method method) {
+		if (!isStatic(method.getModifiers()))
+			throw new IllegalArgumentException("Method is not static");
+		
+		HighLevelDefinition definition = addClass(method.getDeclaringClass());
+		JavaClass jcls = JavaClass.fromInternalName(getInternalName(method.getDeclaringClass()), JavaClass.Kind.CLASS);
+		
+		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), getHeader(method), null);
+		definition.addMember(methodMember);
+		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
+		compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+		return methodMember.ref(registry.getForDefinition(definition).stored());
 	}
 	
 	private ZSPackage getPackage(String className) {

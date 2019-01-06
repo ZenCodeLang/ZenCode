@@ -23,11 +23,11 @@ import org.openzen.zenscript.parser.expression.ParsedExpression;
  *
  * @author Hoofdgebruiker
  */
-public class SimpleBracketSubParser implements BracketExpressionParser {
+public class SimpleBracketParser implements BracketExpressionParser {
 	private final FunctionalMemberRef method;
 	private final TypeID targetType;
 	
-	public SimpleBracketSubParser(GlobalTypeRegistry registry, FunctionalMemberRef method) {
+	public SimpleBracketParser(GlobalTypeRegistry registry, FunctionalMemberRef method) {
 		if (!method.isStatic())
 			throw new IllegalArgumentException("Method must be static");
 		if (method.getHeader().getNumberOfTypeParameters() > 0)

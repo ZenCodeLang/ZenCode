@@ -36,4 +36,8 @@ public class Globals implements ZenCodeGlobals {
 		for (TestClass object : objects)
 			System.out.println("  - " + object.getName());
 	}
+	
+	public static String bracket(String value) {
+		return "BRACKET:" + value;
+	}
 }

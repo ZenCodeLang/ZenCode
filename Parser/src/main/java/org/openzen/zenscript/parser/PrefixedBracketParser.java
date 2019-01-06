@@ -8,8 +8,6 @@ package org.openzen.zenscript.parser;
 import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
