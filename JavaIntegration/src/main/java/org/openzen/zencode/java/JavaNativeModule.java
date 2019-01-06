@@ -167,7 +167,9 @@ public class JavaNativeModule {
 			String name = global.value().isEmpty() ? field.getName() : global.value();
 			FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, thisType, type, registry, Modifiers.PUBLIC, 0, null);
 			definition.addMember(fieldMember);
-			compiled.setFieldInfo(fieldMember, new JavaField(jcls, name, getDescriptor(field.getType())));
+			JavaField javaField = new JavaField(jcls, name, getDescriptor(field.getType()));
+			compiled.setFieldInfo(fieldMember, javaField);
+			compiled.setFieldInfo(fieldMember.autoGetter, javaField);
 			globals.put(name, new ExpressionSymbol((position, scope) -> new StaticGetterExpression(CodePosition.BUILTIN, fieldMember.autoGetter.ref(thisType, GenericMapper.EMPTY))));
 		}
 		
