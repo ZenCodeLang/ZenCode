@@ -14,7 +14,9 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -42,6 +44,7 @@ import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -146,7 +149,6 @@ public class JavaNativeModule {
 			return definitionByClass.get(cls);
 		
 		HighLevelDefinition result = convertClass(cls);
-		definitionByClass.put(cls, result);
 		return result;
 	}
 	
@@ -253,6 +255,7 @@ public class JavaNativeModule {
 		
 		definition.typeParameters = typeParameters;
 		compiled.setClassInfo(definition, javaClass);
+		definitionByClass.put(cls, definition);
 		
 		StoredType thisType = new StoredType(registry.getForMyDefinition(definition), AutoStorageTag.INSTANCE);
 		for (Field field : cls.getDeclaredFields()) {

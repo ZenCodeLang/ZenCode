@@ -28,4 +28,9 @@ public class TestClass implements ZenCodeType {
 	public void dump() {
 		System.out.println("TestClass " + name);
 	}
+	
+	@Method
+	public TestClass wrap(String quotes) {
+		return new TestClass(quotes + name + quotes);
+	}
 }

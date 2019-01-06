@@ -357,12 +357,6 @@ public abstract class ParsedExpression {
 					// try! can thus be used to convert from exception-based to result-based and vice versa
 					return new ParsedTryRethrowExpression(position, readUnaryExpression(position, parser, options));
 				}
-			case T_LESS:// bracket expression
-				parser.next();
-				if (parser.bracketParser == null)
-					throw new ParseException(position, "Bracket expression detected but no bracket parser present");
-				
-				return parser.bracketParser.parse(position, parser);
 			default:
 				return readPostfixExpression(position, parser, options);
 		}
@@ -558,6 +552,12 @@ public abstract class ParsedExpression {
 				parser.required(T_ACLOSE, "} expected");
 				return new ParsedMatchExpression(position, source, cases);
 			}
+			case T_LESS:// bracket expression
+				parser.next();
+				if (parser.bracketParser == null)
+					throw new ParseException(position, "Bracket expression detected but no bracket parser present");
+				
+				return parser.bracketParser.parse(position, parser);
 			default: {
 				IParsedType type = IParsedType.parse(parser);
 				if (type == null) {

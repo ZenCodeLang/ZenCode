@@ -20,3 +20,7 @@ something.dump();
 
 val objects = makeArray(5);
 printMany(objects);
+
+
+println(<test string>);
+println(<test string>.length);
