@@ -17,3 +17,6 @@ val testInstance = new TestOperators();
 //testInstance("something");
 
 something.dump();
+
+val objects = makeArray(5);
+printMany(objects);

@@ -18,7 +18,22 @@ public class Globals implements ZenCodeGlobals {
 	public static TestClass something = new TestClass("hello");
 	
 	@Global
+	public static TestClass[] makeArray(int amount) {
+		TestClass[] result = new TestClass[amount];
+		for (int i = 0; i < result.length; i++)
+			result[i] = new TestClass("test " + i);
+		return result;
+	}
+	
+	@Global
 	public static void println(String message) {
 		System.out.println(message);
+	}
+	
+	@Global
+	public static void printMany(TestClass[] objects) {
+		System.out.println(objects.length + " objects present:");
+		for (TestClass object : objects)
+			System.out.println("  - " + object.getName());
 	}
 }

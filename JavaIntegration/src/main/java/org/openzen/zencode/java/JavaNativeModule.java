@@ -503,6 +503,8 @@ public class JavaNativeModule {
 					return unsignedByClass.get(classType);
 				else
 					throw new IllegalArgumentException("This class cannot be used as unsigned: " + classType);
+			} else if (classType.isArray()) {
+				return registry.getArray(loadType(classType.getComponentType(), false, false).stored(), 1);
 			}
 			
 			if (typeByClass.containsKey(classType))
