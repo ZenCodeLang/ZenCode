@@ -246,6 +246,7 @@ public class JavaNativeModule {
 				TypeID type = loadType(bound);
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
+			typeParameters[i] = parameter;
 		}
 		
 		HighLevelDefinition definition;
