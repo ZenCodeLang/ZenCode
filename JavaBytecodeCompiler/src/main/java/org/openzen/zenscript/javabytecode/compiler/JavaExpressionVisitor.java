@@ -23,7 +23,10 @@ import org.openzen.zenscript.javashared.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativeTranslator<Void> {
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
@@ -374,12 +377,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		BuiltinID builtin = expression.member.getBuiltin();
 		if (builtin == null) {
 			expression.target.accept(this);
-			
+
 			JavaMethod methodInfo = context.getJavaMethod(expression.member);
 			for (int i = 0; i < expression.arguments.typeArguments.length; i++) {
 				if (methodInfo.typeParameterArguments[i]) {
 					StoredType arguments = expression.arguments.typeArguments[i];
-					
+
 				}
 			}
 			for (Expression argument : expression.arguments.arguments) {
@@ -3982,13 +3985,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		if (methodInfo == null)
 			return false;
 
-		if (methodInfo.kind == JavaMethod.Kind.STATIC) {
+		if (methodInfo.kind == JavaMethod.Kind.STATIC)
 			getJavaWriter().invokeStatic(methodInfo);
-		} else if (methodInfo.kind == JavaMethod.Kind.COMPILED) {
+		else if (methodInfo.kind == JavaMethod.Kind.COMPILED)
 			Objects.requireNonNull(methodInfo.translation).translate(expression, this);
-		} else {
+		else if (methodInfo.cls.kind == JavaClass.Kind.INTERFACE)
+			getJavaWriter().invokeInterface(methodInfo);
+		else
 			getJavaWriter().invokeVirtual(methodInfo);
-		}
 		if (methodInfo.genericResult)
 			getJavaWriter().checkCast(context.getInternalName(resultType));
 
