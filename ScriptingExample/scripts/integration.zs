@@ -23,4 +23,11 @@ printMany(objects);
 
 
 println(<test string>);
-println(<test string>.length);
+println(<test string>.name);
+
+var diamond = <item:minecraft:diamond>;
+var dirt = <item:minecraft:dirt>;
+addShapedRecipe("TestRecipe", diamond, [[dirt, dirt, dirt],[dirt, dirt, dirt],[dirt, dirt, dirt]]);
+
+var count = 10;
+floatMethod(5f * count);

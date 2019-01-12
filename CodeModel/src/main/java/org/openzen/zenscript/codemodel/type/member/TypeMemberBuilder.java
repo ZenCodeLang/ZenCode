@@ -65,6 +65,7 @@ import static org.openzen.zenscript.codemodel.type.member.BuiltinID.*;
 import static org.openzen.zencode.shared.CodePosition.BUILTIN;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
@@ -1158,15 +1159,51 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		inc(builtin, FLOAT_INC, FLOAT);
 		dec(builtin, FLOAT_DEC, FLOAT);
 
+		addWithCastedOperand(builtin, FLOAT_ADD_FLOAT, BYTE, FLOAT, BYTE_TO_FLOAT);
+		addWithCastedOperand(builtin, FLOAT_ADD_FLOAT, SBYTE, FLOAT, SBYTE_TO_FLOAT);
+		addWithCastedOperand(builtin, FLOAT_ADD_FLOAT, SHORT, FLOAT, SHORT_TO_FLOAT);
+		addWithCastedOperand(builtin, FLOAT_ADD_FLOAT, USHORT, FLOAT, USHORT_TO_FLOAT);
+		addWithCastedOperand(builtin, FLOAT_ADD_FLOAT, INT, FLOAT, INT_TO_FLOAT);
+		addWithCastedOperand(builtin, FLOAT_ADD_FLOAT, UINT, FLOAT, UINT_TO_FLOAT);
+		addWithCastedOperand(builtin, FLOAT_ADD_FLOAT, LONG, FLOAT, LONG_TO_FLOAT);
+		addWithCastedOperand(builtin, FLOAT_ADD_FLOAT, ULONG, FLOAT, ULONG_TO_FLOAT);
+		addWithCastedOperand(builtin, FLOAT_ADD_FLOAT, USIZE, FLOAT, USIZE_TO_FLOAT);
 		add(builtin, FLOAT_ADD_FLOAT, FLOAT, FLOAT);
 		add(builtin, DOUBLE_ADD_DOUBLE, DOUBLE, DOUBLE, FLOAT_TO_DOUBLE);
 		
+		subWithCastedOperand(builtin, FLOAT_SUB_FLOAT, BYTE, FLOAT, BYTE_TO_FLOAT);
+		subWithCastedOperand(builtin, FLOAT_SUB_FLOAT, SBYTE, FLOAT, SBYTE_TO_FLOAT);
+		subWithCastedOperand(builtin, FLOAT_SUB_FLOAT, SHORT, FLOAT, SHORT_TO_FLOAT);
+		subWithCastedOperand(builtin, FLOAT_SUB_FLOAT, USHORT, FLOAT, USHORT_TO_FLOAT);
+		subWithCastedOperand(builtin, FLOAT_SUB_FLOAT, INT, FLOAT, INT_TO_FLOAT);
+		subWithCastedOperand(builtin, FLOAT_SUB_FLOAT, UINT, FLOAT, UINT_TO_FLOAT);
+		subWithCastedOperand(builtin, FLOAT_SUB_FLOAT, LONG, FLOAT, LONG_TO_FLOAT);
+		subWithCastedOperand(builtin, FLOAT_SUB_FLOAT, ULONG, FLOAT, ULONG_TO_FLOAT);
+		subWithCastedOperand(builtin, FLOAT_SUB_FLOAT, USIZE, FLOAT, USIZE_TO_FLOAT);
 		sub(builtin, FLOAT_SUB_FLOAT, FLOAT, FLOAT);
 		sub(builtin, DOUBLE_SUB_DOUBLE, DOUBLE, DOUBLE, LONG_TO_DOUBLE);
 		
+		mulWithCastedOperand(builtin, FLOAT_MUL_FLOAT, BYTE, FLOAT, BYTE_TO_FLOAT);
+		mulWithCastedOperand(builtin, FLOAT_MUL_FLOAT, SBYTE, FLOAT, SBYTE_TO_FLOAT);
+		mulWithCastedOperand(builtin, FLOAT_MUL_FLOAT, SHORT, FLOAT, SHORT_TO_FLOAT);
+		mulWithCastedOperand(builtin, FLOAT_MUL_FLOAT, USHORT, FLOAT, USHORT_TO_FLOAT);
+		mulWithCastedOperand(builtin, FLOAT_MUL_FLOAT, INT, FLOAT, INT_TO_FLOAT);
+		mulWithCastedOperand(builtin, FLOAT_MUL_FLOAT, UINT, FLOAT, UINT_TO_FLOAT);
+		mulWithCastedOperand(builtin, FLOAT_MUL_FLOAT, LONG, FLOAT, LONG_TO_FLOAT);
+		mulWithCastedOperand(builtin, FLOAT_MUL_FLOAT, ULONG, FLOAT, ULONG_TO_FLOAT);
+		mulWithCastedOperand(builtin, FLOAT_MUL_FLOAT, USIZE, FLOAT, USIZE_TO_FLOAT);
 		mul(builtin, FLOAT_MUL_FLOAT, FLOAT, FLOAT);
 		mul(builtin, DOUBLE_MUL_DOUBLE, DOUBLE, DOUBLE, LONG_TO_DOUBLE);
 		
+		divWithCastedOperand(builtin, FLOAT_DIV_FLOAT, BYTE, FLOAT, BYTE_TO_FLOAT);
+		divWithCastedOperand(builtin, FLOAT_DIV_FLOAT, SBYTE, FLOAT, SBYTE_TO_FLOAT);
+		divWithCastedOperand(builtin, FLOAT_DIV_FLOAT, SHORT, FLOAT, SHORT_TO_FLOAT);
+		divWithCastedOperand(builtin, FLOAT_DIV_FLOAT, USHORT, FLOAT, USHORT_TO_FLOAT);
+		divWithCastedOperand(builtin, FLOAT_DIV_FLOAT, INT, FLOAT, INT_TO_FLOAT);
+		divWithCastedOperand(builtin, FLOAT_DIV_FLOAT, UINT, FLOAT, UINT_TO_FLOAT);
+		divWithCastedOperand(builtin, FLOAT_DIV_FLOAT, LONG, FLOAT, LONG_TO_FLOAT);
+		divWithCastedOperand(builtin, FLOAT_DIV_FLOAT, ULONG, FLOAT, ULONG_TO_FLOAT);
+		divWithCastedOperand(builtin, FLOAT_DIV_FLOAT, USIZE, FLOAT, USIZE_TO_FLOAT);
 		div(builtin, FLOAT_DIV_FLOAT, FLOAT, FLOAT);
 		div(builtin, DOUBLE_DIV_DOUBLE, DOUBLE, DOUBLE, LONG_TO_DOUBLE);
 		
@@ -1267,6 +1304,13 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		members.getOrCreateGroup(member.operator).addMethod(method, TypeMemberPriority.SPECIFIED);
 	}
 	
+	private void castedOperandCall(OperatorMember member, StoredType toType, BuiltinID casterBuiltin) {
+		CasterMemberRef caster = castImplicitRef(member.definition, casterBuiltin, toType);
+		TranslatedOperatorMemberRef method = new TranslatedOperatorMemberRef(member, members.type, GenericMapper.EMPTY,
+				call -> member.ref(members.type, null).call(call.position, call.target, new CallArguments(caster.cast(call.position, call.arguments.arguments[0], true)), call.scope));
+		members.getOrCreateGroup(member.operator).addMethod(method, TypeMemberPriority.SPECIFIED);
+	}
+	
 	private void register(IDefinitionMember member) {
 		member.registerTo(members, TypeMemberPriority.SPECIFIED, null);
 	}
@@ -1347,6 +1391,10 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		castedTargetCall(addOp(definition, id, operand.stored, result.stored), result.stored, caster);
 	}
 	
+	private void addWithCastedOperand(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedOperandCall(addOp(definition, id, operand.stored, result.stored), operand.stored, caster);
+	}
+	
 	private OperatorMember subOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
@@ -1363,6 +1411,10 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	
 	private void sub(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
 		castedTargetCall(subOp(definition, id, operand.stored, result.stored), result.stored, caster);
+	}
+	
+	private void subWithCastedOperand(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedOperandCall(subOp(definition, id, operand.stored, result.stored), operand.stored, caster);
 	}
 	
 	private OperatorMember mulOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
@@ -1383,6 +1435,10 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		castedTargetCall(mulOp(definition, id, operand.stored, result.stored), result.stored, caster);
 	}
 	
+	private void mulWithCastedOperand(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedOperandCall(mulOp(definition, id, operand.stored, result.stored), operand.stored, caster);
+	}
+	
 	private OperatorMember divOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {
 		return new OperatorMember(
 				BUILTIN,
@@ -1399,6 +1455,10 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	
 	private void div(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
 		castedTargetCall(divOp(definition, id, operand.stored, result.stored), result.stored, caster);
+	}
+	
+	private void divWithCastedOperand(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result, BuiltinID caster) {
+		castedOperandCall(divOp(definition, id, operand.stored, result.stored), operand.stored, caster);
 	}
 	
 	private OperatorMember modOp(HighLevelDefinition cls, BuiltinID id, StoredType operand, StoredType result) {

@@ -33,4 +33,10 @@ public class TestClass implements ZenCodeType {
 	public TestClass wrap(String quotes) {
 		return new TestClass(quotes + name + quotes);
 	}
+	
+	@Caster(implicit = true)
+	@Override
+	public String toString() {
+		return name;
+	}
 }

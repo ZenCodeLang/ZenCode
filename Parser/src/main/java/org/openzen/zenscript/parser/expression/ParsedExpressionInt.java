@@ -12,6 +12,8 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantLongExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantSByteExpression;
@@ -116,6 +118,10 @@ public class ParsedExpressionInt extends ParsedExpression {
 			return new ConstantULongExpression(position, value);
 		if (suffix.equals("U") || suffix.equals("u"))
 			return new ConstantUIntExpression(position, (int)value);
+		if (suffix.equals("D") || suffix.equals("d"))
+			return new ConstantDoubleExpression(position, value);
+		if (suffix.equals("F") || suffix.equals("f"))
+			return new ConstantFloatExpression(position, value);
 		
 		for (StoredType hint : scope.hints) {
 			if (suffix.isEmpty() && (hint.type instanceof BasicTypeID)) {

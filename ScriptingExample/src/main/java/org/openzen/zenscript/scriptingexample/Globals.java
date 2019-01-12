@@ -37,7 +37,17 @@ public class Globals implements ZenCodeGlobals {
 			System.out.println("  - " + object.getName());
 	}
 	
-	public static String bracket(String value) {
-		return "BRACKET:" + value;
+	@Global
+    public static void addShapedRecipe(String name, TestClass output, TestClass[][] inputs) {
+		System.out.println("Added " + name);
+	}
+	
+	@Global
+	public static void floatMethod(float argument) {
+		System.out.println(argument);
+	}
+	
+	public static TestClass bracket(String value) {
+		return new TestClass(value);
 	}
 }
