@@ -60,7 +60,6 @@ import org.openzen.zenscript.javashared.JavaMethod;
 import stdlib.Strings;
 
 /**
- *
  * @author Stan Hebben
  */
 public class JavaNativeModule {
@@ -82,8 +81,7 @@ public class JavaNativeModule {
 			String name,
 			String basePackage,
 			GlobalTypeRegistry registry,
-			JavaNativeModule[] dependencies)
-	{
+			JavaNativeModule[] dependencies) {
 		this.pkg = pkg;
 		this.basePackage = basePackage;
 		module = new Module(name);
@@ -208,7 +206,8 @@ public class JavaNativeModule {
 	}
 	
 	private ZSPackage getPackage(String className) {
-		if (!className.contains("."))
+		//TODO make a lang package?
+		if (!className.contains(".") || className.startsWith("java.lang"))
 			return pkg;
 		
 		if (className.startsWith("."))
@@ -277,10 +276,8 @@ public class JavaNativeModule {
 				continue;
 			if (!isPublic(field.getModifiers()))
 				continue;
-
-			String fieldName = field.getName();
-			if (annotation != null && !annotation.value().isEmpty())
-				fieldName = annotation.value();
+			
+			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
 			
 			StoredType fieldType = loadStoredType(field.getAnnotatedType());
 			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC, fieldName, thisType, fieldType, registry, 0, 0, null);
@@ -290,7 +287,7 @@ public class JavaNativeModule {
 		
 		boolean hasConstructor = false;
 		for (java.lang.reflect.Constructor constructor : cls.getConstructors()) {
-			ZenCodeType.Constructor constructorAnnotation = (ZenCodeType.Constructor)constructor.getAnnotation(ZenCodeType.Constructor.class);
+			ZenCodeType.Constructor constructorAnnotation = (ZenCodeType.Constructor) constructor.getAnnotation(ZenCodeType.Constructor.class);
 			if (constructorAnnotation != null) {
 				ConstructorMember member = asConstructor(definition, constructor);
 				definition.addMember(member);
@@ -468,8 +465,7 @@ public class JavaNativeModule {
 			AnnotatedType javaReturnType,
 			AnnotatedType[] parameterTypes,
 			TypeVariable<Method>[] javaTypeParameters,
-			AnnotatedType[] exceptionTypes)
-	{
+			AnnotatedType[] exceptionTypes) {
 		StoredType returnType = javaReturnType == null ? BasicTypeID.VOID.stored : loadStoredType(javaReturnType);
 		
 		FunctionParameter[] parameters = new FunctionParameter[parameterTypes.length];
@@ -513,7 +509,7 @@ public class JavaNativeModule {
 	
 	private TypeID loadType(Type type, boolean nullable, boolean unsigned) {
 		if (type instanceof Class) {
-			Class<?> classType = (Class<?>)type;
+			Class<?> classType = (Class<?>) type;
 			if (unsigned) {
 				if (unsignedByClass.containsKey(classType))
 					return unsignedByClass.get(classType);
@@ -529,8 +525,8 @@ public class JavaNativeModule {
 			HighLevelDefinition definition = addClass(classType);
 			return registry.getForDefinition(definition);
 		} else if (type instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType)type;
-			Class<?> rawType = (Class)parameterizedType.getRawType();
+			ParameterizedType parameterizedType = (ParameterizedType) type;
+			Class<?> rawType = (Class) parameterizedType.getRawType();
 			
 			HighLevelDefinition definition = addClass(rawType);
 			Type[] parameters = parameterizedType.getActualTypeArguments();
