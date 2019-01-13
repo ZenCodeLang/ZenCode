@@ -3984,6 +3984,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		if (methodInfo.kind == JavaMethod.Kind.STATIC) {
 			getJavaWriter().invokeStatic(methodInfo);
+		} else if (methodInfo.kind == JavaMethod.Kind.INTERFACE) {
+			getJavaWriter().invokeInterface(methodInfo);
 		} else if (methodInfo.kind == JavaMethod.Kind.COMPILED) {
 			Objects.requireNonNull(methodInfo.translation).translate(expression, this);
 		} else {

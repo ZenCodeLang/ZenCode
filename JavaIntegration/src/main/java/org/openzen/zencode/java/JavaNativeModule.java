@@ -39,6 +39,7 @@ import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
@@ -56,6 +57,7 @@ import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaImplementation;
 import org.openzen.zenscript.javashared.JavaMethod;
 import stdlib.Strings;
 
@@ -207,6 +209,10 @@ public class JavaNativeModule {
 		return methodMember.ref(registry.getForDefinition(definition).stored());
 	}
 	
+	private boolean isInBasePackage(String className) {
+		return className.startsWith(basePackage + ".");
+	}
+	
 	private ZSPackage getPackage(String className) {
 		if (!className.contains("."))
 			return pkg;
@@ -246,6 +252,7 @@ public class JavaNativeModule {
 				TypeID type = loadType(bound);
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
+			typeParameters[i] = parameter;
 		}
 		
 		HighLevelDefinition definition;
@@ -263,6 +270,19 @@ public class JavaNativeModule {
 		} else {
 			definition = new ClassDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC);
 			javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.CLASS);
+			
+			if (cls.getSuperclass() != null && shouldLoadClass(cls.getSuperclass())) {
+				definition.setSuperType(loadType(cls.getSuperclass(), false, false));
+			}
+		}
+		
+		for (Class<?> iface : cls.getInterfaces()) {
+			if (shouldLoadClass(iface)) {
+				TypeID type = loadType(iface, false, false);
+				ImplementationMember member = new ImplementationMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC, type);
+				definition.members.add(member);
+				compiled.setImplementationInfo(member, new JavaImplementation(true, javaClass));
+			}
 		}
 		
 		definition.typeParameters = typeParameters;
@@ -318,7 +338,6 @@ public class JavaNativeModule {
 				GetterMember member = asGetter(definition, method, getter);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.getType()));
-				continue;
 			}
 			
 			ZenCodeType.Setter setter = method.getAnnotation(ZenCodeType.Setter.class);
@@ -326,7 +345,6 @@ public class JavaNativeModule {
 				SetterMember member = asSetter(definition, method, setter);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, BasicTypeID.VOID.stored));
-				continue;
 			}
 			
 			ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
@@ -334,7 +352,6 @@ public class JavaNativeModule {
 				OperatorMember member = asOperator(definition, method, operator);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
-				continue;
 			}
 			
 			ZenCodeType.Caster caster = method.getAnnotation(ZenCodeType.Caster.class);
@@ -342,7 +359,6 @@ public class JavaNativeModule {
 				CasterMember member = asCaster(definition, method, caster);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.toType));
-				continue;
 			}
 			
 			/*if (!annotated) {
@@ -353,6 +369,10 @@ public class JavaNativeModule {
 		}
 		
 		return definition;
+	}
+	
+	private boolean shouldLoadClass(Class<?> cls) {
+		return isInBasePackage(cls.getName());
 	}
 	
 	private boolean isGetterName(String name) {

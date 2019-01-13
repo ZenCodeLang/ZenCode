@@ -53,5 +53,9 @@ public class JavaModifiers {
 		return out;
 	}
 	
+	public static boolean isStatic(int modifiers) {
+		return (modifiers & STATIC) > 0;
+	}
+	
 	private JavaModifiers() {}
 }

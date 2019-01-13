@@ -24,6 +24,6 @@ public class ParsedEmptyFunctionBody implements ParsedFunctionBody {
 	
 	@Override
 	public Statement compile(StatementScope scope, FunctionHeader header) {
-		return new EmptyStatement(position);
+		return null;
 	}
 }

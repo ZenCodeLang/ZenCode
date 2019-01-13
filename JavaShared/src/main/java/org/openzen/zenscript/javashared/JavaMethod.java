@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.javashared;
 
+import org.openzen.zenscript.codemodel.Modifiers;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -60,6 +62,8 @@ public class JavaMethod {
 	public JavaMethod(JavaClass cls, Kind kind, String name, boolean compile, String descriptor, int modifiers, boolean genericResult, boolean[] typeParameterArguments) {
 		if (descriptor.contains("<")) // fix signature bug
 			throw new IllegalArgumentException("Invalid descriptor!");
+		if (cls.isInterface() && !JavaModifiers.isStatic(modifiers))
+			kind = Kind.INTERFACE;
 		
 		this.cls = cls;
 		this.kind = kind;
@@ -99,10 +103,15 @@ public class JavaMethod {
 		return result.toString();
 	}
 	
+	public boolean isAbstract() {
+		return (modifiers & Modifiers.ABSTRACT) > 0;
+	}
+	
 	public enum Kind {
 		STATIC,
 		STATICINIT,
 		INSTANCE,
+		INTERFACE,
 		EXPANSION,
 		CONSTRUCTOR,
 		COMPILED

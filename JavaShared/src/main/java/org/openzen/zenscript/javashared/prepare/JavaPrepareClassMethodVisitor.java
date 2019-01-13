@@ -8,6 +8,7 @@ package org.openzen.zenscript.javashared.prepare;
 import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.member.CallerMember;
@@ -296,6 +297,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
 		
+		int modifiers = cls.kind == JavaClass.Kind.INTERFACE ? JavaModifiers.ABSTRACT : 0;
 		if (member.getOverrides() != null) {
 			DefinitionMemberRef base = member.getOverrides();
 			
@@ -307,7 +309,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					baseMethod.name,
 					true,
 					context.getMethodDescriptor(header),
-					JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+					modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 					header.getReturnType().type instanceof GenericTypeID,
 					header.useTypeParameters());
 		} else if (method == null) {
@@ -317,7 +319,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					name,
 					true,
 					context.getMethodDescriptor(header),
-					JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+					modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 					header.getReturnType().type instanceof GenericTypeID,
 					header.useTypeParameters());
 		}

@@ -18,6 +18,7 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -182,6 +183,10 @@ public abstract class JavaContext {
 	
 	public JavaVariantOption getJavaVariantOption(VariantOptionRef member) {
 		return getJavaVariantOption(member.getOption());
+	}
+	
+	public JavaImplementation getJavaImplementation(ImplementationMember member) {
+		return getJavaModule(member.definition.module).getImplementationInfo(member);
 	}
 	
 	public void useShared() {

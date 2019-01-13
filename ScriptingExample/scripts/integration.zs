@@ -13,6 +13,12 @@ class TestOperators {
 	//	=> "key " + key;
 }
 
+class TestImplementation {
+	public implements TestInterface {
+		interfaceMethod() => "TestImplementation";
+	}
+}
+
 val testInstance = new TestOperators();
 //testInstance("something");
 
@@ -24,6 +30,8 @@ printMany(objects);
 
 println(<test string>);
 println(<test string>.name);
+println(<test string>.interfaceMethod());
+println(new TestImplementation().interfaceMethod());
 
 var diamond = <item:minecraft:diamond>;
 var dirt = <item:minecraft:dirt>;

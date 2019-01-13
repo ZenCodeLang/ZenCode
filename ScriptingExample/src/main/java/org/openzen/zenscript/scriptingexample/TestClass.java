@@ -5,13 +5,11 @@
  */
 package org.openzen.zenscript.scriptingexample;
 
-import org.openzen.zencode.java.ZenCodeType;
-
 /**
  *
  * @author Hoofdgebruiker
  */
-public class TestClass implements ZenCodeType {
+public class TestClass implements TestInterface {
 	private final String name;
 	
 	@Constructor
@@ -38,5 +36,10 @@ public class TestClass implements ZenCodeType {
 	@Override
 	public String toString() {
 		return name;
+	}
+
+	@Override
+	public String interfaceMethod() {
+		return "Interface method of " + name;
 	}
 }

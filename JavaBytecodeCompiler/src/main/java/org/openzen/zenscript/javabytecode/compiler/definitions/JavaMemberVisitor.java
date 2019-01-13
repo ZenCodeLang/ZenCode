@@ -17,6 +17,7 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaImplementation;
 import org.openzen.zenscript.javashared.JavaMethod;
 
 public class JavaMemberVisitor implements MemberVisitor<Void> {
@@ -116,7 +117,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label constructorEnd = new Label();
 		final JavaWriter destructorWriter = new JavaWriter(member.position, writer, method, definition, null, null);
 		destructorWriter.label(constructorStart);
-
+		
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
         statementVisitor.start();
 		// TODO: destruction of members (to be done when memory tags are implemented)
@@ -132,14 +133,18 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
         final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.getEffectiveModifiers());
         final JavaMethod method = context.getJavaMethod(member);
-
-		final Label methodStart = new Label();
-		final Label methodEnd = new Label();
-	    final JavaWriter methodWriter = new JavaWriter(member.position, writer, method, definition, context.getMethodSignature(member.header), null);
-
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+		
+		final JavaWriter methodWriter = new JavaWriter(member.position, writer, method, definition, context.getMethodSignature(member.header), null);
 
 		if (!isAbstract) {
+			if (method.isAbstract() || method.cls.kind == JavaClass.Kind.INTERFACE)
+				throw new IllegalArgumentException();
+			
+			final Label methodStart = new Label();
+			final Label methodEnd = new Label();
+		
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+
 			statementVisitor.start();
 			member.body.accept(statementVisitor);
 			methodWriter.label(methodEnd);
@@ -180,6 +185,13 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
+		JavaImplementation implementation = context.getJavaImplementation(member);
+		if (implementation.inline) {
+			for (IDefinitionMember imember : member.members)
+				imember.accept(this);
+		} else {
+			throw new UnsupportedOperationException("Non-inline interface implementations not yet available");
+		}
 		return null;
 	}
 
