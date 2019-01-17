@@ -1,4 +1,5 @@
 import example.TestClass;
+import example.TestInterface;
 
 val instance = new TestClass("Instance");
 println("Name: " + instance.name);

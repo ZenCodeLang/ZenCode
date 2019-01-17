@@ -456,6 +456,74 @@ public final class TypeMembers {
 		return false;
 	}
 	
+	public Map<DefinitionMemberRef, IDefinitionMember> borrowInterfaceMembersFromDefinition(Set<IDefinitionMember> implemented, TypeMembers definitionMembers) {
+		Map<DefinitionMemberRef, IDefinitionMember> result = new HashMap<>();
+		
+		for (TypeMember<CasterMemberRef> caster : casters) {
+			if (implemented.contains(caster.member.member))
+				continue;
+			
+			CasterMemberRef implementation = definitionMembers.getCaster(caster.member.toType);
+			if (implementation != null)
+				result.put(caster.member, implementation.getTarget());
+		}
+		for (TypeMember<IteratorMemberRef> iterator : iterators) {
+			if (implemented.contains(iterator.member.target))
+				continue;
+			
+			IteratorMemberRef implementation = definitionMembers.getIterator(iterator.member.getLoopVariableCount());
+			if (implementation != null)
+				result.put(iterator.member, implementation.getTarget());
+		}
+		for (Map.Entry<String, TypeMemberGroup> entry : members.entrySet()) {
+			TypeMemberGroup group = entry.getValue();
+			TypeMemberGroup definitionGroup = definitionMembers.getGroup(entry.getKey());
+			if (definitionGroup == null)
+				continue;
+			
+			if (group.getGetter() != null) {
+				if (!implemented.contains(group.getGetter().member)) {
+					GetterMemberRef implementation = definitionGroup.getGetter();
+					if (implementation != null)
+						result.put(group.getGetter(), implementation.getTarget());
+				}
+			}
+			if (group.getSetter() != null) {
+				if (!implemented.contains(group.getSetter().member)) {
+					SetterMemberRef implementation = definitionGroup.getSetter();
+					if (implementation != null)
+						result.put(group.getSetter(), implementation.getTarget());
+				}
+			}
+			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers()) {
+				if (!implemented.contains(member.member.getTarget())) {
+					FunctionalMemberRef functional = definitionGroup.getMethod(member.member.getHeader());
+					if (functional != null)
+						result.put(member.member, functional.getTarget());
+				}
+			}
+		}
+		for (Map.Entry<OperatorType, TypeMemberGroup> entry : operators.entrySet()) {
+			if (entry.getKey() == OperatorType.DESTRUCTOR)
+				continue; // destructor doesn't have to be implemented; the compiler can do so automatically
+			
+			TypeMemberGroup group = entry.getValue();
+			TypeMemberGroup definitionGroup = definitionMembers.getGroup(entry.getKey());
+			if (definitionGroup == null)
+				continue;
+			
+			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers()) {
+				if (!implemented.contains(member.member.getTarget())) {
+					FunctionalMemberRef functional = definitionGroup.getMethod(member.member.getHeader());
+					if (functional != null)
+						result.put(member.member, functional.getTarget());
+				}
+			}
+		}
+		
+		return result;
+	}
+	
 	private Expression castEquivalent(CodePosition position, Expression value, StoredType toType) {
 		if (toType.equals(value.type))
 			return value;

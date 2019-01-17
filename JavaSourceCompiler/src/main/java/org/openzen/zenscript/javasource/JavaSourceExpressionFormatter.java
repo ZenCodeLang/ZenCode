@@ -198,7 +198,8 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				FormattingUtils.formatExpansionCall(output, this.target, scope, getValue(target), arguments);
 				return new ExpressionString(output.toString(), JavaOperator.CALL);
 			}
-			case INSTANCE: {
+			case INSTANCE:
+			case INTERFACE: {
 				StringBuilder output = new StringBuilder();
 				output.append(getValue(target).value);
 				output.append('.');
@@ -1328,7 +1329,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				return compare(call.left, call.right, call.comparison);
 			case UINT_COMPARE:
 			case USIZE_COMPARE_UINT:
-				return compare(callAsStatic("Integer.compareUnsigned", call.left, call.right), call.comparison);
+				if (call.comparison == CompareType.EQ || call.comparison == CompareType.NE) {
+					return compare(call.left, call.right, call.comparison);
+				} else {
+					return compare(callAsStatic("Integer.compareUnsigned", call.left, call.right), call.comparison);
+				}
 			case LONG_COMPARE:
 			case LONG_COMPARE_INT:
 				return compare(call.left, call.right, call.comparison);

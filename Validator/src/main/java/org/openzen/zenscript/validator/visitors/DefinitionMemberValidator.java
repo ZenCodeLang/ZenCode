@@ -32,6 +32,7 @@ import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -255,6 +256,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		for (IDefinitionMember member : implementation.members)
 			if (member.getOverrides() != null)
 				implemented.add(member.getOverrides().getTarget());
+		for (DefinitionMemberRef member : implementation.definitionBorrowedMembers.keySet())
+			implemented.add(member.getTarget());
 		
 		TypeMembers members = scope.getTypeMembers(implementation.type.stored(BorrowStorageTag.THIS));
 		List<IDefinitionMember> unimplemented = members.getUnimplementedMembers(implemented);

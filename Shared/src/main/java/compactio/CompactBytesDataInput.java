@@ -4,22 +4,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public final class CompactBytesDataInput implements CompactDataInput, AutoCloseable {
-    private static final int P6 = 1 << 6;
     private static final int P7 = 1 << 7;
-    private static final int P13 = 1 << 13;
     private static final int P14 = 1 << 14;
-    private static final int P20 = 1 << 20;
     private static final int P21 = 1 << 21;
-    private static final int P27 = 1 << 27;
     private static final int P28 = 1 << 28;
-    private static final long P34 = 1L << 34;
     private static final long P35 = 1L << 35;
-    private static final long P41 = 1L << 41;
     private static final long P42 = 1L << 42;
-    private static final long P48 = 1L << 48;
     private static final long P49 = 1L << 49;
-    private static final long P55 = 1L << 55;
     private static final long P56 = 1L << 56;
+	
     private final byte[] data;
     private int offset;
     

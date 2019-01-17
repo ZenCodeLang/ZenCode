@@ -87,6 +87,14 @@ public class TypeMemberGroup {
 		return this.setter == null ? null : this.setter.member;
 	}
 	
+	public FunctionalMemberRef getMethod(FunctionHeader header) {
+		for (TypeMember<FunctionalMemberRef> method : methods)
+			if (method.member.getHeader().isEquivalentTo(header))
+				return method.member;
+		
+		return null;
+	}
+	
 	public FunctionalMemberRef getUnaryMethod() {
 		for (TypeMember<FunctionalMemberRef> method : methods)
 			if (method.member.getHeader().parameters.length == 0)

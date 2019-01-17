@@ -6,7 +6,11 @@
 package org.openzen.zenscript.codemodel.member;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
@@ -28,6 +32,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public class ImplementationMember extends DefinitionMember {
 	public final TypeID type;
 	public final List<IDefinitionMember> members = new ArrayList<>();
+	public final Map<DefinitionMemberRef, IDefinitionMember> definitionBorrowedMembers = new HashMap<>(); // contains members from the outer definition to implement interface members
 	
 	public ImplementationMember(CodePosition position, HighLevelDefinition definition, int modifiers, TypeID type) {
 		super(position, definition, modifiers);
@@ -86,8 +91,18 @@ public class ImplementationMember extends DefinitionMember {
 
 	@Override
 	public void normalize(TypeScope scope) {
-		for (IDefinitionMember member : members)
+		Set<IDefinitionMember> implemented = new HashSet<>();
+		for (IDefinitionMember member : members) {
 			member.normalize(scope);
+			if (member.getOverrides() != null)
+				implemented.add(member.getOverrides().getTarget());
+		}
+		
+		TypeMembers interfaceMembers = scope.getTypeMembers(type.stored());
+		TypeMembers definitionMembers = scope.getTypeMembers(scope.getTypeRegistry().getForMyDefinition(definition).stored());
+		
+		definitionBorrowedMembers.clear();
+		definitionBorrowedMembers.putAll(interfaceMembers.borrowInterfaceMembersFromDefinition(implemented, definitionMembers));
 	}
 
 	@Override
