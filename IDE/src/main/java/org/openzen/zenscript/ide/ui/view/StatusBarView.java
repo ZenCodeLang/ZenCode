@@ -5,6 +5,10 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
+import live.LiveObject;
+import live.LiveString;
+import live.SimpleLiveObject;
+
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
@@ -12,11 +16,8 @@ import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
-import org.openzen.drawablegui.live.LiveString;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**

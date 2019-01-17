@@ -5,12 +5,13 @@
  */
 package org.openzen.drawablegui;
 
+import live.LiveBool;
+import live.LiveObject;
+import live.LiveString;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 

@@ -5,12 +5,14 @@
  */
 package org.openzen.drawablegui;
 
+import java.util.function.BiConsumer;
+import listeners.ListenerHandle;
+import live.LiveObject;
+import live.LiveString;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnText;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
@@ -21,7 +23,7 @@ public class DSimpleTooltipComponent implements DComponent {
 	private final DStyleClass styleClass;
 	private final LiveString tooltip;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
-	private final ListenerHandle<LiveString.Listener> tooltipListener;
+	private final ListenerHandle<BiConsumer<String, String>> tooltipListener;
 	
 	private DComponentContext context;
 	private DIRectangle bounds;

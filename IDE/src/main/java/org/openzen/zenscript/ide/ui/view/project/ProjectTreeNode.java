@@ -5,11 +5,13 @@
  */
 package org.openzen.zenscript.ide.ui.view.project;
 
+import live.LiveList;
+import live.LiveMappedList;
+
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DMouseEvent;
-import org.openzen.drawablegui.live.LiveList;
-import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
+import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
 
 /**
@@ -21,11 +23,13 @@ public class ProjectTreeNode extends ProjectOverviewNode {
 	private final DevelopmentHost host;
 	private final LiveList<ProjectOverviewNode> modules;
 	
-	public ProjectTreeNode(ProjectBrowser browser, DevelopmentHost host) {
+	public ProjectTreeNode(ProjectBrowser browser, DevelopmentHost host, IDEPropertyDirectory treeState) {
+		super(treeState.getLiveBool("collapsed", false));
+		
 		this.browser = browser;
 		this.host = host;
 		
-		modules = new LiveMappedList<>(host.getModules(), module -> new ModuleTreeNode(browser, module));
+		modules = new LiveMappedList<>(host.getModules(), module -> new ModuleTreeNode(browser, module, treeState.getSubdirectory(module.getName())));
 	}
 	
 	@Override

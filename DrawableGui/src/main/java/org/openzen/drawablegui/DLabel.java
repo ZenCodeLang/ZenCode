@@ -5,11 +5,13 @@
  */
 package org.openzen.drawablegui;
 
+import java.util.function.BiConsumer;
+import listeners.ListenerHandle;
+import live.LiveString;
+import live.LiveObject;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.draw.DDrawnText;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
@@ -20,7 +22,7 @@ public class DLabel implements DComponent {
 	private final LiveString label;
 	private final DStyleClass styleClass;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
-	private final ListenerHandle<LiveString.Listener> labelListener;
+	private final ListenerHandle<BiConsumer<String, String>> labelListener;
 	
 	private DComponentContext context;
 	private DIRectangle bounds;

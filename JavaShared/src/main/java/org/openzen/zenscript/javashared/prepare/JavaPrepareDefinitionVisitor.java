@@ -32,6 +32,7 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 /**
@@ -94,6 +95,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		
 		{
 			JavaNativeClass iterator = new JavaNativeClass(JavaClass.ITERATOR);
+			iterator.addMethod("empty", new JavaMethod(JavaClass.COLLECTIONS, JavaMethod.Kind.STATIC, "emptyIterator", false, "()Ljava/lang/Iterator;", JavaModifiers.STATIC | JavaModifiers.PUBLIC, false));
 			iterator.addInstanceMethod("hasNext", "hasNext", "()Z");
 			iterator.addInstanceMethod("next", "next", "()Ljava/lang/Object;");
 			nativeClasses.put("stdlib::Iterator", iterator);

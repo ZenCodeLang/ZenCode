@@ -45,7 +45,7 @@ public class FormattingUtils {
 		}
 	}
 	
-	public static void formatCall(StringBuilder result, StatementFormattingTarget target, JavaSourceStatementScope scope, CallArguments arguments) {
+	public static void formatCall(StringBuilder result, StatementFormattingTarget target, JavaSourceStatementScope scope, String name, CallArguments arguments) {
 		if (arguments == null || arguments.typeArguments == null)
 			throw new IllegalArgumentException("Arguments cannot be null!");
 		
@@ -61,6 +61,7 @@ public class FormattingUtils {
 			}
 			result.append(">");
 		}
+		result.append(name);
 		result.append("(");
 		int index = 0;
 		for (Expression argument : arguments.arguments) {

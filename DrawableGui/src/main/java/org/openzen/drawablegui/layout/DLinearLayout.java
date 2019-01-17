@@ -5,8 +5,13 @@
  */
 package org.openzen.drawablegui.layout;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import listeners.ListenerHandle;
+import live.LiveObject;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
@@ -14,9 +19,6 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawnShape;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
@@ -28,7 +30,7 @@ public class DLinearLayout extends BaseComponentGroup {
 	private final Orientation orientation;
 	private final Alignment alignment;
 	private final Element[] components;
-	private final ListenerHandle<LiveObject.Listener<DSizing>>[] componentSizeListeners;
+	private final ListenerHandle<BiConsumer<DSizing, DSizing>>[] componentSizeListeners;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	
 	private DComponentContext context;
@@ -118,7 +120,7 @@ public class DLinearLayout extends BaseComponentGroup {
 
 	@Override
 	public void close() {
-		for (ListenerHandle<LiveObject.Listener<DSizing>> listener : componentSizeListeners) {
+		for (ListenerHandle<BiConsumer<DSizing, DSizing>> listener : componentSizeListeners) {
 			listener.close();
 		}
 		for (Element element : components)

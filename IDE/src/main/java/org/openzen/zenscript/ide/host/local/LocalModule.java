@@ -11,6 +11,7 @@ import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.ide.codemodel.IDECodeError;
 import org.openzen.zenscript.ide.host.IDEModule;
+import org.openzen.zenscript.ide.host.IDEModuleType;
 import org.openzen.zenscript.ide.host.IDEPackage;
 import org.openzen.zenscript.validator.Validator;
 
@@ -30,6 +31,11 @@ public class LocalModule implements IDEModule {
 	@Override
 	public String getName() {
 		return module.getName();
+	}
+	
+	@Override
+	public IDEModuleType getType() {
+		return UniversalModuleType.INSTANCE;
 	}
 
 	@Override

@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.ide.ui;
 
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.listeners.ListenerList;
+import listeners.ListenerHandle;
+import listeners.ListenerList;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 
 /**

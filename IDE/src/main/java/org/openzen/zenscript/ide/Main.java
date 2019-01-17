@@ -1,8 +1,11 @@
 package org.openzen.zenscript.ide;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JFrame;
+import live.MutableLiveBool;
 import org.openzen.drawablegui.DUIWindow;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.local.LocalProjectDevelopmentHost;
@@ -37,15 +40,15 @@ public class Main {
 		IDEPropertyDirectory runState = properties.getRoot().getSubdirectory("runState");
 		if (target == null)
 			target = runState.getString("target", null);
-		if (target == null && host.getTargets().size() > 0)
-			target = host.getTargets().get(0).getName();
-		
-		IDEWindow window = new IDEWindow(host, target);
-		WindowView root = new WindowView(window, host);
+		if (target == null && host.getTargets().getLength() > 0)
+			target = host.getTargets().getAt(0).getName();
 		
 		IDEPropertyDirectory uiState = properties.getRoot().getSubdirectory("uiState");
+		IDEWindow window = new IDEWindow(host, target);
+		WindowView root = new WindowView(window, host, uiState);
 		
 		int pixelPerInch = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
+		MutableLiveBool maximized = uiState.getLiveBool("maximized", false);
 		SwingWindow swingWindow = new SwingWindow("ZenCode IDE - " + host.getName(), root, false);
 		swingWindow.setSize(
 				uiState.getInt("width", 800 * pixelPerInch / 96),
@@ -54,8 +57,9 @@ public class Main {
 				uiState.getInt("x", 0),
 				uiState.getInt("y", 0));
 		swingWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		swingWindow.setExtendedState(uiState.getBool("maximized", false) ? JFrame.MAXIMIZED_BOTH : JFrame.NORMAL);
+		swingWindow.setExtendedState(maximized.getValue() ? JFrame.MAXIMIZED_BOTH : JFrame.NORMAL);
 		swingWindow.setVisible(true);
+		swingWindow.addWindowListener(new MyWindowListener(properties));
 		
 		swingWindow.getWindowBounds().addListener((oldBounds, newBounds) -> {
 			if (swingWindow.getWindowState().getValue() == DUIWindow.State.NORMAL) {
@@ -63,15 +67,23 @@ public class Main {
 				uiState.setInt("y", newBounds.y);
 				uiState.setInt("width", newBounds.width);
 				uiState.setInt("height", newBounds.height);
-				properties.save();
 			}
 		});
 		swingWindow.getWindowState().addListener((oldState, newState) -> {
-			boolean isMaximized = newState == DUIWindow.State.MAXIMIZED;
-			if (isMaximized != uiState.getBool("maximized", false)) {
-				uiState.setBool("maximized", isMaximized);
-				properties.save();
-			}
+			maximized.setValue(newState == DUIWindow.State.MAXIMIZED);
 		});
+	}
+	
+	private static class MyWindowListener extends WindowAdapter {
+		private final IDEPropertyStore properties;
+		
+		public MyWindowListener(IDEPropertyStore properties) {
+			this.properties = properties;
+		}
+		
+		@Override
+		public void windowClosing(WindowEvent e) {
+			properties.save();
+		}
 	}
 }

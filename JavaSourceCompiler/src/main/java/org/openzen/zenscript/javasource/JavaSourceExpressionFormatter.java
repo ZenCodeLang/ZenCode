@@ -203,8 +203,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				StringBuilder output = new StringBuilder();
 				output.append(getValue(target).value);
 				output.append('.');
-				output.append(method.name);
-				FormattingUtils.formatCall(output, this.target, scope, arguments);
+				FormattingUtils.formatCall(output, this.target, scope, method.name, arguments);
 				return new ExpressionString(output.toString(), JavaOperator.CALL);
 			}
 			default:
@@ -227,8 +226,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		StringBuilder result = new StringBuilder();
 		result.append(scope.type(method.cls));
 		result.append('.');
-		result.append(method.name);
-		FormattingUtils.formatCall(result, target, scope, expression.arguments);
+		FormattingUtils.formatCall(result, target, scope, method.name, expression.arguments);
 		return new ExpressionString(result.toString(), JavaOperator.CALL);
 	}
 
@@ -394,16 +392,14 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	@Override
 	public ExpressionString visitConstructorThisCall(ConstructorThisCallExpression expression) {
 		StringBuilder result = new StringBuilder();
-		result.append("this");
-		FormattingUtils.formatCall(result, target, scope, expression.arguments);
+		FormattingUtils.formatCall(result, target, scope, "this", expression.arguments);
 		return new ExpressionString(result.toString(), JavaOperator.PRIMARY);
 	}
 
 	@Override
 	public ExpressionString visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
 		StringBuilder result = new StringBuilder();
-		result.append("super");
-		FormattingUtils.formatCall(result, target, scope, expression.arguments);
+		FormattingUtils.formatCall(result, target, scope, "super", expression.arguments);
 		return new ExpressionString(result.toString(), JavaOperator.PRIMARY);
 	}
 
@@ -500,8 +496,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	@Override
 	public ExpressionString visitGlobalCall(GlobalCallExpression expression) {
 		StringBuilder result = new StringBuilder();
-		result.append(expression.name);
-		FormattingUtils.formatCall(result, target, scope, expression.arguments);
+		FormattingUtils.formatCall(result, target, scope, expression.name, expression.arguments);
 		return new ExpressionString(result.toString(), JavaOperator.PRIMARY);
 	}
 
@@ -566,15 +561,14 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				StringBuilder output = new StringBuilder();
 				output.append(scope.type(method.cls));
 				output.append('.');
-				output.append(method.name);
-				FormattingUtils.formatCall(output, this.target, scope, expression.arguments);
+				FormattingUtils.formatCall(output, this.target, scope, method.name, expression.arguments);
 				return new ExpressionString(output.toString(), JavaOperator.CALL);
 			}
 			case CONSTRUCTOR: {
 				StringBuilder output = new StringBuilder();
 				output.append("new ");
 				output.append(scope.type(expression.type, method.cls));
-				FormattingUtils.formatCall(output, this.target, scope, expression.arguments);
+				FormattingUtils.formatCall(output, this.target, scope, "", expression.arguments);
 				return new ExpressionString(output.toString(), JavaOperator.PRIMARY);
 			}
 			default:
@@ -663,9 +657,10 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 
 	@Override
 	public ExpressionString visitSetter(SetterExpression expression) {
+		JavaMethod setter = context.getJavaMethod(expression.setter);
 		return new ExpressionString(
-				getValue(expression.target) + "." + expression.setter.member.name + " = " + expression.value.accept(this),
-				JavaOperator.ASSIGN);
+				getValue(expression.target) + "." + setter.name + "(" + expression.value.accept(this) + ")",
+				JavaOperator.CALL);
 	}
 
 	@Override
@@ -771,7 +766,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 		
 		StringBuilder result = new StringBuilder();
 		result.append("new ").append(scope.type(option.variantOptionClass));
-		FormattingUtils.formatCall(result, this.target, scope, new CallArguments(expression.arguments));
+		FormattingUtils.formatCall(result, this.target, scope, "", new CallArguments(expression.arguments));
 		return new ExpressionString(result.toString(), JavaOperator.PRIMARY);
 	}
 

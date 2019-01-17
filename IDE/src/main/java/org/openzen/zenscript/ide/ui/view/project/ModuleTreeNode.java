@@ -8,7 +8,7 @@ package org.openzen.zenscript.ide.ui.view.project;
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.zenscript.ide.host.IDEModule;
-import org.openzen.zenscript.ide.ui.IDEWindow;
+import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.ui.icons.ModuleIcon;
 
 /**
@@ -16,10 +16,10 @@ import org.openzen.zenscript.ide.ui.icons.ModuleIcon;
  * @author Hoofdgebruiker
  */
 public class ModuleTreeNode extends PackageTreeNode {
-	public ModuleTreeNode(ProjectBrowser projectBrowser, IDEModule module) {
-		super(projectBrowser, module.getRootPackage());
+	public ModuleTreeNode(ProjectBrowser projectBrowser, IDEModule module, IDEPropertyDirectory treeState) {
+		super(projectBrowser, module.getRootPackage(), treeState);
 		
-		init(module);
+		init(module, treeState);
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class ModuleTreeNode extends PackageTreeNode {
 
 	@Override
 	public String getTitle() {
-		return module.getName();
+		return module.getName() + " [" + module.getType().getName() + "]";
 	}
 	
 	@Override

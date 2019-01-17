@@ -5,12 +5,18 @@
  */
 package org.openzen.zenscript.ide.ui.view.project;
 
+import live.ImmutableLiveString;
+import live.LiveBool;
+import live.LivePredicateBool;
+import live.MutableLiveObject;
+import live.SimpleLiveObject;
+import live.SimpleLiveString;
+
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontFamily;
 import org.openzen.drawablegui.DLabel;
 import org.openzen.drawablegui.DScalableSize;
-import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.border.DEmptyBorder;
 import org.openzen.drawablegui.border.DPaddedBorder;
 import org.openzen.drawablegui.layout.DLinearLayout;
@@ -18,12 +24,6 @@ import org.openzen.drawablegui.layout.DLinearLayout.Alignment;
 import org.openzen.drawablegui.layout.DLinearLayout.Element;
 import org.openzen.drawablegui.layout.DLinearLayout.ElementAlignment;
 import org.openzen.drawablegui.layout.DLinearLayout.Orientation;
-import org.openzen.drawablegui.live.ImmutableLiveString;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LivePredicateBool;
-import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveString;
 import org.openzen.drawablegui.scroll.DScrollPane;
 import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.style.DRoundedRectangleShape;
@@ -36,6 +36,7 @@ import org.openzen.drawablegui.tree.ExpandedArrow;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEPackage;
+import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.IDEWindow;
 import org.openzen.zenscript.ide.ui.dialog.CreatePackageDialog;
@@ -56,7 +57,7 @@ public class ProjectBrowser {
 	public final MutableLiveObject<IDESourceFile> contextFile = new SimpleLiveObject<>(null);
 	public final LiveBool addContentDisabled = new LivePredicateBool(contextPackage, pkg -> pkg == null);
 	
-	public ProjectBrowser(IDEWindow window, DevelopmentHost host) {
+	public ProjectBrowser(IDEWindow window, DevelopmentHost host, IDEPropertyDirectory expanded) {
 		this.window = window;
 		
 		DStyleClass minimalButtonPadding = DStyleClass.inline(new DStylesheetBuilder()
@@ -108,7 +109,7 @@ public class ProjectBrowser {
 				DStyleClass.EMPTY,
 				ExpandedArrow.INSTANCE,
 				CollapsedArrow.INSTANCE,
-				new RootTreeNode(this, host), false);
+				new RootTreeNode(this, host, expanded), false);
 		
 		DScalableSize treeSize = new DScalableSize(new DDpDimension(280), new DDpDimension(280));
 		DScrollPane treeScrollPane = new DScrollPane(

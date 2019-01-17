@@ -5,8 +5,18 @@
  */
 package org.openzen.zenscript.ide.ui.view.aspectbar;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
+import listeners.ListenerHandle;
+import live.LiveBool;
+import live.LiveList;
+import live.LiveMappedList;
+import live.LiveObject;
+import live.LivePredicateBool;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
@@ -15,22 +25,13 @@ import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.live.LiveObject;
 import org.openzen.zenscript.ide.ui.IDEAspectBar;
 import org.openzen.zenscript.ide.ui.IDEAspectToolbar;
 import org.openzen.drawablegui.DUIWindow;
-import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveList;
-import org.openzen.drawablegui.live.LiveMappedList;
-import org.openzen.drawablegui.live.LivePredicateBool;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 import org.openzen.zenscript.ide.ui.IDEAspectBarControl;
 import org.openzen.zenscript.ide.ui.icons.ScalableCloseIcon;
 import org.openzen.zenscript.ide.ui.icons.ScalableMaximizeIcon;
@@ -62,9 +63,9 @@ public class AspectBarView extends BaseComponentGroup {
 	private WindowActionButton maximizeRestore;
 	private WindowActionButton close;
 	
-	private final ListenerHandle<LiveObject.Listener<DSizing>> minimizeRelayout;
-	private final ListenerHandle<LiveObject.Listener<DSizing>> maximizeRestoreRelayout;
-	private final ListenerHandle<LiveObject.Listener<DSizing>> closeRelayout;
+	private final ListenerHandle<BiConsumer<DSizing, DSizing>> minimizeRelayout;
+	private final ListenerHandle<BiConsumer<DSizing, DSizing>> maximizeRestoreRelayout;
+	private final ListenerHandle<BiConsumer<DSizing, DSizing>> closeRelayout;
 	
 	private DDrawnRectangle topBackground;
 	private DDrawnRectangle bottomBackground;
@@ -105,8 +106,8 @@ public class AspectBarView extends BaseComponentGroup {
 				});
 		selectorButtons.addListener(new SelectorButtonListListener());
 		
-		if (aspectBar.toolbars.size() > 0)
-			aspectBar.active.setValue(aspectBar.toolbars.get(0));
+		if (aspectBar.toolbars.getLength() > 0)
+			aspectBar.active.setValue(aspectBar.toolbars.getAt(0));
 	}
 	
 	@Override
@@ -451,7 +452,7 @@ public class AspectBarView extends BaseComponentGroup {
 		@Override
 		public void onRemoved(int index, IDEAspectToolbar oldValue) {
 			if (oldValue == aspectBar.active.getValue())
-				aspectBar.active.setValue(aspectBar.toolbars.size() == 0 ? null : aspectBar.toolbars.get(0));
+				aspectBar.active.setValue(aspectBar.toolbars.getLength() == 0 ? null : aspectBar.toolbars.getAt(0));
 		}
 	}
 	

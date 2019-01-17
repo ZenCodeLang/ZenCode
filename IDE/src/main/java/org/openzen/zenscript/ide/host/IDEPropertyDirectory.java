@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.ide.host;
 
+import live.MutableLiveBool;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -13,6 +15,8 @@ public interface IDEPropertyDirectory {
 	public boolean getBool(String name, boolean defaultValue);
 	
 	public void setBool(String name, boolean value);
+	
+	public MutableLiveBool getLiveBool(String name, boolean defaultValue);
 	
 	public int getInt(String name, int defaultValue);
 	

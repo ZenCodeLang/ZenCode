@@ -7,6 +7,12 @@ package org.openzen.drawablegui.tree;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import listeners.ListenerHandle;
+import live.LiveList;
+import live.LiveObject;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DColorableIconInstance;
 import org.openzen.drawablegui.DComponent;
@@ -19,14 +25,10 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DDrawableInstance;
 import org.openzen.drawablegui.Destructible;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveBool;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnText;
-import org.openzen.drawablegui.live.LiveList;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
+import zsynthetic.FunctionBoolBoolToVoid;
 
 /**
  *
@@ -252,12 +254,12 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 		// nothing to clean up
 	}
 	
-	private class Row implements Destructible, LiveBool.Listener, LiveList.Listener<N> {
+	private class Row implements Destructible, LiveList.Listener<N> {
 		private final int x;
 		private final int index;
 		private final N node;
 		private final DDrawable icon;
-		private final ListenerHandle<LiveBool.Listener> collapseListener;
+		private final ListenerHandle<FunctionBoolBoolToVoid> collapseListener;
 		private final ListenerHandle<LiveList.Listener<N>> childListener;
 		
 		private DDrawnText text;
@@ -268,7 +270,7 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 			this.x = x;
 			this.index = index;
 			this.node = node;
-			this.collapseListener = node.isCollapsed().addListener(this);
+			this.collapseListener = node.isCollapsed().addListener(this::onCollapsedChanged);
 			this.childListener = node.getChildren().addListener(this);
 			
 			if (node == selectedNode)
@@ -319,9 +321,8 @@ public class DTreeView<N extends DTreeNode<N>> implements DComponent {
 					baseX + style.iconTextSpacing + getIconWidth(icon) + style.iconTextSpacing + getIconWidth(node.getIcon()),
 					baseY + fontMetrics.getAscent());
 		}
-
-		@Override
-		public void onChanged(boolean oldValue, boolean newValue) {
+		
+		public void onCollapsedChanged(boolean oldValue, boolean newValue) {
 			updateLayout();
 		}
 

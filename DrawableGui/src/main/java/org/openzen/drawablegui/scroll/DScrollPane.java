@@ -5,6 +5,13 @@
  */
 package org.openzen.drawablegui.scroll;
 
+import java.util.function.BiConsumer;
+import listeners.ListenerHandle;
+import live.LiveInt;
+import live.LiveObject;
+import live.SimpleLiveInt;
+import live.SimpleLiveObject;
+
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
@@ -12,14 +19,10 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DScalableSize;
 import org.openzen.drawablegui.DTransform2D;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveInt;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.SimpleLiveInt;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DSubSurface;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
+import zsynthetic.FunctionIntIntToVoid;
 
 /**
  *
@@ -44,11 +47,11 @@ public class DScrollPane implements DComponent, DScrollContext {
 	private final SimpleLiveObject<DSizing> sizing = new SimpleLiveObject<>(DSizing.EMPTY);
 	private final LiveObject<DScalableSize> size;
 	
-	private final ListenerHandle<LiveInt.Listener> contentsWidthListener;
-	private final ListenerHandle<LiveInt.Listener> contentsHeightListener;
-	private final ListenerHandle<LiveInt.Listener> offsetXListener;
-	private final ListenerHandle<LiveInt.Listener> offsetYListener;
-	private final ListenerHandle<LiveObject.Listener<DSizing>> contentsSizingListener;
+	private final ListenerHandle<FunctionIntIntToVoid> contentsWidthListener;
+	private final ListenerHandle<FunctionIntIntToVoid> contentsHeightListener;
+	private final ListenerHandle<FunctionIntIntToVoid> offsetXListener;
+	private final ListenerHandle<FunctionIntIntToVoid> offsetYListener;
+	private final ListenerHandle<BiConsumer<DSizing, DSizing>> contentsSizingListener;
 	
 	private DComponent hovering = null;
 	
@@ -311,10 +314,10 @@ public class DScrollPane implements DComponent, DScrollContext {
 		return bounds.height;
 	}
 	
-	private class ScrollListener implements LiveInt.Listener {
+	private class ScrollListener implements FunctionIntIntToVoid {
 
 		@Override
-		public void onChanged(int oldValue, int newValue) {
+		public void invoke(int oldValue, int newValue) {
 			int valueX = offsetX.getValue();
 			if (valueX > contentsWidth.getValue() - bounds.width)
 				valueX = contentsWidth.getValue() - bounds.width;

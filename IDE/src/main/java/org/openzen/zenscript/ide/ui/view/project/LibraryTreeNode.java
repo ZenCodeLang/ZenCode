@@ -5,11 +5,12 @@
  */
 package org.openzen.zenscript.ide.ui.view.project;
 
+import live.LiveList;
+import live.LiveMappedList;
+
 import org.openzen.drawablegui.DColorableIcon;
-import org.openzen.drawablegui.live.LiveList;
-import org.openzen.drawablegui.live.LiveMappedList;
 import org.openzen.zenscript.ide.host.IDELibrary;
-import org.openzen.zenscript.ide.ui.IDEWindow;
+import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.ui.icons.LibraryIcon;
 
 /**
@@ -20,10 +21,12 @@ public class LibraryTreeNode extends ProjectOverviewNode {
 	private final IDELibrary library;
 	private final LiveList<ProjectOverviewNode> modules;
 	
-	public LibraryTreeNode(ProjectBrowser browser, IDELibrary library) {
+	public LibraryTreeNode(ProjectBrowser browser, IDELibrary library, IDEPropertyDirectory treeState) {
+		super(treeState.getLiveBool("collapsed", false));
+		
 		this.library = library;
 		
-		modules = new LiveMappedList<>(library.getModules(), module -> new ModuleTreeNode(browser, module));
+		modules = new LiveMappedList<>(library.getModules(), module -> new ModuleTreeNode(browser, module, treeState.getSubdirectory(module.getName())));
 	}
 	
 	@Override

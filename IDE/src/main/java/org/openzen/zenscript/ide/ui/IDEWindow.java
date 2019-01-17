@@ -5,9 +5,10 @@
  */
 package org.openzen.zenscript.ide.ui;
 
-import org.openzen.drawablegui.live.ImmutableLiveString;
-import org.openzen.drawablegui.live.LiveArrayList;
-import org.openzen.drawablegui.live.MutableLiveList;
+import live.ImmutableLiveString;
+import live.LiveArrayList;
+import live.MutableLiveList;
+
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
 import org.openzen.zenscript.ide.host.IDESourceFile;

@@ -5,6 +5,7 @@
  */
 package org.openzen.drawablegui.border;
 
+import java.util.function.BiConsumer;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
@@ -15,11 +16,12 @@ import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.ImmutableLiveObject;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveObject;
+import listeners.ListenerHandle;
+import live.ImmutableLiveObject;
+import live.LiveBool;
+import live.LiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
+import zsynthetic.FunctionBoolBoolToVoid;
 
 /**
  *
@@ -35,10 +37,10 @@ public class DCustomWindowBorder implements DComponent {
 	private DIRectangle bounds;
 	
 	private LiveBool active;
-	private LiveObject<DUIWindow.State> state;
+	private live.LiveObject<DUIWindow.State> state;
 	
-	private ListenerHandle<LiveObject.Listener<DUIWindow.State>> stateListener;
-	private ListenerHandle<LiveBool.Listener> activeListener;
+	private ListenerHandle<BiConsumer<DUIWindow.State, DUIWindow.State>> stateListener;
+	private ListenerHandle<FunctionBoolBoolToVoid> activeListener;
 	
 	private DDrawnRectangle background;
 	private DDrawnShape shadowedBackground;

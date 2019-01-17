@@ -5,7 +5,8 @@
  */
 package org.openzen.zenscript.ide.host;
 
-import org.openzen.drawablegui.live.LiveString;
+import live.LiveString;
+
 import org.openzen.zencode.shared.SourceFile;
 
 /**

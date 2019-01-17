@@ -5,7 +5,7 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.live.LiveObject;
+import live.LiveObject;
 
 /**
  *

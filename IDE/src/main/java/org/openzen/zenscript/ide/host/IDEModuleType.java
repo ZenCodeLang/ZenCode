@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui.live;
+package org.openzen.zenscript.ide.host;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface MutableLiveObject<T> extends LiveObject<T> {
-	public void setValue(T value);
+public interface IDEModuleType {
+	public String getName();
 }

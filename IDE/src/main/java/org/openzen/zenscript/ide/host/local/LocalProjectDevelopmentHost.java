@@ -6,9 +6,11 @@
 package org.openzen.zenscript.ide.host.local;
 
 import java.io.File;
-import org.openzen.drawablegui.live.LiveArrayList;
-import org.openzen.drawablegui.live.LiveList;
-import org.openzen.drawablegui.live.MutableLiveList;
+
+import live.LiveArrayList;
+import live.LiveList;
+import live.MutableLiveList;
+
 import org.openzen.zenscript.constructor.Library;
 import org.openzen.zenscript.constructor.Project;
 import org.openzen.zenscript.constructor.module.ModuleReference;

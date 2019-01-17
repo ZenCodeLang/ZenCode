@@ -13,17 +13,19 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import javax.swing.JFrame;
+
+import live.LiveBool;
+import live.LiveObject;
+import live.MutableLiveObject;
+import live.SimpleLiveBool;
+import live.SimpleLiveObject;
+
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
 import org.openzen.drawablegui.border.DCustomWindowBorder;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveBool;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**

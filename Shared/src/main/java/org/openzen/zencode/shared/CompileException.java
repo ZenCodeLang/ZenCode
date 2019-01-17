@@ -8,12 +8,12 @@ public final class CompileException extends Exception {
     public final CodePosition position;
     public final CompileExceptionCode code;
     public final String message;
-	
+    
     public CompileException(CodePosition position, CompileExceptionCode code, String message) {
         super(position.toString() + ": [" + code.toString() + "] " + message);
         this.position = position;
         this.code = code;
-		this.message = message;
+        this.message = message;
     }
     
     public CodePosition getPosition() {
@@ -22,5 +22,9 @@ public final class CompileException extends Exception {
     
     public CompileExceptionCode getCode() {
         return code;
+    }
+    
+    public String getMessage() {
+        return message;
     }
 }

@@ -3,22 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui.live;
+package live;
 
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import org.openzen.drawablegui.Destructible;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.listeners.ListenerList;
+import listeners.ListenerHandle;
+import listeners.ListenerList;
+import zsynthetic.FunctionBoolBoolToVoid;
 
-/**
- *
- * @author Hoofdgebruiker
- */
-public class LivePredicateBool<T> implements LiveBool, Destructible, LiveObject.Listener<T> {
-	private final ListenerList<LiveBool.Listener> listeners = new ListenerList<>();
+// TODO: rewrite to zencode
+public class LivePredicateBool<T> implements LiveBool, AutoCloseable, BiConsumer<T, T> {
+	private final ListenerList<FunctionBoolBoolToVoid> listeners = new ListenerList<>();
 	private final LiveObject<T> source;
 	private final Predicate<T> predicate;
-	private final ListenerHandle<LiveObject.Listener<T>> sourceListener;
+	private final ListenerHandle<BiConsumer<T, T>> sourceListener;
 	private boolean value;
 	
 	public LivePredicateBool(LiveObject<T> source, Predicate<T> predicate) {
@@ -39,7 +37,7 @@ public class LivePredicateBool<T> implements LiveBool, Destructible, LiveObject.
 	}
 
 	@Override
-	public ListenerHandle<Listener> addListener(Listener listener) {
+	public ListenerHandle<FunctionBoolBoolToVoid> addListener(FunctionBoolBoolToVoid listener) {
 		return listeners.add(listener);
 	}
 	
@@ -49,11 +47,11 @@ public class LivePredicateBool<T> implements LiveBool, Destructible, LiveObject.
 		
 		boolean oldValue = this.value;
 		this.value = value;
-		listeners.accept(listener -> listener.onChanged(oldValue, value));
+		listeners.accept(listener -> listener.invoke(oldValue, value));
 	}
 
 	@Override
-	public void onUpdated(T oldValue, T newValue) {
+	public void accept(T oldValue, T newValue) {
 		setValueInternal(predicate.test(newValue));
 	}
 }

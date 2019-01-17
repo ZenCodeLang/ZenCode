@@ -8,17 +8,19 @@ package org.openzen.drawablegui.layout;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import listeners.ListenerHandle;
+import live.LiveObject;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
@@ -257,10 +259,10 @@ public class DSideLayout extends BaseComponentGroup {
 		background.close();
 	}
 	
-	public class SideComponent implements Closeable, LiveObject.Listener<DSizing> {
+	public class SideComponent implements Closeable, BiConsumer<DSizing, DSizing> {
 		public final Side side;
 		public final DComponent component;
-		public final ListenerHandle<LiveObject.Listener<DSizing>> listenerHandle;
+		public final ListenerHandle<BiConsumer<DSizing, DSizing>> listenerHandle;
 
 		public SideComponent(Side side, DComponent component) {
 			this.side = side;
@@ -274,7 +276,7 @@ public class DSideLayout extends BaseComponentGroup {
 		}
 
 		@Override
-		public void onUpdated(DSizing oldValue, DSizing newValue) {
+		public void accept(DSizing oldValue, DSizing newValue) {
 			recalculateSize();
 		}
 	}

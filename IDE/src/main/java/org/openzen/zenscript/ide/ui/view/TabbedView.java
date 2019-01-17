@@ -7,25 +7,26 @@ package org.openzen.zenscript.ide.ui.view;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
+import listeners.ListenerHandle;
+import live.LiveArrayList;
+import live.LiveList;
+import live.LiveMappedList;
+import live.LiveObject;
+import live.MutableLiveList;
+import live.MutableLiveObject;
+import live.SimpleLiveObject;
+
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
-import org.openzen.drawablegui.draw.DDrawSurface;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveArrayList;
-import org.openzen.drawablegui.live.LiveList;
-import org.openzen.drawablegui.live.LiveMappedList;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.MutableLiveList;
-import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
-import org.openzen.drawablegui.style.DStylePath;
 
 /**
  *
@@ -37,7 +38,7 @@ public class TabbedView extends BaseComponentGroup {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	public final MutableLiveObject<TabbedViewComponent> currentTab = new SimpleLiveObject<>(null);
 	
-	private final Map<TabbedViewTab, ListenerHandle<LiveObject.Listener<DSizing>>> tabSizeListeners = new HashMap<>();
+	private final Map<TabbedViewTab, ListenerHandle<BiConsumer<DSizing, DSizing>>> tabSizeListeners = new HashMap<>();
 	
 	private DComponentContext context;
 	private TabbedViewStyle style;
@@ -127,7 +128,7 @@ public class TabbedView extends BaseComponentGroup {
 
 	@Override
 	public void close() {
-		for (Map.Entry<TabbedViewTab, ListenerHandle<LiveObject.Listener<DSizing>>> entry : tabSizeListeners.entrySet()) {
+		for (Map.Entry<TabbedViewTab, ListenerHandle<BiConsumer<DSizing, DSizing>>> entry : tabSizeListeners.entrySet()) {
 			entry.getValue().close();
 		}
 		
@@ -199,7 +200,7 @@ public class TabbedView extends BaseComponentGroup {
 		@Override
 		public void onRemoved(int index, TabbedViewComponent oldValue) {
 			if (oldValue == currentTab.getValue())
-				currentTab.setValue(tabs.size() == 0 ? null : tabs.get(Math.max(index - 1, 0)));
+				currentTab.setValue(tabs.getLength() == 0 ? null : tabs.getAt(Math.max(index - 1, 0)));
 			
 			layoutTabs();
 		}

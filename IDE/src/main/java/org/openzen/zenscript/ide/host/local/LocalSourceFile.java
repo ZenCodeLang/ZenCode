@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.MutableLiveString;
-import org.openzen.drawablegui.live.SimpleLiveString;
+
+import live.LiveString;
+import live.MutableLiveString;
+import live.SimpleLiveString;
+
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.ide.host.IDESourceFile;

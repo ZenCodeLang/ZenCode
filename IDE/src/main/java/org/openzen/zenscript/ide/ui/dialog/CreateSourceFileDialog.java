@@ -5,6 +5,10 @@
  */
 package org.openzen.zenscript.ide.ui.dialog;
 
+import live.ImmutableLiveBool;
+import live.ImmutableLiveString;
+import live.SimpleLiveString;
+
 import org.openzen.drawablegui.DAnchor;
 import org.openzen.drawablegui.DButton;
 import org.openzen.drawablegui.DComponent;
@@ -19,11 +23,7 @@ import org.openzen.drawablegui.layout.DLinearLayout.Alignment;
 import org.openzen.drawablegui.layout.DLinearLayout.Element;
 import org.openzen.drawablegui.layout.DLinearLayout.ElementAlignment;
 import org.openzen.drawablegui.layout.DLinearLayout.Orientation;
-import org.openzen.drawablegui.live.ImmutableLiveBool;
-import org.openzen.drawablegui.live.ImmutableLiveString;
-import org.openzen.drawablegui.live.SimpleLiveString;
 import org.openzen.drawablegui.style.DDpDimension;
-import org.openzen.drawablegui.style.DSimpleStylesheet;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylesheetBuilder;
 import org.openzen.zenscript.ide.host.IDEModule;

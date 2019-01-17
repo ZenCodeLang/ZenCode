@@ -6,6 +6,14 @@
 package org.openzen.zenscript.ide.ui.view;
 
 import java.util.function.Consumer;
+
+import listeners.ListenerHandle;
+import live.ImmutableLiveBool;
+import live.LiveBool;
+import live.LiveObject;
+import live.LiveString;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
@@ -17,14 +25,9 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSimpleTooltip;
 import org.openzen.drawablegui.draw.DDrawnShape;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.ImmutableLiveBool;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
+import zsynthetic.FunctionBoolBoolToVoid;
 
 /**
  *
@@ -36,7 +39,7 @@ public class IconButtonControl implements DComponent {
 	private final DDrawable iconDisabled;
 	private final Consumer<DMouseEvent> onClick;
 	private final LiveBool disabled;
-	private final ListenerHandle<LiveBool.Listener> disabledListener;
+	private final ListenerHandle<FunctionBoolBoolToVoid> disabledListener;
 	private final DSimpleTooltip tooltip;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	

@@ -7,6 +7,12 @@ package org.openzen.zenscript.ide.ui.view.aspectbar;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import listeners.ListenerHandle;
+import live.LiveBool;
+import live.LiveObject;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DColorableIconInstance;
 import org.openzen.drawablegui.DComponent;
@@ -16,12 +22,9 @@ import org.openzen.drawablegui.DMouseEvent;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.draw.DDrawnRectangle;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.ui.icons.ScalableCloseIcon;
+import zsynthetic.FunctionBoolBoolToVoid;
 
 /**
  *
@@ -34,7 +37,7 @@ public class WindowActionButton implements DComponent {
 	private final Consumer<DMouseEvent> action;
 	
 	private LiveBool windowFocused;
-	private ListenerHandle<LiveBool.Listener> windowFocusedListener;
+	private ListenerHandle<FunctionBoolBoolToVoid> windowFocusedListener;
 	
 	private DComponentContext context;
 	private DColorableIcon icon;

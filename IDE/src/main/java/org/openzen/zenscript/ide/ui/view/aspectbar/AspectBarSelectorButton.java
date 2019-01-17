@@ -6,6 +6,13 @@
 package org.openzen.zenscript.ide.ui.view.aspectbar;
 
 import java.util.function.Consumer;
+
+import listeners.ListenerHandle;
+import live.ImmutableLiveString;
+import live.LiveBool;
+import live.LiveObject;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
@@ -17,13 +24,9 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DSimpleTooltip;
 import org.openzen.drawablegui.draw.DDrawnShape;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.ImmutableLiveString;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
+import zsynthetic.FunctionBoolBoolToVoid;
 
 /**
  *
@@ -48,7 +51,7 @@ public class AspectBarSelectorButton implements DComponent {
 	private boolean pressing;
 	private final DSimpleTooltip tooltip;
 	
-	private final ListenerHandle<LiveBool.Listener> activeListener;
+	private final ListenerHandle<FunctionBoolBoolToVoid> activeListener;
 	
 	public AspectBarSelectorButton(DStyleClass styleClass, DDrawable icon, LiveBool active, String tooltip, Consumer<DMouseEvent> onClick) {
 		this.active = active;

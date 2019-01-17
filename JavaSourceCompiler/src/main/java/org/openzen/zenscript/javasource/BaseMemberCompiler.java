@@ -84,7 +84,7 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 			output.append("abstract ");
 		if (Modifiers.isStatic(modifiers))
 			output.append("static ");
-		if (Modifiers.isFinal(modifiers))
+		if (Modifiers.isFinal(modifiers) && !definition.isInterface())
 			output.append("final ");
 	}
 	

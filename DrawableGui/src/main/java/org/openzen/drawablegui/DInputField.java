@@ -5,14 +5,15 @@
  */
 package org.openzen.drawablegui;
 
+import java.util.function.BiConsumer;
+import listeners.ListenerHandle;
+import live.LiveObject;
+import live.MutableLiveObject;
+import live.MutableLiveString;
+
 import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.MutableLiveString;
 import org.openzen.drawablegui.style.DDimension;
 import org.openzen.drawablegui.style.DStyleClass;
 
@@ -22,7 +23,7 @@ import org.openzen.drawablegui.style.DStyleClass;
  */
 public class DInputField implements DComponent {
 	public final MutableLiveString value;
-	private final ListenerHandle<LiveString.Listener> valueListener;
+	private final ListenerHandle<BiConsumer<String, String>> valueListener;
 	
 	private final DStyleClass styleClass;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();

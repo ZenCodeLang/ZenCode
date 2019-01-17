@@ -5,10 +5,11 @@
  */
 package org.openzen.zenscript.ide.ui.view.project;
 
+import live.SimpleLiveBool;
 import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DMouseEvent;
-import org.openzen.drawablegui.live.LiveEmptyList;
-import org.openzen.drawablegui.live.LiveList;
+import live.LiveEmptyList;
+import live.LiveList;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.icons.CodeIcon;
 
@@ -21,6 +22,8 @@ public class SourceFileTreeNode extends ProjectOverviewNode {
 	private final IDESourceFile sourceFile;
 	
 	public SourceFileTreeNode(ProjectBrowser browser, IDESourceFile sourceFile) {
+		super(new SimpleLiveBool(false));
+		
 		this.browser = browser;
 		this.sourceFile = sourceFile;
 	}

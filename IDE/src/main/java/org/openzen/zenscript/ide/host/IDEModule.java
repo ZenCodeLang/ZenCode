@@ -16,6 +16,8 @@ import org.openzen.zenscript.ide.codemodel.IDECodeError;
 public interface IDEModule {
 	public String getName();
 	
+	public IDEModuleType getType();
+	
 	public IDEPackage getRootPackage();
 	
 	void prebuild(ModuleLoader loader, Consumer<IDECodeError> errors);

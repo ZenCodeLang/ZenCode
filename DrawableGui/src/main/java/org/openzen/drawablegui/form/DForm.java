@@ -7,6 +7,9 @@ package org.openzen.drawablegui.form;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import live.LiveObject;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.BaseComponentGroup;
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
@@ -14,8 +17,6 @@ import org.openzen.drawablegui.DSizing;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.draw.DDrawnText;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**

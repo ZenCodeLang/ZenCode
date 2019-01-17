@@ -3,15 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui.live;
+package live;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.listeners.ListenerList;
+
+import listeners.ListenerHandle;
+import listeners.ListenerList;
 
 /**
  *
@@ -48,12 +49,12 @@ public class SortedLiveList<T> implements LiveList<T>, LiveList.Listener<T> {
 	}
 
 	@Override
-	public int size() {
+	public int getLength() {
 		return sorted.size();
 	}
 
 	@Override
-	public T get(int index) {
+	public T getAt(int index) {
 		return sorted.get(index);
 	}
 

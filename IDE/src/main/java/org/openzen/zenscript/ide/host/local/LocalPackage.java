@@ -8,10 +8,12 @@ package org.openzen.zenscript.ide.host.local;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import org.openzen.drawablegui.live.LiveArrayList;
-import org.openzen.drawablegui.live.LiveList;
-import org.openzen.drawablegui.live.MutableLiveList;
-import org.openzen.drawablegui.live.SortedLiveList;
+
+import live.LiveArrayList;
+import live.LiveList;
+import live.MutableLiveList;
+import live.SortedLiveList;
+
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.constructor.module.SourcePackage;

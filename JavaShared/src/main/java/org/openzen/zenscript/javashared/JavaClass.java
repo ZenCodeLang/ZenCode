@@ -32,6 +32,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	public static final JavaClass DOUBLE = new JavaClass("java.lang", "Double", Kind.CLASS);
 	public static final JavaClass CHARACTER = new JavaClass("java.lang", "Character", Kind.CLASS);
 	public static final JavaClass COLLECTION = new JavaClass("java.util", "Collection", Kind.INTERFACE);
+	public static final JavaClass COLLECTIONS = new JavaClass("java.util", "Collections", Kind.CLASS);
 	
 	public static final JavaClass SHARED = new JavaClass("zsynthetic", "Shared", Kind.CLASS);
 	

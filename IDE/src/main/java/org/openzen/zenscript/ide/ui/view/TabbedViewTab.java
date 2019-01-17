@@ -5,6 +5,11 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
+import java.util.function.BiConsumer;
+import listeners.ListenerHandle;
+import live.LiveObject;
+import live.MutableLiveObject;
+
 import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DSizing;
@@ -15,12 +20,8 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.live.LiveBool;
-import org.openzen.drawablegui.live.LiveObject;
-import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.MutableLiveObject;
 import org.openzen.drawablegui.style.DStyleClass;
+import zsynthetic.FunctionBoolBoolToVoid;
 
 /**
  *
@@ -41,9 +42,9 @@ public class TabbedViewTab implements DComponent {
 	private int textWidth;
 	private DIRectangle bounds;
 	
-	private final ListenerHandle<LiveString.Listener> titleListener;
-	private final ListenerHandle<LiveBool.Listener> updatedListener;
-	private final ListenerHandle<LiveObject.Listener<TabbedViewComponent>> currentTabListener;
+	private final ListenerHandle<BiConsumer<String, String>> titleListener;
+	private final ListenerHandle<FunctionBoolBoolToVoid> updatedListener;
+	private final ListenerHandle<BiConsumer<TabbedViewComponent, TabbedViewComponent>> currentTabListener;
 	
 	private boolean hover;
 	private boolean press;
@@ -61,7 +62,7 @@ public class TabbedViewTab implements DComponent {
 		
 		titleListener = tab.title.addListener((oldValue, newValue) -> calculateSizing());
 		updatedListener = tab.updated.addListener((oldValue, newValue) -> calculateSizing());
-		currentTabListener = currentTab.addListener((oldTab, newTab) -> update());
+		currentTabListener = currentTab.addListener((oldTab, newTab) -> update(newTab));
 	}
 	
 	public void closeTab() {
@@ -199,11 +200,16 @@ public class TabbedViewTab implements DComponent {
 	}
 	
 	private void update() {
+		update(currentTab.getValue());
+	}
+	
+	private void update(TabbedViewComponent currentTab) {
 		if (style == null || shape == null)
 			return;
 		
+		System.out.println("Updating tab " + tab.title.getValue() + (currentTab == tab ? " (current)" : ""));
 		int color = style.tabColorNormal;
-		if (currentTab.getValue() == tab)
+		if (currentTab == tab)
 			color = style.tabColorActive;
 		else if (press)
 			color = style.tabColorPress;

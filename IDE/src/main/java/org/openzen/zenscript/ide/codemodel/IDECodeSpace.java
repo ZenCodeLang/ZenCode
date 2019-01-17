@@ -32,7 +32,7 @@ public class IDECodeSpace {
 		ZSPackage stdlib = new ZSPackage(root, "stdlib");
 		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
 		ModuleLoader loader = new ModuleLoader(registry, exception -> {
-			
+			exception.printStackTrace();
 		});
 		for (IDEModule module : host.getModules()) {
 			module.prebuild(loader, this::addError);

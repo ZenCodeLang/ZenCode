@@ -3,16 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.ide.host;
+package org.openzen.zenscript.scriptingexample;
 
-import live.LiveList;
+import org.openzen.zencode.java.ZenCodeType;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public interface IDELibrary {
-	public String getName();
-	
-	public LiveList<IDEModule> getModules();
+public interface TestInterface extends ZenCodeType {
+	@Method
+	String interfaceMethod();
 }

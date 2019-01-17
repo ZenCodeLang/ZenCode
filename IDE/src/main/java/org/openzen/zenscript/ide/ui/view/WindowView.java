@@ -5,19 +5,21 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
+import live.LiveString;
+import live.SimpleLiveObject;
+import live.SimpleLiveString;
+
 import org.openzen.drawablegui.DEmptyView;
 import org.openzen.drawablegui.DScalableSize;
 import org.openzen.drawablegui.border.DLineBorder;
 import org.openzen.drawablegui.scroll.DScrollPane;
 import org.openzen.drawablegui.layout.DSideLayout;
-import org.openzen.drawablegui.live.LiveString;
-import org.openzen.drawablegui.live.SimpleLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveString;
 import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylesheetBuilder;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
+import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.IDEDockWindow;
 import org.openzen.zenscript.ide.ui.IDEWindow;
@@ -36,13 +38,13 @@ public final class WindowView extends DSideLayout {
 	public final LiveString status = new SimpleLiveString("IDE initialized");
 	private final ProjectBrowser projectBrowser;
 	
-	public WindowView(IDEWindow window, DevelopmentHost host) {
+	public WindowView(IDEWindow window, DevelopmentHost host, IDEPropertyDirectory settings) {
 		super(DStyleClass.inline(
 				new DStylesheetBuilder().color("backgroundColor", 0xFFEEEEEE).build()),
 				DEmptyView.INSTANCE);
 		this.window = window;
 		
-		projectBrowser = new ProjectBrowser(window, host);
+		projectBrowser = new ProjectBrowser(window, host, settings.getSubdirectory("projectBrowserExpansionState"));
 		
 		OutputView output = new OutputView(DStyleClass.EMPTY, window.output);
 		

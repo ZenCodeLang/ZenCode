@@ -5,7 +5,8 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.live.LiveString;
+import live.LiveString;
+
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**

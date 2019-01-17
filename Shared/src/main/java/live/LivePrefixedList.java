@@ -1,18 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.openzen.drawablegui.live;
+package live;
 
 import java.util.Iterator;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.listeners.ListenerList;
+import listeners.ListenerHandle;
+import listeners.ListenerList;
 
-/**
- *
- * @author Hoofdgebruiker
- */
+// TODO: convert to zencode
 public class LivePrefixedList<T> implements LiveList<T> {
 	private final ListenerList<Listener<T>> listeners = new ListenerList<>();
 	private final T prefix;
@@ -73,13 +65,13 @@ public class LivePrefixedList<T> implements LiveList<T> {
 	}
 
 	@Override
-	public int size() {
-		return values.size() + 1;
+	public int getLength() {
+		return values.getLength() + 1;
 	}
 	
 	@Override
-	public T get(int index) {
-		return index == 0 ? prefix : values.get(index);
+	public T getAt(int index) {
+		return index == 0 ? prefix : values.getAt(index);
 	}
 
 	@Override

@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui.live;
+package live;
 
 import java.util.Collections;
 import java.util.Iterator;
-import org.openzen.drawablegui.listeners.DummyListenerHandle;
-import org.openzen.drawablegui.listeners.ListenerHandle;
+import listeners.DummyListenerHandle;
+import listeners.ListenerHandle;
 
 /**
  *
@@ -32,12 +32,12 @@ public class LiveEmptyList<T> implements LiveList<T> {
 	}
 	
 	@Override
-	public int size() {
+	public int getLength() {
 		return 0;
 	}
 	
 	@Override
-	public T get(int index) {
+	public T getAt(int index) {
 		throw new ArrayIndexOutOfBoundsException(index);
 	}
 

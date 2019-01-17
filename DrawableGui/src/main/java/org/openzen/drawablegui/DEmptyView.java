@@ -5,8 +5,8 @@
  */
 package org.openzen.drawablegui;
 
-import org.openzen.drawablegui.live.ImmutableLiveObject;
-import org.openzen.drawablegui.live.LiveObject;
+import live.ImmutableLiveObject;
+import live.LiveObject;
 
 /**
  *

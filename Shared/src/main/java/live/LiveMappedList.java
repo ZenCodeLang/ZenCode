@@ -3,21 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.drawablegui.live;
+package live;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
-import org.openzen.drawablegui.Destructible;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.listeners.ListenerList;
+import listeners.ListenerHandle;
+import listeners.ListenerList;
 
-/**
- *
- * @author Hoofdgebruiker
- */
-public class LiveMappedList<T, U> implements Destructible, LiveList<U> {
+// TODO: rewrite to zencode
+public class LiveMappedList<T, U> implements AutoCloseable, LiveList<U> {
 	private final ListenerList<Listener<U>> listeners = new ListenerList<>();
 	private final Function<T, U> projection;
 	private final List<U> mapped;
@@ -43,12 +39,12 @@ public class LiveMappedList<T, U> implements Destructible, LiveList<U> {
 	}
 	
 	@Override
-	public int size() {
+	public int getLength() {
 		return mapped.size();
 	}
 
 	@Override
-	public U get(int index) {
+	public U getAt(int index) {
 		return mapped.get(index);
 	}
 

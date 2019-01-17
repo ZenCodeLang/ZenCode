@@ -11,8 +11,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.openzen.drawablegui.listeners.ListenerHandle;
-import org.openzen.drawablegui.listeners.ListenerList;
+
+import listeners.ListenerHandle;
+import listeners.ListenerList;
+
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.TokenStream;

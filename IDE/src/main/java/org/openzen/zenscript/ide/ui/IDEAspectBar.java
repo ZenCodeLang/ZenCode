@@ -5,10 +5,10 @@
  */
 package org.openzen.zenscript.ide.ui;
 
-import org.openzen.drawablegui.live.LiveArrayList;
-import org.openzen.drawablegui.live.MutableLiveList;
-import org.openzen.drawablegui.live.MutableLiveObject;
-import org.openzen.drawablegui.live.SimpleLiveObject;
+import live.LiveArrayList;
+import live.MutableLiveList;
+import live.MutableLiveObject;
+import live.SimpleLiveObject;
 
 /**
  *
