@@ -6,7 +6,6 @@ public final class CodePosition {
     public static final CodePosition META = new CodePosition(new VirtualSourceFile("meta"), 0, 0, 0, 0);
     public static final CodePosition UNKNOWN = new CodePosition(new VirtualSourceFile("unknown"), 0, 0, 0, 0);
     public static final CodePosition GENERATED = new CodePosition(new VirtualSourceFile("generated"), 0, 0, 0, 0);
-	
     public final SourceFile file;
     public final int fromLine;
     public final int fromLineOffset;

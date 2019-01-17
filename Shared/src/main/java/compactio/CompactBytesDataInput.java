@@ -4,15 +4,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public final class CompactBytesDataInput implements CompactDataInput, AutoCloseable {
+    private static final int P6 = 1 << 6;
     private static final int P7 = 1 << 7;
+    private static final int P13 = 1 << 13;
     private static final int P14 = 1 << 14;
+    private static final int P20 = 1 << 20;
     private static final int P21 = 1 << 21;
+    private static final int P27 = 1 << 27;
     private static final int P28 = 1 << 28;
+    private static final long P34 = 1L << 34;
     private static final long P35 = 1L << 35;
+    private static final long P41 = 1L << 41;
     private static final long P42 = 1L << 42;
+    private static final long P48 = 1L << 48;
     private static final long P49 = 1L << 49;
+    private static final long P55 = 1L << 55;
     private static final long P56 = 1L << 56;
-	
     private final byte[] data;
     private int offset;
     
@@ -86,22 +93,22 @@ public final class CompactBytesDataInput implements CompactDataInput, AutoClosea
     @Override
     public int readVarInt() {
         int value = this.readVarUInt();
-        return Integer.compareUnsigned(value & 1, 0) == 0 ? value >>> 1 : -((value >>> 1) + 1);
+        return (value & 1) == 0 ? value >>> 1 : -((value >>> 1) + 1);
     }
     
     @Override
     public int readVarUInt() {
         int value = data[offset++] & 0xFF;
-        if (Integer.compareUnsigned(value & CompactBytesDataInput.P7, 0) == 0)
+        if ((value & CompactBytesDataInput.P7) == 0)
             return value;
         value = value & CompactBytesDataInput.P7 - 1 | (data[offset++] & 0xFF) << 7;
-        if (Integer.compareUnsigned(value & CompactBytesDataInput.P14, 0) == 0)
+        if ((value & CompactBytesDataInput.P14) == 0)
             return value;
         value = value & CompactBytesDataInput.P14 - 1 | (data[offset++] & 0xFF) << 14;
-        if (Integer.compareUnsigned(value & CompactBytesDataInput.P21, 0) == 0)
+        if ((value & CompactBytesDataInput.P21) == 0)
             return value;
         value = value & CompactBytesDataInput.P21 - 1 | (data[offset++] & 0xFF) << 21;
-        if (Integer.compareUnsigned(value & CompactBytesDataInput.P28, 0) == 0)
+        if ((value & CompactBytesDataInput.P28) == 0)
             return value;
         return value & CompactBytesDataInput.P28 - 1 | (data[offset++] & 0xFF) << 28;
     }
