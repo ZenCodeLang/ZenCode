@@ -17,19 +17,17 @@ import org.openzen.zencode.shared.SourceFile;
 public class CountingCharReader implements CharReader {
 	private final CharReader reader;
 	private final SourceFile file;
-	private final int tabSize;
 	
 	private int line;
 	private int lineOffset;
 	
-	public CountingCharReader(CharReader reader, SourceFile file, int tabSize)
+	public CountingCharReader(CharReader reader, SourceFile file)
 	{
 		this.reader = reader;
 		this.file = file;
-		this.tabSize = tabSize;
 		
 		line = 1;
-		lineOffset = 1;
+		lineOffset = 0;
 	}
 	
 	public CodePosition getPosition() {
@@ -51,9 +49,7 @@ public class CountingCharReader implements CharReader {
 		
 		if (ch == '\n') {
 			line++;
-			lineOffset = 1;
-		} else if (ch == '\t') {
-			lineOffset += tabSize;
+			lineOffset = 0;
 		} else {
 			lineOffset++;
 		}

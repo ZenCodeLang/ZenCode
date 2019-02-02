@@ -37,6 +37,10 @@ public final class CodePosition {
             throw new AssertionError("From and to positions must be in the same file!");
         return new CodePosition(file, fromLine, fromLineOffset, to.toLine, to.toLineOffset);
     }
+	
+	public CodePosition withLength(int characters) {
+		return new CodePosition(file, fromLine, fromLineOffset, fromLine, fromLineOffset + characters);
+	}
     
     public String toString() {
         return fromLine == 0 && fromLineOffset == 0 ? file.getFilename() : file.getFilename() + ":" + Integer.toString(fromLine) + ":" + Integer.toString(fromLineOffset);

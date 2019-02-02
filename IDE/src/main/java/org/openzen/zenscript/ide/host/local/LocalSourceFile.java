@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import live.LiveString;
 import live.MutableLiveString;
@@ -56,5 +57,27 @@ public class LocalSourceFile implements IDESourceFile {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 3;
+		hash = 83 * hash + Objects.hashCode(this.file);
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final LocalSourceFile other = (LocalSourceFile) obj;
+		return file == other.file;
 	}
 }

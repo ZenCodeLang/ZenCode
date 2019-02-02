@@ -362,6 +362,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		validator.logError(ValidationLogEntry.Code.INVALID_EXPRESSION, expression.position, expression.message);
 		return null;
 	}
+	
+	@Override
+	public Void visitInvalidAssign(InvalidAssignExpression expression) {
+		expression.target.accept(this);
+		expression.source.accept(this);
+		return null;
+	}
 
 	@Override
 	public Void visitIs(IsExpression expression) {
@@ -748,6 +755,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	private void checkCallArguments(CodePosition position, FunctionHeader originalHeader, FunctionHeader instancedHeader, CallArguments arguments) {
 		ValidationUtils.validateTypeArguments(validator, position, originalHeader.typeParameters, arguments.typeArguments);
 		
+		boolean isVariadic = instancedHeader.isVariadicCall(arguments);
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			Expression argument = arguments.arguments[i];
 			argument.accept(this);
@@ -766,7 +774,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 				}
 			}
 			
-			FunctionParameter parameter = instancedHeader.parameters[i];
+			FunctionParameter parameter = instancedHeader.getParameter(isVariadic, i);
 			if (!parameter.type.equals(argument.type)) {
 				validator.logError(
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,

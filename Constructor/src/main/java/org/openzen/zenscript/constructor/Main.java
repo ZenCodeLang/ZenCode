@@ -6,8 +6,9 @@ import java.util.function.Consumer;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
+import org.openzen.zenscript.constructor.module.SourceModuleReference;
+import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
 
 public class Main {
     /**
@@ -29,7 +30,7 @@ public class Main {
 		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
 		
 		ModuleLoader moduleLoader = new ModuleLoader(registry, exceptionLogger);
-		moduleLoader.register("stdlib", new DirectoryModuleReference("stdlib", new File("../../StdLibs/stdlib"), true));
+		moduleLoader.register("stdlib", new SourceModuleReference(new DirectorySourceModule("stdlib", new File("../../StdLibs/stdlib"), true), true));
 		
 		Project project = new Project(currentDirectory);
 		for (Library library : project.libraries) {

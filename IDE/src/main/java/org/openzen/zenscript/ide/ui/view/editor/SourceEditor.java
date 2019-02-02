@@ -15,6 +15,7 @@ import live.ImmutableLiveString;
 import live.InverseLiveBool;
 import live.LiveObject;
 import live.LiveBool;
+import live.LiveList;
 import live.MutableLiveObject;
 import live.SimpleLiveBool;
 
@@ -43,6 +44,8 @@ import org.openzen.drawablegui.draw.DDrawnRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.style.DStyleClass;
+import org.openzen.zenscript.ide.host.IDECodeError;
+import org.openzen.zenscript.ide.host.IDECompileState;
 import org.openzen.zenscript.ide.ui.icons.SaveIcon;
 import org.openzen.zenscript.ide.ui.icons.ShadedCodeIcon;
 import org.openzen.zenscript.ide.ui.icons.ShadedSaveIcon;
@@ -85,6 +88,9 @@ public class SourceEditor implements DComponent {
 	private final IDEWindow window;
 	private final IDEAspectToolbar editToolbar = new IDEAspectToolbar(0, ShadedCodeIcon.BLUE, "Edit", "Source code editor");
 	
+	private final LiveList<IDECodeError> errors;
+	private ListenerHandle<LiveList.Listener<IDECodeError>> errorListListener = null;
+	
 	private final LiveBool updated;
 	
 	private DDrawnRectangle background;
@@ -96,10 +102,9 @@ public class SourceEditor implements DComponent {
 	private final List<DDrawnRectangle> multiLineSelection = new ArrayList<>();
 	private final List<DDrawnText> lineNumbers = new ArrayList<>();
 	private final List<List<DDrawnText>> drawnTokens = new ArrayList<>();
+	private final List<DDrawnShape> errorLines = new ArrayList<>();
 	
-	//private DDrawnShape test;
-	
-	public SourceEditor(DStyleClass styleClass, IDEWindow window, IDESourceFile sourceFile) {
+	public SourceEditor(DStyleClass styleClass, IDEWindow window, IDESourceFile sourceFile, LiveObject<IDECompileState> compileState) {
 		this.styleClass = styleClass;
 		this.window = window;
 		this.sourceFile = sourceFile;
@@ -121,6 +126,10 @@ public class SourceEditor implements DComponent {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
+		
+		errors = compileState.getValue().getErrors(sourceFile);
+		errors.addListener(new ErrorListListener());
+		System.out.println("Code errors: " + errors.getLength());
 	}
 	
 	public LiveBool isUpdated() {
@@ -131,6 +140,9 @@ public class SourceEditor implements DComponent {
 	public void close() {
 		if (blinkTimer != null)
 			blinkTimer.close();
+		
+		if (errorListListener != null)
+			errorListListener.close();
 		
 		tokenListener.close();
 	}
@@ -196,11 +208,6 @@ public class SourceEditor implements DComponent {
 			cursor = null;
 		}
 		
-		/*if (test != null) {
-			test.close();
-			test = null;
-		}*/
-		
 		if (blinkTimer != null)
 			blinkTimer.close();
 		
@@ -212,6 +219,14 @@ public class SourceEditor implements DComponent {
 			for (DDrawnText token : line)
 				token.close();
 		drawnTokens.clear();
+		
+		if (errorListListener != null) {
+			errorListListener.close();
+			errorListListener = null;
+		}
+		for (DDrawnShape shape : errorLines)
+			shape.close();
+		errorLines.clear();
 		
 		clearMultilineSelection();
 	}
@@ -264,7 +279,15 @@ public class SourceEditor implements DComponent {
 					bounds.y + style.selectionPaddingTop + i * fullLineHeight + fontMetrics.getAscent());
 		}
 		
-		//test = surface.strokePath(z + 4, new WavyLine(bounds.x + 50, bounds.y + 50, 100, surface.getContext().dp(2), surface.getContext().dp(3)), DTransform2D.IDENTITY, IDEStyling.ERROR_RED, surface.getScale());
+		for (DDrawnShape shape : errorLines)
+			shape.close();
+		errorLines.clear();
+		if (errorListListener != null)
+			errorListListener.close();
+		
+		for (IDECodeError error : errors)
+			errorLines.add(createShapeForError(error));
+		errorListListener = errors.addListener(new ErrorListListener());
 		
 		layoutLines(0);
 	}
@@ -767,7 +790,7 @@ public class SourceEditor implements DComponent {
 		
 		DSizing sizing = new DSizing(width + lineBarWidth, fullLineHeight * tokens.getLineCount());
 		this.sizing.setValue(sizing);
-		System.out.println("Preferred size: " + sizing.preferredWidth + " x " + sizing.preferredHeight);
+		//System.out.println("Preferred size: " + sizing.preferredWidth + " x " + sizing.preferredHeight);
 	}
 	
 	private class TokenListener implements TokenModel.Listener {
@@ -932,6 +955,44 @@ public class SourceEditor implements DComponent {
 				default:
 					return OPERATOR;
 			}
+		}
+	}
+	
+	private DDrawnShape createShapeForError(IDECodeError error) {
+		SourcePosition fromPosition = new SourcePosition(tokens, error.position.fromLine - 1, error.position.fromLineOffset);
+		int fromX = getX(fromPosition);
+		int fromY = getY(fromPosition);
+		
+		SourcePosition toPosition = new SourcePosition(tokens, error.position.toLine - 1, error.position.toLineOffset);
+		int toX = getX(toPosition);
+		int toY = getY(toPosition);
+		
+		int length = Math.max((int)(10 * context.getScale()), toX - fromX);
+		
+		int height = (int)(2 * context.getScale());
+		int offset = fullLineHeight - height - (int)(1.5 * context.getScale());
+		WavyLine line = new WavyLine(fromX, fromY + offset, length, height, 3 * context.getScale());
+		return context.strokePath(
+				context.z + 4,
+				line, DTransform2D.IDENTITY, style.errorWavyLineColor, context.getScale());
+	}
+	
+	private class ErrorListListener implements LiveList.Listener<IDECodeError> {
+
+		@Override
+		public void onInserted(int index, IDECodeError value) {
+			errorLines.add(index, createShapeForError(value));
+		}
+
+		@Override
+		public void onChanged(int index, IDECodeError oldValue, IDECodeError newValue) {
+			errorLines.get(index).close();
+			errorLines.set(index, createShapeForError(newValue));
+		}
+
+		@Override
+		public void onRemoved(int index, IDECodeError oldValue) {
+			errorLines.remove(index).close();
 		}
 	}
 }

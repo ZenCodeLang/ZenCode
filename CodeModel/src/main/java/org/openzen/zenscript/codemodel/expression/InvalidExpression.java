@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
+import jdk.nashorn.internal.ir.Assignment;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -28,6 +29,11 @@ public class InvalidExpression extends Expression {
 	
 	public InvalidExpression(StoredType type, CompileException cause) {
 		this(cause.position, type, cause.code, cause.message);
+	}
+	
+	@Override
+	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
+		return new InvalidAssignExpression(position, this, value);
 	}
 
 	@Override

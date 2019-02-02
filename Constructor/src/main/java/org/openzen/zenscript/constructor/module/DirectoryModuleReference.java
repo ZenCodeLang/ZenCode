@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.constructor.module;
 
+import org.openzen.zenscript.constructor.module.directory.SourceDirectoryPackage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class DirectoryModuleReference implements ModuleReference {
 	private final String moduleName;
 	private final File directory;
 	private final boolean isStdlib;
-	private SourcePackage rootPackage = null;
+	private SourceDirectoryPackage rootPackage = null;
 	
 	public DirectoryModuleReference(String moduleName, File directory, boolean isStdlib) {
 		this.moduleName = moduleName;
@@ -120,18 +121,18 @@ public class DirectoryModuleReference implements ModuleReference {
 	}
 	
 	@Override
-	public SourcePackage getRootPackage() {
+	public SourceDirectoryPackage getRootPackage() {
 		if (rootPackage == null)
 			rootPackage = loadPackage("", new File(directory, "src"));
 		
 		return rootPackage;
 	}
 	
-	private SourcePackage loadPackage(String name, File directory) {
+	private SourceDirectoryPackage loadPackage(String name, File directory) {
 		if (!directory.exists())
 			throw new IllegalArgumentException("Directory does not exist: " + directory.getAbsolutePath());
 		
-		SourcePackage pkg = new SourcePackage(directory, name);
+		SourceDirectoryPackage pkg = new SourceDirectoryPackage(directory, name);
 		
 		for (File file : directory.listFiles()) {
 			if (file.isDirectory()) {

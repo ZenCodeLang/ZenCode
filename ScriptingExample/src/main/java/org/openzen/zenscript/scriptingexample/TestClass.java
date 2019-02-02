@@ -42,4 +42,9 @@ public class TestClass implements TestInterface {
 	public String interfaceMethod() {
 		return "Interface method of " + name;
 	}
+	
+	@Method
+	public TestGenericInterface<String> generate() {
+		return () -> name;
+	}
 }

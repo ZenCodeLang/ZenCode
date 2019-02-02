@@ -128,7 +128,7 @@ public class DefinitionTypeID implements TypeID {
 	public StoredType instance(GenericMapper mapper, StorageTag storage) {
 		if (!hasTypeParameters() && outer == null)
 			return stored(storage);
-		if (mapper.getMapping().isEmpty())
+		if (mapper == null || mapper.getMapping().isEmpty())
 			return stored(storage);
 		if (mapper.registry == null)
 			throw new NullPointerException();

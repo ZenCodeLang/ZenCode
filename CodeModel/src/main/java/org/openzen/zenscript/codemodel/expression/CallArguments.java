@@ -56,8 +56,9 @@ public class CallArguments {
 	public CallArguments normalize(CodePosition position, TypeScope scope, FunctionHeader header) {
 		CallArguments result = this;
 		
+		boolean isVariadic = header.isVariadicCall(this, scope);
 		for (int i = 0; i < arguments.length; i++) {
-			arguments[i] = arguments[i].normalize(scope).castImplicit(position, scope, header.parameters[i].type);
+			arguments[i] = arguments[i].normalize(scope).castImplicit(position, scope, header.getParameterType(isVariadic, i));
 		}
 		
 		if (arguments.length < header.parameters.length) {

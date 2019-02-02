@@ -370,9 +370,9 @@ public abstract class ParsedExpression {
 				ZSToken indexString = parser.optional(T_IDENTIFIER);
 				if (indexString != null) {
 					List<IParsedType> genericParameters = IParsedType.parseTypeArguments(parser);
-					base = new ParsedExpressionMember(position, base, indexString.content, genericParameters);
+					base = new ParsedExpressionMember(position.until(parser.getPositionBeforeWhitespace()), base, indexString.content, genericParameters);
 				} else if (parser.optional(T_DOLLAR) != null) {
-					base = new ParsedExpressionOuter(position, base);
+					base = new ParsedExpressionOuter(position.until(parser.getPositionBeforeWhitespace()), base);
 				} else {
 					ZSToken indexString2 = parser.optional(T_STRING_SQ);
 					if (indexString2 == null)
@@ -380,15 +380,16 @@ public abstract class ParsedExpression {
 					
 					if (indexString2 != null) {
 						// TODO: handle this properly
-						base = new ParsedExpressionMember(position, base, unescape(indexString2.content).orElse("INVALID STRING"), Collections.emptyList());
+						base = new ParsedExpressionMember(position.until(parser.getPositionBeforeWhitespace()), base, unescape(indexString2.content).orElse("INVALID STRING"), Collections.emptyList());
 					} else {
+						position = parser.getPosition();
 						ZSToken last = parser.next();
-						throw new ParseException(parser.getPosition(), "Invalid expression, last token: " + last.content);
+						throw new ParseException(position.until(parser.getPositionBeforeWhitespace()), "Invalid expression, last token: " + last.content);
 					}
 				}
 			} else if (parser.optional(T_DOT2) != null) {
 				ParsedExpression to = readAssignExpression(parser, options);
-				return new ParsedExpressionRange(position, base, to);
+				return new ParsedExpressionRange(position.until(parser.getPositionBeforeWhitespace()), base, to);
 			} else if (parser.optional(T_SQOPEN) != null) {
 				List<ParsedExpression> indexes = new ArrayList<>();
 				do {
@@ -443,7 +444,7 @@ public abstract class ParsedExpression {
 					name = name.substring(1);
 				
 				List<IParsedType> genericParameters = IParsedType.parseTypeArguments(parser);
-				return new ParsedExpressionVariable(position, name, genericParameters);
+				return new ParsedExpressionVariable(position.until(parser.getPositionBeforeWhitespace()), name, genericParameters);
 			}
 			case T_LOCAL_IDENTIFIER: {
 				String name = parser.next().content.substring(1);

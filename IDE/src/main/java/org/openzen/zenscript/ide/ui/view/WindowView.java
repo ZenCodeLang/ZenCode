@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.ide.ui.view;
 
+import live.LiveObject;
 import live.LiveString;
 import live.SimpleLiveObject;
 import live.SimpleLiveString;
@@ -19,8 +20,10 @@ import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.drawablegui.style.DStylesheetBuilder;
 import org.openzen.zenscript.ide.host.DevelopmentHost;
+import org.openzen.zenscript.ide.host.IDECompileState;
 import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.host.IDESourceFile;
+import org.openzen.zenscript.ide.host.IDETarget;
 import org.openzen.zenscript.ide.ui.IDEDockWindow;
 import org.openzen.zenscript.ide.ui.IDEWindow;
 import org.openzen.zenscript.ide.ui.view.aspectbar.AspectBarView;
@@ -38,11 +41,14 @@ public final class WindowView extends DSideLayout {
 	public final LiveString status = new SimpleLiveString("IDE initialized");
 	private final ProjectBrowser projectBrowser;
 	
-	public WindowView(IDEWindow window, DevelopmentHost host, IDEPropertyDirectory settings) {
+	private final LiveObject<IDECompileState> compileState;
+	
+	public WindowView(IDEWindow window, DevelopmentHost host, IDEPropertyDirectory settings, LiveObject<IDECompileState> compileState) {
 		super(DStyleClass.inline(
 				new DStylesheetBuilder().color("backgroundColor", 0xFFEEEEEE).build()),
 				DEmptyView.INSTANCE);
 		this.window = window;
+		this.compileState = compileState;
 		
 		projectBrowser = new ProjectBrowser(window, host, settings.getSubdirectory("projectBrowserExpansionState"));
 		
@@ -69,7 +75,7 @@ public final class WindowView extends DSideLayout {
 	private class DockWindowListener implements IDEDockWindow.Listener {
 		@Override
 		public void onOpen(IDESourceFile sourceFile) {
-			SourceEditor editor = new SourceEditor(DStyleClass.EMPTY, window, sourceFile);
+			SourceEditor editor = new SourceEditor(DStyleClass.EMPTY, window, sourceFile, compileState);
 			DScalableSize size = new DScalableSize(new DDpDimension(280), new DDpDimension(280));
 			TabbedViewComponent tab = new TabbedViewComponent(
 					sourceFile.getName(),

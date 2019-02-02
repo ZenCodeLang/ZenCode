@@ -7,7 +7,6 @@ package org.openzen.zenscript.ide.host;
 
 import java.util.function.Consumer;
 import org.openzen.zenscript.constructor.ModuleLoader;
-import org.openzen.zenscript.ide.codemodel.IDECodeError;
 
 /**
  *

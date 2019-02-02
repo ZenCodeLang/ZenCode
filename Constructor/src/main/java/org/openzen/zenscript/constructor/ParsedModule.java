@@ -61,7 +61,7 @@ public class ParsedModule {
 		return files.toArray(new ParsedFile[files.size()]);
 	}
 	
-	private void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, File directory) throws ParseException {
+	public static void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, File directory) throws ParseException {
 		for (File file : directory.listFiles()) {
 			if (file.getName().endsWith(".zs")) {
 				files.add(ParsedFile.parse(pkg, bracketParser, file));

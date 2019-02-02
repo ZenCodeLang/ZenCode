@@ -10,8 +10,11 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.InvalidAssignExpression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
@@ -31,11 +34,21 @@ public class ParsedExpressionAssign extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		IPartialExpression cLeft = left.compile(scope);
-		List<StoredType> resultHints = cLeft.getAssignHints();
-		
-		Expression cRight = right.compile(scope.withHints(resultHints)).eval();
-		return cLeft.assign(position, scope, cRight);
+		try {
+			IPartialExpression cLeft = left.compile(scope);
+			List<StoredType> resultHints = cLeft.getAssignHints();
+			Expression cRight = right.compile(scope.withHints(resultHints)).eval();
+			return cLeft.assign(position, scope, cRight);
+		} catch (CompileException ex) {
+			InvalidExpression invalid = new InvalidExpression(BasicTypeID.VOID.stored, ex);
+			Expression cRight;
+			try {
+				cRight = right.compile(scope).eval();
+			} catch (CompileException ex2) {
+				cRight = new InvalidExpression(BasicTypeID.VOID.stored, ex2);
+			}
+			return new InvalidAssignExpression(position, invalid, cRight);
+		}
 	}
 
 	@Override

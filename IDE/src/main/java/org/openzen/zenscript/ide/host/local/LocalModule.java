@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.module.ModuleReference;
-import org.openzen.zenscript.ide.codemodel.IDECodeError;
+import org.openzen.zenscript.ide.host.IDECodeError;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEModuleType;
 import org.openzen.zenscript.ide.host.IDEPackage;

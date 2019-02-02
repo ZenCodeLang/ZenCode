@@ -6,6 +6,7 @@
 package org.openzen.zenscript.ide.host;
 
 import java.util.function.Consumer;
+import live.LiveObject;
 import org.openzen.zenscript.ide.ui.view.output.OutputLine;
 
 /**
@@ -18,6 +19,8 @@ public interface IDETarget {
 	boolean canBuild();
 	
 	boolean canRun();
+	
+	LiveObject<IDECompileState> load();
 	
 	void build(Consumer<OutputLine> output);
 	

@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
+import live.LiveObject;
+import live.SimpleLiveObject;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -18,8 +20,12 @@ import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.constructor.Library;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.Project;
-import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
+import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
 import org.openzen.zenscript.constructor.module.ModuleReference;
+import org.openzen.zenscript.constructor.module.SourceModuleReference;
+import org.openzen.zenscript.ide.host.IDECodeError;
+import org.openzen.zenscript.ide.host.IDECompileState;
+import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.host.IDETarget;
 import org.openzen.zenscript.ide.ui.view.output.ErrorOutputSpan;
 import org.openzen.zenscript.ide.ui.view.output.OutputLine;
@@ -34,6 +40,7 @@ import stdlib.Strings;
 public class LocalTarget implements IDETarget {
 	private final Project project;
 	private final Target target;
+	private final SimpleLiveObject<IDECompileState> state = new SimpleLiveObject<>(null);
 	
 	public LocalTarget(Project project, Target target) {
 		this.project = project;
@@ -54,31 +61,49 @@ public class LocalTarget implements IDETarget {
 	public boolean canRun() {
 		return target.canRun();
 	}
+	
+	@Override
+	public LiveObject<IDECompileState> load() {
+		if (state.getValue() == null)
+			state.setValue(precompile());
+		
+		return state;
+	}
 
 	@Override
 	public void build(Consumer<OutputLine> output) {
-		buildInternal(output);
+		buildInternal(output, new LocalCompileState(), true);
 	}
 
 	@Override
 	public void run(Consumer<OutputLine> output) {
-		ZenCodeCompiler compiler = buildInternal(output);
+		ZenCodeCompiler compiler = buildInternal(output, new LocalCompileState(), true);
 		if (compiler != null)
 			compiler.run();
 	}
 	
-	private ZenCodeCompiler buildInternal(Consumer<OutputLine> output) {
+	private IDECompileState precompile() {
+		LocalCompileState result = new LocalCompileState();
+		buildInternal(line -> {}, result, false);
+		return result;
+	}
+	
+	private ZenCodeCompiler buildInternal(Consumer<OutputLine> output, LocalCompileState state, boolean compile) {
 		ZSPackage root = ZSPackage.createRoot();
 		ZSPackage stdlibPackage = new ZSPackage(root, "stdlib");
 		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlibPackage);
 		
 		ModuleLoader moduleLoader = new ModuleLoader(registry, exception -> {
+			IDESourceFile sourceFile = new LocalSourceFile(exception.position.file);
+			state.addError(sourceFile, new IDECodeError(sourceFile, exception.position, exception.message));
+			
 			String[] lines = Strings.split(exception.getMessage(), '\n');
 			for (String line : lines) {
 				output.accept(new OutputLine(new ErrorOutputSpan(line)));
 			}
 		});
-		moduleLoader.register("stdlib", new DirectoryModuleReference("stdlib", new File("../../StdLibs/stdlib"), true));
+		//moduleLoader.register("stdlib", new DirectoryModuleReference("stdlib", new File("../../StdLibs/stdlib"), true));
+		moduleLoader.register("stdlib", new SourceModuleReference(new DirectorySourceModule("stdlib", new File("../../StdLibs/stdlib"), true), true));
 		Set<String> compiledModules = new HashSet<>();
 		
 		Consumer<ValidationLogEntry> validationLogger = entry -> {
@@ -86,6 +111,9 @@ public class LocalTarget implements IDETarget {
 			output.accept(new OutputLine(new ErrorOutputSpan(entry.kind + " " + entry.position.toString() + ": " + message[0])));
 			for (int i = 1; i < message.length; i++)
 				output.accept(new OutputLine(new ErrorOutputSpan("    " + message[i])));
+			
+			IDESourceFile sourceFile = new LocalSourceFile(entry.position.file);
+			state.addError(sourceFile, new IDECodeError(sourceFile, entry.position, entry.message));
 		};
 		try {
 			for (Library library : project.libraries) {
@@ -99,25 +127,29 @@ public class LocalTarget implements IDETarget {
 			SemanticModule module = moduleLoader.getModule(target.getModule());
 			module = Validator.validate(module.normalize(), validationLogger);
 			
-			ZenCodeCompiler compiler = target.createCompiler(module);
-			if (!module.isValid())
+			if (compile) {
+				ZenCodeCompiler compiler = target.createCompiler(module);
+				if (!module.isValid())
+					return compiler;
+
+				SemanticModule stdlib = moduleLoader.getModule("stdlib");
+				stdlib = Validator.validate(stdlib.normalize(), validationLogger);
+				if (!stdlib.isValid())
+					return compiler;
+
+				compiler.addModule(stdlib);
+				compiledModules.add(stdlib.name);
+
+				boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, new Stack<>(), module, validationLogger);
+				if (!isValid)
+					return compiler;
+
+				compiler.addModule(module);
+				compiler.finish();
 				return compiler;
-			
-			SemanticModule stdlib = moduleLoader.getModule("stdlib");
-			stdlib = Validator.validate(stdlib.normalize(), validationLogger);
-			if (!stdlib.isValid())
-				return compiler;
-			
-			compiler.addModule(stdlib);
-			compiledModules.add(stdlib.name);
-			
-			boolean isValid = compileDependencies(moduleLoader, compiler, compiledModules, new Stack<>(), module, validationLogger);
-			if (!isValid)
-				return compiler;
-			
-			compiler.addModule(module);
-			compiler.finish();
-			return compiler;
+			} else {
+				return null;
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			

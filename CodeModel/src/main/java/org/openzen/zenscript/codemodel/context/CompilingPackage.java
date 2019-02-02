@@ -80,7 +80,7 @@ public class CompilingPackage {
 			return null;
 		
 		if (packages.containsKey(name.get(index).name))
-			return packages.get(name.get(index)).getType(context, name, index + 1);
+			return packages.get(name.get(index).name).getType(context, name, index + 1);
 		
 		if (types.containsKey(name.get(index).name)) {
 			CompilingType type = types.get(name.get(index).name);

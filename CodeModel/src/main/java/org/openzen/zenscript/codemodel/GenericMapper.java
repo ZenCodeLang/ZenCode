@@ -26,6 +26,9 @@ public class GenericMapper {
 	private final Map<TypeParameter, StoredType> mapping;
 	
 	public GenericMapper(CodePosition position, GlobalTypeRegistry registry, Map<TypeParameter, StoredType> mapping) {
+		if (mapping == null)
+			throw new IllegalArgumentException();
+		
 		this.position = position;
 		this.registry = registry;
 		this.mapping = mapping;

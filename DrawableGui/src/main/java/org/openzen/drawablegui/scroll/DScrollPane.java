@@ -53,6 +53,9 @@ public class DScrollPane implements DComponent, DScrollContext {
 	private final ListenerHandle<FunctionIntIntToVoid> offsetYListener;
 	private final ListenerHandle<BiConsumer<DSizing, DSizing>> contentsSizingListener;
 	
+	private boolean isHorizontalScrollbarVisible = true;
+	private boolean isVerticalScrollbarVisible = true;
+	
 	private DComponent hovering = null;
 	
 	private DSubSurface subSurface;
@@ -81,6 +84,7 @@ public class DScrollPane implements DComponent, DScrollContext {
 			
 			contents.setBounds(new DIRectangle(0, 0, bounds.width, Math.max(bounds.height, newPreferences.preferredHeight)));
 			contentsHeight.setValue(newPreferences.preferredHeight);
+			contentsWidth.setValue(newPreferences.preferredWidth);
 		});
 	}
 
@@ -136,25 +140,28 @@ public class DScrollPane implements DComponent, DScrollContext {
 		shape = context.shadowPath(0, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 		style.border.update(context, style.margin.apply(bounds));
 		
-		int width = Math.max(
-				bounds.width - style.border.getPaddingHorizontal(),
-				contents.getSizing().getValue().preferredWidth);
-		int height = Math.max(
-				bounds.height - style.border.getPaddingHorizontal(),
-				contents.getSizing().getValue().preferredHeight);
 		int scrollBarWidth = verticalScrollBar.getSizing().getValue().preferredWidth;
 		int scrollBarHeight = horizontalScrollBar.getSizing().getValue().preferredHeight;
-
+		int scrollBarMarginX = isHorizontalScrollbarVisible ? scrollBarWidth : 0;
+		int scrollBarMarginY = isVerticalScrollbarVisible ? scrollBarHeight : 0;
+		
+		int width = Math.max(
+				bounds.width - style.border.getPaddingHorizontal() - scrollBarMarginX,
+				contents.getSizing().getValue().preferredWidth);
+		int height = Math.max(
+				bounds.height - style.border.getPaddingHorizontal() - scrollBarMarginY,
+				contents.getSizing().getValue().preferredHeight);
+		
 		verticalScrollBar.setBounds(new DIRectangle(
 				bounds.x + bounds.width - scrollBarWidth - style.border.getPaddingRight() - style.margin.right,
 				bounds.y + style.border.getPaddingTop() + style.margin.top,
 				scrollBarWidth,
-				bounds.height - style.border.getPaddingVertical() - style.margin.getVertical()));
+				bounds.height - style.border.getPaddingVertical() - style.margin.getVertical() - scrollBarMarginY));
 		
 		horizontalScrollBar.setBounds(new DIRectangle(
 				bounds.x + style.border.getPaddingLeft() + style.margin.left,
 				bounds.y + bounds.height - scrollBarHeight - style.border.getPaddingBottom() - style.margin.bottom,
-				bounds.width - style.border.getPaddingHorizontal() - style.margin.getHorizontal(),
+				bounds.width - style.border.getPaddingHorizontal() - style.margin.getHorizontal() - scrollBarMarginX,
 				scrollBarHeight));
 		
 		contents.setBounds(new DIRectangle(0, 0, width, height));
@@ -171,7 +178,10 @@ public class DScrollPane implements DComponent, DScrollContext {
 	
 	@Override
 	public void onMouseScroll(DMouseEvent e) {
-		offsetY.setValue(offsetY.getValue() + e.deltaZ * 50);
+		if (e.has(DMouseEvent.SHIFT))
+			offsetX.setValue(offsetX.getValue() + e.deltaZ * 50);
+		else
+			offsetY.setValue(offsetY.getValue() + e.deltaZ * 50);
 	}
 	
 	@Override
@@ -318,9 +328,14 @@ public class DScrollPane implements DComponent, DScrollContext {
 
 		@Override
 		public void invoke(int oldValue, int newValue) {
+			int scrollBarWidth = verticalScrollBar.getSizing().getValue().preferredWidth;
+			int scrollBarHeight = horizontalScrollBar.getSizing().getValue().preferredHeight;
+			int scrollBarMarginX = isHorizontalScrollbarVisible ? scrollBarWidth : 0;
+			int scrollBarMarginY = isVerticalScrollbarVisible ? scrollBarHeight : 0;
+			
 			int valueX = offsetX.getValue();
-			if (valueX > contentsWidth.getValue() - bounds.width)
-				valueX = contentsWidth.getValue() - bounds.width;
+			if (valueX > contentsWidth.getValue() - (bounds.width - scrollBarMarginX))
+				valueX = contentsWidth.getValue() - (bounds.width - scrollBarMarginX);
 			if (valueX < 0)
 				valueX = 0;
 			
@@ -328,8 +343,8 @@ public class DScrollPane implements DComponent, DScrollContext {
 				offsetX.setValue(valueX);
 			
 			int valueY = offsetY.getValue();
-			if (valueY > contentsHeight.getValue() - bounds.height)
-				valueY = contentsHeight.getValue() - bounds.height;
+			if (valueY > contentsHeight.getValue() - (bounds.height - scrollBarMarginY))
+				valueY = contentsHeight.getValue() - (bounds.height - scrollBarMarginY);
 			if (valueY < 0)
 				valueY = 0;
 			

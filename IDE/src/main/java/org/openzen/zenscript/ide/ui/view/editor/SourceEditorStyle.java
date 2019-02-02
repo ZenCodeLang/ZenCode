@@ -31,6 +31,8 @@ public class SourceEditorStyle {
 	public final int cursorWidth;
 	public final int cursorColor;
 	
+	public final int errorWavyLineColor;
+	
 	public SourceEditorStyle(DStyleDefinition style) {
 		this.backgroundColor = style.getColor("backgroundColor", 0xFFFFFFFF);
 		this.lineBarBackgroundColor = style.getColor("lineBarBackgroundColor", 0xFFE9E8E2);
@@ -50,5 +52,7 @@ public class SourceEditorStyle {
 		
 		this.cursorWidth = style.getDimension("cursorWidth", new DDpDimension(1));
 		this.cursorColor = style.getColor("cursorColor", 0xFF000000);
+		
+		this.errorWavyLineColor = style.getColor("errorWavyLineColor", 0xFFFF0000);
 	}
 }

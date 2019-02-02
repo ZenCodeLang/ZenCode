@@ -5,32 +5,21 @@
  */
 package org.openzen.zenscript.constructor.module;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import org.openzen.zencode.shared.FileSourceFile;
+import java.util.Collection;
 import org.openzen.zencode.shared.SourceFile;
 
 /**
  *
  * @author Hoofdgebruiker
  */
-public class SourcePackage {
-	public final File directory;
-	public final String name;
-	public final Map<String, SourcePackage> subPackages = new HashMap<>();
-	public final Map<String, SourceFile> sourceFiles = new HashMap<>();
+public interface SourcePackage {
+	public String getName();
 	
-	public SourcePackage(File directory, String name) {
-		this.directory = directory;
-		this.name = name;
-	}
+	public Collection<? extends SourcePackage> getSubPackages();
 	
-	public void addPackage(SourcePackage pkg) {
-		subPackages.put(pkg.name, pkg);
-	}
+	public Collection<? extends SourceFile> getFiles();
 	
-	public void addFile(SourceFile file) {
-		sourceFiles.put(file.getFilename(), file);
-	}
+	public SourcePackage createSubPackage(String name);
+	
+	public SourceFile createSourceFile(String name);
 }

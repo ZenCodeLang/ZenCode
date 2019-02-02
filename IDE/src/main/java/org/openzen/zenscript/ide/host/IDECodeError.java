@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zenscript.ide.codemodel;
+package org.openzen.zenscript.ide.host;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.ide.host.IDESourceFile;
 
 /**
  *

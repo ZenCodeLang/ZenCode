@@ -293,8 +293,10 @@ public class TypeMemberGroup {
 	public Expression call(CodePosition position, TypeScope scope, Expression target, CallArguments arguments, boolean allowStaticUsage) throws CompileException {
 		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, allowStaticUsage);
 		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(position, scope, arguments.typeArguments);
+		
+		boolean isVariadicCall = instancedHeader.isVariadicCall(arguments, scope);
 		for (int i = 0; i < arguments.arguments.length; i++) {
-			arguments.arguments[i] = arguments.arguments[i].castImplicit(position, scope, instancedHeader.parameters[i].type);
+			arguments.arguments[i] = arguments.arguments[i].castImplicit(position, scope, instancedHeader.getParameterType(isVariadicCall, i));
 		}
 
 		scope.getPreparer().prepare(method.getTarget());

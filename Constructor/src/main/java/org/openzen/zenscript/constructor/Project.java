@@ -11,10 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.compiler.Target;
 import org.openzen.zenscript.compiler.TargetType;
+import org.openzen.zenscript.constructor.module.SourceModuleReference;
+import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
 
 /**
  *
@@ -55,13 +56,13 @@ public class Project {
 		for (int i = 0; i < jsonModules.length(); i++) {
 			Object module = jsonModules.get(i);
 			if (module instanceof String) {
-				modules[i] = new DirectoryModuleReference(module.toString(), new File(directory, module.toString()), false);
+				modules[i] = new SourceModuleReference(new DirectorySourceModule(module.toString(), new File(directory, module.toString())));
 			} else if (module instanceof JSONObject) {
 				JSONObject jsonModule = (JSONObject) module;
 				String name = jsonModule.getString("name");
 				switch (jsonModule.getString("type")) {
 					case "directory":
-						modules[i] = new DirectoryModuleReference(name, new File(directory, jsonModule.getString("directory")), false);
+						modules[i] = new SourceModuleReference(new DirectorySourceModule(name, new File(directory, jsonModule.getString("directory"))));
 						break;
 					default:
 						throw new ConstructorException("Invalid module type: " + jsonModule.getString("type"));

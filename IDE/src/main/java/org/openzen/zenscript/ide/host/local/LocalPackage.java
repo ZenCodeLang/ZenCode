@@ -8,6 +8,7 @@ package org.openzen.zenscript.ide.host.local;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 
 import live.LiveArrayList;
 import live.LiveList;
@@ -16,6 +17,7 @@ import live.SortedLiveList;
 
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.constructor.module.directory.SourceDirectoryPackage;
 import org.openzen.zenscript.constructor.module.SourcePackage;
 import org.openzen.zenscript.ide.host.IDEPackage;
 import org.openzen.zenscript.ide.host.IDESourceFile;
@@ -35,20 +37,11 @@ public class LocalPackage implements IDEPackage {
 	public LocalPackage(SourcePackage pkg) {
 		this.pkg = pkg;
 		
-		String[] subPackageKeys = pkg.subPackages.keySet()
-				.toArray(new String[pkg.subPackages.size()]);
-		Arrays.sort(subPackageKeys);
-		
-		String[] sourceFileKeys = pkg.sourceFiles.keySet()
-				.toArray(new String[pkg.sourceFiles.size()]);
-		Arrays.sort(sourceFileKeys);
-		
-		for (SourcePackage subPackage : pkg.subPackages.values()) {
+		for (SourcePackage subPackage : pkg.getSubPackages())
 			subPackages.add(new LocalPackage(subPackage));
-		}
-		for (SourceFile sourceFile : pkg.sourceFiles.values()) {
+		
+		for (SourceFile sourceFile : pkg.getFiles())
 			sourceFiles.add(new LocalSourceFile(sourceFile));
-		}
 		
 		subPackagesSorted = new SortedLiveList<>(subPackages, (a, b) -> a.getName().compareTo(b.getName()));
 		sourceFilesSorted = new SortedLiveList<>(sourceFiles, (a, b) -> a.getName().getValue().compareTo(b.getName().getValue()));
@@ -56,7 +49,7 @@ public class LocalPackage implements IDEPackage {
 	
 	@Override
 	public String getName() {
-		return pkg.name;
+		return pkg.getName();
 	}
 
 	@Override
@@ -71,28 +64,16 @@ public class LocalPackage implements IDEPackage {
 	
 	@Override
 	public IDEPackage createSubPackage(String name) {
-		File file = new File(this.pkg.directory, name);
-		file.mkdir();
-		
-		SourcePackage sourcePackage = new SourcePackage(file, name);
-		IDEPackage pkg = new LocalPackage(sourcePackage);
-		this.pkg.subPackages.put(name, sourcePackage);
-		subPackages.add(pkg);
-		return pkg;
+		SourcePackage subpkg = this.pkg.createSubPackage(name);
+		LocalPackage local = new LocalPackage(subpkg);
+		subPackages.add(local);
+		return local;
 	}
 	
 	@Override
 	public IDESourceFile createSourceFile(String name) {
-		File file = new File(this.pkg.directory, name);
-		try {
-			file.createNewFile();
-		} catch (IOException ex) {
-			ex.printStackTrace(); // TODO
-		}
-		
-		FileSourceFile sourceFile = new FileSourceFile(name, file);
+		SourceFile sourceFile = pkg.createSourceFile(name);
 		IDESourceFile localSourceFile = new LocalSourceFile(sourceFile);
-		this.pkg.sourceFiles.put(name, sourceFile);
 		sourceFiles.add(localSourceFile);
 		return localSourceFile;
 	}

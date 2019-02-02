@@ -9,10 +9,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
-import org.openzen.zenscript.compiler.CompilationUnit;
-import org.openzen.zenscript.compiler.SemanticModule;
+import org.openzen.zenscript.codemodel.SemanticModule;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.ModuleLoader;
-import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
+import org.openzen.zenscript.constructor.module.SourceModuleReference;
+import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
 
 /**
  *
@@ -20,9 +22,11 @@ import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
  */
 public class Main {
 	public static void main(String[] args) throws IOException {
-		CompilationUnit compilationUnit = new CompilationUnit();
-		ModuleLoader loader = new ModuleLoader(compilationUnit, exception -> exception.printStackTrace());
-		loader.register("stdlib", new DirectoryModuleReference("stdlib", new File("../../StdLibs/stdlib"), true));
+		ZSPackage root = ZSPackage.createRoot();
+		ZSPackage stdlib = new ZSPackage(root, "stdlib");
+		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
+		ModuleLoader loader = new ModuleLoader(registry, exception -> exception.printStackTrace());
+		loader.register("stdlib", new SourceModuleReference(new DirectorySourceModule("stdlib", new File("../../StdLibs/stdlib"), true), true));
 		
 		SemanticModule module = loader.getModule("stdlib");
 		ModuleSerializer serializer = new ModuleSerializer(new SerializationOptions(

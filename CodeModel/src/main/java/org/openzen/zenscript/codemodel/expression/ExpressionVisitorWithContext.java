@@ -96,6 +96,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 	
 	R visitInvalid(C context, InvalidExpression expression);
 	
+	R visitInvalidAssign(C context, InvalidAssignExpression expression);
+	
 	R visitIs(C context, IsExpression expression);
 	
 	R visitMakeConst(C context, MakeConstExpression expression);

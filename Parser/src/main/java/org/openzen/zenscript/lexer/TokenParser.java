@@ -42,7 +42,7 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements T
 		if (eof.isWhitespace()) // important for the advance() method
 			throw new IllegalArgumentException("EOF cannot be whitespace");
 		
-        this.reader = new CountingCharReader(reader, file, 4);
+        this.reader = new CountingCharReader(reader, file);
         this.dfa = dfa;
 		this.eof = eof;
 		this.invalid = invalid;

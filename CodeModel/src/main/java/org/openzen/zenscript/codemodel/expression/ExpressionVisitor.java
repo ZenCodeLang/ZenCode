@@ -98,6 +98,10 @@ public interface ExpressionVisitor<T> {
 		throw new RuntimeException("Invalid expression");
 	}
 	
+	default T visitInvalidAssign(InvalidAssignExpression expression) {
+		throw new RuntimeException("Invalid expression");
+	}
+	
 	T visitIs(IsExpression expression);
 	
 	T visitMakeConst(MakeConstExpression expression);

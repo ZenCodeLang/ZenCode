@@ -59,7 +59,7 @@ public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> exte
             if (marks.isEmpty()) {
                 tokenMemoryOffset++;
             } else {
-                tokenMemory.add(new PositionedToken(getPosition(), result));
+                tokenMemory.add(new PositionedToken(getPosition(), getPositionBeforeWhitespace(), result));
             }
             tokenMemoryCurrent++;
 			return result;
@@ -72,6 +72,15 @@ public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> exte
             return tokenMemory.get((tokenMemoryCurrent) - tokenMemoryOffset).position;
         } else {
             return super.getPosition();
+        }
+	}
+	
+	@Override
+	public CodePosition getPositionBeforeWhitespace() {
+		if (tokenMemoryCurrent < tokenMemoryOffset + tokenMemory.size()) {
+            return tokenMemory.get((tokenMemoryCurrent) - tokenMemoryOffset).positionBeforeWhitespace;
+        } else {
+            return super.getPositionBeforeWhitespace();
         }
 	}
 	
@@ -92,7 +101,7 @@ public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> exte
         if (t.getType() == type) {
             return next();
         } else {
-			throw new ParseException(getPosition(), error);
+			throw new ParseException(getPosition().withLength(t.getContent().length()), error);
         }
     }
 	
@@ -113,10 +122,12 @@ public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> exte
 	
 	private class PositionedToken {
 		public final CodePosition position;
+		public final CodePosition positionBeforeWhitespace;
 		public final T token;
 		
-		public PositionedToken(CodePosition position, T token) {
+		public PositionedToken(CodePosition position, CodePosition positionBeforeWhitespace, T token) {
 			this.position = position;
+			this.positionBeforeWhitespace = positionBeforeWhitespace;
 			this.token = token;
 		}
 	}

@@ -24,6 +24,8 @@ public class Main {
 		
 		JavaNativeModule example = scriptingEngine.createNativeModule("example", "org.openzen.zenscript.scriptingexample");
 		example.addGlobals(Globals.class);
+		example.addClass(TestBaseInterface.class);
+		example.addClass(TestGenericInterface.class);
 		example.addClass(TestClass.class);
 		example.addClass(TestInterface.class);
 		scriptingEngine.registerNativeProvided(example);

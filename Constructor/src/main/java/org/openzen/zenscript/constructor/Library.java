@@ -8,8 +8,9 @@ package org.openzen.zenscript.constructor;
 import java.io.File;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openzen.zenscript.constructor.module.DirectoryModuleReference;
 import org.openzen.zenscript.constructor.module.ModuleReference;
+import org.openzen.zenscript.constructor.module.SourceModuleReference;
+import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
 
 /**
  *
@@ -28,7 +29,7 @@ public class Library {
 		modules = new ModuleReference[modulesJson.length()];
 		for (int i = 0; i < modulesJson.length(); i++) {
 			String moduleName = modulesJson.getString(i);
-			modules[i] = new DirectoryModuleReference(moduleName, new File(this.directory, moduleName), false);
+			modules[i] = new SourceModuleReference(new DirectorySourceModule(moduleName, new File(this.directory, moduleName), false), false);
 		}
 	}
 }

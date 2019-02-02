@@ -6,8 +6,6 @@
 package org.openzen.zenscript.codemodel;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -17,7 +15,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
@@ -113,6 +110,36 @@ public class FunctionHeader {
 		hasUnknowns = hasUnknowns(parameters, returnType);
 	}
 	
+	public boolean isVariadic() {
+		return parameters.length > 0 && parameters[parameters.length - 1].variadic;
+	}
+	
+	public boolean isVariadicCall(CallArguments arguments, TypeScope scope) {
+		if (!isVariadic())
+			return false;
+		if (arguments.arguments.length < parameters.length - 1)
+			return false;
+		if (arguments.arguments.length != parameters.length)
+			return true;
+		if (scope.getTypeMembers(arguments.arguments[arguments.arguments.length - 1].type).canCastImplicit(parameters[parameters.length - 1].type))
+			return false;
+		
+		return true;
+	}
+	
+	public boolean isVariadicCall(CallArguments arguments) {
+		if (!isVariadic())
+			return false;
+		if (arguments.arguments.length < parameters.length - 1)
+			return false;
+		if (arguments.arguments.length != parameters.length)
+			return true;
+		if (arguments.arguments[arguments.arguments.length - 1].type.equals(parameters[parameters.length - 1].type))
+			return false;
+		
+		return true;
+	}
+	
 	public boolean[] useTypeParameters() {
 		boolean[] useTypeParameters = new boolean[typeParameters.length];
 		for (int i = 0; i < useTypeParameters.length; i++)
@@ -130,6 +157,18 @@ public class FunctionHeader {
 			throw new NullPointerException();
 		
 		this.returnType = returnType;
+	}
+	
+	public StoredType getParameterType(boolean isVariadic, int index) {
+		return getParameter(isVariadic, index).type;
+	}
+	
+	public FunctionParameter getParameter(boolean isVariadic, int index) {
+		if (isVariadic && index >= parameters.length - 1) {
+			return parameters[parameters.length - 1];
+		} else {
+			return parameters[index];
+		}
 	}
 	
 	public boolean isDenormalized() {
