@@ -54,9 +54,11 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaFunctionalInterfaceStorageTag;
 import org.openzen.zenscript.javashared.JavaImplementation;
 import org.openzen.zenscript.javashared.JavaMethod;
 import stdlib.Strings;
@@ -251,7 +253,7 @@ public class JavaNativeModule {
 			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
 			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
 			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
-				TypeID type = loadType(context, bound);
+				TypeID type = loadType(context, bound).type;
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
 			typeParameters[i] = parameter;
@@ -275,13 +277,13 @@ public class JavaNativeModule {
 			javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.CLASS);
 			
 			if (cls.getAnnotatedSuperclass() != null && shouldLoadType(cls.getAnnotatedSuperclass().getType())) {
-				definition.setSuperType(loadType(context, cls.getAnnotatedSuperclass()));
+				definition.setSuperType(loadType(context, cls.getAnnotatedSuperclass()).type);
 			}
 		}
 		
 		for (AnnotatedType iface : cls.getAnnotatedInterfaces()) {
 			if (shouldLoadType(iface.getType())) {
-				TypeID type = loadType(context, iface);
+				TypeID type = loadType(context, iface).type;
 				ImplementationMember member = new ImplementationMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC, type);
 				definition.members.add(member);
 				compiled.setImplementationInfo(member, new JavaImplementation(true, javaClass));
@@ -515,7 +517,7 @@ public class JavaNativeModule {
 			context.put(javaTypeParameter, typeParameters[i]);
 			
 			for (AnnotatedType bound : javaTypeParameter.getAnnotatedBounds())
-				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, loadType(context, bound)));
+				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, loadType(context, bound).type));
 		}
 		
 		if (exceptionTypes.length > 1)
@@ -526,15 +528,14 @@ public class JavaNativeModule {
 	}
 	
 	private StoredType loadStoredType(TypeVariableContext context, AnnotatedType annotatedType) {
-		TypeID baseType = loadType(context, annotatedType);
-		return baseType.stored();
+		return loadType(context, annotatedType);
 	}
 	
-	private TypeID loadType(TypeVariableContext context, AnnotatedType annotatedType) {
+	private StoredType loadType(TypeVariableContext context, AnnotatedType annotatedType) {
 		if (annotatedType.isAnnotationPresent(ZenCodeType.USize.class))
-			return BasicTypeID.USIZE;
+			return BasicTypeID.USIZE.stored;
 		else if (annotatedType.isAnnotationPresent(ZenCodeType.NullableUSize.class))
-			return registry.getOptional(BasicTypeID.USIZE);
+			return registry.getOptional(BasicTypeID.USIZE).stored();
 		
 		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class);
 		boolean unsigned = annotatedType.isAnnotationPresent(ZenCodeType.Unsigned.class);
@@ -543,40 +544,84 @@ public class JavaNativeModule {
 		return loadType(context, type, nullable, unsigned);
 	}
 	
-	private TypeID loadType(TypeVariableContext context, Type type, boolean nullable, boolean unsigned) {
+	private StoredType loadType(TypeVariableContext context, Type type, boolean nullable, boolean unsigned) {
 		if (type instanceof Class) {
 			Class<?> classType = (Class<?>) type;
 			if (unsigned) {
 				if (unsignedByClass.containsKey(classType))
-					return unsignedByClass.get(classType);
+					return unsignedByClass.get(classType).stored();
 				else
 					throw new IllegalArgumentException("This class cannot be used as unsigned: " + classType);
 			} else if (classType.isArray()) {
-				return registry.getArray(loadType(context, classType.getComponentType(), false, false).stored(), 1);
+				return registry.getArray(loadType(context, classType.getComponentType(), false, false), 1).stored();
+			} else if (classType.isAnnotationPresent(FunctionalInterface.class)) {
+				return loadFunctionalInterface(context, classType, new Type[0]);
 			}
 			
 			if (typeByClass.containsKey(classType))
-				return typeByClass.get(classType);
+				return typeByClass.get(classType).stored();
 			
 			HighLevelDefinition definition = addClass(classType);
-			return registry.getForDefinition(definition);
+			return registry.getForDefinition(definition).stored();
 		} else if (type instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) type;
 			Class<?> rawType = (Class) parameterizedType.getRawType();
+			if (rawType.isAnnotationPresent(FunctionalInterface.class))
+				return loadFunctionalInterface(context, rawType, parameterizedType.getActualTypeArguments());
 			
 			HighLevelDefinition definition = addClass(rawType);
 			Type[] parameters = parameterizedType.getActualTypeArguments();
 			StoredType[] codeParameters = new StoredType[parameters.length];
 			for (int i = 0; i < parameters.length; i++)
-				codeParameters[i] = loadType(context, parameters[i], false, false).stored();
+				codeParameters[i] = loadType(context, parameters[i], false, false);
 			
-			return registry.getForDefinition(definition, codeParameters);
+			return registry.getForDefinition(definition, codeParameters).stored();
 		} else if (type instanceof TypeVariable) {
 			TypeVariable variable = (TypeVariable)type;
-			return registry.getGeneric(context.get(variable));
+			return registry.getGeneric(context.get(variable)).stored();
 		} else {
 			throw new IllegalArgumentException("Could not analyze type: " + type);
 		}
+	}
+	
+	private StoredType loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, Type[] parameters) {
+		Method functionalInterfaceMethod = getFunctionalInterfaceMethod(cls);
+		TypeVariableContext context = convertTypeParameters(cls);
+		FunctionHeader header = getHeader(context, functionalInterfaceMethod);
+		
+		Map<TypeParameter, StoredType> mapping = new HashMap<>();
+		TypeVariable[] javaParameters = cls.getTypeParameters();
+		for (int i = 0; i < javaParameters.length; i++)
+			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false, false));
+		
+		StorageTag tag = new JavaFunctionalInterfaceStorageTag(functionalInterfaceMethod);
+		return registry.getFunction(header).stored(tag);
+	}
+	
+	private <T> TypeVariableContext convertTypeParameters(Class<T> cls) {
+		TypeVariableContext context = new TypeVariableContext();
+		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
+		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
+		for (int i = 0; i < javaTypeParameters.length; i++) {
+			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
+			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
+			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
+				TypeID type = loadType(context, bound).type;
+				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
+			}
+			typeParameters[i] = parameter;
+			context.put(typeVariable, parameter);
+		}
+		return context;
+	}
+	
+	private Method getFunctionalInterfaceMethod(Class<?> functionalInterface) {
+		for (Method method : functionalInterface.getDeclaredMethods()) {
+			if (!method.isDefault())
+				return method;
+		}
+		
+		return null;
 	}
 	
 	private int getMethodModifiers(Method method) {

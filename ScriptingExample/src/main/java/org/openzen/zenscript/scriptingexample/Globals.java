@@ -47,7 +47,17 @@ public class Globals implements ZenCodeGlobals {
 		System.out.println(argument);
 	}
 	
+	@Global
+	public static void invokeFunctional(MyFunctionalInterface greeter) {
+		System.out.println("doSomething: " + greeter.doSomething("world"));
+	}
+	
 	public static TestClass bracket(String value) {
 		return new TestClass(value);
+	}
+	
+	@FunctionalInterface
+	public static interface MyFunctionalInterface {
+		String doSomething(String value);
 	}
 }

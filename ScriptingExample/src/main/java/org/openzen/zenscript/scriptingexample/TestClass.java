@@ -43,6 +43,11 @@ public class TestClass implements TestInterface {
 		return "Interface method of " + name;
 	}
 	
+	@Override
+	public String getValue() {
+		return "getValue " + name;
+	}
+	
 	@Method
 	public TestGenericInterface<String> generate() {
 		return () -> name;

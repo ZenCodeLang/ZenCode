@@ -43,3 +43,5 @@ addShapedRecipe("TestRecipe", diamond, [[dirt, dirt, dirt],[dirt, dirt, dirt],[d
 
 var count = 10;
 floatMethod(5f * count);
+
+invokeFunctional(name => "Hello " + name);

@@ -11,7 +11,7 @@ import org.openzen.zencode.java.ZenCodeType;
  *
  * @author Hoofdgebruiker
  */
-public interface TestInterface extends ZenCodeType {
+public interface TestInterface extends ZenCodeType, TestGenericInterface<String> {
 	@Method
 	String interfaceMethod();
 }
