@@ -5,6 +5,8 @@
  */
 package org.openzen.drawablegui.live;
 
+import live.LiveString;
+
 /**
  *
  * @author Hoofdgebruiker

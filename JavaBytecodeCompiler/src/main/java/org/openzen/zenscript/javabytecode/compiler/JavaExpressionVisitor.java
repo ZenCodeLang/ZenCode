@@ -22,6 +22,7 @@ import org.openzen.zenscript.javashared.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -1867,17 +1868,39 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
             return null;
         }*/
 
-		final String descriptor = context.getMethodDescriptor(expression.header);
-		final String signature = context.getMethodSignature(expression.header);
-		final String signature2 = context.getMethodDescriptor(expression.header);
-		final String name = context.getLambdaCounter();
-
-		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", descriptor);
+		final String descriptor;
+		final String signature;
+		final String[] interfaces;
+		final String methodName;
+		final String className = context.getLambdaCounter();
+		
+		{//Fill the info above
+			final StorageTag actualStorage = expression.type.getActualStorage();
+			if (actualStorage instanceof JavaFunctionalInterfaceStorageTag) {
+				//Let's implement the functional Interface instead
+				final Method functionalInterfaceMethod = ((JavaFunctionalInterfaceStorageTag) actualStorage).functionalInterfaceMethod;
+				
+				descriptor = Type.getMethodDescriptor(functionalInterfaceMethod);
+				//Should be the same, should it not?
+				signature = context.getMethodSignature(expression.header);
+				interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
+				methodName = functionalInterfaceMethod.getName();
+			} else {
+				//Normal way, no casting to functional interface
+				descriptor = context.getMethodDescriptor(expression.header);
+				signature = context.getMethodSignature(expression.header);
+				interfaces = new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))};
+				methodName = "accept";
+			}
+		}
+		
+		
+		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, methodName, descriptor);
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
-		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))});
+		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
 		final JavaWriter functionWriter = new JavaWriter(expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 
-		javaWriter.newObject(name);
+		javaWriter.newObject(className);
 		javaWriter.dup();
 
 		final String constructorDesc = calcFunctionSignature(expression.closure);
@@ -1898,12 +1921,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			capture.accept(this);
 
 			constructorWriter.load(type, i);
-			constructorWriter.putField(name, "captured" + i, type.getDescriptor());
+			constructorWriter.putField(className, "captured" + i, type.getDescriptor());
 		}
 
 		constructorWriter.pop();
 
-		javaWriter.invokeSpecial(name, "<init>", constructorDesc);
+		javaWriter.invokeSpecial(className, "<init>", constructorDesc);
 
 		constructorWriter.ret();
 		constructorWriter.end();
@@ -1917,7 +1940,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
 				final int position = calculateMemberPosition(varExpression, expression);
 				functionWriter.loadObject(0);
-				functionWriter.getField(name, "captured" + position, context.getDescriptor(varExpression.variable.type));
+				functionWriter.getField(className, "captured" + position, context.getDescriptor(varExpression.variable.type));
 				return null;
 			}
 
@@ -1925,7 +1948,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			public Void visitCapturedParameter(CapturedParameterExpression varExpression) {
 				final int position = calculateMemberPosition(varExpression, expression);
 				functionWriter.loadObject(0);
-				functionWriter.getField(name, "captured" + position, context.getDescriptor(varExpression.parameter.type));
+				functionWriter.getField(className, "captured" + position, context.getDescriptor(varExpression.parameter.type));
 				return null;
 			}
 		});
@@ -1936,9 +1959,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		functionWriter.end();
 		lambdaCW.visitEnd();
 
-		context.register(name, lambdaCW.toByteArray());
+		context.register(className, lambdaCW.toByteArray());
 
-		try (FileOutputStream out = new FileOutputStream(name + ".class")) {
+		try (FileOutputStream out = new FileOutputStream(className + ".class")) {
 			out.write(lambdaCW.toByteArray());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -3880,7 +3903,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			} else if (fromTag == UniqueStorageTag.INSTANCE && JavaTypeUtils.isShared(toTag)) {
 				// new Shared<T>(value)
 				javaWriter.newObject("zsynthetic/Shared");
-				javaWriter.dup();
+				javaWriter.dupX1();
 				javaWriter.invokeSpecial(SHARED_INIT);
 			}
 		}
