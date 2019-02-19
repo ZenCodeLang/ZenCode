@@ -13,6 +13,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -98,6 +99,25 @@ public abstract class JavaContext {
 			return basePackage;
 		
 		return getPackageName(pkg.parent) + "/" + pkg.name;
+	}
+	
+	public JavaMethod getFunctionalInterface(StoredType type) {
+		if (type.getSpecifiedStorage() instanceof JavaFunctionalInterfaceStorageTag) {
+			JavaFunctionalInterfaceStorageTag tag = (JavaFunctionalInterfaceStorageTag)type.getSpecifiedStorage();
+			return tag.method;
+		} else {
+			FunctionTypeID functionType = (FunctionTypeID)type.type;
+			JavaSynthesizedFunctionInstance function = getFunction(functionType);
+			
+			return new JavaMethod(
+					function.getCls(),
+					JavaMethod.Kind.INTERFACE,
+					function.getMethod(),
+					false,
+					getMethodDescriptor(function.getHeader()),
+					Modifiers.PUBLIC | Modifiers.ABSTRACT,
+					function.getHeader().getReturnType().isGeneric());
+		}
 	}
 	
 	protected abstract JavaSyntheticClassGenerator getTypeGenerator();

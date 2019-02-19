@@ -14,10 +14,12 @@ import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 public class JavaFunctionalInterfaceStorageTag implements StorageTag {
-	public final Method funtionalInterfaceMethod;
+	public final Method functionalInterfaceMethod;
+	public final JavaMethod method;
 	
-	public JavaFunctionalInterfaceStorageTag(Method functionalInterfaceMethod) {
-		this.funtionalInterfaceMethod = functionalInterfaceMethod;
+	public JavaFunctionalInterfaceStorageTag(Method functionalInterfaceMethod, JavaMethod method) {
+		this.functionalInterfaceMethod = functionalInterfaceMethod;
+		this.method = method;
 	}
 
 	@Override

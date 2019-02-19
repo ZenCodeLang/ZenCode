@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javashared;
 
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -26,5 +27,9 @@ public class JavaSynthesizedFunctionInstance {
 	
 	public String getMethod() {
 		return function.method;
+	}
+	
+	public FunctionHeader getHeader() {
+		return function.header;
 	}
 }

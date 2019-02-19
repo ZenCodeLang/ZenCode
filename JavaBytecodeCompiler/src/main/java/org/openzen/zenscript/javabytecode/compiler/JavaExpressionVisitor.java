@@ -1869,7 +1869,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		final String descriptor = context.getMethodDescriptor(expression.header);
 		final String signature = context.getMethodSignature(expression.header);
-		final String signature2 = context.getMethodDescriptor(expression.header);
 		final String name = context.getLambdaCounter();
 
 		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, "accept", descriptor);
