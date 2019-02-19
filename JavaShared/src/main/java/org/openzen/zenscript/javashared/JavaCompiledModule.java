@@ -6,6 +6,7 @@
 package org.openzen.zenscript.javashared;
 
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -34,7 +35,7 @@ public class JavaCompiledModule {
 	private final Map<IDefinitionMember, JavaField> fields = new HashMap<>();
 	private final Map<IDefinitionMember, JavaMethod> methods = new HashMap<>();
 	private final Map<TypeParameter, JavaTypeParameterInfo> typeParameters = new HashMap<>();
-	private final Map<FunctionParameter, JavaParameterInfo> parameters = new HashMap<>();
+	private final Map<FunctionParameter, JavaParameterInfo> parameters = new IdentityHashMap<>();
 	private final Map<VariantDefinition.Option, JavaVariantOption> variantOptions = new HashMap<>();
 	
 	public JavaCompiledModule(Module module, FunctionParameter[] scriptParameters) {
