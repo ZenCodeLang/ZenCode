@@ -52,6 +52,11 @@ public class Globals implements ZenCodeGlobals {
 		System.out.println("doSomething: " + greeter.doSomething("world"));
 	}
 	
+	@Global
+	public static void invokeFunctionalInt(MyFunctionalInterfaceInt calculator){
+		System.out.println("FunctionalInt: " + calculator.doSomething(7, 13));
+	}
+	
 	public static TestClass bracket(String value) {
 		return new TestClass(value);
 	}
@@ -59,5 +64,10 @@ public class Globals implements ZenCodeGlobals {
 	@FunctionalInterface
 	public static interface MyFunctionalInterface {
 		String doSomething(String value);
+	}
+	
+	@FunctionalInterface
+	public static interface MyFunctionalInterfaceInt {
+		int doSomething(int valueA, int valueB);
 	}
 }
