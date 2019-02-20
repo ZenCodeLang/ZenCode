@@ -61,6 +61,7 @@ import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaFunctionalInterfaceStorageTag;
 import org.openzen.zenscript.javashared.JavaImplementation;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
 import stdlib.Strings;
 
 /**
@@ -600,7 +601,7 @@ public class JavaNativeModule {
 				functionalInterfaceMethod.getName(),
 				false,
 				getMethodDescriptor(functionalInterfaceMethod),
-				Modifiers.PUBLIC | Modifiers.ABSTRACT,
+				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
 				header.getReturnType().type.isGeneric());
 		StorageTag tag = new JavaFunctionalInterfaceStorageTag(functionalInterfaceMethod, method);
 		return registry.getFunction(header).stored(tag);
