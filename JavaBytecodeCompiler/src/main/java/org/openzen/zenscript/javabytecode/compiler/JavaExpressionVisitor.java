@@ -3913,6 +3913,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				// new Shared<T>(value)
 				javaWriter.newObject("zsynthetic/Shared");
 				javaWriter.dupX1();
+				javaWriter.swap();
 				javaWriter.invokeSpecial(SHARED_INIT);
 			}
 		}
@@ -3921,73 +3922,82 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 	
 	private void visitFunctionalInterfaceWrapping(StorageCastExpression expression, JavaFunctionalInterfaceStorageTag tag) {
+
 		final Method functionalInterfaceMethod = tag.functionalInterfaceMethod;
-		
+
+		final JavaMethod wrappedMethod = context.getFunctionalInterface(expression.value.type);
 		final String wrappedSignature = context.getDescriptor(expression.type);
-		final String wrappedMethodName = "accept";
 		final String constructorDesc = "(" + wrappedSignature + ")V";
 		
 		final String className = context.getLambdaCounter();
-		final String descriptor = Type.getMethodDescriptor(functionalInterfaceMethod);
-		//ddd
 		final String methodName = functionalInterfaceMethod.getName();
+		final String methodDescriptor = Type.getMethodDescriptor(functionalInterfaceMethod);
 		final String[] interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
-		
-		final FunctionParameter[] functionParameters = ((FunctionTypeID) expression.value.type.type).header.parameters;
-		final String wrappedMethodSig = context.getMethodDescriptor(((FunctionTypeID) expression.value.type.type).header);
-		
-		
+
+		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
+		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
+
+		//The field storing the wrapped object
+		{
+			lambdaCW.visitField(Modifier.PRIVATE | Modifier.FINAL, "wrapped", wrappedSignature, null, null).visitEnd();
+		}
+
+		//Constructor
+		{
+			final JavaWriter constructorWriter = new JavaWriter(expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
+			constructorWriter.start();
+			constructorWriter.loadObject(0);
+			constructorWriter.dup();
+			constructorWriter.invokeSpecial(Object.class, "<init>", "()V");
+
+			constructorWriter.loadObject(1);
+			constructorWriter.putField(className, "wrapped", wrappedSignature);
+
+			constructorWriter.ret();
+			constructorWriter.end();
+		}
+
+		//The actual method
+		{
+			final JavaWriter functionWriter = new JavaWriter(expression.position, lambdaCW, tag.method, null, methodDescriptor, null, "java/lang/Override");
+			functionWriter.start();
+
+			//this.wrapped
+			functionWriter.loadObject(0);
+			functionWriter.getField(className, "wrapped", wrappedSignature);
+
+			//Load all function parameters
+			{
+				final Class<?>[] methodParameterTypes = functionalInterfaceMethod.getParameterTypes();
+				for (int i = 0; i < methodParameterTypes.length; i++) {
+					functionWriter.load(Type.getType(methodParameterTypes[i]), i + 1);
+				}
+			}
+
+			//Invokes the wrapped interface's method and returns the result
+			functionWriter.invokeInterface(wrappedMethod);
+			functionWriter.returnType(context.getType(((FunctionTypeID) expression.value.type.type).header.getReturnType()));
+
+			functionWriter.ret();
+			functionWriter.end();
+		}
+
+
+		lambdaCW.visitEnd();
+		context.register(className, lambdaCW.toByteArray());
+
 		javaWriter.newObject(className);
 		javaWriter.dupX1();
 		javaWriter.swap();
 		javaWriter.invokeSpecial(className, "<init>", constructorDesc);
-		
-		
-		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, methodName, descriptor);
-		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
-		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
-		
-		
-		lambdaCW.visitField(Modifier.PRIVATE | Modifier.FINAL, "wrapped", wrappedSignature, null, null).visitEnd();
-		
-		final JavaWriter constructorWriter = new JavaWriter(expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
-		constructorWriter.start();
-		constructorWriter.loadObject(0);
-		constructorWriter.dup();
-		constructorWriter.invokeSpecial(Object.class, "<init>", "()V");
-		
-		constructorWriter.loadObject(1);
-		constructorWriter.putField(className, "wrapped", wrappedSignature);
-		
-		constructorWriter.ret();
-		constructorWriter.end();
-		
-		
-		final JavaWriter functionWriter = new JavaWriter(expression.position, lambdaCW, methodInfo, null, descriptor, null, "java/lang/Override");
-		functionWriter.start();
-		
-		//this.wrapped
-		functionWriter.loadObject(0);
-		functionWriter.getField(className, "wrapped", wrappedSignature);
-		for (int i = 0; i < functionParameters.length; i++) {
-			final FunctionParameter functionParameter = functionParameters[i];
-			functionWriter.load(context.getType(functionParameter.type), i + 1);
-		}
-		
-		functionWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.fromInternalName(context.getInternalName(expression.type.type), JavaClass.Kind.INTERFACE), wrappedMethodName, wrappedMethodSig, 0));
-		
-		functionWriter.returnType(context.getType(((FunctionTypeID) expression.value.type.type).header.getReturnType()));
-		
-		functionWriter.ret();
-		functionWriter.end();
-		lambdaCW.visitEnd();
-		
-		context.register(className, lambdaCW.toByteArray());
-		
-		try (FileOutputStream out = new FileOutputStream(className + ".class")) {
-			out.write(lambdaCW.toByteArray());
-		} catch (IOException e) {
-			e.printStackTrace();
+
+		//Debug-only, remove later
+		if(true) {
+			try (FileOutputStream out = new FileOutputStream(className + ".class")) {
+				out.write(lambdaCW.toByteArray());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
