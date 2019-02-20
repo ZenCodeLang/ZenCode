@@ -594,7 +594,15 @@ public class JavaNativeModule {
 		for (int i = 0; i < javaParameters.length; i++)
 			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false, false));
 		
-		StorageTag tag = new JavaFunctionalInterfaceStorageTag(functionalInterfaceMethod);
+		JavaMethod method = new JavaMethod(
+				JavaClass.fromInternalName(cls.getName().replace('.', '/'), JavaClass.Kind.INTERFACE),
+				JavaMethod.Kind.INTERFACE,
+				functionalInterfaceMethod.getName(),
+				false,
+				getMethodDescriptor(functionalInterfaceMethod),
+				Modifiers.PUBLIC | Modifiers.ABSTRACT,
+				header.getReturnType().type.isGeneric());
+		StorageTag tag = new JavaFunctionalInterfaceStorageTag(functionalInterfaceMethod, method);
 		return registry.getFunction(header).stored(tag);
 	}
 	
