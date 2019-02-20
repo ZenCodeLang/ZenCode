@@ -115,7 +115,7 @@ public abstract class JavaContext {
 					function.getMethod(),
 					false,
 					getMethodDescriptor(function.getHeader()),
-					Modifiers.PUBLIC | Modifiers.ABSTRACT,
+					JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
 					function.getHeader().getReturnType().isGeneric());
 		}
 	}

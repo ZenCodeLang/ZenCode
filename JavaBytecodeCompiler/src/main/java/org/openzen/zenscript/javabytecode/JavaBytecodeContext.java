@@ -86,7 +86,7 @@ public class JavaBytecodeContext extends JavaContext {
         ifaceWriter
 				.visitMethod(
 					Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT,
-					"accept",
+					function.method,
 					getMethodDescriptor(function.header),
 					getMethodSignature(function.header),
 					null)

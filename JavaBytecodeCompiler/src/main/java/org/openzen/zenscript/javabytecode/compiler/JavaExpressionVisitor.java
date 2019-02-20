@@ -1127,11 +1127,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			}
 			case FUNCTION_CALL:
-				javaWriter.invokeInterface(
-						JavaMethod.getNativeVirtual(
-								JavaClass.fromInternalName(context.getInternalName(expression.target.type), JavaClass.Kind.INTERFACE),
-								"accept",
-								context.getMethodDescriptor(expression.instancedHeader)));
+				javaWriter.invokeInterface(context.getFunctionalInterface(expression.target.type));
 				break;
 			case AUTOOP_NOTEQUALS:
 				throw new UnsupportedOperationException("Not yet supported!");
@@ -1870,10 +1866,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
             return null;
         }*/
 
-		final String descriptor;
 		final String signature;
 		final String[] interfaces;
-		final String methodName;
 		final String className = context.getLambdaCounter();
 		
 		{//Fill the info above
@@ -1882,25 +1876,58 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				//Let's implement the functional Interface instead
 				final Method functionalInterfaceMethod = ((JavaFunctionalInterfaceStorageTag) actualStorage).functionalInterfaceMethod;
 				
-				descriptor = Type.getMethodDescriptor(functionalInterfaceMethod);
 				//Should be the same, should it not?
 				signature = context.getMethodSignature(expression.header);
 				interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
-				methodName = functionalInterfaceMethod.getName();
 			} else {
 				//Normal way, no casting to functional interface
-				descriptor = context.getMethodDescriptor(expression.header);
 				signature = context.getMethodSignature(expression.header);
 				interfaces = new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))};
-				methodName = "accept";
 			}
 		}
 		
 		
-		final JavaMethod methodInfo = JavaMethod.getNativeVirtual(javaWriter.method.cls, methodName, descriptor);
+		final JavaMethod methodInfo;
+		{
+			final JavaMethod m = context.getFunctionalInterface(expression.type);
+			methodInfo = new JavaMethod(m.cls, m.kind, m.name, m.compile, m.descriptor, m.modifiers & ~JavaModifiers.ABSTRACT, m.genericResult, m.typeParameterArguments);
+		}
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
-		final JavaWriter functionWriter = new JavaWriter(expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
+		final JavaWriter functionWriter;
+		
+		//Bridge method!!!
+		if(!Objects.equals(methodInfo.descriptor, signature)) {
+			final JavaMethod bridgeMethodInfo = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
+			final JavaWriter bridgeWriter = new JavaWriter(expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "java/lang/Override");
+			bridgeWriter.start();
+			
+			//This.name(parameters, casted)
+			bridgeWriter.loadObject(0);
+			
+			for (int i = 0; i < expression.header.parameters.length; i++) {
+				final FunctionParameter functionParameter = expression.header.parameters[i];
+				final Type type = context.getType(functionParameter.type);
+				bridgeWriter.load(type, i + 1);
+				bridgeWriter.checkCast(type);
+			}
+			
+			bridgeWriter.invokeVirtual(methodInfo);
+			if(expression.header.getReturnType().type != BasicTypeID.VOID) {
+				bridgeWriter.returnType(context.getType(expression.header.getReturnType()));
+			}
+			
+			bridgeWriter.ret();
+			bridgeWriter.end();
+			
+			
+			
+			final JavaMethod actualMethod = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, signature, methodInfo.modifiers, methodInfo.genericResult, methodInfo.typeParameterArguments);
+			//No @Override
+			functionWriter = new JavaWriter(expression.position, lambdaCW, actualMethod, null, signature, null);
+		} else {
+			functionWriter = new JavaWriter(expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
+		}
 
 		javaWriter.newObject(className);
 		javaWriter.dup();
@@ -3930,7 +3957,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final String constructorDesc = "(" + wrappedSignature + ")V";
 		
 		final String className = context.getLambdaCounter();
-		final String methodName = functionalInterfaceMethod.getName();
 		final String methodDescriptor = Type.getMethodDescriptor(functionalInterfaceMethod);
 		final String[] interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
 
@@ -3959,7 +3985,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		//The actual method
 		{
-			final JavaWriter functionWriter = new JavaWriter(expression.position, lambdaCW, tag.method, null, methodDescriptor, null, "java/lang/Override");
+			final JavaMethod actualMethod = new JavaMethod(tag.method.cls, tag.method.kind, tag.method.name, tag.method.compile, tag.method.descriptor, tag.method.modifiers & ~JavaModifiers.ABSTRACT, tag.method.genericResult, tag.method.typeParameterArguments);
+			final JavaWriter functionWriter = new JavaWriter(expression.position, lambdaCW, actualMethod, null, methodDescriptor, null, "java/lang/Override");
 			functionWriter.start();
 
 			//this.wrapped

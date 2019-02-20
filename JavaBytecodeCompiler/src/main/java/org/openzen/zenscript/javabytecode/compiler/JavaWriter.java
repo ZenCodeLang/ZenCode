@@ -418,7 +418,7 @@ public class JavaWriter {
         if (debug)
             System.out.println("checkCast " + type.getDescriptor());
 
-        visitor.visitTypeInsn(CHECKCAST, type.getDescriptor());
+        visitor.visitTypeInsn(CHECKCAST, type.getInternalName());
     }
 
     public void iNeg() {
