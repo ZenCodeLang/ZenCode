@@ -596,7 +596,7 @@ public class JavaNativeModule {
 			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false, false));
 		
 		JavaMethod method = new JavaMethod(
-				JavaClass.fromInternalName(cls.getName().replace('.', '/'), JavaClass.Kind.INTERFACE),
+				JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.INTERFACE),
 				JavaMethod.Kind.INTERFACE,
 				functionalInterfaceMethod.getName(),
 				false,

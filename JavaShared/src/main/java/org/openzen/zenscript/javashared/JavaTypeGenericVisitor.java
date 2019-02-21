@@ -118,7 +118,8 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 
 	@Override
 	public String visitDefinition(StoredType context, DefinitionTypeID definition) {
-		StringBuilder builder = new StringBuilder("L").append(definition.definition.name);
+		JavaClass cls = this.context.getJavaClass(definition.definition);
+		StringBuilder builder = new StringBuilder("L").append(cls.internalName);
 
 		if (definition.typeArguments.length > 0) {
 			builder.append("<");
