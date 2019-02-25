@@ -6,6 +6,7 @@
 package org.openzen.zenscript.scriptingexample;
 
 import org.openzen.zencode.java.ZenCodeGlobals;
+import static org.openzen.zencode.java.ZenCodeType.*;
 
 /**
  *
@@ -57,6 +58,12 @@ public class Globals implements ZenCodeGlobals {
 		System.out.println("FunctionalInt: " + calculator.doSomething(7, 13));
 	}
 	
+	@Global
+	public static void testOptional(MyOptionalInterface function) {
+		System.out.println("Null: " + function.doSomething(null));
+		System.out.println("Hello: " + function.doSomething("hello"));
+	}
+	
 	public static TestClass bracket(String value) {
 		return new TestClass(value);
 	}
@@ -69,5 +76,10 @@ public class Globals implements ZenCodeGlobals {
 	@FunctionalInterface
 	public static interface MyFunctionalInterfaceInt {
 		int doSomething(int valueA, int valueB);
+	}
+	
+	@FunctionalInterface
+	public static interface MyOptionalInterface {
+		int doSomething(@Nullable String value);
 	}
 }

@@ -286,6 +286,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionExpression expression) {
+		
 		// TODO
 		return null;
 	}

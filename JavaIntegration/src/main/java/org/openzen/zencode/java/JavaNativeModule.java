@@ -240,12 +240,27 @@ public class JavaNativeModule {
 		if ((cls.getModifiers() & Modifier.PUBLIC) == 0)
 			throw new IllegalArgumentException("Class must be public");
 		
-		ZenCodeType.Name name = cls.getDeclaredAnnotation(ZenCodeType.Name.class);
-		String className = name == null ? cls.getName() : name.value();
+		String className = cls.getName();
 		boolean isStruct = cls.getAnnotation(ZenCodeType.Struct.class) != null;
 		
 		ZSPackage classPkg = getPackage(className);
+		ZenCodeType.Name name = cls.getDeclaredAnnotation(ZenCodeType.Name.class);
 		className = className.contains(".") ? className.substring(className.lastIndexOf('.') + 1) : className;
+		if (name != null) {
+			String specifiedName = name.value();
+			if (specifiedName.startsWith(".")) {
+				classPkg = getPackage(specifiedName);
+				className = className.substring(className.lastIndexOf('.') + 1);
+			} else if (specifiedName.indexOf('.') >= 0) {
+				if (!specifiedName.startsWith(pkg.fullName))
+					throw new IllegalArgumentException("Specified @Name as " + specifiedName + " but it's not in the module root package");
+				
+				classPkg = getPackage(basePackage + specifiedName.substring(pkg.fullName.length()));
+				className = className.substring(className.lastIndexOf('.') + 1);
+			} else {
+				className = name.value();
+			}
+		}
 		
 		TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
@@ -546,6 +561,14 @@ public class JavaNativeModule {
 	}
 	
 	private StoredType loadType(TypeVariableContext context, Type type, boolean nullable, boolean unsigned) {
+		StoredType result = loadType(context, type, unsigned);
+		if (nullable)
+			result = new StoredType(registry.getOptional(result.type), result.getSpecifiedStorage());
+		
+		return result;
+	}
+	
+	private StoredType loadType(TypeVariableContext context, Type type, boolean unsigned) {
 		if (type instanceof Class) {
 			Class<?> classType = (Class<?>) type;
 			if (unsigned) {
