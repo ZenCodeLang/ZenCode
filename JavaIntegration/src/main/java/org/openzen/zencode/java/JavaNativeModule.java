@@ -217,6 +217,9 @@ public class JavaNativeModule {
 	}
 	
 	private ZSPackage getPackage(String className) {
+		//TODO validate
+		if(this.basePackage == null || this.basePackage.isEmpty())
+			return pkg;
 		//TODO make a lang package?
 		if (!className.contains(".") || className.startsWith("java.lang"))
 			return pkg;

@@ -147,4 +147,8 @@ public class ScriptingEngine {
 			runUnit.dump(new File("classes"));
 		runUnit.run(arguments, parentClassLoader);
 	}
+	
+	public List<JavaNativeModule> getNativeModules() {
+		return Collections.unmodifiableList(this.nativeModules);
+	}
 }
