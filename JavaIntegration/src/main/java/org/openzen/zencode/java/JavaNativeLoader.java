@@ -5,10 +5,7 @@
  */
 package org.openzen.zencode.java;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -20,7 +17,6 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 public class JavaNativeLoader {
 	private final Class<?>[] classes;
 	private final Class<?>[] globals;
-	private final Map<String, LoadingModule> modulesByBasePackage = new HashMap<>();
 	private final Map<String, LoadingModule> modulesByName = new HashMap<>();
 	private boolean loaded = false;
 	
@@ -40,7 +36,6 @@ public class JavaNativeLoader {
 			throw new IllegalArgumentException("Module already exists: " + name);
 		
 		LoadingModule module = new LoadingModule(pkg, name, basePackage, dependencies);
-		modulesByBasePackage.put(name, module);
 		modulesByName.put(name, module);
 		
 		return module;
@@ -52,7 +47,7 @@ public class JavaNativeLoader {
 		sortClasses();
 		
 		ScriptingEngine engine = new ScriptingEngine();
-		for (LoadingModule module : modulesByBasePackage.values()) {
+		for (LoadingModule module : modulesByName.values()) {
 			load(engine, module);
 		}
 		return engine;
