@@ -3358,7 +3358,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.label(end);
 				return;
 			}
-			case ARRAY_CONSTRUCTOR_PROJECTED: {
+			case ARRAY_CONSTRUCTOR_PROJECTED:
+			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
 				ArrayTypeID type = (ArrayTypeID) expression.type.type;
 				
 				//Labels
@@ -3373,7 +3374,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.storeObject(originArrayLocation);
 				Type destinationArrayType = context.getType(expression.type);
 				
-				
+				final boolean indexed = builtin == BuiltinID.ARRAY_CONSTRUCTOR_PROJECTED_INDEXED;
 				final boolean canBeInLined = ArrayInitializerHelper.canBeInLined(expression.arguments.arguments[1]);
 				if (canBeInLined) {
 					//We can inline, so do it
@@ -3392,6 +3393,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 								JavaExpressionVisitor visitor = new JavaExpressionVisitor(context, module, javaWriter) {
 									@Override
 									public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
+										if(indexed) {
+											final JavaParameterInfo parameterInfo = module.getParameterInfo(expression.parameter);
+											if (parameterInfo != null && parameterInfo.index <= type.dimension) {
+												javaWriter.loadInt(counterLocations[parameterInfo.index - 1]);
+												return null;
+											}
+										}
+										
 										javaWriter.load(projectedElementType, projectedElementLocal);
 										return null;
 									}
@@ -3403,8 +3412,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 								}
 								
 								if (funcExpression instanceof FunctionExpression && ((FunctionExpression) funcExpression).body instanceof ReturnStatement) {
+									CompilerUtils.tagMethodParameters(context, module, ((FunctionExpression) funcExpression).header, false);
 									((ReturnStatement) ((FunctionExpression) funcExpression).body).value.accept(visitor);
 									javaWriter.addVariableInfo(new JavaLocalVariableInfo(projectedElementType, projectedElementLocal, inlineBegin, ((FunctionExpression) funcExpression).header.parameters[0].name, inlineEnd));
+									
 								} else throw new IllegalStateException("Trying to inline a non-inlineable expression");
 								
 								
@@ -3424,6 +3435,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 								javaWriter.loadObject(functionLocation);
 								javaWriter.swap();
 								
+								if(indexed) {
+									for (int counterLocation : counterLocations) {
+										javaWriter.loadInt(counterLocation);
+										javaWriter.swap();
+									}
+								}
+								
 								javaWriter.invokeInterface(context.getFunctionalInterface(expression.arguments.arguments[1].type));
 							});
 				}
@@ -3432,26 +3450,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.label(end);
 				return;
 				
-			}
-			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
-				ArrayTypeID type = (ArrayTypeID) expression.type.type;
-				
-				if (type.dimension == 1) {
-					// original = arguments[0] (this is an array)
-					// projector = arguments[1] (this is a lambda with 2 parameters)
-					// array = new T[original.length]
-					// for (int i = 0; i < array.length; i++)
-					//   array[i] = projector(i, original[i]);
-					//
-					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
-
-					// TODO: implement in bytecode
-
-					return;
-				} else {
-					// TODO: implement
-					throw new UnsupportedOperationException("Not yet supported!");
-				}
 			}
 			case ARRAY_INDEXGET:
 				break;
