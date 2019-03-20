@@ -137,12 +137,12 @@ class ArrayInitializerHelper {
 	}
 
 	/**
-	 * Checks if an expression can be inlined
+	 * Checks if an expression can be inLined
 	 *
 	 * @param expression Expression to check for.
-	 * @return can expression be inlined
+	 * @return can expression be inLined
 	 */
-	static boolean canBeInlined(Expression expression) {
+	static boolean canBeInLined(Expression expression) {
 		while (expression instanceof StorageCastExpression)
 			expression = ((StorageCastExpression) expression).value;
 
@@ -162,7 +162,7 @@ class ArrayInitializerHelper {
 	 * @param currentArrayType  The current type of the array, reduced during the recursions of the functions
 	 * @param innermostFunction The function that will decide what to add to the array, needs to increase the stack size by one and may not touch the other stacks!
 	 */
-	private static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, Type currentArrayType, InnermostFunction innermostFunction) {
+	static void visitMultiDimArray(JavaWriter javaWriter, int[] sizeLocations, int[] counterLocations, int dim, Type currentArrayType, InnermostFunction innermostFunction) {
 		final Label begin = new Label();
 		final Label end = new Label();
 		javaWriter.label(begin);
