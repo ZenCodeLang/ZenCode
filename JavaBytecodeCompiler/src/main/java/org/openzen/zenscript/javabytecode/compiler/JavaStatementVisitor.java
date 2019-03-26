@@ -36,6 +36,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitBlock(BlockStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		Boolean returns = false;
 		for (Statement statement1 : statement.statements) {
 			returns = statement1.accept(this);
@@ -45,18 +46,21 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitBreak(BreakStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_end"));
 		return false;
 	}
 
 	@Override
 	public Boolean visitContinue(ContinueStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		javaWriter.goTo(javaWriter.getNamedLabel(statement.target.label + "_start"));
 		return false;
 	}
 
 	@Override
 	public Boolean visitDoWhile(DoWhileStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		Label start = new Label();
 		Label end = new Label();
 		if (statement.label == null)
@@ -82,12 +86,14 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitExpression(ExpressionStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		statement.expression.accept(nonPushingExpressionVisitor);
 		return false;
 	}
 
 	@Override
 	public Boolean visitForeach(ForeachStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		//Create Labels
 		Label start = new Label();
 		Label end = new Label();
@@ -147,6 +153,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitIf(IfStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		statement.condition.accept(expressionVisitor);
 		Label onElse = null;
 		Label end = new Label();
@@ -171,9 +178,15 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	public Boolean visitLock(LockStatement statement) {
 		return false;
 	}
-
+	
+	@Override
+	public Boolean visitInvalid(InvalidStatement statement) {
+		throw new UnsupportedOperationException("Invalid Statement: " + statement.message);
+	}
+	
 	@Override
 	public Boolean visitReturn(ReturnStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		statement.value.accept(expressionVisitor);
 		javaWriter.returnType(context.getType(statement.value.type));
 		return true;
@@ -181,6 +194,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitSwitch(SwitchStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 
 		final Label start = new Label();
 		final Label end = new Label();
@@ -246,6 +260,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitThrow(ThrowStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		statement.value.accept(expressionVisitor);
 		javaWriter.aThrow();
 		return false;
@@ -253,6 +268,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitTryCatch(TryCatchStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		final Label tryCatchStart = new Label();
 		final Label tryFinish = new Label();
 		final Label tryCatchFinish = new Label();
@@ -304,6 +320,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitVar(VarStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		if (statement.initializer != null) {
 			statement.initializer.accept(expressionVisitor);
 		}
@@ -322,6 +339,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 	@Override
 	public Boolean visitWhile(WhileStatement statement) {
+    	javaWriter.position(statement.position.fromLine);
 		Label start = new Label();
 		Label end = new Label();
 

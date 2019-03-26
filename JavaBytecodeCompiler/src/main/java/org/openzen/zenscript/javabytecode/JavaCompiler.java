@@ -60,6 +60,7 @@ public class JavaCompiler {
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			String className = getClassName(definition.position.getFilename());
 			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, definition.pkg.fullName + "/" + className);
+			scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
 			
 			JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context.getJavaClass(definition);
 			target.addClass(cls.internalName, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
@@ -79,6 +80,7 @@ public class JavaCompiler {
 			final SourceFile sourceFile = script.file;
 			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
 			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
+			scriptFile.classWriter.visitSource(script.file.getFilename(), null);
 
 			String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
 
