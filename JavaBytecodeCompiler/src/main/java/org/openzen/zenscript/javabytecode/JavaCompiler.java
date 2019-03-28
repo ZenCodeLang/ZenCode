@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -40,7 +40,7 @@ public class JavaCompiler {
 	public JavaCompiler() {}
 	
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space) {
-		Map<String, JavaScriptFile> scriptBlocks = new HashMap<>();
+		Map<String, JavaScriptFile> scriptBlocks = new LinkedHashMap<>();
 		
 		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters);
 		JavaBytecodeContext context = new JavaBytecodeContext(target, space, module.modulePackage, packageName);
