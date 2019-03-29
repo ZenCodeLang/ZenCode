@@ -96,7 +96,7 @@ public class ScriptingEngine {
 			FunctionParameter[] scriptParameters,
 			String... dependencies) throws ParseException
 	{
-		return createScriptedModule(name, sources, bracketParser, scriptParameters, Throwable::printStackTrace, System.out::println , dependencies);
+		return createScriptedModule(name, sources, bracketParser, scriptParameters, Throwable::printStackTrace, System.out::println, sourceFile -> System.out.println("Loading " + sourceFile.getFilename()), dependencies);
 	}
 	
 	public SemanticModule createScriptedModule(
@@ -106,14 +106,17 @@ public class ScriptingEngine {
 			FunctionParameter[] scriptParameters,
 			Consumer<CompileException> compileExceptionConsumer,
 			Consumer<ValidationLogEntry> validatorErrorConsumer,
+			Consumer<SourceFile> sourceFileConsumer,
 			String... dependencies) throws ParseException
 	{
 		Module scriptModule = new Module(name);
 		CompilingPackage scriptPackage = new CompilingPackage(new ZSPackage(space.rootPackage, name), scriptModule);
 		
 		ParsedFile[] files = new ParsedFile[sources.length];
-		for (int i = 0; i < sources.length; i++)
+		for (int i = 0; i < sources.length; i++) {
+			sourceFileConsumer.accept(sources[i]);
 			files[i] = ParsedFile.parse(scriptPackage, bracketParser, sources[i]);
+		}
 		
 		SemanticModule[] dependencyModules = new SemanticModule[dependencies.length + 1];
 		dependencyModules[0] = space.getModule("stdlib");
