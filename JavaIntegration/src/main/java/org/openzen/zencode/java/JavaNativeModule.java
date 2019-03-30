@@ -5,13 +5,7 @@
  */
 package org.openzen.zencode.java;
 
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +49,7 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
@@ -286,10 +281,10 @@ public class JavaNativeModule {
 			definition = new InterfaceDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC, null);
 			javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.INTERFACE);
 		} else if (cls.isEnum()) {
-			definition = new EnumDefinition(CodePosition.NATIVE, module, pkg, className, Modifiers.PUBLIC, null);
+			definition = new EnumDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC, null);
 			javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.ENUM);
 		} else if (isStruct) {
-			definition = new StructDefinition(CodePosition.NATIVE, module, pkg, className, Modifiers.PUBLIC, null);
+			definition = new StructDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC, null);
 			javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.CLASS);
 		} else {
 			definition = new ClassDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC);
@@ -324,7 +319,8 @@ public class JavaNativeModule {
 			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
 			
 			StoredType fieldType = loadStoredType(context, field.getAnnotatedType());
-			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC, fieldName, thisType, fieldType, registry, 0, 0, null);
+			
+			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
 			definition.addMember(member);
 			compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), getDescriptor(field.getType())));
 		}
@@ -659,7 +655,7 @@ public class JavaNativeModule {
 		return null;
 	}
 	
-	private int getMethodModifiers(Method method) {
+	private int getMethodModifiers(Member method) {
 		int result = Modifiers.PUBLIC;
 		if (isStatic(method.getModifiers()))
 			result |= Modifiers.STATIC;

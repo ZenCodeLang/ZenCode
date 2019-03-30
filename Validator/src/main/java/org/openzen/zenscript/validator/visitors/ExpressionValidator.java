@@ -739,8 +739,8 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	private void checkFieldAccess(CodePosition position, FieldMemberRef field) {
-		if (!scope.getAccessScope().hasAccessTo(field.getTarget().getAccessScope(), Modifiers.PRIVATE))
-			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "fields are private");
+		if (!scope.getAccessScope().hasAccessTo(field.getTarget().getAccessScope(), field.getTarget().getEffectiveModifiers()))
+			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no field access to " + field.describe());
 	}
 	
 	private void checkStatic(CodePosition position, DefinitionMemberRef member) {
