@@ -46,8 +46,8 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 	
 	public final StoredType getType() {
 		if (type == null) {
-			if (member.getType().type == BasicTypeID.UNDETERMINED)
-				throw new IllegalStateException("Property is not yet resolved!");
+			//if (member.getType().type == BasicTypeID.UNDETERMINED)
+			//	throw new IllegalStateException("Property is not yet resolved!");
 			
 			type = mapper == null ? member.getType() : member.getType().instance(mapper);
 			mapper = null;

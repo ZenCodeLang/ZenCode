@@ -124,7 +124,7 @@ public interface ZenCodeType {
 	}
 	
 	@Retention(RetentionPolicy.RUNTIME)
-	@Target(ElementType.PACKAGE)
+	@Target(ElementType.PARAMETER)
 	@interface OptionalString {
 		String value() default "";
 	}

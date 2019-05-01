@@ -51,7 +51,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	public boolean accepts(int arguments) {
-		return arguments >= target.header.minParameters && arguments <= target.header.maxParameters;
+		return target.header.accepts(arguments);
 	}
 	
 	@Override

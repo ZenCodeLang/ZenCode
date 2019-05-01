@@ -95,11 +95,11 @@ public interface ExpressionVisitor<T> {
 	T visitInterfaceCast(InterfaceCastExpression expression);
 	
 	default T visitInvalid(InvalidExpression expression) {
-		throw new RuntimeException("Invalid expression");
+		throw new RuntimeException("Invalid expression @ " + expression.position + ": " + expression.message);
 	}
 	
 	default T visitInvalidAssign(InvalidAssignExpression expression) {
-		throw new RuntimeException("Invalid expression");
+		throw new RuntimeException("Invalid expression @ " + expression.position + ": " + expression.target.message);
 	}
 	
 	T visitIs(IsExpression expression);

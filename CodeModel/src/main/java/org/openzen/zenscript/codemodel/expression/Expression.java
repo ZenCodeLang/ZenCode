@@ -23,7 +23,6 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.StatementTransformer;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
@@ -42,8 +41,8 @@ public abstract class Expression implements IPartialExpression {
 	public Expression(CodePosition position, StoredType type, StoredType thrownType) {
 		if (type == null)
 			throw new NullPointerException();
-		if (type.type == BasicTypeID.UNDETERMINED)
-			throw new IllegalArgumentException(position + ": Cannot use undetermined type as expression type");
+		//if (type.type == BasicTypeID.UNDETERMINED)
+		//	throw new IllegalArgumentException(position + ": Cannot use undetermined type as expression type");
 		
 		this.position = position;
 		this.type = type.getNormalized();

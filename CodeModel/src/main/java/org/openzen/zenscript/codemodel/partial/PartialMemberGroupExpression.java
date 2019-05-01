@@ -90,7 +90,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
 		List<FunctionHeader> results = new ArrayList<>();
 		for (TypeMember<FunctionalMemberRef> method : group.getMethodMembers()) {
-			if (!method.member.accepts(arguments)  || method.member.isStatic())
+			if (!method.member.accepts(arguments) || method.member.isStatic())
 				continue;
 			
 			try {

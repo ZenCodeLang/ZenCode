@@ -584,6 +584,8 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		if (modified.isOptional()) {
 			operator(builtin, OperatorType.EQUALS, new FunctionHeader(BOOL.stored, NULL.stored), BuiltinID.OPTIONAL_IS_NULL);
 			operator(builtin, OperatorType.NOTEQUALS, new FunctionHeader(BOOL.stored, NULL.stored), BuiltinID.OPTIONAL_IS_NOT_NULL);
+			operator(builtin, OperatorType.SAME, new FunctionHeader(BOOL.stored, NULL.stored), BuiltinID.OPTIONAL_IS_NULL);
+			operator(builtin, OperatorType.NOTSAME, new FunctionHeader(BOOL.stored, NULL.stored), BuiltinID.OPTIONAL_IS_NOT_NULL);
 		}
 		
 		processType(builtin);
