@@ -5,7 +5,15 @@
  */
 package org.openzen.zencode.java;
 
-import java.lang.reflect.*;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Member;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +33,21 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantLongExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantSByteExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantShortExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionSymbol;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
+import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.CasterMember;
@@ -48,8 +69,8 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
@@ -319,7 +340,6 @@ public class JavaNativeModule {
 			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
 			
 			StoredType fieldType = loadStoredType(context, field.getAnnotatedType());
-			
 			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
 			definition.addMember(member);
 			compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), getDescriptor(field.getType())));
@@ -498,7 +518,7 @@ public class JavaNativeModule {
 		return getHeader(
 				context,
 				null,
-				constructor.getAnnotatedParameterTypes(),
+				constructor.getParameters(),
 				constructor.getTypeParameters(),
 				constructor.getAnnotatedExceptionTypes());
 	}
@@ -507,22 +527,84 @@ public class JavaNativeModule {
 		return getHeader(
 				context,
 				method.getAnnotatedReturnType(),
-				method.getAnnotatedParameterTypes(),
+				method.getParameters(),
 				method.getTypeParameters(),
 				method.getAnnotatedExceptionTypes());
 	}
 	
+	private Expression getDefaultValue(Parameter parameter, StoredType type) {
+		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class)) {
+			Expression defaultValue = type.type.getDefaultValue();
+			if (defaultValue == null)
+				throw new IllegalArgumentException(type.toString() + " doesn't have a default value");
+			return defaultValue;
+		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalInt.class)) {
+			ZenCodeType.OptionalInt annotation = parameter.getAnnotation(ZenCodeType.OptionalInt.class);
+			if (type.type == BasicTypeID.BYTE)
+				return new ConstantByteExpression(CodePosition.NATIVE, annotation.value());
+			else if (type.type == BasicTypeID.SBYTE)
+				return new ConstantSByteExpression(CodePosition.NATIVE, (byte)annotation.value());
+			else if (type.type == BasicTypeID.SHORT)
+				return new ConstantShortExpression(CodePosition.NATIVE, (short)annotation.value());
+			else if (type.type == BasicTypeID.USHORT)
+				return new ConstantUShortExpression(CodePosition.NATIVE, annotation.value());
+			else if (type.type == BasicTypeID.INT)
+				return new ConstantIntExpression(CodePosition.NATIVE, annotation.value());
+			else if (type.type == BasicTypeID.UINT)
+				return new ConstantUIntExpression(CodePosition.NATIVE, annotation.value());
+			else
+				throw new IllegalArgumentException("Cannot use int default values for " + type.toString());
+		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalLong.class)) {
+			ZenCodeType.OptionalLong annotation = parameter.getAnnotation(ZenCodeType.OptionalLong.class);
+			if (type.type == BasicTypeID.LONG)
+				return new ConstantLongExpression(CodePosition.NATIVE, annotation.value());
+			else if (type.type == BasicTypeID.ULONG)
+				return new ConstantULongExpression(CodePosition.NATIVE, annotation.value());
+			else
+				throw new IllegalArgumentException("Cannot use long default values for " + type.toString());
+		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalFloat.class)) {
+			ZenCodeType.OptionalFloat annotation = parameter.getAnnotation(ZenCodeType.OptionalFloat.class);
+			if (type.type == BasicTypeID.FLOAT)
+				return new ConstantFloatExpression(CodePosition.NATIVE, annotation.value());
+			else
+				throw new IllegalArgumentException("Cannot use float default values for " + type.toString());
+		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalDouble.class)) {
+			ZenCodeType.OptionalDouble annotation = parameter.getAnnotation(ZenCodeType.OptionalDouble.class);
+			if (type.type == BasicTypeID.DOUBLE)
+				return new ConstantDoubleExpression(CodePosition.NATIVE, annotation.value());
+			else
+				throw new IllegalArgumentException("Cannot use double default values for " + type.toString());
+		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalString.class)) {
+			ZenCodeType.OptionalString annotation = parameter.getAnnotation(ZenCodeType.OptionalString.class);
+			if (type.type == StringTypeID.INSTANCE) {
+				Expression result = new ConstantStringExpression(CodePosition.NATIVE, annotation.value());
+				if (type.getActualStorage() != StaticStorageTag.INSTANCE)
+					result = new StorageCastExpression(CodePosition.NATIVE, result, type);
+				return result;
+			} else {
+				throw new IllegalArgumentException("Cannot use string default values for " + type.toString());
+			}
+		} else {
+			return null;
+		}
+	}
+
 	private FunctionHeader getHeader(
 			TypeVariableContext context,
 			AnnotatedType javaReturnType,
-			AnnotatedType[] parameterTypes,
+			Parameter[] javaParameters,
 			TypeVariable<Method>[] javaTypeParameters,
 			AnnotatedType[] exceptionTypes) {
 		StoredType returnType = javaReturnType == null ? BasicTypeID.VOID.stored : loadStoredType(context, javaReturnType);
 		
-		FunctionParameter[] parameters = new FunctionParameter[parameterTypes.length];
+		FunctionParameter[] parameters = new FunctionParameter[javaParameters.length];
 		for (int i = 0; i < parameters.length; i++) {
-			parameters[i] = new FunctionParameter(loadStoredType(context, parameterTypes[i]));
+			Parameter parameter = javaParameters[i];
+
+			AnnotatedType parameterType = parameter.getAnnotatedType();
+			StoredType type = loadStoredType(context, parameter.getAnnotatedType());
+			Expression defaultValue = getDefaultValue(parameter, type);
+			parameters[i] = new FunctionParameter(type, parameter.getName(), defaultValue, parameter.isVarArgs());
 		}
 		
 		TypeParameter[] typeParameters = new TypeParameter[javaTypeParameters.length];

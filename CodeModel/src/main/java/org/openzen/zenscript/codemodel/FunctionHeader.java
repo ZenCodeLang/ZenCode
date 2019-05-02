@@ -243,11 +243,11 @@ public class FunctionHeader {
 	}
 	
 	public boolean matchesImplicitly(CodePosition position, CallArguments arguments, TypeScope scope) {
-		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
+		if (!accepts(arguments.arguments.length))
 			return false;
 		
 		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
-		for (int i = 0; i < header.parameters.length; i++) {
+		for (int i = 0; i < arguments.arguments.length; i++) {
 			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
 				return false;
 		}

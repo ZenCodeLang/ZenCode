@@ -14,6 +14,7 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
@@ -220,14 +221,16 @@ public class ParsedCallArguments {
 	}
 	
 	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header, StoredType[] typeArguments) {
-		if (arguments.size() != header.parameters.length)
+		if (!header.accepts(arguments.size()))
 			return false;
 		
+		boolean variadic = false;
 		for (int i = 0; i < arguments.size(); i++) {
-			if (typeArguments == null && header.typeParameters != null && header.parameters[i].type.hasInferenceBlockingTypeParameters(header.typeParameters))
+			FunctionParameter parameter = header.getParameter(variadic, i);
+			if (typeArguments == null && header.typeParameters != null && parameter.type.hasInferenceBlockingTypeParameters(header.typeParameters))
 				return false;
 			
-			if (!arguments.get(i).isCompatibleWith(scope, header.parameters[i].type.getNormalized()))
+			if (!arguments.get(i).isCompatibleWith(scope, header.getParameterType(variadic, i).getNormalized()))
 				return false;
 		}
 		

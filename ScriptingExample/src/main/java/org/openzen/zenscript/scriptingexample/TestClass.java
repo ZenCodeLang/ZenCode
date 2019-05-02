@@ -52,4 +52,9 @@ public class TestClass implements TestInterface {
 	public TestGenericInterface<String> generate() {
 		return () -> name;
 	}
+	
+	@Method
+	public void withDefaultParameter(String a, @OptionalString("world") String b) {
+		System.out.println(a + " " + b);
+	}
 }

@@ -8,8 +8,11 @@ package org.openzen.zenscript.codemodel.type;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
@@ -25,6 +28,11 @@ public class OptionalTypeID implements TypeID {
 		this.baseType = baseType;
 		
 		normalized = baseType.getNormalized() == baseType ? this : registry.getOptional(baseType.getNormalized());
+	}
+	
+	@Override
+	public Expression getDefaultValue() {
+		return new NullExpression(CodePosition.UNKNOWN);
 	}
 	
 	@Override

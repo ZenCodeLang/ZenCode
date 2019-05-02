@@ -29,8 +29,8 @@ public class Main {
     public static void main(String... args) throws IOException {
 		if (args.length == 0) {
 			// testing environment - TODO project chooser/creator
-			//args = new String[] { "../../ZenCode", "SharedJavaSource" };
-			args = new String[] { "../../ZenCode", "CodeModelJavaSource" };
+			args = new String[] { "../../ZenCode", "SharedJavaSource" };
+			//args = new String[] { "../../ZenCode", "CodeModelJavaSource" };
 		}
 		
 		Arguments arguments = new Arguments(args);

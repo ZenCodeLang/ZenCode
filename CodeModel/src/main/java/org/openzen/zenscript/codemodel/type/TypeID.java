@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
@@ -37,6 +38,10 @@ public interface TypeID {
 	boolean hasDefaultValue();
 	
 	boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters);
+	
+	default Expression getDefaultValue() {
+		return null;
+	}
 	
 	// Infers type parameters for this type so it matches with targetType
 	// returns false if that isn't possible

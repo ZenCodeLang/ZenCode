@@ -7,8 +7,11 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
 import java.util.Set;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.expression.ArrayExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
@@ -34,6 +37,11 @@ public class ArrayTypeID implements TypeID {
 		this.elementType = elementType;
 		this.dimension = dimension;
 		this.normalized = elementType.getNormalized() == elementType ? this : registry.getArray(elementType.getNormalized(), dimension);
+	}
+	
+	@Override
+	public Expression getDefaultValue() {
+		return new ArrayExpression(CodePosition.UNKNOWN, Expression.NONE, this.stored());
 	}
 	
 	@Override

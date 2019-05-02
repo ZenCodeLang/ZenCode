@@ -7,8 +7,11 @@ package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
 import java.util.Set;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
@@ -31,6 +34,11 @@ public class StringTypeID implements TypeID {
 	public static final StoredType SHARED = new StoredType(INSTANCE, SharedStorageTag.INSTANCE);
 	
 	private StringTypeID() {}
+	
+	@Override
+	public Expression getDefaultValue() {
+		return new ConstantStringExpression(CodePosition.UNKNOWN, "");
+	}
 	
 	@Override
 	public TypeID getNormalized() {

@@ -53,7 +53,7 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	@Override
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
 		return group.getMethodMembers().stream()
-				.filter(method -> method.member.getHeader().parameters.length == arguments && method.member.isStatic())
+				.filter(method -> method.member.getHeader().accepts(arguments) && method.member.isStatic())
 				.map(method -> method.member.getHeader())
 				.collect(Collectors.toList());
 	}
