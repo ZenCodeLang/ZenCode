@@ -3325,7 +3325,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 
 				if (builtin == BuiltinID.ARRAY_CONSTRUCTOR_SIZED) {
-					type.elementType.type.accept(JavaDefaultExpressionTypeVisitor.INSTANCE).accept(this);
+					type.elementType.type.getDefaultValue().accept(this);
 				} else {
 					expression.arguments.arguments[expression.arguments.arguments.length - 1].accept(this);
 				}
