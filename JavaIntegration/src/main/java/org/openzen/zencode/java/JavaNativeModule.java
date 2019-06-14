@@ -260,27 +260,30 @@ public class JavaNativeModule {
 			throw new IllegalArgumentException("Class must be public");
 		
 		String className = cls.getName();
-		boolean isStruct = cls.getAnnotation(ZenCodeType.Struct.class) != null;
+		boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
 		
-		ZSPackage classPkg = getPackage(className);
-		ZenCodeType.Name name = cls.getDeclaredAnnotation(ZenCodeType.Name.class);
+		ZSPackage classPkg;
+		ZenCodeType.Name nameAnnotation = cls.getDeclaredAnnotation(ZenCodeType.Name.class);
 		className = className.contains(".") ? className.substring(className.lastIndexOf('.') + 1) : className;
-		if (name != null) {
-			String specifiedName = name.value();
+		if (nameAnnotation == null) {
+			classPkg = getPackage(className);
+		} else {
+			String specifiedName = nameAnnotation.value();
 			if (specifiedName.startsWith(".")) {
 				classPkg = getPackage(specifiedName);
 				className = className.substring(className.lastIndexOf('.') + 1);
 			} else if (specifiedName.indexOf('.') >= 0) {
 				if (!specifiedName.startsWith(pkg.fullName))
 					throw new IllegalArgumentException("Specified @Name as " + specifiedName + " but it's not in the module root package");
-				
+
 				classPkg = getPackage(basePackage + specifiedName.substring(pkg.fullName.length()));
 				className = className.substring(className.lastIndexOf('.') + 1);
 			} else {
-				className = name.value();
+				classPkg = getPackage(className);
+				className = nameAnnotation.value();
 			}
 		}
-		
+
 		TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
 		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
