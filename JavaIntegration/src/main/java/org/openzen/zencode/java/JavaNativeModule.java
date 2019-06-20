@@ -214,7 +214,7 @@ public class JavaNativeModule {
 	
 	public FunctionalMemberRef loadStaticMethod(Method method) {
 		if (!isStatic(method.getModifiers()))
-			throw new IllegalArgumentException("Method is not static");
+			throw new IllegalArgumentException("Method \"" + method.toString() + "\" is not static");
 		
 		HighLevelDefinition definition = addClass(method.getDeclaringClass());
 		JavaClass jcls = JavaClass.fromInternalName(getInternalName(method.getDeclaringClass()), JavaClass.Kind.CLASS);
@@ -241,7 +241,7 @@ public class JavaNativeModule {
 		else if (className.startsWith(basePackage + "."))
 			className = className.substring(basePackage.length() + 1);
 		else
-			throw new IllegalArgumentException("Invalid class name: not in the given base package");
+            throw new IllegalArgumentException("Invalid class name: \"" + className + "\" not in the given base package: \"" + basePackage + "\"");
 		
 		String[] classNameParts = Strings.split(className, '.');
 		ZSPackage classPkg = pkg;
@@ -253,7 +253,7 @@ public class JavaNativeModule {
 	
 	private <T> HighLevelDefinition convertClass(Class<T> cls) {
 		if ((cls.getModifiers() & Modifier.PUBLIC) == 0)
-			throw new IllegalArgumentException("Class must be public");
+			throw new IllegalArgumentException("Class \" " + cls.getName() + "\" must be public");
 		
 		String className = cls.getName();
 		boolean isStruct = cls.getAnnotation(ZenCodeType.Struct.class) != null;
@@ -461,7 +461,7 @@ public class JavaNativeModule {
 	private OperatorMember asOperator(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Operator annotation) {
 		FunctionHeader header = getHeader(context, method);
 		if (isStatic(method.getModifiers()))
-			throw new IllegalArgumentException("operator method cannot be static");
+			throw new IllegalArgumentException("operator method \"" + method.toString() + "\"cannot be static");
 		
 		// TODO: check number of parameters
 		//if (header.parameters.length != annotation.value().parameters)
@@ -488,7 +488,7 @@ public class JavaNativeModule {
 	
 	private SetterMember asSetter(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Setter annotation) {
 		if (method.getParameterCount() != 1)
-			throw new IllegalArgumentException("Illegal setter: must have exactly 1 parameter");
+			throw new IllegalArgumentException("Illegal setter: \"" + method.toString() + "\"must have exactly 1 parameter");
 		
 		StoredType type = loadStoredType(context, method.getAnnotatedParameterTypes()[0]);
 		String name = null;
