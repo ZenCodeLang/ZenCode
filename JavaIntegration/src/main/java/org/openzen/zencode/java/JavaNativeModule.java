@@ -256,13 +256,15 @@ public class JavaNativeModule {
 			throw new IllegalArgumentException("Class \" " + cls.getName() + "\" must be public");
 		
 		String className = cls.getName();
-		boolean isStruct = cls.getAnnotation(ZenCodeType.Struct.class) != null;
-		
-		ZSPackage classPkg = getPackage(className);
-		ZenCodeType.Name name = cls.getDeclaredAnnotation(ZenCodeType.Name.class);
+        boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
+        
+        ZSPackage classPkg;
+        ZenCodeType.Name nameAnnotation = cls.getDeclaredAnnotation(ZenCodeType.Name.class);
 		className = className.contains(".") ? className.substring(className.lastIndexOf('.') + 1) : className;
-		if (name != null) {
-			String specifiedName = name.value();
+        if (nameAnnotation == null) {
+            classPkg = getPackage(className);
+        } else {
+            String specifiedName = nameAnnotation.value();
 			if (specifiedName.startsWith(".")) {
 				classPkg = getPackage(specifiedName);
 				className = className.substring(className.lastIndexOf('.') + 1);
@@ -273,7 +275,8 @@ public class JavaNativeModule {
 				classPkg = getPackage(basePackage + specifiedName.substring(pkg.fullName.length()));
 				className = className.substring(className.lastIndexOf('.') + 1);
 			} else {
-				className = name.value();
+                classPkg = getPackage(className);
+                className = nameAnnotation.value();
 			}
 		}
 		
