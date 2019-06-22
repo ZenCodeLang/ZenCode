@@ -410,7 +410,7 @@ public class JavaNativeModule {
 	
 	private boolean shouldLoadType(Type type) {
 		if (type instanceof Class)
-			return shouldLoadClass((Class<?>)type);
+			return definitionByClass.containsKey(type) || shouldLoadClass((Class<?>)type);
 		if (type instanceof ParameterizedType)
 			return shouldLoadType(((ParameterizedType)type).getRawType());
 		
