@@ -122,11 +122,11 @@ public abstract class Expression implements IPartialExpression {
 	}
 	
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException {
 		TypeMembers members = scope.getTypeMembers(type);
 		IPartialExpression result = members.getMemberExpression(position, scope, this, name, false);
 		if (result == null)
-			System.out.println("No such member: " + name.name);
+		    throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "No such member: " + name.name);
 		return result;
 	}
 	
