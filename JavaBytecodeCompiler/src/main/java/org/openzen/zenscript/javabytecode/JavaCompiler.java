@@ -5,7 +5,7 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -40,7 +40,7 @@ public class JavaCompiler {
 	public JavaCompiler() {}
 	
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space) {
-		Map<String, JavaScriptFile> scriptBlocks = new HashMap<>();
+		Map<String, JavaScriptFile> scriptBlocks = new LinkedHashMap<>();
 		
 		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters);
 		JavaBytecodeContext context = new JavaBytecodeContext(target, space, module.modulePackage, packageName);
@@ -60,6 +60,7 @@ public class JavaCompiler {
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			String className = getClassName(definition.position.getFilename());
 			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, definition.pkg.fullName + "/" + className);
+			scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
 			
 			JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context.getJavaClass(definition);
 			target.addClass(cls.internalName, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
@@ -79,6 +80,7 @@ public class JavaCompiler {
 			final SourceFile sourceFile = script.file;
 			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
 			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
+			scriptFile.classWriter.visitSource(script.file.getFilename(), null);
 
 			String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
 

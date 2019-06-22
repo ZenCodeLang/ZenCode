@@ -8,6 +8,7 @@ package org.openzen.zencode.java;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
@@ -232,6 +233,9 @@ public class JavaNativeModule {
 	}
 	
 	private ZSPackage getPackage(String className) {
+		//TODO validate
+		if(this.basePackage == null || this.basePackage.isEmpty())
+			return pkg;
 		//TODO make a lang package?
 		if (!className.contains(".") || className.startsWith("java.lang"))
 			return pkg;
@@ -271,7 +275,7 @@ public class JavaNativeModule {
 			} else if (specifiedName.indexOf('.') >= 0) {
 				if (!specifiedName.startsWith(pkg.fullName))
 					throw new IllegalArgumentException("Specified @Name as " + specifiedName + " but it's not in the module root package");
-				
+
 				classPkg = getPackage(basePackage + specifiedName.substring(pkg.fullName.length()));
 				className = className.substring(className.lastIndexOf('.') + 1);
 			} else {
@@ -279,7 +283,7 @@ public class JavaNativeModule {
                 className = nameAnnotation.value();
 			}
 		}
-		
+
 		TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
 		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
@@ -301,10 +305,10 @@ public class JavaNativeModule {
 			definition = new InterfaceDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC, null);
 			javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.INTERFACE);
 		} else if (cls.isEnum()) {
-			definition = new EnumDefinition(CodePosition.NATIVE, module, pkg, className, Modifiers.PUBLIC, null);
+			definition = new EnumDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC, null);
 			javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.ENUM);
 		} else if (isStruct) {
-			definition = new StructDefinition(CodePosition.NATIVE, module, pkg, className, Modifiers.PUBLIC, null);
+			definition = new StructDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC, null);
 			javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.CLASS);
 		} else {
 			definition = new ClassDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC);
@@ -339,7 +343,7 @@ public class JavaNativeModule {
 			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
 			
 			StoredType fieldType = loadStoredType(context, field.getAnnotatedType());
-			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC, fieldName, thisType, fieldType, registry, 0, 0, null);
+			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
 			definition.addMember(member);
 			compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), getDescriptor(field.getType())));
 		}
@@ -587,7 +591,7 @@ public class JavaNativeModule {
 			return null;
 		}
 	}
-	
+
 	private FunctionHeader getHeader(
 			TypeVariableContext context,
 			AnnotatedType javaReturnType,
@@ -599,7 +603,7 @@ public class JavaNativeModule {
 		FunctionParameter[] parameters = new FunctionParameter[javaParameters.length];
 		for (int i = 0; i < parameters.length; i++) {
 			Parameter parameter = javaParameters[i];
-			
+
 			AnnotatedType parameterType = parameter.getAnnotatedType();
 			StoredType type = loadStoredType(context, parameter.getAnnotatedType());
 			Expression defaultValue = getDefaultValue(parameter, type);
@@ -736,7 +740,7 @@ public class JavaNativeModule {
 		return null;
 	}
 	
-	private int getMethodModifiers(Method method) {
+	private int getMethodModifiers(Member method) {
 		int result = Modifiers.PUBLIC;
 		if (isStatic(method.getModifiers()))
 			result |= Modifiers.STATIC;

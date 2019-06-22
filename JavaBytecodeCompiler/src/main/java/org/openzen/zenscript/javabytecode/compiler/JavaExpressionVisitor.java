@@ -8,7 +8,6 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
@@ -1897,7 +1896,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final JavaWriter functionWriter;
 		
 		//Bridge method!!!
-		if(!Objects.equals(methodInfo.descriptor, signature)) {
+		if (!Objects.equals(methodInfo.descriptor, signature)) {
 			final JavaMethod bridgeMethodInfo = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
 			final JavaWriter bridgeWriter = new JavaWriter(expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "java/lang/Override");
 			bridgeWriter.start();
@@ -1909,10 +1908,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final FunctionParameter functionParameter = expression.header.parameters[i];
 				final Type type = context.getType(functionParameter.type);
 				bridgeWriter.load(type, i + 1);
-				bridgeWriter.checkCast(type);
+				if (!CompilerUtils.isPrimitive(functionParameter.type.type)) {
+					bridgeWriter.checkCast(type);
+				}
 			}
 			
-			bridgeWriter.invokeVirtual(methodInfo);
+			bridgeWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), methodInfo.kind, methodInfo.name, methodInfo.compile, signature, methodInfo.modifiers, methodInfo.genericResult));
 			if(expression.header.getReturnType().type != BasicTypeID.VOID) {
 				bridgeWriter.returnType(context.getType(expression.header.getReturnType()));
 			}
@@ -3324,7 +3325,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 
 				if (builtin == BuiltinID.ARRAY_CONSTRUCTOR_SIZED) {
-					type.elementType.type.accept(JavaDefaultExpressionTypeVisitor.INSTANCE).accept(this);
+					type.elementType.type.getDefaultValue().accept(this);
 				} else {
 					expression.arguments.arguments[expression.arguments.arguments.length - 1].accept(this);
 				}
@@ -3338,117 +3339,117 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				return;
 			}
 			case ARRAY_CONSTRUCTOR_LAMBDA: {
-				ArrayTypeID type = (ArrayTypeID) expression.type.type;
-
-				if (type.dimension == 1) {
-					// array = new T[arguments[0]]
-					// lambda = arguments[1]
-					// for (int i = 0; i < array.length; i++)
-					//    array[i] = lambda.invoke(i);
-					//
-					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
-					throw new UnsupportedOperationException("Not yet supported!");
-				} else {
-					// TODO: implement
-					throw new UnsupportedOperationException("Not yet supported!");
-				}
-			}
-			case ARRAY_CONSTRUCTOR_PROJECTED: {
-
-
-				ArrayTypeID type = (ArrayTypeID) expression.type.type;
-
+				
+				//Labels
 				final Label begin = new Label();
 				final Label end = new Label();
-
 				javaWriter.label(begin);
-				expression.arguments.arguments[0].accept(this); //Origin array
+				
+				final Type ASMElementType = context.getType(expression.type);
+				final int dimension = ((ArrayTypeID) expression.type.type).dimension;
+				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(dimension, expression.arguments.arguments, this);
+				ArrayInitializerHelper.visitMultiDimArray(javaWriter, arraySizes, new int[dimension], dimension, ASMElementType, (elementType, counterLocations) -> {
+					expression.arguments.arguments[dimension].accept(this);
+					for (int counterLocation : counterLocations) {
+						javaWriter.loadInt(counterLocation);
+					}
+					javaWriter.invokeInterface(context.getFunctionalInterface(expression.arguments.arguments[dimension].type));
+				});
+				javaWriter.label(end);
+				return;
+			}
+			case ARRAY_CONSTRUCTOR_PROJECTED:
+			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
+				
+				//Labels
+				final Label begin = new Label();
+				final Label end = new Label();
+				javaWriter.label(begin);
+				
+				//Origin Array
+				expression.arguments.arguments[0].accept(this);
 				final Type originArrayType = context.getType(expression.arguments.arguments[0].type);
 				final int originArrayLocation = javaWriter.local(originArrayType);
 				javaWriter.storeObject(originArrayLocation);
 				Type destinationArrayType = context.getType(expression.type);
-
-
-				final boolean canBeInlined = ArrayInitializerHelper.canBeInlined(expression.arguments.arguments[1]);
-				final Type functionType;    //Only used if not inline able
-				final int functionLocation; //Only used if not inline able
-				if (!canBeInlined) {
-					expression.arguments.arguments[1].accept(this); //Projection Function
-					functionType = context.getType(expression.arguments.arguments[1].type);
-					functionLocation = javaWriter.local(functionType);
-					javaWriter.storeObject(functionLocation);
-					javaWriter.addVariableInfo(new JavaLocalVariableInfo(functionType, functionLocation, begin, "projectionFunction", end));
-				}
-
-				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsProjected(type.dimension, originArrayType, originArrayLocation, javaWriter);
-				ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, type.dimension, originArrayLocation, originArrayType, destinationArrayType,
-						(elementType, counterLocations) -> {
-							if (canBeInlined) {
+				
+				final boolean indexed = builtin == BuiltinID.ARRAY_CONSTRUCTOR_PROJECTED_INDEXED;
+				final boolean canBeInLined = ArrayInitializerHelper.canBeInLined(expression.arguments.arguments[1]);
+				if (canBeInLined) {
+					//We can inline, so do it
+					final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsProjected(type.dimension, originArrayType, originArrayLocation, javaWriter);
+					final Type projectedElementType = Type.getType(originArrayType.getDescriptor().substring(type.dimension));
+					ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, type.dimension, originArrayLocation, originArrayType, destinationArrayType,
+							(elementType, counterLocations) -> {
 								Label inlineBegin = new Label();
 								Label inlineEnd = new Label();
 								javaWriter.label(inlineBegin);
-								final Type projectedElementType = Type.getType(originArrayType.getDescriptor().substring(type.dimension));
+								
 								final int projectedElementLocal = javaWriter.local(projectedElementType);
 								javaWriter.store(projectedElementType, projectedElementLocal);
-
-
+								
+								
 								JavaExpressionVisitor visitor = new JavaExpressionVisitor(context, module, javaWriter) {
 									@Override
 									public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
+										if(indexed) {
+											final JavaParameterInfo parameterInfo = module.getParameterInfo(expression.parameter);
+											if (parameterInfo != null && parameterInfo.index <= type.dimension) {
+												javaWriter.loadInt(counterLocations[parameterInfo.index - 1]);
+												return null;
+											}
+										}
+										
 										javaWriter.load(projectedElementType, projectedElementLocal);
 										return null;
 									}
 								};
-
+								
 								Expression funcExpression = expression.arguments.arguments[1];
 								while (funcExpression instanceof StorageCastExpression) {
 									funcExpression = ((StorageCastExpression) funcExpression).value;
 								}
-
+								
 								if (funcExpression instanceof FunctionExpression && ((FunctionExpression) funcExpression).body instanceof ReturnStatement) {
+									CompilerUtils.tagMethodParameters(context, module, ((FunctionExpression) funcExpression).header, false);
 									((ReturnStatement) ((FunctionExpression) funcExpression).body).value.accept(visitor);
 									javaWriter.addVariableInfo(new JavaLocalVariableInfo(projectedElementType, projectedElementLocal, inlineBegin, ((FunctionExpression) funcExpression).header.parameters[0].name, inlineEnd));
+									
 								} else throw new IllegalStateException("Trying to inline a non-inlineable expression");
-
-
+								
+								
 								javaWriter.label(inlineEnd);
-							} else {
+							});
+				} else {
+					//We cannot inline, so get a hold of the function expression and apply it to every
+					expression.arguments.arguments[1].accept(this); //Projection Function
+					final Type functionType = context.getType(expression.arguments.arguments[1].type);
+					final int functionLocation = javaWriter.local(functionType);
+					javaWriter.storeObject(functionLocation);
+					javaWriter.addVariableInfo(new JavaLocalVariableInfo(functionType, functionLocation, begin, "projectionFunction", end));
+					final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsProjected(type.dimension, originArrayType, originArrayLocation, javaWriter);
+					ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, type.dimension, originArrayLocation, originArrayType, destinationArrayType,
+							(elementType, counterLocations) -> {
 								//Apply function here
-								//javaWriter.loadObject(functionLocation);
-								//javaWriter.swap();
-
-								//TODO invoke?
-								//javaWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName("lambda1", JavaClass.Kind.CLASS), JavaMethod.Kind.INSTANCE, "accept", true, "(Ljava/lang/String;)Ljava/lang/String;", 0, false));
-
-								//FIXME Critical! Currently returning the same object!
-								//throw new UnsupportedOperationException("Cannot use projection functions yet!");
-							}
-						});
-
-
+								javaWriter.loadObject(functionLocation);
+								javaWriter.swap();
+								
+								if(indexed) {
+									for (int counterLocation : counterLocations) {
+										javaWriter.loadInt(counterLocation);
+										javaWriter.swap();
+									}
+								}
+								
+								javaWriter.invokeInterface(context.getFunctionalInterface(expression.arguments.arguments[1].type));
+							});
+				}
+				
+				
 				javaWriter.label(end);
 				return;
-
-			}
-			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
-				ArrayTypeID type = (ArrayTypeID) expression.type.type;
-
-				if (type.dimension == 1) {
-					// original = arguments[0] (this is an array)
-					// projector = arguments[1] (this is a lambda with 2 parameters)
-					// array = new T[original.length]
-					// for (int i = 0; i < array.length; i++)
-					//   array[i] = projector(i, original[i]);
-					//
-					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
-
-					// TODO: implement in bytecode
-
-					return;
-				} else {
-					// TODO: implement
-					throw new UnsupportedOperationException("Not yet supported!");
-				}
+				
 			}
 			case ARRAY_INDEXGET:
 				break;

@@ -9,3 +9,9 @@ invokeFunctionalInt(y);
 
 
 println(((x as int) => x)(10));
+
+//TODO: Globals can't be "captured"
+//invokeFunctionalInt((a, b) => {
+//	println("a");
+//	return a + b;
+//});

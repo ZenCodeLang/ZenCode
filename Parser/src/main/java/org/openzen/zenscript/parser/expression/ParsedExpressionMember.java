@@ -44,7 +44,7 @@ public class ParsedExpressionMember extends ParsedExpression {
 				scope.hints,
 				new GenericName(this.member, typeArguments));
 		if (member == null) {
-			TypeMembers members = scope.getTypeMembers(cValue.eval().type);
+			//TypeMembers members = scope.getTypeMembers(cValue.eval().type);
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Member not found: " + this.member);
 		}
 		

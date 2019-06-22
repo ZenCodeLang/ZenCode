@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -29,6 +31,7 @@ import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.ParsedFile;
 import org.openzen.zenscript.parser.ZippedPackage;
+import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 
 /**
@@ -93,12 +96,27 @@ public class ScriptingEngine {
 			FunctionParameter[] scriptParameters,
 			String... dependencies) throws ParseException
 	{
+		return createScriptedModule(name, sources, bracketParser, scriptParameters, Throwable::printStackTrace, System.out::println, sourceFile -> System.out.println("Loading " + sourceFile.getFilename()), dependencies);
+	}
+	
+	public SemanticModule createScriptedModule(
+			String name,
+			SourceFile[] sources,
+			BracketExpressionParser bracketParser,
+			FunctionParameter[] scriptParameters,
+			Consumer<CompileException> compileExceptionConsumer,
+			Consumer<ValidationLogEntry> validatorErrorConsumer,
+			Consumer<SourceFile> sourceFileConsumer,
+			String... dependencies) throws ParseException
+	{
 		Module scriptModule = new Module(name);
 		CompilingPackage scriptPackage = new CompilingPackage(new ZSPackage(space.rootPackage, name), scriptModule);
 		
 		ParsedFile[] files = new ParsedFile[sources.length];
-		for (int i = 0; i < sources.length; i++)
+		for (int i = 0; i < sources.length; i++) {
+			sourceFileConsumer.accept(sources[i]);
 			files[i] = ParsedFile.parse(scriptPackage, bracketParser, sources[i]);
+		}
 		
 		SemanticModule[] dependencyModules = new SemanticModule[dependencies.length + 1];
 		dependencyModules[0] = space.getModule("stdlib");
@@ -112,13 +130,13 @@ public class ScriptingEngine {
 				files,
 				space,
 				scriptParameters,
-				ex -> ex.printStackTrace());
+				compileExceptionConsumer);
 		if (!scripts.isValid())
 			return scripts;
 		
 		return Validator.validate(
 				scripts.normalize(),
-				error -> System.out.println(error.toString()));
+				validatorErrorConsumer);
 	}
 	
 	public void registerCompiled(SemanticModule module) {
@@ -146,5 +164,9 @@ public class ScriptingEngine {
 		if (debug)
 			runUnit.dump(new File("classes"));
 		runUnit.run(arguments, parentClassLoader);
+	}
+	
+	public List<JavaNativeModule> getNativeModules() {
+		return Collections.unmodifiableList(this.nativeModules);
 	}
 }
