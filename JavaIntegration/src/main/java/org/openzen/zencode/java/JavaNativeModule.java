@@ -164,9 +164,8 @@ public class JavaNativeModule {
 	public HighLevelDefinition addClass(Class<?> cls) {
 		if (definitionByClass.containsKey(cls))
 			return definitionByClass.get(cls);
-		
-		HighLevelDefinition result = convertClass(cls);
-		return result;
+        
+        return convertClass(cls);
 	}
 	
 	public void addGlobals(Class<?> cls) {
@@ -421,9 +420,13 @@ public class JavaNativeModule {
 		return false;
 	}
 	
+	private String getClassName(Class<?> cls) {
+	    return cls.isAnnotationPresent(ZenCodeType.Name.class) ? cls.getAnnotation(ZenCodeType.Name.class).value() : cls.getName();
+    }
+	
 	private boolean shouldLoadClass(Class<?> cls) {
-		return isInBasePackage(cls.getName());
-	}
+	    return isInBasePackage(getClassName(cls));
+    }
 	
 	private boolean isGetterName(String name) {
 		return name.startsWith("get") || name.startsWith("is") || name.startsWith("has");
@@ -604,7 +607,7 @@ public class JavaNativeModule {
 		for (int i = 0; i < parameters.length; i++) {
 			Parameter parameter = javaParameters[i];
 
-			AnnotatedType parameterType = parameter.getAnnotatedType();
+			//AnnotatedType parameterType = parameter.getAnnotatedType();
 			StoredType type = loadStoredType(context, parameter.getAnnotatedType());
 			Expression defaultValue = getDefaultValue(parameter, type);
 			parameters[i] = new FunctionParameter(type, parameter.getName(), defaultValue, parameter.isVarArgs());
