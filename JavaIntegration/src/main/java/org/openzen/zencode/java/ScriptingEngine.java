@@ -5,34 +5,21 @@
  */
 package org.openzen.zencode.java;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
+import org.openzen.zencode.shared.*;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.context.*;
+import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.storage.*;
+import org.openzen.zenscript.javabytecode.*;
+import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.lexer.*;
+import org.openzen.zenscript.parser.*;
+import org.openzen.zenscript.validator.*;
 
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.SourceFile;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Module;
-import org.openzen.zenscript.codemodel.ModuleSpace;
-import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.storage.StorageType;
-import org.openzen.zenscript.javabytecode.JavaBytecodeRunUnit;
-import org.openzen.zenscript.javabytecode.JavaCompiler;
-import org.openzen.zenscript.javashared.SimpleJavaCompileSpace;
-import org.openzen.zenscript.lexer.ParseException;
-import org.openzen.zenscript.parser.BracketExpressionParser;
-import org.openzen.zenscript.parser.ParsedFile;
-import org.openzen.zenscript.parser.ZippedPackage;
-import org.openzen.zenscript.validator.ValidationLogEntry;
-import org.openzen.zenscript.validator.Validator;
+import java.io.*;
+import java.util.*;
+import java.util.function.*;
 
 /**
  *
@@ -57,14 +44,10 @@ public class ScriptingEngine {
 			SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, new SemanticModule[0], FunctionParameter.NONE, stdlib);
 			stdlibModule = Validator.validate(stdlibModule, error -> System.out.println(error.toString()));
 			space.addModule("stdlib", stdlibModule);
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		} catch (CompileException ex) {
-			throw new RuntimeException(ex);
-		} catch (ParseException ex) {
+		} catch (IOException | CompileException | ParseException ex) {
 			throw new RuntimeException(ex);
 		}
-	}
+    }
 	
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
@@ -73,8 +56,7 @@ public class ScriptingEngine {
 	
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {
 		SemanticModule semantic = Validator.validate(
-				module.toSemantic(space),
-				entry -> System.out.println(entry));
+				module.toSemantic(space), System.out::println);
 		if (!semantic.isValid())
 			return;
 		
