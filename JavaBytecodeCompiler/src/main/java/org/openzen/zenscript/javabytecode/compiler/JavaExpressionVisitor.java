@@ -111,7 +111,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	private static final JavaMethod ENUM_NAME = JavaMethod.getNativeVirtual(JavaClass.ENUM, "name", "()Ljava/lang/String;");
 	private static final JavaMethod ENUM_ORDINAL = JavaMethod.getNativeVirtual(JavaClass.ENUM, "ordinal", "()I");
 	private static final JavaMethod HASHMAP_INIT = JavaMethod.getNativeConstructor(JavaClass.HASHMAP, "()V");
-	private static final JavaMethod MAP_GET = JavaMethod.getInterface(JavaClass.HASHMAP, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
+	private static final JavaMethod MAP_GET = JavaMethod.getInterface(JavaClass.MAP, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 	private static final JavaMethod MAP_PUT = JavaMethod.getInterface(JavaClass.MAP, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 	private static final JavaMethod MAP_PUT_ALL = JavaMethod.getInterface(JavaClass.MAP, "putAll", "(Ljava/util/Map;)V");
 	private static final JavaMethod MAP_CONTAINS_KEY = JavaMethod.getInterface(JavaClass.MAP, "containsKey", "(Ljava/lang/Object;)Z");
