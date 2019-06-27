@@ -178,9 +178,10 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				}
 				case INDEXGET: {
 					StringBuilder result = new StringBuilder();
-					result.append(expression.target);
+					result.append(((GetLocalVariableExpression) expression.target).variable.name);
 					result.append("[");
-					for (int i = 0; i < expression.arguments.arguments.length - 1; i++) {
+					//why -1?
+					for (int i = 0; i < expression.arguments.arguments.length; i++) {
 						if (i > 0)
 							result.append(", ");
 						

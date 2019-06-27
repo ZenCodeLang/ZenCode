@@ -90,7 +90,7 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 	@Override
 	public String visitDefinition(DefinitionTypeID definition) {
 		String importedName = importer.importDefinition(definition.definition);
-		if (definition.typeArguments == null)
+		if (definition.typeArguments == null || definition.typeArguments.length == 0)
 			return importedName;
 		
 		StringBuilder result = new StringBuilder();
