@@ -874,7 +874,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			case ASSOC_INDEXGET:
 			case ASSOC_GETORDEFAULT: {
-				javaWriter.invokeVirtual(MAP_GET);
+				javaWriter.invokeInterface(MAP_GET);
 
 				AssocTypeID type = (AssocTypeID) expression.target.type.type;
 				javaWriter.checkCast(context.getInternalName(type.valueType));
