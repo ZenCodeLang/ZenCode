@@ -39,7 +39,11 @@ public class JavaMethod {
 	public static JavaMethod getNativeVirtual(JavaClass cls, String name, String descriptor) {
 		return new JavaMethod(cls, Kind.INSTANCE, name, false, descriptor, JavaModifiers.PUBLIC, false);
 	}
-
+    
+    public static JavaMethod getInterface(JavaClass cls, String name, String descriptor) {
+        return new JavaMethod(cls, Kind.INTERFACE, name, false, descriptor, JavaModifiers.PUBLIC, false);
+    }
+    
 	public static JavaMethod getNativeExpansion(JavaClass cls, String name, String descriptor) {
 		return new JavaMethod(cls, Kind.EXPANSION, name, false, descriptor, JavaModifiers.PUBLIC | JavaModifiers.STATIC, false);
 	}

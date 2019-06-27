@@ -870,6 +870,10 @@ public class JavaWriter {
 	}
 	
 	public void invokeVirtual(JavaMethod method) {
+        if(method.kind == JavaMethod.Kind.INTERFACE) {
+            invokeInterface(method);
+            return;
+        }
 		if (debug)
 			System.out.println("invokeVirtual " + method.cls.internalName + '.' + method.name + method.descriptor);
 		
