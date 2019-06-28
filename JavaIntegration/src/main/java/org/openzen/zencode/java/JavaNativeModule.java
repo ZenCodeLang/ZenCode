@@ -5,80 +5,22 @@
  */
 package org.openzen.zencode.java;
 
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Member;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.Module;
-import org.openzen.zenscript.codemodel.ModuleSpace;
-import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.PackageDefinitions;
-import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.definition.ClassDefinition;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
-import org.openzen.zenscript.codemodel.definition.StructDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantLongExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantSByteExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantShortExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.ExpressionSymbol;
-import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
-import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
-import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaFunctionalInterfaceStorageTag;
-import org.openzen.zenscript.javashared.JavaImplementation;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
-import stdlib.Strings;
+import org.openzen.zencode.shared.*;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.generic.*;
+import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.member.ref.*;
+import org.openzen.zenscript.codemodel.partial.*;
+import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.member.*;
+import org.openzen.zenscript.codemodel.type.storage.*;
+import org.openzen.zenscript.javashared.*;
+import stdlib.*;
+
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * @author Stan Hebben
@@ -542,7 +484,7 @@ public class JavaNativeModule {
 		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class)) {
 			Expression defaultValue = type.type.getDefaultValue();
 			if (defaultValue == null)
-				throw new IllegalArgumentException(type.toString() + " doesn't have a default value");
+			    defaultValue = new NullExpression(CodePosition.NATIVE);
 			return defaultValue;
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalInt.class)) {
 			ZenCodeType.OptionalInt annotation = parameter.getAnnotation(ZenCodeType.OptionalInt.class);
@@ -640,7 +582,7 @@ public class JavaNativeModule {
 		else if (annotatedType.isAnnotationPresent(ZenCodeType.NullableUSize.class))
 			return registry.getOptional(BasicTypeID.USIZE).stored();
 		
-		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class);
+		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class) || annotatedType.isAnnotationPresent(ZenCodeType.Optional.class);
 		boolean unsigned = annotatedType.isAnnotationPresent(ZenCodeType.Unsigned.class);
 		
 		Type type = annotatedType.getType();

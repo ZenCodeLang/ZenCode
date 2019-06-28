@@ -5,30 +5,18 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zencode.shared.*;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.AssocTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.validator.TypeContext;
-import org.openzen.zenscript.validator.ValidationLogEntry;
-import org.openzen.zenscript.validator.Validator;
-import org.openzen.zenscript.validator.analysis.ExpressionScope;
+import org.openzen.zenscript.codemodel.expression.switchvalue.*;
+import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.member.ref.*;
+import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.validator.*;
+import org.openzen.zenscript.validator.analysis.*;
+
+import java.util.*;
 
 /**
  *
@@ -776,7 +764,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			}
 			
 			FunctionParameter parameter = instancedHeader.getParameter(isVariadic, i);
-			if (!parameter.type.equals(argument.type)) {
+			if (!parameter.type.equals(argument.type) && !parameter.defaultValue.type.equals(argument.type)) {
 				validator.logError(
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						position,
