@@ -5,17 +5,6 @@
  */
 package org.openzen.zencode.java;
 
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -78,6 +67,18 @@ import org.openzen.zenscript.javashared.JavaImplementation;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaModifiers;
 import stdlib.Strings;
+
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Stan Hebben
@@ -532,7 +533,7 @@ public class JavaNativeModule {
 		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class)) {
 			Expression defaultValue = type.type.getDefaultValue();
 			if (defaultValue == null)
-				throw new IllegalArgumentException(type.toString() + " doesn't have a default value");
+			    defaultValue = new org.openzen.zenscript.codemodel.expression.NullExpression(CodePosition.NATIVE);
 			return defaultValue;
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalInt.class)) {
 			ZenCodeType.OptionalInt annotation = parameter.getAnnotation(ZenCodeType.OptionalInt.class);
@@ -630,7 +631,7 @@ public class JavaNativeModule {
 		else if (annotatedType.isAnnotationPresent(ZenCodeType.NullableUSize.class))
 			return registry.getOptional(BasicTypeID.USIZE).stored();
 		
-		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class);
+		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class) || annotatedType.isAnnotationPresent(ZenCodeType.Optional.class);
 		boolean unsigned = annotatedType.isAnnotationPresent(ZenCodeType.Unsigned.class);
 		
 		Type type = annotatedType.getType();

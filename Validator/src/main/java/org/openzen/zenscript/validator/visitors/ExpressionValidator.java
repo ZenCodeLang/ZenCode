@@ -776,7 +776,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			}
 			
 			FunctionParameter parameter = instancedHeader.getParameter(isVariadic, i);
-			if (!parameter.type.equals(argument.type)) {
+			if (!parameter.type.equals(argument.type) && !parameter.defaultValue.type.equals(argument.type)) {
 				validator.logError(
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						position,
