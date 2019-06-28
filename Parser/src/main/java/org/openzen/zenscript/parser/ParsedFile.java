@@ -5,15 +5,9 @@
  */
 package org.openzen.zenscript.parser;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
@@ -31,16 +25,27 @@ import org.openzen.zenscript.codemodel.context.FileResolutionContext;
 import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.lexer.ZSTokenParser;
-import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.scope.GlobalScriptScope;
-import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.lexer.ParseException;
+import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import static org.openzen.zenscript.lexer.ZSTokenType.EOF;
+import static org.openzen.zenscript.lexer.ZSTokenType.K_IMPORT;
 
 /**
  *
@@ -80,15 +85,18 @@ public class ParsedFile {
 				pkg,
 				globals);
 		
+		
+		//Map so we don't print multiple compile exceptions for a single import
+		Map<String, CompileException> importErrors = new HashMap<>();
 		for (ParsedFile file : files) {
-			file.registerTypes(moduleContext, rootPackage, pkg);
+			file.registerTypes(moduleContext, rootPackage, pkg, importErrors);
 		}
 		
 		for (ParsedFile file : files) {
 			// compileMembers will register all definition members to their
 			// respective definitions, such as fields, constructors, methods...
 			// It doesn't yet compile the method contents.
-			file.compileTypes(moduleContext, rootPackage, pkg);
+			file.compileTypes(moduleContext, rootPackage, pkg, importErrors);
 		}
 		
 		if (failed)
@@ -97,7 +105,7 @@ public class ParsedFile {
 		// scripts will store all the script blocks encountered in the files
 		PrecompilationState precompiler = new PrecompilationState();
 		for (ParsedFile file : files) {
-			file.registerMembers(moduleContext, precompiler, rootPackage, pkg, expansions, globals);
+			file.registerMembers(moduleContext, precompiler, rootPackage, pkg, expansions, globals, importErrors);
 		}
 		
 		List<ScriptBlock> scripts = new ArrayList<>();
@@ -106,9 +114,12 @@ public class ParsedFile {
 			// compileCode will convert the parsed statements and expressions
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
-			file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals, scriptHeader, exceptionLogger);
+			file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals, scriptHeader, exceptionLogger, importErrors);
 		}
-		
+        
+        for(CompileException error : importErrors.values()) {
+            exceptionLogger.accept(error);
+        }
 		return new SemanticModule(
 				pkg.module,
 				dependencies,
@@ -231,9 +242,9 @@ public class ParsedFile {
 	public void registerTypes(
 			ModuleTypeResolutionContext moduleContext,
 			ZSPackage rootPackage,
-			CompilingPackage modulePackage) {
+			CompilingPackage modulePackage, Map<String, CompileException> importErrors) {
 		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
-		loadImports(context, rootPackage, modulePackage);
+		loadImports(context, rootPackage, modulePackage, importErrors);
 		
 		for (ParsedDefinition definition : this.definitions) {
 			if (definition.getName() != null)
@@ -244,9 +255,9 @@ public class ParsedFile {
 	public void compileTypes(
 			ModuleTypeResolutionContext moduleContext,
 			ZSPackage rootPackage,
-			CompilingPackage modulePackage) {
+			CompilingPackage modulePackage, Map<String, CompileException> importErrors) {
 		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
-		loadImports(context, rootPackage, modulePackage);
+		loadImports(context, rootPackage, modulePackage, importErrors);
 		
 		for (ParsedDefinition definition : this.definitions) {
 			if (definition.getName() != null)
@@ -264,9 +275,9 @@ public class ParsedFile {
 			ZSPackage rootPackage,
 			CompilingPackage modulePackage,
 			List<ExpansionDefinition> expansions,
-			Map<String, ISymbol> globals) {
+			Map<String, ISymbol> globals, Map<String, CompileException> importErrors) {
 		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
-		loadImports(context, rootPackage, modulePackage);
+		loadImports(context, rootPackage, modulePackage, importErrors);
 		
 		FileScope scope = new FileScope(context, expansions, globals, precompiler);
 		for (ParsedDefinition definition : this.definitions) {
@@ -275,17 +286,17 @@ public class ParsedFile {
 	}
 	
 	public void compileCode(
-			ModuleTypeResolutionContext moduleContext,
-			PrecompilationState precompiler,
-			ZSPackage rootPackage,
-			CompilingPackage modulePackage,
-			List<ExpansionDefinition> expansions,
-			List<ScriptBlock> scripts,
-			Map<String, ISymbol> globals,
-			FunctionHeader scriptHeader,
-			Consumer<CompileException> exceptionLogger) {
+            ModuleTypeResolutionContext moduleContext,
+            PrecompilationState precompiler,
+            ZSPackage rootPackage,
+            CompilingPackage modulePackage,
+            List<ExpansionDefinition> expansions,
+            List<ScriptBlock> scripts,
+            Map<String, ISymbol> globals,
+            FunctionHeader scriptHeader,
+            Consumer<CompileException> exceptionLogger, Map<String, CompileException> importErrors) {
 		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
-		loadImports(context, rootPackage, modulePackage);
+		loadImports(context, rootPackage, modulePackage, importErrors);
 		
 		FileScope scope = new FileScope(context, expansions, globals, precompiler);
 		for (ParsedDefinition definition : this.definitions) {
@@ -309,7 +320,7 @@ public class ParsedFile {
 		}
 	}
 	
-	private void loadImports(FileResolutionContext context, ZSPackage rootPackage, CompilingPackage modulePackage) {
+	private void loadImports(FileResolutionContext context, ZSPackage rootPackage, CompilingPackage modulePackage, Map<String, CompileException> importErrors) {
 		for (ParsedImport importEntry : imports) {
 			HighLevelDefinition definition;
 			if (importEntry.isRelative()) {
@@ -318,9 +329,8 @@ public class ParsedFile {
 				definition = rootPackage.getImport(importEntry.getPath(), 0);
 			}
 			
-			// TODO: how to signal this?
-			//if (definition == null)
-			//	importErrors.add(new CompileException(importEntry.position, CompileExceptionCode.IMPORT_NOT_FOUND, "Could not find type " + importEntry.toString()));
+			if (definition == null)
+				importErrors.put(importEntry.toString(), new CompileException(importEntry.position, CompileExceptionCode.IMPORT_NOT_FOUND, "Could not find type " + importEntry.toString()));
 			
 			if (definition != null)
 				context.addImport(importEntry.getName(), definition);
