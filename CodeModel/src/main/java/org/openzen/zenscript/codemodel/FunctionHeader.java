@@ -234,7 +234,7 @@ public class FunctionHeader {
 			return false;
 		
 		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
-		for (int i = 0; i < header.parameters.length; i++) {
+		for (int i = 0; i < header.minParameters; i++) {
 			if (!arguments.arguments[i].type.equals(header.parameters[i].type))
 				return false;
 		}
