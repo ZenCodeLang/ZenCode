@@ -97,7 +97,9 @@ public interface ZenCodeType {
 	
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.PARAMETER)
-	@interface Optional {}
+	@interface Optional {
+		String value() default "null";
+	}
 	
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.PARAMETER)

@@ -5,22 +5,94 @@
  */
 package org.openzen.zencode.java;
 
-import org.openzen.zencode.shared.*;
-import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.definition.*;
-import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.generic.*;
-import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.member.ref.*;
-import org.openzen.zenscript.codemodel.partial.*;
-import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.codemodel.type.member.*;
-import org.openzen.zenscript.codemodel.type.storage.*;
-import org.openzen.zenscript.javashared.*;
-import stdlib.*;
-
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.IOException;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Member;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.LiteralSourceFile;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.ModuleSpace;
+import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.PackageDefinitions;
+import org.openzen.zenscript.codemodel.SemanticModule;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
+import org.openzen.zenscript.codemodel.context.FileResolutionContext;
+import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
+import org.openzen.zenscript.codemodel.definition.ClassDefinition;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantLongExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantSByteExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantShortExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
+import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.ExpressionSymbol;
+import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
+import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
+import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.member.MethodMember;
+import org.openzen.zenscript.codemodel.member.OperatorMember;
+import org.openzen.zenscript.codemodel.member.SetterMember;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.FileScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.ISymbol;
+import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.storage.StorageType;
+import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaField;
+import org.openzen.zenscript.javashared.JavaFunctionalInterfaceStorageTag;
+import org.openzen.zenscript.javashared.JavaImplementation;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
+import org.openzen.zenscript.lexer.ParseException;
+import org.openzen.zenscript.lexer.ZSTokenParser;
+import org.openzen.zenscript.parser.BracketExpressionParser;
+import org.openzen.zenscript.parser.expression.ParsedExpression;
+import stdlib.Strings;
 
 /**
  * @author Stan Hebben
@@ -38,7 +110,8 @@ public class JavaNativeModule {
 	private final Map<Class<?>, TypeID> unsignedByClass = new HashMap<>();
 	
 	public final Map<String, ISymbol> globals = new HashMap<>();
-	
+	private BracketExpressionParser bep;
+
 	public JavaNativeModule(
 			ZSPackage pkg,
 			String name,
@@ -480,12 +553,25 @@ public class JavaNativeModule {
 				method.getAnnotatedExceptionTypes());
 	}
 	
-	private Expression getDefaultValue(Parameter parameter, StoredType type) {
+	protected Expression getDefaultValue(Parameter parameter, StoredType type) {
 		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class)) {
-			Expression defaultValue = type.type.getDefaultValue();
-			if (defaultValue == null)
-			    defaultValue = new NullExpression(CodePosition.NATIVE);
-			return defaultValue;
+				final String s = parameter.getAnnotation(ZenCodeType.Optional.class).value();
+				try {
+					final String filename = "internal: " + parameter.getDeclaringExecutable().getName();
+
+					final CompilingPackage rootCompiling = new CompilingPackage(pkg, module);
+					final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], StorageType.getStandard(), pkg, rootCompiling, globals);
+					final FileResolutionContext fContext = new FileResolutionContext(context, pkg, rootCompiling);
+					final FileScope fileScope = new FileScope(fContext, Collections.emptyList(), globals, member -> {});
+					final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep, 4);
+
+					return ParsedExpression.parse(tokens).compile(new ExpressionScope(fileScope)).eval().castExplicit(CodePosition.GENERATED, fileScope, type, type.isOptional());
+				} catch (IOException | ParseException | CompileException ex) {
+					//TODO REMOVE
+					ex.printStackTrace();
+					return null;
+				}
+			//}
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalInt.class)) {
 			ZenCodeType.OptionalInt annotation = parameter.getAnnotation(ZenCodeType.OptionalInt.class);
 			if (type.type == BasicTypeID.BYTE)
@@ -747,7 +833,11 @@ public class JavaNativeModule {
 		
 		return new JavaMethod(cls, kind, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), result.isGeneric());
 	}
-	
+
+	public void registerBEP(BracketExpressionParser bep) {
+		this.bep = bep;
+	}
+
 	private static class TypeVariableContext {
 		private final Map<TypeVariable, TypeParameter> typeVariables = new HashMap<>();
 		
