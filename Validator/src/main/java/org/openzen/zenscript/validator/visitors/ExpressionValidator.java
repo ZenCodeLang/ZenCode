@@ -5,9 +5,14 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import org.openzen.zencode.shared.*;
-import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.definition.*;
+import java.util.*;
+
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.*;
 import org.openzen.zenscript.codemodel.member.*;
@@ -15,9 +20,6 @@ import org.openzen.zenscript.codemodel.member.ref.*;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.validator.*;
 import org.openzen.zenscript.validator.analysis.*;
-
-import java.util.*;
-
 /**
  *
  * @author Hoofdgebruiker
@@ -764,7 +766,8 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			}
 			
 			FunctionParameter parameter = instancedHeader.getParameter(isVariadic, i);
-			if (!parameter.type.equals(argument.type) && !parameter.defaultValue.type.equals(argument.type)) {
+			if (!parameter.type.equals(argument.type) && (parameter.defaultValue == null || !Objects.equals(parameter.defaultValue.type, argument.type))) {
+				if(!parameter.type.type.equals(argument.type.type))
 				validator.logError(
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						position,
