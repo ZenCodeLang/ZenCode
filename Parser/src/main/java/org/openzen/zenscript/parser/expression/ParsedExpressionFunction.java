@@ -100,6 +100,9 @@ public class ParsedExpressionFunction extends ParsedExpression {
 	
 	@Override
 	public boolean isCompatibleWith(BaseScope scope, StoredType type) {
+		if(type.isOptional())
+			type = type.withoutOptional();
+
 		if (type.type instanceof FunctionTypeID) {
 			FunctionHeader definedHeader = header.compile(scope);
 			FunctionTypeID targetFunction = (FunctionTypeID) type.type;
