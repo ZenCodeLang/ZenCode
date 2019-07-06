@@ -83,4 +83,24 @@ public class IfStatement extends Statement {
 				onThen.normalize(scope, modified),
 				onElse == null ? null : onElse.normalize(scope, modified));
 	}
+
+	@Override
+	public StoredType getReturnType() {
+		final StoredType thenType = onThen.getReturnType();
+		if(onElse == null)
+			return thenType;
+		final StoredType elseType = onElse.getReturnType();
+		if(thenType == elseType)
+			return thenType;
+
+		if(thenType == null)
+			return elseType;
+		if(elseType == null)
+			return thenType;
+
+		if(thenType.type != elseType.type)
+			//TODO make this real?
+			throw new IllegalStateException("If and Else return different things?!?");
+		return thenType;
+	}
 }

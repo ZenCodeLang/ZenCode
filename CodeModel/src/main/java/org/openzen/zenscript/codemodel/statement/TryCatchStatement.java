@@ -12,6 +12,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -88,5 +89,15 @@ public class TryCatchStatement extends Statement {
 			tCatchClauses.add(clause.normalize(scope, modified));
 		Statement tFinallyClause = finallyClause == null ? null : finallyClause.normalize(scope, modified);
 		return new TryCatchStatement(position, tResource, tContent, tCatchClauses, tFinallyClause);
+	}
+
+	@Override
+	public StoredType getReturnType() {
+		if(finallyClause != null && finallyClause.getReturnType() != null)
+			return finallyClause.getReturnType();
+
+		final StoredType contentType = content.getReturnType();
+		//TODO check catch clauses and do stuff I guess?
+		return contentType;
 	}
 }
