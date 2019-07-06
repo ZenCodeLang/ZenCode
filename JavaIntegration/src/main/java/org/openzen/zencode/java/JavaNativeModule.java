@@ -298,19 +298,7 @@ public class JavaNativeModule {
 			}
 		}
 
-		TypeVariableContext context = new TypeVariableContext();
-		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
-		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
-		for (int i = 0; i < javaTypeParameters.length; i++) {
-			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
-			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
-			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
-				TypeID type = loadType(context, bound).type;
-				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
-			}
-			typeParameters[i] = parameter;
-			context.put(typeVariable, parameter);
-		}
+
 		
 		HighLevelDefinition definition;
 		String internalName = getInternalName(cls);
@@ -327,12 +315,34 @@ public class JavaNativeModule {
 		} else {
 			definition = new ClassDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC);
 			javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.CLASS);
-			
-			if (cls.getAnnotatedSuperclass() != null && shouldLoadType(cls.getAnnotatedSuperclass().getType())) {
-				definition.setSuperType(loadType(context, cls.getAnnotatedSuperclass()).type);
-			}
+
 		}
-		
+
+		//Moved up here so that circular dependencies are caught (hopefully)
+		definitionByClass.put(cls, definition);
+
+		TypeVariableContext context = new TypeVariableContext();
+		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
+		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
+		for (int i = 0; i < javaTypeParameters.length; i++) {
+			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
+			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
+			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
+				TypeID type = loadType(context, bound).type;
+				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
+			}
+			typeParameters[i] = parameter;
+			context.put(typeVariable, parameter);
+		}
+
+		if (definition instanceof ClassDefinition && cls.getAnnotatedSuperclass() != null && shouldLoadType(cls.getAnnotatedSuperclass().getType())) {
+			definition.setSuperType(loadType(context, cls.getAnnotatedSuperclass()).type);
+		}
+
+		if (definition.getSuperType() == null && cls != Object.class) {
+			definition.setSuperType(loadType(context, Object.class, false, false).type);
+		}
+
 		for (AnnotatedType iface : cls.getAnnotatedInterfaces()) {
 			if (shouldLoadType(iface.getType())) {
 				TypeID type = loadType(context, iface).type;
@@ -344,7 +354,6 @@ public class JavaNativeModule {
 		
 		definition.typeParameters = typeParameters;
 		compiled.setClassInfo(definition, javaClass);
-		definitionByClass.put(cls, definition);
 		
 		StoredType thisType = new StoredType(registry.getForMyDefinition(definition), AutoStorageTag.INSTANCE);
 		for (Field field : cls.getDeclaredFields()) {
