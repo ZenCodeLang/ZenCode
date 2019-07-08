@@ -645,7 +645,7 @@ public class JavaNativeModule {
 			Parameter parameter = javaParameters[i];
 
 			//AnnotatedType parameterType = parameter.getAnnotatedType();
-			StoredType type = loadStoredType(context, parameter.getAnnotatedType());
+			StoredType type = loadStoredType(context, parameter);
 			Expression defaultValue = getDefaultValue(parameter, type);
 			parameters[i] = new FunctionParameter(type, parameter.getName(), defaultValue, parameter.isVarArgs());
 		}
@@ -670,6 +670,14 @@ public class JavaNativeModule {
 	private StoredType loadStoredType(TypeVariableContext context, AnnotatedType annotatedType) {
 		return loadType(context, annotatedType);
 	}
+
+	private StoredType loadStoredType(TypeVariableContext context, Parameter parameter) {
+		final StoredType type = loadStoredType(context, parameter.getAnnotatedType());
+		//Optional is a parameter annotation so passing the parameter's type does not pass the optional
+		if(parameter.isAnnotationPresent(ZenCodeType.Optional.class) && !type.isOptional())
+			return new StoredType(registry.getOptional(type.type), type.getSpecifiedStorage());
+		return type;
+	}
 	
 	private StoredType loadType(TypeVariableContext context, AnnotatedType annotatedType) {
 		if (annotatedType.isAnnotationPresent(ZenCodeType.USize.class))
@@ -677,7 +685,7 @@ public class JavaNativeModule {
 		else if (annotatedType.isAnnotationPresent(ZenCodeType.NullableUSize.class))
 			return registry.getOptional(BasicTypeID.USIZE).stored();
 		
-		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class) || annotatedType.isAnnotationPresent(ZenCodeType.Optional.class);
+		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class);
 		boolean unsigned = annotatedType.isAnnotationPresent(ZenCodeType.Unsigned.class);
 		
 		Type type = annotatedType.getType();
