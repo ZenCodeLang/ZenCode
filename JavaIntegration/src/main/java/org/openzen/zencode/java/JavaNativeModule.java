@@ -35,11 +35,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.FileResolutionContext;
 import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
-import org.openzen.zenscript.codemodel.definition.ClassDefinition;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
-import org.openzen.zenscript.codemodel.definition.StructDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
@@ -57,14 +53,7 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.member.SetterMember;
+import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
@@ -272,7 +261,11 @@ public class JavaNativeModule {
 	private <T> HighLevelDefinition convertClass(Class<T> cls) {
 		if ((cls.getModifiers() & Modifier.PUBLIC) == 0)
 			throw new IllegalArgumentException("Class \" " + cls.getName() + "\" must be public");
-		
+
+		if(cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
+			return convertExpansion(cls);
+		}
+
 		String className = cls.getName();
         boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
         
@@ -434,6 +427,74 @@ public class JavaNativeModule {
 		
 		return definition;
 	}
+
+	private <T> ExpansionDefinition convertExpansion(Class<T> cls) {
+		if (!cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
+			throw new IllegalArgumentException("Cannot convert class " + cls + " as it does not have an Expansion annotation");
+		}
+
+		final String expandedName = cls.getAnnotation(ZenCodeType.Expansion.class).value();
+		final TypeID expandedType = getTypeFromName(expandedName);
+		if(expandedType == null)
+			throw new IllegalArgumentException("Could not find definition for name " + expandedName);
+
+		final ExpansionDefinition expansion = new ExpansionDefinition(CodePosition.NATIVE, module, pkg, Modifiers.PUBLIC, null);
+		final JavaClass javaClass = JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.CLASS);
+		expansion.target = expandedType.stored();
+		definitionByClass.put(cls, expansion);
+
+
+		for (Method method : cls.getDeclaredMethods()) {
+			if(!Modifier.isStatic(method.getModifiers()) || method.getParameterCount() < 1) {
+				//Log?
+				continue;
+			}
+
+			if(!method.isAnnotationPresent(ZenCodeType.Method.class))
+				continue;
+
+			final ZenCodeType.Method annotation = method.getAnnotation(ZenCodeType.Method.class);
+			String name = !annotation.value().isEmpty() ? annotation.value() : method.getName();
+
+			TypeVariableContext context = new TypeVariableContext();
+
+			final Parameter[] parameters = new Parameter[method.getParameterCount() - 1];
+			System.arraycopy(method.getParameters(), 1, parameters, 0, method.getParameterCount() - 1);
+
+			FunctionHeader header = getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+			final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
+
+			expansion.addMember(member);
+			compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, getMethodDescriptor(method), getMethodModifiers(method)));
+		}
+
+		if(!expansion.members.isEmpty()) {
+			compiled.setExpansionClassInfo(expansion, javaClass);
+			definitions.add(expansion);
+		}
+
+		return expansion;
+	}
+
+
+	private TypeID getTypeFromName(String className) {
+		for (TypeID value : this.typeByClass.values()) {
+			if(value.toString().equals(className))
+				return value;
+		}
+
+		final ZSPackage zsPackage = getPackage(className);
+		final String[] split = className.split("\\.");
+		final String actualName = split[split.length-1];
+
+		for (HighLevelDefinition value : this.definitionByClass.values()) {
+			if(value.name.equals(actualName) && value.pkg.equals(zsPackage))
+				return registry.getForMyDefinition(value);
+		}
+
+		return null;
+	}
+
 	
 	private boolean shouldLoadType(Type type) {
 		if (type instanceof Class)
