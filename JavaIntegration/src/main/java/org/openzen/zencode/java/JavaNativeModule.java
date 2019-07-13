@@ -58,12 +58,7 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.FileScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
@@ -453,6 +448,10 @@ public class JavaNativeModule {
 			if(!method.isAnnotationPresent(ZenCodeType.Method.class))
 				continue;
 
+			if(!method.getParameterTypes()[0].isAssignableFrom(getClassFromType(expandedType)))
+				throw new IllegalArgumentException("Cannot add extension method " + method + " as its first parameter does not match the extended type.");
+
+
 			final ZenCodeType.Method annotation = method.getAnnotation(ZenCodeType.Method.class);
 			String name = !annotation.value().isEmpty() ? annotation.value() : method.getName();
 
@@ -474,6 +473,29 @@ public class JavaNativeModule {
 		}
 
 		return expansion;
+	}
+
+	private Class<?> getClassFromType(TypeID type) {
+		if(type instanceof DefinitionTypeID) {
+			DefinitionTypeID definitionType = ((DefinitionTypeID) type);
+
+			for (Map.Entry<Class<?>, HighLevelDefinition> ent : definitionByClass.entrySet()) {
+				if(ent.getValue().equals(definitionType.definition))
+					return ent.getKey();
+			}
+		}
+
+		for (Map.Entry<Class<?>, TypeID> ent : typeByClass.entrySet()) {
+			if(ent.getValue().equals(type))
+				return ent.getKey();
+		}
+
+		for (Map.Entry<Class<?>, TypeID> ent : unsignedByClass.entrySet()) {
+			if(ent.getValue().equals(type))
+				return ent.getKey();
+		}
+
+		throw new IllegalArgumentException("Could not find class for type " + type);
 	}
 
 
