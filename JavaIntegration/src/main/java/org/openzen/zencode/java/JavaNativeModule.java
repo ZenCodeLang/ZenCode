@@ -5,19 +5,6 @@
  */
 package org.openzen.zencode.java;
 
-import java.io.IOException;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Member;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.LiteralSourceFile;
@@ -35,7 +22,12 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.FileResolutionContext;
 import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
-import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.definition.ClassDefinition;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
@@ -53,7 +45,14 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.member.CasterMember;
+import org.openzen.zenscript.codemodel.member.ConstructorMember;
+import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.member.GetterMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
+import org.openzen.zenscript.codemodel.member.MethodMember;
+import org.openzen.zenscript.codemodel.member.OperatorMember;
+import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
@@ -82,6 +81,20 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import stdlib.Strings;
+
+import java.io.IOException;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Stan Hebben
@@ -443,32 +456,66 @@ public class JavaNativeModule {
 		expansion.target = expandedType.stored();
 		definitionByClass.put(cls, expansion);
 
-
+        boolean addExpansion = false;
 		for (Method method : cls.getDeclaredMethods()) {
 			if(!Modifier.isStatic(method.getModifiers()) || method.getParameterCount() < 1) {
 				//Log?
 				continue;
 			}
 
-			if(!method.isAnnotationPresent(ZenCodeType.Method.class))
-				continue;
+//			if(!method.isAnnotationPresent(ZenCodeType.Method.class))
+//				continue;
+            
+            final ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
+            if(methodAnnotation != null) {
+                String name = !methodAnnotation.value().isEmpty() ? methodAnnotation.value() : method.getName();
+                
+                TypeVariableContext context = new TypeVariableContext();
+                
+                final Parameter[] parameters = getExpansionParameters(method);
+                
+                FunctionHeader header = getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+                final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
+                
+                expansion.addMember(member);
+                compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, getMethodDescriptor(method), getMethodModifiers(method)));
+                addExpansion = true;
+            }
+            
+            final ZenCodeType.Caster casterAnnotation = method.getAnnotation(ZenCodeType.Caster.class);
+            if(casterAnnotation != null) {
+                boolean implicit = casterAnnotation.implicit();
+                int modifiers = getMethodModifiers(method) ^ Modifiers.STATIC;
+                if (implicit) {
+                    modifiers |= Modifiers.IMPLICIT;
+                }
+                TypeVariableContext context = new TypeVariableContext();
+                StoredType toType = loadStoredType(context, method.getAnnotatedReturnType());
+                final CasterMember member = new CasterMember(CodePosition.NATIVE, expansion, modifiers, toType,  null);
+                
+                expansion.addMember(member);
+                compiled.setMethodInfo(member, getMethod(javaClass, method, member.toType));
+                addExpansion = true;
+            }
+            
+            //TODO not working, not sure if it *should* work
+//            final ZenCodeType.Operator operatorAnnotation = method.getAnnotation(ZenCodeType.Operator.class);
+//            if(operatorAnnotation != null) {
+//
+//                TypeVariableContext context = new TypeVariableContext();
+//
+//                final Parameter[] parameters = getExpansionParameters(method);
+//
+//                FunctionHeader header = getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+//                final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, getMethodModifiers(method) ^ Modifiers.STATIC, OperatorType.valueOf(operatorAnnotation.value().toString()), header, null);
+//
+//                expansion.addMember(member);
+//                compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
+//                addExpansion = true;
+//            }
+        }
 
-			final ZenCodeType.Method annotation = method.getAnnotation(ZenCodeType.Method.class);
-			String name = !annotation.value().isEmpty() ? annotation.value() : method.getName();
-
-			TypeVariableContext context = new TypeVariableContext();
-
-			final Parameter[] parameters = new Parameter[method.getParameterCount() - 1];
-			System.arraycopy(method.getParameters(), 1, parameters, 0, method.getParameterCount() - 1);
-
-			FunctionHeader header = getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-			final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
-
-			expansion.addMember(member);
-			compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, getMethodDescriptor(method), getMethodModifiers(method)));
-		}
-
-		if(!expansion.members.isEmpty()) {
+		if(addExpansion) {
 			compiled.setExpansionClassInfo(expansion, javaClass);
 			definitions.add(expansion);
 		}
@@ -476,6 +523,11 @@ public class JavaNativeModule {
 		return expansion;
 	}
 
+	private Parameter[] getExpansionParameters(Method method){
+        final Parameter[] parameters = new Parameter[method.getParameterCount() - 1];
+        System.arraycopy(method.getParameters(), 1, parameters, 0, method.getParameterCount() - 1);
+        return parameters;
+    }
 
 	private TypeID getTypeFromName(String className) {
 		for (TypeID value : this.typeByClass.values()) {
