@@ -5,26 +5,23 @@
  */
 package org.openzen.zenscript.codemodel.type.member;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.CompareType;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.ConstExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
+import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.CompareType;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.expression.ConstExpression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
-import org.openzen.zenscript.codemodel.expression.PostCallExpression;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
@@ -34,6 +31,10 @@ import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -335,15 +336,28 @@ public class TypeMemberGroup {
 	
 	public FunctionalMemberRef selectMethod(CodePosition position, TypeScope scope, CallArguments arguments, boolean allowNonStatic, boolean allowStatic) throws CompileException {
 		// try to match with exact types
+        List<TypeMember<FunctionalMemberRef>> possibleMethods = new ArrayList<>();
 		for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
 			
 			FunctionHeader header = method.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
 			if (header.matchesExactly(position, arguments, scope))
-				return method.member;
+			    possibleMethods.add(method);
 		}
-		
+        if (!possibleMethods.isEmpty()) {
+            TypeMember<FunctionalMemberRef> selectedMethod = null;
+            for (TypeMember<FunctionalMemberRef> method : possibleMethods) {
+                if (selectedMethod == null) {
+                    selectedMethod = method;
+                    continue;
+                }
+                
+                selectedMethod = selectedMethod.resolve(method);
+            }
+            if (selectedMethod != null)
+                return selectedMethod.member;
+        }
 		// try to match with approximate types
 		FunctionalMemberRef selected = null;
 		for (TypeMember<FunctionalMemberRef> method : methods) {
