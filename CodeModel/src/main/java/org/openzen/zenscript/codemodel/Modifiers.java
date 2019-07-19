@@ -81,4 +81,24 @@ public class Modifiers {
 	public static boolean hasAccess(int modifiers) {
 		return (modifiers & (PRIVATE | PUBLIC | PROTECTED | INTERNAL)) > 0;
 	}
+    
+    public static String describe(int modifiers) {
+        StringBuilder builder = new StringBuilder();
+        if (isPublic(modifiers)) {
+            builder.append("public");
+        } else if (isPrivate(modifiers)) {
+            builder.append("private");
+        } else if (isProtected(modifiers)) {
+            builder.append("protected");
+        }
+        if (isAbstract(modifiers)) {
+            builder.append(" abstract");
+        } else if (isFinal(modifiers)) {
+            builder.append(" final");
+        } else if (isStatic(modifiers)) {
+            builder.append(" static");
+        }
+        return builder.toString();
+    }
+    
 }

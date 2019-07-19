@@ -5,15 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.type.member;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.CompareType;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
@@ -42,13 +38,18 @@ import org.openzen.zenscript.codemodel.partial.PartialMemberGroupExpression;
 import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.partial.PartialVariantOptionExpression;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -559,7 +560,7 @@ public final class TypeMembers {
 			if (implementation.member.implementsType.type.getNormalized() == toType.type)
 				return castEquivalent(position, new InterfaceCastExpression(position, value, implementation.member), toType);
 		}
-		if (extendsType(toType.type))
+		if (extendsOrImplements(toType.type))
 			return new SupertypeCastExpression(position, value, toType);
 		
 		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Could not cast " + toString() + " to " + toType);
