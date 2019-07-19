@@ -75,6 +75,7 @@ import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
+import org.openzen.zenscript.parser.type.IParsedType;
 import stdlib.Strings;
 
 import java.io.IOException;
@@ -557,6 +558,12 @@ public class JavaNativeModule {
 				return value;
 		}
 
+		for (TypeID value : this.unsignedByClass.values()) {
+			if(value.toString().equals(className))
+				return value;
+		}
+
+
 		final ZSPackage zsPackage = getPackage(className);
 		final String[] split = className.split("\\.");
 		final String actualName = split[split.length-1];
@@ -565,6 +572,20 @@ public class JavaNativeModule {
 			if(actualName.equals(value.name) && value.pkg.equals(zsPackage))
 				return registry.getForMyDefinition(value);
 		}
+
+
+		//TODO: Can we get by with only this?
+		final ZSPackage outerPkg = new ZSPackage(ZSPackage.createRoot(), "");
+		outerPkg.add(pkg.name, pkg);
+		final CompilingPackage rootCompiling = new CompilingPackage(outerPkg, module);
+		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], StorageType.getStandard(), outerPkg, rootCompiling, globals);
+
+		try {
+			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep, 4);
+			return IParsedType.parse(tokens).compileUnstored(context);
+		} catch (Exception ignored) {
+		}
+
 
 		return null;
 	}
