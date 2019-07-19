@@ -3817,6 +3817,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitSetter(SetterExpression expression) {
+		if(!checkAndExecuteMethodInfo(expression.setter, expression.type, expression)) {
+			throw new IllegalStateException("Unknown Setter");
+		}
 		return null;
 	}
 
@@ -4031,6 +4034,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitSupertypeCast(SupertypeCastExpression expression) {
+		expression.value.accept(this);
 		return null; // nothing to do
 	}
 
