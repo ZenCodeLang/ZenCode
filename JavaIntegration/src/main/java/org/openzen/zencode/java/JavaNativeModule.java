@@ -540,7 +540,7 @@ public class JavaNativeModule {
 		final String actualName = split[split.length-1];
 
 		for (HighLevelDefinition value : this.definitionByClass.values()) {
-			if(value.name.equals(actualName) && value.pkg.equals(zsPackage))
+			if(actualName.equals(value.name) && value.pkg.equals(zsPackage))
 				return registry.getForMyDefinition(value);
 		}
 
