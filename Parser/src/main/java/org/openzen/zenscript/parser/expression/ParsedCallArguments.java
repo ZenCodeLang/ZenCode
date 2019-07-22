@@ -140,11 +140,14 @@ public class ParsedCallArguments {
 		List<StoredType>[] predictedTypes = new List[arguments.size()];
 		for (int i = 0; i < predictedTypes.length; i++)
 			predictedTypes[i] = new ArrayList<>();
-		
+
 		for (FunctionHeader header : candidates) {
+			//TODO: this is wrong!
+			boolean variadic = header.isVariadic();
 			for (int i = 0; i < arguments.size(); i++) {
-				if (!predictedTypes[i].contains(header.parameters[i].type))
-					predictedTypes[i].add(header.parameters[i].type);
+				final StoredType parameterType = header.getParameterType(variadic, i);
+				if (!predictedTypes[i].contains(parameterType))
+					predictedTypes[i].add(parameterType);
 			}
 		}
 		
@@ -223,8 +226,9 @@ public class ParsedCallArguments {
 	private boolean isCompatibleWith(BaseScope scope, FunctionHeader header, StoredType[] typeArguments) {
 		if (!header.accepts(arguments.size()))
 			return false;
-		
-		boolean variadic = false;
+
+		//TODO: This is wrong
+		boolean variadic = header.isVariadic();
 		for (int i = 0; i < arguments.size(); i++) {
 			FunctionParameter parameter = header.getParameter(variadic, i);
 			if (typeArguments == null && header.typeParameters != null && parameter.type.hasInferenceBlockingTypeParameters(header.typeParameters))

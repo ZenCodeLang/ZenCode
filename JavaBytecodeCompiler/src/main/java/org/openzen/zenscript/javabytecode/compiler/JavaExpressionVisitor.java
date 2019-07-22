@@ -387,9 +387,36 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 				}
 			}
-			for (Expression argument : expression.arguments.arguments) {
-				argument.accept(this);
+
+			final Expression[] arguments = expression.arguments.arguments;
+			final FunctionParameter[] parameters = expression.instancedHeader.parameters;
+
+			final boolean variadic = expression.instancedHeader.isVariadicCall(expression.arguments) && ((arguments.length != parameters.length) || !parameters[parameters.length - 1].type.type
+					.equals(arguments[arguments.length - 1].type.type));
+
+			if(variadic) {
+				for (int i = 0; i < parameters.length - 1; i++) {
+					arguments[i].accept(this);
+				}
+
+				final int arrayCount = (arguments.length - parameters.length) + 1;
+				javaWriter.constant(arrayCount);
+				javaWriter.newArray(context.getType(parameters[parameters.length - 1].type).getElementType());
+				for (int i = 0; i < arrayCount; i++) {
+					javaWriter.dup();
+					javaWriter.constant(i);
+					arguments[i + parameters.length - 1].accept(this);
+					javaWriter.arrayStore(context.getType(arguments[i].type));
+				}
+
+
+			} else {
+ 				for (Expression argument : arguments) {
+					argument.accept(this);
+				}
 			}
+
+
 
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");

@@ -11,6 +11,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -165,7 +166,11 @@ public class FunctionHeader {
 	
 	public FunctionParameter getParameter(boolean isVariadic, int index) {
 		if (isVariadic && index >= parameters.length - 1) {
-			return parameters[parameters.length - 1];
+			final FunctionParameter parameter = parameters[parameters.length - 1];
+			if(parameter.type.type instanceof ArrayTypeID) {
+				return new FunctionParameter(((ArrayTypeID) parameter.type.type).elementType, parameter.name);
+			}
+			return parameter;
 		} else {
 			return parameters[index];
 		}
