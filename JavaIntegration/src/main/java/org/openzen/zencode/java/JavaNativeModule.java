@@ -8,16 +8,7 @@ package org.openzen.zencode.java;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.LiteralSourceFile;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.Module;
-import org.openzen.zenscript.codemodel.ModuleSpace;
-import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.PackageDefinitions;
-import org.openzen.zenscript.codemodel.SemanticModule;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.FileResolutionContext;
@@ -64,13 +55,7 @@ import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaFunctionalInterfaceStorageTag;
-import org.openzen.zenscript.javashared.JavaImplementation;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
+import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.BracketExpressionParser;
@@ -88,9 +73,8 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Stan Hebben
@@ -462,7 +446,11 @@ public class JavaNativeModule {
 //			if(!method.isAnnotationPresent(ZenCodeType.Method.class))
 //				continue;
 
-            if(!method.getParameterTypes()[0].isAssignableFrom(getClassFromType(expandedType)))
+			final Class<?> classFromType = getClassFromType(expandedType);
+			if(classFromType == null) {
+				//TODO REMOVE
+				System.err.println("Could not get class for type " + expandedType + " attempting to do stuff anyways");
+			} else 	if(!method.getParameterTypes()[0].isAssignableFrom(classFromType))
 				throw new IllegalArgumentException("Cannot add extension method " + method + " as its first parameter does not match the extended type.");
 
 
@@ -543,7 +531,8 @@ public class JavaNativeModule {
 				return ent.getKey();
 		}
 
-		throw new IllegalArgumentException("Could not find class for type " + type);
+		return null;
+		//throw new IllegalArgumentException("Could not find class for type " + type);
 	}
 
 	private Parameter[] getExpansionParameters(Method method){
@@ -564,21 +553,22 @@ public class JavaNativeModule {
 		}
 
 
-		final ZSPackage zsPackage = getPackage(className);
-		final String[] split = className.split("\\.");
-		final String actualName = split[split.length-1];
+		try {
+			final ZSPackage zsPackage = getPackage(className);
+			final String[] split = className.split("\\.");
+			final String actualName = split[split.length - 1];
 
-		for (HighLevelDefinition value : this.definitionByClass.values()) {
-			if(actualName.equals(value.name) && value.pkg.equals(zsPackage))
-				return registry.getForMyDefinition(value);
+			for (HighLevelDefinition value : this.definitionByClass.values()) {
+				if (actualName.equals(value.name) && value.pkg.equals(zsPackage))
+					return registry.getForMyDefinition(value);
+			}
+		} catch (IllegalArgumentException ignored){
 		}
 
 
 		//TODO: Can we get by with only this?
-		final ZSPackage outerPkg = new ZSPackage(ZSPackage.createRoot(), "");
-		outerPkg.add(pkg.name, pkg);
-		final CompilingPackage rootCompiling = new CompilingPackage(outerPkg, module);
-		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], StorageType.getStandard(), outerPkg, rootCompiling, globals);
+		final CompilingPackage rootCompiling = new CompilingPackage(pkg.parent, module);
+		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], StorageType.getStandard(), pkg.parent, rootCompiling, globals);
 
 		try {
 			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep, 4);
