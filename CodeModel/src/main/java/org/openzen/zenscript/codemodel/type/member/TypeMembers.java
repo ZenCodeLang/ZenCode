@@ -411,8 +411,15 @@ public final class TypeMembers {
 			return true;
 		if (type.isOptional() && areEquivalent(type.withoutOptional(), toType))
 			return true;
+   
+		if( getImplicitCaster(toType) != null || extendsOrImplements(toType.type))
+		    return true;
 		
-		return getImplicitCaster(toType) != null || extendsOrImplements(toType.type);
+        final StoredType accept = type.type.accept(new TagRemovingTypeVisitor(cache));
+        if(!this.type.type.equals(accept.type) && cache.get(accept).canCastImplicit(toType)){
+            return true;
+        }
+        return false;
 	}
 	
 	private boolean areEquivalent(StoredType fromType, StoredType toType) {
@@ -571,7 +578,12 @@ public final class TypeMembers {
 		if (this.canCastImplicit(toType))
 			return castImplicit(position, value, toType, false);
 		
-		for (TypeMember<CasterMemberRef> caster : casters)
+        final TypeMembers typeMembers = cache.get(type.type.accept(new TagRemovingTypeVisitor(cache)));
+        if(this.type.type != typeMembers.type.type && typeMembers.canCast(toType)) {
+            return typeMembers.castExplicit(position, value, toType, optional);
+        }
+        
+        for (TypeMember<CasterMemberRef> caster : casters)
 			if (areEquivalent(caster.member.toType, toType))
 				return castEquivalent(position, caster.member.cast(position, value, false), toType);
 		

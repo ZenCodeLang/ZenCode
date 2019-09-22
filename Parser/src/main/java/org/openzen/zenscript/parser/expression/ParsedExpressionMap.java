@@ -81,16 +81,16 @@ public class ParsedExpressionMap extends ParsedExpression {
 			return new NewExpression(position, usedHint, constructor, CallArguments.EMPTY);
 		}
 		
-		if (!hasAssocHint && scope.hints.size() == 1) {
-			// compile as constructor call
-			StoredType hint = scope.hints.get(0);
-			for (int i = 0; i < keys.size(); i++) {
-				if (keys.get(i) != null)
-					throw new CompileException(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
-			}
-			ParsedCallArguments arguments = new ParsedCallArguments(null, values);
-			return ParsedNewExpression.compile(position, hint, arguments, scope);
-		}
+		//if (!hasAssocHint && scope.hints.size() == 1) {
+		//	// compile as constructor call
+		//	StoredType hint = scope.hints.get(0);
+		//	for (int i = 0; i < keys.size(); i++) {
+		//		if (keys.get(i) != null)
+		//			throw new CompileException(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
+		//	}
+		//	ParsedCallArguments arguments = new ParsedCallArguments(null, values);
+		//	return ParsedNewExpression.compile(position, hint, arguments, scope);
+		//}
 		
 		Expression[] cKeys = new Expression[keys.size()];
 		Expression[] cValues = new Expression[values.size()];
