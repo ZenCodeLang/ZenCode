@@ -1940,7 +1940,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				}
 			}
 			
-			bridgeWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), methodInfo.kind, methodInfo.name, methodInfo.compile, signature, methodInfo.modifiers, methodInfo.genericResult));
+			bridgeWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), JavaMethod.Kind.INSTANCE, methodInfo.name, methodInfo.compile, signature, methodInfo.modifiers, methodInfo.genericResult));
 			if(expression.header.getReturnType().type != BasicTypeID.VOID) {
 				bridgeWriter.returnType(context.getType(expression.header.getReturnType()));
 			}

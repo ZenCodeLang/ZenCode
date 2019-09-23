@@ -878,7 +878,7 @@ public class JavaNativeModule {
             TypeVariable variable = (TypeVariable) type;
             return registry.getGeneric(context.get(variable)).stored();
         }else if(type instanceof AnnotatedType){
-		    final TypeID baseType;
+		    final StoredType storedType;
 		    if(type instanceof AnnotatedParameterizedType) {
                 AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
                 final Type rawType = ((ParameterizedType) parameterizedType.getType()).getRawType();
@@ -889,22 +889,22 @@ public class JavaNativeModule {
                 }
             
                 if(rawType == Map.class) {
-                    baseType = registry.getAssociative(codeParameters[0], codeParameters[1]);
+                    storedType = registry.getAssociative(codeParameters[0], codeParameters[1]).stored();
                 } else {
                     HighLevelDefinition definition = addClass((Class<?>) rawType);
-                    baseType = registry.getForDefinition(definition, codeParameters);
+                    storedType = registry.getForDefinition(definition, codeParameters).stored();
                 }
             } else {
-		        baseType = loadType(context, (AnnotatedElement) ((AnnotatedType) type).getType(), unsigned).type;
+		        storedType = loadType(context, (AnnotatedElement) ((AnnotatedType) type).getType(), unsigned);
             }
             
 		    if(type.isAnnotationPresent(ZenCodeStorageTag.class)) {
 		        //Replace with switch if more StorageTagTypes are added
                 if(type.getAnnotation(ZenCodeStorageTag.class).value() == StorageTagType.STATIC) {
-                    return baseType.stored(StaticStorageTag.INSTANCE);
+                    return storedType.type.stored(StorageTag.union(CodePosition.BUILTIN, storedType.getSpecifiedStorage(), StaticStorageTag.INSTANCE));
                 }
             }
-		    return baseType.stored();
+		    return storedType;
 		    
         } else {
 			throw new IllegalArgumentException("Could not analyze type: " + type);
