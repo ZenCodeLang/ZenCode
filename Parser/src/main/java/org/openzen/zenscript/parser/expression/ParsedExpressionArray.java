@@ -6,7 +6,10 @@
 
 package org.openzen.zenscript.parser.expression;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -24,7 +27,9 @@ import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
  * @author Stanneke
  */
 public class ParsedExpressionArray extends ParsedExpression {
-	private final List<ParsedExpression> contents;
+    
+    public static final List<BiFunction<ParsedExpressionArray, ExpressionScope, IPartialExpression>> compileOverrides = new ArrayList<>(0);
+    public final List<ParsedExpression> contents;
 
 	public ParsedExpressionArray(CodePosition position, List<ParsedExpression> contents) {
 		super(position);
@@ -34,6 +39,13 @@ public class ParsedExpressionArray extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
+        
+        for(BiFunction<ParsedExpressionArray, ExpressionScope, IPartialExpression> compileOverride : compileOverrides) {
+            final IPartialExpression apply = compileOverride.apply(this, scope);
+            if(apply != null)
+                return apply;
+        }
+        
 		StoredType asBaseType = null;
 		StoredType asType = null;
 		boolean couldHintType = false;
