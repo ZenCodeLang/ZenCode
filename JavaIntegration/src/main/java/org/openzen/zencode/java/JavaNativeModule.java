@@ -56,25 +56,16 @@ import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.javashared.*;
-import org.openzen.zenscript.lexer.ParseException;
-import org.openzen.zenscript.lexer.ZSTokenParser;
+import org.openzen.zenscript.lexer.*;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 import stdlib.Strings;
 
 import java.io.IOException;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 /**
  * @author Stan Hebben
@@ -834,11 +825,10 @@ public class JavaNativeModule {
 		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class);
 		boolean unsigned = annotatedType.isAnnotationPresent(ZenCodeType.Unsigned.class);
 		
-		Type type = annotatedType.getType();
-		return loadType(context, type, nullable, unsigned);
+		return loadType(context, annotatedType, nullable, unsigned);
 	}
 	
-	private StoredType loadType(TypeVariableContext context, Type type, boolean nullable, boolean unsigned) {
+	private StoredType loadType(TypeVariableContext context, AnnotatedElement type, boolean nullable, boolean unsigned) {
 		StoredType result = loadType(context, type, unsigned);
 		if (nullable)
 			result = new StoredType(registry.getOptional(result.type), result.getSpecifiedStorage());
@@ -846,18 +836,20 @@ public class JavaNativeModule {
 		return result;
 	}
 	
-	private StoredType loadType(TypeVariableContext context, Type type, boolean unsigned) {
+	@SuppressWarnings("ChainOfInstanceofChecks")
+    private StoredType loadType(TypeVariableContext context, AnnotatedElement type, boolean unsigned) {
 		if (type instanceof Class) {
-			Class<?> classType = (Class<?>) type;
+            Class<?> classType = (Class<?>) type;
 			if (unsigned) {
-				if (unsignedByClass.containsKey(classType))
-					return unsignedByClass.get(classType).stored();
-				else
-					throw new IllegalArgumentException("This class cannot be used as unsigned: " + classType);
+				if (unsignedByClass.containsKey(classType)) {
+                    return unsignedByClass.get(classType).stored();
+                } else {
+                    throw new IllegalArgumentException("This class cannot be used as unsigned: " + classType);
+                }
 			} else if (classType.isArray()) {
 				return registry.getArray(loadType(context, classType.getComponentType(), false, false), 1).stored();
 			} else if (classType.isAnnotationPresent(FunctionalInterface.class)) {
-				return loadFunctionalInterface(context, classType, new Type[0]);
+				return loadFunctionalInterface(context, classType, new AnnotatedElement[0]);
 			}
 			
 			if (typeByClass.containsKey(classType))
@@ -869,24 +861,57 @@ public class JavaNativeModule {
 			ParameterizedType parameterizedType = (ParameterizedType) type;
 			Class<?> rawType = (Class) parameterizedType.getRawType();
 			if (rawType.isAnnotationPresent(FunctionalInterface.class))
-				return loadFunctionalInterface(context, rawType, parameterizedType.getActualTypeArguments());
+				return loadFunctionalInterface(context, rawType, (AnnotatedElement[]) parameterizedType.getActualTypeArguments());
 			
-			HighLevelDefinition definition = addClass(rawType);
 			Type[] parameters = parameterizedType.getActualTypeArguments();
 			StoredType[] codeParameters = new StoredType[parameters.length];
 			for (int i = 0; i < parameters.length; i++)
-				codeParameters[i] = loadType(context, parameters[i], false, false);
-			
-			return registry.getForDefinition(definition, codeParameters).stored();
+			    codeParameters[i] = loadType(context, (AnnotatedElement) parameters[i], false, false);
+       
+			if(rawType == Map.class) {
+                return registry.getAssociative(codeParameters[0], codeParameters[1]).stored();
+            }
+            
+            HighLevelDefinition definition = addClass(rawType);
+            return registry.getForDefinition(definition, codeParameters).stored();
 		} else if (type instanceof TypeVariable) {
-			TypeVariable variable = (TypeVariable)type;
-			return registry.getGeneric(context.get(variable)).stored();
-		} else {
+            TypeVariable variable = (TypeVariable) type;
+            return registry.getGeneric(context.get(variable)).stored();
+        }else if(type instanceof AnnotatedType){
+		    final TypeID baseType;
+		    if(type instanceof AnnotatedParameterizedType) {
+                AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
+                final Type rawType = ((ParameterizedType) parameterizedType.getType()).getRawType();
+                final AnnotatedType[] actualTypeArguments = parameterizedType.getAnnotatedActualTypeArguments();
+                final StoredType[] codeParameters = new StoredType[actualTypeArguments.length];
+                for(int i = 0; i < actualTypeArguments.length; i++) {
+                    codeParameters[i] = loadType(context, actualTypeArguments[i], false, false);
+                }
+            
+                if(rawType == Map.class) {
+                    baseType = registry.getAssociative(codeParameters[0], codeParameters[1]);
+                } else {
+                    HighLevelDefinition definition = addClass((Class<?>) rawType);
+                    baseType = registry.getForDefinition(definition, codeParameters);
+                }
+            } else {
+		        baseType = loadType(context, (AnnotatedElement) ((AnnotatedType) type).getType(), unsigned).type;
+            }
+            
+		    if(type.isAnnotationPresent(ZenCodeStorageTag.class)) {
+		        //Replace with switch if more StorageTagTypes are added
+                if(type.getAnnotation(ZenCodeStorageTag.class).value() == StorageTagType.STATIC) {
+                    return baseType.stored(StaticStorageTag.INSTANCE);
+                }
+            }
+		    return baseType.stored();
+		    
+        } else {
 			throw new IllegalArgumentException("Could not analyze type: " + type);
 		}
 	}
 	
-	private StoredType loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, Type[] parameters) {
+	private StoredType loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, AnnotatedElement[] parameters) {
 		Method functionalInterfaceMethod = getFunctionalInterfaceMethod(cls);
 		TypeVariableContext context = convertTypeParameters(cls);
 		FunctionHeader header = getHeader(context, functionalInterfaceMethod);
