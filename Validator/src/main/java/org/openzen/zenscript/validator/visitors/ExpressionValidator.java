@@ -60,7 +60,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 				validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
-					"array element expression type doesn't match array type");
+					"array element expression type " + element.type + " doesn't match array type " + expression.arrayType.elementType);
 			}
 			element.accept(this);
 		}
@@ -383,10 +383,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			key.accept(this);
 			value.accept(this);
 			if (!key.type.equals(type.keyType)) {
-				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Key type must match the associative array key type");
+				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Key type " + key.type + " must match the associative array key type " + type.keyType);
 			}
 			if (!value.type.equals(type.valueType)) {
-				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Value type must match the associative array value type");
+				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Value type " + value.type + " must match the associative array value type " + type.valueType);
 			}
 		}
 		return null;
