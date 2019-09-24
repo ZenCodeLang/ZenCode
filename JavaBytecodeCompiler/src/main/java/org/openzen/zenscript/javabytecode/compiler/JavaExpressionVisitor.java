@@ -155,16 +155,20 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	private static final JavaMethod SHARED_ADDREF = JavaMethod.getNativeVirtual(JavaClass.SHARED, "addRef", "()V");
 	private static final JavaMethod SHARED_RELEASE = JavaMethod.getNativeVirtual(JavaClass.SHARED, "release", "()V");
 
-	protected final JavaWriter javaWriter;
-	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
-	private final JavaBytecodeContext context;
-	private final JavaCompiledModule module;
+	final JavaWriter javaWriter;
+    private final JavaBoxingTypeVisitor boxingTypeVisitor;
+    private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
+    private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
+    private final JavaBytecodeContext context;
+    private final JavaCompiledModule module;
 
 	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
 		this.javaWriter = javaWriter;
 		this.context = context;
 		this.module = module;
-	}
+        boxingTypeVisitor = new JavaBoxingTypeVisitor(javaWriter);
+        unboxingTypeVisitor = new JavaUnboxingTypeVisitor(javaWriter);
+    }
 
 	@Override
 	public Void visitAndAnd(AndAndExpression expression) {
@@ -1665,7 +1669,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.ifNonNull(end);
 		javaWriter.pop();
 		expression.right.accept(this);
+		expression.right.type.type.accept(expression.right.type, boxingTypeVisitor);
 		javaWriter.label(end);
+		expression.type.type.accept(expression.type, unboxingTypeVisitor);
 		return null;
 	}
 
@@ -2335,11 +2341,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.newObject("java/util/HashMap");
 		javaWriter.dup();
 		javaWriter.invokeSpecial("java/util/HashMap", "<init>", "()V");
+        final AssocTypeID type = (AssocTypeID) expression.type.type;
 		for (int i = 0; i < expression.keys.length; i++) {
 			javaWriter.dup();
 			expression.keys[i].accept(this);
-			expression.values[i].accept(this);
-			javaWriter.invokeInterface(MAP_PUT);
+            type.keyType.type.accept(type.keyType, boxingTypeVisitor);
+            expression.values[i].accept(this);
+            type.valueType.type.accept(type.valueType, boxingTypeVisitor);
+            javaWriter.invokeInterface(MAP_PUT);
 			javaWriter.pop();
 		}
 		return null;
@@ -4142,7 +4151,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
 		//Does nothing if not required to be wrapped
 		expression.value.accept(this);
-		expression.value.type.type.accept(expression.value.type, new JavaBoxingTypeVisitor(javaWriter));
+		expression.value.type.type.accept(expression.value.type, boxingTypeVisitor);
 		return null;
 	}
 

@@ -28,7 +28,7 @@ public class CompilerUtils {
 	}
 
 	public static boolean isLarge(StoredType type) {
-		return type.type == BasicTypeID.DOUBLE || type.type == BasicTypeID.DOUBLE;
+		return type.type == BasicTypeID.DOUBLE || type.type == BasicTypeID.LONG;
 	}
 	
 	public static int calcAccess(int modifiers) {

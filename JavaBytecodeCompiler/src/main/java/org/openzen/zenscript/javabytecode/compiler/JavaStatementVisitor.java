@@ -148,6 +148,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		
 		javaWriter.goTo(start);
 		javaWriter.label(end);
+		javaWriter.pop();
 		return false;
 	}
 
