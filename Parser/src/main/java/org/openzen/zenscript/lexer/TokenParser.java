@@ -1,9 +1,10 @@
 /* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
 
-import java.io.IOException;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
+
+import java.io.IOException;
 
 /**
  * Represents a token stream. A token stream reads characters from a reader and
@@ -93,7 +94,7 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements T
             while (dfa.transitions[state].containsKey(reader.peek())) {
 				char c = (char) reader.next();
                 value.append(c);
-                state = dfa.transitions[state].get(c);
+                state = dfa.transitions[state].get((int)c);
             }
 			
             if (dfa.finals[state] != null) {

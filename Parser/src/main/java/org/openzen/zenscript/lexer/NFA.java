@@ -1,15 +1,15 @@
 /* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
 
-import gnu.trove.iterator.TIntIterator;
-import gnu.trove.set.hash.TIntHashSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * Represents an NFA. NFAs can be compiled from a list of regular expressions.
@@ -304,7 +304,7 @@ public class NFA<T extends Comparable<T>>
             NFAState<T> head = new NFAState<>();
             NFAState<T> tail = new NFAState<>();
 
-            TIntIterator iter = processCharList(stream).iterator();
+            Iterator<Integer> iter = processCharList(stream).iterator();
             while (iter.hasNext()) {
                 tail.addTransition(iter.next(), head);
             }
@@ -325,15 +325,15 @@ public class NFA<T extends Comparable<T>>
     }
 
     /* Processes a character list */
-    private TIntHashSet processCharList(CharStream stream)
+    private Set<Integer> processCharList(CharStream stream)
 	{
         boolean invert = stream.optional('^');
-        TIntHashSet base = new TIntHashSet();
+        Set<Integer>base = new HashSet();
         do {
             processCharPartial(base, stream);
         } while (!stream.peek(']'));
         if (invert) {
-            TIntHashSet result = new TIntHashSet();
+            Set<Integer>result = new HashSet();
             for (int i = 0; i <= 256; i++) {
                 if (!base.contains(i)) result.add(i);
             }
@@ -345,7 +345,7 @@ public class NFA<T extends Comparable<T>>
 
     /* Processes a character partial, which can be a single character or a range
      * of characters. */
-    private void processCharPartial(TIntHashSet out, CharStream stream)
+    private void processCharPartial(Set<Integer>out, CharStream stream)
 	{
         if (stream.optional('.')) {
             for (int i = 0; i <= 256; i++) {

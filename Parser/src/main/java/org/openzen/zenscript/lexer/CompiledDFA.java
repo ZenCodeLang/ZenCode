@@ -1,10 +1,10 @@
 /* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
 
-import gnu.trove.iterator.TIntIterator;
-import gnu.trove.map.hash.TIntIntHashMap;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a compiled DFA. A compiled DFA has a compact representation and
@@ -32,7 +32,7 @@ public class CompiledDFA<T>
 		return new NFA<>(regexps, tokens, tokenClass).compile();
 	}
 	
-    public TIntIntHashMap[] transitions;
+    public Map<Integer, Integer>[] transitions;
     public T[] finals;
 
     /**
@@ -47,7 +47,7 @@ public class CompiledDFA<T>
      * @param transitions transitions graph
      * @param finals finals
      */
-    public CompiledDFA(TIntIntHashMap[] transitions, T[] finals)
+    public CompiledDFA(Map<Integer, Integer>[] transitions, T[] finals)
 	{
         this.transitions = transitions;
         this.finals = finals;
@@ -90,9 +90,9 @@ public class CompiledDFA<T>
 	{
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < transitions.length; i++) {
-            TIntIntHashMap map = transitions[i];
+            Map<Integer, Integer> map = transitions[i];
 
-            TIntIterator it = map.keySet().iterator();
+            Iterator<Integer> it = map.keySet().iterator();
             while (it.hasNext()) {
                 int v = it.next();
                 result.append("edge(");
