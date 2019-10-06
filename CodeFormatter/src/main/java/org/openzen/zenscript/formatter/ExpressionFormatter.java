@@ -373,12 +373,12 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitConstantDouble(ConstantDoubleExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	    return new ExpressionString(Double.toString(expression.value), ZenScriptOperator.PRIMARY);
 	}
 
 	@Override
 	public ExpressionString visitConstantFloat(ConstantFloatExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new ExpressionString(Float.toString(expression.value), ZenScriptOperator.PRIMARY);
 	}
 
 	@Override

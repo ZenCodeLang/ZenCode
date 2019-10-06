@@ -10,9 +10,7 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.lexer.ParseException;
-import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.lexer.ZSTokenType;
+import org.openzen.zenscript.lexer.*;
 
 /**
  *
@@ -25,7 +23,8 @@ public class ParsedStorageTag {
 		if (parser.optional(ZSTokenType.T_BACKTICK) == null)
 			return NULL;
 		
-		String name = parser.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
+		ZSToken token = parser.optional(ZSTokenType.K_STATIC);
+		String name = token != null ? token.content : parser.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<String> arguments = new ArrayList<>();
 		while (parser.optional(ZSTokenType.T_COLON) != null)
 			arguments.add(parser.next().content);

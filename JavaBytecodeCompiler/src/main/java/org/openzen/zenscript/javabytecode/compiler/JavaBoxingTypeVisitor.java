@@ -60,7 +60,6 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<StoredType,
 			default:
 				return null;
 		}
-		writer.dup();
 		
 		if (method != null)
 			writer.invokeStatic(method);

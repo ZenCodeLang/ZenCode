@@ -7,10 +7,11 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
 
 import java.util.HashMap;
 import java.util.Map;
-
+@SuppressWarnings("Duplicates")
 public class JavaForeachWriter {
 
 	private final JavaWriter javaWriter;
@@ -19,6 +20,7 @@ public class JavaForeachWriter {
 	private final Label startLabel;
 	private final Label endLabel;
 	private final JavaStatementVisitor statementVisitor;
+	private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
 
 	public JavaForeachWriter(JavaStatementVisitor statementVisitor, VarStatement[] variables, Statement content, Label start, Label end) {
 		this.statementVisitor = statementVisitor;
@@ -27,7 +29,8 @@ public class JavaForeachWriter {
 		this.content = content;
 		this.startLabel = start;
 		this.endLabel = end;
-	}
+        this.unboxingTypeVisitor = new JavaUnboxingTypeVisitor(this.javaWriter);
+    }
 
 	public void visitIntRange() {
 		javaWriter.dup();
@@ -55,8 +58,7 @@ public class JavaForeachWriter {
 	}
 
 	public void visitStringCharacterIterator() {
-		//TODO UNTESTED!
-		javaWriter.invokeSpecial("java/lang/String", "toCharArray()", "()[C");
+        javaWriter.invokeVirtual(JavaMethod.getVirtual(JavaClass.STRING, "toCharArray", "()[C", JavaModifiers.PUBLIC));
 		handleArray(javaWriter.local(int.class), javaWriter.getLocalVariable(variables[0].variable));
 	}
 
@@ -66,12 +68,12 @@ public class JavaForeachWriter {
 
 		javaWriter.label(startLabel);
 		javaWriter.dup();
-		javaWriter.dup();
 		javaWriter.arrayLength();
-		javaWriter.loadInt(z);
-
-		javaWriter.ifICmpLE(endLabel);
-		javaWriter.loadInt(z);
+        javaWriter.loadInt(z);
+        
+        javaWriter.ifICmpLE(endLabel);
+        javaWriter.dup();
+        javaWriter.loadInt(z);
 
 
 		javaWriter.arrayLoad(arrayTypeInfo.type);
@@ -85,7 +87,21 @@ public class JavaForeachWriter {
 	}
 
 	public void visitAssocKeyIterator() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	    javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.MAP, "keySet", "()Ljava/util/Set;", 0));
+        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.COLLECTION, "iterator", "()Ljava/util/Iterator;", 0));
+        
+        javaWriter.label(startLabel);
+        javaWriter.dup();
+        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
+        javaWriter.ifEQ(endLabel);
+        javaWriter.dup();
+        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+        
+        final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
+        this.downCast(0, keyVariable.type);
+        javaWriter.store(keyVariable.type, keyVariable.local);
+        
+        content.accept(statementVisitor);
 	}
 
 	public void visitAssocKeyValueIterator() {
@@ -96,6 +112,7 @@ public class JavaForeachWriter {
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
 		javaWriter.ifEQ(endLabel);
+		javaWriter.dup();
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
 		javaWriter.checkCast(Type.getType(Map.Entry.class));
 		javaWriter.dup(false);
@@ -105,13 +122,21 @@ public class JavaForeachWriter {
 		final JavaLocalVariableInfo valueVariable = javaWriter.getLocalVariable(variables[1].variable);
 
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getKey", "()Ljava/lang/Object;", 0));
+		this.downCast(0, keyVariable.type);
 		javaWriter.store(keyVariable.type, keyVariable.local);
-
+		
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getValue", "()Ljava/lang/Object;", 0));
+        this.downCast(1, valueVariable.type);
 		javaWriter.store(valueVariable.type, valueVariable.local);
+		
 		content.accept(statementVisitor);
-
-
-		//throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
+	
+	private void downCast(int typeNumber, Type t) {
+        if(CompilerUtils.isPrimitive(variables[typeNumber].type.type)) {
+            variables[typeNumber].type.type.accept(variables[typeNumber].type, unboxingTypeVisitor);
+        } else {
+            javaWriter.checkCast(t);
+        }
+    }
 }
