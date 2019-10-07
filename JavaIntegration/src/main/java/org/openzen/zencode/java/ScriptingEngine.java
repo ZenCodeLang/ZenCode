@@ -18,6 +18,7 @@ import org.openzen.zenscript.parser.*;
 import org.openzen.zenscript.validator.*;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.*;
 
@@ -36,6 +37,8 @@ public class ScriptingEngine {
 	
 	public boolean debug = false;
 	
+	public IZSLogger logger;
+	
 	public ScriptingEngine() {
 		space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
 		
@@ -47,6 +50,12 @@ public class ScriptingEngine {
 		} catch (IOException | CompileException | ParseException ex) {
 			throw new RuntimeException(ex);
 		}
+		this.logger = new EmptyLogger();
+    }
+    
+    public ScriptingEngine(IZSLogger logger) {
+        this();
+        this.logger = logger;
     }
 	
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {
@@ -145,8 +154,13 @@ public class ScriptingEngine {
 			runUnit.add(compiler.compile(compiled.name, compiled, javaSpace));
 		if (debug)
 			runUnit.dump(new File("classes"));
-		runUnit.run(arguments, parentClassLoader);
-	}
+        
+        try {
+            runUnit.run(arguments, parentClassLoader);
+        } catch(ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            logger.throwingErr(e.getCause().getMessage(), e.getCause());
+        }
+    }
 	
 	public List<JavaNativeModule> getNativeModules() {
 		return Collections.unmodifiableList(this.nativeModules);
