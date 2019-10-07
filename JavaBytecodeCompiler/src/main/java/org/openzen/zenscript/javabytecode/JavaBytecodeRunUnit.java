@@ -22,10 +22,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Hoofdgebruiker
@@ -57,15 +58,15 @@ public class JavaBytecodeRunUnit {
 		}
 	}
 
-	public void run() {
+	public void run() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 		run(Collections.emptyMap(), this.getClass().getClassLoader());
 	}
 
-	public void run(Map<FunctionParameter, Object> arguments) {
+	public void run(Map<FunctionParameter, Object> arguments) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 		run(arguments, this.getClass().getClassLoader());
 	}
 
-	public void run(Map<FunctionParameter, Object> arguments, ClassLoader parentClassLoader) {
+	public void run(Map<FunctionParameter, Object> arguments, ClassLoader parentClassLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 		writeScripts();
 
 		ScriptClassLoader classLoader = new ScriptClassLoader(parentClassLoader);
@@ -78,14 +79,10 @@ public class JavaBytecodeRunUnit {
 
 			argumentsArray[i] = arguments.get(parameter);
 		}
-		try {
 			Class[] classes = new Class[scriptParameters.size()];
 			for (int i = 0; i < classes.length; i++)
 				classes[i] = loadClass(classLoader, scriptParameterInfo.get(i).typeDescriptor);
 			classLoader.loadClass("Scripts").getMethod("run", classes).invoke(null, argumentsArray);
-		} catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
-			Logger.getLogger(JavaBytecodeRunUnit.class.getName()).log(Level.SEVERE, null, ex);
-		}
 	}
 
 	public void dump(File directory) {
