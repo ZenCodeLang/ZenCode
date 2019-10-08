@@ -5,15 +5,6 @@
  */
 package org.openzen.zenscript.constructor;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.json.JSONObject;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -24,12 +15,22 @@ import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.javabytecode.JavaBytecodeModule;
 import org.openzen.zenscript.javabytecode.JavaBytecodeRunUnit;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
-import org.openzen.zenscript.javashared.JavaCompileSpace;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.SimpleJavaCompileSpace;
 import org.openzen.zenscript.javasource.JavaDirectoryOutput;
 import org.openzen.zenscript.javasource.JavaSourceCompiler;
 import org.openzen.zenscript.javasource.JavaSourceModule;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -220,7 +221,11 @@ public class ConstructorRegistry {
 			for (JavaBytecodeModule module : modules)
 				unit.add(module);
 			//unit.add(compiler.helpers);
-			unit.run();
-		}
+            try {
+                unit.run();
+            } catch(ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
 	}
 }
