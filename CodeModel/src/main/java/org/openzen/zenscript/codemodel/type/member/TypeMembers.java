@@ -39,11 +39,7 @@ import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpressio
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.partial.PartialVariantOptionExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -173,7 +169,27 @@ public final class TypeMembers {
 			return other;
 		if (cache.get(other).canCastImplicit(type))
 			return type;
-		
+
+
+		for (TypeMember<ImplementationMemberRef> implementation : this.implementations) {
+			final StoredType union = cache.get(implementation.member.implementsType).union(other);
+			if(union != null)
+				return union;
+		}
+
+		if(this.type.type instanceof ArrayTypeID && other.type instanceof ArrayTypeID) {
+			ArrayTypeID thisArray = (ArrayTypeID) this.type.type;
+			ArrayTypeID otherArray = (ArrayTypeID) other.type;
+
+			if(thisArray.dimension == otherArray.dimension) {
+				final StoredType union = cache.get(thisArray.elementType).union(otherArray.elementType);
+				if(union != null) {
+					return getTypeRegistry().getArray(union, thisArray.dimension).stored();
+				}
+			}
+		}
+
+
 		return null;
 	}
 	
