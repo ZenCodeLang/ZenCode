@@ -43,7 +43,7 @@ public class ScriptingEngine {
 		space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
 		
 		try {
-            ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.zip"));
+            ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.jar"));
             SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, new SemanticModule[0], FunctionParameter.NONE, stdlib);
 			stdlibModule = Validator.validate(stdlibModule, error -> System.out.println(error.toString()));
 			space.addModule("stdlib", stdlibModule);
