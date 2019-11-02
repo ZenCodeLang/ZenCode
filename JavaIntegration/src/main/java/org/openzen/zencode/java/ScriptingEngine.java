@@ -43,11 +43,12 @@ public class ScriptingEngine {
 		space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
 		
 		try {
-			ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.zip"));
-			SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, new SemanticModule[0], FunctionParameter.NONE, stdlib);
+			File stdlibsFolder = new File(ScriptingEngine.class.getResource("/StdLibs").getPath());
+            FolderPackage stdlibs = new FolderPackage(stdlibsFolder);
+            SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, new SemanticModule[0], FunctionParameter.NONE, stdlib);
 			stdlibModule = Validator.validate(stdlibModule, error -> System.out.println(error.toString()));
 			space.addModule("stdlib", stdlibModule);
-		} catch (IOException | CompileException | ParseException ex) {
+		} catch (CompileException | ParseException ex) {
 			throw new RuntimeException(ex);
 		}
 		this.logger = new EmptyLogger();
