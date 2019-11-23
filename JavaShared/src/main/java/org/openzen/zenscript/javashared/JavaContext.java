@@ -128,6 +128,9 @@ public abstract class JavaContext {
 	
 	public void addModule(Module module, JavaCompiledModule target) {
 		modules.put(module, target);
+
+		//TODO: can we do this here?
+		space.register(target);
 	}
 	
 	public JavaCompiledModule getJavaModule(Module module) {
