@@ -5,10 +5,6 @@
  */
 package org.openzen.zenscript.javashared.prepare;
 
-import org.openzen.zenscript.javashared.JavaNativeClass;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
@@ -33,7 +29,12 @@ import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaModifiers;
+import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zenscript.javashared.JavaVariantOption;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -72,7 +73,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			JavaNativeClass list = new JavaNativeClass(new JavaClass("java.util", "List", JavaClass.Kind.INTERFACE));
 			JavaClass arrayList = new JavaClass("java.util", "ArrayList", JavaClass.Kind.CLASS);
 			list.addMethod("constructor", JavaMethod.getNativeConstructor(arrayList, "()V"));
-			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z"); List<?> l;
+			list.addInstanceMethod("add", "add", "(TE;)Z"); List<?> l;
 			list.addInstanceMethod("insert", "add", "(Ljava/lang/Object;I)V");
 			list.addInstanceMethod("remove", "remove", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("indexOf", "indexOf", "(Ljava/lang/Object;)I");

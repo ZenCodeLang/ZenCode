@@ -47,6 +47,7 @@ public class ScriptingEngine {
             SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, new SemanticModule[0], FunctionParameter.NONE, stdlib);
 			stdlibModule = Validator.validate(stdlibModule, error -> System.out.println(error.toString()));
 			space.addModule("stdlib", stdlibModule);
+			registerCompiled(stdlibModule);
 		} catch (CompileException | ParseException | IOException ex) {
 			throw new RuntimeException(ex);
 		}
