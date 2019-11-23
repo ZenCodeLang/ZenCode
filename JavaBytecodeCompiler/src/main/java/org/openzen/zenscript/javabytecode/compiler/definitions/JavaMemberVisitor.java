@@ -190,6 +190,13 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			for (IDefinitionMember imember : member.members)
 				imember.accept(this);
 		} else {
+			//TODO: Fixme???
+			// What should I do if a native class has interfaces to be visited?
+			if(javaModule.getNativeClassInfo(member.definition) != null) {
+				return null;
+			}
+
+
 			throw new UnsupportedOperationException("Non-inline interface implementations not yet available");
 		}
 		return null;
