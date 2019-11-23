@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -35,7 +34,7 @@ public class ParsedConstructor extends ParsedFunctionalMember {
 
 	@Override
 	public void linkTypes(TypeResolutionContext context) {
-        compiled = new ConstructorMember(position, definition, modifiers, header.compile(context), header.parameters.isEmpty() ? BuiltinID.CLASS_DEFAULT_CONSTRUCTOR : null);
+		compiled = new ConstructorMember(position, definition, modifiers, header.compile(context), null);
 	}
 
 	@Override
