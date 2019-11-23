@@ -4227,8 +4227,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		} else {
 			getJavaWriter().invokeVirtual(methodInfo);
 		}
-		if (methodInfo.genericResult)
+		if (methodInfo.genericResult) {
 			getJavaWriter().checkCast(context.getInternalName(resultType));
+		}
+
+		//Make sure that method results are popped if ZC thinks its a void but it actually is not.
+		//Fixes an issue for List#add() returning void in ZC but Z in Java.
+		if(resultType.type == BasicTypeID.VOID && !methodInfo.descriptor.endsWith(")V")) {
+			final boolean isLarge = methodInfo.descriptor.endsWith(")D") && methodInfo.descriptor.endsWith(")L");
+			getJavaWriter().pop(isLarge);
+		}
 
 		return true;
 	}
