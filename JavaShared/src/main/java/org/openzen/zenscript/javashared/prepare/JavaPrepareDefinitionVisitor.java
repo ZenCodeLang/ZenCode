@@ -73,7 +73,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			JavaNativeClass list = new JavaNativeClass(new JavaClass("java.util", "List", JavaClass.Kind.INTERFACE));
 			JavaClass arrayList = new JavaClass("java.util", "ArrayList", JavaClass.Kind.CLASS);
 			list.addMethod("constructor", JavaMethod.getNativeConstructor(arrayList, "()V"));
-			list.addInstanceMethod("add", "add", "(TE;)Z"); List<?> l;
+			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z"); List<?> l;
 			list.addInstanceMethod("insert", "add", "(Ljava/lang/Object;I)V");
 			list.addInstanceMethod("remove", "remove", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("indexOf", "indexOf", "(Ljava/lang/Object;)I");
