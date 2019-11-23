@@ -5,7 +5,8 @@
  */
 package org.openzen.zenscript.javashared.prepare;
 
-import org.openzen.zenscript.javashared.JavaNativeClass;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
@@ -19,11 +20,6 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaContext;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
 
 /**
  *
@@ -64,7 +60,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	public JavaClass visitClass(ClassDefinition definition) {
 		if (isPrepared(definition))
 			return context.getJavaClass(definition);
-		
+
 		return visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
 	}
 
@@ -134,6 +130,11 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	}
 	
 	private JavaClass visitClassCompiled(HighLevelDefinition definition, boolean startsEmpty, JavaClass.Kind kind) {
+
+		for (TypeParameter typeParameter : definition.typeParameters) {
+			module.setTypeParameterInfo(typeParameter, new JavaTypeParameterInfo(-1));
+		}
+
 		if (definition.getSuperType() != null)
 			prepare(definition.getSuperType());
 		
