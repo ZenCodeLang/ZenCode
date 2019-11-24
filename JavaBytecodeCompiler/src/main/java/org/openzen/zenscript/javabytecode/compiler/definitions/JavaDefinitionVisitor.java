@@ -1,32 +1,45 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.javashared.*;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
-import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.definition.AliasDefinition;
+import org.openzen.zenscript.codemodel.definition.ClassDefinition;
+import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
+import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
-import org.openzen.zenscript.javabytecode.compiler.*;
+import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
+import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
+import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
+import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
+import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
+import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
+import org.openzen.zenscript.javashared.JavaVariantOption;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.type.StoredType;
 
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
-	private static final JavaMethod CLASS_FORNAME
+	private final JavaMethod CLASS_FORNAME
 			= JavaMethod.getNativeStatic(JavaClass.CLASS, "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
-	private static final JavaMethod ENUM_VALUEOF
+	private final JavaMethod ENUM_VALUEOF
 			= JavaMethod.getNativeStatic(JavaClass.CLASS, "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;");
-	private static final JavaMethod ARRAY_CLONE
+	private final JavaMethod ARRAY_CLONE
 			= JavaMethod.getNativeVirtual(JavaClass.ARRAYS, "clone", "()Ljava/lang/Object;");
 
 	private final JavaClassWriter outerWriter;

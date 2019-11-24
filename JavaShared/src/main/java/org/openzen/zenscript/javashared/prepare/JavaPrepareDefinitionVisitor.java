@@ -41,9 +41,9 @@ import java.util.Map;
  * @author Hoofdgebruiker
  */
 public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass> {
-	private static final Map<String, JavaNativeClass> nativeClasses = new HashMap<>();
+	private final Map<String, JavaNativeClass> nativeClasses = new HashMap<>();
 	
-	static {
+	 {
 		{
 			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.lang", "StringBuilder", JavaClass.Kind.CLASS));
 			cls.addConstructor("constructor", "()V");
