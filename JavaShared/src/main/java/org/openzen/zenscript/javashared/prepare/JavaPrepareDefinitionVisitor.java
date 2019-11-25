@@ -95,7 +95,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		}
 		
 		{
-			JavaNativeClass iterator = new JavaNativeClass(JavaClass.ITERATOR);
+			JavaNativeClass iterator = new JavaNativeClass(new JavaClass("java.util", "Iterator", JavaClass.Kind.INTERFACE));
 			iterator.addMethod("empty", new JavaMethod(JavaClass.COLLECTIONS, JavaMethod.Kind.STATIC, "emptyIterator", false, "()Ljava/lang/Iterator;", JavaModifiers.STATIC | JavaModifiers.PUBLIC, false));
 			iterator.addInstanceMethod("hasNext", "hasNext", "()Z");
 			iterator.addInstanceMethod("next", "next", "()Ljava/lang/Object;");
