@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javashared.prepare;
 
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -166,16 +167,24 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		JavaMethod method = null;
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
-		if (method == null)
+		if (method == null) {
+			final JavaMethod.Kind kind = getKind(member);
+			final String descriptor;
+			if (kind == JavaMethod.Kind.EXPANSION && member.definition instanceof ExpansionDefinition) {
+				descriptor = context.getMethodDescriptorExpansion(header, ((ExpansionDefinition) member.definition).target);
+			} else {
+				descriptor = context.getMethodDescriptor(header);
+			}
 			method = new JavaMethod(
 					cls,
-					getKind(member),
+					kind,
 					name,
 					true,
-					context.getMethodDescriptor(header),
+					descriptor,
 					JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
 					header.getReturnType().type instanceof GenericTypeID,
-					header.useTypeParameters()); 
+					header.useTypeParameters());
+		}
 		
 		if (method.compile) {
 			if (DEBUG_EMPTY && cls.empty)

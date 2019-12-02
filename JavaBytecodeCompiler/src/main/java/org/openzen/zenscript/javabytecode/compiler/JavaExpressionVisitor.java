@@ -4220,9 +4220,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			getJavaWriter().invokeStatic(methodInfo);
 		} else if (methodInfo.kind == JavaMethod.Kind.INTERFACE) {
 			getJavaWriter().invokeInterface(methodInfo);
+		} else if (methodInfo.kind == JavaMethod.Kind.EXPANSION) {
+			getJavaWriter().invokeStatic(methodInfo);
 		} else if (methodInfo.kind == JavaMethod.Kind.COMPILED) {
 			Objects.requireNonNull(methodInfo.translation).translate(expression, this);
-		} else if (methodInfo.cls.kind == JavaClass.Kind.INTERFACE) {
+		} else if (methodInfo.cls != null && methodInfo.cls.kind == JavaClass.Kind.INTERFACE) {
 			getJavaWriter().invokeInterface(methodInfo);
 		} else {
 			getJavaWriter().invokeVirtual(methodInfo);

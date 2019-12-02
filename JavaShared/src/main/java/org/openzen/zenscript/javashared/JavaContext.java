@@ -221,7 +221,11 @@ public abstract class JavaContext {
 	}
 	
 	public String getMethodDescriptor(FunctionHeader header) {
-		return getMethodDescriptor(header, false);
+		return getMethodDescriptor(header, false, "");
+	}
+
+	public String getMethodDescriptorExpansion(FunctionHeader header, StoredType expandedType) {
+		return getMethodDescriptor(header, false, getDescriptor(expandedType));
 	}
 	
     public String getMethodSignature(FunctionHeader header) {
@@ -229,7 +233,7 @@ public abstract class JavaContext {
     }
 	
 	public String getEnumConstructorDescriptor(FunctionHeader header) {
-		return getMethodDescriptor(header, true);
+		return getMethodDescriptor(header, true, "");
 	}
 	
 	public JavaSynthesizedFunctionInstance getFunction(FunctionTypeID type) {
@@ -339,14 +343,25 @@ public abstract class JavaContext {
 			return new JavaSynthesizedClass(range.cls, new TypeID[] { type.baseType.type });
 		}
 	}
-	
-	private String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor) {
+
+	/**
+	 * @param header Function Header
+	 * @param isEnumConstructor If this is an enum constructor, add String, int as parameters
+	 * @param expandedType If this is for an expanded type, add the type at the beginning.
+	 *                        Can be null or an empty string if this is not an expansion method header
+	 * @return Method descriptor {@code (<LClass;*No.TypeParameters><LString;I if enum><expandedType><headerTypes>)<retType> }
+	 */
+	private String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor, String expandedType) {
         StringBuilder descBuilder = new StringBuilder("(");
 		for (int i = 0; i < header.getNumberOfTypeParameters(); i++)
 			descBuilder.append("Ljava/lang/Class;");
 		
         if (isEnumConstructor)
             descBuilder.append("Ljava/lang/String;I");
+
+        //TODO: Put this earlier? We'd need to agree on one...
+        if(expandedType != null)
+        	descBuilder.append(expandedType);
 		
         for (FunctionParameter parameter : header.parameters) {
 			descBuilder.append(getDescriptor(parameter.type));
