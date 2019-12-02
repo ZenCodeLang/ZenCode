@@ -884,11 +884,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				} else {
 					argument.accept(this);
 					javaWriter.dup();
-					int tmp = javaWriter.local(Type.getType("zsynthetic/IntRange"));
+					final String owner;
+					if (argument.type.type instanceof RangeTypeID) {
+						owner = context.getInternalName(argument.type);
+					} else {
+						owner = "zsynthetic/IntRange";
+					}
+					int tmp = javaWriter.local(Type.getType(owner));
 					javaWriter.storeInt(tmp);
-					javaWriter.getField("zsynthetic/IntRange", "from", "I");
+					javaWriter.getField(owner, "from", "I");
 					javaWriter.loadInt(tmp);
-					javaWriter.getField("zsynthetic/IntRange", "to", "I");
+					javaWriter.getField(owner, "to", "I");
 				}
 				javaWriter.invokeVirtual(STRING_SUBSTRING);
 				break;
@@ -1007,11 +1013,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				} else {
 					argument.accept(this);
 					javaWriter.dup();
-					int tmp = javaWriter.local(Type.getType("zsynthetic/IntRange"));
+					final String owner;
+					if (argument.type.type instanceof RangeTypeID) {
+						owner = context.getInternalName(argument.type);
+					} else {
+						owner = "zsynthetic/IntRange";
+					}
+					int tmp = javaWriter.local(Type.getType(owner));
 					javaWriter.storeInt(tmp);
-					javaWriter.getField("zsynthetic/IntRange", "from", "I");
+					javaWriter.getField(owner, "from", "I");
 					javaWriter.loadInt(tmp);
-					javaWriter.getField("zsynthetic/IntRange", "to", "I");
+					javaWriter.getField(owner, "to", "I");
 				}
 
 				if (type.elementType.type instanceof BasicTypeID) {

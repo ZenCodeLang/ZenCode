@@ -3,6 +3,7 @@ package org.openzen.zenscript.javabytecode.compiler;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.*;
+import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import org.openzen.zenscript.javashared.JavaCompiledModule;
 
 public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     private final JavaWriter javaWriter;
-	private final JavaBytecodeContext context;
+	final JavaBytecodeContext context;
     public JavaExpressionVisitor expressionVisitor;
 	public JavaNonPushingExpressionVisitor nonPushingExpressionVisitor;
 
@@ -124,7 +125,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		} else {
 			switch (statement.iterator.target.getBuiltin()) {
 				case ITERATOR_INT_RANGE:
-					iteratorWriter.visitIntRange();
+					iteratorWriter.visitIntRange(((RangeTypeID) statement.iterator.getOwnerType().type));
 					break;
 				case ITERATOR_ARRAY_VALUES:
 					iteratorWriter.visitArrayValueIterator();

@@ -4,6 +4,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -32,11 +33,12 @@ public class JavaForeachWriter {
         this.unboxingTypeVisitor = new JavaUnboxingTypeVisitor(this.javaWriter);
     }
 
-	public void visitIntRange() {
+	public void visitIntRange(RangeTypeID type) {
+		final String owner = statementVisitor.context.getInternalName(type);
 		javaWriter.dup();
-		javaWriter.getField("zsynthetic/IntRange", "to", "I");
+		javaWriter.getField(owner, "to", "I");
 		javaWriter.swap();
-		javaWriter.getField("zsynthetic/IntRange", "from", "I");
+		javaWriter.getField(owner, "from", "I");
 
 		final int z = javaWriter.getLocalVariable(variables[0].variable).local;
 		javaWriter.storeInt(z);
