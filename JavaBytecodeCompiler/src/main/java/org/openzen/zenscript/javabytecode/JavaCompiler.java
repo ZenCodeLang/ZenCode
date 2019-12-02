@@ -103,7 +103,13 @@ public class JavaCompiler {
 				target.addScript(method);
 
 			entry.getValue().classWriter.visitEnd();
-			target.addClass(entry.getKey(), entry.getValue().classWriter.toByteArray());
+
+			if (target.getClasses().containsKey(entry.getKey())) {
+				//TODO Scripts and definitions seem to create the same class. Bad!
+				System.err.println("Trying to register " + entry.getKey() + " a 2nd time");
+			}else{
+				target.addClass(entry.getKey(), entry.getValue().classWriter.toByteArray());
+			}
 		}
 
 		return target;

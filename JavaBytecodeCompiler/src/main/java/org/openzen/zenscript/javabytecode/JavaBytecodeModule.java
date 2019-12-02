@@ -29,8 +29,12 @@ public class JavaBytecodeModule extends JavaCompiledModule {
 	public void addClass(String name, byte[] bytecode) {
 		if (bytecode == null)
 			return;
-		
-		classes.put(name, bytecode);
+
+		if(name.startsWith("java")) {
+			System.err.println("Invalid name " + name);
+		} else {
+			classes.put(name, bytecode);
+		}
 	}
 	
 	public void addScript(JavaScriptMethod method) {
