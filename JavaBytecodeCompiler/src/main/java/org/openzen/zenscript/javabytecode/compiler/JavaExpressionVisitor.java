@@ -4138,7 +4138,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitThis(ThisExpression expression) {
-		javaWriter.loadObject(0);
+		javaWriter.load(context.getType(expression.type), 0);
 		return null;
 	}
 
