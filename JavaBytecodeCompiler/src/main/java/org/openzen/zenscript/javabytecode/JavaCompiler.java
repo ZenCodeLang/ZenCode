@@ -36,7 +36,8 @@ import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
  */
 public class JavaCompiler {
 	private int generatedScriptBlockCounter = 0;
-	
+	private int expansionCounter = 0;
+
 	public JavaCompiler() {}
 	
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space) {
@@ -47,7 +48,7 @@ public class JavaCompiler {
 		context.addModule(module.module, target);
 		
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			String filename = getFilename(definition);
+			String filename = getFilename(definition) + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
 			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null);
 			definition.accept(definitionPreparer);
 		}
