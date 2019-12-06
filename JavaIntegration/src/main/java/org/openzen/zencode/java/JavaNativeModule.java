@@ -265,7 +265,7 @@ public class JavaNativeModule {
 				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
 			} else if (specifiedName.indexOf('.') >= 0) {
 				if (!specifiedName.startsWith(pkg.fullName))
-					throw new IllegalArgumentException("Specified @Name as \"" + specifiedName + "\" for class: \"" + cls.toString() + "\" but it's not in the module root package");
+					throw new IllegalArgumentException("Specified @Name as \"" + specifiedName + "\" for class: \"" + cls.toString() + "\" but it's not in the module root package: \"" + pkg.fullName + "\"");
 
 				classPkg = getPackage(basePackage + specifiedName.substring(pkg.fullName.length()));
 				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
