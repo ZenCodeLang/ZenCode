@@ -28,8 +28,6 @@ import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -186,15 +184,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		writer.visitEnd();
 
 
-		final byte[] classBytes = writer.toByteArray();
-
-		try (FileOutputStream out = new FileOutputStream("ttt.class")) {
-			out.write(classBytes);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return classBytes;
+		return writer.toByteArray();
 	}
 
 	@Override
@@ -303,13 +293,6 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			optionWriter.visitEnd();
 			final byte[] byteArray = optionWriter.toByteArray();
 			context.register(optionTag.variantOptionClass.internalName, byteArray);
-
-			//Print the option files, won't be in production
-			try (FileOutputStream out = new FileOutputStream(optionTag.variantOptionClass.internalName.replace('/', '_') + ".class")) {
-				out.write(byteArray);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 
 

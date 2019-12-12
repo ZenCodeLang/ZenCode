@@ -21,8 +21,6 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 import org.openzen.zenscript.javashared.*;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -2086,12 +2084,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		context.register(className, lambdaCW.toByteArray());
 
-		try (FileOutputStream out = new FileOutputStream(className + ".class")) {
-			out.write(lambdaCW.toByteArray());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		return null;
 	}
 
@@ -4119,15 +4111,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.dupX1();
 		javaWriter.swap();
 		javaWriter.invokeSpecial(className, "<init>", constructorDesc);
-
-		//Debug-only, remove later
-		if(true) {
-			try (FileOutputStream out = new FileOutputStream(className + ".class")) {
-				out.write(lambdaCW.toByteArray());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	@Override
