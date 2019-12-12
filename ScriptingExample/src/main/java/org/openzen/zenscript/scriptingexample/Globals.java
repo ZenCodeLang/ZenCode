@@ -67,6 +67,10 @@ public class Globals implements ZenCodeGlobals {
 	public static TestClass bracket(String value) {
 		return new TestClass(value);
 	}
+
+	public static String staticToString(String value) {
+		return value;
+	}
 	
 	@FunctionalInterface
 	public static interface MyFunctionalInterface {
