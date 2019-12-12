@@ -300,7 +300,7 @@ public class JavaNativeModule {
 
 		TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
-		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
+        definition.typeParameters = new TypeParameter[cls.getTypeParameters().length];
 		for (int i = 0; i < javaTypeParameters.length; i++) {
 			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
 			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
@@ -308,10 +308,10 @@ public class JavaNativeModule {
 				TypeID type = loadType(context, bound).type;
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
-			typeParameters[i] = parameter;
+            definition.typeParameters[i] = parameter;
 			context.put(typeVariable, parameter);
 		}
-
+  
 		if (definition instanceof ClassDefinition && cls.getAnnotatedSuperclass() != null && shouldLoadType(cls.getAnnotatedSuperclass().getType())) {
 			definition.setSuperType(loadType(context, cls.getAnnotatedSuperclass()).type);
 		}
@@ -329,7 +329,7 @@ public class JavaNativeModule {
 			}
 		}
 		
-		definition.typeParameters = typeParameters;
+		
 		compiled.setClassInfo(definition, javaClass);
 		
 		StoredType thisType = new StoredType(registry.getForMyDefinition(definition), AutoStorageTag.INSTANCE);
