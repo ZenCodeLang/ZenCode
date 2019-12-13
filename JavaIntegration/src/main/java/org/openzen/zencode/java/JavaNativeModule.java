@@ -301,15 +301,24 @@ public class JavaNativeModule {
 		TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
 		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
+		definition.typeParameters = typeParameters;
+
 		for (int i = 0; i < javaTypeParameters.length; i++) {
+			//Put up here for nested parameters?
 			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
 			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
+			typeParameters[i] = parameter;
+			context.put(typeVariable, parameter);
+		}
+
+		for (int i = 0; i < javaTypeParameters.length; i++) {
+			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
+			TypeParameter parameter = typeParameters[i];
 			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
 				TypeID type = loadType(context, bound).type;
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
 			typeParameters[i] = parameter;
-			context.put(typeVariable, parameter);
 		}
 
 		if (definition instanceof ClassDefinition && cls.getAnnotatedSuperclass() != null && shouldLoadType(cls.getAnnotatedSuperclass().getType())) {
@@ -328,8 +337,7 @@ public class JavaNativeModule {
 				compiled.setImplementationInfo(member, new JavaImplementation(true, javaClass));
 			}
 		}
-		
-		definition.typeParameters = typeParameters;
+
 		compiled.setClassInfo(definition, javaClass);
 		
 		StoredType thisType = new StoredType(registry.getForMyDefinition(definition), AutoStorageTag.INSTANCE);
@@ -349,7 +357,7 @@ public class JavaNativeModule {
 		}
 		
 		boolean hasConstructor = false;
-		for (java.lang.reflect.Constructor constructor : cls.getConstructors()) {
+		for (java.lang.reflect.Constructor<?> constructor : cls.getConstructors()) {
 			ZenCodeType.Constructor constructorAnnotation = (ZenCodeType.Constructor) constructor.getAnnotation(ZenCodeType.Constructor.class);
 			if (constructorAnnotation != null) {
 				ConstructorMember member = asConstructor(context, definition, constructor);
@@ -777,6 +785,23 @@ public class JavaNativeModule {
 			AnnotatedType[] exceptionTypes) {
 		StoredType returnType = javaReturnType == null ? BasicTypeID.VOID.stored : loadStoredType(context, javaReturnType);
 		
+
+		TypeParameter[] typeParameters = new TypeParameter[javaTypeParameters.length];
+		for (int i = 0; i < javaTypeParameters.length; i++) {
+			//Put up here for nested parameters?
+			TypeVariable<Method> typeVariable = javaTypeParameters[i];
+			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
+			typeParameters[i] = parameter;
+			context.put(typeVariable, parameter);
+		}
+
+		for (int i = 0; i < javaTypeParameters.length; i++) {
+			TypeVariable<Method> javaTypeParameter = javaTypeParameters[i];
+			
+			for (AnnotatedType bound : javaTypeParameter.getAnnotatedBounds())
+				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, loadType(context, bound).type));
+		}
+
 		FunctionParameter[] parameters = new FunctionParameter[javaParameters.length];
 		for (int i = 0; i < parameters.length; i++) {
 			Parameter parameter = javaParameters[i];
@@ -785,16 +810,6 @@ public class JavaNativeModule {
 			StoredType type = loadStoredType(context, parameter);
 			Expression defaultValue = getDefaultValue(parameter, type);
 			parameters[i] = new FunctionParameter(type, parameter.getName(), defaultValue, parameter.isVarArgs());
-		}
-		
-		TypeParameter[] typeParameters = new TypeParameter[javaTypeParameters.length];
-		for (int i = 0; i < javaTypeParameters.length; i++) {
-			TypeVariable<Method> javaTypeParameter = javaTypeParameters[i];
-			typeParameters[i] = new TypeParameter(CodePosition.UNKNOWN, javaTypeParameter.getName());
-			context.put(javaTypeParameter, typeParameters[i]);
-			
-			for (AnnotatedType bound : javaTypeParameter.getAnnotatedBounds())
-				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, loadType(context, bound).type));
 		}
 		
 		if (exceptionTypes.length > 1)
@@ -856,10 +871,15 @@ public class JavaNativeModule {
 				return typeByClass.get(classType).stored();
 			
 			HighLevelDefinition definition = addClass(classType);
-			return registry.getForDefinition(definition).stored();
+			final List<StoredType> s = new ArrayList<>();
+			for (TypeVariable<? extends Class<?>> typeParameter : classType.getTypeParameters()) {
+				s.add(registry.getGeneric(context.get(typeParameter)).stored());
+			}
+
+			return registry.getForDefinition(definition, s.toArray(StoredType.NONE)).stored();
 		} else if (type instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) type;
-			Class<?> rawType = (Class) parameterizedType.getRawType();
+			Class<?> rawType = (Class<?>) parameterizedType.getRawType();
 			if (rawType.isAnnotationPresent(FunctionalInterface.class))
 				return loadFunctionalInterface(context, rawType, (AnnotatedElement[]) parameterizedType.getActualTypeArguments());
 			
@@ -874,8 +894,8 @@ public class JavaNativeModule {
             
             HighLevelDefinition definition = addClass(rawType);
             return registry.getForDefinition(definition, codeParameters).stored();
-		} else if (type instanceof TypeVariable) {
-            TypeVariable variable = (TypeVariable) type;
+		} else if (type instanceof TypeVariable<?>) {
+            TypeVariable<?> variable = (TypeVariable<?>) type;
             return registry.getGeneric(context.get(variable)).stored();
         }else if(type instanceof AnnotatedType){
 		    final StoredType storedType;
@@ -891,11 +911,14 @@ public class JavaNativeModule {
                 if(rawType == Map.class) {
                     storedType = registry.getAssociative(codeParameters[0], codeParameters[1]).stored();
                 } else {
-                    HighLevelDefinition definition = addClass((Class<?>) rawType);
-                    storedType = registry.getForDefinition(definition, codeParameters).stored();
+                    storedType = loadType(context, (AnnotatedElement) rawType, unsigned);
                 }
             } else {
-		        storedType = loadType(context, (AnnotatedElement) ((AnnotatedType) type).getType(), unsigned);
+				if (((AnnotatedType) type).getType() instanceof WildcardType) {
+					storedType = BasicTypeID.UNDETERMINED.stored();
+				} else {
+					storedType = loadType(context, (AnnotatedElement) ((AnnotatedType) type).getType(), unsigned);
+				}
             }
             
 		    if(type.isAnnotationPresent(ZenCodeStorageTag.class)) {
@@ -918,7 +941,7 @@ public class JavaNativeModule {
 		
 		Map<TypeParameter, StoredType> mapping = new HashMap<>();
 		TypeVariable[] javaParameters = cls.getTypeParameters();
-		for (int i = 0; i < javaParameters.length; i++)
+		for (int i = 0; i < parameters.length; i++)
 			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false, false));
 		
 		JavaMethod method = new JavaMethod(
@@ -937,15 +960,21 @@ public class JavaNativeModule {
 		TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
 		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
+
 		for (int i = 0; i < javaTypeParameters.length; i++) {
 			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
 			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
-			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
-				TypeID type = loadType(context, bound).type;
-				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
-			}
 			typeParameters[i] = parameter;
+
+			//Put up here so that Nested Type parameters may work..?
 			context.put(typeVariable, parameter);
+		}
+
+		for (int i = 0; i < javaTypeParameters.length; i++) {
+			for (AnnotatedType bound : javaTypeParameters[i].getAnnotatedBounds()) {
+				TypeID type = loadType(context, bound).type;
+				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
+			}
 		}
 		return context;
 	}

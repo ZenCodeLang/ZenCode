@@ -85,6 +85,14 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		if (!scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference
 			StoredType returnType = statements.getReturnType();
+			if(returnType == null) {
+				throw new NullPointerException();
+			}
+
+			if(returnType.type == null) {
+				throw new NullPointerException();
+			}
+
 			Map<TypeParameter, StoredType> inferredTypes = returnType.type.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType());
 			if (inferredTypes == null)
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
