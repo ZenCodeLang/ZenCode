@@ -81,6 +81,7 @@ public class JavaNativeModule {
 	private final Map<Class<?>, HighLevelDefinition> definitionByClass = new HashMap<>();
 	private final Map<Class<?>, TypeID> typeByClass = new HashMap<>();
 	private final Map<Class<?>, TypeID> unsignedByClass = new HashMap<>();
+	private final TypeVariableContext context = new TypeVariableContext();
 	
 	public final Map<String, ISymbol> globals = new HashMap<>();
 	private BracketExpressionParser bep;
@@ -161,7 +162,7 @@ public class JavaNativeModule {
 		JavaClass jcls = JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.CLASS);
 		compiled.setClassInfo(definition, jcls);
 		StoredType thisType = registry.getForMyDefinition(definition).stored();
-		TypeVariableContext context = new TypeVariableContext();
+		//TypeVariableContext context = new TypeVariableContext();
 		
 		for (Field field : cls.getDeclaredFields()) {
 			if (!field.isAnnotationPresent(ZenCodeGlobals.Global.class))
@@ -207,7 +208,7 @@ public class JavaNativeModule {
 		HighLevelDefinition definition = addClass(method.getDeclaringClass());
 		JavaClass jcls = JavaClass.fromInternalName(getInternalName(method.getDeclaringClass()), JavaClass.Kind.CLASS);
 		
-		TypeVariableContext context = new TypeVariableContext();
+		//TypeVariableContext context = new TypeVariableContext();
 		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), getHeader(context, method), null);
 		definition.addMember(methodMember);
 		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
@@ -298,7 +299,7 @@ public class JavaNativeModule {
 		//Moved up here so that circular dependencies are caught (hopefully)
 		definitionByClass.put(cls, definition);
 
-		TypeVariableContext context = new TypeVariableContext();
+		//TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
 		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
 		definition.typeParameters = typeParameters;
@@ -457,7 +458,7 @@ public class JavaNativeModule {
             if(methodAnnotation != null) {
                 String name = !methodAnnotation.value().isEmpty() ? methodAnnotation.value() : method.getName();
 
-                TypeVariableContext context = new TypeVariableContext();
+                //TypeVariableContext context = new TypeVariableContext();
 
                 final Parameter[] parameters = getExpansionParameters(method);
 
@@ -476,7 +477,7 @@ public class JavaNativeModule {
                 if (implicit) {
                     modifiers |= Modifiers.IMPLICIT;
                 }
-                TypeVariableContext context = new TypeVariableContext();
+                //TypeVariableContext context = new TypeVariableContext();
                 StoredType toType = loadStoredType(context, method.getAnnotatedReturnType());
                 final CasterMember member = new CasterMember(CodePosition.NATIVE, expansion, modifiers, toType,  null);
 
@@ -807,7 +808,7 @@ public class JavaNativeModule {
 			Parameter parameter = javaParameters[i];
 
 			//AnnotatedType parameterType = parameter.getAnnotatedType();
-			StoredType type = loadStoredType(context, parameter);
+ 			StoredType type = loadStoredType(context, parameter);
 			Expression defaultValue = getDefaultValue(parameter, type);
 			parameters[i] = new FunctionParameter(type, parameter.getName(), defaultValue, parameter.isVarArgs());
 		}
@@ -957,7 +958,7 @@ public class JavaNativeModule {
 	}
 	
 	private <T> TypeVariableContext convertTypeParameters(Class<T> cls) {
-		TypeVariableContext context = new TypeVariableContext();
+		//TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
 		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
 
