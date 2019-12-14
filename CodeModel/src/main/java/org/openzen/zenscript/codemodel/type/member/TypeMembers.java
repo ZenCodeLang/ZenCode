@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinition;
@@ -430,8 +431,17 @@ public final class TypeMembers {
    
 		if( getImplicitCaster(toType) != null || extendsOrImplements(toType.type))
 		    return true;
-		
+
+		if(type.type.isGeneric() && type.type instanceof GenericTypeID) {
+			final GenericTypeID genericTypeID = (GenericTypeID) type.type;
+			if(genericTypeID.parameter.matches(cache, toType.type)) {
+				return true;
+			}
+		}
+
+
         final StoredType accept = type.type.accept(new TagRemovingTypeVisitor(cache));
+
         if(!this.type.type.equals(accept.type) && cache.get(accept).canCastImplicit(toType)){
             return true;
         }
