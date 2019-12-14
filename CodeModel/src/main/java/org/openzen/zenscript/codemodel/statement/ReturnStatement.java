@@ -11,6 +11,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
@@ -28,7 +29,7 @@ public class ReturnStatement extends Statement {
 	
 	@Override
 	public StoredType getReturnType() {
-		return value.type;
+		return value != null ? value.type : BasicTypeID.VOID.stored();
 	}
 	
 	@Override
