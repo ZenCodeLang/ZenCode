@@ -2016,7 +2016,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			
 			
 			
-			final JavaMethod actualMethod = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, signature, methodInfo.modifiers, methodInfo.genericResult, methodInfo.typeParameterArguments);
+			final JavaMethod actualMethod = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, context.getMethodDescriptor(expression.header), methodInfo.modifiers, methodInfo.genericResult, methodInfo.typeParameterArguments);
 			//No @Override
 			functionWriter = new JavaWriter(expression.position, lambdaCW, actualMethod, null, signature, null);
 		} else {
