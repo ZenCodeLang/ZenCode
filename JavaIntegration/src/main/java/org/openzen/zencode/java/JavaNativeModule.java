@@ -899,9 +899,10 @@ public class JavaNativeModule {
             TypeVariable<?> variable = (TypeVariable<?>) type;
             return registry.getGeneric(context.get(variable)).stored();
         }else if(type instanceof AnnotatedType){
-		    final StoredType storedType;
+		    StoredType storedType;
 		    if(type instanceof AnnotatedParameterizedType) {
                 AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
+
                 final Type rawType = ((ParameterizedType) parameterizedType.getType()).getRawType();
                 final AnnotatedType[] actualTypeArguments = parameterizedType.getAnnotatedActualTypeArguments();
                 final StoredType[] codeParameters = new StoredType[actualTypeArguments.length];
@@ -911,7 +912,16 @@ public class JavaNativeModule {
             
                 if(rawType == Map.class) {
                     storedType = registry.getAssociative(codeParameters[0], codeParameters[1]).stored();
-                } else {
+                } else if(rawType instanceof Class<?>){
+                	final Map<TypeParameter, StoredType> map = new HashMap<>();
+					final TypeVariable<? extends Class<?>>[] typeParameters = ((Class<?>) rawType).getTypeParameters();
+					final StoredType loadType = loadType(context, (AnnotatedElement) rawType, unsigned);
+					for (int i = 0; i < typeParameters.length; i++) {
+						final TypeParameter typeParameter = context.get(typeParameters[i]);
+						map.put(typeParameter, codeParameters[i]);
+					}
+					storedType = loadType.instance(new GenericMapper(CodePosition.NATIVE, registry, map));
+				} else {
                     storedType = loadType(context, (AnnotatedElement) rawType, unsigned);
                 }
             } else {
