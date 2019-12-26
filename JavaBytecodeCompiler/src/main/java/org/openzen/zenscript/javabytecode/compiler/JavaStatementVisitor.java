@@ -16,8 +16,8 @@ import org.openzen.zenscript.javashared.JavaCompiledModule;
 public class JavaStatementVisitor implements StatementVisitor<Boolean> {
     private final JavaWriter javaWriter;
 	final JavaBytecodeContext context;
-    public JavaExpressionVisitor expressionVisitor;
-	public JavaNonPushingExpressionVisitor nonPushingExpressionVisitor;
+    public final JavaExpressionVisitor expressionVisitor;
+	public final JavaNonPushingExpressionVisitor nonPushingExpressionVisitor;
 
     /**
      * @param javaWriter the method writer that compiles the statement
@@ -26,13 +26,14 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
         this.javaWriter = javaWriter;
 		this.context = context;
         this.expressionVisitor = new JavaExpressionVisitor(context, module, javaWriter);
-		nonPushingExpressionVisitor = new JavaNonPushingExpressionVisitor(context, module, javaWriter, expressionVisitor);
+		this.nonPushingExpressionVisitor = new JavaNonPushingExpressionVisitor(context, module, javaWriter, expressionVisitor);
     }
 
     public JavaStatementVisitor(JavaBytecodeContext context, JavaExpressionVisitor expressionVisitor) {
         this.javaWriter = expressionVisitor.getJavaWriter();
 		this.context = context;
         this.expressionVisitor = expressionVisitor;
+		this.nonPushingExpressionVisitor = new JavaNonPushingExpressionVisitor(expressionVisitor.context, expressionVisitor.module, expressionVisitor.javaWriter, expressionVisitor);
     }
 
 	@Override

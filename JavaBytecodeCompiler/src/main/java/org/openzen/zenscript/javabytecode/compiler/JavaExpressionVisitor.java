@@ -159,8 +159,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
     private final JavaBoxingTypeVisitor boxingTypeVisitor;
     private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
     private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
-    private final JavaBytecodeContext context;
-    private final JavaCompiledModule module;
+    final JavaBytecodeContext context;
+    final JavaCompiledModule module;
 
 	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
 		this.javaWriter = javaWriter;
