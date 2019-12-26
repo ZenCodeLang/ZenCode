@@ -190,8 +190,13 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 	@Override
 	public Boolean visitReturn(ReturnStatement statement) {
     	javaWriter.position(statement.position.fromLine);
-		statement.value.accept(expressionVisitor);
-		javaWriter.returnType(context.getType(statement.value.type));
+    	if(statement.value == null) {
+    		javaWriter.ret();
+		} else {
+			statement.value.accept(expressionVisitor);
+			javaWriter.returnType(context.getType(statement.value.type));
+		}
+
 		return true;
 	}
 
