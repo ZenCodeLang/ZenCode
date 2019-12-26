@@ -18,6 +18,9 @@ import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.EscapableBracketParser;
 import org.openzen.zenscript.parser.PrefixedBracketParser;
 import org.openzen.zenscript.parser.SimpleBracketParser;
+import org.openzen.zenscript.scriptingexample.events.EventManager;
+import org.openzen.zenscript.scriptingexample.events.IEvent;
+import org.openzen.zenscript.scriptingexample.events.impl.CTStringedEvent;
 
 public class Main {
 	public static void main(String[] args) throws CompileException, ParseException, IOException, NoSuchMethodException {
@@ -30,6 +33,9 @@ public class Main {
 		example.addClass(TestGenericInterface.class);
 		example.addClass(TestClass.class);
 		example.addClass(TestInterface.class);
+		example.addClass(IEvent.class);
+		example.addClass(EventManager.class);
+		example.addClass(CTStringedEvent.class);
 		scriptingEngine.registerNativeProvided(example);
 
 		File inputDirectory = new File("scripts");
