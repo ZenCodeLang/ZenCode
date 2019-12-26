@@ -1961,6 +1961,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final String signature;
 		final String[] interfaces;
 		final String className = context.getLambdaCounter();
+		final String descriptor;
 		
 		{//Fill the info above
 			final StorageTag actualStorage = expression.type.getActualStorage();
@@ -1970,10 +1971,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				
 				//Should be the same, should it not?
 				signature = context.getMethodSignature(expression.header);
+				descriptor = context.getMethodDescriptor(expression.header);
 				interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
 			} else {
 				//Normal way, no casting to functional interface
 				signature = context.getMethodSignature(expression.header);
+				descriptor = context.getMethodDescriptor(expression.header);
 				interfaces = new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))};
 			}
 		}
@@ -1989,7 +1992,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final JavaWriter functionWriter;
 		
 		//Bridge method!!!
-		if (!Objects.equals(methodInfo.descriptor, signature)) {
+		if (!Objects.equals(methodInfo.descriptor, descriptor)) {
 			final JavaMethod bridgeMethodInfo = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
 			final JavaWriter bridgeWriter = new JavaWriter(expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "java/lang/Override");
 			bridgeWriter.start();
