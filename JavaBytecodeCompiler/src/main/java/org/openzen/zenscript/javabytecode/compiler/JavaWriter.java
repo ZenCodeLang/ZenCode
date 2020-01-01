@@ -11,6 +11,7 @@ import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
+import javax.lang.model.element.VariableElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,9 +86,13 @@ public class JavaWriter {
 	public void setLocalVariable(VariableID variable, JavaLocalVariableInfo info) {
 		localVariables.put(variable, info);
 	}
-	
+
+	public JavaLocalVariableInfo tryGetLocalVariable(VariableID variable) {
+		return localVariables.get(variable);
+	}
+
 	public JavaLocalVariableInfo getLocalVariable(VariableID variable) {
-		JavaLocalVariableInfo result = localVariables.get(variable);
+		JavaLocalVariableInfo result = tryGetLocalVariable(variable);
 		if (result == null)
 			throw new IllegalStateException("Local variable unknown");
 		

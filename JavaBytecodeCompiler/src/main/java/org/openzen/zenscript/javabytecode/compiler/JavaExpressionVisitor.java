@@ -2064,6 +2064,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final JavaStatementVisitor CSV = new JavaStatementVisitor(context, new JavaExpressionVisitor(context, module, functionWriter) {
 			@Override
 			public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
+				final JavaLocalVariableInfo localVariable = functionWriter.tryGetLocalVariable(varExpression.variable.variable);
+				if(localVariable != null) {
+					final Label label = new Label();
+					localVariable.end = label;
+					functionWriter.label(label);
+					functionWriter.load(localVariable);
+					return null;
+				}
+
+
+
 				final int position = calculateMemberPosition(varExpression, expression);
 				functionWriter.loadObject(0);
 				functionWriter.getField(className, "captured" + position, context.getDescriptor(varExpression.variable.type));
