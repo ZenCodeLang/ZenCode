@@ -73,7 +73,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			JavaNativeClass list = new JavaNativeClass(new JavaClass("java.util", "List", JavaClass.Kind.INTERFACE));
 			JavaClass arrayList = new JavaClass("java.util", "ArrayList", JavaClass.Kind.CLASS);
 			list.addMethod("constructor", JavaMethod.getNativeConstructor(arrayList, "()V"));
-			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z"); List<?> l;
+			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("insert", "add", "(Ljava/lang/Object;I)V");
 			list.addInstanceMethod("remove", "remove", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("indexOf", "indexOf", "(Ljava/lang/Object;)I");
@@ -236,14 +236,20 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 	
 	private final JavaContext context;
 	private final String filename;
+	private final String className;
 	private final JavaClass outerClass;
 	private final JavaCompiledModule module;
-	
+
 	public JavaPrepareDefinitionVisitor(JavaContext context, JavaCompiledModule module, String filename, JavaClass outerClass) {
+		this(context, module, filename, outerClass, JavaClass.getNameFromFile(filename));
+	}
+
+	public JavaPrepareDefinitionVisitor(JavaContext context, JavaCompiledModule module, String filename, JavaClass outerClass, String className) {
 		this.context = context;
 		this.filename = filename;
 		this.outerClass = outerClass;
 		this.module = module;
+		this.className = className;
 	}
 	
 	private boolean isPrepared(HighLevelDefinition definition) {
@@ -298,7 +304,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		if (isPrepared(definition))
 			return context.getJavaClass(definition);
 		
-		JavaClass cls = new JavaClass(context.getPackageName(definition.pkg), JavaClass.getNameFromFile(filename), JavaClass.Kind.CLASS);
+		JavaClass cls = new JavaClass(context.getPackageName(definition.pkg), className, JavaClass.Kind.CLASS);
 		context.setJavaClass(definition, cls);
 		return cls;
 	}
@@ -313,7 +319,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			context.setJavaNativeClass(definition, nativeClasses.get(nativeTag.value));
 		}
 		
-		JavaClass cls = new JavaClass(context.getPackageName(definition.pkg), JavaClass.getNameFromFile(filename), JavaClass.Kind.CLASS);
+		JavaClass cls = new JavaClass(context.getPackageName(definition.pkg), className, JavaClass.Kind.CLASS);
 		context.setJavaClass(definition, cls);
 		return cls;
 	}

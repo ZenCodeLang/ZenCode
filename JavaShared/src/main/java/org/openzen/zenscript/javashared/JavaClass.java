@@ -52,7 +52,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	
 	public static String getNameFromFile(String filename) {
 		if (filename.indexOf('.') > 0)
-			return filename.substring(0, filename.indexOf('.'));
+			return filename.substring(0, filename.lastIndexOf('.'));
 		else
 			return filename;
 	}
