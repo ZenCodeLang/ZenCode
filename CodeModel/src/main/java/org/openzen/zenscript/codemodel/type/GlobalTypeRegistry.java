@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -109,5 +110,9 @@ public class GlobalTypeRegistry {
 			identityMap.put(id, id);
 			return id;
 		}
+	}
+
+	public Collection<DefinitionTypeID> getDefinitions() {
+		return definitionTypes.keySet();
 	}
 }

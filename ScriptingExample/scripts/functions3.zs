@@ -1,1 +1,0 @@
-function apply2(fn as function(value as int) as int, scale as int) as int {    return fn(scale);}function scale2(value as int, scale as int) as int {    return apply2(v => v * scale, value);}

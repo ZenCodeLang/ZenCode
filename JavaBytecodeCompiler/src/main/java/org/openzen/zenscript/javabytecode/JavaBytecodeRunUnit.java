@@ -92,7 +92,11 @@ public class JavaBytecodeRunUnit {
 			directory.mkdirs();
 
 		for (Map.Entry<String, byte[]> classEntry : classes.entrySet()) {
-			File output = new File(directory, classEntry.getKey() + ".class");
+			File output = new File(directory, classEntry.getKey().replace('.', File.separatorChar) + ".class");
+			if (!output.getParentFile().exists() && !output.getParentFile().mkdirs()) {
+				//Throw error?
+				continue;
+			}
 			try (FileOutputStream outputStream = new FileOutputStream(output)) {
 				outputStream.write(classEntry.getValue());
 			} catch (IOException ex) {

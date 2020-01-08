@@ -9,10 +9,7 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
-import org.openzen.zenscript.codemodel.expression.GlobalExpression;
+import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.StoredType;
@@ -62,5 +59,10 @@ public class PartialGlobalExpression implements IPartialExpression {
 	@Override
 	public StoredType[] getTypeArguments() {
 		return typeArguments;
+	}
+
+	@Override
+	public IPartialExpression capture(CodePosition position, LambdaClosure closure) {
+		return this;
 	}
 }

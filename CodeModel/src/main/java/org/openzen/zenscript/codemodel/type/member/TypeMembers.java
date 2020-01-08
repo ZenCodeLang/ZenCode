@@ -11,41 +11,16 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
-import org.openzen.zenscript.codemodel.expression.NullExpression;
-import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
-import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
-import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
+import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinition;
-import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.partial.PartialMemberGroupExpression;
-import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
-import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
-import org.openzen.zenscript.codemodel.partial.PartialVariantOptionExpression;
+import org.openzen.zenscript.codemodel.member.ref.*;
+import org.openzen.zenscript.codemodel.partial.*;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  *
@@ -81,6 +56,36 @@ public final class TypeMembers {
 	
 	public boolean extendsOrImplements(TypeID other) {
 		other = other.getNormalized();
+		checkBoundaries:
+		if(this.type.type instanceof DefinitionTypeID && other instanceof DefinitionTypeID) {
+			DefinitionTypeID thisTypeId = (DefinitionTypeID) this.type.type;
+			DefinitionTypeID otherTypeId = (DefinitionTypeID) other;
+
+			if(thisTypeId.definition != otherTypeId.definition){
+				break checkBoundaries;
+			}
+
+			if(thisTypeId.definition.typeParameters.length != otherTypeId.typeArguments.length){
+				break checkBoundaries;
+			}
+
+			for (int i = 0; i < thisTypeId.definition.typeParameters.length; i++) {
+				final TypeID type = otherTypeId.typeArguments[i].type;
+				if (type == BasicTypeID.UNDETERMINED) {
+					continue;
+				}
+				if (type instanceof InvalidTypeID && ((InvalidTypeID) type).code == CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE) {
+					continue;
+				}
+				if (thisTypeId.definition.typeParameters[i].matches(cache, type)) {
+					continue;
+				}
+				break checkBoundaries;
+			}
+			return true;
+		}
+
+
 		TypeID superType = type.type.getSuperType(cache.getRegistry());
 		if (superType != null) {
 			if (superType == other)
@@ -430,8 +435,17 @@ public final class TypeMembers {
    
 		if( getImplicitCaster(toType) != null || extendsOrImplements(toType.type))
 		    return true;
-		
+
+		if(type.type.isGeneric() && type.type instanceof GenericTypeID) {
+			final GenericTypeID genericTypeID = (GenericTypeID) type.type;
+			if(genericTypeID.parameter.matches(cache, toType.type)) {
+				return true;
+			}
+		}
+
+
         final StoredType accept = type.type.accept(new TagRemovingTypeVisitor(cache));
+
         if(!this.type.type.equals(accept.type) && cache.get(accept).canCastImplicit(toType)){
             return true;
         }

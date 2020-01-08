@@ -48,8 +48,9 @@ public class JavaCompiler {
 		context.addModule(module.module, target);
 		
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			String filename = getFilename(definition) + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
-			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null);
+			final String className = getFilename(definition);
+			String filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
+			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null, className);
 			definition.accept(definitionPreparer);
 		}
 		

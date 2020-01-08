@@ -7,6 +7,7 @@ package org.openzen.zenscript.codemodel.statement;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -96,6 +97,7 @@ public class BlockStatement extends Statement {
 	public StoredType getReturnType() {
 		final List<StoredType> collect = Arrays.stream(statements)
 				.map(Statement::getReturnType)
+				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.toList());
 		if(collect.isEmpty())

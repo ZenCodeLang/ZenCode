@@ -159,8 +159,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
     private final JavaBoxingTypeVisitor boxingTypeVisitor;
     private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
     private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
-    private final JavaBytecodeContext context;
-    private final JavaCompiledModule module;
+    final JavaBytecodeContext context;
+    final JavaCompiledModule module;
 
 	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
 		this.javaWriter = javaWriter;
@@ -1961,6 +1961,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final String signature;
 		final String[] interfaces;
 		final String className = context.getLambdaCounter();
+		final String descriptor;
 		
 		{//Fill the info above
 			final StorageTag actualStorage = expression.type.getActualStorage();
@@ -1970,10 +1971,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				
 				//Should be the same, should it not?
 				signature = context.getMethodSignature(expression.header);
+				descriptor = context.getMethodDescriptor(expression.header);
 				interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
 			} else {
 				//Normal way, no casting to functional interface
 				signature = context.getMethodSignature(expression.header);
+				descriptor = context.getMethodDescriptor(expression.header);
 				interfaces = new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))};
 			}
 		}
@@ -1989,7 +1992,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final JavaWriter functionWriter;
 		
 		//Bridge method!!!
-		if (!Objects.equals(methodInfo.descriptor, signature)) {
+		if (!Objects.equals(methodInfo.descriptor, descriptor)) {
 			final JavaMethod bridgeMethodInfo = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
 			final JavaWriter bridgeWriter = new JavaWriter(expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "java/lang/Override");
 			bridgeWriter.start();
@@ -2016,7 +2019,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			
 			
 			
-			final JavaMethod actualMethod = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, signature, methodInfo.modifiers, methodInfo.genericResult, methodInfo.typeParameterArguments);
+			final JavaMethod actualMethod = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, context.getMethodDescriptor(expression.header), methodInfo.modifiers, methodInfo.genericResult, methodInfo.typeParameterArguments);
 			//No @Override
 			functionWriter = new JavaWriter(expression.position, lambdaCW, actualMethod, null, signature, null);
 		} else {
@@ -2061,6 +2064,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final JavaStatementVisitor CSV = new JavaStatementVisitor(context, new JavaExpressionVisitor(context, module, functionWriter) {
 			@Override
 			public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
+				final JavaLocalVariableInfo localVariable = functionWriter.tryGetLocalVariable(varExpression.variable.variable);
+				if(localVariable != null) {
+					final Label label = new Label();
+					localVariable.end = label;
+					functionWriter.label(label);
+					functionWriter.load(localVariable);
+					return null;
+				}
+
+
+
 				final int position = calculateMemberPosition(varExpression, expression);
 				functionWriter.loadObject(0);
 				functionWriter.getField(className, "captured" + position, context.getDescriptor(varExpression.variable.type));
