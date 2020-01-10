@@ -194,7 +194,7 @@ public class JavaNativeModule {
 	}
 	
 	private boolean isInBasePackage(String className) {
-		return className.startsWith(basePackage + ".");
+		return className.startsWith(basePackage + ".") || className.startsWith("java.lang.") || className.startsWith("java.util.");
 	}
 
 	private ZSPackage getPackage(String className) {
@@ -303,6 +303,9 @@ public class JavaNativeModule {
 
 		//Moved up here so that circular dependencies are caught (hopefully)
 		definitionByClass.put(cls, definition);
+		if(!shouldLoadClass(cls)) {
+			return definition;
+		}
 
 		//TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
