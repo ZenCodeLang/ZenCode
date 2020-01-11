@@ -1000,7 +1000,7 @@ public class JavaNativeModule {
 
 	private Method getFunctionalInterfaceMethod(Class<?> functionalInterface) {
 		for (Method method : functionalInterface.getDeclaredMethods()) {
-			if (!method.isDefault())
+			if (Modifier.isPublic(method.getModifiers()) && !method.isDefault())
 				return method;
 		}
 
