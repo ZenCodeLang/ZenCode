@@ -49,15 +49,16 @@ public class CompilerUtils {
 	}
 
     public static void tagMethodParameters(JavaBytecodeContext context, JavaCompiledModule module, FunctionHeader header, boolean isStatic) {
-		int index = header.getNumberOfTypeParameters();
+		int index = isStatic ? 0 : 1;
 		for (int i = 0; i < header.typeParameters.length; i++) {
 			TypeParameter parameter = header.typeParameters[i];
-			module.setTypeParameterInfo(parameter, new JavaTypeParameterInfo(index++));
+			module.setTypeParameterInfo(parameter, new JavaTypeParameterInfo(index));
+			index++;
 		}
         for (int i = 0; i < header.parameters.length; i++) {
             FunctionParameter parameter = header.parameters[i];
             String parameterType = context.getDescriptor(parameter.type);
-            module.setParameterInfo(parameter, new JavaParameterInfo(isStatic ? index : index + 1, parameterType));
+            module.setParameterInfo(parameter, new JavaParameterInfo(index, parameterType));
 			index++;
         }
     }

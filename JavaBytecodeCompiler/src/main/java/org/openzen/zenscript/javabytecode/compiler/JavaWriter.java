@@ -67,14 +67,15 @@ public class JavaWriter {
 		this.method = method;
 		this.forDefinition = forDefinition;
 		this.position = position;
-		
-		final MethodVisitor methodVisitor = visitor.visitMethod(isExtension ? method.modifiers | Opcodes.ACC_STATIC : method.modifiers, method.name, descriptor, signature, exceptions);
+
+		final int access = isExtension ? method.modifiers | ACC_STATIC : method.modifiers;
+		final MethodVisitor methodVisitor = visitor.visitMethod(access, method.name, descriptor, signature, exceptions);
 		
 		for (String annotation : annotations) {
 			methodVisitor.visitAnnotation(annotation, true).visitEnd();
 		}
 		
-		this.visitor = new LocalVariablesSorter(isExtension ? method.modifiers | Opcodes.ACC_STATIC : method.modifiers, descriptor, methodVisitor);
+		this.visitor = new LocalVariablesSorter(access, descriptor, methodVisitor);
 		this.nameVariables = nameVariables;
 	}
 	
