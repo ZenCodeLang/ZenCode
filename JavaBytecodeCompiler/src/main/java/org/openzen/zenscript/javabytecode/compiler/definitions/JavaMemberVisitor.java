@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
+import java.util.Collections;
 import java.util.List;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -129,7 +130,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
     @Override
     public Void visitMethod(MethodMember member) {
-        CompilerUtils.tagMethodParameters(context, javaModule, member.header, member.isStatic());
+        CompilerUtils.tagMethodParameters(context, javaModule, member.header, member.isStatic(), Collections.emptyList());
 
         final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.getEffectiveModifiers());
         final JavaMethod method = context.getJavaMethod(member);

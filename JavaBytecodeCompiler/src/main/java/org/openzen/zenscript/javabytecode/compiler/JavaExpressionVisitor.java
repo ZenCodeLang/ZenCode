@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
@@ -23,10 +24,8 @@ import org.openzen.zenscript.javashared.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativeTranslator<Void> {
     private static final JavaMethod OBJECTS_TOSTRING = JavaMethod.getNativeStatic(new JavaClass("java.util", "Objects", JavaClass.Kind.CLASS), "toString", "(Ljava/lang/Object;)Ljava/lang/String;");
@@ -384,11 +383,24 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		if (builtin == null) {
 			expression.target.accept(this);
 
-			JavaMethod methodInfo = context.getJavaMethod(expression.member);
-			for (int i = 0; i < expression.arguments.typeArguments.length; i++) {
-				if (methodInfo.typeParameterArguments[i]) {
-					StoredType arguments = expression.arguments.typeArguments[i];
+			final List<TypeParameter> typeParameters;
+			{
+				final List<TypeParameter> parameters = new ArrayList<>(
+						Arrays.asList(expression.member.getTarget().definition.typeParameters)
+				);
 
+				expression.member.getOwnerType().type.extractTypeParameters(parameters);
+				for (FunctionParameter parameter : expression.instancedHeader.parameters) {
+					parameter.type.type.extractTypeParameters(parameters);
+				}
+				typeParameters = parameters.stream().distinct().collect(Collectors.toList());
+			}
+
+			JavaMethod methodInfo = context.getJavaMethod(expression.member);
+
+			if(methodInfo.compile) {
+				for (TypeParameter typeParameter : typeParameters) {
+					javaWriter.aConstNull(); // TODO: Replace with actual class
 				}
 			}
 
@@ -1951,7 +1963,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitFunction(FunctionExpression expression) {
-		CompilerUtils.tagMethodParameters(context, module, expression.header, false);
+		CompilerUtils.tagMethodParameters(context, module, expression.header, false, Collections.emptyList());
 
         /*if (expression.header.parameters.length == 0 && expression.body instanceof ReturnStatement && expression.body.hasTag(MatchExpression.class) && expression.closure.captures.isEmpty()) {
             ((ReturnStatement) expression.body).value.accept(this);
@@ -2188,6 +2200,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.getField(context.getJavaField(expression.getter));
 				return null;
 			}
+
+
+			final List<TypeParameter> typeParameters = new ArrayList<>();
+			expression.getter.member.getType().type.extractTypeParameters(typeParameters);
+
+			for (TypeParameter typeParameter : typeParameters) {
+				javaWriter.aConstNull(); //TODO: Replace with actual type
+			}
+
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
@@ -3516,7 +3537,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 								}
 								
 								if (funcExpression instanceof FunctionExpression && ((FunctionExpression) funcExpression).body instanceof ReturnStatement) {
-									CompilerUtils.tagMethodParameters(context, module, ((FunctionExpression) funcExpression).header, false);
+									CompilerUtils.tagMethodParameters(context, module, ((FunctionExpression) funcExpression).header, false, Collections
+                                            .emptyList());
 									((ReturnStatement) ((FunctionExpression) funcExpression).body).value.accept(visitor);
 									javaWriter.addVariableInfo(new JavaLocalVariableInfo(projectedElementType, projectedElementLocal, inlineBegin, ((FunctionExpression) funcExpression).header.parameters[0].name, inlineEnd));
 									

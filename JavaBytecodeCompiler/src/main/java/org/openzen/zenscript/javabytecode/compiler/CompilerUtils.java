@@ -18,6 +18,8 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaTypeParameterInfo;
 
+import java.util.List;
+
 public class CompilerUtils {
 
 	private CompilerUtils() {}
@@ -48,8 +50,14 @@ public class CompilerUtils {
 		return out;
 	}
 
-    public static void tagMethodParameters(JavaBytecodeContext context, JavaCompiledModule module, FunctionHeader header, boolean isStatic) {
+    public static void tagMethodParameters(JavaBytecodeContext context, JavaCompiledModule module, FunctionHeader header, boolean isStatic, List<TypeParameter> baseTypeTypeParameters) {
 		int index = isStatic ? 0 : 1;
+
+		for (TypeParameter baseTypeTypeParameter : baseTypeTypeParameters) {
+			module.setTypeParameterInfo(baseTypeTypeParameter, new JavaTypeParameterInfo(index));
+			index++;
+		}
+
 		for (int i = 0; i < header.typeParameters.length; i++) {
 			TypeParameter parameter = header.typeParameters[i];
 			module.setTypeParameterInfo(parameter, new JavaTypeParameterInfo(index));

@@ -125,7 +125,11 @@ public abstract class JavaContext {
 	public abstract String getDescriptor(TypeID type);
 	
 	public abstract String getDescriptor(StoredType type);
-	
+
+	public String getSignature(StoredType type) {
+		return new JavaTypeGenericVisitor(this).getGenericSignature(type);
+	}
+
 	public void addModule(Module module, JavaCompiledModule target) {
 		modules.put(module, target);
 
@@ -225,12 +229,23 @@ public abstract class JavaContext {
 	}
 
 	public String getMethodDescriptorExpansion(FunctionHeader header, StoredType expandedType) {
-		return getMethodDescriptor(header, false, getDescriptor(expandedType));
+		StringBuilder startBuilder = new StringBuilder(getDescriptor(expandedType));
+		final List<TypeParameter> typeParameters = new ArrayList<>();
+		expandedType.type.extractTypeParameters(typeParameters);
+		for (TypeParameter typeParameter : typeParameters) {
+			startBuilder.append("Ljava/lang/Class;");
+		}
+
+		return getMethodDescriptor(header, false, startBuilder.toString());
 	}
 	
     public String getMethodSignature(FunctionHeader header) {
-        return new JavaTypeGenericVisitor(this).getGenericMethodSignature(header);
+        return getMethodSignature(header, true);
     }
+
+    public String getMethodSignature(FunctionHeader header, boolean withGenerics) {
+		return new JavaTypeGenericVisitor(this).getGenericMethodSignature(header, withGenerics);
+	}
 	
 	public String getEnumConstructorDescriptor(FunctionHeader header) {
 		return getMethodDescriptor(header, true, "");

@@ -29,6 +29,7 @@ import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -145,7 +146,8 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitFunction(FunctionDefinition definition) {
-		CompilerUtils.tagMethodParameters(context, context.getJavaModule(definition.module), definition.header, true);
+		CompilerUtils.tagMethodParameters(context, context.getJavaModule(definition.module), definition.header, true, Collections
+                .emptyList());
 
         final String signature = context.getMethodSignature(definition.header);
 		final JavaMethod method = context.getJavaMethod(definition.caller);
