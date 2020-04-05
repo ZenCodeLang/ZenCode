@@ -211,6 +211,13 @@ public class JavaWriter {
 		
 		visitor.visitInsn(large ? POP2 : POP);
 	}
+
+	public void pop2() {
+		if(debug)
+			System.out.println("pop2");
+
+		visitor.visitInsn(POP2);
+	}
 	
 	public void dup() {
 		if (debug)

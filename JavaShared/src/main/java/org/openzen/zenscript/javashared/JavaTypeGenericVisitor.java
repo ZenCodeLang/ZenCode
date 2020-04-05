@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.generic.*;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -194,5 +195,37 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 	@Override
 	public String visitOptional(StoredType context, OptionalTypeID type) {
 		return type.baseType.accept(context, this);
+	}
+
+	public String getMethodSignatureExpansion(FunctionHeader header, StoredType expandedClass) {
+		final StringBuilder stringBuilder = new StringBuilder();
+		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
+		expandedClass.type.extractTypeParameters(typeParameters);
+		for (TypeParameter typeParameter : header.typeParameters) {
+			if(!typeParameters.contains(typeParameter)){
+				typeParameters.add(typeParameter);
+			}
+		}
+
+		if(typeParameters.size() != 0) {
+			stringBuilder.append("<");
+			for (TypeParameter typeParameter : typeParameters) {
+				stringBuilder.append(typeParameter.name);
+				stringBuilder.append(":Ljava/lang/Object;");
+			}
+			stringBuilder.append(">");
+		}
+		stringBuilder.append("(");
+		stringBuilder.append(context.getSignature(expandedClass));
+		for (TypeParameter typeParameter : typeParameters) {
+			stringBuilder.append("Ljava/lang/Class<T");
+			stringBuilder.append(typeParameter.name);
+			stringBuilder.append(";>;");
+		}
+		stringBuilder.append(getGenericSignature(header.parameters));
+		stringBuilder.append(")");
+		stringBuilder.append(context.getSignature(header.getReturnType()));
+
+		return stringBuilder.toString();
 	}
 }

@@ -77,6 +77,7 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpressio
 import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
@@ -624,6 +625,11 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	@Override
 	public Void visitSetter(SetterExpression expression) {
 		expression.target.accept(original);
+		for (TypeParameter typeParameter : expression.setter.member.definition.typeParameters) {
+			javaWriter.aConstNull(); //TODO replace with actual type
+			javaWriter.checkCast("java/lang/Class");
+		}
+
 		expression.value.accept(original);
 		original.checkAndExecuteMethodInfo(expression.setter, expression.type, expression);
 		return null;

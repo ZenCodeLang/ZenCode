@@ -389,9 +389,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 						Arrays.asList(expression.member.getTarget().definition.typeParameters)
 				);
 
-				expression.member.getOwnerType().type.extractTypeParameters(parameters);
-				for (FunctionParameter parameter : expression.instancedHeader.parameters) {
-					parameter.type.type.extractTypeParameters(parameters);
+				//expression.member.getOwnerType().type.extractTypeParameters(parameters);
+				for (TypeParameter typeParameter : expression.instancedHeader.typeParameters) {
+					if(!parameters.contains(typeParameter)) {
+						parameters.add(typeParameter);
+					}
 				}
 				typeParameters = parameters.stream().distinct().collect(Collectors.toList());
 			}
@@ -1307,6 +1309,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitCast(CastExpression expression) {
 		expression.target.accept(this);
 
+		final ArrayList<TypeParameter> typeParameters = new ArrayList<>(Arrays.asList(expression.member.member.definition.typeParameters));
+		//expression.member.type.type.extractTypeParameters(typeParameters);
+		expression.member.toType.type.extractTypeParameters(typeParameters);
+
+		for (TypeParameter typeParameter : typeParameters) {
+			javaWriter.aConstNull(); //Todo: Replace with actual Type
+			javaWriter.checkCast("java/lang/Class");
+		}
+
 		BuiltinID builtin = expression.member.member.builtin;
 		if (builtin == null) {
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
@@ -1982,12 +1993,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final Method functionalInterfaceMethod = ((JavaFunctionalInterfaceStorageTag) actualStorage).functionalInterfaceMethod;
 				
 				//Should be the same, should it not?
-				signature = context.getMethodSignature(expression.header);
+				signature = context.getMethodSignature(expression.header, true);
 				descriptor = context.getMethodDescriptor(expression.header);
 				interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
 			} else {
 				//Normal way, no casting to functional interface
-				signature = context.getMethodSignature(expression.header);
+				signature = context.getMethodSignature(expression.header, true);
 				descriptor = context.getMethodDescriptor(expression.header);
 				interfaces = new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))};
 			}
@@ -2021,7 +2032,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				}
 			}
 			
-			bridgeWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), JavaMethod.Kind.INSTANCE, methodInfo.name, methodInfo.compile, signature, methodInfo.modifiers, methodInfo.genericResult));
+			bridgeWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), JavaMethod.Kind.INSTANCE, methodInfo.name, methodInfo.compile, descriptor, methodInfo.modifiers, methodInfo.genericResult));
 			if(expression.header.getReturnType().type != BasicTypeID.VOID) {
 				bridgeWriter.returnType(context.getType(expression.header.getReturnType()));
 			}
@@ -4266,8 +4277,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		//Make sure that method results are popped if ZC thinks its a void but it actually is not.
 		//Fixes an issue for List#add() returning void in ZC but Z in Java.
-		if(resultType.type == BasicTypeID.VOID && !methodInfo.descriptor.endsWith(")V")) {
-			final boolean isLarge = methodInfo.descriptor.endsWith(")D") && methodInfo.descriptor.endsWith(")L");
+		if(resultType.type == BasicTypeID.VOID && !methodInfo.descriptor.equals("") && !methodInfo.descriptor.endsWith(")V")) {
+			final boolean isLarge = methodInfo.descriptor.endsWith(")D") && methodInfo.descriptor.endsWith(")J");
 			getJavaWriter().pop(isLarge);
 		}
 
@@ -4332,6 +4343,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void copyTo(CallExpression call) {
+		//Copy this (source) to dest
+		//              source.copyTo(dest, sourceOffset, destOffset, length)
+		//=> System.arraycopy(source, sourceOffset, dest, destOffset, length);
+		javaWriter.dup2X2();
+		javaWriter.pop2();
+		javaWriter.swap();
+		javaWriter.dup2X2();
+		javaWriter.pop2();
+		final JavaClass system = JavaClass.fromInternalName("java/lang/System", JavaClass.Kind.CLASS);
+		final JavaMethod javaMethod = JavaMethod.getStatic(system, "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", JavaModifiers.PUBLIC);
+		javaWriter.invokeStatic(javaMethod);
 		return null;
 	}
 

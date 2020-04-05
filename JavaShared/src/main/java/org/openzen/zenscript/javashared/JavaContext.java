@@ -238,6 +238,10 @@ public abstract class JavaContext {
 
 		return getMethodDescriptor(header, false, startBuilder.toString());
 	}
+
+	public String getMethodSignatureExpansion(FunctionHeader header, StoredType expandedClass) {
+		return new JavaTypeGenericVisitor(this).getMethodSignatureExpansion(header, expandedClass);
+	}
 	
     public String getMethodSignature(FunctionHeader header) {
         return getMethodSignature(header, true);

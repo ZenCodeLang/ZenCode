@@ -15,6 +15,7 @@ import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -175,32 +176,36 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
 		expandedClass.type.extractTypeParameters(typeParameters);
+		{
 
-		final String descMiddle, signatureMiddle, signatureStart;
-		if(typeParameters.isEmpty()) {
-			descMiddle = signatureMiddle = signatureStart = "";
-		} else {
-			final StringBuilder descMiddleBuilder = new StringBuilder();
-			final StringBuilder signatureMiddleBuilder = new StringBuilder();
-			final StringBuilder signatureStartBuilder = new StringBuilder("<");
+			final String descMiddle, signatureMiddle, signatureStart;
+			if (typeParameters.isEmpty()) {
+				descMiddle = signatureMiddle = signatureStart = "";
+			} else {
+				final StringBuilder descMiddleBuilder = new StringBuilder();
+				final StringBuilder signatureMiddleBuilder = new StringBuilder();
+				final StringBuilder signatureStartBuilder = new StringBuilder("<");
 
-			for (TypeParameter typeParameter : typeParameters) {
-				descMiddleBuilder.append("Ljava/lang/Class;");
-				signatureMiddleBuilder.append("Ljava/lang/Class<T").append(typeParameter.name).append(";>;");
-				signatureStartBuilder.append(typeParameter.name).append(":Ljava/lang/Object;");
+				for (TypeParameter typeParameter : typeParameters) {
+					descMiddleBuilder.append("Ljava/lang/Class;");
+					signatureMiddleBuilder.append("Ljava/lang/Class<T").append(typeParameter.name).append(";>;");
+					signatureStartBuilder.append(typeParameter.name).append(":Ljava/lang/Object;");
+				}
+
+				descMiddle = descMiddleBuilder.toString();
+				signatureMiddle = signatureMiddleBuilder.toString();
+				signatureStart = signatureStartBuilder.append(">").toString();
 			}
 
-			descMiddle = descMiddleBuilder.toString();
-			signatureMiddle = signatureMiddleBuilder.toString();
-			signatureStart = signatureStartBuilder.append(">").toString();
-		}
 
-		if (isStatic) {
-			descriptor = "(" + descMiddle + ")" + context.getDescriptor(returnType);
-			signature = signatureStart + "(" + signatureMiddle + ")" + context.getSignature(returnType);
-		} else {
-			descriptor = "(" + context.getDescriptor(expandedClass) + descMiddle + ")" + context.getDescriptor(returnType);
-			signature = signatureStart + "(" + context.getSignature(expandedClass) + signatureMiddle + ")" + context.getSignature(returnType);
+			if (isStatic) {
+				descriptor = "(" + descMiddle + ")" + context.getDescriptor(returnType);
+				signature = signatureStart + "(" + signatureMiddle + ")" + context.getSignature(returnType);
+			} else {
+				descriptor = "(" + context.getDescriptor(expandedClass) + descMiddle + ")" + context.getDescriptor(returnType);
+				signature = signatureStart + "(" + context.getSignature(expandedClass) + signatureMiddle + ")" + context
+						.getSignature(returnType);
+			}
 		}
 
 		final Label methodStart = new Label();
@@ -236,16 +241,101 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitSetter(SetterMember member) {
+		final boolean isStatic = member.isStatic();
+		final StoredType setterType = member.parameter.type;
+
+		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
+		expandedClass.type.extractTypeParameters(typeParameters);
+		CompilerUtils.tagMethodParameters(context, javaModule, member.getHeader(), isStatic, typeParameters);
+		setterType.type.extractTypeParameters(typeParameters);
+
+
+		final String signature = context.getMethodSignatureExpansion(member.getHeader(), expandedClass);
+		final String description = context.getMethodDescriptorExpansion(member.getHeader(), expandedClass);
+
+		final Label methodStart = new Label();
+		final Label methodEnd = new Label();
+
+		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaWriter methodWriter = new JavaWriter(member.position, writer, true, javaMethod, member.definition, true, signature, description, new String[0]);
+
+
+		methodWriter.label(methodStart);
+		if (!isStatic) {
+			methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, context.getType(this.expandedClass));
+			methodWriter.nameParameter(0, "expandedObj");
+		}
+
+		int i = isStatic ? 0 : 1;
+		for (TypeParameter typeParameter : typeParameters) {
+			final String name = "typeOf" + typeParameter.name;
+			methodWriter.nameVariable(i, name, methodStart, methodEnd, Type.getType(Class.class));
+			methodWriter.nameParameter(0, name);
+			i++;
+		}
+
+		//in script you use $ but the parameter is named "value", which to choose?
+		//final String name = member.parameter.name;
+		final String name = "$";
+		methodWriter.nameVariable(i, name, methodStart, methodEnd, context.getType(setterType));
+		methodWriter.nameParameter(0, name);
+
+		javaModule.setParameterInfo(member.parameter, new JavaParameterInfo(i, context.getDescriptor(setterType)));
+
+		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+		javaStatementVisitor.start();
+		member.body.accept(javaStatementVisitor);
+		javaStatementVisitor.end();
+		methodWriter.label(methodEnd);
+
 		return null;
 	}
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		return null;
+		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final MethodMember methodMember = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
+		methodMember.body = member.body;
+		methodMember.annotations = member.annotations;
+		javaModule.setMethodInfo(methodMember, javaMethod);
+
+		return methodMember.accept(this);
 	}
 
 	@Override
 	public Void visitCaster(CasterMember member) {
+
+		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
+		expandedClass.type.extractTypeParameters(typeParameters);
+
+		CompilerUtils.tagMethodParameters(context, javaModule, member.getHeader(), false, typeParameters);
+		member.toType.type.extractTypeParameters(typeParameters);
+
+		final String methodSignature = context.getMethodSignatureExpansion(member.getHeader(), expandedClass);
+		final String methodDescriptor = context.getMethodDescriptorExpansion(member.getHeader(), expandedClass);
+
+		final Label methodStart = new Label();
+		final Label methodEnd = new Label();
+
+		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final JavaWriter methodWriter = new JavaWriter(member.position, writer, true, javaMethod, member.definition, true, methodSignature, methodDescriptor, new String[0]);
+
+		methodWriter.label(methodStart);
+		methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, context.getType(this.expandedClass));
+		methodWriter.nameParameter(0, "expandedObj");
+
+		int i = 1;
+		for (TypeParameter typeParameter : typeParameters) {
+			final String name = "typeOf" + typeParameter.name;
+			methodWriter.nameVariable(i, name, methodStart, methodEnd, Type.getType(Class.class));
+			methodWriter.nameParameter(0, name);
+		}
+
+		final JavaStatementVisitor javaStatementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
+		javaStatementVisitor.start();
+		member.body.accept(javaStatementVisitor);
+		javaStatementVisitor.end();
+		methodWriter.label(methodEnd);
 		return null;
 	}
 
@@ -256,7 +346,14 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCaller(CallerMember member) {
-		return null;
+		//It's gonna be a method anyways, so why not reuse the code ^^
+		final JavaMethod javaMethod = context.getJavaMethod(member);
+		final MethodMember call = new MethodMember(member.position, member.definition, member.getEffectiveModifiers(), javaMethod.name, member.header, member.builtin);
+		call.body = member.body;
+		call.annotations = member.annotations;
+
+		javaModule.setMethodInfo(call, javaMethod);
+		return call.accept(this);
 	}
 
 	@Override
