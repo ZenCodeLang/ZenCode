@@ -625,9 +625,12 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	@Override
 	public Void visitSetter(SetterExpression expression) {
 		expression.target.accept(original);
-		for (TypeParameter typeParameter : expression.setter.member.definition.typeParameters) {
-			javaWriter.aConstNull(); //TODO replace with actual type
-			javaWriter.checkCast("java/lang/Class");
+
+		if (expression.setter.member.definition.isExpansion()) {
+			for (TypeParameter typeParameter : expression.setter.member.definition.typeParameters) {
+				javaWriter.aConstNull(); //TODO replace with actual type
+				javaWriter.checkCast("java/lang/Class");
+			}
 		}
 
 		expression.value.accept(original);

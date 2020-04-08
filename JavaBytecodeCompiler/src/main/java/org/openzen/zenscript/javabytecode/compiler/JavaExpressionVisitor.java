@@ -6,6 +6,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -385,12 +386,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 			final List<TypeParameter> typeParameters;
 			{
-				final List<TypeParameter> parameters = new ArrayList<>(
-						Arrays.asList(expression.member.getTarget().definition.typeParameters)
-				);
+
+				final List<TypeParameter> parameters = new ArrayList<>();
+				if(expression.member.getTarget().definition.isExpansion()) {
+					parameters.addAll(Arrays.asList(expression.member.getTarget().definition.typeParameters));
+				}
 
 				//expression.member.getOwnerType().type.extractTypeParameters(parameters);
-				for (TypeParameter typeParameter : expression.instancedHeader.typeParameters) {
+				//expression.instancedHeader.typeParameters
+				for (TypeParameter typeParameter : expression.member.getTarget().getHeader().typeParameters) {
 					if(!parameters.contains(typeParameter)) {
 						parameters.add(typeParameter);
 					}
@@ -403,6 +407,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			if(methodInfo.compile) {
 				for (TypeParameter typeParameter : typeParameters) {
 					javaWriter.aConstNull(); // TODO: Replace with actual class
+					javaWriter.checkCast("java/lang/Class");
 				}
 			}
 
@@ -1313,9 +1318,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		//expression.member.type.type.extractTypeParameters(typeParameters);
 		expression.member.toType.type.extractTypeParameters(typeParameters);
 
-		for (TypeParameter typeParameter : typeParameters) {
-			javaWriter.aConstNull(); //Todo: Replace with actual Type
-			javaWriter.checkCast("java/lang/Class");
+		if (expression.member.member.definition.isExpansion()) {
+			for (TypeParameter typeParameter : typeParameters) {
+				javaWriter.aConstNull(); //Todo: Replace with actual Type
+				javaWriter.checkCast("java/lang/Class");
+			}
 		}
 
 		BuiltinID builtin = expression.member.member.builtin;
@@ -2160,6 +2167,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitGetField(GetFieldExpression expression) {
 		expression.target.accept(this);
 		getField(expression.field);
+		javaWriter.checkCast(context.getType(expression.field.getType()));
 		return null;
 	}
 
@@ -2209,6 +2217,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		if (builtin == null) {
 			if (context.hasJavaField(expression.getter)) {
 				javaWriter.getField(context.getJavaField(expression.getter));
+				javaWriter.checkCast(context.getType(expression.getter.getType()));
 				return null;
 			}
 
@@ -2216,13 +2225,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			final List<TypeParameter> typeParameters = new ArrayList<>();
 			expression.getter.member.getType().type.extractTypeParameters(typeParameters);
 
-			for (TypeParameter typeParameter : typeParameters) {
-				javaWriter.aConstNull(); //TODO: Replace with actual type
+			if(expression.getter.member.definition.isExpansion()) {
+				for (TypeParameter typeParameter : typeParameters) {
+					javaWriter.aConstNull(); //TODO: Replace with actual type
+					javaWriter.checkCast("java/lang/Class");
+				}
 			}
 
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
+			javaWriter.checkCast(context.getType(expression.getter.getType()));
 			return null;
 		}
 
@@ -2534,6 +2547,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		JavaMethod method = context.getJavaMethod(expression.constructor);
 		javaWriter.newObject(method.cls);
 		javaWriter.dup();
+
+
+		if(!expression.constructor.getTarget().hasTag(NativeTag.class)) {
+			for (StoredType typeArgument : expression.type.asDefinition().typeArguments) {
+				javaWriter.aConstNull();
+				javaWriter.checkCast("java/lang/Class");
+			}
+		}
+
 
 		for (Expression argument : expression.arguments.arguments) {
 			argument.accept(this);

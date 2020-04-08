@@ -15,9 +15,11 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -370,7 +372,7 @@ public abstract class JavaContext {
 	 *                        Can be null or an empty string if this is not an expansion method header
 	 * @return Method descriptor {@code (<LClass;*No.TypeParameters><LString;I if enum><expandedType><headerTypes>)<retType> }
 	 */
-	private String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor, String expandedType) {
+	public String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor, String expandedType) {
         StringBuilder descBuilder = new StringBuilder("(");
 		for (int i = 0; i < header.getNumberOfTypeParameters(); i++)
 			descBuilder.append("Ljava/lang/Class;");
@@ -389,4 +391,12 @@ public abstract class JavaContext {
         descBuilder.append(getDescriptor(header.getReturnType()));
         return descBuilder.toString();
     }
+
+	public String getMethodDescriptorConstructor(FunctionHeader header, DefinitionMember member) {
+		StringBuilder startBuilder = new StringBuilder();
+		for (TypeParameter typeParameter : member.definition.typeParameters) {
+			startBuilder.append("Ljava/lang/Class;");
+		}
+		return getMethodDescriptor(header, member.definition instanceof EnumDefinition, startBuilder.toString());
+	}
 }

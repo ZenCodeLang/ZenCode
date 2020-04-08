@@ -49,6 +49,7 @@ public class JavaWriter {
 			String[] exceptions,
 			String... annotations) {
 		this(position, visitor, nameVariables, method, forDefinition, false, signature, method.descriptor, exceptions, annotations);
+		this.position(position.fromLine);
 	}
 	
 	

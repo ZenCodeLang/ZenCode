@@ -313,15 +313,28 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					header.getReturnType().type instanceof GenericTypeID,
 					header.useTypeParameters());
 		} else if (method == null) {
-			method = new JavaMethod(
-					cls,
-					getKind(member),
-					name,
-					true,
-					context.getMethodDescriptor(header),
-					modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-					header.getReturnType().type instanceof GenericTypeID,
-					header.useTypeParameters());
+			if(member instanceof ConstructorMember) {
+				method = new JavaMethod(
+						cls,
+						getKind(member),
+						name,
+						true,
+						context.getMethodDescriptorConstructor(header, member),
+						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+						false,
+						header.useTypeParameters()
+				);
+			} else {
+				method = new JavaMethod(
+						cls,
+						getKind(member),
+						name,
+						true,
+						context.getMethodDescriptor(header),
+						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+						header.getReturnType().type instanceof GenericTypeID,
+						header.useTypeParameters());
+			}
 		}
 		
 		if (method.compile && member.getBuiltin() != BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) {

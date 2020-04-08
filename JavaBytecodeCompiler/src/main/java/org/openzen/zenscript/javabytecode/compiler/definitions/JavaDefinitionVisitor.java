@@ -64,9 +64,43 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			if (member instanceof ImplementationMember)
 				interfaces.add(context.getInternalName(((ImplementationMember) member).type));
 		}
-        String signature = null;
+        String signature;
+
+		{
+			final StringBuilder signatureBuilder = new StringBuilder();
+			if(definition.typeParameters.length != 0) {
+				signatureBuilder.append("<");
+				for (TypeParameter typeParameter : definition.typeParameters) {
+					signatureBuilder.append(typeParameter.name);
+					signatureBuilder.append(":");
+					signatureBuilder.append("Ljava/lang/Object;");
+				}
+				signatureBuilder.append(">");
+			}
+
+			signatureBuilder.append("L").append(superTypeInternalName).append(";");
+			for (IDefinitionMember member : definition.members) {
+				if(member instanceof ImplementationMember) {
+					signatureBuilder.append(context.getInternalName(((ImplementationMember) member).type));
+				}
+			}
+
+			signature = signatureBuilder.toString();
+		}
 
         writer.visit(Opcodes.V1_8, definition.modifiers, toClass.internalName, signature, superTypeInternalName, interfaces.toArray(new String[0]));
+		for (TypeParameter typeParameter : definition.typeParameters) {
+			//Add it to the class
+			writer.visitField(
+					Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL,
+					"typeOf" + typeParameter.name,
+					"Ljava/lang/Class;",
+					"Ljava/lang/Class<T" + typeParameter.name + ";>;",
+					//"Ljava/lang/Class;",
+					null
+			);
+		}
+
 		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(context, writer, toClass, definition);
         for (IDefinitionMember member : definition.members) {
             member.accept(memberVisitor);

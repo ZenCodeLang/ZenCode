@@ -22,4 +22,9 @@ public class JavaTypeParameterInfo {
 		this.parameterIndex = -1;
 		this.field = field;
 	}
+
+	public JavaTypeParameterInfo(int parameterIndex, JavaField field) {
+		this.parameterIndex = parameterIndex;
+		this.field = field;
+	}
 }

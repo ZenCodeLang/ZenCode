@@ -168,22 +168,36 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
 		if (method == null) {
-			final JavaMethod.Kind kind = getKind(member);
-			final String descriptor;
-			if (kind == JavaMethod.Kind.EXPANSION && member.definition instanceof ExpansionDefinition) {
-				descriptor = context.getMethodDescriptorExpansion(header, ((ExpansionDefinition) member.definition).target);
+
+			if(member instanceof ConstructorMember) {
+				method = new JavaMethod(
+						cls,
+						getKind(member),
+						name,
+						true,
+						context.getMethodDescriptorConstructor(header, member),
+						JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+						false,
+						header.useTypeParameters()
+				);
 			} else {
-				descriptor = context.getMethodDescriptor(header);
+				final JavaMethod.Kind kind = getKind(member);
+				final String descriptor;
+				if (kind == JavaMethod.Kind.EXPANSION && member.definition instanceof ExpansionDefinition) {
+					descriptor = context.getMethodDescriptorExpansion(header, ((ExpansionDefinition) member.definition).target);
+				} else {
+					descriptor = context.getMethodDescriptor(header);
+				}
+				method = new JavaMethod(
+						cls,
+						kind,
+						name,
+						true,
+						descriptor,
+						JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+						header.getReturnType().type instanceof GenericTypeID,
+						header.useTypeParameters());
 			}
-			method = new JavaMethod(
-					cls,
-					kind,
-					name,
-					true,
-					descriptor,
-					JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-					header.getReturnType().type instanceof GenericTypeID,
-					header.useTypeParameters());
 		}
 		
 		if (method.compile) {
