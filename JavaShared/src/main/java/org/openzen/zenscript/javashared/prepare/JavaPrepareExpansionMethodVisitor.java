@@ -61,7 +61,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	
 	@Override
 	public Void visitConst(ConstMember member) {
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()));
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
 		module.setFieldInfo(member, field);
 		
 		if (DEBUG_EMPTY && cls.empty)
@@ -74,7 +74,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitField(FieldMember member) {
 		// TODO: expansion fields
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()));
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
 		module.setFieldInfo(member, field);
 		
 		if (member.hasAutoGetter() || member.hasAutoSetter())

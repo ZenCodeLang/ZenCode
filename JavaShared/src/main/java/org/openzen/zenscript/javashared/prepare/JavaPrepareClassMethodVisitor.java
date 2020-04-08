@@ -76,13 +76,13 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			System.out.println("Class " + cls.fullName + " not empty because of const " + member.name);
 		
 		cls.empty = false;
-		module.setFieldInfo(member, new JavaField(cls, member.name, context.getDescriptor(member.getType())));
+		module.setFieldInfo(member, new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType())));
 		return null;
 	}
 	
 	@Override
 	public Void visitField(FieldMember member) {
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()));
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
 		module.setFieldInfo(member, field);
 		if (member.hasAutoGetter()) {
 			visitGetter(member.autoGetter);
