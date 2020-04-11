@@ -932,7 +932,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.invokeInterface(MAP_GET);
 
 				AssocTypeID type = (AssocTypeID) expression.target.type.type;
-				javaWriter.checkCast(context.getInternalName(type.valueType));
+				type.valueType.type.accept(type.valueType, unboxingTypeVisitor);
 				break;
 			}
 			case ASSOC_INDEXSET:
@@ -2167,7 +2167,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitGetField(GetFieldExpression expression) {
 		expression.target.accept(this);
 		getField(expression.field);
-		javaWriter.checkCast(context.getType(expression.field.getType()));
+		if(!CompilerUtils.isPrimitive(expression.field.member.getType().type)) {
+			javaWriter.checkCast(context.getType(expression.field.getType()));
+		}
 		return null;
 	}
 
@@ -2217,7 +2219,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		if (builtin == null) {
 			if (context.hasJavaField(expression.getter)) {
 				javaWriter.getField(context.getJavaField(expression.getter));
-				javaWriter.checkCast(context.getType(expression.getter.getType()));
+				if(!CompilerUtils.isPrimitive(expression.getter.member.getType().type)) {
+					javaWriter.checkCast(context.getType(expression.getter.getType()));
+				}
 				return null;
 			}
 
@@ -2234,8 +2238,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
-
-			javaWriter.checkCast(context.getType(expression.getter.getType()));
+			if(!CompilerUtils.isPrimitive(expression.getter.member.getType().type)) {
+				javaWriter.checkCast(context.getType(expression.getter.getType()));
+			}
 			return null;
 		}
 
