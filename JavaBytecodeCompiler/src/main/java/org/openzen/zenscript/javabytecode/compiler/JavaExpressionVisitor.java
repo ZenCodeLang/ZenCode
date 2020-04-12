@@ -929,9 +929,10 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			case ASSOC_INDEXGET:
 			case ASSOC_GETORDEFAULT: {
+				AssocTypeID type = (AssocTypeID) expression.target.type.type;
+				type.keyType.type.accept(type.keyType, boxingTypeVisitor);
 				javaWriter.invokeInterface(MAP_GET);
 
-				AssocTypeID type = (AssocTypeID) expression.target.type.type;
 				type.valueType.type.accept(type.valueType, unboxingTypeVisitor);
 				break;
 			}
