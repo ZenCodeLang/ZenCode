@@ -48,7 +48,7 @@ public class JavaCompiler {
 		context.addModule(module.module, target);
 		
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			final String className = getFilename(definition);
+			final String className = getClassName(getFilename(definition));
 			String filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
 			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null, className);
 			definition.accept(definitionPreparer);
@@ -120,10 +120,11 @@ public class JavaCompiler {
 	private String getFilename(HighLevelDefinition definition) {
 		SourceFile source = definition.position.file;
 		if (source != null) {
-			int slash = Math.max(source.getFilename().lastIndexOf('/'), source.getFilename().lastIndexOf('\\'));
-			String filename = source.getFilename().substring(slash < 0 ? 0 : slash + 1);
-			filename = filename.substring(0, filename.lastIndexOf('.'));
-			return filename;
+			//int slash = Math.max(source.getFilename().lastIndexOf('/'), source.getFilename().lastIndexOf('\\'));
+			//String filename = source.getFilename().substring(slash < 0 ? 0 : slash + 1);
+			//filename = filename.substring(0, filename.lastIndexOf('.'));
+			//return filename;
+			return source.getFilename();
 		} else {
 			return definition.name == null ? "Expansion" : definition.name;
 		}
