@@ -2,9 +2,11 @@ package org.openzen.zenscript.scriptingexample;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+
 import org.openzen.zencode.java.JavaNativeModule;
 import org.openzen.zencode.java.ScriptingEngine;
 import org.openzen.zencode.shared.CompileException;
@@ -41,10 +43,17 @@ public class Main {
 		scriptingEngine.registerNativeProvided(example);
 
 		File inputDirectory = new File("scripts");
-		File[] inputFiles = Optional.ofNullable(inputDirectory.listFiles((dir, name) -> name.endsWith(".zs"))).orElseGet(() -> new File[0]);
-		SourceFile[] sourceFiles = new SourceFile[inputFiles.length];
-		for (int i = 0; i < inputFiles.length; i++)
-			sourceFiles[i] = new FileSourceFile(inputFiles[i].getName(), inputFiles[i]);
+		final SourceFile[] sourceFiles = Files.walk(inputDirectory.getAbsoluteFile().toPath())
+				.map(Path::toFile)
+				.filter(File::isFile)
+				.filter(f -> f.getName().endsWith(".zs"))
+				.filter(f -> !f.getAbsolutePath().contains("nope"))
+				.map(f -> new FileSourceFile(f.getName(), f))
+				.toArray(SourceFile[]::new);
+		//File[] inputFiles = Optional.ofNullable(inputDirectory.listFiles((dir, name) -> name.endsWith(".zs"))).orElseGet(() -> new File[0]);
+		//SourceFile[] sourceFiles = new SourceFile[inputFiles.length];
+		//for (int i = 0; i < inputFiles.length; i++)
+		//	sourceFiles[i] = new FileSourceFile(inputFiles[i].getName(), inputFiles[i]);
 
 		final PrefixedBracketParser parser = new PrefixedBracketParser(null);
 		BracketExpressionParser testParser = new SimpleBracketParser(scriptingEngine.registry, example.loadStaticMethod(Globals.class.getMethod("bracket", String.class)));
