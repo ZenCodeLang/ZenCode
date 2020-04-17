@@ -385,6 +385,17 @@ public class JavaNativeModule {
 		for (Method method : cls.getDeclaredMethods()) {
 			ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
 			if (methodAnnotation != null) {
+
+				//Simple check if the method was overwritten
+				try {
+					if(!cls.getDeclaredMethod(method.getName(), method.getParameterTypes()).equals(method)) {
+						continue;
+					}
+				} catch (NoSuchMethodException e) {
+					e.printStackTrace();
+					continue;
+				}
+
 				MethodMember member = asMethod(context, definition, method, methodAnnotation);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
