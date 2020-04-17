@@ -359,7 +359,7 @@ public class TypeMemberGroup {
                 return selectedMethod.member;
         }
 		// try to match with approximate types
-		FunctionalMemberRef selected = null;
+		TypeMember<FunctionalMemberRef> selected = null;
 		for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
@@ -372,15 +372,19 @@ public class TypeMemberGroup {
 			if (!header.matchesImplicitly(position, arguments, scope))
 				continue;
 			
-			if (selected != null) {
+			if (selected == null) {
+				selected = method;
+			} else if(selected.priority == method.priority){
 				StringBuilder explanation = new StringBuilder();
-				FunctionHeader selectedHeader = selected.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
+				FunctionHeader selectedHeader = selected.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
 				explanation.append("Function A: ").append(selectedHeader.toString()).append("\n");
 				explanation.append("Function B: ").append(header.toString());
 				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, "Ambiguous call; multiple methods match:\n" + explanation.toString());
+			} else {
+				//For example:
+				//Child overrides parent: Priority.Specified vs. Priority.Inherited
+				selected = selected.resolve(method);
 			}
-			
-			selected = method.member;
 		}
 		
 		if (selected == null) {
@@ -403,7 +407,7 @@ public class TypeMemberGroup {
 			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No matching method found for " + name + ":\n" + message.toString());
 		}
 		
-		return selected;
+		return selected.member;
 	}
 	
 	public FunctionalMemberRef getOverride(CodePosition position, TypeScope scope, FunctionalMember member) throws CompileException {
