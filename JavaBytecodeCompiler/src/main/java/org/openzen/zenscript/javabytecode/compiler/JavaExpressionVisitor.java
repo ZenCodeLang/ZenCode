@@ -934,6 +934,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.invokeInterface(MAP_GET);
 
 				type.valueType.type.accept(type.valueType, unboxingTypeVisitor);
+				if(!CompilerUtils.isPrimitive(type.valueType.type)) {
+					javaWriter.checkCast(context.getType(type.valueType));
+				}
 				break;
 			}
 			case ASSOC_INDEXSET:
