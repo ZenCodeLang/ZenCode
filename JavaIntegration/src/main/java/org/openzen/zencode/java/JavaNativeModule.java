@@ -803,7 +803,6 @@ public class JavaNativeModule {
 			Parameter[] javaParameters,
 			TypeVariable<Method>[] javaTypeParameters,
 			AnnotatedType[] exceptionTypes) {
-		StoredType returnType = javaReturnType == null ? BasicTypeID.VOID.stored : loadStoredType(context, javaReturnType);
 
 
 		TypeParameter[] typeParameters = new TypeParameter[javaTypeParameters.length];
@@ -835,6 +834,7 @@ public class JavaNativeModule {
 		if (exceptionTypes.length > 1)
 			throw new IllegalArgumentException("A method can only throw a single exception type!");
 
+		StoredType returnType = javaReturnType == null ? BasicTypeID.VOID.stored : loadStoredType(context, javaReturnType);
 		StoredType thrownType = exceptionTypes.length == 0 ? null : loadStoredType(context, exceptionTypes[0]);
 		return new FunctionHeader(typeParameters, returnType, thrownType, AutoStorageTag.INSTANCE, parameters);
 	}
