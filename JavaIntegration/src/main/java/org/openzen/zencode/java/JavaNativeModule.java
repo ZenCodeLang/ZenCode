@@ -967,6 +967,7 @@ public class JavaNativeModule {
 	private StoredType loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, AnnotatedElement[] parameters) {
 		Method functionalInterfaceMethod = getFunctionalInterfaceMethod(cls);
 		TypeVariableContext context = convertTypeParameters(cls);
+		//TODO: This breaks if the functional interface type appears in the method's signature
 		FunctionHeader header = getHeader(context, functionalInterfaceMethod);
 
 		Map<TypeParameter, StoredType> mapping = new HashMap<>();
@@ -1011,7 +1012,7 @@ public class JavaNativeModule {
 
 	private Method getFunctionalInterfaceMethod(Class<?> functionalInterface) {
 		for (Method method : functionalInterface.getDeclaredMethods()) {
-			if (Modifier.isPublic(method.getModifiers()) && !method.isDefault())
+			if (Modifier.isPublic(method.getModifiers()) && Modifier.isAbstract(method.getModifiers()) && !method.isDefault())
 				return method;
 		}
 
