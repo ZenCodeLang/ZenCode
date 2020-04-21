@@ -74,7 +74,7 @@ public class ValidationUtils {
 			
 			if (parameter.defaultValue != null) {
 				parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope(access)));
-				if (parameter.defaultValue.type != parameter.type) {
+				if (!parameter.defaultValue.type.equals(parameter.type)) {
 					target.logError(INVALID_TYPE, position, "default value does not match parameter type");
 				}
 			}
