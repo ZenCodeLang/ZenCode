@@ -76,6 +76,7 @@ public class JavaNativeModule {
 
 		for (JavaNativeModule dependency : dependencies) {
 			definitionByClass.putAll(dependency.definitionByClass);
+			context.typeVariables.putAll(dependency.context.typeVariables);
 		}
 
 		compiled = new JavaCompiledModule(module, FunctionParameter.NONE);
