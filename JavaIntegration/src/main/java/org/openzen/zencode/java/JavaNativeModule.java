@@ -489,7 +489,19 @@ public class JavaNativeModule {
                 compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, getMethodDescriptor(method), getMethodModifiers(method)));
                 addExpansion = true;
             }
-
+            
+            final ZenCodeType.Getter getterAnnotation = method.getAnnotation(ZenCodeType.Getter.class);
+            if(getterAnnotation != null) {
+                StoredType type = loadStoredType(context, method.getAnnotatedReturnType());
+                int modifiers = getMethodModifiers(method) ^ Modifiers.STATIC;
+                final String name = getterAnnotation.value().isEmpty() ? translateGetterName(method.getName()) : getterAnnotation.value();
+                final GetterMember member = new GetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
+                
+                expansion.addMember(member);
+                compiled.setMethodInfo(member, getMethod(javaClass, method, type));
+                addExpansion = true;
+            }
+            
             final ZenCodeType.Caster casterAnnotation = method.getAnnotation(ZenCodeType.Caster.class);
             if(casterAnnotation != null) {
                 boolean implicit = casterAnnotation.implicit();
