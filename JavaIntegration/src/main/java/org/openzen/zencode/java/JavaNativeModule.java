@@ -400,7 +400,6 @@ public class JavaNativeModule {
 				MethodMember member = asMethod(context, definition, method, methodAnnotation);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
-				continue;
 			}
 
 			ZenCodeType.Getter getter = method.getAnnotation(ZenCodeType.Getter.class);
