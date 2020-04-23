@@ -73,13 +73,14 @@ public class JavaNativeModule {
 		this.basePackage = basePackage;
 		module = new Module(name);
 		this.registry = registry;
-
+        
+        compiled = new JavaCompiledModule(module, FunctionParameter.NONE);
+        
 		for (JavaNativeModule dependency : dependencies) {
 			definitionByClass.putAll(dependency.definitionByClass);
 			context.typeVariables.putAll(dependency.context.typeVariables);
+			compiled.addAllFrom(dependency.compiled);
 		}
-
-		compiled = new JavaCompiledModule(module, FunctionParameter.NONE);
 
 		typeByClass.put(void.class, BasicTypeID.VOID);
 		typeByClass.put(boolean.class, BasicTypeID.BOOL);

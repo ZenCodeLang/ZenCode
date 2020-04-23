@@ -185,4 +185,16 @@ public class JavaCompiledModule {
 		
 		return info;
 	}
+    
+    public void addAllFrom(JavaCompiledModule compiled) {
+        this.classes.putAll(compiled.classes);
+        this.expansionClasses.putAll(compiled.expansionClasses);
+        this.nativeClasses.putAll(compiled.nativeClasses);
+        this.implementations.putAll(compiled.implementations);
+        this.fields.putAll(compiled.fields);
+        this.methods.putAll(compiled.methods);
+        this.typeParameters.putAll(compiled.typeParameters);
+        this.parameters.putAll(compiled.parameters);
+        this.variantOptions.putAll(compiled.variantOptions);
+    }
 }
