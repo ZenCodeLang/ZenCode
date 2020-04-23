@@ -186,8 +186,23 @@ public class JavaNativeModule {
 
 		HighLevelDefinition definition = addClass(method.getDeclaringClass());
 		JavaClass jcls = JavaClass.fromInternalName(getInternalName(method.getDeclaringClass()), JavaClass.Kind.CLASS);
-
-		//TypeVariableContext context = new TypeVariableContext();
+		
+        if(method.isAnnotationPresent(ZenCodeType.Method.class)){
+            //The method should already have been loaded let's use that one.
+            final String methodDescriptor = org.objectweb.asm.Type.getMethodDescriptor(method);
+            final Optional<MethodMember> matchingMember = definition.members.stream()
+                    .filter(m -> m instanceof MethodMember)
+                    .map(m -> ((MethodMember) m))
+                    .filter(m -> {
+                        final JavaMethod methodInfo = compiled.optMethodInfo(m);
+                        return methodInfo != null && methodDescriptor.equals(methodInfo.descriptor);
+                    })
+                    .findAny();
+            
+            if(matchingMember.isPresent()) {
+                return matchingMember.get().ref(registry.getForDefinition(definition).stored());
+            }
+        }
 		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), getHeader(context, method), null);
 		definition.addMember(methodMember);
 		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
