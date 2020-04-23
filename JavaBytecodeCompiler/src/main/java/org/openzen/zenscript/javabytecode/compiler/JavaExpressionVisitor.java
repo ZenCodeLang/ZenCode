@@ -1116,19 +1116,19 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 					//Compare non-int types beforehand
 					if (itemType.type == BasicTypeID.LONG || itemType.type == BasicTypeID.ULONG) {
 						javaWriter.lCmp();
-						javaWriter.ifNE(loopStart);
+						javaWriter.ifEQ(loopStart);
 					} else if (itemType.type == BasicTypeID.FLOAT) {
 						javaWriter.fCmp();
-						javaWriter.ifNE(loopStart);
+						javaWriter.ifEQ(loopStart);
 					} else if (itemType.type == BasicTypeID.DOUBLE) {
 						javaWriter.dCmp();
-						javaWriter.ifNE(loopStart);
+						javaWriter.ifEQ(loopStart);
 					} else
 						javaWriter.ifICmpNE(loopStart);
 				} else {
 					//If equals, use Object.equals in case of null
 					javaWriter.invokeStatic(new JavaMethod(JavaClass.fromInternalName("java/util/Objects", JavaClass.Kind.CLASS), JavaMethod.Kind.STATIC, "equals", false, "(Ljava/lang/Object;Ljava/lang/Object;)Z", 0, false));
-					javaWriter.ifNE(loopStart);
+					javaWriter.ifEQ(loopStart);
 					// If ==
 					// javaWriter.ifACmpNe(loopStart);
 				}
