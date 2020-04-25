@@ -142,19 +142,25 @@ public class ScriptingEngine {
 	public void run(Map<FunctionParameter, Object> arguments) {
 		run(arguments, this.getClass().getClassLoader());
 	}
+	
+	public JavaBytecodeRunUnit createRunUnit() {
+        SimpleJavaCompileSpace javaSpace = new SimpleJavaCompileSpace(registry);
+        for (JavaNativeModule nativeModule : nativeModules)
+            javaSpace.register(nativeModule.getCompiled());
+        
+        JavaCompiler compiler = new JavaCompiler();
+        
+        JavaBytecodeRunUnit runUnit = new JavaBytecodeRunUnit();
+        for (SemanticModule compiled : compiledModules)
+            runUnit.add(compiler.compile(compiled.name, compiled, javaSpace));
+        if (debug)
+            runUnit.dump(new File("classes"));
+        
+        return runUnit;
+    }
 
 	public void run(Map<FunctionParameter, Object> arguments, ClassLoader parentClassLoader) {
-		SimpleJavaCompileSpace javaSpace = new SimpleJavaCompileSpace(registry);
-		for (JavaNativeModule nativeModule : nativeModules)
-			javaSpace.register(nativeModule.getCompiled());
-
-		JavaCompiler compiler = new JavaCompiler();
-
-		JavaBytecodeRunUnit runUnit = new JavaBytecodeRunUnit();
-		for (SemanticModule compiled : compiledModules)
-			runUnit.add(compiler.compile(compiled.name, compiled, javaSpace));
-		if (debug)
-			runUnit.dump(new File("classes"));
+	    JavaBytecodeRunUnit runUnit = createRunUnit();
         
         try {
             runUnit.run(arguments, parentClassLoader);
