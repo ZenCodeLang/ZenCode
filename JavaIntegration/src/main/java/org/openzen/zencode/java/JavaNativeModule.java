@@ -384,7 +384,7 @@ public class JavaNativeModule {
 
 		boolean hasConstructor = false;
 		for (java.lang.reflect.Constructor<?> constructor : cls.getConstructors()) {
-			ZenCodeType.Constructor constructorAnnotation = (ZenCodeType.Constructor) constructor.getAnnotation(ZenCodeType.Constructor.class);
+			ZenCodeType.Constructor constructorAnnotation = constructor.getAnnotation(ZenCodeType.Constructor.class);
 			if (constructorAnnotation != null) {
 				ConstructorMember member = asConstructor(context, definition, constructor);
 				definition.addMember(member);
@@ -663,7 +663,8 @@ public class JavaNativeModule {
 		return name;
 	}
 
-	private ConstructorMember asConstructor(TypeVariableContext context, HighLevelDefinition definition, java.lang.reflect.Constructor method) {
+	@SuppressWarnings("rawtypes")
+    private ConstructorMember asConstructor(TypeVariableContext context, HighLevelDefinition definition, java.lang.reflect.Constructor method) {
 		FunctionHeader header = getHeader(context, method);
 		return new ConstructorMember(
 				CodePosition.NATIVE,
@@ -737,7 +738,8 @@ public class JavaNativeModule {
 		return new CasterMember(CodePosition.NATIVE, definition, modifiers, toType, null);
 	}
 
-	private FunctionHeader getHeader(TypeVariableContext context, java.lang.reflect.Constructor constructor) {
+	@SuppressWarnings({"rawtypes", "unchecked"})
+    private FunctionHeader getHeader(TypeVariableContext context, java.lang.reflect.Constructor constructor) {
 		return getHeader(
 				context,
 				null,
@@ -1077,7 +1079,8 @@ public class JavaNativeModule {
 		return org.objectweb.asm.Type.getDescriptor(cls);
 	}
 
-	private static String getMethodDescriptor(java.lang.reflect.Constructor constructor) {
+	@SuppressWarnings("rawtypes")
+    private static String getMethodDescriptor(java.lang.reflect.Constructor constructor) {
 		return org.objectweb.asm.Type.getConstructorDescriptor(constructor);
 	}
 
@@ -1085,7 +1088,8 @@ public class JavaNativeModule {
 		return org.objectweb.asm.Type.getMethodDescriptor(method);
 	}
 
-	private static JavaMethod getMethod(JavaClass cls, java.lang.reflect.Constructor constructor) {
+	@SuppressWarnings("rawtypes")
+    private static JavaMethod getMethod(JavaClass cls, java.lang.reflect.Constructor constructor) {
 		return new JavaMethod(
 				cls,
 				JavaMethod.Kind.CONSTRUCTOR,
@@ -1115,13 +1119,16 @@ public class JavaNativeModule {
 	}
 
 	private static class TypeVariableContext {
-		private final Map<TypeVariable, TypeParameter> typeVariables = new HashMap<>();
+		@SuppressWarnings("rawtypes")
+        private final Map<TypeVariable, TypeParameter> typeVariables = new HashMap<>();
 
-		public void put(TypeVariable variable, TypeParameter parameter) {
+		@SuppressWarnings("rawtypes")
+        public void put(TypeVariable variable, TypeParameter parameter) {
 			typeVariables.put(variable, parameter);
 		}
 
-		public TypeParameter get(TypeVariable variable) {
+		@SuppressWarnings("rawtypes")
+        public TypeParameter get(TypeVariable variable) {
 			if (!typeVariables.containsKey(variable))
 				throw new IllegalStateException("Could not find type variable " + variable.getName());
 
