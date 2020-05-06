@@ -453,12 +453,12 @@ public final class TypeMembers {
 	}
 	
 	private boolean areEquivalent(StoredType fromType, StoredType toType) {
-		if (fromType == toType)
+		if (fromType == toType || fromType.equals(toType))
 			return true;
 		if (!fromType.getActualStorage().canCastTo(toType.getActualStorage()) && !toType.getActualStorage().canCastFrom(fromType.getActualStorage()))
 			return false;
 		
-		return fromType.type == toType.type;
+		return fromType.type.equals(toType.type);
 	}
 	
 	public CasterMemberRef getImplicitCaster(StoredType toType) {

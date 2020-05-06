@@ -374,7 +374,9 @@ public class TypeMemberGroup {
 			
 			if (selected == null) {
 				selected = method;
-			} else if(selected.priority == method.priority){
+			} else if (selected.member.equals(method.member)) {
+                selected = selected.resolve(method);
+            } else if(selected.priority == method.priority){
 				StringBuilder explanation = new StringBuilder();
 				FunctionHeader selectedHeader = selected.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
 				explanation.append("Function A: ").append(selectedHeader.toString()).append("\n");
