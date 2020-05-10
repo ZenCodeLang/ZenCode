@@ -405,7 +405,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			JavaMethod methodInfo = context.getJavaMethod(expression.member);
 
 			if(methodInfo.compile) {
-			    if(expression.member.getHeader().typeParameters.length == expression.arguments.typeArguments.length) {
+			    if(typeParameters.size() == expression.arguments.typeArguments.length) {
                     final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
                     for(StoredType typeArgument : expression.arguments.typeArguments) {
                         typeArgument.type.accept(javaWriter, javaTypeExpressionVisitor);
