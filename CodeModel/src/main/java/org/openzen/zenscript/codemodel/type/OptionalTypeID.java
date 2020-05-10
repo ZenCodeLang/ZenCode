@@ -124,4 +124,9 @@ public class OptionalTypeID implements TypeID {
 	public String toString(StorageTag storage) {
 		return baseType.toString(storage) + '?';
 	}
+    
+    @Override
+    public boolean isGeneric() {
+        return baseType.isGeneric();
+    }
 }

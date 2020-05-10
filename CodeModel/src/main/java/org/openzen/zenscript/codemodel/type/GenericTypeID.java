@@ -116,7 +116,7 @@ public class GenericTypeID implements TypeID {
 			return false;
 		}
 		final GenericTypeID other = (GenericTypeID) obj;
-		return this.parameter == other.parameter;
+		return this.parameter.equals(other.parameter);
 	}
 	
 	@Override

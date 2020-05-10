@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.codemodel;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -519,4 +519,43 @@ public class FunctionHeader {
 	public boolean accepts(int arguments) {
 		return arguments >= this.minParameters && arguments <= this.maxParameters;
 	}
+    
+    @Override
+    public boolean equals(Object o) {
+        if(this == o)
+            return true;
+        if(o == null || getClass() != o.getClass())
+            return false;
+        
+        FunctionHeader that = (FunctionHeader) o;
+        
+        if(minParameters != that.minParameters)
+            return false;
+        if(maxParameters != that.maxParameters)
+            return false;
+        if(hasUnknowns != that.hasUnknowns)
+            return false;
+        if(!Arrays.equals(typeParameters, that.typeParameters))
+            return false;
+        if(!returnType.equals(that.returnType))
+            return false;
+        if(!Arrays.equals(parameters, that.parameters))
+            return false;
+        if(!Objects.equals(thrownType, that.thrownType))
+            return false;
+        return Objects.equals(storage, that.storage);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(typeParameters);
+        result = 31 * result + returnType.hashCode();
+        result = 31 * result + Arrays.hashCode(parameters);
+        result = 31 * result + (thrownType != null ? thrownType.hashCode() : 0);
+        result = 31 * result + (storage != null ? storage.hashCode() : 0);
+        result = 31 * result + minParameters;
+        result = 31 * result + maxParameters;
+        result = 31 * result + (hasUnknowns ? 1 : 0);
+        return result;
+    }
 }
