@@ -339,7 +339,7 @@ public class JavaNativeModule {
 			definition.setSuperType(loadType(context, cls.getAnnotatedSuperclass()).type);
 		}
 
-		if (!foundRegistry && definition.getSuperType() == null && cls != Object.class) {
+		if (!foundRegistry && definition.getSuperType() == null && cls != Object.class && !(definition instanceof EnumDefinition)) {
 			definition.setSuperType(loadType(context, Object.class, false, false).type);
 		}
 
