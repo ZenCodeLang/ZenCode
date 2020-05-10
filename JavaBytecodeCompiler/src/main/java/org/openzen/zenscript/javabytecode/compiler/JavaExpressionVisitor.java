@@ -405,10 +405,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			JavaMethod methodInfo = context.getJavaMethod(expression.member);
 
 			if(methodInfo.compile) {
-				for (TypeParameter typeParameter : typeParameters) {
-					javaWriter.aConstNull(); // TODO: Replace with actual class
-					javaWriter.checkCast("java/lang/Class");
-				}
+			    if(expression.member.getHeader().typeParameters.length == expression.arguments.typeArguments.length) {
+                    final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+                    for(StoredType typeArgument : expression.arguments.typeArguments) {
+                        typeArgument.type.accept(javaWriter, javaTypeExpressionVisitor);
+                    }
+                } else {
+                    for(TypeParameter typeParameter : typeParameters) {
+                        javaWriter.aConstNull(); // TODO: Replace with actual class
+                        javaWriter.checkCast("java/lang/Class");
+                    }
+                }
 			}
 
 			final Expression[] arguments = expression.arguments.arguments;

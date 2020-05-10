@@ -5,42 +5,30 @@
  */
 package org.openzen.zencode.java;
 
-import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.LiteralSourceFile;
+import org.openzen.zencode.shared.*;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
-import org.openzen.zenscript.codemodel.annotations.NativeDefinitionAnnotation;
-import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.FileResolutionContext;
-import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
+import org.openzen.zenscript.codemodel.annotations.*;
+import org.openzen.zenscript.codemodel.context.*;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.generic.*;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.FileScope;
+import org.openzen.zenscript.codemodel.member.ref.*;
+import org.openzen.zenscript.codemodel.partial.*;
+import org.openzen.zenscript.codemodel.scope.*;
 import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageType;
+import org.openzen.zenscript.codemodel.type.member.*;
+import org.openzen.zenscript.codemodel.type.storage.*;
 import org.openzen.zenscript.javashared.*;
-import org.openzen.zenscript.lexer.ParseException;
-import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.parser.BracketExpressionParser;
-import org.openzen.zenscript.parser.expression.ParsedExpression;
-import org.openzen.zenscript.parser.type.IParsedType;
-import stdlib.Strings;
+import org.openzen.zenscript.lexer.*;
+import org.openzen.zenscript.parser.*;
+import org.openzen.zenscript.parser.expression.*;
+import org.openzen.zenscript.parser.type.*;
+import stdlib.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.*;
+import java.util.Arrays;
 import java.util.*;
 
 
@@ -852,14 +840,21 @@ public class JavaNativeModule {
 		}
 
 		FunctionParameter[] parameters = new FunctionParameter[javaParameters.length];
+		int classParameters = 0;
 		for (int i = 0; i < parameters.length; i++) {
 			Parameter parameter = javaParameters[i];
+			if(parameter.getType().getCanonicalName().contentEquals("java.lang.Class")) {
+			    classParameters++;
+            }
 
 			//AnnotatedType parameterType = parameter.getAnnotatedType();
  			StoredType type = loadStoredType(context, parameter);
 			Expression defaultValue = getDefaultValue(parameter, type);
 			parameters[i] = new FunctionParameter(type, parameter.getName(), defaultValue, parameter.isVarArgs());
 		}
+		if(classParameters > 0 && classParameters == typeParameters.length) {
+		    parameters = Arrays.copyOfRange(parameters, classParameters, parameters.length);
+        }
 
 		if (exceptionTypes.length > 1)
 			throw new IllegalArgumentException("A method can only throw a single exception type!");
@@ -1110,8 +1105,14 @@ public class JavaNativeModule {
 			kind = JavaMethod.Kind.STATIC;
 		else
 			kind = JavaMethod.Kind.INSTANCE;
-
-		return new JavaMethod(cls, kind, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), result.isGeneric());
+        
+        final int length = method.getTypeParameters().length;
+        boolean compile = length > 0 && length == Arrays.stream(method.getParameterTypes())
+                .filter(s -> s.getCanonicalName().contentEquals("java.lang.Class"))
+                .count();
+        
+        return new JavaMethod(cls, kind, method.getName(), compile, getMethodDescriptor(method), method
+                .getModifiers(), result.isGeneric());
 	}
 
 	public void registerBEP(BracketExpressionParser bep) {

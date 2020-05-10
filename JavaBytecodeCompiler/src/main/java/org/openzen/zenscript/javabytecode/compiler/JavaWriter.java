@@ -196,7 +196,7 @@ public class JavaWriter {
 	}
 	
 	public void constantClass(JavaClass cls) {
-		visitor.visitLdcInsn(Type.getType(cls.internalName));
+		visitor.visitLdcInsn(Type.getObjectType(cls.internalName));
 	}
 	
 	public void pop() {
