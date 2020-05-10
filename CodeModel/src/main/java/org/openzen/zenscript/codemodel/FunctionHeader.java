@@ -252,6 +252,19 @@ public class FunctionHeader {
 			return false;
 		
 		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
+		if(isVariadic()) {
+		    boolean matches = true;
+            for (int i = 0; i < arguments.arguments.length; i++) {
+                if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.getParameterType(true, i))) {
+                    matches = false;
+                    break;
+                }
+            }
+            if(matches) {
+                return true;
+            }
+        }
+		
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
 				return false;
