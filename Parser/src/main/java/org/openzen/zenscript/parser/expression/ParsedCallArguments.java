@@ -5,16 +5,14 @@
  */
 package org.openzen.zenscript.parser.expression;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.generic.*;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
@@ -144,7 +142,21 @@ public class ParsedCallArguments {
 		for (FunctionHeader header : candidates) {
 			//TODO: this is wrong!
 			boolean variadic = header.isVariadic();
+   
+			type_parameter_replacement:
+            if(typeArguments != null && typeArguments.length > 0 && header.typeParameters.length == typeArguments.length) {
+                final Map<TypeParameter, StoredType> types = new HashMap<>();
+                for(int i = 0; i < header.typeParameters.length; i++) {
+                    if(!header.typeParameters[i].matches(scope.getMemberCache(), typeArguments[i].type)) {
+                        break type_parameter_replacement;
+                    }
+                    types.put(header.typeParameters[i], typeArguments[i]);
+                }
+                header = header.withGenericArguments(new GenericMapper(position, scope.getTypeRegistry(), types));
+            }
+			
 			for (int i = 0; i < arguments.size(); i++) {
+			    
 				final StoredType parameterType = header.getParameterType(variadic, i);
 				if (!predictedTypes[i].contains(parameterType))
 					predictedTypes[i].add(parameterType);
