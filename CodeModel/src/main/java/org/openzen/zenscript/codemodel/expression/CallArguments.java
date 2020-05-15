@@ -8,9 +8,9 @@ package org.openzen.zenscript.codemodel.expression;
 import java.util.Arrays;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.*;
 
 /**
  *
@@ -64,10 +64,16 @@ public class CallArguments {
 		if (arguments.length < header.parameters.length) {
 			Expression[] newArguments = Arrays.copyOf(arguments, header.parameters.length);
 			for (int i = arguments.length; i < header.parameters.length; i++) {
-				if (header.parameters[i].defaultValue == null)
-					newArguments[i] = new InvalidExpression(position, header.parameters[i].type, CompileExceptionCode.MISSING_PARAMETER, "Parameter missing and no default value specified");
-				else
-					newArguments[i] = header.parameters[i].defaultValue;
+                final FunctionParameter parameter = header.parameters[i];
+                if (parameter.defaultValue == null) {
+				    if(parameter.variadic) {
+				        newArguments[i] = new ArrayExpression(position, Expression.NONE, parameter.type);
+                    } else {
+                        newArguments[i] = new InvalidExpression(position, parameter.type, CompileExceptionCode.MISSING_PARAMETER, "Parameter missing and no default value specified");
+                    }
+                } else {
+                    newArguments[i] = parameter.defaultValue;
+                }
 			}
 			result = new CallArguments(typeArguments, newArguments);
 		}
