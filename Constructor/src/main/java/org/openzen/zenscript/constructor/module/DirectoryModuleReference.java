@@ -8,9 +8,10 @@ package org.openzen.zenscript.constructor.module;
 import org.openzen.zenscript.constructor.module.directory.SourceDirectoryPackage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.*;
+import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
@@ -28,6 +29,7 @@ import org.openzen.zenscript.constructor.ParsedModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.codemodel.type.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
+import org.openzen.zenscript.constructor.module.logging.*;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedFile;
 
@@ -53,7 +55,7 @@ public class DirectoryModuleReference implements ModuleReference {
 	}
 
 	@Override
-	public SemanticModule load(ModuleLoader loader, GlobalTypeRegistry registry, Consumer<CompileException> exceptionLogger) {
+	public SemanticModule load(ModuleLoader loader, GlobalTypeRegistry registry, ModuleLogger exceptionLogger) {
 		if (!directory.exists())
 			throw new ConstructorException("Error: module directory not found: " + directory);
 		

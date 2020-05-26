@@ -37,7 +37,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-		final JavaWriter javaWriter = new JavaWriter(definition.position, writer, new JavaMethod(context.getJavaClass(definition), JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaMethod(context.getJavaClass(definition), JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
 		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
 		this.clinitStatementVisitor.start();
 		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -131,7 +131,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		}
 
 
-		final JavaWriter methodWriter = new JavaWriter(member.position, writer, true, method, definition, true, methodSignature, methodDescriptor, null);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, method, definition, true, methodSignature, methodDescriptor, null);
 		methodWriter.label(methodStart);
 
 		if (!isStatic) {
@@ -212,7 +212,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaMethod method = context.getJavaMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(member.position, this.writer, true, method, definition, true, signature, descriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, true, signature, descriptor, new String[0]);
 
 		methodWriter.label(methodStart);
 
@@ -257,7 +257,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaMethod javaMethod = context.getJavaMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(member.position, writer, true, javaMethod, member.definition, true, signature, description, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, signature, description, new String[0]);
 
 
 		methodWriter.label(methodStart);
@@ -318,7 +318,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaMethod javaMethod = context.getJavaMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(member.position, writer, true, javaMethod, member.definition, true, methodSignature, methodDescriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, true, methodSignature, methodDescriptor, new String[0]);
 
 		methodWriter.label(methodStart);
 		methodWriter.nameVariable(0, "expandedObj", methodStart, methodEnd, context.getType(this.expandedClass));

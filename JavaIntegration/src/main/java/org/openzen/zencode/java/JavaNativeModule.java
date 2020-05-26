@@ -472,9 +472,10 @@ public class JavaNativeModule {
 			final Class<?> classFromType = getClassFromType(expandedType);
 			if(classFromType == null) {
 				//TODO REMOVE
-				System.err.println("Could not get class for type " + expandedType + " attempting to do stuff anyways");
-			} else 	if(!method.getParameterTypes()[0].isAssignableFrom(classFromType))
-				throw new IllegalArgumentException("Cannot add extension method " + method + " as its first parameter does not match the extended type.");
+				logger.debug("Could not get class for type " + expandedType + " attempting to do stuff anyways");
+			} else if(!method.getParameterTypes()[0].isAssignableFrom(classFromType)) {
+                throw new IllegalArgumentException("Cannot add extension method " + method + " as its first parameter does not match the extended type.");
+            }
 
 
 			final ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);

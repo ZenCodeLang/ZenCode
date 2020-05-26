@@ -9,6 +9,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -38,8 +39,13 @@ public class JavaBytecodeRunUnit {
 	private final List<JavaParameterInfo> scriptParameterInfo = new ArrayList<>();
 
 	private boolean scriptsWritten = false;
-
-	public void add(JavaBytecodeModule module) {
+	private final IZSLogger logger;
+    
+    public JavaBytecodeRunUnit(IZSLogger logger) {
+        this.logger = logger;
+    }
+    
+    public void add(JavaBytecodeModule module) {
 		scriptsWritten = false;
 
 		for (Map.Entry<String, byte[]> classEntry : module.getClasses().entrySet())
@@ -125,7 +131,7 @@ public class JavaBytecodeRunUnit {
 		headerBuilder.append(")V");
 
 		JavaMethod runMethod = JavaMethod.getStatic(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", headerBuilder.toString(), Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-		final JavaWriter runWriter = new JavaWriter(CodePosition.GENERATED, scriptsClassWriter, runMethod, null, null, null);
+		final JavaWriter runWriter = new JavaWriter(logger, CodePosition.GENERATED, scriptsClassWriter, runMethod, null, null, null);
 		runWriter.start();
 		for (JavaScriptMethod method : scripts) {
 			for (int i = 0; i < method.parameters.length; i++) {

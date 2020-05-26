@@ -4,6 +4,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -38,7 +39,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-        final JavaWriter javaWriter = new JavaWriter(definition.position, writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
+        final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
         this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
         this.clinitStatementVisitor.start();
         CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
@@ -65,7 +66,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
         final Label constructorStart = new Label();
         final Label constructorEnd = new Label();
-        final JavaWriter constructorWriter = new JavaWriter(member.position, writer, method, definition, context.getMethodSignature(member.header), null);
+        final JavaWriter constructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header), null);
         constructorWriter.label(constructorStart);
         CompilerUtils.tagConstructorParameters(context, javaModule, member.definition, member.header, isEnum);
         if(isEnum) {
@@ -98,7 +99,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		if (!member.isConstructorForwarded()) {
 			if (isEnum) {
-				System.out.println("Writing enum constructor");
+				context.logger.debug("Writing enum constructor");
 				constructorWriter.getVisitor().newLocal(Type.getType(String.class));
 				constructorWriter.getVisitor().newLocal(Type.getType(int.class));
 				constructorWriter.loadObject(0);
@@ -106,7 +107,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				constructorWriter.loadInt(2);
 				constructorWriter.invokeSpecial(Type.getInternalName(Enum.class), "<init>", "(Ljava/lang/String;I)V");
 			} else if (definition.getSuperType() == null) {
-				System.out.println("Writing regular constructor");
+				context.logger.debug("Writing regular constructor");
 				constructorWriter.loadObject(0);
 				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
 			}
@@ -144,7 +145,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		final Label constructorStart = new Label();
 		final Label constructorEnd = new Label();
-		final JavaWriter destructorWriter = new JavaWriter(member.position, writer, method, definition, null, null);
+		final JavaWriter destructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, null, null);
 		destructorWriter.label(constructorStart);
 		
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
@@ -163,7 +164,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
         final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.getEffectiveModifiers());
         final JavaMethod method = context.getJavaMethod(member);
 		
-		final JavaWriter methodWriter = new JavaWriter(member.position, writer, method, definition, context.getMethodSignature(member.header), null);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header), null);
 
 		if (!isAbstract) {
 			if (method.isAbstract() || method.cls.kind == JavaClass.Kind.INTERFACE)
@@ -195,7 +196,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaMethod method = context.getJavaMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(member.position, this.writer, true, method, definition, false, signature, descriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, this.writer, true, method, definition, false, signature, descriptor, new String[0]);
 
 		methodWriter.label(methodStart);
 		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
@@ -216,7 +217,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 		final JavaMethod javaMethod = context.getJavaMethod(member);
-		final JavaWriter methodWriter = new JavaWriter(member.position, writer, true, javaMethod, member.definition, false, signature, description, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, signature, description, new String[0]);
 		methodWriter.label(methodStart);
 
 		//in script you use $ but the parameter is named "value", which to choose?
@@ -267,7 +268,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label methodEnd = new Label();
 
 
-		final JavaWriter methodWriter = new JavaWriter(member.position, writer, true, javaMethod, member.definition, false, methodSignature, methodDescriptor, new String[0]);
+		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, true, javaMethod, member.definition, false, methodSignature, methodDescriptor, new String[0]);
 
 		methodWriter.label(methodStart);
 

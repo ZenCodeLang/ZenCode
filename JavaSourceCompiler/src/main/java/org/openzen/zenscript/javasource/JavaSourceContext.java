@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javasource;
 
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -22,8 +23,8 @@ public class JavaSourceContext extends JavaContext {
 	private final JavaSyntheticClassGenerator generator;
 	public final JavaSourceSyntheticHelperGenerator helperGenerator;
 	
-	public JavaSourceContext(JavaSourceModule helpers, JavaSourceFormattingSettings settings, JavaCompileSpace space, ZSPackage modulePackage, String basePackage) {
-		super(space, modulePackage, basePackage);
+	public JavaSourceContext(IZSLogger logger, JavaSourceModule helpers, JavaSourceFormattingSettings settings, JavaCompileSpace space, ZSPackage modulePackage, String basePackage) {
+		super(space, modulePackage, basePackage, logger);
 		
 		typeDescriptorVisitor = new JavaTypeDescriptorVisitor(this);
 		this.generator = new JavaSourceSyntheticTypeGenerator(helpers, settings, this);

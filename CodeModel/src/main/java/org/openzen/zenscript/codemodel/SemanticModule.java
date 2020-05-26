@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationProcessor;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
@@ -43,20 +45,22 @@ public class SemanticModule {
 	public final List<ExpansionDefinition> expansions;
 	public final AnnotationDefinition[] annotations;
 	public final StorageType[] storageTypes;
+	public final IZSLogger logger;
 	
 	public SemanticModule(
-			Module module,
-			SemanticModule[] dependencies,
-			FunctionParameter[] parameters,
-			State state,
-			ZSPackage rootPackage,
-			ZSPackage modulePackage,
-			PackageDefinitions definitions,
-			List<ScriptBlock> scripts,
-			GlobalTypeRegistry registry,
-			List<ExpansionDefinition> expansions,
-			AnnotationDefinition[] annotations,
-			StorageType[] storageTypes)
+	        Module module,
+            SemanticModule[] dependencies,
+            FunctionParameter[] parameters,
+            State state,
+            ZSPackage rootPackage,
+            ZSPackage modulePackage,
+            PackageDefinitions definitions,
+            List<ScriptBlock> scripts,
+            GlobalTypeRegistry registry,
+            List<ExpansionDefinition> expansions,
+            AnnotationDefinition[] annotations,
+            StorageType[] storageTypes,
+            IZSLogger logger)
 	{
 		this.name = module.name;
 		this.module = module;
@@ -73,7 +77,8 @@ public class SemanticModule {
 		this.expansions = expansions;
 		this.annotations = annotations;
 		this.storageTypes = storageTypes;
-	}
+        this.logger = logger;
+    }
 	
 	public boolean isValid() {
 		return state != State.INVALID;
@@ -108,7 +113,8 @@ public class SemanticModule {
 				registry,
 				expansions,
 				annotations,
-				storageTypes);
+				storageTypes,
+                logger);
 	}
 	
 	public ModuleContext getContext() {

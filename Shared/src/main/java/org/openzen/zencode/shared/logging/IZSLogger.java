@@ -1,4 +1,4 @@
-package org.openzen.zencode.java;
+package org.openzen.zencode.shared.logging;
 
 public interface IZSLogger {
     

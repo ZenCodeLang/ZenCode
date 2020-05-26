@@ -13,7 +13,9 @@ import org.openzen.zenscript.ide.host.IDECodeError;
 import org.openzen.zenscript.ide.host.IDEModule;
 import org.openzen.zenscript.ide.host.IDEModuleType;
 import org.openzen.zenscript.ide.host.IDEPackage;
-import org.openzen.zenscript.validator.Validator;
+import org.openzen.zenscript.ide.host.local.logging.*;
+import org.openzen.zenscript.validator.*;
+import org.openzen.zenscript.validator.logger.*;
 
 /**
  *
@@ -46,6 +48,6 @@ public class LocalModule implements IDEModule {
 	@Override
 	public void prebuild(ModuleLoader loader, Consumer<IDECodeError> errors) {
 		SemanticModule module = loader.getModule(this.module.getName());
-		Validator.validate(module, entry -> errors.accept(new IDECodeError(null, entry.position, entry.message)));
+		Validator.validate(module, new LocalValidatorLogger(errors));
 	}
 }

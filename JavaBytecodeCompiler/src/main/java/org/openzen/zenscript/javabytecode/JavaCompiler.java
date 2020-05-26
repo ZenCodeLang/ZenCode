@@ -11,6 +11,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -35,16 +36,20 @@ import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
  * @author Hoofdgebruiker
  */
 public class JavaCompiler {
-	private int generatedScriptBlockCounter = 0;
+    
+    private int generatedScriptBlockCounter = 0;
 	private int expansionCounter = 0;
-
-	public JavaCompiler() {}
+	private IZSLogger logger;
+    
+    public JavaCompiler(IZSLogger logger) {
+        this.logger = logger;
+    }
 	
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space) {
 		Map<String, JavaScriptFile> scriptBlocks = new LinkedHashMap<>();
 		
-		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters);
-		JavaBytecodeContext context = new JavaBytecodeContext(target, space, module.modulePackage, packageName);
+		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters, logger);
+		JavaBytecodeContext context = new JavaBytecodeContext(target, space, module.modulePackage, packageName, logger);
 		context.addModule(module.module, target);
 		
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
@@ -92,7 +97,7 @@ public class JavaCompiler {
 			JavaMethod method = JavaMethod.getStatic(new JavaClass(context.getPackageName(script.pkg), className, JavaClass.Kind.CLASS), methodName, scriptDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
 			scriptFile.scriptMethods.add(new JavaScriptMethod(method, module.parameters, javaScriptParameters));
 
-			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(CodePosition.UNKNOWN, visitor, method, null, null, null));
+			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(script.module), new JavaWriter(logger, CodePosition.UNKNOWN, visitor, method, null, null, null));
 			statementVisitor.start();
 			for (Statement statement : script.statements) {
 				statement.accept(statementVisitor);
@@ -108,7 +113,7 @@ public class JavaCompiler {
 
 			if (target.getClasses().containsKey(entry.getKey())) {
 				//TODO Scripts and definitions seem to create the same class. Bad!
-				System.err.println("Trying to register " + entry.getKey() + " a 2nd time");
+				logger.warning("Warning: Trying to register " + entry.getKey() + " a 2nd time");
 			}else{
 				target.addClass(entry.getKey(), entry.getValue().classWriter.toByteArray());
 			}

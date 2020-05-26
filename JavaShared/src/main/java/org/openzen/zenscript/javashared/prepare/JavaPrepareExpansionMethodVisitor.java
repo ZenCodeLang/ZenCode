@@ -65,7 +65,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		module.setFieldInfo(member, field);
 		
 		if (DEBUG_EMPTY && cls.empty)
-			System.out.println("Class " + cls.fullName + " not empty because of const");
+			context.logger.debug("Class " + cls.fullName + " not empty because of const");
 		
 		cls.empty = false;
 		return null;
@@ -202,7 +202,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		
 		if (method.compile) {
 			if (DEBUG_EMPTY && cls.empty)
-				System.out.println("Class " + cls.fullName + " not empty because of " + member.describe());
+				context.logger.debug("Class " + cls.fullName + " not empty because of " + member.describe());
 			
 			cls.empty = false;
 		}

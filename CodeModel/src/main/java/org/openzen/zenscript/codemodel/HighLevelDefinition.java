@@ -196,7 +196,7 @@ public abstract class HighLevelDefinition extends Taggable {
 		}
 		
 		if (isDestructible() && destructor == null && !(this instanceof ExpansionDefinition)) {
-			System.out.println("Added destructor to " + position);
+			//System.out.println("Added destructor to " + position);
 			destructor = new DestructorMember(position, this, Modifiers.PUBLIC);
 			members.add(destructor);
 		}

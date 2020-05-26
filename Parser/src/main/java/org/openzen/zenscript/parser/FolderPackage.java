@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ParseException;
+import org.openzen.zenscript.parser.logger.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,11 +61,11 @@ public class FolderPackage {
         files.add(parent);
     }
 	
-	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, FunctionParameter[] scriptParameters) throws ParseException {
-		return loadModule(space, name, bracketParser, dependencies, scriptParameters, new ZSPackage(space.rootPackage, name));
+	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, FunctionParameter[] scriptParameters, ParserLogger logger) throws ParseException {
+		return loadModule(space, name, bracketParser, dependencies, scriptParameters, new ZSPackage(space.rootPackage, name), logger);
 	}
 	
-	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, FunctionParameter[] scriptParameters, ZSPackage pkg) throws ParseException {
+	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, FunctionParameter[] scriptParameters, ZSPackage pkg, ParserLogger logger) throws ParseException {
 		List<SourceFile> sourceFiles = files.get(name);
 		if (sourceFiles == null)
 			return null; // no such module
@@ -80,7 +81,8 @@ public class FolderPackage {
 				scriptPackage,
 				files,
 				space,
-				scriptParameters, Throwable::printStackTrace);
+				scriptParameters,
+                logger);
 		return scripts.normalize();
 	}
 }

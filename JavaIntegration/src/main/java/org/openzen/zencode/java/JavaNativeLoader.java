@@ -8,6 +8,7 @@ package org.openzen.zencode.java;
 import java.util.*;
 import java.util.function.Consumer;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 
 /**
@@ -18,11 +19,13 @@ public class JavaNativeLoader {
 	private final Class<?>[] classes;
 	private final Class<?>[] globals;
 	private final Map<String, LoadingModule> modulesByName = new HashMap<>();
-	private boolean loaded = false;
+    private final IZSLogger logger;
+    private boolean loaded = false;
 	
-	public JavaNativeLoader(Class<?>[] classes, Class<?>[] globals) {
+	public JavaNativeLoader(Class<?>[] classes, Class<?>[] globals, IZSLogger logger) {
 		this.classes = classes;
 		this.globals = globals;
+		this.logger = logger;
 	}
 	
 	public LoadingModule addModule(
@@ -65,7 +68,7 @@ public class JavaNativeLoader {
 		for (Class<?> cls : classes) {
 			LoadingModule module = findModuleByPackage(modulesByPackage, getPackageName(cls));
 			if (module == null) {
-				System.out.println("Warning: module not found for class " + cls.getName());
+				logger.warning("Module not found for class " + cls.getName());
 			} else {
 				module.classes.add(cls);
 			}
@@ -73,7 +76,7 @@ public class JavaNativeLoader {
 		for (Class<?> cls : globals) {
 			LoadingModule module = findModuleByPackage(modulesByPackage, getPackageName(cls));
 			if (module == null) {
-				System.out.println("Warning: module not found for class " + cls.getName());
+				logger.warning("Module not found for class " + cls.getName());
 			} else {
 				module.globals.add(cls);
 			}
@@ -110,6 +113,7 @@ public class JavaNativeLoader {
 		}
 		
 		module.resolved = new JavaNativeModule(
+                logger,
 				module.pkg,
 				module.name,
 				module.basePackage,

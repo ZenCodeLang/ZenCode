@@ -5,6 +5,7 @@
  */
 package org.openzen.zencode.java;
 
+import org.openzen.zencode.java.logger.*;
 import org.openzen.zencode.shared.*;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.context.*;
@@ -20,7 +21,6 @@ import org.openzen.zenscript.validator.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.function.*;
 
 /**
  *
@@ -37,36 +37,34 @@ public class ScriptingEngine {
 	
 	public boolean debug = false;
 	
-	public IZSLogger logger;
+	public final ScriptingEngineLogger logger;
 	
 	public ScriptingEngine() {
-		space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
-		
-		try {
-            ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.jar"));
-            SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, new SemanticModule[0], FunctionParameter.NONE, stdlib);
-			stdlibModule = Validator.validate(stdlibModule, error -> System.out.println(error.toString()));
-			space.addModule("stdlib", stdlibModule);
-			registerCompiled(stdlibModule);
-		} catch (CompileException | ParseException | IOException ex) {
-			throw new RuntimeException(ex);
-		}
-		this.logger = new EmptyLogger();
+        this(new ScriptingEngineStreamLogger());
     }
     
-    public ScriptingEngine(IZSLogger logger) {
-        this();
+    public ScriptingEngine(ScriptingEngineLogger logger) {
+        this.space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
         this.logger = logger;
+        try {
+            ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.jar"));
+            SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, SemanticModule.NONE, FunctionParameter.NONE, stdlib, logger);
+            stdlibModule = Validator.validate(stdlibModule, logger);
+            space.addModule("stdlib", stdlibModule);
+            registerCompiled(stdlibModule);
+        } catch (CompileException | ParseException | IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 	
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(testPackage, name, basePackage, registry, dependencies);
+		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies);
 	}
 	
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {
 		SemanticModule semantic = Validator.validate(
-				module.toSemantic(space), System.out::println);
+				module.toSemantic(space), logger);
 		if (!semantic.isValid())
 			return;
 		
@@ -88,25 +86,12 @@ public class ScriptingEngine {
 			FunctionParameter[] scriptParameters,
 			String... dependencies) throws ParseException
 	{
-		return createScriptedModule(name, sources, bracketParser, scriptParameters, Throwable::printStackTrace, System.out::println, sourceFile -> System.out.println("Loading " + sourceFile.getFilename()), dependencies);
-	}
-	
-	public SemanticModule createScriptedModule(
-			String name,
-			SourceFile[] sources,
-			BracketExpressionParser bracketParser,
-			FunctionParameter[] scriptParameters,
-			Consumer<CompileException> compileExceptionConsumer,
-			Consumer<ValidationLogEntry> validatorErrorConsumer,
-			Consumer<SourceFile> sourceFileConsumer,
-			String... dependencies) throws ParseException
-	{
 		Module scriptModule = new Module(name);
 		CompilingPackage scriptPackage = new CompilingPackage(new ZSPackage(space.rootPackage, name), scriptModule);
 		
 		ParsedFile[] files = new ParsedFile[sources.length];
 		for (int i = 0; i < sources.length; i++) {
-			sourceFileConsumer.accept(sources[i]);
+			logger.logSourceFile(sources[i]);
 			files[i] = ParsedFile.parse(scriptPackage, bracketParser, sources[i]);
 		}
 		
@@ -122,13 +107,13 @@ public class ScriptingEngine {
 				files,
 				space,
 				scriptParameters,
-				compileExceptionConsumer);
+				logger);
 		if (!scripts.isValid())
 			return scripts;
 		
 		return Validator.validate(
 				scripts.normalize(),
-				validatorErrorConsumer);
+				logger);
 	}
 	
 	public void registerCompiled(SemanticModule module) {
@@ -148,9 +133,9 @@ public class ScriptingEngine {
         for (JavaNativeModule nativeModule : nativeModules)
             javaSpace.register(nativeModule.getCompiled());
         
-        JavaCompiler compiler = new JavaCompiler();
+        JavaCompiler compiler = new JavaCompiler(logger);
         
-        JavaBytecodeRunUnit runUnit = new JavaBytecodeRunUnit();
+        JavaBytecodeRunUnit runUnit = new JavaBytecodeRunUnit(logger);
         for (SemanticModule compiled : compiledModules)
             runUnit.add(compiler.compile(compiled.name, compiled, javaSpace));
         if (debug)

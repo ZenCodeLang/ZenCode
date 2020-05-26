@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.ModuleSpace;
@@ -21,6 +22,7 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.codemodel.type.storage.StorageType;
+import org.openzen.zenscript.constructor.module.logging.*;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.ParsedFile;
@@ -48,8 +50,8 @@ public class SourceModuleReference implements ModuleReference {
 	}
 
 	@Override
-	public SemanticModule load(ModuleLoader loader, GlobalTypeRegistry registry, Consumer<CompileException> exceptionLogger) {
-		SemanticModule[] dependencies = module.loadDependencies(loader, registry, exceptionLogger);
+	public SemanticModule load(ModuleLoader loader, GlobalTypeRegistry registry, ModuleLogger logger) {
+		SemanticModule[] dependencies = module.loadDependencies(loader, registry, logger);
 
 		ModuleSpace space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
 		for (SemanticModule module : dependencies) {
@@ -64,8 +66,8 @@ public class SourceModuleReference implements ModuleReference {
 		Module module = new Module(getName());
 		CompilingPackage compilingPackage = new CompilingPackage(pkg, module);
 
-		ParsedFile[] parsedFiles = parse(compilingPackage, exceptionLogger);
-		SemanticModule result = ParsedFile.compileSyntaxToSemantic(dependencies, compilingPackage, parsedFiles, space, FunctionParameter.NONE, exceptionLogger);
+		ParsedFile[] parsedFiles = parse(compilingPackage, logger);
+		SemanticModule result = ParsedFile.compileSyntaxToSemantic(dependencies, compilingPackage, parsedFiles, space, FunctionParameter.NONE, logger);
 		result.globals.putAll(this.module.getGlobals(result));
 		return result;
 	}
@@ -75,19 +77,19 @@ public class SourceModuleReference implements ModuleReference {
 		return module.getRootPackage();
 	}
 	
-	public ParsedFile[] parse(CompilingPackage compilingPackage, Consumer<CompileException> exceptionLogger) {
+	public ParsedFile[] parse(CompilingPackage compilingPackage, CompileExceptionLogger exceptionLogger) {
 		// TODO: load bracket parsers from host plugins
 		List<ParsedFile> files = new ArrayList<>();
 		parse(files, compilingPackage, null, module.getRootPackage(), exceptionLogger);
 		return files.toArray(new ParsedFile[files.size()]);
 	}
 	
-	private static void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, SourcePackage directory, Consumer<CompileException> exceptionLogger) {
+	private static void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, SourcePackage directory, CompileExceptionLogger exceptionLogger) {
 		for (SourceFile file : directory.getFiles()) {
 			try {
 				files.add(ParsedFile.parse(pkg, bracketParser, file));
 			} catch (ParseException ex) {
-				exceptionLogger.accept(new CompileException(ex.position, CompileExceptionCode.PARSE_ERROR, ex.message));
+				exceptionLogger.logCompileException(new CompileException(ex.position, CompileExceptionCode.PARSE_ERROR, ex.message));
 			}
 		}
 		for (SourcePackage subpkg : directory.getSubPackages()) {

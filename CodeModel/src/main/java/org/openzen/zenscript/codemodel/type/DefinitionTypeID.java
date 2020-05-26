@@ -101,12 +101,13 @@ public class DefinitionTypeID implements TypeID {
 		DefinitionTypeID current = this;
 		do {
 			if (current.typeArguments != null) {
-				if (current.definition.typeParameters == null)
-					System.out.println("Type parameters but no generic parameters");
-				else
-					for (int i = 0; i < current.typeArguments.length; i++)
-						mapping.put(current.definition.typeParameters[i], current.typeArguments[i]);
-			}
+                if(current.definition.typeParameters != null) {
+                    for (int i = 0; i < current.typeArguments.length; i++)
+                        mapping.put(current.definition.typeParameters[i], current.typeArguments[i]);
+                }//else {
+                //    System.out.println("Type parameters but no generic parameters");
+                //}
+            }
 
 			current = current.outer;
 		} while (current != null && !current.definition.isStatic());

@@ -2059,7 +2059,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		//Bridge method!!!
 		if (!Objects.equals(methodInfo.descriptor, descriptor)) {
 			final JavaMethod bridgeMethodInfo = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
-			final JavaWriter bridgeWriter = new JavaWriter(expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "java/lang/Override");
+			final JavaWriter bridgeWriter = new JavaWriter(context.logger, expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "java/lang/Override");
 			bridgeWriter.start();
 			
 			//This.name(parameters, casted)
@@ -2086,9 +2086,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			
 			final JavaMethod actualMethod = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, context.getMethodDescriptor(expression.header), methodInfo.modifiers, methodInfo.genericResult, methodInfo.typeParameterArguments);
 			//No @Override
-			functionWriter = new JavaWriter(expression.position, lambdaCW, actualMethod, null, signature, null);
+			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualMethod, null, signature, null);
 		} else {
-			functionWriter = new JavaWriter(expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
+			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 		}
 
 		javaWriter.newObject(className);
@@ -2097,7 +2097,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final String constructorDesc = calcFunctionSignature(expression.closure);
 
 
-		final JavaWriter constructorWriter = new JavaWriter(expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
+		final JavaWriter constructorWriter = new JavaWriter(context.logger, expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
 		constructorWriter.start();
 		constructorWriter.loadObject(0);
 		constructorWriter.dup();
@@ -4173,7 +4173,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		//Constructor
 		{
-			final JavaWriter constructorWriter = new JavaWriter(expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
+			final JavaWriter constructorWriter = new JavaWriter(context.logger, expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
 			constructorWriter.start();
 			constructorWriter.loadObject(0);
 			constructorWriter.dup();
@@ -4189,7 +4189,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		//The actual method
 		{
 			final JavaMethod actualMethod = new JavaMethod(tag.method.cls, tag.method.kind, tag.method.name, tag.method.compile, tag.method.descriptor, tag.method.modifiers & ~JavaModifiers.ABSTRACT, tag.method.genericResult, tag.method.typeParameterArguments);
-			final JavaWriter functionWriter = new JavaWriter(expression.position, lambdaCW, actualMethod, null, methodDescriptor, null, "java/lang/Override");
+			final JavaWriter functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualMethod, null, methodDescriptor, null, "java/lang/Override");
 			functionWriter.start();
 
 			//this.wrapped

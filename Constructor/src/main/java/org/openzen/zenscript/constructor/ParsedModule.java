@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.BracketExpressionParser;
@@ -32,12 +33,12 @@ public class ParsedModule {
 	public final String packageName;
 	public final String javaPackageName;
 	public final String host;
-	private final Consumer<CompileException> exceptionLogger;
+	//private final CompileExceptionLogger exceptionLogger;
 	
-	public ParsedModule(String name, File directory, File moduleFile, Consumer<CompileException> exceptionLogger) throws IOException {
+	public ParsedModule(String name, File directory, File moduleFile, CompileExceptionLogger exceptionLogger) throws IOException {
 		this.name = name;
 		this.sourceDirectory = new File(directory, "src");
-		this.exceptionLogger = exceptionLogger;
+		//this.exceptionLogger = exceptionLogger;
 		
 		BufferedInputStream input = new BufferedInputStream(new FileInputStream(moduleFile));
 		JSONObject json = new JSONObject(new JSONTokener(input));

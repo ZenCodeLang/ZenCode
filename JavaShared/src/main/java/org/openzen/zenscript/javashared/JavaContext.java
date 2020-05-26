@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -48,8 +49,10 @@ public abstract class JavaContext {
 	
 	public final ZSPackage modulePackage;
 	public final String basePackage;
+	public final IZSLogger logger;
 	
-	public JavaContext(JavaCompileSpace space, ZSPackage modulePackage, String basePackage) {
+	public JavaContext(JavaCompileSpace space, ZSPackage modulePackage, String basePackage, IZSLogger logger) {
+	    this.logger = logger;
 		this.space = space;
 		this.registry = space.getRegistry();
 		
