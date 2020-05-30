@@ -2075,9 +2075,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			}
 			
 			bridgeWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), JavaMethod.Kind.INSTANCE, methodInfo.name, methodInfo.compile, descriptor, methodInfo.modifiers, methodInfo.genericResult));
-			if(expression.header.getReturnType().type != BasicTypeID.VOID) {
-				bridgeWriter.returnType(context.getType(expression.header.getReturnType()));
-			}
+            final StoredType returnType = expression.header.getReturnType();
+            if(returnType.type != BasicTypeID.VOID) {
+                final Type returnTypeASM = context.getType(returnType);
+                if(!CompilerUtils.isPrimitive(returnType.type)) {
+                    bridgeWriter.checkCast(returnTypeASM);
+                }
+                bridgeWriter.returnType(returnTypeASM);
+            }
 			
 			bridgeWriter.ret();
 			bridgeWriter.end();
@@ -4200,13 +4205,20 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			{
 				final Class<?>[] methodParameterTypes = functionalInterfaceMethod.getParameterTypes();
 				for (int i = 0; i < methodParameterTypes.length; i++) {
-					functionWriter.load(Type.getType(methodParameterTypes[i]), i + 1);
+                    final Class<?> methodParameterType = methodParameterTypes[i];
+                    final Type type = Type.getType(methodParameterType);
+                    functionWriter.load(type, i + 1);
 				}
 			}
 
 			//Invokes the wrapped interface's method and returns the result
 			functionWriter.invokeInterface(wrappedMethod);
-			functionWriter.returnType(context.getType(((FunctionTypeID) expression.value.type.type).header.getReturnType()));
+            final StoredType returnType = ((FunctionTypeID) expression.value.type.type).header.getReturnType();
+            final Type type = context.getType(returnType);
+            if(!CompilerUtils.isPrimitive(returnType.type)) {
+                functionWriter.checkCast(type);
+            }
+            functionWriter.returnType(type);
 
 			functionWriter.ret();
 			functionWriter.end();
