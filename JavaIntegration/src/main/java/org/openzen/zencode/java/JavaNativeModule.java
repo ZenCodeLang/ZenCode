@@ -6,6 +6,7 @@
 package org.openzen.zencode.java;
 
 import org.openzen.zencode.shared.*;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.*;
 import org.openzen.zenscript.codemodel.context.*;
@@ -27,6 +28,7 @@ import org.openzen.zenscript.parser.type.*;
 import stdlib.*;
 
 import java.io.*;
+import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.*;
@@ -49,9 +51,11 @@ public class JavaNativeModule {
 	private final TypeVariableContext context = new TypeVariableContext();
 
 	public final Map<String, ISymbol> globals = new HashMap<>();
-	private BracketExpressionParser bep;
-
-	public JavaNativeModule(
+    private final IZSLogger logger;
+    private BracketExpressionParser bep;
+    
+    public JavaNativeModule(
+	        IZSLogger logger,
 			ZSPackage pkg,
 			String name,
 			String basePackage,
@@ -61,7 +65,8 @@ public class JavaNativeModule {
 		this.basePackage = basePackage;
 		module = new Module(name);
 		this.registry = registry;
-        
+        this.logger = logger;
+    
         compiled = new JavaCompiledModule(module, FunctionParameter.NONE);
         
 		for (JavaNativeModule dependency : dependencies) {
@@ -110,7 +115,7 @@ public class JavaNativeModule {
 				space.registry,
 				space.collectExpansions(),
 				space.getAnnotations(),
-				space.getStorageTypes());
+				space.getStorageTypes(), logger);
 	}
 
 	public JavaCompiledModule getCompiled() {
@@ -125,9 +130,16 @@ public class JavaNativeModule {
 	}
 
 	public void addGlobals(Class<?> cls) {
-		HighLevelDefinition definition = new ClassDefinition(CodePosition.NATIVE, module, pkg, "__globals__", Modifiers.PUBLIC);
-		JavaClass jcls = JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.CLASS);
-		compiled.setClassInfo(definition, jcls);
+	    HighLevelDefinition definition;
+	    JavaClass jcls;
+	    if(definitionByClass.containsKey(cls)) {
+	        definition = definitionByClass.get(cls);
+	        jcls = compiled.getClassInfo(definition);
+        } else {
+	        definition = new ClassDefinition(CodePosition.NATIVE, module, pkg, "__globals__", Modifiers.PUBLIC);
+            jcls = JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.CLASS);
+            compiled.setClassInfo(definition, jcls);
+        }
 		StoredType thisType = registry.getForMyDefinition(definition).stored();
 		//TypeVariableContext context = new TypeVariableContext();
 
@@ -156,11 +168,24 @@ public class JavaNativeModule {
 
 			ZenCodeGlobals.Global global = method.getAnnotation(ZenCodeGlobals.Global.class);
 			String name = global.value().isEmpty() ? method.getName() : global.value();
-			MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, getHeader(context, method), null);
+			//MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, getHeader(context, method), null);
+			//definition.addMember(methodMember);
+			MethodMember methodMember = asMethod(context, definition, method, new ZenCodeType.Method(){
+                @Override
+                public String value() {
+                    return name;
+                }
+                
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return ZenCodeType.Method.class;
+                }
+            });
 			definition.addMember(methodMember);
 
-			boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
-			compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+			//boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
+			//compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+            compiled.setMethodInfo(methodMember, getMethod(jcls, method, loadType(context, method.getAnnotatedReturnType())));
 			globals.put(name, new ExpressionSymbol((position, scope) -> {
 				TypeMembers members = scope.getTypeMembers(thisType);
 				return new PartialStaticMemberGroupExpression(position, scope, thisType.type, members.getGroup(name), StoredType.NONE);
@@ -465,9 +490,7 @@ public class JavaNativeModule {
 				//Log?
 				continue;
 			}
-
-//			if(!method.isAnnotationPresent(ZenCodeType.Method.class))
-//				continue;
+			
 
 			final Class<?> classFromType = getClassFromType(expandedType);
 			if(classFromType == null) {
