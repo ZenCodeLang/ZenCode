@@ -85,7 +85,20 @@ public class JavaForeachWriter {
 	}
 
 	public void visitCustomIterator() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        javaWriter.invokeInterface(JavaMethod.getVirtual(new JavaClass("java.lang", "Iterable", JavaClass.Kind.INTERFACE), "iterator", "()Ljava/util/Iterator;", 0));
+        
+        javaWriter.label(startLabel);
+        javaWriter.dup();
+        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
+        javaWriter.ifEQ(endLabel);
+        javaWriter.dup();
+        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+        
+        final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
+        this.downCast(0, keyVariable.type);
+        javaWriter.store(keyVariable.type, keyVariable.local);
+        
+        content.accept(statementVisitor);
 	}
 
 	public void visitAssocKeyIterator() {

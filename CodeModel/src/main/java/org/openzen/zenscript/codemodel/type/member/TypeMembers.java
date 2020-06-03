@@ -123,7 +123,9 @@ public final class TypeMembers {
 	
 	public void copyMembersTo(TypeMembers other, TypeMemberPriority priority) {
 		other.casters.addAll(casters);
-		other.iterators.addAll(iterators);
+        for(TypeMember<IteratorMemberRef> iterator : iterators) {
+            other.addIterator(iterator.member, priority);
+        }
 		
 		for (Map.Entry<String, EnumConstantMember> entry : enumMembers.entrySet())
 			other.addEnumMember(entry.getValue(), priority);

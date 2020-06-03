@@ -130,16 +130,17 @@ public class JavaNativeModule {
 	}
 
 	public void addGlobals(Class<?> cls) {
-	    HighLevelDefinition definition;
-	    JavaClass jcls;
-	    if(definitionByClass.containsKey(cls)) {
-	        definition = definitionByClass.get(cls);
-	        jcls = compiled.getClassInfo(definition);
+        
+        final HighLevelDefinition definition = addClass(cls);
+        final JavaClass jcls;
+        
+        if(compiled.hasClassInfo(definition)) {
+            jcls = compiled.getClassInfo(definition);
         } else {
-	        definition = new ClassDefinition(CodePosition.NATIVE, module, pkg, "__globals__", Modifiers.PUBLIC);
             jcls = JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.CLASS);
             compiled.setClassInfo(definition, jcls);
         }
+
 		StoredType thisType = registry.getForMyDefinition(definition).stored();
 		//TypeVariableContext context = new TypeVariableContext();
 
@@ -273,14 +274,14 @@ public class JavaNativeModule {
 	}
 
 	private <T> HighLevelDefinition convertClass(Class<T> cls) {
-		if ((cls.getModifiers() & Modifier.PUBLIC) == 0)
-			throw new IllegalArgumentException("Class \" " + cls.getName() + "\" must be public");
-
-		if(cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
-			return convertExpansion(cls);
-		}
-
-		String className = cls.getName();
+        if((cls.getModifiers() & Modifier.PUBLIC) == 0)
+            throw new IllegalArgumentException("Class \" " + cls.getName() + "\" must be public");
+        
+        if(cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
+            return convertExpansion(cls);
+        }
+        
+        String className = cls.getName();
         boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
 
 		HighLevelDefinition definition = checkRegistry(cls);
@@ -339,25 +340,33 @@ public class JavaNativeModule {
 
 		//TypeVariableContext context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
-		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
-		definition.typeParameters = typeParameters;
+		if(!foundRegistry || definition.typeParameters == null || definition.typeParameters.length != cls.getTypeParameters().length) {
+            definition.typeParameters = new TypeParameter[cls.getTypeParameters().length];
+        }
 
 		for (int i = 0; i < javaTypeParameters.length; i++) {
 			//Put up here for nested parameters?
 			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
-			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
-			typeParameters[i] = parameter;
+			TypeParameter parameter;
+			if(foundRegistry && definition.typeParameters.length == cls.getTypeParameters().length) {
+                parameter = definition.typeParameters[i];
+            } else {
+                parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
+            }
+            definition.typeParameters[i] = parameter;
 			context.put(typeVariable, parameter);
 		}
 
 		for (int i = 0; i < javaTypeParameters.length; i++) {
 			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
-			TypeParameter parameter = typeParameters[i];
+			TypeParameter parameter = definition.typeParameters[i];
 			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
+				if(bound.getType() == Object.class) {
+					continue; //Makes the stdlibs types work as they have "no" bounds for T
+				}
 				TypeID type = loadType(context, bound).type;
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
-			typeParameters[i] = parameter;
 		}
 
 		if (!foundRegistry && definition instanceof ClassDefinition && cls.getAnnotatedSuperclass() != null && shouldLoadType(cls.getAnnotatedSuperclass().getType())) {
