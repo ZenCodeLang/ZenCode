@@ -23,13 +23,12 @@ import org.openzen.zenscript.parser.SimpleBracketParser;
 import org.openzen.zenscript.scriptingexample.events.EventManager;
 import org.openzen.zenscript.scriptingexample.events.IEvent;
 import org.openzen.zenscript.scriptingexample.events.impl.CTStringedEvent;
-import org.openzen.zenscript.scriptingexample.logging.StreamLogger;
+import org.openzen.zencode.java.logger.ScriptingEngineStreamLogger;
 
 public class Main {
 	public static void main(String[] args) throws CompileException, ParseException, IOException, NoSuchMethodException {
-		ScriptingEngine scriptingEngine = new ScriptingEngine();
+		ScriptingEngine scriptingEngine = new ScriptingEngine(new ScriptingEngineStreamLogger());
 		scriptingEngine.debug = true;
-		scriptingEngine.logger = new StreamLogger();
 
 		JavaNativeModule example = scriptingEngine.createNativeModule("example", "org.openzen.zenscript.scriptingexample");
 		example.addGlobals(Globals.class);
