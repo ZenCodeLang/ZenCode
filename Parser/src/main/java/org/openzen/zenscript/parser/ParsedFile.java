@@ -32,8 +32,7 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.lexer.ParseException;
-import org.openzen.zenscript.lexer.ZSTokenParser;
+import org.openzen.zenscript.lexer.*;
 import org.openzen.zenscript.parser.logger.*;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
@@ -60,6 +59,7 @@ public class ParsedFile {
 			ModuleSpace registry,
 			FunctionParameter[] parameters,
 			ParserLogger logger) {
+	    boolean failed = false;
 		// We are considering all these files to be in the same package, so make
 		// a single PackageDefinition instance. If these files were in multiple
 		// packages, we'd need an instance for every package.
@@ -76,7 +76,6 @@ public class ParsedFile {
 		definitions.registerExpansionsTo(expansions);
 		
 		Map<String, ISymbol> globals = registry.collectGlobals();
-		boolean failed = false;
 		
 		ModuleTypeResolutionContext moduleContext = new ModuleTypeResolutionContext(
 				registry.registry,
@@ -99,6 +98,15 @@ public class ParsedFile {
 			// It doesn't yet compile the method contents.
 			file.compileTypes(moduleContext, rootPackage, pkg, importErrors);
 		}
+        
+        for(ParsedFile file : files) {
+            if(file.hasErrors()) {
+                failed = true;
+                for(ParseException error : file.errors) {
+                    logger.logParseException(error);
+                }
+            }
+        }
 		
 		if (failed)
 			return new SemanticModule(pkg.module, dependencies, parameters, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.registry, expansions, registry.getAnnotations(), registry.getStorageTypes(), logger);
@@ -202,7 +210,13 @@ public class ParsedFile {
 			} else {
 				ParsedDefinition definition = ParsedDefinition.parse(compilingPackage, position, modifiers, annotations, tokens, null);
 				if (definition == null) {
-					result.statements.add(ParsedStatement.parse(tokens, annotations));
+				    try {
+                        result.statements.add(ParsedStatement.parse(tokens, annotations));
+                    }catch (ParseException e) {
+				        tokens.logError(e);
+				        tokens.recoverUntilToken(ZSTokenType.T_SEMICOLON);
+				        tokens.next();
+                    }
 				} else {
 					result.definitions.add(definition);
 				}
