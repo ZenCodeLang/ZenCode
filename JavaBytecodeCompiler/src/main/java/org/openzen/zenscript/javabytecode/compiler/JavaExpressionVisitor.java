@@ -554,14 +554,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case LONG_INC:
 			case ULONG_INC:
 				modify(expression.target, () -> {
-					javaWriter.constant(1l);
+					javaWriter.constant(1L);
 					javaWriter.iAdd();
 				}, PushOption.AFTER);
 				return null;
 			case LONG_DEC:
 			case ULONG_DEC:
 				modify(expression.target, () -> {
-					javaWriter.constant(1l);
+					javaWriter.constant(1L);
 					javaWriter.iSub();
 				}, PushOption.AFTER);
 				return null;
@@ -3897,14 +3897,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				case LONG_INC:
 				case ULONG_INC:
 					modify(expression.target, () -> {
-						javaWriter.constant(1l);
+						javaWriter.constant(1L);
 						javaWriter.lAdd();
 					}, PushOption.BEFORE);
 					return null;
 				case LONG_DEC:
 				case ULONG_DEC:
 					modify(expression.target, () -> {
-						javaWriter.constant(1l);
+						javaWriter.constant(1L);
 						javaWriter.lSub();
 					}, PushOption.BEFORE);
 					return null;

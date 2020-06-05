@@ -53,7 +53,7 @@ public class ParsedNewExpression extends ParsedExpression{
 			TypeMembers members = scope.getTypeMembers(type);
 			TypeMemberGroup constructors = members.getOrCreateGroup(OperatorType.CONSTRUCTOR);
 
-			List<StoredType>[] predictedTypes = constructors.predictCallTypes(position, scope, scope.hints, arguments.arguments.size());
+			//List<StoredType>[] predictedTypes = constructors.predictCallTypes(position, scope, scope.hints, arguments.arguments.size());
 			CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
 			FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 			if (member == null)
