@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.openzen.zencode.shared.CodePosition;
@@ -39,7 +39,7 @@ public class JavaCompiler {
     
     private int generatedScriptBlockCounter = 0;
 	private int expansionCounter = 0;
-	private IZSLogger logger;
+	private final IZSLogger logger;
     
     public JavaCompiler(IZSLogger logger) {
         this.logger = logger;
@@ -47,6 +47,7 @@ public class JavaCompiler {
 	
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space) {
 		Map<String, JavaScriptFile> scriptBlocks = new LinkedHashMap<>();
+		Set<JavaScriptFile> scriptFilesThatAreActuallyUsedInScripts = new HashSet<>();
 		
 		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters, logger);
 		JavaBytecodeContext context = new JavaBytecodeContext(target, space, module.modulePackage, packageName, logger);
@@ -55,7 +56,7 @@ public class JavaCompiler {
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			final String className = getClassName(getFilename(definition));
 			String filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
-			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null, className);
+			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null, filename);
 			definition.accept(definitionPreparer);
 		}
 		
@@ -65,11 +66,9 @@ public class JavaCompiler {
 		}
 		
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
-			String className = getClassName(definition.position.getFilename());
-			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, definition.pkg.fullName + "/" + className);
-			scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
-			
-			JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context.getJavaClass(definition);
+            JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context.getJavaClass(definition);
+            JavaScriptFile scriptFile = getScriptFile(scriptBlocks, cls.fullName);
+            scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
 			target.addClass(cls.internalName, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
 		}
 		
@@ -87,7 +86,10 @@ public class JavaCompiler {
 			final SourceFile sourceFile = script.file;
 			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
 			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
-			scriptFile.classWriter.visitSource(script.file.getFilename(), null);
+			scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
+			if(sourceFile != null) {
+                scriptFile.classWriter.visitSource(sourceFile.getFilename(), null);
+            }
 
 			String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
 
@@ -110,11 +112,7 @@ public class JavaCompiler {
 				target.addScript(method);
 
 			entry.getValue().classWriter.visitEnd();
-
-			if (target.getClasses().containsKey(entry.getKey())) {
-				//TODO Scripts and definitions seem to create the same class. Bad!
-				logger.warning("Warning: Trying to register " + entry.getKey() + " a 2nd time");
-			}else{
+			if(scriptFilesThatAreActuallyUsedInScripts.contains(entry.getValue())) {
 				target.addClass(entry.getKey(), entry.getValue().classWriter.toByteArray());
 			}
 		}
