@@ -78,12 +78,13 @@ public class JavaNativeModule {
 		typeByClass.put(void.class, BasicTypeID.VOID);
 		typeByClass.put(boolean.class, BasicTypeID.BOOL);
 		typeByClass.put(byte.class, BasicTypeID.SBYTE);
-		typeByClass.put(short.class, BasicTypeID.SHORT);
-		typeByClass.put(int.class, BasicTypeID.INT);
-		typeByClass.put(long.class, BasicTypeID.LONG);
-		typeByClass.put(float.class, BasicTypeID.FLOAT);
-		typeByClass.put(double.class, BasicTypeID.DOUBLE);
-		typeByClass.put(String.class, StringTypeID.INSTANCE);
+        typeByClass.put(char.class, BasicTypeID.CHAR);
+        typeByClass.put(short.class, BasicTypeID.SHORT);
+        typeByClass.put(int.class, BasicTypeID.INT);
+        typeByClass.put(long.class, BasicTypeID.LONG);
+        typeByClass.put(float.class, BasicTypeID.FLOAT);
+        typeByClass.put(double.class, BasicTypeID.DOUBLE);
+        typeByClass.put(String.class, StringTypeID.INSTANCE);
 		typeByClass.put(Boolean.class, registry.getOptional(BasicTypeID.BOOL));
 		typeByClass.put(Byte.class, registry.getOptional(BasicTypeID.BYTE));
 		typeByClass.put(Short.class, registry.getOptional(BasicTypeID.SHORT));
@@ -93,13 +94,14 @@ public class JavaNativeModule {
 		typeByClass.put(Double.class, registry.getOptional(BasicTypeID.DOUBLE));
 
 		unsignedByClass.put(byte.class, BasicTypeID.BYTE);
-		unsignedByClass.put(short.class, BasicTypeID.USHORT);
-		unsignedByClass.put(int.class, BasicTypeID.UINT);
-		unsignedByClass.put(long.class, BasicTypeID.ULONG);
-		unsignedByClass.put(Byte.class, registry.getOptional(BasicTypeID.BYTE));
-		unsignedByClass.put(Short.class, registry.getOptional(BasicTypeID.SHORT));
-		unsignedByClass.put(Integer.class, registry.getOptional(BasicTypeID.INT));
-		unsignedByClass.put(Long.class, registry.getOptional(BasicTypeID.LONG));
+        unsignedByClass.put(char.class, BasicTypeID.CHAR);
+        unsignedByClass.put(short.class, BasicTypeID.USHORT);
+        unsignedByClass.put(int.class, BasicTypeID.UINT);
+        unsignedByClass.put(long.class, BasicTypeID.ULONG);
+        unsignedByClass.put(Byte.class, registry.getOptional(BasicTypeID.BYTE));
+        unsignedByClass.put(Short.class, registry.getOptional(BasicTypeID.SHORT));
+        unsignedByClass.put(Integer.class, registry.getOptional(BasicTypeID.INT));
+        unsignedByClass.put(Long.class, registry.getOptional(BasicTypeID.LONG));
 	}
 
 	public SemanticModule toSemantic(ModuleSpace space) {
@@ -225,7 +227,7 @@ public class JavaNativeModule {
 	}
 	
 	private boolean isInBasePackage(String className) {
-		return className.startsWith(basePackage + ".") || className.startsWith("java.lang.") || className.startsWith("java.util.");
+		return className.startsWith(module.name) || className.startsWith(basePackage + ".") || className.startsWith("java.lang.") || className.startsWith("java.util.");
 	}
 
 	private ZSPackage getPackage(String className) {
