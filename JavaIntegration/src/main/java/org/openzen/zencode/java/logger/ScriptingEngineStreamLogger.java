@@ -63,7 +63,7 @@ public class ScriptingEngineStreamLogger implements ScriptingEngineLogger {
     
     @Override
     public void logCompileException(CompileException exception) {
-        throw new UnsupportedOperationException();
+        throwingErr("Compile Exception:", exception);
     }
     
     @Override
