@@ -112,6 +112,18 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
 			}
         }
+    
+        for(IDefinitionMember membersOfSameType : member.definition.members) {
+            if(membersOfSameType instanceof FieldMember) {
+                final FieldMember fieldMember = ((FieldMember) membersOfSameType);
+                final Expression initializer = fieldMember.initializer;
+                if(initializer != null) {
+                    constructorWriter.loadObject(0);
+                    initializer.accept(statementVisitor.expressionVisitor);
+                    constructorWriter.putField(context.getJavaField(fieldMember));
+                }
+            }
+        }
 
 		for (TypeParameter typeParameter : definition.typeParameters) {
 			final JavaTypeParameterInfo typeParameterInfo = javaModule.getTypeParameterInfo(typeParameter);

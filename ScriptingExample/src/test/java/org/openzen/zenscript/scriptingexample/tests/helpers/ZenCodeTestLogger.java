@@ -10,6 +10,7 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
     private static final boolean logDebug = false;
     private final List<String> printlnOutputs = new ArrayList<>();
     private final List<String> errors = new ArrayList<>();
+    private final List<String> warnings = new ArrayList<>();
     private boolean isEngineComplete = false;
     
     @Override
@@ -19,9 +20,21 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
         }
     }
     
+    @Override
+    public void warning(String message) {
+        warnings.add(message);
+        super.warning(message);
+    }
+    
+    @Override
+    public void throwingWarn(String message, Throwable throwable) {
+        warnings.add(message);
+        super.throwingWarn(message, throwable);
+    }
+    
     public void logPrintln(String line) {
         info(line);
-        this.printlnOutputs.addAll(Arrays.asList(line.split(System.lineSeparator())));
+        this.printlnOutputs.addAll(Arrays.asList(String.valueOf(line).split(System.lineSeparator())));
     }
     
     @Override
@@ -56,5 +69,9 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
     
     public void assertNoErrors() {
         Assertions.assertEquals(0, errors.size());
+    }
+    
+    public void assertNoWarnings() {
+        Assertions.assertEquals(0, warnings.size());
     }
 }
