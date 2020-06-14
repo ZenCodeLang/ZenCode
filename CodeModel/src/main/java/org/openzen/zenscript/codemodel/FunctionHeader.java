@@ -239,12 +239,13 @@ public class FunctionHeader {
 			return false;
 		
 		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
-		for (int i = 0; i < header.minParameters; i++) {
-			if (!arguments.arguments[i].type.equals(header.parameters[i].type))
-				return false;
-		}
-		
-		return true;
+        final boolean variadicCall = header.isVariadicCall(arguments, scope);
+        for(int i = 0; i < arguments.arguments.length; i++) {
+            if(!arguments.arguments[i].type.equals(header.getParameterType(variadicCall, i)))
+                return false;
+        }
+        
+        return true;
 	}
 	
 	public boolean matchesImplicitly(CodePosition position, CallArguments arguments, TypeScope scope) {
