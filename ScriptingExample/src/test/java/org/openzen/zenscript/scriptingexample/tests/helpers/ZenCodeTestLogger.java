@@ -3,15 +3,19 @@ package org.openzen.zenscript.scriptingexample.tests.helpers;
 import org.junit.jupiter.api.*;
 import org.openzen.zencode.java.logger.*;
 
-import java.util.*;
-
 public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
     
     private static final boolean logDebug = false;
-    private final List<String> printlnOutputs = new ArrayList<>();
-    private final List<String> errors = new ArrayList<>();
-    private final List<String> warnings = new ArrayList<>();
+    private final ZenCodeTestLoggerOutput printlnOutputs;
+    private final ZenCodeTestLoggerOutput errors;
+    private final ZenCodeTestLoggerOutput warnings;
     private boolean isEngineComplete = false;
+    
+    public ZenCodeTestLogger() {
+        this.printlnOutputs = new ZenCodeTestLoggerOutput();
+        this.errors = new ZenCodeTestLoggerOutput();
+        this.warnings = new ZenCodeTestLoggerOutput();
+    }
     
     @Override
     public void debug(String message) {
@@ -34,7 +38,7 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
     
     public void logPrintln(String line) {
         info(line);
-        this.printlnOutputs.addAll(Arrays.asList(String.valueOf(line).split(System.lineSeparator())));
+        this.printlnOutputs.add(line);
     }
     
     @Override
@@ -57,21 +61,33 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
         if(!isEngineComplete) {
             Assertions.fail("Trying to call an assertion before the engine ran, probably a fault in the test!");
         }
-        Assertions.assertEquals(content, printlnOutputs.get(line));
+        printlnOutputs.assertLine(line, content);
     }
     
     public void assertPrintOutputSize(int size) {
         if(!isEngineComplete) {
             Assertions.fail("Trying to call an assertion before the engine ran, probably a fault in the test!");
         }
-        Assertions.assertEquals(size, printlnOutputs.size());
+        printlnOutputs.assertSize(size);
     }
     
     public void assertNoErrors() {
-        Assertions.assertEquals(0, errors.size());
+        errors.assertEmpty();
     }
     
     public void assertNoWarnings() {
-        Assertions.assertEquals(0, warnings.size());
+        warnings.assertEmpty();
+    }
+    
+    public ZenCodeTestLoggerOutput printlnOutputs() {
+        return printlnOutputs;
+    }
+    
+    public ZenCodeTestLoggerOutput errors() {
+        return errors;
+    }
+    
+    public ZenCodeTestLoggerOutput warnings() {
+        return warnings;
     }
 }

@@ -8,7 +8,6 @@ import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.lexer.*;
 import org.openzen.zenscript.parser.*;
 import org.openzen.zenscript.scriptingexample.tests.*;
-import org.openzen.zenscript.scriptingexample.tests.helpers.*;
 
 import java.util.*;
 
@@ -40,12 +39,23 @@ public abstract class ZenCodeTest {
     }
     
     public void executeEngine() {
+        executeEngine(false);
+    }
+    
+    public void executeEngine(boolean allowError) {
         try {
             final FunctionParameterList parameters = getParameters();
             final SemanticModule script_tests = engine.createScriptedModule("script_tests", sourceFiles
                     .toArray(new SourceFile[0]), getBEP(), parameters.getParameters());
-            
-            Assertions.assertTrue(script_tests.isValid(), "Scripts are not valid!");
+            final boolean scriptsValid = script_tests.isValid();
+            if(allowError) {
+                if(!scriptsValid) {
+                    logger.setEngineComplete();
+                    return;
+                }
+            } else {
+                Assertions.assertTrue(scriptsValid, "Scripts are not valid!");
+            }
             engine.registerCompiled(script_tests);
             engine.run(parameters.getParameterMap());
         } catch(ParseException e) {

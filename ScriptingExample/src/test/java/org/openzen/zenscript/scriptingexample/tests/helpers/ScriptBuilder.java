@@ -44,15 +44,12 @@ public class ScriptBuilder {
     
     public void execute(ZenCodeTest test, LogTolerance logTolerance) {
         appendScriptsToTest(test);
-        test.executeEngine();
+        test.executeEngine(logTolerance != LogTolerance.NO_ERRORS);
         switch(logTolerance) {
             case NO_WARNINGS:
-                test.logger.assertNoWarnings();
+                test.logger.assertNoWarnings(); //Fallthrough intended
             case NO_ERRORS:
                 test.logger.assertNoErrors();
-                break;
-            case ALLOW_ERRORS:
-                break;
         }
     }
     
