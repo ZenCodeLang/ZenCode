@@ -5,32 +5,19 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import java.util.*;
-
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.SourceFile;
+import org.objectweb.asm.*;
+import org.openzen.zencode.shared.*;
 import org.openzen.zencode.shared.logging.*;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.ScriptBlock;
-import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
-import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
-import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
-import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
-import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompileSpace;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaParameterInfo;
-import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
-import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.statement.*;
+import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.javabytecode.compiler.*;
+import org.openzen.zenscript.javabytecode.compiler.definitions.*;
+import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.prepare.*;
+
+import java.util.*;
 
 /**
  * @author Hoofdgebruiker
@@ -55,22 +42,37 @@ public class JavaCompiler {
 		
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			final String className = getClassName(getFilename(definition));
-			String filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
-			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null, filename);
-			definition.accept(definitionPreparer);
+			final String filename;
+            if(definition instanceof FunctionDefinition) {
+                filename = className;
+            } else {
+                filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
+            }
+            JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null, filename);
+            definition.accept(definitionPreparer);
 		}
 		
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(context, target);
 			definition.accept(memberPreparer);
 		}
-		
-		for (HighLevelDefinition definition : module.definitions.getAll()) {
-            JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context.getJavaClass(definition);
-            JavaScriptFile scriptFile = getScriptFile(scriptBlocks, cls.fullName);
+        
+        for(HighLevelDefinition definition : module.definitions.getAll()) {
+            final String internalName;
+            final JavaScriptFile scriptFile;
+            if(definition instanceof FunctionDefinition) {
+                internalName = getClassName(getFilename(definition));
+                scriptFile = getScriptFile(scriptBlocks, module.modulePackage.fullName + "/" + internalName);
+                scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
+            } else {
+                JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context
+                        .getJavaClass(definition);
+                scriptFile = getScriptFile(scriptBlocks, cls.fullName);
+                internalName = cls.internalName;
+            }
             scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
-			target.addClass(cls.internalName, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
-		}
+            target.addClass(internalName, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
+        }
 		
 		FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, module.parameters);
 		String scriptDescriptor = context.getMethodDescriptor(scriptHeader);
