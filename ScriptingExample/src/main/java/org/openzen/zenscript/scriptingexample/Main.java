@@ -36,7 +36,7 @@ public class Main {
                 .filter(File::isFile)
                 .filter(f -> f.getName().endsWith(".zs"))
                 .filter(f -> !f.getAbsolutePath().contains("nope"))
-                .map(f -> new FileSourceFile(f.getName(), f))
+                .map(f -> new FileSourceFile(f.getAbsolutePath().substring(inputDirectory.getAbsolutePath().length() + 1), f))
                 .toArray(SourceFile[]::new);
         
         final PrefixedBracketParser parser = new PrefixedBracketParser(null);
