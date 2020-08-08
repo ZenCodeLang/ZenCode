@@ -10,6 +10,7 @@ import org.openzen.zenscript.parser.*;
 import org.openzen.zenscript.scriptingexample.tests.*;
 
 import java.util.*;
+import java.util.stream.*;
 
 
 public abstract class ZenCodeTest {
@@ -28,6 +29,7 @@ public abstract class ZenCodeTest {
     public void beforeEach() throws CompileException {
         this.logger = new ZenCodeTestLogger();
         this.engine = new ScriptingEngine(logger);
+        engine.debug = true;
         this.testModule = engine.createNativeModule("test_module", "org.openzen.zenscript.scripting_tests");
         SharedGlobals.currentlyActiveLogger = logger;
         
@@ -65,8 +67,12 @@ public abstract class ZenCodeTest {
         logger.setEngineComplete();
     }
     
-    public void addScript(String context) {
-        sourceFiles.add(new LiteralSourceFile("test_script_" + sourceFiles.size() + ".zs", context));
+    public void addScript(String content) {
+        addScript(content, "test_script_" + sourceFiles.size() + ".zs");
+    }
+    
+    public void addScript(String content, String name) {
+        sourceFiles.add(new LiteralSourceFile(name, content));
     }
     
     

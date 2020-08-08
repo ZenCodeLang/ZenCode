@@ -4,11 +4,12 @@ import java.util.*;
 
 public class ScriptBuilder {
     
-    private final List<String> scripts;
+    private final Map<String, String> scriptNameToScript;
     private StringJoiner currentScriptJoiner;
+    private String currentScriptName;
     
     private ScriptBuilder() {
-        scripts = new ArrayList<>();
+        scriptNameToScript = new HashMap<>();
         startNewScript();
     }
     
@@ -26,20 +27,29 @@ public class ScriptBuilder {
     }
     
     public ScriptBuilder startNewScript() {
-        if(currentScriptJoiner != null) {
-            scripts.add(currentScriptJoiner.toString());
+        return startNewScript(null);
+    }
+    
+    public ScriptBuilder startNewScript(String fileName) {
+        if(currentScriptJoiner != null && currentScriptJoiner.length() != 0) {
+            scriptNameToScript.put(currentScriptName, currentScriptJoiner.toString());
         }
-        
+    
         currentScriptJoiner = new StringJoiner(System.lineSeparator());
+        if(fileName == null) {
+            currentScriptName = "test_script_" + (scriptNameToScript.size() + 1) + ".zs";
+        } else {
+            currentScriptName = fileName;
+        }
         return this;
     }
     
     public void appendScriptsToTest(ZenCodeTest test) {
         startNewScript();
     
-        for(String script : scripts) {
-            test.addScript(script);
-        }
+        scriptNameToScript.forEach((name, content) -> {
+            test.addScript(content, name);
+        });
     }
     
     public void execute(ZenCodeTest test, LogTolerance logTolerance) {
