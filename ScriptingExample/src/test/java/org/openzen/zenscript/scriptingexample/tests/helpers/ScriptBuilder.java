@@ -9,7 +9,7 @@ public class ScriptBuilder {
     private String currentScriptName;
     
     private ScriptBuilder() {
-        scriptNameToScript = new HashMap<>();
+        scriptNameToScript = new LinkedHashMap<>();
         startNewScript();
     }
     
