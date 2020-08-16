@@ -17,7 +17,9 @@ import org.openzen.zenscript.javabytecode.compiler.definitions.*;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.prepare.*;
 
+import java.io.*;
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * @author Hoofdgebruiker
@@ -139,8 +141,17 @@ public class JavaCompiler {
 		if (filename == null) {
 			return "generatedBlock" + (generatedScriptBlockCounter++);
 		} else {
-			// TODO: remove special characters
-			return filename.substring(0, filename.lastIndexOf('.')).replace("/", "_");
+            // TODO: find all special characters
+            final String specialCharRegex = Stream.of('/', '\\', '.', ';')
+                    .filter(character -> character != File.separatorChar)
+                    .map(String::valueOf)
+                    .collect(Collectors.joining("", "[", "]"));
+            
+			return filename
+                    .substring(0, filename.lastIndexOf('.')) //remove the .zs part
+                    .replaceAll(specialCharRegex, "_")
+                    .replace('[', '_')
+                    .replace(File.separatorChar, '/');
 		}
 	}
 
