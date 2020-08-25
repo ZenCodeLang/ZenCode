@@ -135,6 +135,9 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 				case ITERATOR_STRING_CHARS:
 					iteratorWriter.visitStringCharacterIterator();
 					break;
+				case ITERATOR_ITERABLE:
+					iteratorWriter.visitIteratorIterator(context.getType(statement.loopVariables[0].type));
+					break;
 				default:
 					throw new IllegalArgumentException("Invalid iterator: " + statement.iterator.target.getBuiltin());
 			}

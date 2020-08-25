@@ -19,6 +19,11 @@ public abstract class BaseComponentGroup implements DComponent {
 	
 	protected abstract DComponent findChild(Predicate<DComponent> predicate);
 	
+	protected void onComponentRemoved(DComponent component) {
+		if (hovering == component)
+			hovering = null;
+	}
+	
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		DComponent target = getComponent(e.x, e.y);

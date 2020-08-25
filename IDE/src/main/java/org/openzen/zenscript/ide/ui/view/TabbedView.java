@@ -60,8 +60,10 @@ public class TabbedView extends BaseComponentGroup {
 		tabs.addListener(new TabListListener());
 		
 		currentTab.addListener((oldValue, newValue) -> {
-			if (oldValue != null)
+			if (oldValue != null) {
 				oldValue.content.unmount();
+				onComponentRemoved(oldValue.content);
+			}
 			if (newValue != null)
 				newValue.content.mount(context);
 			

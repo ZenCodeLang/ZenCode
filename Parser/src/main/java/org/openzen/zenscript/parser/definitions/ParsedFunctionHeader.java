@@ -56,7 +56,7 @@ public class ParsedFunctionHeader {
 				boolean variadic = tokens.optional(T_DOT3) != null;
 				
 				IParsedType type = ParsedTypeBasic.UNDETERMINED;
-				if (tokens.optional(K_AS) != null) {
+				if (tokens.optional(K_AS) != null || tokens.optional(T_COLON) != null) {
 					type = IParsedType.parse(tokens);
 				}
 				ParsedExpression defaultValue = null;

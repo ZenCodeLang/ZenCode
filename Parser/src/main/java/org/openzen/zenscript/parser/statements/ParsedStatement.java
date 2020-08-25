@@ -99,7 +99,7 @@ public abstract class ParsedStatement {
 
 				IParsedType type = null;
 				ParsedExpression initializer = null;
-				if (parser.optional(K_AS) != null) {
+				if (parser.optional(K_AS) != null || parser.optional(T_COLON) != null) {
 					type = IParsedType.parse(parser);
 				}
 				if (parser.optional(T_ASSIGN) != null) {

@@ -299,6 +299,7 @@ public class SourceEditor implements DComponent {
 	
 	@Override
 	public void onMouseExit(DMouseEvent e) {
+		
 		context.getUIContext().setCursor(DUIContext.Cursor.NORMAL);
 	}
 	
@@ -816,7 +817,8 @@ public class SourceEditor implements DComponent {
 		@Override
 		public void onLineChanged(int index) {
 			if (bounds != null) {
-				Destructible.close(drawnTokens.get(index));
+				if (index < drawnTokens.size())
+					Destructible.close(drawnTokens.get(index));
 				
 				TokenLine line = tokens.getLine(index);
 				drawnTokens.set(index, lineToTokens(line));

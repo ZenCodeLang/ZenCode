@@ -165,6 +165,7 @@ public class TabbedViewTab implements DComponent {
 	public void close() {
 		titleListener.close();
 		updatedListener.close();
+		currentTabListener.close();
 		
 		unmount();
 	}

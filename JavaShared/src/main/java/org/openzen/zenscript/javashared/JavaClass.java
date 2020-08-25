@@ -21,6 +21,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	public static final JavaClass MAP = new JavaClass("java.util", "Map", JavaClass.Kind.INTERFACE);
 	public static final JavaClass HASHMAP = new JavaClass("java.util", "HashMap", JavaClass.Kind.CLASS);
 	public static final JavaClass ITERATOR = new JavaClass("java.util", "Iterator", JavaClass.Kind.INTERFACE);
+	public static final JavaClass ITERABLE = new JavaClass("java.lang", "Iterable", Kind.INTERFACE);
 	public static final JavaClass ARRAYS = new JavaClass("java.util", "Arrays", Kind.CLASS);
 	
 	public static final JavaClass BOOLEAN = new JavaClass("java.lang", "Boolean", Kind.CLASS);

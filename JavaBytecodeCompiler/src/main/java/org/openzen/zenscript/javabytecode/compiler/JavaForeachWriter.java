@@ -8,7 +8,6 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class JavaForeachWriter {
@@ -60,6 +59,20 @@ public class JavaForeachWriter {
 		handleArray(javaWriter.local(int.class), javaWriter.getLocalVariable(variables[0].variable));
 	}
 
+	public void visitIteratorIterator(Type targetType) {
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERABLE, "iterator", "()Ljava/lang/Iterator;", 0));
+		javaWriter.label(startLabel);
+		javaWriter.dup();
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
+		javaWriter.ifEQ(endLabel);
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+		javaWriter.checkCast(targetType);
+		final JavaLocalVariableInfo variable = javaWriter.getLocalVariable(variables[0].variable);
+		javaWriter.store(variable.type, variable.local);
+
+		content.accept(statementVisitor);
+	}
+
 	private void handleArray(final int z, final JavaLocalVariableInfo arrayTypeInfo) {
 		javaWriter.iConst0();
 		javaWriter.storeInt(z);
@@ -72,7 +85,6 @@ public class JavaForeachWriter {
 
 		javaWriter.ifICmpLE(endLabel);
 		javaWriter.loadInt(z);
-
 
 		javaWriter.arrayLoad(arrayTypeInfo.type);
 		javaWriter.store(arrayTypeInfo.type, arrayTypeInfo.local);

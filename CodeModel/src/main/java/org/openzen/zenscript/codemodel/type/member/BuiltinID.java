@@ -527,7 +527,8 @@ public enum BuiltinID {
 	ITERATOR_ARRAY_KEY_VALUES,
 	ITERATOR_ASSOC_KEYS,
 	ITERATOR_ASSOC_KEY_VALUES,
-	ITERATOR_STRING_CHARS;
+	ITERATOR_STRING_CHARS,
+	ITERATOR_ITERABLE;
 	
 	private static final BuiltinID[] VALUES = values();
 	public static BuiltinID get(int ordinal) {
