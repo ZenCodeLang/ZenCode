@@ -8,7 +8,7 @@ package org.openzen.zenscript.validator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.validator.analysis.StatementScope;
+import org.openzen.zenscript.validator.logger.*;
 import org.openzen.zenscript.validator.visitors.DefinitionValidator;
 import org.openzen.zenscript.validator.visitors.StatementValidator;
 
@@ -28,7 +29,7 @@ import org.openzen.zenscript.validator.visitors.StatementValidator;
  * @author Hoofdgebruiker
  */
 public class Validator {
-	public static SemanticModule validate(SemanticModule module, Consumer<ValidationLogEntry> logger) {
+	public static SemanticModule validate(SemanticModule module, ValidatorLogger logger) {
 		if (module.state != SemanticModule.State.NORMALIZED)
 			throw new IllegalStateException("Module is not yet normalized");
 		
@@ -41,7 +42,7 @@ public class Validator {
 		}
 		
 		for (ValidationLogEntry entry : validator.getLog()) {
-			logger.accept(entry);
+			logger.logValidationLogEntry(entry);
 		}
 		
 		SemanticModule.State state = validator.hasErrors() ? SemanticModule.State.INVALID : SemanticModule.State.VALIDATED;
@@ -57,7 +58,8 @@ public class Validator {
 				module.registry,
 				module.expansions,
 				module.annotations,
-				module.storageTypes);
+				module.storageTypes,
+                logger);
 	}
 	
 	private final List<ValidationLogEntry> log = new ArrayList<>();

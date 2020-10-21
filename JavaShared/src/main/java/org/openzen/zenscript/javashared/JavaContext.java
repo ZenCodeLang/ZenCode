@@ -10,14 +10,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -46,8 +49,10 @@ public abstract class JavaContext {
 	
 	public final ZSPackage modulePackage;
 	public final String basePackage;
+	public final IZSLogger logger;
 	
-	public JavaContext(JavaCompileSpace space, ZSPackage modulePackage, String basePackage) {
+	public JavaContext(JavaCompileSpace space, ZSPackage modulePackage, String basePackage, IZSLogger logger) {
+	    this.logger = logger;
 		this.space = space;
 		this.registry = space.getRegistry();
 		
@@ -125,9 +130,16 @@ public abstract class JavaContext {
 	public abstract String getDescriptor(TypeID type);
 	
 	public abstract String getDescriptor(StoredType type);
-	
+
+	public String getSignature(StoredType type) {
+		return new JavaTypeGenericVisitor(this).getGenericSignature(type);
+	}
+
 	public void addModule(Module module, JavaCompiledModule target) {
 		modules.put(module, target);
+
+		//TODO: can we do this here?
+		space.register(target);
 	}
 	
 	public JavaCompiledModule getJavaModule(Module module) {
@@ -218,15 +230,34 @@ public abstract class JavaContext {
 	}
 	
 	public String getMethodDescriptor(FunctionHeader header) {
-		return getMethodDescriptor(header, false);
+		return getMethodDescriptor(header, false, "");
+	}
+
+	public String getMethodDescriptorExpansion(FunctionHeader header, StoredType expandedType) {
+		StringBuilder startBuilder = new StringBuilder(getDescriptor(expandedType));
+		final List<TypeParameter> typeParameters = new ArrayList<>();
+		expandedType.type.extractTypeParameters(typeParameters);
+		for (TypeParameter typeParameter : typeParameters) {
+			startBuilder.append("Ljava/lang/Class;");
+		}
+
+		return getMethodDescriptor(header, false, startBuilder.toString());
+	}
+
+	public String getMethodSignatureExpansion(FunctionHeader header, StoredType expandedClass) {
+		return new JavaTypeGenericVisitor(this).getMethodSignatureExpansion(header, expandedClass);
 	}
 	
     public String getMethodSignature(FunctionHeader header) {
-        return new JavaTypeGenericVisitor(this).getGenericMethodSignature(header);
+        return getMethodSignature(header, true);
     }
+
+    public String getMethodSignature(FunctionHeader header, boolean withGenerics) {
+		return new JavaTypeGenericVisitor(this).getGenericMethodSignature(header, withGenerics);
+	}
 	
 	public String getEnumConstructorDescriptor(FunctionHeader header) {
-		return getMethodDescriptor(header, true);
+		return getMethodDescriptor(header, true, "");
 	}
 	
 	public JavaSynthesizedFunctionInstance getFunction(FunctionTypeID type) {
@@ -336,14 +367,25 @@ public abstract class JavaContext {
 			return new JavaSynthesizedClass(range.cls, new TypeID[] { type.baseType.type });
 		}
 	}
-	
-	private String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor) {
+
+	/**
+	 * @param header Function Header
+	 * @param isEnumConstructor If this is an enum constructor, add String, int as parameters
+	 * @param expandedType If this is for an expanded type, add the type at the beginning.
+	 *                        Can be null or an empty string if this is not an expansion method header
+	 * @return Method descriptor {@code (<LClass;*No.TypeParameters><LString;I if enum><expandedType><headerTypes>)<retType> }
+	 */
+	public String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor, String expandedType) {
         StringBuilder descBuilder = new StringBuilder("(");
 		for (int i = 0; i < header.getNumberOfTypeParameters(); i++)
 			descBuilder.append("Ljava/lang/Class;");
 		
         if (isEnumConstructor)
             descBuilder.append("Ljava/lang/String;I");
+
+        //TODO: Put this earlier? We'd need to agree on one...
+        if(expandedType != null)
+        	descBuilder.append(expandedType);
 		
         for (FunctionParameter parameter : header.parameters) {
 			descBuilder.append(getDescriptor(parameter.type));
@@ -352,4 +394,12 @@ public abstract class JavaContext {
         descBuilder.append(getDescriptor(header.getReturnType()));
         return descBuilder.toString();
     }
+
+	public String getMethodDescriptorConstructor(FunctionHeader header, DefinitionMember member) {
+		StringBuilder startBuilder = new StringBuilder();
+		for (TypeParameter typeParameter : member.definition.typeParameters) {
+			startBuilder.append("Ljava/lang/Class;");
+		}
+		return getMethodDescriptor(header, member.definition instanceof EnumDefinition, startBuilder.toString());
+	}
 }

@@ -5,24 +5,21 @@
  */
 package org.openzen.zenscript.codemodel.scope;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialGlobalExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.StoredType;
@@ -31,6 +28,10 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -42,7 +43,15 @@ public class FileScope extends BaseScope {
 	private final LocalMemberCache memberCache;
 	private final Map<String, ISymbol> globals;
 	private final TypeMemberPreparer preparer;
-	
+
+	public FileScope(
+			TypeResolutionContext context,
+			List<ExpansionDefinition> expansions,
+			Map<String, ISymbol> globals) {
+		this(context, expansions, globals, member -> {
+		});
+	}
+
 	public FileScope(
 			TypeResolutionContext context,
 			List<ExpansionDefinition> expansions,

@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.annotations;
 
-import java.util.Collections;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -24,6 +22,9 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StringTypeID;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -31,7 +32,7 @@ import org.openzen.zenscript.codemodel.type.StringTypeID;
 public class NativeAnnotationDefinition implements AnnotationDefinition {
 	public static final NativeAnnotationDefinition INSTANCE = new NativeAnnotationDefinition();
 	
-	private static final List<FunctionHeader> INITIALIZERS = Collections.singletonList(
+	private final List<FunctionHeader> INITIALIZERS = Collections.singletonList(
 			new FunctionHeader(BasicTypeID.VOID, StringTypeID.UNIQUE));
 	
 	private NativeAnnotationDefinition() {}

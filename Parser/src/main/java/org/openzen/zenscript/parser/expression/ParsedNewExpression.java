@@ -52,12 +52,8 @@ public class ParsedNewExpression extends ParsedExpression{
 		try {
 			TypeMembers members = scope.getTypeMembers(type);
 			TypeMemberGroup constructors = members.getOrCreateGroup(OperatorType.CONSTRUCTOR);
-			/*for (TypeMember<FunctionalMemberRef> member : constructors.getMethodMembers()) {
-				if (member.member.getBuiltin() == BuiltinID.ARRAY_CONSTRUCTOR_PROJECTED)
-					System.out.println("X");
-			}*/
 
-			List<StoredType>[] predictedTypes = constructors.predictCallTypes(position, scope, scope.hints, arguments.arguments.size());
+			//List<StoredType>[] predictedTypes = constructors.predictCallTypes(position, scope, scope.hints, arguments.arguments.size());
 			CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
 			FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 			if (member == null)

@@ -508,6 +508,9 @@ public abstract class ParsedExpression {
 				parser.next();
 				List<ParsedExpression> expressions = new ArrayList<>();
 				do {
+					if(parser.peek().type == T_BRCLOSE) {
+						break;
+					}
 					expressions.add(readAssignExpression(parser, options));
 				} while (parser.optional(ZSTokenType.T_COMMA) != null);
 				parser.required(T_BRCLOSE, ") expected");

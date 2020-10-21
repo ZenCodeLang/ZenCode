@@ -8,6 +8,9 @@ package org.openzen.zenscript.parser.expression;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -30,8 +33,11 @@ import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
  * @author Stanneke
  */
 public class ParsedExpressionMap extends ParsedExpression {
-	private final List<ParsedExpression> keys;
-	private final List<ParsedExpression> values;
+    
+    public static final List<BiFunction<ParsedExpressionMap, ExpressionScope, ? extends IPartialExpression>> compileOverrides = new ArrayList<>(0);
+    
+	public final List<ParsedExpression> keys;
+	public final List<ParsedExpression> values;
 
 	public ParsedExpressionMap(
 			CodePosition position,
@@ -45,6 +51,12 @@ public class ParsedExpressionMap extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
+        for(BiFunction<ParsedExpressionMap, ExpressionScope, ? extends IPartialExpression> compileOverride : compileOverrides) {
+            final IPartialExpression apply = compileOverride.apply(this, scope);
+            if(apply != null)
+                return apply;
+        }
+	    
 		StoredType usedHint = null;
 		List<StoredType> keyHints = new ArrayList<>();
 		List<StoredType> valueHints = new ArrayList<>();
@@ -81,16 +93,16 @@ public class ParsedExpressionMap extends ParsedExpression {
 			return new NewExpression(position, usedHint, constructor, CallArguments.EMPTY);
 		}
 		
-		if (!hasAssocHint && scope.hints.size() == 1) {
-			// compile as constructor call
-			StoredType hint = scope.hints.get(0);
-			for (int i = 0; i < keys.size(); i++) {
-				if (keys.get(i) != null)
-					throw new CompileException(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
-			}
-			ParsedCallArguments arguments = new ParsedCallArguments(null, values);
-			return ParsedNewExpression.compile(position, hint, arguments, scope);
-		}
+		//if (!hasAssocHint && scope.hints.size() == 1) {
+		//	// compile as constructor call
+		//	StoredType hint = scope.hints.get(0);
+		//	for (int i = 0; i < keys.size(); i++) {
+		//		if (keys.get(i) != null)
+		//			throw new CompileException(position, CompileExceptionCode.UNSUPPORTED_NAMED_ARGUMENTS, "Named constructor arguments not yet supported");
+		//	}
+		//	ParsedCallArguments arguments = new ParsedCallArguments(null, values);
+		//	return ParsedNewExpression.compile(position, hint, arguments, scope);
+		//}
 		
 		Expression[] cKeys = new Expression[keys.size()];
 		Expression[] cValues = new Expression[values.size()];

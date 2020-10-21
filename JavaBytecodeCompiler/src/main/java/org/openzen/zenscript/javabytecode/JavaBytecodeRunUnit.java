@@ -9,6 +9,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -22,10 +23,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Hoofdgebruiker
@@ -37,8 +39,13 @@ public class JavaBytecodeRunUnit {
 	private final List<JavaParameterInfo> scriptParameterInfo = new ArrayList<>();
 
 	private boolean scriptsWritten = false;
-
-	public void add(JavaBytecodeModule module) {
+	private final IZSLogger logger;
+    
+    public JavaBytecodeRunUnit(IZSLogger logger) {
+        this.logger = logger;
+    }
+    
+    public void add(JavaBytecodeModule module) {
 		scriptsWritten = false;
 
 		for (Map.Entry<String, byte[]> classEntry : module.getClasses().entrySet())
@@ -57,15 +64,15 @@ public class JavaBytecodeRunUnit {
 		}
 	}
 
-	public void run() {
+	public void run() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 		run(Collections.emptyMap(), this.getClass().getClassLoader());
 	}
 
-	public void run(Map<FunctionParameter, Object> arguments) {
+	public void run(Map<FunctionParameter, Object> arguments) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 		run(arguments, this.getClass().getClassLoader());
 	}
 
-	public void run(Map<FunctionParameter, Object> arguments, ClassLoader parentClassLoader) {
+	public void run(Map<FunctionParameter, Object> arguments, ClassLoader parentClassLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 		writeScripts();
 
 		ScriptClassLoader classLoader = new ScriptClassLoader(parentClassLoader);
@@ -78,14 +85,10 @@ public class JavaBytecodeRunUnit {
 
 			argumentsArray[i] = arguments.get(parameter);
 		}
-		try {
 			Class[] classes = new Class[scriptParameters.size()];
 			for (int i = 0; i < classes.length; i++)
 				classes[i] = loadClass(classLoader, scriptParameterInfo.get(i).typeDescriptor);
 			classLoader.loadClass("Scripts").getMethod("run", classes).invoke(null, argumentsArray);
-		} catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
-			Logger.getLogger(JavaBytecodeRunUnit.class.getName()).log(Level.SEVERE, null, ex);
-		}
 	}
 
 	public void dump(File directory) {
@@ -95,7 +98,11 @@ public class JavaBytecodeRunUnit {
 			directory.mkdirs();
 
 		for (Map.Entry<String, byte[]> classEntry : classes.entrySet()) {
-			File output = new File(directory, classEntry.getKey() + ".class");
+			File output = new File(directory, classEntry.getKey().replace('.', File.separatorChar) + ".class");
+			if (!output.getParentFile().exists() && !output.getParentFile().mkdirs()) {
+				//Throw error?
+				continue;
+			}
 			try (FileOutputStream outputStream = new FileOutputStream(output)) {
 				outputStream.write(classEntry.getValue());
 			} catch (IOException ex) {
@@ -124,7 +131,7 @@ public class JavaBytecodeRunUnit {
 		headerBuilder.append(")V");
 
 		JavaMethod runMethod = JavaMethod.getStatic(new JavaClass("script", "Scripts", JavaClass.Kind.CLASS), "run", headerBuilder.toString(), Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-		final JavaWriter runWriter = new JavaWriter(CodePosition.GENERATED, scriptsClassWriter, runMethod, null, null, null);
+		final JavaWriter runWriter = new JavaWriter(logger, CodePosition.GENERATED, scriptsClassWriter, runMethod, null, null, null);
 		runWriter.start();
 		for (JavaScriptMethod method : scripts) {
 			for (int i = 0; i < method.parameters.length; i++) {

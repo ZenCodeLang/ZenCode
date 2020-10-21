@@ -21,7 +21,8 @@ public class SimpleJavaCompileSpace implements JavaCompileSpace {
 	public SimpleJavaCompileSpace(GlobalTypeRegistry registry) {
 		this.registry = registry;
 	}
-	
+
+	@Override
 	public void register(JavaCompiledModule module) {
 		modules.put(module.module, module);
 	}

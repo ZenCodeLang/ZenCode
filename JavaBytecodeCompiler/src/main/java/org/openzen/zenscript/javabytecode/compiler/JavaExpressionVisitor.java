@@ -6,6 +6,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -22,16 +23,14 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 import org.openzen.zenscript.javashared.*;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativeTranslator<Void> {
+    private static final JavaMethod OBJECTS_TOSTRING = JavaMethod.getNativeStatic(new JavaClass("java.util", "Objects", JavaClass.Kind.CLASS), "toString", "(Ljava/lang/Object;)Ljava/lang/String;");
+    
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
 	private static final JavaMethod BOOLEAN_TO_STRING = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "toString", "(Z)Ljava/lang/String;");
 	private static final JavaMethod BYTE_PARSE = JavaMethod.getNativeStatic(JavaClass.BYTE, "parseByte", "(Ljava/lang/String;)B");
@@ -156,16 +155,20 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	private static final JavaMethod SHARED_ADDREF = JavaMethod.getNativeVirtual(JavaClass.SHARED, "addRef", "()V");
 	private static final JavaMethod SHARED_RELEASE = JavaMethod.getNativeVirtual(JavaClass.SHARED, "release", "()V");
 
-	protected final JavaWriter javaWriter;
-	private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
-	private final JavaBytecodeContext context;
-	private final JavaCompiledModule module;
+	final JavaWriter javaWriter;
+    private final JavaBoxingTypeVisitor boxingTypeVisitor;
+    private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
+    private final JavaCapturedExpressionVisitor capturedExpressionVisitor = new JavaCapturedExpressionVisitor(this);
+    final JavaBytecodeContext context;
+    final JavaCompiledModule module;
 
 	public JavaExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter) {
 		this.javaWriter = javaWriter;
 		this.context = context;
 		this.module = module;
-	}
+        boxingTypeVisitor = new JavaBoxingTypeVisitor(javaWriter);
+        unboxingTypeVisitor = new JavaUnboxingTypeVisitor(javaWriter);
+    }
 
 	@Override
 	public Void visitAndAnd(AndAndExpression expression) {
@@ -381,16 +384,69 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		if (builtin == null) {
 			expression.target.accept(this);
 
-			JavaMethod methodInfo = context.getJavaMethod(expression.member);
-			for (int i = 0; i < expression.arguments.typeArguments.length; i++) {
-				if (methodInfo.typeParameterArguments[i]) {
-					StoredType arguments = expression.arguments.typeArguments[i];
+			final List<TypeParameter> typeParameters;
+			{
 
+				final List<TypeParameter> parameters = new ArrayList<>();
+				if(expression.member.getTarget().definition.isExpansion()) {
+					parameters.addAll(Arrays.asList(expression.member.getTarget().definition.typeParameters));
+				}
+
+				//expression.member.getOwnerType().type.extractTypeParameters(parameters);
+				//expression.instancedHeader.typeParameters
+				for (TypeParameter typeParameter : expression.member.getTarget().getHeader().typeParameters) {
+					if(!parameters.contains(typeParameter)) {
+						parameters.add(typeParameter);
+					}
+				}
+				typeParameters = parameters.stream().distinct().collect(Collectors.toList());
+			}
+
+			JavaMethod methodInfo = context.getJavaMethod(expression.member);
+
+			if(methodInfo.compile) {
+			    if(typeParameters.size() == expression.arguments.typeArguments.length) {
+                    final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+                    for(StoredType typeArgument : expression.arguments.typeArguments) {
+                        typeArgument.type.accept(javaWriter, javaTypeExpressionVisitor);
+                    }
+                } else {
+                    for(TypeParameter typeParameter : typeParameters) {
+                        javaWriter.aConstNull(); // TODO: Replace with actual class
+                        javaWriter.checkCast("java/lang/Class");
+                    }
+                }
+			}
+
+			final Expression[] arguments = expression.arguments.arguments;
+			final FunctionParameter[] parameters = expression.instancedHeader.parameters;
+
+			final boolean variadic = expression.instancedHeader.isVariadicCall(expression.arguments) && ((arguments.length != parameters.length) || !parameters[parameters.length - 1].type.type
+					.equals(arguments[arguments.length - 1].type.type));
+
+			if(variadic) {
+				for (int i = 0; i < parameters.length - 1; i++) {
+					arguments[i].accept(this);
+				}
+
+				final int arrayCount = (arguments.length - parameters.length) + 1;
+				javaWriter.constant(arrayCount);
+				javaWriter.newArray(context.getType(parameters[parameters.length - 1].type).getElementType());
+				for (int i = 0; i < arrayCount; i++) {
+					javaWriter.dup();
+					javaWriter.constant(i);
+					arguments[i + parameters.length - 1].accept(this);
+					javaWriter.arrayStore(context.getType(arguments[i].type));
+				}
+
+
+			} else {
+ 				for (Expression argument : arguments) {
+					argument.accept(this);
 				}
 			}
-			for (Expression argument : expression.arguments.arguments) {
-				argument.accept(this);
-			}
+
+
 
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
@@ -498,14 +554,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case LONG_INC:
 			case ULONG_INC:
 				modify(expression.target, () -> {
-					javaWriter.constant(1l);
+					javaWriter.constant(1L);
 					javaWriter.iAdd();
 				}, PushOption.AFTER);
 				return null;
 			case LONG_DEC:
 			case ULONG_DEC:
 				modify(expression.target, () -> {
-					javaWriter.constant(1l);
+					javaWriter.constant(1L);
 					javaWriter.iSub();
 				}, PushOption.AFTER);
 				return null;
@@ -852,11 +908,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				} else {
 					argument.accept(this);
 					javaWriter.dup();
-					int tmp = javaWriter.local(Type.getType("zsynthetic/IntRange"));
+					final String owner;
+					if (argument.type.type instanceof RangeTypeID) {
+						owner = context.getInternalName(argument.type);
+					} else {
+						owner = "zsynthetic/IntRange";
+					}
+					int tmp = javaWriter.local(Type.getType(owner));
 					javaWriter.storeInt(tmp);
-					javaWriter.getField("zsynthetic/IntRange", "from", "I");
+					javaWriter.getField(owner, "from", "I");
 					javaWriter.loadInt(tmp);
-					javaWriter.getField("zsynthetic/IntRange", "to", "I");
+					javaWriter.getField(owner, "to", "I");
 				}
 				javaWriter.invokeVirtual(STRING_SUBSTRING);
 				break;
@@ -874,10 +936,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			case ASSOC_INDEXGET:
 			case ASSOC_GETORDEFAULT: {
+				AssocTypeID type = (AssocTypeID) expression.target.type.type;
+				type.keyType.type.accept(type.keyType, boxingTypeVisitor);
 				javaWriter.invokeInterface(MAP_GET);
 
-				AssocTypeID type = (AssocTypeID) expression.target.type.type;
-				javaWriter.checkCast(context.getInternalName(type.valueType));
+				type.valueType.type.accept(type.valueType, unboxingTypeVisitor);
+				if(!CompilerUtils.isPrimitive(type.valueType.type)) {
+					javaWriter.checkCast(context.getType(type.valueType));
+				}
 				break;
 			}
 			case ASSOC_INDEXSET:
@@ -975,11 +1041,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				} else {
 					argument.accept(this);
 					javaWriter.dup();
-					int tmp = javaWriter.local(Type.getType("zsynthetic/IntRange"));
+					final String owner;
+					if (argument.type.type instanceof RangeTypeID) {
+						owner = context.getInternalName(argument.type);
+					} else {
+						owner = "zsynthetic/IntRange";
+					}
+					int tmp = javaWriter.local(Type.getType(owner));
 					javaWriter.storeInt(tmp);
-					javaWriter.getField("zsynthetic/IntRange", "from", "I");
+					javaWriter.getField(owner, "from", "I");
 					javaWriter.loadInt(tmp);
-					javaWriter.getField("zsynthetic/IntRange", "to", "I");
+					javaWriter.getField(owner, "to", "I");
 				}
 
 				if (type.elementType.type instanceof BasicTypeID) {
@@ -1051,19 +1123,19 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 					//Compare non-int types beforehand
 					if (itemType.type == BasicTypeID.LONG || itemType.type == BasicTypeID.ULONG) {
 						javaWriter.lCmp();
-						javaWriter.ifNE(loopStart);
+						javaWriter.ifEQ(loopStart);
 					} else if (itemType.type == BasicTypeID.FLOAT) {
 						javaWriter.fCmp();
-						javaWriter.ifNE(loopStart);
+						javaWriter.ifEQ(loopStart);
 					} else if (itemType.type == BasicTypeID.DOUBLE) {
 						javaWriter.dCmp();
-						javaWriter.ifNE(loopStart);
+						javaWriter.ifEQ(loopStart);
 					} else
 						javaWriter.ifICmpNE(loopStart);
 				} else {
 					//If equals, use Object.equals in case of null
 					javaWriter.invokeStatic(new JavaMethod(JavaClass.fromInternalName("java/util/Objects", JavaClass.Kind.CLASS), JavaMethod.Kind.STATIC, "equals", false, "(Ljava/lang/Object;Ljava/lang/Object;)Z", 0, false));
-					javaWriter.ifNE(loopStart);
+					javaWriter.ifEQ(loopStart);
 					// If ==
 					// javaWriter.ifACmpNe(loopStart);
 				}
@@ -1141,8 +1213,32 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitCallStatic(CallStaticExpression expression) {
-		for (Expression argument : expression.arguments.arguments)
-			argument.accept(this);
+        final Expression[] arguments = expression.arguments.arguments;
+        final FunctionParameter[] parameters = expression.instancedHeader.parameters;
+        final boolean variadic = expression.instancedHeader.isVariadicCall(expression.arguments) && ((arguments.length != parameters.length) || !parameters[parameters.length - 1].type.type
+                .equals(arguments[arguments.length - 1].type.type));
+        
+        if(variadic) {
+            for (int i = 0; i < parameters.length - 1; i++) {
+                arguments[i].accept(this);
+            }
+            
+            final int arrayCount = (arguments.length - parameters.length) + 1;
+            javaWriter.constant(arrayCount);
+            javaWriter.newArray(context.getType(parameters[parameters.length - 1].type).getElementType());
+            for (int i = 0; i < arrayCount; i++) {
+                javaWriter.dup();
+                javaWriter.constant(i);
+                arguments[i + parameters.length - 1].accept(this);
+                javaWriter.arrayStore(context.getType(arguments[i].type));
+            }
+            
+            
+        } else {
+            for (Expression argument : arguments) {
+                argument.accept(this);
+            }
+        }
 
 		BuiltinID builtin = expression.member.getBuiltin();
 		if (builtin == null) {
@@ -1253,6 +1349,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitCast(CastExpression expression) {
 		expression.target.accept(this);
 
+		final ArrayList<TypeParameter> typeParameters = new ArrayList<>(Arrays.asList(expression.member.member.definition.typeParameters));
+		//expression.member.type.type.extractTypeParameters(typeParameters);
+		expression.member.toType.type.extractTypeParameters(typeParameters);
+
+		if (expression.member.member.definition.isExpansion()) {
+			for (TypeParameter typeParameter : typeParameters) {
+				javaWriter.aConstNull(); //Todo: Replace with actual Type
+				javaWriter.checkCast("java/lang/Class");
+			}
+		}
+
 		BuiltinID builtin = expression.member.member.builtin;
 		if (builtin == null) {
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
@@ -1263,7 +1370,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		switch (builtin) {
 			case BOOL_TO_STRING:
-				javaWriter.invokeStatic(BOOLEAN_TO_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(BOOLEAN_TO_STRING);
+                }
 				break;
 			case BYTE_TO_SBYTE:
 				javaWriter.i2b();
@@ -1301,9 +1412,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.iAnd();
 				break;
 			case BYTE_TO_STRING:
-				javaWriter.constant(0xFF);
-				javaWriter.iAnd();
-				javaWriter.invokeStatic(INTEGER_TO_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.constant(0xFF);
+                    javaWriter.iAnd();
+                    javaWriter.invokeStatic(INTEGER_TO_STRING);
+                }
 				break;
 			case SBYTE_TO_BYTE:
 			case SBYTE_TO_SHORT:
@@ -1325,7 +1440,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case SBYTE_TO_CHAR:
 				break;
 			case SBYTE_TO_STRING:
-				javaWriter.invokeStatic(INTEGER_TO_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(INTEGER_TO_STRING);
+                }
 				break;
 			case SHORT_TO_BYTE:
 				break;
@@ -1350,7 +1469,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case SHORT_TO_CHAR:
 				break;
 			case SHORT_TO_STRING:
-				javaWriter.invokeStatic(SHORT_TO_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(SHORT_TO_STRING);
+                }
 				break;
 			case USHORT_TO_BYTE:
 				break;
@@ -1386,10 +1509,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.iAnd();
 				break;
 			case USHORT_TO_STRING:
-				javaWriter.constant(0xFFFFL);
-				javaWriter.iAnd();
-				javaWriter.invokeStatic(INTEGER_TO_STRING);
-				break;
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.constant(0xFFFFL);
+                    javaWriter.iAnd();
+                    javaWriter.invokeStatic(INTEGER_TO_STRING);
+                }
+                break;
 			case INT_TO_BYTE:
 			case USIZE_TO_BYTE:
 				break;
@@ -1429,7 +1556,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				break;
 			case INT_TO_STRING:
 			case USIZE_TO_STRING:
-				javaWriter.invokeStatic(INTEGER_TO_STRING);
+			    if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(INTEGER_TO_STRING);
+                }
 				break;
 			case UINT_TO_BYTE:
 				break;
@@ -1467,7 +1598,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.i2s();
 				break;
 			case UINT_TO_STRING:
-				javaWriter.invokeStatic(INTEGER_TO_UNSIGNED_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(INTEGER_TO_UNSIGNED_STRING);
+                }
 				break;
 			case LONG_TO_BYTE:
 				javaWriter.l2i();
@@ -1499,7 +1634,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.i2s();
 				break;
 			case LONG_TO_STRING:
-				javaWriter.invokeStatic(LONG_TO_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(LONG_TO_STRING);
+                }
 				break;
 			case ULONG_TO_BYTE:
 				javaWriter.l2i();
@@ -1530,7 +1669,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.i2s();
 				break;
 			case ULONG_TO_STRING:
-				javaWriter.invokeStatic(LONG_TO_UNSIGNED_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(LONG_TO_UNSIGNED_STRING);
+                }
 				break;
 			case FLOAT_TO_BYTE:
 				javaWriter.f2i();
@@ -1557,7 +1700,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.f2d();
 				break;
 			case FLOAT_TO_STRING:
-				javaWriter.invokeStatic(FLOAT_TO_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(FLOAT_TO_STRING);
+                }
 				break;
 			case DOUBLE_TO_BYTE:
 				javaWriter.d2i();
@@ -1584,7 +1731,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.d2f();
 				break;
 			case DOUBLE_TO_STRING:
-				javaWriter.invokeStatic(DOUBLE_TO_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(DOUBLE_TO_STRING);
+                }
 				break;
 			case CHAR_TO_BYTE:
 				break;
@@ -1602,7 +1753,11 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.i2l();
 				break;
 			case CHAR_TO_STRING:
-				javaWriter.invokeStatic(CHARACTER_TO_STRING);
+                if(expression.target.type.isOptional()) {
+                    javaWriter.invokeStatic(OBJECTS_TOSTRING);
+                } else {
+                    javaWriter.invokeStatic(CHARACTER_TO_STRING);
+                }
 				break;
 			case ENUM_TO_STRING:
 				javaWriter.invokeVirtual(ENUM_NAME);
@@ -1639,7 +1794,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.ifNonNull(end);
 		javaWriter.pop();
 		expression.right.accept(this);
+		expression.right.type.type.accept(expression.right.type, boxingTypeVisitor);
 		javaWriter.label(end);
+		expression.type.type.accept(expression.type, unboxingTypeVisitor);
 		return null;
 	}
 
@@ -1859,7 +2016,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitFunction(FunctionExpression expression) {
-		CompilerUtils.tagMethodParameters(context, module, expression.header, false);
+		CompilerUtils.tagMethodParameters(context, module, expression.header, false, Collections.emptyList());
 
         /*if (expression.header.parameters.length == 0 && expression.body instanceof ReturnStatement && expression.body.hasTag(MatchExpression.class) && expression.closure.captures.isEmpty()) {
             ((ReturnStatement) expression.body).value.accept(this);
@@ -1869,6 +2026,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final String signature;
 		final String[] interfaces;
 		final String className = context.getLambdaCounter();
+		final String descriptor;
 		
 		{//Fill the info above
 			final StorageTag actualStorage = expression.type.getActualStorage();
@@ -1877,11 +2035,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final Method functionalInterfaceMethod = ((JavaFunctionalInterfaceStorageTag) actualStorage).functionalInterfaceMethod;
 				
 				//Should be the same, should it not?
-				signature = context.getMethodSignature(expression.header);
+				signature = context.getMethodSignature(expression.header, true);
+				descriptor = context.getMethodDescriptor(expression.header);
 				interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
 			} else {
 				//Normal way, no casting to functional interface
-				signature = context.getMethodSignature(expression.header);
+				signature = context.getMethodSignature(expression.header, true);
+				descriptor = context.getMethodDescriptor(expression.header);
 				interfaces = new String[]{context.getInternalName(new FunctionTypeID(null, expression.header).stored(UniqueStorageTag.INSTANCE))};
 			}
 		}
@@ -1897,9 +2057,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final JavaWriter functionWriter;
 		
 		//Bridge method!!!
-		if(!Objects.equals(methodInfo.descriptor, signature)) {
+		if (!Objects.equals(methodInfo.descriptor, descriptor)) {
 			final JavaMethod bridgeMethodInfo = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, methodInfo.descriptor, methodInfo.modifiers | JavaModifiers.BRIDGE | JavaModifiers.SYNTHETIC, methodInfo.genericResult, methodInfo.typeParameterArguments);
-			final JavaWriter bridgeWriter = new JavaWriter(expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "java/lang/Override");
+			final JavaWriter bridgeWriter = new JavaWriter(context.logger, expression.position, lambdaCW, bridgeMethodInfo, null, methodInfo.descriptor, null, "java/lang/Override");
 			bridgeWriter.start();
 			
 			//This.name(parameters, casted)
@@ -1909,24 +2069,31 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final FunctionParameter functionParameter = expression.header.parameters[i];
 				final Type type = context.getType(functionParameter.type);
 				bridgeWriter.load(type, i + 1);
-				bridgeWriter.checkCast(type);
+				if (!CompilerUtils.isPrimitive(functionParameter.type.type)) {
+					bridgeWriter.checkCast(type);
+				}
 			}
 			
-			bridgeWriter.invokeVirtual(methodInfo);
-			if(expression.header.getReturnType().type != BasicTypeID.VOID) {
-				bridgeWriter.returnType(context.getType(expression.header.getReturnType()));
-			}
+			bridgeWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName(className, JavaClass.Kind.CLASS), JavaMethod.Kind.INSTANCE, methodInfo.name, methodInfo.compile, descriptor, methodInfo.modifiers, methodInfo.genericResult));
+            final StoredType returnType = expression.header.getReturnType();
+            if(returnType.type != BasicTypeID.VOID) {
+                final Type returnTypeASM = context.getType(returnType);
+                if(!CompilerUtils.isPrimitive(returnType.type)) {
+                    bridgeWriter.checkCast(returnTypeASM);
+                }
+                bridgeWriter.returnType(returnTypeASM);
+            }
 			
 			bridgeWriter.ret();
 			bridgeWriter.end();
 			
 			
 			
-			final JavaMethod actualMethod = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, signature, methodInfo.modifiers, methodInfo.genericResult, methodInfo.typeParameterArguments);
+			final JavaMethod actualMethod = new JavaMethod(methodInfo.cls, methodInfo.kind, methodInfo.name, methodInfo.compile, context.getMethodDescriptor(expression.header), methodInfo.modifiers, methodInfo.genericResult, methodInfo.typeParameterArguments);
 			//No @Override
-			functionWriter = new JavaWriter(expression.position, lambdaCW, actualMethod, null, signature, null);
+			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualMethod, null, signature, null);
 		} else {
-			functionWriter = new JavaWriter(expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
+			functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, methodInfo, null, signature, null, "java/lang/Override");
 		}
 
 		javaWriter.newObject(className);
@@ -1935,7 +2102,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final String constructorDesc = calcFunctionSignature(expression.closure);
 
 
-		final JavaWriter constructorWriter = new JavaWriter(expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
+		final JavaWriter constructorWriter = new JavaWriter(context.logger, expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
 		constructorWriter.start();
 		constructorWriter.loadObject(0);
 		constructorWriter.dup();
@@ -1967,6 +2134,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final JavaStatementVisitor CSV = new JavaStatementVisitor(context, new JavaExpressionVisitor(context, module, functionWriter) {
 			@Override
 			public Void visitGetLocalVariable(GetLocalVariableExpression varExpression) {
+				final JavaLocalVariableInfo localVariable = functionWriter.tryGetLocalVariable(varExpression.variable.variable);
+				if(localVariable != null) {
+					final Label label = new Label();
+					localVariable.end = label;
+					functionWriter.label(label);
+					functionWriter.load(localVariable);
+					return null;
+				}
+
+
+
 				final int position = calculateMemberPosition(varExpression, expression);
 				functionWriter.loadObject(0);
 				functionWriter.getField(className, "captured" + position, context.getDescriptor(varExpression.variable.type));
@@ -1989,12 +2167,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		lambdaCW.visitEnd();
 
 		context.register(className, lambdaCW.toByteArray());
-
-		try (FileOutputStream out = new FileOutputStream(className + ".class")) {
-			out.write(lambdaCW.toByteArray());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
 		return null;
 	}
@@ -2035,6 +2207,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitGetField(GetFieldExpression expression) {
 		expression.target.accept(this);
 		getField(expression.field);
+		if(!CompilerUtils.isPrimitive(expression.field.member.getType().type)) {
+			javaWriter.checkCast(context.getType(expression.field.getType()));
+		}
 		return null;
 	}
 
@@ -2084,11 +2259,28 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		if (builtin == null) {
 			if (context.hasJavaField(expression.getter)) {
 				javaWriter.getField(context.getJavaField(expression.getter));
+				if(!CompilerUtils.isPrimitive(expression.getter.member.getType().type)) {
+					javaWriter.checkCast(context.getType(expression.getter.getType()));
+				}
 				return null;
 			}
+
+
+			final List<TypeParameter> typeParameters = new ArrayList<>();
+			expression.getter.member.getType().type.extractTypeParameters(typeParameters);
+
+			if(expression.getter.member.definition.isExpansion()) {
+				for (TypeParameter typeParameter : typeParameters) {
+					javaWriter.aConstNull(); //TODO: Replace with actual type
+					javaWriter.checkCast("java/lang/Class");
+				}
+			}
+
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
-
+			if(!CompilerUtils.isPrimitive(expression.getter.member.getType().type)) {
+				javaWriter.checkCast(context.getType(expression.getter.getType()));
+			}
 			return null;
 		}
 
@@ -2307,11 +2499,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.newObject("java/util/HashMap");
 		javaWriter.dup();
 		javaWriter.invokeSpecial("java/util/HashMap", "<init>", "()V");
+        final AssocTypeID type = (AssocTypeID) expression.type.type;
 		for (int i = 0; i < expression.keys.length; i++) {
 			javaWriter.dup();
 			expression.keys[i].accept(this);
-			expression.values[i].accept(this);
-			javaWriter.invokeInterface(MAP_PUT);
+            type.keyType.type.accept(type.keyType, boxingTypeVisitor);
+            expression.values[i].accept(this);
+            type.valueType.type.accept(type.valueType, boxingTypeVisitor);
+            javaWriter.invokeInterface(MAP_PUT);
 			javaWriter.pop();
 		}
 		return null;
@@ -2397,6 +2592,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		JavaMethod method = context.getJavaMethod(expression.constructor);
 		javaWriter.newObject(method.cls);
 		javaWriter.dup();
+
+
+		if(!expression.constructor.getTarget().hasTag(NativeTag.class)) {
+			for (StoredType typeArgument : expression.type.asDefinition().typeArguments) {
+				javaWriter.aConstNull();
+				javaWriter.checkCast("java/lang/Class");
+			}
+		}
+
 
 		for (Expression argument : expression.arguments.arguments) {
 			argument.accept(this);
@@ -3324,7 +3528,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 
 				if (builtin == BuiltinID.ARRAY_CONSTRUCTOR_SIZED) {
-					type.elementType.type.accept(JavaDefaultExpressionTypeVisitor.INSTANCE).accept(this);
+					type.elementType.type.getDefaultValue().accept(this);
 				} else {
 					expression.arguments.arguments[expression.arguments.arguments.length - 1].accept(this);
 				}
@@ -3338,117 +3542,118 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				return;
 			}
 			case ARRAY_CONSTRUCTOR_LAMBDA: {
-				ArrayTypeID type = (ArrayTypeID) expression.type.type;
-
-				if (type.dimension == 1) {
-					// array = new T[arguments[0]]
-					// lambda = arguments[1]
-					// for (int i = 0; i < array.length; i++)
-					//    array[i] = lambda.invoke(i);
-					//
-					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
-					throw new UnsupportedOperationException("Not yet supported!");
-				} else {
-					// TODO: implement
-					throw new UnsupportedOperationException("Not yet supported!");
-				}
-			}
-			case ARRAY_CONSTRUCTOR_PROJECTED: {
-
-
-				ArrayTypeID type = (ArrayTypeID) expression.type.type;
-
+				
+				//Labels
 				final Label begin = new Label();
 				final Label end = new Label();
-
 				javaWriter.label(begin);
-				expression.arguments.arguments[0].accept(this); //Origin array
+				
+				final Type ASMElementType = context.getType(expression.type);
+				final int dimension = ((ArrayTypeID) expression.type.type).dimension;
+				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(dimension, expression.arguments.arguments, this);
+				ArrayInitializerHelper.visitMultiDimArray(javaWriter, arraySizes, new int[dimension], dimension, ASMElementType, (elementType, counterLocations) -> {
+					expression.arguments.arguments[dimension].accept(this);
+					for (int counterLocation : counterLocations) {
+						javaWriter.loadInt(counterLocation);
+					}
+					javaWriter.invokeInterface(context.getFunctionalInterface(expression.arguments.arguments[dimension].type));
+				});
+				javaWriter.label(end);
+				return;
+			}
+			case ARRAY_CONSTRUCTOR_PROJECTED:
+			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
+				ArrayTypeID type = (ArrayTypeID) expression.type.type;
+				
+				//Labels
+				final Label begin = new Label();
+				final Label end = new Label();
+				javaWriter.label(begin);
+				
+				//Origin Array
+				expression.arguments.arguments[0].accept(this);
 				final Type originArrayType = context.getType(expression.arguments.arguments[0].type);
 				final int originArrayLocation = javaWriter.local(originArrayType);
 				javaWriter.storeObject(originArrayLocation);
 				Type destinationArrayType = context.getType(expression.type);
-
-
-				final boolean canBeInlined = ArrayInitializerHelper.canBeInlined(expression.arguments.arguments[1]);
-				final Type functionType;    //Only used if not inline able
-				final int functionLocation; //Only used if not inline able
-				if (!canBeInlined) {
-					expression.arguments.arguments[1].accept(this); //Projection Function
-					functionType = context.getType(expression.arguments.arguments[1].type);
-					functionLocation = javaWriter.local(functionType);
-					javaWriter.storeObject(functionLocation);
-					javaWriter.addVariableInfo(new JavaLocalVariableInfo(functionType, functionLocation, begin, "projectionFunction", end));
-				}
-
-				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsProjected(type.dimension, originArrayType, originArrayLocation, javaWriter);
-				ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, type.dimension, originArrayLocation, originArrayType, destinationArrayType,
-						(elementType, counterLocations) -> {
-							if (canBeInlined) {
+				
+				final boolean indexed = builtin == BuiltinID.ARRAY_CONSTRUCTOR_PROJECTED_INDEXED;
+				final boolean canBeInLined = ArrayInitializerHelper.canBeInLined(expression.arguments.arguments[1]);
+				if (canBeInLined) {
+					//We can inline, so do it
+					final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsProjected(type.dimension, originArrayType, originArrayLocation, javaWriter);
+					final Type projectedElementType = Type.getType(originArrayType.getDescriptor().substring(type.dimension));
+					ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, type.dimension, originArrayLocation, originArrayType, destinationArrayType,
+							(elementType, counterLocations) -> {
 								Label inlineBegin = new Label();
 								Label inlineEnd = new Label();
 								javaWriter.label(inlineBegin);
-								final Type projectedElementType = Type.getType(originArrayType.getDescriptor().substring(type.dimension));
+								
 								final int projectedElementLocal = javaWriter.local(projectedElementType);
 								javaWriter.store(projectedElementType, projectedElementLocal);
-
-
+								
+								
 								JavaExpressionVisitor visitor = new JavaExpressionVisitor(context, module, javaWriter) {
 									@Override
 									public Void visitGetFunctionParameter(GetFunctionParameterExpression expression) {
+										if(indexed) {
+											final JavaParameterInfo parameterInfo = module.getParameterInfo(expression.parameter);
+											if (parameterInfo != null && parameterInfo.index <= type.dimension) {
+												javaWriter.loadInt(counterLocations[parameterInfo.index - 1]);
+												return null;
+											}
+										}
+										
 										javaWriter.load(projectedElementType, projectedElementLocal);
 										return null;
 									}
 								};
-
+								
 								Expression funcExpression = expression.arguments.arguments[1];
 								while (funcExpression instanceof StorageCastExpression) {
 									funcExpression = ((StorageCastExpression) funcExpression).value;
 								}
-
+								
 								if (funcExpression instanceof FunctionExpression && ((FunctionExpression) funcExpression).body instanceof ReturnStatement) {
+									CompilerUtils.tagMethodParameters(context, module, ((FunctionExpression) funcExpression).header, false, Collections
+                                            .emptyList());
 									((ReturnStatement) ((FunctionExpression) funcExpression).body).value.accept(visitor);
 									javaWriter.addVariableInfo(new JavaLocalVariableInfo(projectedElementType, projectedElementLocal, inlineBegin, ((FunctionExpression) funcExpression).header.parameters[0].name, inlineEnd));
+									
 								} else throw new IllegalStateException("Trying to inline a non-inlineable expression");
-
-
+								
+								
 								javaWriter.label(inlineEnd);
-							} else {
+							});
+				} else {
+					//We cannot inline, so get a hold of the function expression and apply it to every
+					expression.arguments.arguments[1].accept(this); //Projection Function
+					final Type functionType = context.getType(expression.arguments.arguments[1].type);
+					final int functionLocation = javaWriter.local(functionType);
+					javaWriter.storeObject(functionLocation);
+					javaWriter.addVariableInfo(new JavaLocalVariableInfo(functionType, functionLocation, begin, "projectionFunction", end));
+					final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsProjected(type.dimension, originArrayType, originArrayLocation, javaWriter);
+					ArrayInitializerHelper.visitProjected(javaWriter, arraySizes, type.dimension, originArrayLocation, originArrayType, destinationArrayType,
+							(elementType, counterLocations) -> {
 								//Apply function here
-								//javaWriter.loadObject(functionLocation);
-								//javaWriter.swap();
-
-								//TODO invoke?
-								//javaWriter.invokeVirtual(new JavaMethod(JavaClass.fromInternalName("lambda1", JavaClass.Kind.CLASS), JavaMethod.Kind.INSTANCE, "accept", true, "(Ljava/lang/String;)Ljava/lang/String;", 0, false));
-
-								//FIXME Critical! Currently returning the same object!
-								//throw new UnsupportedOperationException("Cannot use projection functions yet!");
-							}
-						});
-
-
+								javaWriter.loadObject(functionLocation);
+								javaWriter.swap();
+								
+								if(indexed) {
+									for (int counterLocation : counterLocations) {
+										javaWriter.loadInt(counterLocation);
+										javaWriter.swap();
+									}
+								}
+								
+								javaWriter.invokeInterface(context.getFunctionalInterface(expression.arguments.arguments[1].type));
+							});
+				}
+				
+				
 				javaWriter.label(end);
 				return;
-
-			}
-			case ARRAY_CONSTRUCTOR_PROJECTED_INDEXED: {
-				ArrayTypeID type = (ArrayTypeID) expression.type.type;
-
-				if (type.dimension == 1) {
-					// original = arguments[0] (this is an array)
-					// projector = arguments[1] (this is a lambda with 2 parameters)
-					// array = new T[original.length]
-					// for (int i = 0; i < array.length; i++)
-					//   array[i] = projector(i, original[i]);
-					//
-					// NOTE: arguments[1] can be a FunctionExpression; this can be optimized by running it inline
-
-					// TODO: implement in bytecode
-
-					return;
-				} else {
-					// TODO: implement
-					throw new UnsupportedOperationException("Not yet supported!");
-				}
+				
 			}
 			case ARRAY_INDEXGET:
 				break;
@@ -3692,14 +3897,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				case LONG_INC:
 				case ULONG_INC:
 					modify(expression.target, () -> {
-						javaWriter.constant(1l);
+						javaWriter.constant(1L);
 						javaWriter.lAdd();
 					}, PushOption.BEFORE);
 					return null;
 				case LONG_DEC:
 				case ULONG_DEC:
 					modify(expression.target, () -> {
-						javaWriter.constant(1l);
+						javaWriter.constant(1L);
 						javaWriter.lSub();
 					}, PushOption.BEFORE);
 					return null;
@@ -3816,6 +4021,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitSetter(SetterExpression expression) {
+		if(!checkAndExecuteMethodInfo(expression.setter, expression.type, expression)) {
+			throw new IllegalStateException("Unknown Setter");
+		}
 		return null;
 	}
 
@@ -3970,7 +4178,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		//Constructor
 		{
-			final JavaWriter constructorWriter = new JavaWriter(expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
+			final JavaWriter constructorWriter = new JavaWriter(context.logger, expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
 			constructorWriter.start();
 			constructorWriter.loadObject(0);
 			constructorWriter.dup();
@@ -3986,7 +4194,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		//The actual method
 		{
 			final JavaMethod actualMethod = new JavaMethod(tag.method.cls, tag.method.kind, tag.method.name, tag.method.compile, tag.method.descriptor, tag.method.modifiers & ~JavaModifiers.ABSTRACT, tag.method.genericResult, tag.method.typeParameterArguments);
-			final JavaWriter functionWriter = new JavaWriter(expression.position, lambdaCW, actualMethod, null, methodDescriptor, null, "java/lang/Override");
+			final JavaWriter functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualMethod, null, methodDescriptor, null, "java/lang/Override");
 			functionWriter.start();
 
 			//this.wrapped
@@ -3997,13 +4205,20 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			{
 				final Class<?>[] methodParameterTypes = functionalInterfaceMethod.getParameterTypes();
 				for (int i = 0; i < methodParameterTypes.length; i++) {
-					functionWriter.load(Type.getType(methodParameterTypes[i]), i + 1);
+                    final Class<?> methodParameterType = methodParameterTypes[i];
+                    final Type type = Type.getType(methodParameterType);
+                    functionWriter.load(type, i + 1);
 				}
 			}
 
 			//Invokes the wrapped interface's method and returns the result
 			functionWriter.invokeInterface(wrappedMethod);
-			functionWriter.returnType(context.getType(((FunctionTypeID) expression.value.type.type).header.getReturnType()));
+            final StoredType returnType = ((FunctionTypeID) expression.value.type.type).header.getReturnType();
+            final Type type = context.getType(returnType);
+            if(!CompilerUtils.isPrimitive(returnType.type)) {
+                functionWriter.checkCast(type);
+            }
+            functionWriter.returnType(type);
 
 			functionWriter.ret();
 			functionWriter.end();
@@ -4017,25 +4232,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.dupX1();
 		javaWriter.swap();
 		javaWriter.invokeSpecial(className, "<init>", constructorDesc);
-
-		//Debug-only, remove later
-		if(true) {
-			try (FileOutputStream out = new FileOutputStream(className + ".class")) {
-				out.write(lambdaCW.toByteArray());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	@Override
 	public Void visitSupertypeCast(SupertypeCastExpression expression) {
+		expression.value.accept(this);
 		return null; // nothing to do
 	}
 
 	@Override
 	public Void visitThis(ThisExpression expression) {
-		javaWriter.loadObject(0);
+		javaWriter.load(context.getType(expression.type), 0);
 		return null;
 	}
 
@@ -4110,7 +4317,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
 		//Does nothing if not required to be wrapped
 		expression.value.accept(this);
-		expression.value.type.type.accept(expression.value.type, new JavaBoxingTypeVisitor(javaWriter));
+		expression.value.type.type.accept(expression.value.type, boxingTypeVisitor);
 		return null;
 	}
 
@@ -4129,15 +4336,25 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			getJavaWriter().invokeStatic(methodInfo);
 		} else if (methodInfo.kind == JavaMethod.Kind.INTERFACE) {
 			getJavaWriter().invokeInterface(methodInfo);
+		} else if (methodInfo.kind == JavaMethod.Kind.EXPANSION) {
+			getJavaWriter().invokeStatic(methodInfo);
 		} else if (methodInfo.kind == JavaMethod.Kind.COMPILED) {
 			Objects.requireNonNull(methodInfo.translation).translate(expression, this);
-		} else if (methodInfo.cls.kind == JavaClass.Kind.INTERFACE) {
+		} else if (methodInfo.cls != null && methodInfo.cls.kind == JavaClass.Kind.INTERFACE) {
 			getJavaWriter().invokeInterface(methodInfo);
 		} else {
 			getJavaWriter().invokeVirtual(methodInfo);
 		}
-		if (methodInfo.genericResult)
+		if (methodInfo.genericResult) {
 			getJavaWriter().checkCast(context.getInternalName(resultType));
+		}
+
+		//Make sure that method results are popped if ZC thinks its a void but it actually is not.
+		//Fixes an issue for List#add() returning void in ZC but Z in Java.
+		if(resultType.type == BasicTypeID.VOID && !methodInfo.descriptor.equals("") && !methodInfo.descriptor.endsWith(")V")) {
+			final boolean isLarge = methodInfo.descriptor.endsWith(")D") && methodInfo.descriptor.endsWith(")J");
+			getJavaWriter().pop(isLarge);
+		}
 
 		return true;
 	}
@@ -4200,6 +4417,17 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void copyTo(CallExpression call) {
+		//Copy this (source) to dest
+		//              source.copyTo(dest, sourceOffset, destOffset, length)
+		//=> System.arraycopy(source, sourceOffset, dest, destOffset, length);
+		javaWriter.dup2X2();
+		javaWriter.pop2();
+		javaWriter.swap();
+		javaWriter.dup2X2();
+		javaWriter.pop2();
+		final JavaClass system = JavaClass.fromInternalName("java/lang/System", JavaClass.Kind.CLASS);
+		final JavaMethod javaMethod = JavaMethod.getStatic(system, "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", JavaModifiers.PUBLIC);
+		javaWriter.invokeStatic(javaMethod);
 		return null;
 	}
 

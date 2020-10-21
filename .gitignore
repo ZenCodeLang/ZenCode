@@ -2,3 +2,5 @@
 .nb-gradle
 build
 *.class
+
+out/

@@ -6,13 +6,18 @@
 package org.openzen.zenscript.codemodel.statement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -77,5 +82,28 @@ public class SwitchStatement extends LoopStatement {
 			result.cases.add(case_.normalize(scope, tModified));
 		}
 		return result;
+	}
+
+	@Override
+	public StoredType getReturnType() {
+		//return super.getReturnType();
+		final List<StoredType> collect = cases.stream()
+				.flatMap(aCase -> Arrays.stream(aCase.statements))
+				.map(Statement::getReturnType)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+
+		if(collect.isEmpty())
+			return null;
+
+		if(collect.size() == 1)
+			return collect.get(0);
+
+		final long c = collect.stream().map(s -> s.type).distinct().count();
+		if(c == 1)
+			return collect.get(0);
+		else
+			//TODO make this real
+			throw new IllegalStateException("Too many possible types: " + c);
 	}
 }

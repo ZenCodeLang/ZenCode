@@ -73,16 +73,16 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitConst(ConstMember member) {
 		if (DEBUG_EMPTY && cls.empty)
-			System.out.println("Class " + cls.fullName + " not empty because of const " + member.name);
+			context.logger.debug("Class " + cls.fullName + " not empty because of const " + member.name);
 		
 		cls.empty = false;
-		module.setFieldInfo(member, new JavaField(cls, member.name, context.getDescriptor(member.getType())));
+		module.setFieldInfo(member, new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType())));
 		return null;
 	}
 	
 	@Override
 	public Void visitField(FieldMember member) {
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()));
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
 		module.setFieldInfo(member, field);
 		if (member.hasAutoGetter()) {
 			visitGetter(member.autoGetter);
@@ -105,7 +105,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitDestructor(DestructorMember member) {
 		if (DEBUG_EMPTY && cls.empty)
-			System.out.println("Class " + cls.fullName + " not empty because of destructor");
+			context.logger.debug("Class " + cls.fullName + " not empty because of destructor");
 		
 		cls.empty = false;
 		return null;
@@ -163,7 +163,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 				m.accept(this);
 		} else {
 			if (DEBUG_EMPTY && cls.empty)
-				System.out.println("Class " + cls.fullName + " not empty because of unmergeable implementation");
+				context.logger.debug("Class " + cls.fullName + " not empty because of unmergeable implementation");
 			
 			cls.empty = false;
 			
@@ -187,7 +187,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		member.innerDefinition.accept(innerDefinitionPrepare);
 		
 		if (DEBUG_EMPTY && cls.empty)
-			System.out.println("Class " + cls.fullName + " not empty because of inner definition " + member.innerDefinition.name);
+			context.logger.debug("Class " + cls.fullName + " not empty because of inner definition " + member.innerDefinition.name);
 		cls.empty = false;
 		return null;
 	}
@@ -195,7 +195,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitStaticInitializer(StaticInitializerMember member) {
 		if (DEBUG_EMPTY && cls.empty)
-			System.out.println("Class " + cls.fullName + " not empty because of static initializer");
+			context.logger.debug("Class " + cls.fullName + " not empty because of static initializer");
 		
 		cls.empty = false;
 		return null;
@@ -313,20 +313,33 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					header.getReturnType().type instanceof GenericTypeID,
 					header.useTypeParameters());
 		} else if (method == null) {
-			method = new JavaMethod(
-					cls,
-					getKind(member),
-					name,
-					true,
-					context.getMethodDescriptor(header),
-					modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-					header.getReturnType().type instanceof GenericTypeID,
-					header.useTypeParameters());
+			if(member instanceof ConstructorMember) {
+				method = new JavaMethod(
+						cls,
+						getKind(member),
+						name,
+						true,
+						context.getMethodDescriptorConstructor(header, member),
+						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+						false,
+						header.useTypeParameters()
+				);
+			} else {
+				method = new JavaMethod(
+						cls,
+						getKind(member),
+						name,
+						true,
+						context.getMethodDescriptor(header),
+						modifiers | JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+						header.getReturnType().type instanceof GenericTypeID,
+						header.useTypeParameters());
+			}
 		}
 		
 		if (method.compile && member.getBuiltin() != BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) {
 			if (DEBUG_EMPTY && cls.empty)
-				System.out.println("Class " + cls.fullName + " not empty because of " + member.describe());
+				context.logger.debug("Class " + cls.fullName + " not empty because of " + member.describe());
 			
 			cls.empty = false;
 		}

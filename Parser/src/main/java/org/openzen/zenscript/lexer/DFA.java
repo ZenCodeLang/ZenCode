@@ -1,15 +1,16 @@
 /* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
 
-import gnu.trove.iterator.TIntIterator;
-import gnu.trove.map.hash.TIntIntHashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import gnu.trove.set.hash.TIntHashSet;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * Implements a DFA. Used as intermediate form when compiling an NFA to a
@@ -56,8 +57,8 @@ public class DFA<T>
 
         while (!todo.isEmpty()) {
             DFAState<T> current = todo.poll();
-
-            TIntIterator it = current.transitions.keySet().iterator();
+    
+            Iterator<Integer> it = current.transitions.keySet().iterator();
             while (it.hasNext()) {
                 int k = it.next();
                 DFAState<T> next = current.transitions.get(k);
@@ -70,16 +71,16 @@ public class DFA<T>
         }
 
         /* Compile */
-        TIntIntHashMap[] transitions = new TIntIntHashMap[counter];
+        Map<Integer, Integer>[] transitions = new HashMap[counter];
 		@SuppressWarnings("unchecked")
         T[] finals2 = (T[]) Array.newInstance(tokenClass, counter);
 		
         for (DFAState<T> node : nodeList) {
             int index = nodes.get(node);
             finals2[index] = node.finalCode;
-
-            transitions[index] = new TIntIntHashMap();
-            TIntIterator it = node.transitions.keySet().iterator();
+    
+            transitions[index] = new HashMap<>();
+            Iterator<Integer> it = node.transitions.keySet().iterator();
             while (it.hasNext()) {
                 int k = it.next();
                 DFAState<T> next = node.transitions.get(k);
@@ -98,13 +99,13 @@ public class DFA<T>
     public DFA<T> optimize()
 	{
         CompiledDFA<T> compiled = compile();
-        TIntIntHashMap[] transitions = compiled.transitions;
+        Map<Integer, Integer>[] transitions = compiled.transitions;
         int size = transitions.length;
 
         /* Collect all edges and determine alphabet */
-        TIntHashSet alphabet = new TIntHashSet();
+        Set<Integer> alphabet = new HashSet<>();
         for (int i = 0; i < size; i++) {
-            TIntIterator it = transitions[i].keySet().iterator();
+            Iterator<Integer> it = transitions[i].keySet().iterator();
             while (it.hasNext()) {
                 int k = it.next();
                 alphabet.add(k);
@@ -127,7 +128,7 @@ public class DFA<T>
         boolean changed;
         do {
             changed = false;
-            TIntIterator ita = alphabet.iterator();
+            Iterator<Integer> ita = alphabet.iterator();
             while (ita.hasNext()) {
                 int x = ita.next();
                 for (int i = 0; i < size; i++) {
@@ -146,7 +147,7 @@ public class DFA<T>
         } while (changed);
 
         /* Group nodes */
-        TIntObjectHashMap<DFAState<T>> nodeMap = new TIntObjectHashMap<>();
+        Map<Integer, DFAState<T>> nodeMap = new HashMap<>();
         outer: for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 if (!distinguishable[i][j] && nodeMap.containsKey(j)) {
@@ -165,7 +166,7 @@ public class DFA<T>
         }
 
         for (int i = 0; i < compiled.transitions.length; i++) {
-            TIntIterator iter = transitions[i].keySet().iterator();
+            Iterator<Integer> iter = transitions[i].keySet().iterator();
             while (iter.hasNext()) {
                 int k = iter.next();
 
@@ -182,9 +183,9 @@ public class DFA<T>
         StringBuilder result = new StringBuilder();
         CompiledDFA<T> dfs = compile();
         for (int i = 0; i < dfs.transitions.length; i++) {
-            TIntIntHashMap map = dfs.transitions[i];
-            
-            TIntIterator it = map.keySet().iterator();
+            Map<Integer, Integer> map = dfs.transitions[i];
+    
+            Iterator<Integer> it = map.keySet().iterator();
             while (it.hasNext()) {
                 int v = it.next();
                 result.append("edge(");
@@ -217,14 +218,15 @@ public class DFA<T>
      */
     public static class DFAState<T>
 	{
-        private TIntObjectHashMap<DFAState<T>> transitions;
+        
+        private Map<Integer, DFAState<T>> transitions;
         private T finalCode = null;
 
         /**
          * Creates a new DFA state.
          */
         public DFAState() {
-            transitions = new TIntObjectHashMap<>();
+            transitions = new HashMap<>();
         }
 
         /**

@@ -5,14 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.type;
 
-import org.openzen.zenscript.codemodel.GenericName;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
@@ -20,6 +14,13 @@ import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  *
@@ -42,7 +43,7 @@ public class DefinitionTypeID implements TypeID {
 		if (typeArguments == null)
 			throw new NullPointerException("typeParameters cannot be null");
 		if (typeArguments.length != definition.getNumberOfGenericParameters())
-			throw new IllegalArgumentException("Wrong number of type parameters!");
+			throw new IllegalArgumentException("Wrong number of type parameters! " + definition.name + " expected: " + definition.getNumberOfGenericParameters() + " got: " + typeArguments.length);
 		if (definition.isInnerDefinition() && !definition.isStatic() && outer == null)
 			throw new IllegalArgumentException("Inner definition requires outer instance");
 		if ((!definition.isInnerDefinition() || definition.isStatic()) && outer != null)
@@ -100,12 +101,13 @@ public class DefinitionTypeID implements TypeID {
 		DefinitionTypeID current = this;
 		do {
 			if (current.typeArguments != null) {
-				if (current.definition.typeParameters == null)
-					System.out.println("Type parameters but no generic parameters");
-				else
-					for (int i = 0; i < current.typeArguments.length; i++)
-						mapping.put(current.definition.typeParameters[i], current.typeArguments[i]);
-			}
+                if(current.definition.typeParameters != null) {
+                    for (int i = 0; i < current.typeArguments.length; i++)
+                        mapping.put(current.definition.typeParameters[i], current.typeArguments[i]);
+                }//else {
+                //    System.out.println("Type parameters but no generic parameters");
+                //}
+            }
 
 			current = current.outer;
 		} while (current != null && !current.definition.isStatic());

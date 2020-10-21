@@ -16,6 +16,7 @@ import java.util.function.Consumer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ModuleSpace;
 import org.openzen.zenscript.codemodel.SemanticModule;
@@ -75,7 +76,7 @@ public class DirectorySourceModule implements SourceModule {
 	}
 
 	@Override
-	public SemanticModule[] loadDependencies(ModuleLoader loader, GlobalTypeRegistry registry, Consumer<CompileException> exceptionLogger) {
+	public SemanticModule[] loadDependencies(ModuleLoader loader, GlobalTypeRegistry registry, CompileExceptionLogger exceptionLogger) {
 		List<String> dependencyNames = new ArrayList<>();
 		if (!isStdLib)
 			dependencyNames.add("stdlib");

@@ -42,8 +42,8 @@ public class JavaClass implements Comparable<JavaClass> {
 			return new JavaClass("", internalName, kind, new String[0]);
 		
 		int lastSlash = internalName.lastIndexOf('/');
-		if (lastSlash < 0)
-			System.out.println(internalName);
+		//if (lastSlash < 0)
+		//	System.out.println(internalName);
 		
 		String pkg = lastSlash < 0 ? "" : internalName.substring(0, lastSlash);
 		String className = lastSlash < 0 ? internalName : internalName.substring(lastSlash + 1);
@@ -53,7 +53,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	
 	public static String getNameFromFile(String filename) {
 		if (filename.indexOf('.') > 0)
-			return filename.substring(0, filename.indexOf('.'));
+			return filename.substring(0, filename.lastIndexOf('.'));
 		else
 			return filename;
 	}

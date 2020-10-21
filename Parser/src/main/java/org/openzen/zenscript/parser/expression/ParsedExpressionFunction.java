@@ -81,25 +81,38 @@ public class ParsedExpressionFunction extends ParsedExpression {
 			
 			header.setReturnType(returnType);
 		}
-		
-		if (!scope.genericInferenceMap.isEmpty()) {
+
+
+		if (genericHeader.typeParameters.length > 0 && !scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference
 			StoredType returnType = statements.getReturnType();
-			Map<TypeParameter, StoredType> inferredTypes = returnType.type.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType());
-			if (inferredTypes == null)
-				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
-			
-			scope.genericInferenceMap.putAll(inferredTypes);
+			if (returnType != null) {
+				Map<TypeParameter, StoredType> inferredTypes = returnType.type.inferTypeParameters(scope.getMemberCache(), genericHeader
+						.getReturnType());
+				if (inferredTypes == null) {
+					throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
+				}
+
+				scope.genericInferenceMap.putAll(inferredTypes);
+			}
+
 		}
-		
+
+		final FunctionHeader thatOtherHeader = genericHeader.withGenericArguments(new GenericMapper(position, scope.getTypeRegistry(), scope.genericInferenceMap));
+		if(thatOtherHeader.getReturnType().isBasic(BasicTypeID.UNDETERMINED)) {
+			thatOtherHeader.setReturnType(header.getReturnType());
+		}
 		StoredType functionType = scope.getTypeRegistry()
-				.getFunction(genericHeader.withGenericArguments(new GenericMapper(position, scope.getTypeRegistry(), scope.genericInferenceMap)))
+				.getFunction(thatOtherHeader)
 				.stored(storage);
 		return new FunctionExpression(position, functionType, closure, header, statements);
 	}
 	
 	@Override
 	public boolean isCompatibleWith(BaseScope scope, StoredType type) {
+		if(type.isOptional())
+			type = type.withoutOptional();
+
 		if (type.type instanceof FunctionTypeID) {
 			FunctionHeader definedHeader = header.compile(scope);
 			FunctionTypeID targetFunction = (FunctionTypeID) type.type;

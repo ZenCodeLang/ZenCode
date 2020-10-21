@@ -40,4 +40,8 @@ public class NativeDefinitionAnnotation implements DefinitionAnnotation {
 	public void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeContext context) {
 		output.writeString(identifier);
 	}
+
+	public String getIdentifier() {
+		return identifier;
+	}
 }

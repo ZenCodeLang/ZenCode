@@ -530,6 +530,9 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		if (definitionType.superType != null) {
 			cache.get(definitionType.superType.stored(type.getSpecifiedStorage()))
 					.copyMembersTo(members, TypeMemberPriority.INHERITED);
+		} else if(definition.getSuperType() != null) {
+			cache.get(definition.getSuperType().stored(type.getSpecifiedStorage()))
+					.copyMembersTo(members, TypeMemberPriority.INHERITED);
 		} else {
 			getter(definition, OBJECT_HASHCODE, "objectHashCode", INT.stored);
 		}

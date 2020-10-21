@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.codemodel.generic;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -60,8 +60,32 @@ public class TypeParameter extends Taggable {
 		}
 		return result.toString();
 	}
-	
-	@Override
+    
+    @Override
+    public boolean equals(Object o) {
+        if(this == o)
+            return true;
+        if(o == null || getClass() != o.getClass())
+            return false;
+        
+        TypeParameter that = (TypeParameter) o;
+        
+        if(!name.equals(that.name))
+            return false;
+        if(!Objects.equals(storage, that.storage))
+            return false;
+        return bounds.equals(that.bounds);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + (storage != null ? storage.hashCode() : 0);
+        result = 31 * result + bounds.hashCode();
+        return result;
+    }
+    
+    @Override
 	public String toString() {
 		return name + "@" + position.toShortString();
 	}

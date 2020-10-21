@@ -14,7 +14,8 @@ if (!hasProperty('mainClass')) {
 }
 
 dependencies {
-	compile 'org.ow2.asm:asm-debug-all:6.0_BETA'
-	compile project(':CodeModel')
+    compile group: 'org.ow2.asm', name: 'asm', version: '7.2'
+    compile group: 'org.ow2.asm', name: 'asm-commons', version: '7.2'
+    compile project(':CodeModel')
 	compile project(':JavaShared')
 }

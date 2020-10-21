@@ -132,8 +132,8 @@ public class StatementFormatter implements StatementVisitor<Void> {
 	public Void visitExpression(ExpressionStatement statement) {
 		WhitespaceInfo whitespace = statement.getTag(WhitespaceInfo.class);
 		beginSingleLine(whitespace);
-		output.append(statement.expression.accept(expressionFormatter).value)
-			  .append(";");
+        String value = statement.expression.accept(expressionFormatter).value;
+        output.append(value).append(";");
 		endSingleLine(whitespace);
 		return null;
 	}
@@ -278,7 +278,8 @@ public class StatementFormatter implements StatementVisitor<Void> {
 		}
 		if (statement.initializer != null) {
 			output.append(" = ");
-			output.append(statement.initializer.accept(expressionFormatter).value);
+            String value = statement.initializer.accept(expressionFormatter).value;
+            output.append(value);
 		}
 		output.append(";");
 		endSingleLine(whitespace);

@@ -5,7 +5,8 @@
  */
 package org.openzen.zenscript.javashared.prepare;
 
-import org.openzen.zenscript.javashared.JavaNativeClass;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
@@ -19,11 +20,6 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaContext;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
 
 /**
  *
@@ -56,7 +52,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 		if (definition.module != module.module)
 			throw new IllegalArgumentException("Definition is not in the same module as the current module!");
 		
-		System.out.println("~~ Preparing " + definition.name);
+		context.logger.debug("~~ Preparing " + definition.name);
 		definition.accept(this);
 	}
 	
@@ -64,7 +60,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	public JavaClass visitClass(ClassDefinition definition) {
 		if (isPrepared(definition))
 			return context.getJavaClass(definition);
-		
+
 		return visitClassCompiled(definition, true, JavaClass.Kind.CLASS);
 	}
 
@@ -134,6 +130,11 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	}
 	
 	private JavaClass visitClassCompiled(HighLevelDefinition definition, boolean startsEmpty, JavaClass.Kind kind) {
+
+		for (TypeParameter typeParameter : definition.typeParameters) {
+			module.setTypeParameterInfo(typeParameter, new JavaTypeParameterInfo(-1));
+		}
+
 		if (definition.getSuperType() != null)
 			prepare(definition.getSuperType());
 		
@@ -151,7 +152,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	}
 	
 	private void visitClassMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
-		System.out.println("Preparing " + cls.internalName);
+		context.logger.debug("Preparing " + cls.internalName);
 		JavaPrepareClassMethodVisitor methodVisitor = new JavaPrepareClassMethodVisitor(context, module, cls, nativeClass, this, startsEmpty);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
@@ -160,7 +161,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	}
 	
 	private void visitExpansionMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass) {
-		System.out.println("Preparing " + cls.internalName);
+		context.logger.debug("Preparing " + cls.internalName);
 		JavaPrepareExpansionMethodVisitor methodVisitor = new JavaPrepareExpansionMethodVisitor(context, module, cls, nativeClass);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);

@@ -11,6 +11,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -32,6 +33,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.lexer.ParseException;
+import org.openzen.zenscript.parser.logger.*;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
@@ -42,7 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import org.openzen.zenscript.lexer.ZSTokenType;
 
 import static org.openzen.zenscript.lexer.ZSTokenType.EOF;
 import static org.openzen.zenscript.lexer.ZSTokenType.K_IMPORT;
@@ -58,7 +60,8 @@ public class ParsedFile {
 			ParsedFile[] files,
 			ModuleSpace registry,
 			FunctionParameter[] parameters,
-			Consumer<CompileException> exceptionLogger) {
+			ParserLogger logger) {
+	    boolean failed = false;
 		// We are considering all these files to be in the same package, so make
 		// a single PackageDefinition instance. If these files were in multiple
 		// packages, we'd need an instance for every package.
@@ -75,7 +78,6 @@ public class ParsedFile {
 		definitions.registerExpansionsTo(expansions);
 		
 		Map<String, ISymbol> globals = registry.collectGlobals();
-		boolean failed = false;
 		
 		ModuleTypeResolutionContext moduleContext = new ModuleTypeResolutionContext(
 				registry.registry,
@@ -98,9 +100,18 @@ public class ParsedFile {
 			// It doesn't yet compile the method contents.
 			file.compileTypes(moduleContext, rootPackage, pkg, importErrors);
 		}
+        
+        for(ParsedFile file : files) {
+            if(file.hasErrors()) {
+                failed = true;
+                for(ParseException error : file.errors) {
+                    logger.logParseException(error);
+                }
+            }
+        }
 		
 		if (failed)
-			return new SemanticModule(pkg.module, dependencies, parameters, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.registry, expansions, registry.getAnnotations(), registry.getStorageTypes());
+			return new SemanticModule(pkg.module, dependencies, parameters, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.registry, expansions, registry.getAnnotations(), registry.getStorageTypes(), logger);
 		
 		// scripts will store all the script blocks encountered in the files
 		PrecompilationState precompiler = new PrecompilationState();
@@ -114,11 +125,11 @@ public class ParsedFile {
 			// compileCode will convert the parsed statements and expressions
 			// into semantic code. This semantic code can then be compiled
 			// to various targets.
-			file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals, scriptHeader, exceptionLogger, importErrors);
+			file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals, scriptHeader, logger, importErrors);
 		}
         
         for(CompileException error : importErrors.values()) {
-            exceptionLogger.accept(error);
+            logger.logCompileException(error);
         }
 		return new SemanticModule(
 				pkg.module,
@@ -132,7 +143,7 @@ public class ParsedFile {
 				registry.registry,
 				expansions,
 				registry.getAnnotations(),
-				registry.getStorageTypes());
+				registry.getStorageTypes(), logger);
 	}
 	
 	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File file) throws ParseException {
@@ -201,7 +212,13 @@ public class ParsedFile {
 			} else {
 				ParsedDefinition definition = ParsedDefinition.parse(compilingPackage, position, modifiers, annotations, tokens, null);
 				if (definition == null) {
-					result.statements.add(ParsedStatement.parse(tokens, annotations));
+				    try {
+                        result.statements.add(ParsedStatement.parse(tokens, annotations));
+                    }catch (ParseException e) {
+				        tokens.logError(e);
+				        tokens.recoverUntilToken(ZSTokenType.T_SEMICOLON);
+				        tokens.next();
+                    }
 				} else {
 					result.definitions.add(definition);
 				}
@@ -294,7 +311,8 @@ public class ParsedFile {
             List<ScriptBlock> scripts,
             Map<String, ISymbol> globals,
             FunctionHeader scriptHeader,
-            Consumer<CompileException> exceptionLogger, Map<String, CompileException> importErrors) {
+            CompileExceptionLogger exceptionLogger,
+            Map<String, CompileException> importErrors) {
 		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
 		loadImports(context, rootPackage, modulePackage, importErrors);
 		
@@ -303,7 +321,7 @@ public class ParsedFile {
 			try {
 				definition.compile(scope);
 			} catch (CompileException ex) {
-				exceptionLogger.accept(ex);
+				exceptionLogger.logCompileException(ex);
 			}
 		}
 		

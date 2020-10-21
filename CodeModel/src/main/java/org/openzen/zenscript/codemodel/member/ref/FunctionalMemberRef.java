@@ -26,6 +26,8 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
+import java.util.*;
+
 /**
  *
  * @author Hoofdgebruiker
@@ -150,4 +152,31 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	public Expression callStatic(CodePosition position, TypeID target, FunctionHeader instancedHeader, CallArguments arguments, TypeScope scope) {
 		return new CallStaticExpression(position, target, this, instancedHeader, arguments);
 	}
+    
+    @Override
+    public boolean equals(Object o) {
+        if(this == o)
+            return true;
+        if(o == null || getClass() != o.getClass())
+            return false;
+        
+        FunctionalMemberRef that = (FunctionalMemberRef) o;
+        
+        if(!target.equals(that.target))
+            return false;
+        if(!header.equals(that.header))
+            return false;
+        if(!type.equals(that.type))
+            return false;
+        return Objects.equals(mapper, that.mapper);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = target.hashCode();
+        result = 31 * result + header.hashCode();
+        result = 31 * result + type.hashCode();
+        result = 31 * result + (mapper != null ? mapper.hashCode() : 0);
+        return result;
+    }
 }

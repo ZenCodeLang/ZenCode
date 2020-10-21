@@ -5,12 +5,13 @@
  */
 package org.openzen.zenscript.codemodel;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -165,7 +166,11 @@ public class FunctionHeader {
 	
 	public FunctionParameter getParameter(boolean isVariadic, int index) {
 		if (isVariadic && index >= parameters.length - 1) {
-			return parameters[parameters.length - 1];
+			final FunctionParameter parameter = parameters[parameters.length - 1];
+			if(parameter.type.type instanceof ArrayTypeID) {
+				return new FunctionParameter(((ArrayTypeID) parameter.type.type).elementType, parameter.name);
+			}
+			return parameter;
 		} else {
 			return parameters[index];
 		}
@@ -234,12 +239,13 @@ public class FunctionHeader {
 			return false;
 		
 		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
-		for (int i = 0; i < header.parameters.length; i++) {
-			if (!arguments.arguments[i].type.equals(header.parameters[i].type))
-				return false;
-		}
-		
-		return true;
+        final boolean variadicCall = header.isVariadicCall(arguments, scope);
+        for(int i = 0; i < arguments.arguments.length; i++) {
+            if(!arguments.arguments[i].type.equals(header.getParameterType(variadicCall, i)))
+                return false;
+        }
+        
+        return true;
 	}
 	
 	public boolean matchesImplicitly(CodePosition position, CallArguments arguments, TypeScope scope) {
@@ -247,6 +253,19 @@ public class FunctionHeader {
 			return false;
 		
 		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
+		if(isVariadic()) {
+		    boolean matches = true;
+            for (int i = 0; i < arguments.arguments.length; i++) {
+                if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.getParameterType(true, i))) {
+                    matches = false;
+                    break;
+                }
+            }
+            if(matches) {
+                return true;
+            }
+        }
+		
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
 				return false;
@@ -514,4 +533,43 @@ public class FunctionHeader {
 	public boolean accepts(int arguments) {
 		return arguments >= this.minParameters && arguments <= this.maxParameters;
 	}
+    
+    @Override
+    public boolean equals(Object o) {
+        if(this == o)
+            return true;
+        if(o == null || getClass() != o.getClass())
+            return false;
+        
+        FunctionHeader that = (FunctionHeader) o;
+        
+        if(minParameters != that.minParameters)
+            return false;
+        if(maxParameters != that.maxParameters)
+            return false;
+        if(hasUnknowns != that.hasUnknowns)
+            return false;
+        if(!Arrays.equals(typeParameters, that.typeParameters))
+            return false;
+        if(!returnType.equals(that.returnType))
+            return false;
+        if(!Arrays.equals(parameters, that.parameters))
+            return false;
+        if(!Objects.equals(thrownType, that.thrownType))
+            return false;
+        return Objects.equals(storage, that.storage);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(typeParameters);
+        result = 31 * result + returnType.hashCode();
+        result = 31 * result + Arrays.hashCode(parameters);
+        result = 31 * result + (thrownType != null ? thrownType.hashCode() : 0);
+        result = 31 * result + (storage != null ? storage.hashCode() : 0);
+        result = 31 * result + minParameters;
+        result = 31 * result + maxParameters;
+        result = 31 * result + (hasUnknowns ? 1 : 0);
+        return result;
+    }
 }

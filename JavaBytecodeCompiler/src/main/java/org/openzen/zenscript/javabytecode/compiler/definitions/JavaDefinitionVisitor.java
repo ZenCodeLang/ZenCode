@@ -1,32 +1,44 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.javashared.*;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
-import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.definition.AliasDefinition;
+import org.openzen.zenscript.codemodel.definition.ClassDefinition;
+import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
+import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.definition.StructDefinition;
+import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
-import org.openzen.zenscript.javabytecode.compiler.*;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
+import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
+import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
+import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
+import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaModifiers;
+import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
+import org.openzen.zenscript.javashared.JavaVariantOption;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
-	private static final JavaMethod CLASS_FORNAME
+	private final JavaMethod CLASS_FORNAME
 			= JavaMethod.getNativeStatic(JavaClass.CLASS, "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
-	private static final JavaMethod ENUM_VALUEOF
+	private final JavaMethod ENUM_VALUEOF
 			= JavaMethod.getNativeStatic(JavaClass.CLASS, "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;");
-	private static final JavaMethod ARRAY_CLONE
+	private final JavaMethod ARRAY_CLONE
 			= JavaMethod.getNativeVirtual(JavaClass.ARRAYS, "clone", "()Ljava/lang/Object;");
 
 	private final JavaClassWriter outerWriter;
@@ -52,9 +64,43 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			if (member instanceof ImplementationMember)
 				interfaces.add(context.getInternalName(((ImplementationMember) member).type));
 		}
-        String signature = null;
+        String signature;
+
+		{
+			final StringBuilder signatureBuilder = new StringBuilder();
+			if(definition.typeParameters.length != 0) {
+				signatureBuilder.append("<");
+				for (TypeParameter typeParameter : definition.typeParameters) {
+					signatureBuilder.append(typeParameter.name);
+					signatureBuilder.append(":");
+					signatureBuilder.append("Ljava/lang/Object;");
+				}
+				signatureBuilder.append(">");
+			}
+
+			signatureBuilder.append("L").append(superTypeInternalName).append(";");
+			for (IDefinitionMember member : definition.members) {
+				if(member instanceof ImplementationMember) {
+					signatureBuilder.append(context.getInternalName(((ImplementationMember) member).type));
+				}
+			}
+
+			signature = signatureBuilder.toString();
+		}
 
         writer.visit(Opcodes.V1_8, definition.modifiers, toClass.internalName, signature, superTypeInternalName, interfaces.toArray(new String[0]));
+		for (TypeParameter typeParameter : definition.typeParameters) {
+			//Add it to the class
+			writer.visitField(
+					Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL,
+					"typeOf" + typeParameter.name,
+					"Ljava/lang/Class;",
+					"Ljava/lang/Class<T" + typeParameter.name + ";>;",
+					//"Ljava/lang/Class;",
+					null
+			);
+		}
+
 		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(context, writer, toClass, definition);
         for (IDefinitionMember member : definition.members) {
             member.accept(memberVisitor);
@@ -87,7 +133,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitEnum(EnumDefinition definition) {
-		System.out.println("Compiling enum " + definition.name + " in " + definition.position.getFilename());
+		context.logger.debug("Compiling enum " + definition.name + " in " + definition.position.getFilename());
 
 		String superTypeInternalName = definition.getSuperType() == null ? "java/lang/Object" : context.getInternalName(definition.getSuperType());
 
@@ -105,7 +151,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         }
 
 		JavaMethod valuesMethod = JavaMethod.getStatic(toClass, "values", "()[L" + toClass.internalName + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
-		JavaWriter valuesWriter = new JavaWriter(definition.position, writer, true, valuesMethod, definition, null, null);
+		JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, true, valuesMethod, definition, null, null);
 		valuesWriter.start();
 		valuesWriter.getStaticField(toClass.internalName, "$VALUES", "[L" + toClass.internalName + ";");
 		valuesWriter.invokeVirtual(ARRAY_CLONE);
@@ -114,7 +160,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		valuesWriter.end();
 
 		JavaMethod valueOfMethod = JavaMethod.getStatic(toClass, "valueOf", "(Ljava/lang/String;)L" + toClass.internalName + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
-		JavaWriter valueOfWriter = new JavaWriter(definition.position, writer, true, valueOfMethod, definition, null, null);
+		JavaWriter valueOfWriter = new JavaWriter(context.logger, definition.position, writer, true, valueOfMethod, definition, null, null);
 		valueOfWriter.start();
 		valueOfWriter.invokeStatic(CLASS_FORNAME);
 		valueOfWriter.loadObject(0);
@@ -134,12 +180,13 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitFunction(FunctionDefinition definition) {
-		CompilerUtils.tagMethodParameters(context, context.getJavaModule(definition.module), definition.header, true);
+		CompilerUtils.tagMethodParameters(context, context.getJavaModule(definition.module), definition.header, true, Collections
+                .emptyList());
 
         final String signature = context.getMethodSignature(definition.header);
 		final JavaMethod method = context.getJavaMethod(definition.caller);
 
-		final JavaWriter writer = new JavaWriter(definition.position, outerWriter, true, method, definition, signature, null);
+		final JavaWriter writer = new JavaWriter(context.logger, definition.position, outerWriter, true, method, definition, signature, null);
         final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer);
         statementVisitor.start();
 		boolean returns = definition.caller.body.accept(statementVisitor);
@@ -173,15 +220,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		writer.visitEnd();
 
 
-		final byte[] classBytes = writer.toByteArray();
-
-		try (FileOutputStream out = new FileOutputStream("ttt.class")) {
-			out.write(classBytes);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return classBytes;
+		return writer.toByteArray();
 	}
 
 	@Override
@@ -262,7 +301,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			optionInitSignatureBuilder.append(")V");
 
 			JavaMethod constructorMethod = JavaMethod.getConstructor(optionTag.variantOptionClass, optionInitDescBuilder.toString(), JavaModifiers.PUBLIC);
-			final JavaWriter initWriter = new JavaWriter(option.position, optionWriter, constructorMethod, variant, optionInitSignatureBuilder.toString(), null);
+			final JavaWriter initWriter = new JavaWriter(context.logger, option.position, optionWriter, constructorMethod, variant, optionInitSignatureBuilder.toString(), null);
 			initWriter.start();
 			initWriter.loadObject(0);
 			initWriter.dup();
@@ -280,7 +319,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 			//Denominator for switch-cases
 			JavaMethod denominator = JavaMethod.getVirtual(optionTag.variantOptionClass, "getDenominator", "()I", JavaModifiers.PUBLIC);
-			final JavaWriter getDenominator = new JavaWriter(option.position, optionWriter, denominator, null, null, null, "java/lang/Override");
+			final JavaWriter getDenominator = new JavaWriter(context.logger, option.position, optionWriter, denominator, null, null, null, "java/lang/Override");
 			getDenominator.start();
 			getDenominator.constant(option.ordinal);
 			getDenominator.returnInt();
@@ -290,13 +329,6 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			optionWriter.visitEnd();
 			final byte[] byteArray = optionWriter.toByteArray();
 			context.register(optionTag.variantOptionClass.internalName, byteArray);
-
-			//Print the option files, won't be in production
-			try (FileOutputStream out = new FileOutputStream(optionTag.variantOptionClass.internalName.replace('/', '_') + ".class")) {
-				out.write(byteArray);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 
 
@@ -304,7 +336,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			member.accept(visitor);
 		}
 
-		final JavaWriter superInitWriter = new JavaWriter(variant.position, writer, JavaMethod.getConstructor(toClass, "()V", Opcodes.ACC_PUBLIC), variant, "()V", null);
+		final JavaWriter superInitWriter = new JavaWriter(context.logger, variant.position, writer, JavaMethod.getConstructor(toClass, "()V", Opcodes.ACC_PUBLIC), variant, "()V", null);
 		superInitWriter.start();
 		superInitWriter.loadObject(0);
 		superInitWriter.invokeSpecial("java/lang/Object", "<init>", "()V");

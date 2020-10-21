@@ -100,8 +100,8 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 				// ignore this here
 			}
 		}
-		if (results.isEmpty())
-			System.out.println("!");
+		//if (results.isEmpty())
+		//	System.out.println("!");
 		return results;
 	}
 

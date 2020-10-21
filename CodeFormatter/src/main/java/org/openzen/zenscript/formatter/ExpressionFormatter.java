@@ -178,9 +178,16 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				}
 				case INDEXGET: {
 					StringBuilder result = new StringBuilder();
-					result.append(expression.target);
+                    if(expression.target instanceof GetLocalVariableExpression) {
+                        result.append(((GetLocalVariableExpression) expression.target).variable.name);
+                    } else if(expression.target instanceof GetFunctionParameterExpression) {
+                        result.append(((GetFunctionParameterExpression) expression.target).parameter.name);
+                    } else {
+                        result.append(expression.target);
+                    }
 					result.append("[");
-					for (int i = 0; i < expression.arguments.arguments.length - 1; i++) {
+					//why -1?
+					for (int i = 0; i < expression.arguments.arguments.length; i++) {
 						if (i > 0)
 							result.append(", ");
 						
@@ -366,12 +373,12 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitConstantDouble(ConstantDoubleExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	    return new ExpressionString(Double.toString(expression.value), ZenScriptOperator.PRIMARY);
 	}
 
 	@Override
 	public ExpressionString visitConstantFloat(ConstantFloatExpression expression) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new ExpressionString(Float.toString(expression.value), ZenScriptOperator.PRIMARY);
 	}
 
 	@Override

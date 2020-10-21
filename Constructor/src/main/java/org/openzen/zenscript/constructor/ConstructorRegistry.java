@@ -5,16 +5,8 @@
  */
 package org.openzen.zenscript.constructor;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.json.JSONObject;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -24,12 +16,22 @@ import org.openzen.zenscript.compiler.ZenCodeCompiler;
 import org.openzen.zenscript.javabytecode.JavaBytecodeModule;
 import org.openzen.zenscript.javabytecode.JavaBytecodeRunUnit;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
-import org.openzen.zenscript.javashared.JavaCompileSpace;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.SimpleJavaCompileSpace;
 import org.openzen.zenscript.javasource.JavaDirectoryOutput;
 import org.openzen.zenscript.javasource.JavaSourceCompiler;
 import org.openzen.zenscript.javasource.JavaSourceModule;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -74,8 +76,8 @@ public class ConstructorRegistry {
 		}
 
 		@Override
-		public ZenCodeCompiler createCompiler(SemanticModule module) {
-			return new JavaSourceZenCompiler(output, module.registry);
+		public ZenCodeCompiler createCompiler(SemanticModule module, IZSLogger logger) {
+			return new JavaSourceZenCompiler(output, module.registry, logger);
 		}
 
 		@Override
@@ -106,17 +108,19 @@ public class ConstructorRegistry {
 		
 		public final GlobalTypeRegistry registry;
 		private final SimpleJavaCompileSpace space;
+		private final IZSLogger logger;
 		
-		public JavaSourceZenCompiler(File output, GlobalTypeRegistry registry) {
+		public JavaSourceZenCompiler(File output, GlobalTypeRegistry registry, IZSLogger logger) {
 			this.output = output;
 			compiler = new JavaSourceCompiler(registry);
 			this.registry = registry;
 			space = new SimpleJavaCompileSpace(registry);
-		}
+            this.logger = logger;
+        }
 
 		@Override
 		public void addModule(SemanticModule module) {
-			JavaSourceModule result = compiler.compile(module, space, module.modulePackage.fullName);
+			JavaSourceModule result = compiler.compile(logger, module, space, module.modulePackage.fullName);
 			writeMappings(result);
 			
 			modules.add(result);
@@ -168,8 +172,8 @@ public class ConstructorRegistry {
 		}
 
 		@Override
-		public ZenCodeCompiler createCompiler(SemanticModule module) {
-			return new JavaBytecodeJarCompiler();
+		public ZenCodeCompiler createCompiler(SemanticModule module, IZSLogger logger) {
+			return new JavaBytecodeJarCompiler(logger);
 		}
 
 		@Override
@@ -198,11 +202,17 @@ public class ConstructorRegistry {
 		private final ZSPackage stdlib = new ZSPackage(root, "stdlib");
 		public final GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
 		
-		private final JavaCompiler compiler = new JavaCompiler();
+		private final JavaCompiler compiler;
 		private final List<JavaBytecodeModule> modules = new ArrayList<>();
 		private final SimpleJavaCompileSpace space = new SimpleJavaCompileSpace(registry);
-
-		@Override
+        private final IZSLogger logger;
+        
+        public JavaBytecodeJarCompiler(IZSLogger logger) {
+            this.logger = logger;
+            compiler = new JavaCompiler(logger);
+        }
+        
+        @Override
 		public void addModule(SemanticModule module) {
 			JavaBytecodeModule result = compiler.compile(module.modulePackage.fullName, module, space);
 			modules.add(result);
@@ -216,11 +226,15 @@ public class ConstructorRegistry {
 
 		@Override
 		public void run() {
-			JavaBytecodeRunUnit unit = new JavaBytecodeRunUnit();
+			JavaBytecodeRunUnit unit = new JavaBytecodeRunUnit(logger);
 			for (JavaBytecodeModule module : modules)
 				unit.add(module);
 			//unit.add(compiler.helpers);
-			unit.run();
-		}
+            try {
+                unit.run();
+            } catch(ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
 	}
 }

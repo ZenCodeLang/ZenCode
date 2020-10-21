@@ -5,12 +5,20 @@
  */
 package org.openzen.zenscript.codemodel.statement;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
@@ -83,5 +91,26 @@ public class BlockStatement extends Statement {
 		for (Statement statement : statements)
 			normalized[i++] = statement.normalize(scope, modified);
 		return new BlockStatement(position, normalized);
+	}
+
+	@Override
+	public StoredType getReturnType() {
+		final List<StoredType> collect = Arrays.stream(statements)
+				.map(Statement::getReturnType)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList());
+		if(collect.isEmpty())
+			return super.getReturnType();
+		if(collect.size() == 1)
+			return collect.get(0);
+
+		final long count = collect.stream().map(s -> s.type).distinct().count();
+		if(count == 1L)
+			return collect.get(0);
+
+		else
+			//TODO make this real?
+			throw new IllegalStateException("More than one possible storedType: " + count);
 	}
 }

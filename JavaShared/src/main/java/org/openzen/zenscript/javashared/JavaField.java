@@ -13,12 +13,17 @@ public class JavaField {
 	public final JavaClass cls;
 	public final String name;
 	public final String descriptor;
-	public final String signature = null; // TODO: calculate signature too
+	public final String signature; // TODO: calculate signature too
 	
 	public JavaField(JavaClass cls, String name, String descriptor) {
+		this(cls, name, descriptor, null);
+	}
+
+	public JavaField(JavaClass cls, String name, String descriptor, String signature) {
 		this.cls = cls;
 		this.name = name;
 		this.descriptor = descriptor;
+		this.signature = signature;
 	}
 	
 	public String getMapping(JavaClass definition) {

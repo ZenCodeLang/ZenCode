@@ -8,6 +8,7 @@ package org.openzen.zenscript.javasource;
 import java.util.HashMap;
 import java.util.Map;
 import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
@@ -31,8 +32,8 @@ public class JavaSourceCompiler {
 		settings = new JavaSourceFormattingSettings.Builder().build();
 	}
 	
-	public JavaSourceModule compile(SemanticModule module, JavaCompileSpace space, String basePackage) {
-		JavaSourceContext context = new JavaSourceContext(helpers, settings, space, module.modulePackage, basePackage);
+	public JavaSourceModule compile(IZSLogger logger, SemanticModule module, JavaCompileSpace space, String basePackage) {
+		JavaSourceContext context = new JavaSourceContext(logger, helpers, settings, space, module.modulePackage, basePackage);
 		
 		JavaSourceModule result = new JavaSourceModule(module.module, module.parameters);
 		context.addModule(module.module, result);

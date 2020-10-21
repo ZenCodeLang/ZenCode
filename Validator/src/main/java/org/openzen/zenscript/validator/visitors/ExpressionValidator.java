@@ -5,8 +5,8 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -14,22 +14,12 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.AssocTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.validator.TypeContext;
-import org.openzen.zenscript.validator.ValidationLogEntry;
-import org.openzen.zenscript.validator.Validator;
-import org.openzen.zenscript.validator.analysis.ExpressionScope;
-
+import org.openzen.zenscript.codemodel.expression.switchvalue.*;
+import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.member.ref.*;
+import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.validator.*;
+import org.openzen.zenscript.validator.analysis.*;
 /**
  *
  * @author Hoofdgebruiker
@@ -70,7 +60,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 				validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
-					"array element expression type doesn't match array type");
+					"array element expression type " + element.type + " doesn't match array type " + expression.arrayType.elementType);
 			}
 			element.accept(this);
 		}
@@ -393,10 +383,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			key.accept(this);
 			value.accept(this);
 			if (!key.type.equals(type.keyType)) {
-				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Key type must match the associative array key type");
+				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Key type " + key.type + " must match the associative array key type " + type.keyType);
 			}
 			if (!value.type.equals(type.valueType)) {
-				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Value type must match the associative array value type");
+				validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, key.position, "Value type " + value.type + " must match the associative array value type " + type.valueType);
 			}
 		}
 		return null;
@@ -739,8 +729,8 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	private void checkFieldAccess(CodePosition position, FieldMemberRef field) {
-		if (!scope.getAccessScope().hasAccessTo(field.getTarget().getAccessScope(), Modifiers.PRIVATE))
-			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "fields are private");
+		if (!scope.getAccessScope().hasAccessTo(field.getTarget().getAccessScope(), field.getTarget().getEffectiveModifiers()))
+			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no field access to " + field.describe());
 	}
 	
 	private void checkStatic(CodePosition position, DefinitionMemberRef member) {
@@ -776,7 +766,8 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			}
 			
 			FunctionParameter parameter = instancedHeader.getParameter(isVariadic, i);
-			if (!parameter.type.equals(argument.type) && !parameter.defaultValue.type.equals(argument.type)) {
+			if (!parameter.type.equals(argument.type) && (parameter.defaultValue == null || !Objects.equals(parameter.defaultValue.type, argument.type))) {
+				if(!parameter.type.type.equals(argument.type.type))
 				validator.logError(
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						position,

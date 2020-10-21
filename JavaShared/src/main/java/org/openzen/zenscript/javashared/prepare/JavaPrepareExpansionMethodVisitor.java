@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.javashared.prepare;
 
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -60,11 +61,11 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	
 	@Override
 	public Void visitConst(ConstMember member) {
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()));
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
 		module.setFieldInfo(member, field);
 		
 		if (DEBUG_EMPTY && cls.empty)
-			System.out.println("Class " + cls.fullName + " not empty because of const");
+			context.logger.debug("Class " + cls.fullName + " not empty because of const");
 		
 		cls.empty = false;
 		return null;
@@ -73,7 +74,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitField(FieldMember member) {
 		// TODO: expansion fields
-		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()));
+		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
 		module.setFieldInfo(member, field);
 		
 		if (member.hasAutoGetter() || member.hasAutoSetter())
@@ -166,20 +167,42 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		JavaMethod method = null;
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
-		if (method == null)
-			method = new JavaMethod(
-					cls,
-					getKind(member),
-					name,
-					true,
-					context.getMethodDescriptor(header),
-					JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-					header.getReturnType().type instanceof GenericTypeID,
-					header.useTypeParameters()); 
+		if (method == null) {
+
+			if(member instanceof ConstructorMember) {
+				method = new JavaMethod(
+						cls,
+						getKind(member),
+						name,
+						true,
+						context.getMethodDescriptorConstructor(header, member),
+						JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+						false,
+						header.useTypeParameters()
+				);
+			} else {
+				final JavaMethod.Kind kind = getKind(member);
+				final String descriptor;
+				if (kind == JavaMethod.Kind.EXPANSION && member.definition instanceof ExpansionDefinition) {
+					descriptor = context.getMethodDescriptorExpansion(header, ((ExpansionDefinition) member.definition).target);
+				} else {
+					descriptor = context.getMethodDescriptor(header);
+				}
+				method = new JavaMethod(
+						cls,
+						kind,
+						name,
+						true,
+						descriptor,
+						JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
+						header.getReturnType().type instanceof GenericTypeID,
+						header.useTypeParameters());
+			}
+		}
 		
 		if (method.compile) {
 			if (DEBUG_EMPTY && cls.empty)
-				System.out.println("Class " + cls.fullName + " not empty because of " + member.describe());
+				context.logger.debug("Class " + cls.fullName + " not empty because of " + member.describe());
 			
 			cls.empty = false;
 		}

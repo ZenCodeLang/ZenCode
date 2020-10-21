@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.module.ModuleReference;
 import org.openzen.zenscript.constructor.module.SourceModuleReference;
 import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
+import org.openzen.zenscript.constructor.module.logging.*;
 
 public class Main {
     /**
@@ -22,7 +23,7 @@ public class Main {
 			return;
 		}
 		
-		Consumer<CompileException> exceptionLogger = exception -> System.err.println(exception.toString());
+        ModuleLogger exceptionLogger = new EmptyModuleLogger();
 		
 		File currentDirectory = new File(arguments.directory);
 		ZSPackage root = ZSPackage.createRoot();

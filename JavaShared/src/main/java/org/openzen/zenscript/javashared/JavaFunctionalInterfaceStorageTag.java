@@ -6,6 +6,8 @@
 package org.openzen.zenscript.javashared;
 
 import java.lang.reflect.Method;
+import java.util.*;
+
 import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
@@ -57,4 +59,20 @@ public class JavaFunctionalInterfaceStorageTag implements StorageTag {
 	public boolean isImmutable() {
 		return true;
 	}
+    
+    @Override
+    public boolean equals(Object o) {
+        if(this == o)
+            return true;
+        if(o == null || getClass() != o.getClass())
+            return false;
+        
+        JavaFunctionalInterfaceStorageTag other = (JavaFunctionalInterfaceStorageTag) o;
+        return Objects.equals(functionalInterfaceMethod, other.functionalInterfaceMethod);
+    }
+    
+    @Override
+    public int hashCode() {
+        return functionalInterfaceMethod != null ? functionalInterfaceMethod.hashCode() : 0;
+    }
 }

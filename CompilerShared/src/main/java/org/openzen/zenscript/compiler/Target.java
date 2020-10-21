@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.compiler;
 
+import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.SemanticModule;
 
 /**
@@ -12,7 +13,7 @@ import org.openzen.zenscript.codemodel.SemanticModule;
  * @author Hoofdgebruiker
  */
 public interface Target {
-	public ZenCodeCompiler createCompiler(SemanticModule module);
+	public ZenCodeCompiler createCompiler(SemanticModule module, IZSLogger logger);
 	
 	public String getModule();
 	
