@@ -14,8 +14,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.context.LocalTypeResolutionContext;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -110,13 +109,12 @@ public class ParsedFunctionHeader {
 		TypeParameter[] genericParameters = ParsedTypeParameter.getCompiled(this.genericParameters);
 		LocalTypeResolutionContext localContext = new LocalTypeResolutionContext(context, null, genericParameters);
 		ParsedTypeParameter.compile(localContext, genericParameters, this.genericParameters);
-		
-		StoredType returnType = this.returnType.compile(localContext);
+
+		TypeID returnType = this.returnType.compile(localContext);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.size()];
 		for (int i = 0; i < parameters.length; i++)
 			parameters[i] = this.parameters.get(i).compile(localContext);
 		
-		StorageTag storage = this.storage == ParsedStorageTag.NULL ? null : this.storage.resolve(position, context);
-		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(context), storage, parameters);
+		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(context), parameters);
 	}
 }

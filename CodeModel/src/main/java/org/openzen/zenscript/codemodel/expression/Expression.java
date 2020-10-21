@@ -7,7 +7,6 @@ package org.openzen.zenscript.codemodel.expression;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.openzen.zencode.shared.CodePosition;
@@ -18,14 +17,13 @@ import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.StatementTransformer;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -35,10 +33,10 @@ public abstract class Expression implements IPartialExpression {
 	public static final Expression[] NONE = new Expression[0];
 	
 	public final CodePosition position;
-	public final StoredType type;
-	public final StoredType thrownType;
+	public final TypeID type;
+	public final TypeID thrownType;
 	
-	public Expression(CodePosition position, StoredType type, StoredType thrownType) {
+	public Expression(CodePosition position, TypeID type, TypeID thrownType) {
 		if (type == null)
 			throw new NullPointerException();
 		//if (type.type == BasicTypeID.UNDETERMINED)
@@ -73,7 +71,7 @@ public abstract class Expression implements IPartialExpression {
 	public abstract Expression normalize(TypeScope scope);
 	
 	@Override
-	public List<StoredType> getAssignHints() {
+	public List<TypeID> getAssignHints() {
 		return Collections.singletonList(type);
 	}
 	
@@ -82,11 +80,11 @@ public abstract class Expression implements IPartialExpression {
 		return this;
 	}
 	
-	public Expression castExplicit(CodePosition position, TypeScope scope, StoredType asType, boolean optional) {
+	public Expression castExplicit(CodePosition position, TypeScope scope, TypeID asType, boolean optional) {
 		return scope.getTypeMembers(type).castExplicit(position, this, asType, optional);
 	}
 	
-	public Expression castImplicit(CodePosition position, TypeScope scope, StoredType asType) {
+	public Expression castImplicit(CodePosition position, TypeScope scope, TypeID asType) {
 		return scope.getTypeMembers(type).castImplicit(position, this, asType, true);
 	}
 	
@@ -101,13 +99,13 @@ public abstract class Expression implements IPartialExpression {
 	}
 	
 	@Override
-	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) {
 		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
 		return group.predictCallTypes(position, scope, hints, arguments);
 	}
 	
 	@Override
-	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
 		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
 		return group.getMethodMembers().stream()
 				.filter(method -> method.member.getHeader().accepts(arguments) && !method.member.isStatic())
@@ -116,13 +114,13 @@ public abstract class Expression implements IPartialExpression {
 	}
 	
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
+	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
 		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
 		return group.call(position, scope, this, arguments, false);
 	}
 	
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) {
 		TypeMembers members = scope.getTypeMembers(type);
 		IPartialExpression result = members.getMemberExpression(position, scope, this, name, false);
 		if (result == null)
@@ -131,7 +129,7 @@ public abstract class Expression implements IPartialExpression {
 	}
 	
 	@Override
-	public StoredType[] getTypeArguments() {
+	public TypeID[] getTypeArguments() {
 		return null;
 	}
 	
@@ -147,19 +145,19 @@ public abstract class Expression implements IPartialExpression {
 		throw new UnsupportedOperationException("Cannot evaluate this value to an enum constant!");
 	}
 	
-	public static StoredType binaryThrow(CodePosition position, StoredType left, StoredType right) {
-		if (Objects.equals(left, right))
+	public static TypeID binaryThrow(CodePosition position, TypeID left, TypeID right) {
+		if (left == right)
 			return left;
 		else if (left == null)
 			return right;
 		else if (right == null)
 			return left;
 		else
-			return new InvalidTypeID(position, CompileExceptionCode.DIFFERENT_EXCEPTIONS, "two different exceptions in same operation: " + left.toString() + " and " + right.toString()).stored(UniqueStorageTag.INSTANCE);
+			return new InvalidTypeID(position, CompileExceptionCode.DIFFERENT_EXCEPTIONS, "two different exceptions in same operation: " + left.toString() + " and " + right.toString());
 	}
 	
-	public static StoredType multiThrow(CodePosition position, Expression[] expressions) {
-		StoredType result = null;
+	public static TypeID multiThrow(CodePosition position, Expression[] expressions) {
+		TypeID result = null;
 		for (Expression expression : expressions)
 			result = binaryThrow(position, result, expression.thrownType);
 		return result;

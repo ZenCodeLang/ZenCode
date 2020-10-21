@@ -1,6 +1,7 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
 import org.openzen.zenscript.codemodel.member.MethodMember;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.*;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -144,10 +145,10 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         statementVisitor.start();
 		boolean returns = definition.caller.body.accept(statementVisitor);
 		if (!returns) {
-			StoredType type = definition.header.getReturnType();
-			if (CompilerUtils.isPrimitive(type.type))
+			TypeID type = definition.header.getReturnType();
+			if (CompilerUtils.isPrimitive(type))
 				writer.iConst0();
-			else if (type.type != BasicTypeID.VOID)
+			else if (type != BasicTypeID.VOID)
 				writer.aConstNull();
 			writer.returnType(context.getType(type));
 		}
@@ -221,17 +222,17 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 				StringBuilder builder = new StringBuilder();
 				//TODO check if this can be changed to what Stan was up to
 				builder.append("<");
-				for (final StoredType type : option.types) {
-					builder.append(javaTypeGenericVisitor.getSignatureWithBound(type.type));
+				for (final TypeID type : option.types) {
+					builder.append(javaTypeGenericVisitor.getSignatureWithBound(type));
 				}
 				builder.append(">");
 				builder.append("L").append(toClass.internalName).append("<");
 
 				for (final TypeParameter genericParameter : variant.typeParameters) {
 					boolean t = true;
-					for (final StoredType type : option.types)
-						if (type.type instanceof GenericTypeID) {
-							final GenericTypeID genericTypeID = (GenericTypeID) type.type;
+					for (final TypeID type : option.types)
+						if (type instanceof GenericTypeID) {
+							final GenericTypeID genericTypeID = (GenericTypeID) type;
 							if (genericParameter == genericTypeID.parameter) {
 								builder.append("T").append(genericParameter.name).append(";");
 								t = false;
@@ -251,7 +252,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			final StringBuilder optionInitDescBuilder = new StringBuilder("(");
 			final StringBuilder optionInitSignatureBuilder = new StringBuilder("(");
 
-			StoredType[] types = option.types;
+			TypeID[] types = option.types;
 			for (int i = 0; i < types.length; ++i) {
 				final String descriptor = context.getDescriptor(types[i]);
 				optionInitDescBuilder.append(descriptor);

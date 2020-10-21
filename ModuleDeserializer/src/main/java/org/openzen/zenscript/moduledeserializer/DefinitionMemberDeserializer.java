@@ -98,7 +98,6 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 		int flags = 0;
 		CodePosition position = CodePosition.UNKNOWN;
 		int modifiers = 0;
-		StoredType supertypeStored = supertype.stored(BorrowStorageTag.THIS);
 		
 		if (kind != MemberEncoding.TYPE_INNER_DEFINITION) {
 			flags = reader.readUInt();
@@ -110,7 +109,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 		switch (kind) {
 			case MemberEncoding.TYPE_CONST: {
 				String name = readName(flags);
-				StoredType type = reader.deserializeType(context);
+				TypeID type = reader.deserializeType(context);
 				
 				ConstMember result = new ConstMember(position, definition, modifiers, name, type, null);
 				reader.enqueueCode(reader -> result.value = reader.deserializeExpression(new StatementContext(context)));
@@ -121,7 +120,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				String name = readName(flags);
 				int autoGetterAccess = (flags & MemberEncoding.FLAG_AUTO_GETTER) > 0 ? reader.readUInt() : 0;
 				int autoSetterAccess = (flags & MemberEncoding.FLAG_AUTO_SETTER) > 0 ? reader.readUInt() : 0;
-				StoredType type = reader.deserializeType(context);
+				TypeID type = reader.deserializeType(context);
 				
 				FieldMember result = new FieldMember(position, definition, flags, name, context.thisType, type, context.moduleContext.registry, autoGetterAccess, autoSetterAccess, null);
 				reader.enqueueCode(reader -> result.initializer = reader.deserializeExpression(new StatementContext(context)));
@@ -140,7 +139,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 			case MemberEncoding.TYPE_DESTRUCTOR: {
 				DestructorMember result = new DestructorMember(position, definition, modifiers);
 				reader.enqueueCode(reader -> {
-					result.overrides = (FunctionalMemberRef)reader.readMember(context, supertypeStored);
+					result.overrides = (FunctionalMemberRef)reader.readMember(context, supertype);
 					result.setBody(reader.deserializeStatement(new StatementContext(context, result.header)));
 				});
 				member = result;
@@ -151,19 +150,19 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				FunctionHeader header = reader.deserializeHeader(context);
 				MethodMember result = new MethodMember(position, definition, modifiers, name, header, null);
 				reader.enqueueCode(reader -> {
-					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef)reader.readMember(context, supertypeStored));
+					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
 				member = result;
 				break;
 			}
 			case MemberEncoding.TYPE_GETTER: {
-				StoredType type = reader.deserializeType(context);
+				TypeID type = reader.deserializeType(context);
 				String name = readName(flags);
 				
 				GetterMember result = new GetterMember(position, definition, modifiers, name, type, null);
 				reader.enqueueCode(reader -> {
-					result.setOverrides((GetterMemberRef)reader.readMember(context, supertypeStored));
+					result.setOverrides((GetterMemberRef)reader.readMember(context, supertype));
 					FunctionHeader header = new FunctionHeader(type);
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
@@ -171,12 +170,12 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				break;
 			}
 			case MemberEncoding.TYPE_SETTER: {
-				StoredType type = reader.deserializeType(context);
+				TypeID type = reader.deserializeType(context);
 				String name = readName(flags);
 				
 				SetterMember result = new SetterMember(position, definition, modifiers, name, type, null);
 				reader.enqueueCode(reader -> {
-					result.setOverrides((SetterMemberRef)reader.readMember(context, supertypeStored));
+					result.setOverrides((SetterMemberRef)reader.readMember(context, supertype));
 					FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, result.parameter);
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
@@ -189,31 +188,31 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				
 				OperatorMember result = new OperatorMember(position, definition, modifiers, operator, header, null);
 				reader.enqueueCode(reader -> {
-					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef)reader.readMember(context, supertypeStored));
+					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
 				member = result;
 				break;
 			}
 			case MemberEncoding.TYPE_CASTER: {
-				StoredType toType = reader.deserializeType(context);
+				TypeID toType = reader.deserializeType(context);
 				
 				CasterMember result = new CasterMember(position, definition, modifiers, toType, null);
 				reader.enqueueCode(reader -> {
-					result.setOverrides(context.moduleContext.registry, (CasterMemberRef)reader.readMember(context, supertypeStored));
+					result.setOverrides(context.moduleContext.registry, (CasterMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, new FunctionHeader(toType))));
 				});
 				member = result;
 				break;
 			}
 			case MemberEncoding.TYPE_ITERATOR: {
-				StoredType[] types = new StoredType[reader.readUInt()];
+				TypeID[] types = new TypeID[reader.readUInt()];
 				for (int i = 0; i < types.length; i++)
 					types[i] = reader.deserializeType(context);
 				
 				IteratorMember result = new IteratorMember(position, definition, modifiers, types, context.moduleContext.registry, null);
 				reader.enqueueCode(reader -> {
-					result.setOverrides((IteratorMemberRef)reader.readMember(context, supertypeStored));
+					result.setOverrides((IteratorMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, result.header)));
 				});
 				member = result;
@@ -224,14 +223,14 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				CallerMember result = new CallerMember(position, definition, modifiers, header, null);
 				
 				reader.enqueueCode(reader -> {
-					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef)reader.readMember(context, supertypeStored));
+					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef)reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
 				member = result;
 				break;
 			}
 			case MemberEncoding.TYPE_IMPLEMENTATION: {
-				TypeID type = reader.deserializeTypeID(context);
+				TypeID type = reader.deserializeType(context);
 				ImplementationMember result = new ImplementationMember(position, definition, modifiers, type);
 				
 				int members = reader.readUInt();
@@ -394,7 +393,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 		int options = reader.readUInt();
 		for (int i = 0; i < options; i++) {
 			String name = reader.readString();
-			StoredType[] types = new StoredType[reader.readUInt()];
+			TypeID[] types = new TypeID[reader.readUInt()];
 			for (int j = 0; j < types.length; j++)
 				types[i] = reader.deserializeType(context);
 			

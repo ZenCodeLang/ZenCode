@@ -11,7 +11,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -22,7 +21,6 @@ public class TypeParameter extends Taggable {
 	
 	public final CodePosition position;
 	public final String name;
-	public StorageTag storage = null;
 	public final List<TypeParameterBound> bounds = new ArrayList<>();
 	
 	public TypeParameter(CodePosition position, String name) {

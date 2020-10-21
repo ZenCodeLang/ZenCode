@@ -22,9 +22,9 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
@@ -48,14 +48,14 @@ public class ParsedExpressionVariable extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		StoredType[] typeArguments = IParsedType.compileTypes(this.typeArguments, scope);
+		TypeID[] typeArguments = IParsedType.compileTypes(this.typeArguments, scope);
 		IPartialExpression result = scope.get(position, new GenericName(name, typeArguments));
 		if (result == null) {
-			for (StoredType hint : scope.hints) {
+			for (TypeID hint : scope.hints) {
 				TypeMembers members = scope.getTypeMembers(hint);
 				EnumConstantMember member = members.getEnumMember(name);
 				if (member != null)
-					return new EnumConstantExpression(position, hint.type, member);
+					return new EnumConstantExpression(position, hint, member);
 				
 				VariantOptionRef option = members.getVariantOption(name);
 				if (option != null)
@@ -74,7 +74,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 	}
 	
 	@Override
-	public SwitchValue compileToSwitchValue(StoredType type, ExpressionScope scope) throws CompileException {
+	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
 		TypeMembers members = scope.getTypeMembers(type);
 		if (type.isEnum()) {
 			EnumConstantMember member = members.getEnumMember(name);

@@ -13,12 +13,6 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.SharedStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 
 /**
  *
@@ -26,12 +20,6 @@ import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
  */
 public class StringTypeID implements TypeID {
 	public static final StringTypeID INSTANCE = new StringTypeID();
-	
-	public static final StoredType AUTO = new StoredType(INSTANCE, AutoStorageTag.INSTANCE);
-	public static final StoredType STATIC = new StoredType(INSTANCE, StaticStorageTag.INSTANCE);
-	public static final StoredType UNIQUE = new StoredType(INSTANCE, UniqueStorageTag.INSTANCE);
-	public static final StoredType BORROW = new StoredType(INSTANCE, BorrowStorageTag.INVOCATION);
-	public static final StoredType SHARED = new StoredType(INSTANCE, SharedStorageTag.INSTANCE);
 	
 	private StringTypeID() {}
 	
@@ -76,8 +64,8 @@ public class StringTypeID implements TypeID {
 	}
 
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		return new StoredType(this, storage);
+	public TypeID instance(GenericMapper mapper) {
+		return this;
 	}
 
 	@Override

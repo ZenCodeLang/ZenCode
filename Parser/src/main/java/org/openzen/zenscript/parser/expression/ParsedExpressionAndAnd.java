@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.expression.AndAndExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -37,8 +37,8 @@ public class ParsedExpressionAndAnd extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression left = this.left.compile(scope).eval();
 		Expression right = this.right.compile(scope).eval();
-		
-		StoredType resultType = scope.getTypeMembers(left.type).union(right.type);
+
+		TypeID resultType = scope.getTypeMembers(left.type).union(right.type);
 		if (resultType == null)
 			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + left.type + " and " + right.type);
 		

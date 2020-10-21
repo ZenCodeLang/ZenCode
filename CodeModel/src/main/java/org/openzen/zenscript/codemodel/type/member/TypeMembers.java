@@ -21,7 +21,6 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
-import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
@@ -56,7 +55,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
  */
 public final class TypeMembers {
 	private final LocalMemberCache cache;
-	public final StoredType type;
+	public final TypeID type;
 	
 	private final List<TypeMember<CasterMemberRef>> casters = new ArrayList<>();
 	private final List<TypeMember<ImplementationMemberRef>> implementations = new ArrayList<>();
@@ -68,10 +67,10 @@ public final class TypeMembers {
 	private final Map<String, InnerDefinition> innerTypes = new HashMap<>();
 	private final Map<OperatorType, TypeMemberGroup> operators = new HashMap<>();
 	
-	public TypeMembers(LocalMemberCache cache, StoredType type) {
+	public TypeMembers(LocalMemberCache cache, TypeID type) {
 		if (type == null)
 			throw new NullPointerException("Type must not be null!");
-		if (type.type == BasicTypeID.UNDETERMINED)
+		if (type == BasicTypeID.UNDETERMINED)
 			throw new IllegalArgumentException("Cannot retrieve members of undetermined type");
 		
 		this.cache = cache;
@@ -84,16 +83,16 @@ public final class TypeMembers {
 	
 	public boolean extendsOrImplements(TypeID other) {
 		other = other.getNormalized();
-		TypeID superType = type.type.getSuperType(cache.getRegistry());
+		TypeID superType = type.getSuperType(cache.getRegistry());
 		if (superType != null) {
 			if (superType == other)
 				return true;
-			if (cache.get(superType.stored(type.getActualStorage())).extendsOrImplements(other))
+			if (cache.get(superType).extendsOrImplements(other))
 				return true;
 		}
 		
 		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
-			if (implementation.member.implementsType.type == other)
+			if (implementation.member.implementsType == other)
 				return true;
 			if (cache.get(implementation.member.implementsType).extendsOrImplements(other))
 				return true;
@@ -104,11 +103,11 @@ public final class TypeMembers {
 	
 	public boolean extendsType(TypeID other) {
 		other = other.getNormalized();
-		TypeID superType = type.type.getSuperType(cache.getRegistry());
+		TypeID superType = type.getSuperType(cache.getRegistry());
 		if (superType != null) {
 			if (superType == other)
 				return true;
-			if (cache.get(superType.stored(type.getActualStorage())).extendsType(other))
+			if (cache.get(superType).extendsType(other))
 				return true;
 		}
 		
@@ -163,7 +162,7 @@ public final class TypeMembers {
 		return null;
 	}
 	
-	public StoredType union(StoredType other) {
+	public TypeID union(TypeID other) {
 		other = other.getNormalized();
 		if (type == other)
 			return type;
@@ -386,7 +385,7 @@ public final class TypeMembers {
 		return null;
 	}
 	
-	public StoredType[] getLoopTypes(int variables) {
+	public TypeID[] getLoopTypes(int variables) {
 		for (TypeMember<IteratorMemberRef> iterator : iterators)
 			if (iterator.member.getLoopVariableCount() == variables)
 				return iterator.member.types;
@@ -394,62 +393,50 @@ public final class TypeMembers {
 		return null;
 	}
 	
-	public boolean canCastImplicit(StoredType toType) {
+	public boolean canCastImplicit(TypeID toType) {
 		toType = toType.getNormalized();
-		if (areEquivalent(type, toType))
+		if (type == toType)
 			return true;
-		if (toType.type == BasicTypeID.UNDETERMINED)
+		if (toType == BasicTypeID.UNDETERMINED)
 			throw new IllegalArgumentException("Cannot cast to undetermined type!");
-		if (type.type == BasicTypeID.NULL && toType.type.isOptional())
+		if (type == BasicTypeID.NULL && toType.isOptional())
 			return true;
-		
-		if (!type.getActualStorage().canCastTo(toType.getActualStorage()) && !toType.getActualStorage().canCastFrom(type.getActualStorage()))
-			return false;
 		
 		if (toType.isOptional() && canCastImplicit(toType.withoutOptional()))
 			return true;
-		if (type.isOptional() && areEquivalent(type.withoutOptional(), toType))
+		if (type.isOptional() && type.withoutOptional() == toType)
 			return true;
 		
-		return getImplicitCaster(toType) != null || extendsOrImplements(toType.type);
+		return getImplicitCaster(toType) != null || extendsOrImplements(toType);
 	}
 	
-	private boolean areEquivalent(StoredType fromType, StoredType toType) {
-		if (fromType == toType)
-			return true;
-		if (!fromType.getActualStorage().canCastTo(toType.getActualStorage()) && !toType.getActualStorage().canCastFrom(fromType.getActualStorage()))
-			return false;
-		
-		return fromType.type == toType.type;
-	}
-	
-	public CasterMemberRef getImplicitCaster(StoredType toType) {
+	public CasterMemberRef getImplicitCaster(TypeID toType) {
 		toType = toType.getNormalized();
 		for (TypeMember<CasterMemberRef> caster : casters) {
-			if (caster.member.isImplicit() && areEquivalent(caster.member.toType, toType))
+			if (caster.member.isImplicit() && caster.member.toType == toType)
 				return caster.member;
 		}
 		
 		return null;
 	}
 	
-	public CasterMemberRef getCaster(StoredType toType) {
+	public CasterMemberRef getCaster(TypeID toType) {
 		toType = toType.getNormalized();
 		for (TypeMember<CasterMemberRef> caster : casters) {
-			if (areEquivalent(caster.member.toType, toType))
+			if (caster.member.toType == toType)
 				return caster.member;
 		}
 		
 		return null;
 	}
 	
-	public boolean canCast(StoredType toType) {
+	public boolean canCast(TypeID toType) {
 		toType = toType.getNormalized();
 		if (canCastImplicit(toType))
 			return true;
 		
 		for (TypeMember<CasterMemberRef> caster : casters) {
-			if (areEquivalent(caster.member.toType, toType))
+			if (caster.member.toType == toType)
 				return true;
 		}
 		
@@ -524,56 +511,46 @@ public final class TypeMembers {
 		return result;
 	}
 	
-	private Expression castEquivalent(CodePosition position, Expression value, StoredType toType) {
-		if (toType.equals(value.type))
-			return value;
-		
-		//if (!(toType.type instanceof StringTypeID))
-		//	System.out.println(position + ": " + value.type.getActualStorage() + " -> " + toType.getActualStorage());
-		
-		return new StorageCastExpression(position, value, toType);
-	}
-	
-	public Expression castImplicit(CodePosition position, Expression value, StoredType toType, boolean implicit) {
+	public Expression castImplicit(CodePosition position, Expression value, TypeID toType, boolean implicit) {
 		if (toType == null)
 			throw new NullPointerException();
 		
 		toType = toType.getNormalized();
-		if (toType.type == BasicTypeID.UNDETERMINED)
+		if (toType == BasicTypeID.UNDETERMINED)
 			return value;
-		if (areEquivalent(type, toType))
-			return castEquivalent(position, value, toType);
-		
-		if (type.type == BasicTypeID.NULL && toType.isOptional())
+		if (type == toType)
+			return value;
+
+		if (type == BasicTypeID.NULL && toType.isOptional())
 			return new NullExpression(position, toType);
 		if (toType.isOptional() && canCastImplicit(toType.withoutOptional()))
-			return castEquivalent(position, new WrapOptionalExpression(position, castImplicit(position, value, toType.withoutOptional(), implicit), toType), toType);
-		if (type.isOptional() && areEquivalent(type.withoutOptional(), toType))
-			return castEquivalent(position, new CheckNullExpression(position, value), toType);
+			return new WrapOptionalExpression(position, castImplicit(position, value, toType.withoutOptional(), implicit), toType);
+		if (type.isOptional() && type.withoutOptional() == toType)
+			return new CheckNullExpression(position, value);
 		
 		for (TypeMember<CasterMemberRef> caster : casters) {
-			if (caster.member.isImplicit() && areEquivalent(caster.member.toType, toType))
-				return castEquivalent(position, caster.member.cast(position, value, implicit), toType);
+			if (caster.member.isImplicit() && caster.member.toType == toType)
+				return caster.member.cast(position, value, implicit);
 		}
 		for (TypeMember<ImplementationMemberRef> implementation : implementations) {
-			if (implementation.member.implementsType.type.getNormalized() == toType.type)
-				return castEquivalent(position, new InterfaceCastExpression(position, value, implementation.member), toType);
+			if (implementation.member.implementsType.getNormalized() == toType)
+				return new InterfaceCastExpression(position, value, implementation.member);
 		}
-		if (extendsType(toType.type))
+		if (extendsType(toType))
 			return new SupertypeCastExpression(position, value, toType);
 		
 		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Could not cast " + toString() + " to " + toType);
 	}
 	
-	public Expression castExplicit(CodePosition position, Expression value, StoredType toType, boolean optional) {
+	public Expression castExplicit(CodePosition position, Expression value, TypeID toType, boolean optional) {
 		toType = toType.getNormalized();
 		if (this.canCastImplicit(toType))
 			return castImplicit(position, value, toType, false);
 		
 		for (TypeMember<CasterMemberRef> caster : casters)
-			if (areEquivalent(caster.member.toType, toType))
-				return castEquivalent(position, caster.member.cast(position, value, false), toType);
-		
+			if (caster.member.toType == toType)
+				return value;
+
 		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Cannot cast " + toString() + " to " + toType + ", even explicitly");
 	}
 	
@@ -586,7 +563,7 @@ public final class TypeMembers {
 			TypeMemberGroup group = members.get(name.name);
 			
 			if (group.isStatic)
-				return new PartialStaticMemberGroupExpression(position, scope, type.type, group, name.arguments);
+				return new PartialStaticMemberGroupExpression(position, scope, type, group, name.arguments);
 			else
 				return new PartialMemberGroupExpression(position, scope, target, group, name.arguments, allowStatic);
 		}
@@ -596,9 +573,9 @@ public final class TypeMembers {
 	
 	public IPartialExpression getStaticMemberExpression(CodePosition position, TypeScope scope, GenericName name) {
 		if (members.containsKey(name.name))
-			return new PartialStaticMemberGroupExpression(position, scope, type.type, members.get(name.name), name.arguments);
+			return new PartialStaticMemberGroupExpression(position, scope, type, members.get(name.name), name.arguments);
 		if (innerTypes.containsKey(name.name))
-			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID)type.type), name.arguments);
+			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID)type), name.arguments);
 		if (variantOptions.containsKey(name.name))
 			return new PartialVariantOptionExpression(position, scope, variantOptions.get(name.name));
 		
@@ -613,7 +590,7 @@ public final class TypeMembers {
 		if (!innerTypes.containsKey(name.name))
 			throw new RuntimeException("No such inner type in " + type + ": " + name.name);
 		
-		return innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID)type.type);
+		return innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID)type);
 	}
 	
 	@Override

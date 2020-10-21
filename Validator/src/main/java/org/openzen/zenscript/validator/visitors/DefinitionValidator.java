@@ -30,11 +30,9 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
@@ -209,7 +207,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 	private void validate(VariantDefinition.Option option) {
 		ValidationUtils.validateIdentifier(validator, option.position, option.name);
 		TypeValidator typeValidator = new TypeValidator(validator, option.position);
-		for (StoredType type : option.types)
+		for (TypeID type : option.types)
 			typeValidator.validate(TypeContext.OPTION_MEMBER_TYPE, type);
 	}
 	
@@ -245,12 +243,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		}
 
 		@Override
-		public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public StoredType getThisType() {
+		public TypeID getThisType() {
 			throw new UnsupportedOperationException();
 		}
 

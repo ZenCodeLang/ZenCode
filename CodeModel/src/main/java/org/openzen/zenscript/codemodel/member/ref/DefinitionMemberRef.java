@@ -10,7 +10,7 @@ import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -29,7 +29,7 @@ public interface DefinitionMemberRef {
 		return getTarget().hasTag(type);
 	}
 	
-	StoredType getOwnerType();
+	TypeID getOwnerType();
 	
 	DefinitionMemberRef getOverrides();
 	

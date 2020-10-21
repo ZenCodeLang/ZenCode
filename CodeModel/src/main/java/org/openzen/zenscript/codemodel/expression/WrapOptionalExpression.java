@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 public class WrapOptionalExpression extends Expression {
 	public final Expression value;
 	
-	public WrapOptionalExpression(CodePosition position, Expression value, StoredType optionalType) {
+	public WrapOptionalExpression(CodePosition position, Expression value, TypeID optionalType) {
 		super(position, optionalType, value.thrownType);
 		
 		if (value.type.isOptional())

@@ -32,7 +32,6 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -116,7 +115,7 @@ public class TypeMemberGroup {
 		return false;
 	}
 	
-	public FunctionalMemberRef getStaticMethod(int arguments, StoredType returnType) {
+	public FunctionalMemberRef getStaticMethod(int arguments, TypeID returnType) {
 		for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (method.member.isStatic() && method.member.getHeader().accepts(arguments) && method.member.getHeader().getReturnType().equals(returnType))
 				return method.member;
@@ -261,8 +260,8 @@ public class TypeMemberGroup {
 		}
 	}
 	
-	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> typeHints, int arguments) {
-		List<StoredType>[] result = (List<StoredType>[])(new List[arguments]);
+	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> typeHints, int arguments) {
+		List<TypeID>[] result = (List<TypeID>[])(new List[arguments]);
 		for (int i = 0; i < result.length; i++)
 			result[i] = new ArrayList<>();
 		
@@ -271,16 +270,14 @@ public class TypeMemberGroup {
 			if (header.parameters.length != arguments)
 				continue;
 			
-			if (header.typeParameters != null) {
-				for (StoredType resultHint : typeHints) {
-					Map<TypeParameter, StoredType> mapping = header.getReturnType().inferTypeParameters(scope.getMemberCache(), resultHint);
-					if (mapping != null) {
-						header = header.withGenericArguments(scope.getLocalTypeParameters().getInner(position, scope.getTypeRegistry(), mapping));
-						break;
-					}
+			for (TypeID resultHint : typeHints) {
+				Map<TypeParameter, TypeID> mapping = header.getReturnType().inferTypeParameters(scope.getMemberCache(), resultHint);
+				if (mapping != null) {
+					header = header.withGenericArguments(scope.getLocalTypeParameters().getInner(position, scope.getTypeRegistry(), mapping));
+					break;
 				}
 			}
-			
+
 			for (int i = 0; i < header.parameters.length; i++) {
 				if (!result[i].contains(header.parameters[i].type))
 					result[i].add(header.parameters[i].type);

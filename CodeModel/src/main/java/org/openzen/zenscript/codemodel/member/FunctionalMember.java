@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 /**
@@ -47,12 +47,12 @@ public abstract class FunctionalMember extends DefinitionMember {
 	
 	public abstract FunctionalKind getKind();
 	
-	public FunctionalMemberRef ref(StoredType type) {
+	public FunctionalMemberRef ref(TypeID type) {
 		return new FunctionalMemberRef(this, type, null);
 	}
 	
 	@Override
-	public FunctionalMemberRef ref(StoredType type, GenericMapper mapper) {
+	public FunctionalMemberRef ref(TypeID type, GenericMapper mapper) {
 		return new FunctionalMemberRef(this, type, mapper);
 	}
 	

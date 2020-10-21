@@ -10,7 +10,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -20,11 +20,11 @@ public class VariantValueExpression extends Expression {
 	public final VariantOptionRef option;
 	public final Expression[] arguments;
 	
-	public VariantValueExpression(CodePosition position, StoredType variantType, VariantOptionRef option) {
+	public VariantValueExpression(CodePosition position, TypeID variantType, VariantOptionRef option) {
 		this(position, variantType, option, Expression.NONE);
 	}
 	
-	public VariantValueExpression(CodePosition position, StoredType variantType, VariantOptionRef option, Expression[] arguments) {
+	public VariantValueExpression(CodePosition position, TypeID variantType, VariantOptionRef option, Expression[] arguments) {
 		super(position, variantType, multiThrow(position, arguments));
 		
 		this.option = option;
@@ -36,7 +36,7 @@ public class VariantValueExpression extends Expression {
 	}
 	
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
+	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
 		if (arguments != null)
 			return super.call(position, scope, hints, arguments);
 		

@@ -19,7 +19,6 @@ import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -60,11 +59,6 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 		
 		return null;
 	}
-	
-	@Override
-	public Void visitString(TypeContext context, StringTypeID string) {
-		return null;
-	}
 
 	@Override
 	public Void visitArray(TypeContext context, ArrayTypeID array) {
@@ -95,7 +89,7 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 
 	@Override
 	public Void visitIterator(TypeContext context, IteratorTypeID iterator) {
-		for (StoredType type : iterator.iteratorTypes)
+		for (TypeID type : iterator.iteratorTypes)
 			validate(context, type);
 		
 		return null;

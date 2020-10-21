@@ -23,10 +23,10 @@ import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 
@@ -49,7 +49,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		if (receiver instanceof ParsedExpressionVariable) {
 			ParsedExpressionVariable variable = (ParsedExpressionVariable) receiver;
-			for (StoredType hint : scope.hints) {
+			for (TypeID hint : scope.hints) {
 				TypeMembers members = scope.getTypeMembers(hint);
 				if (members.getVariantOption(variable.name) != null) {
 					try {
@@ -66,7 +66,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 		
 		if (receiver instanceof ParsedExpressionSuper) {
 			// super call (intended as first call in constructor)
-			StoredType targetType = scope.getThisType().getSuperType(scope.getTypeRegistry());
+			TypeID targetType = scope.getThisType().getSuperType(scope.getTypeRegistry());
 			if (targetType == null)
 				throw new CompileException(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Class has no superclass");
 
@@ -79,7 +79,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 			return new ConstructorSuperCallExpression(position, targetType, member, callArguments);
 		} else if (receiver instanceof ParsedExpressionThis) {
 			// this call (intended as first call in constructor)
-			StoredType targetType = scope.getThisType();
+			TypeID targetType = scope.getThisType();
 
 			TypeMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
 			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
@@ -97,7 +97,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 	}
 	
 	@Override
-	public SwitchValue compileToSwitchValue(StoredType type, ExpressionScope scope) throws CompileException {
+	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
 		if (!(receiver instanceof ParsedExpressionVariable))
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
 		

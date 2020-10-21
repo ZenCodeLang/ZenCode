@@ -11,9 +11,7 @@ package org.openzen.zenscript.codemodel.type;
  */
 public interface TypeVisitorWithContext<C, R, E extends Exception> {
 	R visitBasic(C context, BasicTypeID basic) throws E;
-	
-	R visitString(C context, StringTypeID string) throws E;
-	
+
 	R visitArray(C context, ArrayTypeID array) throws E;
 	
 	R visitAssoc(C context, AssocTypeID assoc) throws E;

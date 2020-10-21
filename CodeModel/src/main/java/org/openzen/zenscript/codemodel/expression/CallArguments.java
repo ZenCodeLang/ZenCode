@@ -11,25 +11,26 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class CallArguments {
-	public static final CallArguments EMPTY = new CallArguments(new Expression[0]);
+	public static final CallArguments EMPTY = new CallArguments(Expression.NONE);
 	
-	public final StoredType[] typeArguments;
+	public final TypeID[] typeArguments;
 	public final Expression[] arguments;
 	
 	public CallArguments(Expression... arguments) {
-		this.typeArguments = StoredType.NONE;
+		this.typeArguments = TypeID.NONE;
 		this.arguments = arguments;
 	}
 	
-	public CallArguments(StoredType[] typeArguments, Expression[] arguments) {
+	public CallArguments(TypeID[] typeArguments, Expression[] arguments) {
 		if (typeArguments == null)
-			typeArguments = StoredType.NONE;
+			typeArguments = TypeID.NONE;
 		if (arguments == null)
 			throw new IllegalArgumentException("Arguments cannot be null!");
 		
@@ -38,7 +39,7 @@ public class CallArguments {
 	}
 	
 	public CallArguments(StoredType... dummy) {
-		this.typeArguments = StoredType.NONE;
+		this.typeArguments = TypeID.NONE;
 		this.arguments = new Expression[dummy.length];
 		for (int i = 0; i < dummy.length; i++)
 			arguments[i] = new DummyExpression(dummy[i]);

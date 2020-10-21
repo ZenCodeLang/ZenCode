@@ -29,7 +29,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
@@ -123,9 +123,9 @@ public class ParsedExpressionInt extends ParsedExpression {
 		if (suffix.equals("F") || suffix.equals("f"))
 			return new ConstantFloatExpression(position, value);
 		
-		for (StoredType hint : scope.hints) {
-			if (suffix.isEmpty() && (hint.type instanceof BasicTypeID)) {
-				switch ((BasicTypeID) hint.type) {
+		for (TypeID hint : scope.hints) {
+			if (suffix.isEmpty() && (hint instanceof BasicTypeID)) {
+				switch ((BasicTypeID) hint) {
 					case SBYTE:
 						return new ConstantSByteExpression(position, (byte) value);
 					case BYTE:
@@ -172,8 +172,8 @@ public class ParsedExpressionInt extends ParsedExpression {
 				if (method != null) {
 					try {
 						ParsedCallArguments parsedArguments = new ParsedCallArguments(Collections.emptyList(), Collections.singletonList(new ParsedExpressionInt(position, negative, value, "")));
-						CallArguments arguments = parsedArguments.compileCall(position, scope, StoredType.NONE, method.getHeader());
-						method.callStatic(position, hint.type, method.getHeader(), arguments, scope);
+						CallArguments arguments = parsedArguments.compileCall(position, scope, TypeID.NONE, method.getHeader());
+						method.callStatic(position, hint, method.getHeader(), arguments, scope);
 					} catch (CompileException ex) {
 						return new InvalidExpression(hint, ex);
 					}
@@ -192,7 +192,7 @@ public class ParsedExpressionInt extends ParsedExpression {
 	}
 	
 	@Override
-	public SwitchValue compileToSwitchValue(StoredType type, ExpressionScope scope) throws CompileException {
+	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
 		if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE)
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "value is too large for a switch case");
 		

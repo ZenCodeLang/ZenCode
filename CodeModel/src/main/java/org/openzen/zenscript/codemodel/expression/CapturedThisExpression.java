@@ -7,14 +7,14 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class CapturedThisExpression extends CapturedExpression {
-	public CapturedThisExpression(CodePosition position, StoredType type, LambdaClosure closure) {
+	public CapturedThisExpression(CodePosition position, TypeID type, LambdaClosure closure) {
 		super(position, type, closure);
 	}
 

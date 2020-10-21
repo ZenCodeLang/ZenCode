@@ -4,7 +4,7 @@ import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 
-public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<StoredType, Void, RuntimeException> {
+public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Void, RuntimeException> {
 	private static final JavaMethod BOOLEAN_VALUEOF = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "valueOf", "(Z)Ljava/lang/Boolean;");
 	private static final JavaMethod BYTE_VALUEOF = JavaMethod.getNativeStatic(JavaClass.BYTE, "valueOf", "(B)Ljava/lang/Byte;");
 	private static final JavaMethod SHORT_VALUEOF = JavaMethod.getNativeStatic(JavaClass.SHORT, "valueOf", "(S)Ljava/lang/Short;");
@@ -21,7 +21,7 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<StoredType,
 	}
 
 	@Override
-	public Void visitBasic(StoredType context, BasicTypeID basic) {
+	public Void visitBasic(TypeID context, BasicTypeID basic) {
 		final JavaMethod method;
 		switch (basic) {
 			case BOOL:
@@ -57,6 +57,9 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<StoredType,
 			case CHAR:
 				method = CHARACTER_VALUEOF;
 				break;
+			case STRING:
+				// NO-OP
+				return null;
 			default:
 				return null;
 		}
@@ -66,63 +69,57 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<StoredType,
 			writer.invokeStatic(method);
 		return null;
 	}
-	
+
 	@Override
-	public Void visitString(StoredType context, StringTypeID string) {
+	public Void visitArray(TypeID context, ArrayTypeID array) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitArray(StoredType context, ArrayTypeID array) {
+	public Void visitAssoc(TypeID context, AssocTypeID assoc) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitAssoc(StoredType context, AssocTypeID assoc) {
+	public Void visitGenericMap(TypeID context, GenericMapTypeID map) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitGenericMap(StoredType context, GenericMapTypeID map) {
+	public Void visitIterator(TypeID context, IteratorTypeID iterator) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitIterator(StoredType context, IteratorTypeID iterator) {
+	public Void visitFunction(TypeID context, FunctionTypeID function) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitFunction(StoredType context, FunctionTypeID function) {
+	public Void visitDefinition(TypeID context, DefinitionTypeID definition) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitDefinition(StoredType context, DefinitionTypeID definition) {
+	public Void visitGeneric(TypeID context, GenericTypeID generic) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitGeneric(StoredType context, GenericTypeID generic) {
+	public Void visitRange(TypeID context, RangeTypeID range) {
 		//NO-OP
 		return null;
 	}
 
 	@Override
-	public Void visitRange(StoredType context, RangeTypeID range) {
-		//NO-OP
-		return null;
-	}
-
-	@Override
-	public Void visitOptional(StoredType context, OptionalTypeID type) {
+	public Void visitOptional(TypeID context, OptionalTypeID type) {
 		//NO-OP
 		return null;
 	}

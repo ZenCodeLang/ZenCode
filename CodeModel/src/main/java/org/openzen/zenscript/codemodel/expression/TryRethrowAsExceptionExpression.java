@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 public class TryRethrowAsExceptionExpression extends Expression {
 	public final Expression value;
 	
-	public TryRethrowAsExceptionExpression(CodePosition position, StoredType type, Expression value, StoredType thrownType) {
+	public TryRethrowAsExceptionExpression(CodePosition position, TypeID type, Expression value, TypeID thrownType) {
 		super(position, type, thrownType);
 		
 		this.value = value;

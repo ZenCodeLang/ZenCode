@@ -10,7 +10,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javashared.JavaCompileSpace;
@@ -21,7 +20,6 @@ import org.openzen.zenscript.javashared.JavaSynthesizedRange;
 import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
 import org.openzen.zenscript.javashared.JavaTypeInternalNameVisitor;
-import org.openzen.zenscript.javashared.JavaTypeUtils;
 
 /**
  *
@@ -50,27 +48,15 @@ public class JavaBytecodeContext extends JavaContext {
 	}
 	
 	@Override
-	public String getDescriptor(StoredType type) {
-		if (JavaTypeUtils.isShared(type))
-			return "Lzsynthetic/Shared";
-		
-		return type.type.accept(descriptorVisitor);
-	}
-	
-	@Override
 	public String getDescriptor(TypeID type) {
 		return type.accept(descriptorVisitor);
 	}
-	
-	public String getInternalName(StoredType type) {
-		return type.type.accept(type, internalNameVisitor);
-	}
-	
+
 	public String getInternalName(TypeID type) {
 		return type.accept(null, internalNameVisitor);
 	}
 	
-	public Type getType(StoredType type) {
+	public Type getType(TypeID type) {
 		return Type.getType(getDescriptor(type));
 	}
 	
@@ -137,11 +123,6 @@ public class JavaBytecodeContext extends JavaContext {
 		@Override
 		public void synthesizeRange(JavaSynthesizedRange range) {
 			createRangeClass(range);
-		}
-		
-		@Override
-		public void synthesizeShared() {
-			createSharedClass();
 		}
 	}
 }

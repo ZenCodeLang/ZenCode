@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 public class SetterMemberRef extends PropertyRef {
 	public final SetterMember member;
 	
-	public SetterMemberRef(StoredType owner, SetterMember member, GenericMapper mapper) {
+	public SetterMemberRef(TypeID owner, SetterMember member, GenericMapper mapper) {
 		super(owner, member, mapper);
 		
 		this.member = member;

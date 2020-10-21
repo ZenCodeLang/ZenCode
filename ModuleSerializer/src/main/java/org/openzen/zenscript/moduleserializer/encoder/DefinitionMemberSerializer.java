@@ -9,7 +9,6 @@ import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
 import org.openzen.zenscript.codemodel.definition.DefinitionVisitorWithContext;
@@ -22,7 +21,6 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 import org.openzen.zenscript.moduleserializer.EncodingDefinition;
@@ -127,7 +125,7 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 		for (VariantDefinition.Option option : variant.options) {
 			output.writeString(option.name);
 			output.writeUInt(option.types.length);
-			for (StoredType type : option.types)
+			for (TypeID type : option.types)
 				output.serialize(context, type);
 		}
 		return null;

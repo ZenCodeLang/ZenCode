@@ -384,7 +384,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			JavaMethod methodInfo = context.getJavaMethod(expression.member);
 			for (int i = 0; i < expression.arguments.typeArguments.length; i++) {
 				if (methodInfo.typeParameterArguments[i]) {
-					StoredType arguments = expression.arguments.typeArguments[i];
+					TypeID arguments = expression.arguments.typeArguments[i];
 
 				}
 			}
@@ -1041,7 +1041,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.ifICmpLE(loopEnd);
 				javaWriter.dup();
 				javaWriter.loadInt(counterLocation);
-				final StoredType itemType = expression.arguments.arguments[0].type;
+				final TypeID itemType = expression.arguments.arguments[0].type;
 				javaWriter.arrayLoad(context.getType(itemType));
 				javaWriter.iinc(counterLocation);
 				expression.arguments.arguments[0].accept(this);
@@ -2063,7 +2063,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	@Override
 	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		javaWriter.loadObject(0);
-		final StoredType type = expression.value.option.getParameterType(expression.index);
+		final TypeID type = expression.value.option.getParameterType(expression.index);
 		final JavaVariantOption tag = context.getJavaVariantOption(expression.value.option);
 		javaWriter.checkCast(tag.variantOptionClass.internalName);
 		javaWriter.getField(new JavaField(tag.variantOptionClass, "field" + expression.index, context.getDescriptor(type)));
@@ -2326,7 +2326,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		expression.value.accept(this);
 
 		//TODO replace beforeSwitch visitor or similar
-		if (expression.value.type.type instanceof StringTypeID)
+		if (expression.value.type == BasicTypeID.STRING)
 			javaWriter.invokeVirtual(OBJECT_HASHCODE);
 
 		//TODO replace with beforeSwitch visitor or similar
@@ -4096,7 +4096,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		}
 
 		final StringBuilder builder = new StringBuilder("(");
-		for (StoredType type : expression.option.getOption().types) {
+		for (TypeID type : expression.option.getOption().types) {
 			builder.append(context.getDescriptor(type));
 		}
 		builder.append(")V");
@@ -4110,7 +4110,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
 		//Does nothing if not required to be wrapped
 		expression.value.accept(this);
-		expression.value.type.type.accept(expression.value.type, new JavaBoxingTypeVisitor(javaWriter));
+		expression.value.type.accept(expression.value.type, new JavaBoxingTypeVisitor(javaWriter));
 		return null;
 	}
 
@@ -4120,7 +4120,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	//Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
 	@SuppressWarnings({"Raw", "unchecked"})
-	boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, StoredType resultType, Expression expression) {
+	boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, TypeID resultType, Expression expression) {
 		JavaMethod methodInfo = context.getJavaMethod(member);
 		if (methodInfo == null)
 			return false;
@@ -4170,7 +4170,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void listToArray(CastExpression value) {
 		//value.target.accept(this);
 		javaWriter.iConst0();
-		final Type type = context.getType(((ArrayTypeID) value.type.type).elementType);
+		final Type type = context.getType(((ArrayTypeID) value.type).elementType);
 		javaWriter.newArray(type);
 		final JavaMethod toArray = new JavaMethod(JavaClass.COLLECTION, JavaMethod.Kind.INSTANCE, "toArray", true, "([Ljava/lang/Object;)[Ljava/lang/Object;", 0, true);
 		javaWriter.invokeInterface(toArray);

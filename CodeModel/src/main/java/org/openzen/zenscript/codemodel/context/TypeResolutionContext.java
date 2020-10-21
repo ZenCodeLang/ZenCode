@@ -11,9 +11,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -27,8 +25,6 @@ public interface TypeResolutionContext {
 	AnnotationDefinition getAnnotation(String name);
 	
 	TypeID getType(CodePosition position, List<GenericName> name);
-	
-	StorageTag getStorageTag(CodePosition position, String name, String[] parameters);
-	
-	StoredType getThisType();
+
+	TypeID getThisType();
 }

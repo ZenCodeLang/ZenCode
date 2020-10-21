@@ -14,7 +14,7 @@ import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.StatementAnnotation;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -22,19 +22,19 @@ import org.openzen.zenscript.codemodel.type.StoredType;
  */
 public abstract class Statement extends Taggable {
 	public final CodePosition position;
-	public final StoredType thrownType;
+	public final TypeID thrownType;
 	public StatementAnnotation[] annotations = StatementAnnotation.NONE;
 	
-	public Statement(CodePosition position, StoredType thrownType) {
+	public Statement(CodePosition position, TypeID thrownType) {
 		this.position = position;
 		this.thrownType = thrownType;
 	}
 	
-	public StoredType getReturnType() {
+	public TypeID getReturnType() {
 		return null;
 	}
 	
-	public Statement withReturnType(TypeScope scope, StoredType returnType) {
+	public Statement withReturnType(TypeScope scope, TypeID returnType) {
 		return this;
 	}
 	
@@ -54,7 +54,7 @@ public abstract class Statement extends Taggable {
 	
 	public abstract Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified);
 	
-	public static List<Statement> withReturnType(TypeScope scope, List<Statement> statements, StoredType returnType) {
+	public static List<Statement> withReturnType(TypeScope scope, List<Statement> statements, TypeID returnType) {
 		return statements.stream()
 				.map(statement -> statement.withReturnType(scope, returnType))
 				.collect(Collectors.toList());

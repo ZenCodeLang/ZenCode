@@ -8,7 +8,6 @@ import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import java.util.Arrays;
 import java.util.List;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 
@@ -197,7 +196,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 		javaWriter.label(start);
 		statement.value.accept(expressionVisitor);
-		if (statement.value.type.type == StringTypeID.INSTANCE)
+		if (statement.value.type == BasicTypeID.STRING)
 			javaWriter.invokeVirtual(JavaExpressionVisitor.OBJECT_HASHCODE);
 		boolean out = false;
 

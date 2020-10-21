@@ -8,7 +8,6 @@ package org.openzen.zenscript.codemodel;
 import java.util.List;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -17,13 +16,13 @@ import org.openzen.zenscript.codemodel.type.TypeID;
  */
 public class GenericName {
 	public final String name;
-	public final StoredType[] arguments;
+	public final TypeID[] arguments;
 	
 	public GenericName(String name) {
-		this(name, StoredType.NONE);
+		this(name, TypeID.NONE);
 	}
 	
-	public GenericName(String name, StoredType[] arguments) {
+	public GenericName(String name, TypeID[] arguments) {
 		if (arguments == null)
 			throw new NullPointerException("Arguments cannot be null");
 		

@@ -13,7 +13,6 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
 import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
@@ -27,7 +26,6 @@ import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -49,32 +47,30 @@ public enum BasicTypeID implements TypeID {
 	FLOAT("float"),
 	DOUBLE("double"),
 	CHAR("char"),
+	STRING("string"),
 	
 	UNDETERMINED("undetermined");
 	
-	public static final List<StoredType> HINT_BOOL = Collections.singletonList(BOOL.stored);
+	public static final List<TypeID> HINT_BOOL = Collections.singletonList(BOOL);
 	
 	public final String name;
-	public final StoredType stored;
 	
 	private Expression defaultValue = null;
 	
 	BasicTypeID(String name) {
 		this.name = name;
-		stored = new StoredType(this, null);
-		this.defaultValue = defaultValue;
 	}
 	
 	@Override
 	public BasicTypeID getNormalized() {
 		return this;
 	}
-	
+
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		return stored(storage);
+	public TypeID instance(GenericMapper mapper) {
+		return this;
 	}
-	
+
 	@Override
 	public String toString() {
 		return name;

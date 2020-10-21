@@ -137,9 +137,7 @@ public interface ExpressionVisitor<T> {
 	T visitStaticGetter(StaticGetterExpression expression);
 	
 	T visitStaticSetter(StaticSetterExpression expression);
-	
-	T visitStorageCast(StorageCastExpression expression);
-	
+
 	T visitSupertypeCast(SupertypeCastExpression expression);
 	
 	T visitThis(ThisExpression expression);

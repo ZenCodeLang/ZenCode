@@ -6,7 +6,7 @@ import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
@@ -19,13 +19,13 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	private final ClassWriter writer;
 	private final JavaBytecodeContext context;
-	private final StoredType expandedClass;
+	private final TypeID expandedClass;
 	private final HighLevelDefinition definition;
 	private final JavaCompiledModule javaModule;
 
 	private final JavaStatementVisitor clinitStatementVisitor;
 
-	public JavaExpansionMemberVisitor(JavaBytecodeContext context, ClassWriter writer, StoredType expandedClass, HighLevelDefinition definition) {
+	public JavaExpansionMemberVisitor(JavaBytecodeContext context, ClassWriter writer, TypeID expandedClass, HighLevelDefinition definition) {
 		this.writer = writer;
 		this.expandedClass = expandedClass;
 		this.definition = definition;

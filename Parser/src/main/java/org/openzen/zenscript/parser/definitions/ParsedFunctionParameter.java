@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
@@ -37,8 +37,8 @@ public class ParsedFunctionParameter {
 	public FunctionParameter compile(TypeResolutionContext context) {
 		if (compiled != null)
 			return compiled;
-		
-		StoredType cType = type.compile(context);
+
+		TypeID cType = type.compile(context);
 		Expression cDefaultValue = null;
 		return compiled = new FunctionParameter(cType, name, null, variadic);
 	}

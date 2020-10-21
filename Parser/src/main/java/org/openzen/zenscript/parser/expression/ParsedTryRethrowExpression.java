@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -42,13 +42,13 @@ public class ParsedTryRethrowExpression extends ParsedExpression {
 				return new TryRethrowAsExceptionExpression(position, cSource.type, cSource, cSource.thrownType);
 			} else {
 				// rethrow as result
-				StoredType resultType = scope.getTypeRegistry().getForDefinition(result, cSource.type, cSource.thrownType).stored(cSource.thrownType.getSpecifiedStorage());
+				TypeID resultType = scope.getTypeRegistry().getForDefinition(result, cSource.type, cSource.thrownType);
 				return new TryRethrowAsResultExpression(position, resultType, cSource);
 			}
 		} else {
 			// expression
-			if (cSource.type.type instanceof DefinitionTypeID) {
-				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type.type;
+			if (cSource.type instanceof DefinitionTypeID) {
+				DefinitionTypeID sourceType = (DefinitionTypeID)cSource.type;
 				if (sourceType.definition == result) {
 					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0], cSource);
 				}

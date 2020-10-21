@@ -9,13 +9,13 @@ import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
 import org.openzen.zenscript.codemodel.statement.ForeachStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.ForeachScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.InvalidStatement;
 import org.openzen.zenscript.codemodel.statement.VariableID;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
@@ -42,7 +42,7 @@ public class ParsedStatementForeach extends ParsedStatement {
 			if (iterator == null)
 				return new InvalidStatement(position, CompileExceptionCode.NO_SUCH_ITERATOR, list.type + " doesn't have an iterator with " + varnames.length + " variables");
 
-			StoredType[] loopTypes = iterator.types;
+			TypeID[] loopTypes = iterator.types;
 			VarStatement[] variables = new VarStatement[varnames.length];
 			for (int i = 0; i < variables.length; i++)
 				variables[i] = new VarStatement(position, new VariableID(), varnames[i], loopTypes[i], null, true);

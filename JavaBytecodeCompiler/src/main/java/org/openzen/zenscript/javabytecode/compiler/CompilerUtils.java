@@ -10,7 +10,6 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
@@ -27,8 +26,8 @@ public class CompilerUtils {
 				|| (id.isOptional() && id.withoutOptional() == BasicTypeID.USIZE);
 	}
 
-	public static boolean isLarge(StoredType type) {
-		return type.type == BasicTypeID.DOUBLE || type.type == BasicTypeID.DOUBLE;
+	public static boolean isLarge(TypeID type) {
+		return type == BasicTypeID.DOUBLE || type == BasicTypeID.LONG || type == BasicTypeID.ULONG;
 	}
 	
 	public static int calcAccess(int modifiers) {

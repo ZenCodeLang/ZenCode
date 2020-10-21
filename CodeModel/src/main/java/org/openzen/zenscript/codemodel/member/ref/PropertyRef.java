@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.PropertyMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -22,15 +23,15 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 public abstract class PropertyRef implements DefinitionMemberRef {
 	private final PropertyMember member;
 	
-	private final StoredType owner;
-	private StoredType type;
+	private final TypeID owner;
+	private TypeID type;
 	private GenericMapper mapper;
 	
-	public PropertyRef(StoredType owner, PropertyMember member, GenericMapper mapper) {
+	public PropertyRef(TypeID owner, PropertyMember member, GenericMapper mapper) {
 		this.owner = owner;
 		this.member = member;
 		
-		if (member.getType().type == BasicTypeID.UNDETERMINED) {
+		if (member.getType() == BasicTypeID.UNDETERMINED) {
 			type = null;
 			this.mapper = mapper;
 		} else {
@@ -40,11 +41,11 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public final StoredType getOwnerType() {
+	public final TypeID getOwnerType() {
 		return owner;
 	}
 	
-	public final StoredType getType() {
+	public final TypeID getType() {
 		if (type == null) {
 			//if (member.getType().type == BasicTypeID.UNDETERMINED)
 			//	throw new IllegalStateException("Property is not yet resolved!");

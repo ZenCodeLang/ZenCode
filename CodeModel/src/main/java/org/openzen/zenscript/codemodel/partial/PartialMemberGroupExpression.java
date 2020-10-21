@@ -15,10 +15,10 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.TypeMember;
 
 /**
@@ -29,7 +29,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final Expression target;
 	private final TypeMemberGroup group;
-	private final StoredType[] typeArguments;
+	private final TypeID[] typeArguments;
 	private final boolean allowStaticUsage;
 	private final TypeScope scope;
 	
@@ -38,7 +38,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 			TypeScope scope,
 			Expression target,
 			TypeMemberGroup group,
-			StoredType[] typeArguments,
+			TypeID[] typeArguments,
 			boolean allowStaticMembers)
 	{
 		this.position = position;
@@ -55,7 +55,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 			Expression target,
 			String name,
 			FunctionalMemberRef member,
-			StoredType[] typeArguments,
+			TypeID[] typeArguments,
 			boolean allowStaticMembers)
 	{
 		this.position = position;
@@ -72,7 +72,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	}
 	
 	@Override
-	public List<StoredType> getAssignHints() {
+	public List<TypeID> getAssignHints() {
 		if (group.getSetter() != null)
 			return Collections.singletonList(group.getSetter().getType());
 		if (group.getField() != null)
@@ -82,12 +82,12 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) {
 		return group.predictCallTypes(position, scope, hints, arguments);
 	}
 	
 	@Override
-	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
 		List<FunctionHeader> results = new ArrayList<>();
 		for (TypeMember<FunctionalMemberRef> method : group.getMethodMembers()) {
 			if (!method.member.accepts(arguments) || method.member.isStatic())
@@ -106,12 +106,12 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) throws CompileException {
 		return eval().getMember(position, scope, hints, name);
 	}
 
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
+	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
 		return group.call(position, scope, target, arguments, allowStaticUsage);
 	}
 	
@@ -126,7 +126,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public StoredType[] getTypeArguments() {
+	public TypeID[] getTypeArguments() {
 		return typeArguments;
 	}
 }

@@ -18,16 +18,11 @@ import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.FunctionTypeID;
+import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LambdaScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.InvalidTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -50,16 +45,14 @@ public class ParsedExpressionFunction extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		FunctionHeader definedHeader = header.compile(scope);
 		FunctionHeader header = definedHeader;
-		StorageTag storage = AutoStorageTag.INSTANCE;
-		for (StoredType hint : scope.hints) {
-			if (hint.getNormalized().type instanceof FunctionTypeID) {
-				FunctionTypeID functionHint = (FunctionTypeID) hint.getNormalized().type;
+		for (TypeID hint : scope.hints) {
+			if (hint.getNormalized() instanceof FunctionTypeID) {
+				FunctionTypeID functionHint = (FunctionTypeID) hint.getNormalized();
 				if (header.canOverride(scope, functionHint.header)) {
 					if (header != definedHeader)
 						return new InvalidExpression(position, hint, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Ambiguity trying to resolve function types, can't decide for the type");
 					
 					header = functionHint.header.forLambda(definedHeader);
-					storage = hint.getActualStorage();
 				}
 			}
 		}
@@ -74,35 +67,34 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		StatementScope innerScope = new LambdaScope(scope, closure, header);
 		Statement statements = body.compile(innerScope, header);
 		
-		if (header.getReturnType().isBasic(BasicTypeID.UNDETERMINED)) {
-			StoredType returnType = statements.getReturnType();
+		if (header.getReturnType() == BasicTypeID.UNDETERMINED) {
+			TypeID returnType = statements.getReturnType();
 			if (returnType == null)
-				returnType = new InvalidTypeID(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Could not infer return type").stored();
+				returnType = new InvalidTypeID(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Could not infer return type");
 			
 			header.setReturnType(returnType);
 		}
 		
 		if (!scope.genericInferenceMap.isEmpty()) {
 			// perform type parameter inference
-			StoredType returnType = statements.getReturnType();
-			Map<TypeParameter, StoredType> inferredTypes = returnType.type.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType());
+			TypeID returnType = statements.getReturnType();
+			Map<TypeParameter, TypeID> inferredTypes = returnType.inferTypeParameters(scope.getMemberCache(), genericHeader.getReturnType());
 			if (inferredTypes == null)
 				throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
 			
 			scope.genericInferenceMap.putAll(inferredTypes);
 		}
-		
-		StoredType functionType = scope.getTypeRegistry()
-				.getFunction(genericHeader.withGenericArguments(new GenericMapper(position, scope.getTypeRegistry(), scope.genericInferenceMap)))
-				.stored(storage);
+
+		TypeID functionType = scope.getTypeRegistry()
+				.getFunction(genericHeader.withGenericArguments(new GenericMapper(position, scope.getTypeRegistry(), scope.genericInferenceMap)));
 		return new FunctionExpression(position, functionType, closure, header, statements);
 	}
 	
 	@Override
-	public boolean isCompatibleWith(BaseScope scope, StoredType type) {
-		if (type.type instanceof FunctionTypeID) {
+	public boolean isCompatibleWith(BaseScope scope, TypeID type) {
+		if (type instanceof FunctionTypeID) {
 			FunctionHeader definedHeader = header.compile(scope);
-			FunctionTypeID targetFunction = (FunctionTypeID) type.type;
+			FunctionTypeID targetFunction = (FunctionTypeID) type;
 			return definedHeader.canOverride(scope, targetFunction.header);
 		} else {
 			return false;

@@ -12,8 +12,6 @@ public class JavaDefaultExpressionTypeVisitor implements TypeVisitor<Expression>
 
 	@Override
 	public Expression visitBasic(BasicTypeID basic) {
-
-
 		if (basic == null)
 			throw new IllegalStateException("Null basic type!");
 
@@ -49,16 +47,11 @@ public class JavaDefaultExpressionTypeVisitor implements TypeVisitor<Expression>
 				return new ConstantDoubleExpression(CodePosition.UNKNOWN, 0.0d);
 			case CHAR:
 				return new ConstantCharExpression(CodePosition.UNKNOWN, '\0');
+			case STRING:
+				return new NullExpression(CodePosition.UNKNOWN);
 			default:
 				throw new IllegalStateException("Unknown basic type!");
 		}
-
-
-	}
-
-	@Override
-	public Expression visitString(StringTypeID string) {
-		return new NullExpression(CodePosition.UNKNOWN);
 	}
 
 	@Override

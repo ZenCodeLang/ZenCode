@@ -22,7 +22,6 @@ import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
@@ -45,8 +44,8 @@ public class FieldMember extends PropertyMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
-			StoredType thisType,
-			StoredType type,
+			TypeID thisType,
+			TypeID type,
 			GlobalTypeRegistry registry,
 			int autoGetterAccess,
 			int autoSetterAccess,
@@ -92,7 +91,7 @@ public class FieldMember extends PropertyMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
-			StoredType type,
+			TypeID type,
 			int autoGetterAccess,
 			int autoSetterAccess,
 			GetterMember autoGetter,
@@ -173,7 +172,7 @@ public class FieldMember extends PropertyMember {
 	}
 
 	@Override
-	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
+	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
 		return new FieldMemberRef(type, this, mapper);
 	}
 	

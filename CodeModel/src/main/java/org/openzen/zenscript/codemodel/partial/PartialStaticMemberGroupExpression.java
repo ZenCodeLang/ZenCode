@@ -30,9 +30,9 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	private final TypeScope scope;
 	private final TypeID target;
 	private final TypeMemberGroup group;
-	private final StoredType[] typeArguments;
+	private final TypeID[] typeArguments;
 	
-	public PartialStaticMemberGroupExpression(CodePosition position, TypeScope scope, TypeID target, TypeMemberGroup group, StoredType[] typeArguments) {
+	public PartialStaticMemberGroupExpression(CodePosition position, TypeScope scope, TypeID target, TypeMemberGroup group, TypeID[] typeArguments) {
 		this.position = position;
 		this.scope = scope;
 		this.group = group;
@@ -46,12 +46,12 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) {
 		return group.predictCallTypes(position, scope, hints, arguments);
 	}
 	
 	@Override
-	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
 		return group.getMethodMembers().stream()
 				.filter(method -> method.member.getHeader().accepts(arguments) && method.member.isStatic())
 				.map(method -> method.member.getHeader())
@@ -59,12 +59,12 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) throws CompileException {
 		return eval().getMember(position, scope, hints, name);
 	}
 
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
+	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
 		return group.callStatic(position, target, scope, arguments);
 	}
 	
@@ -74,12 +74,12 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 	}
 
 	@Override
-	public StoredType[] getTypeArguments() {
+	public TypeID[] getTypeArguments() {
 		return typeArguments;
 	}
 	
 	@Override
-	public List<StoredType> getAssignHints() {
+	public List<TypeID> getAssignHints() {
 		if (group.getSetter() != null)
 			return Collections.singletonList(group.getSetter().getType());
 		if (group.getField() != null)

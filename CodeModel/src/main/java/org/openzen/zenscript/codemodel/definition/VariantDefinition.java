@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -49,9 +49,9 @@ public class VariantDefinition extends HighLevelDefinition {
 		public final VariantDefinition variant;
 		public final String name;
 		public final int ordinal;
-		public final StoredType[] types;
+		public final TypeID[] types;
 		
-		public Option(CodePosition position, VariantDefinition variant, String name, int ordinal, StoredType[] types) {
+		public Option(CodePosition position, VariantDefinition variant, String name, int ordinal, TypeID[] types) {
 			this.position = position;
 			this.variant = variant;
 			this.name = name;
@@ -59,7 +59,7 @@ public class VariantDefinition extends HighLevelDefinition {
 			this.types = types;
 		}
 		
-		public VariantOptionRef instance(StoredType variantType, GenericMapper mapper) {
+		public VariantOptionRef instance(TypeID variantType, GenericMapper mapper) {
 			return new VariantOptionRef(this, variantType, mapper.map(types));
 		}
 	}

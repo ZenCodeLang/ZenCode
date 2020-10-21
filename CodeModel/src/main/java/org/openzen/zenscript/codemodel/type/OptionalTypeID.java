@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -41,9 +40,9 @@ public class OptionalTypeID implements TypeID {
 	}
 	
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		StoredType base = baseType.instance(mapper, storage);
-		return mapper.registry.getOptional(base.type).stored(StorageTag.union(mapper.position, base.getSpecifiedStorage(), storage));
+	public TypeID instance(GenericMapper mapper) {
+		TypeID base = baseType.instance(mapper);
+		return mapper.registry.getOptional(base);
 	}
 	
 	@Override
@@ -118,10 +117,5 @@ public class OptionalTypeID implements TypeID {
 	@Override
 	public String toString() {
 		return baseType.toString() + "?";
-	}
-	
-	@Override
-	public String toString(StorageTag storage) {
-		return baseType.toString(storage) + '?';
 	}
 }

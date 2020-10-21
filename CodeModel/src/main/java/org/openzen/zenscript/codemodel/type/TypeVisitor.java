@@ -12,8 +12,6 @@ package org.openzen.zenscript.codemodel.type;
 public interface TypeVisitor<T> {
 	T visitBasic(BasicTypeID basic);
 	
-	T visitString(StringTypeID string);
-	
 	T visitArray(ArrayTypeID array);
 	
 	T visitAssoc(AssocTypeID assoc);

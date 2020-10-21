@@ -11,7 +11,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -19,12 +19,12 @@ import org.openzen.zenscript.codemodel.type.StoredType;
  */
 public class VarStatement extends Statement {
 	public final String name;
-	public final StoredType type;
+	public final TypeID type;
 	public final Expression initializer;
 	public final VariableID variable;
 	public final boolean isFinal;
 	
-	public VarStatement(CodePosition position, VariableID variable, String name, StoredType type, Expression initializer, boolean isFinal) {
+	public VarStatement(CodePosition position, VariableID variable, String name, TypeID type, Expression initializer, boolean isFinal) {
 		super(position, initializer == null ? null : initializer.thrownType);
 		
 		this.name = name;

@@ -11,7 +11,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -28,8 +28,8 @@ public class ParsedExpressionOuter extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		StoredType thisType = scope.getThisType();
-		if (thisType == null || !(thisType.type instanceof DefinitionTypeID))
+		TypeID thisType = scope.getThisType();
+		if (thisType == null || !(thisType instanceof DefinitionTypeID))
 			throw new CompileException(position, CompileExceptionCode.USING_THIS_OUTSIDE_TYPE, "Not in a type");
 		
 		return scope.getOuterInstance(position);

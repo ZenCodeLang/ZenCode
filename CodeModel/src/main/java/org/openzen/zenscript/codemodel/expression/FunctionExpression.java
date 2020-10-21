@@ -17,7 +17,7 @@ import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -30,7 +30,7 @@ public class FunctionExpression extends Expression {
 	
 	public FunctionExpression(
 			CodePosition position,
-			StoredType type,
+			TypeID type,
 			LambdaClosure closure,
 			FunctionHeader header,
 			Statement body) {

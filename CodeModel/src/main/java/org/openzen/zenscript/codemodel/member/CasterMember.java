@@ -13,8 +13,8 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
@@ -23,14 +23,14 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
  * @author Hoofdgebruiker
  */
 public class CasterMember extends FunctionalMember {
-	public StoredType toType;
+	public TypeID toType;
 	public CasterMemberRef overrides;
 	
 	public CasterMember(
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
-			StoredType toType,
+			TypeID toType,
 			BuiltinID builtin)
 	{
 		super(position, definition, modifiers, new FunctionHeader(toType), builtin);
@@ -58,7 +58,7 @@ public class CasterMember extends FunctionalMember {
 		return "caster to " + toType.toString();
 	}
 	
-	public StoredType getTargetType() {
+	public TypeID getTargetType() {
 		return toType;
 	}
 	

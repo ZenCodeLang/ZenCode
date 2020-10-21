@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaTypeParameterInfo;
@@ -65,15 +64,12 @@ public class JavaTypeExpressionVisitor implements TypeVisitorWithContext<JavaWri
 			case CHAR:
 				writer.constant(Character.class);
 				return null;
+			case STRING:
+				writer.constant(String.class);
+				return null;
 			default:
 				throw new IllegalArgumentException();
 		}
-	}
-
-	@Override
-	public Void visitString(JavaWriter writer, StringTypeID string) {
-		writer.constant(String.class);
-		return null;
 	}
 
 	@Override

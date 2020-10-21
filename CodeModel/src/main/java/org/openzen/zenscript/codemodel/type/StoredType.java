@@ -22,17 +22,17 @@ import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
  * @author Hoofdgebruiker
  */
 public class StoredType {
-	public static Map<TypeParameter, StoredType> getMapping(TypeParameter[] parameters, StoredType[] arguments) {
-		Map<TypeParameter, StoredType> typeArguments = new HashMap<>();
+	public static Map<TypeParameter, TypeID> getMapping(TypeParameter[] parameters, TypeID[] arguments) {
+		Map<TypeParameter, TypeID> typeArguments = new HashMap<>();
 		for (int i = 0; i < parameters.length; i++)
 			typeArguments.put(parameters[i], arguments[i]);
 		return typeArguments;
 	}
 	
-	public static Map<TypeParameter, StoredType> getSelfMapping(GlobalTypeRegistry registry, TypeParameter[] parameters) {
-		Map<TypeParameter, StoredType> typeArguments = new HashMap<>();
+	public static Map<TypeParameter, TypeID> getSelfMapping(GlobalTypeRegistry registry, TypeParameter[] parameters) {
+		Map<TypeParameter, TypeID> typeArguments = new HashMap<>();
 		for (TypeParameter parameter : parameters)
-			typeArguments.put(parameter, registry.getGeneric(parameter).stored(parameter.storage));
+			typeArguments.put(parameter, registry.getGeneric(parameter));
 		return typeArguments;
 	}
 	
@@ -64,13 +64,13 @@ public class StoredType {
 		return type.getNormalized() == type ? this : new StoredType(type.getNormalized(), storage);
 	}
 	
-	public StoredType getSuperType(GlobalTypeRegistry registry) {
+	public TypeID getSuperType(GlobalTypeRegistry registry) {
 		TypeID superType = type.getSuperType(registry);
-		return superType == null ? null : superType.stored(storage);
+		return superType == null ? null : superType;
 	}
 	
-	public StoredType instance(GenericMapper mapper) {
-		return type.instance(mapper, storage);
+	public TypeID instance(GenericMapper mapper) {
+		return type.instance(mapper);
 	}
 	
 	public boolean isDestructible() {
@@ -115,7 +115,7 @@ public class StoredType {
 	
 	// Infers type parameters for this type so it matches with targetType
 	// returns false if that isn't possible
-	public Map<TypeParameter, StoredType> inferTypeParameters(LocalMemberCache cache, StoredType targetType) {
+	public Map<TypeParameter, TypeID> inferTypeParameters(LocalMemberCache cache, TypeID targetType) {
 		return type.inferTypeParameters(cache, targetType);
 	}
 	
@@ -146,9 +146,8 @@ public class StoredType {
 		if (obj == null || getClass() != obj.getClass())
 			return false;
 		
-		final StoredType other = (StoredType) obj;
-		return Objects.equals(this.type, other.type)
-				&& Objects.equals(this.storage, other.storage);
+		final TypeID other = (TypeID) obj;
+		return Objects.equals(this.type, other);
 	}
 	
 	@Override

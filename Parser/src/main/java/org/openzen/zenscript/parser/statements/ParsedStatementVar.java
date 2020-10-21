@@ -17,7 +17,7 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.InvalidStatement;
 import org.openzen.zenscript.codemodel.statement.VariableID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -45,7 +45,7 @@ public class ParsedStatementVar extends ParsedStatement {
 	public Statement compile(StatementScope scope) {
 		try {
 			Expression initializer;
-			StoredType type;
+			TypeID type;
 			if (this.type == null) {
 				if (this.initializer == null)
 					return new InvalidStatement(position, CompileExceptionCode.VAR_WITHOUT_TYPE_OR_INITIALIZER, "Local variables must have either a type or an initializer");

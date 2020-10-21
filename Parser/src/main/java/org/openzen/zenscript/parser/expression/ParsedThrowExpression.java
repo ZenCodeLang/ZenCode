@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -30,7 +31,7 @@ public class ParsedThrowExpression extends ParsedExpression {
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		Expression cValue = value.compile(scope).eval();
-		StoredType resultType = BasicTypeID.VOID.stored;
+		TypeID resultType = BasicTypeID.VOID;
 		if (scope.getResultTypeHints().size() == 1)
 			resultType = scope.getResultTypeHints().get(0);
 		

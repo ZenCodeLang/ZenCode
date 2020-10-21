@@ -13,8 +13,7 @@ import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
@@ -49,7 +48,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 
 	@Override
 	public void linkTypes(TypeResolutionContext context) {
-		StoredType[] loopVariableTypes = new StoredType[header.parameters.size()];
+		TypeID[] loopVariableTypes = new TypeID[header.parameters.size()];
 		for (int i = 0; i < loopVariableTypes.length; i++)
 			loopVariableTypes[i] = header.parameters.get(i).type.compile(context);
 		
@@ -63,7 +62,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 
 	@Override
 	public void compile(BaseScope scope) {
-		FunctionHeader header = new FunctionHeader(scope.getTypeRegistry().getIterator(compiled.getLoopVariableTypes()).stored(UniqueStorageTag.INSTANCE));
+		FunctionHeader header = new FunctionHeader(scope.getTypeRegistry().getIterator(compiled.getLoopVariableTypes()));
 		StatementScope innerScope = new FunctionScope(position, scope, header);
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
 		compiled.setContent(body.compile(innerScope, header));

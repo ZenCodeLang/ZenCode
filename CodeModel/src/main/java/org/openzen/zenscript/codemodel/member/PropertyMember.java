@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 /**
@@ -15,10 +15,10 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
  * @author Hoofdgebruiker
  */
 public abstract class PropertyMember extends DefinitionMember {
-	private StoredType type;
+	private TypeID type;
 	public final BuiltinID builtin;
 	
-	public PropertyMember(CodePosition position, HighLevelDefinition definition, int modifiers, StoredType type, BuiltinID builtin) {
+	public PropertyMember(CodePosition position, HighLevelDefinition definition, int modifiers, TypeID type, BuiltinID builtin) {
 		super(position, definition, modifiers);
 		
 		if (type == null)
@@ -28,11 +28,11 @@ public abstract class PropertyMember extends DefinitionMember {
 		this.builtin = builtin;
 	}
 	
-	public StoredType getType() {
+	public TypeID getType() {
 		return type;
 	}
 	
-	public void setType(StoredType type) {
+	public void setType(TypeID type) {
 		if (type == null)
 			throw new NullPointerException();
 		

@@ -15,8 +15,7 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
@@ -51,12 +50,12 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	
 	protected void inferHeaders(BaseScope scope) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(scope, implementation.getCompiled().type.stored(BorrowStorageTag.THIS));
+			fillOverride(scope, implementation.getCompiled().type);
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 			
-			fillOverride(scope, definition.getSuperType().stored(BorrowStorageTag.THIS));
+			fillOverride(scope, definition.getSuperType());
 		}
 		
 		if (getCompiled() == null || getCompiled().header == null)
@@ -75,11 +74,11 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 		getCompiled().annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		getCompiled().setBody(body.compile(innerScope, getCompiled().header));
 		
-		if (getCompiled().header.getReturnType().isBasic(BasicTypeID.UNDETERMINED)) {
+		if (getCompiled().header.getReturnType() == BasicTypeID.UNDETERMINED) {
 			if (getCompiled().body == null)
 				throw new CompileException(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Method return type could not be inferred");
-			
-			StoredType returnType = getCompiled().body.getReturnType();
+
+			TypeID returnType = getCompiled().body.getReturnType();
 			if (returnType == null) {
 				throw new CompileException(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Method return type could not be inferred");
 			} else {
@@ -88,5 +87,5 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 		}
 	}
 	
-	protected abstract void fillOverride(TypeScope scope, StoredType baseType) throws CompileException;
+	protected abstract void fillOverride(TypeScope scope, TypeID baseType) throws CompileException;
 }

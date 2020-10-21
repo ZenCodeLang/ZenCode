@@ -11,18 +11,17 @@ import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class GenericMapTypeID implements TypeID {
-	public final StoredType value;
+	public final TypeID value;
 	public final TypeParameter key;
 	private final GenericMapTypeID normalized;
 	
-	public GenericMapTypeID(GlobalTypeRegistry registry, StoredType value, TypeParameter key) {
+	public GenericMapTypeID(GlobalTypeRegistry registry, TypeID value, TypeParameter key) {
 		this.value = value;
 		this.key = key;
 		
@@ -65,8 +64,8 @@ public class GenericMapTypeID implements TypeID {
 	}
 	
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		return mapper.registry.getGenericMap(value.instance(mapper), key).stored(storage);
+	public TypeID instance(GenericMapper mapper) {
+		return mapper.registry.getGenericMap(value.instance(mapper), key);
 	}
 
 	@Override
@@ -81,7 +80,7 @@ public class GenericMapTypeID implements TypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		value.type.extractTypeParameters(typeParameters);
+		value.extractTypeParameters(typeParameters);
 		typeParameters.remove(key);
 	}
 	

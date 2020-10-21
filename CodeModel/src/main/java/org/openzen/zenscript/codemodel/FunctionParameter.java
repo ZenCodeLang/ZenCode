@@ -8,10 +8,9 @@ package org.openzen.zenscript.codemodel;
 import java.util.Objects;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.annotations.ParameterAnnotation;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -21,12 +20,12 @@ public class FunctionParameter extends Taggable {
 	public static final FunctionParameter[] NONE = new FunctionParameter[0];
 	
 	public ParameterAnnotation[] annotations;
-	public final StoredType type;
+	public final TypeID type;
 	public final String name;
 	public Expression defaultValue;
 	public final boolean variadic;
 	
-	public FunctionParameter(StoredType type) {
+	public FunctionParameter(TypeID type) {
 		this.annotations = ParameterAnnotation.NONE;
 		this.type = type;
 		this.name = "";
@@ -34,11 +33,7 @@ public class FunctionParameter extends Taggable {
 		this.variadic = false;
 	}
 	
-	public FunctionParameter(BasicTypeID type) {
-		this(type.stored);
-	}
-	
-	public FunctionParameter(StoredType type, String name) {
+	public FunctionParameter(TypeID type, String name) {
 		this.annotations = ParameterAnnotation.NONE;
 		this.type = type;
 		this.name = name;
@@ -46,7 +41,7 @@ public class FunctionParameter extends Taggable {
 		this.variadic = false;
 	}
 	
-	public FunctionParameter(StoredType type, String name, Expression defaultValue, boolean variadic) {
+	public FunctionParameter(TypeID type, String name, Expression defaultValue, boolean variadic) {
 		this.annotations = ParameterAnnotation.NONE;
 		this.type = type;
 		this.name = name;
@@ -61,7 +56,7 @@ public class FunctionParameter extends Taggable {
 	}
 	
 	public FunctionParameter withGenericArguments(GenericMapper mapper) {
-		StoredType instanced = type.instance(mapper);
+		TypeID instanced = type.instance(mapper);
 		if (instanced.equals(type))
 			return this;
 		

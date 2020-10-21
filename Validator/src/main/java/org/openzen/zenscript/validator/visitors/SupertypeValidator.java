@@ -18,7 +18,6 @@ import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
@@ -45,12 +44,6 @@ public class SupertypeValidator implements TypeVisitor<Void> {
 	@Override
 	public Void visitBasic(BasicTypeID basic) {
 		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a basic type");
-		return null;
-	}
-	
-	@Override
-	public Void visitString(StringTypeID string) {
-		validator.logError(ValidationLogEntry.Code.SUPERCLASS_NOT_A_CLASS, position, "Superclass cannot be a string");
 		return null;
 	}
 

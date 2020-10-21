@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -21,7 +21,7 @@ public class MapExpression extends Expression {
 			CodePosition position,
 			Expression[] keys,
 			Expression[] values,
-			StoredType type) {
+			TypeID type) {
 		super(position, type, binaryThrow(position, multiThrow(position, keys), multiThrow(position, values)));
 		
 		this.keys = keys;

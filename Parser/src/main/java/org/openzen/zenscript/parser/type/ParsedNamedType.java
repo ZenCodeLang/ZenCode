@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -24,16 +23,14 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public class ParsedNamedType implements IParsedType {
 	private final CodePosition position;
 	public final List<ParsedNamePart> name;
-	private final ParsedStorageTag storage;
-	
-	public ParsedNamedType(CodePosition position, List<ParsedNamePart> name, ParsedStorageTag storage) {
+
+	public ParsedNamedType(CodePosition position, List<ParsedNamePart> name) {
 		this.position = position;
 		this.name = name;
-		this.storage = storage;
 	}
 	
 	@Override
-	public StoredType compile(TypeResolutionContext context) {
+	public TypeID compile(TypeResolutionContext context) {
 		if (name.size() == 1 && name.get(0).name.equals("Iterator"))
 			return toIterator(context);
 		
@@ -43,17 +40,9 @@ public class ParsedNamedType implements IParsedType {
 		
 		TypeID result = context.getType(position, genericNames);
 		if (result == null)
-			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()).stored();
+			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString());
 		
-		return result.stored(storage.resolve(position, context));
-	}
-	
-	@Override
-	public TypeID compileUnstored(TypeResolutionContext context) {
-		if (storage != ParsedStorageTag.NULL)
-			return new InvalidTypeID(position, CompileExceptionCode.STORAGE_NOT_SUPPORTED, "Storage not supported here");
-		
-		return compile(context).type;
+		return result;
 	}
 	
 	@Override
@@ -76,19 +65,18 @@ public class ParsedNamedType implements IParsedType {
 	}
 	
 	@Override
-	public StoredType[] compileTypeArguments(BaseScope scope) {
+	public TypeID[] compileTypeArguments(BaseScope scope) {
 		ParsedNamePart last = name.get(name.size() - 1);
 		return IParsedType.compileTypes(last.typeArguments, scope);
 	}
 	
-	private StoredType toIterator(TypeResolutionContext context) {
+	private TypeID toIterator(TypeResolutionContext context) {
 		List<IParsedType> genericTypes = name.get(0).typeArguments;
-		StoredType[] iteratorTypes = new StoredType[genericTypes.size()];
+		TypeID[] iteratorTypes = new TypeID[genericTypes.size()];
 		for (int i = 0; i < genericTypes.size(); i++)
 			iteratorTypes[i] = genericTypes.get(i).compile(context);
 
-		TypeID type = context.getTypeRegistry().getIterator(iteratorTypes);
-		return type.stored(storage.resolve(position, context));
+		return context.getTypeRegistry().getIterator(iteratorTypes);
 	}
 	
 	public static class ParsedNamePart {

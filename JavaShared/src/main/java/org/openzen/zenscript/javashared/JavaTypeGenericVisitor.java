@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.Collection;
 
-public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType, String, RuntimeException> {
+public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 
 	private final JavaContext context;
 
@@ -15,12 +15,12 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 		this.context = context;
 	}
 	
-	public String getGenericSignature(StoredType... types) {
+	public String getGenericSignature(TypeID... types) {
 		if (types == null || types.length == 0)
 			return "";
 		final StringBuilder builder = new StringBuilder();
-		for (StoredType type : types)
-			builder.append(type.type.accept(type, this));
+		for (TypeID type : types)
+			builder.append(type.accept( this));
 
 		return builder.toString();
 	}
@@ -49,7 +49,7 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 			return "";
 		final StringBuilder builder = new StringBuilder();
 		for (FunctionParameter parameter : parameters) {
-			builder.append(parameter.type.type.accept(parameter.type, this));
+			builder.append(parameter.type.accept(this));
 		}
 		return builder.toString();
 	}
@@ -72,7 +72,7 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 
 				@Override
 				public String visitType(ParameterTypeBound bound) {
-					return bound.type.accept(null, JavaTypeGenericVisitor.this);
+					return bound.type.accept(JavaTypeGenericVisitor.this);
 				}
 			});
 			if (s != null)
@@ -82,49 +82,44 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 	}
 
 	@Override
-	public String visitBasic(StoredType context, BasicTypeID basic) {
+	public String visitBasic(BasicTypeID basic) {
 		return this.context.getDescriptor(basic);
-	}
-	
-	@Override
-	public String visitString(StoredType context, StringTypeID string) {
-		return this.context.getDescriptor(string);
 	}
 
 	@Override
-	public String visitArray(StoredType context, ArrayTypeID array) {
+	public String visitArray(ArrayTypeID array) {
 		return this.context.getDescriptor(array);
 	}
 
 	@Override
-	public String visitAssoc(StoredType context, AssocTypeID assoc) {
+	public String visitAssoc(AssocTypeID assoc) {
 		return this.context.getDescriptor(assoc);
 	}
 
 	@Override
-	public String visitGenericMap(StoredType context, GenericMapTypeID map) {
+	public String visitGenericMap(GenericMapTypeID map) {
 		return this.context.getDescriptor(map);
 	}
 
 	@Override
-	public String visitIterator(StoredType context, IteratorTypeID iterator) {
+	public String visitIterator(IteratorTypeID iterator) {
 		return this.context.getDescriptor(iterator);
 	}
 
 	@Override
-	public String visitFunction(StoredType context, FunctionTypeID function) {
+	public String visitFunction(FunctionTypeID function) {
 		return this.context.getDescriptor(function);
 	}
 
 	@Override
-	public String visitDefinition(StoredType context, DefinitionTypeID definition) {
+	public String visitDefinition(DefinitionTypeID definition) {
 		JavaClass cls = this.context.getJavaClass(definition.definition);
 		StringBuilder builder = new StringBuilder("L").append(cls.internalName);
 
 		if (definition.typeArguments.length > 0) {
 			builder.append("<");
-			for (StoredType typeParameter : definition.typeArguments) {
-				builder.append(typeParameter.type.accept(null, this));
+			for (TypeID typeParameter : definition.typeArguments) {
+				builder.append(typeParameter.accept(this));
 			}
 			builder.append(">");
 		}
@@ -133,17 +128,17 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 	}
 
 	@Override
-	public String visitGeneric(StoredType context, GenericTypeID generic) {
+	public String visitGeneric(GenericTypeID generic) {
 		return "T" + generic.parameter.name + ";";
 	}
 
 	@Override
-	public String visitRange(StoredType context, RangeTypeID range) {
+	public String visitRange(RangeTypeID range) {
 		return this.context.getDescriptor(range);
 	}
 
 	@Override
-	public String visitOptional(StoredType context, OptionalTypeID type) {
-		return type.baseType.accept(context, this);
+	public String visitOptional(OptionalTypeID type) {
+		return type.baseType.accept(this);
 	}
 }

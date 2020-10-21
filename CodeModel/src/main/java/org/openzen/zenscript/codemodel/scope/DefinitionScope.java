@@ -32,9 +32,7 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 
 /**
  *
@@ -43,7 +41,7 @@ import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 public class DefinitionScope extends BaseScope {
 	private final BaseScope outer;
 	private final HighLevelDefinition definition;
-	private final StoredType type;
+	private final TypeID type;
 	private final TypeMembers members;
 	private final TypeParameter[] typeParameters;
 	private final GenericMapper typeParameterMap;
@@ -56,19 +54,19 @@ public class DefinitionScope extends BaseScope {
 		this.outer = outer;
 		this.definition = definition;
 		
-		Map<TypeParameter, StoredType> typeParameters = new HashMap<>();
+		Map<TypeParameter, TypeID> typeParameters = new HashMap<>();
 		if (definition instanceof ExpansionDefinition) {
 			ExpansionDefinition expansion = (ExpansionDefinition)definition;
 			type = expansion.target;
 			this.typeParameters = expansion.typeParameters;
-			typeParameters = StoredType.getSelfMapping(outer.getTypeRegistry(), expansion.typeParameters);
+			typeParameters = TypeID.getSelfMapping(outer.getTypeRegistry(), expansion.typeParameters);
 		} else {
 			DefinitionTypeID definitionType = outer.getTypeRegistry().getForMyDefinition(definition);
-			type = definitionType.stored();
+			type = definitionType;
 			
 			List<TypeParameter> typeParameterList = new ArrayList<>();
 			while (definitionType != null) {
-				typeParameters = StoredType.getSelfMapping(outer.getTypeRegistry(), definitionType.definition.typeParameters);
+				typeParameters = TypeID.getSelfMapping(outer.getTypeRegistry(), definitionType.definition.typeParameters);
 				typeParameterList.addAll(Arrays.asList(definitionType.definition.typeParameters));
 				
 				definitionType = definitionType.definition.isStatic() ? null : definitionType.outer;
@@ -112,7 +110,7 @@ public class DefinitionScope extends BaseScope {
 		if (members != null && members.hasInnerType(name.get(0).name)) {
 			TypeID result = members.getInnerType(position, name.get(0));
 			for (int i = 1; i < name.size(); i++) {
-				result = getTypeMembers(result.stored(StaticExpressionStorageTag.INSTANCE)).getInnerType(position, name.get(i));
+				result = getTypeMembers(result).getInnerType(position, name.get(i));
 			}
 			return result;
 		} 
@@ -126,11 +124,6 @@ public class DefinitionScope extends BaseScope {
 	}
 
 	@Override
-	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
-		return outer.getStorageTag(position, name, parameters);
-	}
-
-	@Override
 	public LoopStatement getLoop(String name) {
 		return null;
 	}
@@ -141,7 +134,7 @@ public class DefinitionScope extends BaseScope {
 	}
 
 	@Override
-	public StoredType getThisType() {
+	public TypeID getThisType() {
 		return type;
 	}
 

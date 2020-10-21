@@ -393,9 +393,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 	
 	private void compileMembers(JavaSourceFileScope scope, HighLevelDefinition definition) {
 		if (context.getJavaNativeClass(definition) != null) {
-			StoredType[] typeParameters = new StoredType[definition.getNumberOfGenericParameters()];
+			TypeID[] typeParameters = new TypeID[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < typeParameters.length; i++)
-				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]).stored(definition.typeParameters[i].storage);
+				typeParameters[i] = scope.semanticScope.getTypeRegistry().getGeneric(definition.typeParameters[i]);
 			TypeID targetType = scope.semanticScope.getTypeRegistry().getForDefinition(definition, typeParameters);
 			
 			JavaExpansionMemberCompiler memberCompiler = new JavaExpansionMemberCompiler(settings, targetType, definition.typeParameters, indent + settings.indent, output, scope, definition);
