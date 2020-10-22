@@ -22,7 +22,6 @@ import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
@@ -36,10 +35,10 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	private final FunctionalMember target;
 	
 	private FunctionHeader header;
-	private final StoredType type;
+	private final TypeID type;
 	private GenericMapper mapper;
 	
-	public FunctionalMemberRef(FunctionalMember target, StoredType type, GenericMapper mapper) {
+	public FunctionalMemberRef(FunctionalMember target, TypeID type, GenericMapper mapper) {
 		this.target = target;
 		this.type = type;
 		
@@ -75,7 +74,7 @@ public class FunctionalMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public StoredType getOwnerType() {
+	public TypeID getOwnerType() {
 		return type;
 	}
 	

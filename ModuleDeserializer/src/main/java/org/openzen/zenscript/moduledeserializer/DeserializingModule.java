@@ -16,7 +16,6 @@ import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.SemanticModule;
 

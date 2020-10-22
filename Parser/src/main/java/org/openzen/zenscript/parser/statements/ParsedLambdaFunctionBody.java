@@ -31,7 +31,7 @@ public class ParsedLambdaFunctionBody implements ParsedFunctionBody {
 	@Override
 	public Statement compile(StatementScope scope, FunctionHeader header) {
 		try {
-			if (header.getReturnType().isBasic(BasicTypeID.VOID)) {
+			if (header.getReturnType() == BasicTypeID.VOID) {
 				Expression value = this.value.compile(new ExpressionScope(scope)).eval();
 				return new ExpressionStatement(value.position, value);
 			} else {

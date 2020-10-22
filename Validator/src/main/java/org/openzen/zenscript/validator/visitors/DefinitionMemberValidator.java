@@ -38,10 +38,7 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
@@ -204,11 +201,11 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitCustomIterator(IteratorMember member) {
 		TypeValidator typeValidator = new TypeValidator(validator, member.position);
-		for (StoredType type : member.getLoopVariableTypes())
+		for (TypeID type : member.getLoopVariableTypes())
 			typeValidator.validate(TypeContext.ITERATOR_TYPE, type);
 		
 		validateFunctional(member, new MethodStatementScope(
-				new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes()).stored(UniqueStorageTag.INSTANCE)),
+				new FunctionHeader(scope.getTypeRegistry().getIterator(member.getLoopVariableTypes())),
 				member.getAccessScope()));
 		return null;
 	}
@@ -259,7 +256,7 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		for (DefinitionMemberRef member : implementation.definitionBorrowedMembers.keySet())
 			implemented.add(member.getTarget());
 		
-		TypeMembers members = scope.getTypeMembers(implementation.type.stored(BorrowStorageTag.THIS));
+		TypeMembers members = scope.getTypeMembers(implementation.type);
 		List<IDefinitionMember> unimplemented = members.getUnimplementedMembers(implemented);
 		if (unimplemented.size() == 1) {
 			validator.logError(ValidationLogEntry.Code.INCOMPLETE_IMPLEMENTATION, implementation.position, unimplemented.get(0).describe() + " not implemented");

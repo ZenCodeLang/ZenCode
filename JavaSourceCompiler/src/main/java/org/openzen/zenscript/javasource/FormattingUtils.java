@@ -9,10 +9,9 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
-import org.openzen.zenscript.javashared.JavaTypeUtils;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 
 /**
@@ -53,7 +52,7 @@ public class FormattingUtils {
 			result.append("<");
 			
 			int index = 0;
-			for (StoredType typeArgument : arguments.typeArguments) {
+			for (TypeID typeArgument : arguments.typeArguments) {
 				if (index > 0)
 					result.append(", ");
 				result.append(scope.type(typeArgument));
@@ -81,7 +80,7 @@ public class FormattingUtils {
 			result.append("<");
 			
 			int index = 0;
-			for (StoredType typeArgument : arguments.typeArguments) {
+			for (TypeID typeArgument : arguments.typeArguments) {
 				if (index > 0)
 					result.append(", ");
 				result.append(scope.type(typeArgument));

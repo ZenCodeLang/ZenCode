@@ -31,8 +31,8 @@ public class ParsedExpressionOrOr extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		Expression cLeft = left.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL.stored);
-		Expression cRight = right.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL.stored);
+		Expression cLeft = left.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL);
+		Expression cRight = right.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL);
 		return new OrOrExpression(position, cLeft, cRight);
 	}
 

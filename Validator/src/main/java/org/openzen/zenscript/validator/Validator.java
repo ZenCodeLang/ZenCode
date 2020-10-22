@@ -58,7 +58,6 @@ public class Validator {
 				module.registry,
 				module.expansions,
 				module.annotations,
-				module.storageTypes,
                 logger);
 	}
 	

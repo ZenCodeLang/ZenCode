@@ -195,7 +195,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 						true,
 						descriptor,
 						JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-						header.getReturnType().type instanceof GenericTypeID,
+						header.getReturnType() instanceof GenericTypeID,
 						header.useTypeParameters());
 			}
 		}

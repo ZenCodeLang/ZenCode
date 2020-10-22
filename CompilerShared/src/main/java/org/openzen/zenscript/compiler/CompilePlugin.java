@@ -7,7 +7,6 @@ package org.openzen.zenscript.compiler;
 
 import java.util.List;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.type.storage.StorageType;
 
 /**
  *

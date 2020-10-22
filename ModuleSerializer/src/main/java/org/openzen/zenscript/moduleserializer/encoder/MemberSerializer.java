@@ -29,7 +29,7 @@ import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.moduleserialization.MemberEncoding;
 import org.openzen.zenscript.moduleserializer.SerializationOptions;
 
@@ -242,7 +242,7 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		int flags = getFlags(member);
 		serialize(flags, context, member);
 		output.writeUInt(member.getLoopVariableCount());
-		for (StoredType type : member.getLoopVariableTypes())
+		for (TypeID type : member.getLoopVariableTypes())
 			output.serialize(context, type);
 		
 		output.enqueueCode(encoder -> {

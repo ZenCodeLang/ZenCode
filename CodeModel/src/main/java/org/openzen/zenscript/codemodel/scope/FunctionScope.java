@@ -19,11 +19,9 @@ import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -33,7 +31,7 @@ public class FunctionScope extends StatementScope {
 	private final BaseScope outer;
 	private final FunctionHeader header;
 	private final GenericMapper typeParameterMap;
-	private final StoredType thisType;
+	private final TypeID thisType;
 	private final DollarEvaluator dollar;
 	
 	public FunctionScope(CodePosition position, BaseScope outer, FunctionHeader header) {
@@ -43,7 +41,7 @@ public class FunctionScope extends StatementScope {
 	public FunctionScope(CodePosition position, BaseScope outer, FunctionHeader header, DollarEvaluator dollar) {
 		this.outer = outer;
 		this.header = header;
-		this.thisType = outer.getThisType() == null || header.storage == null ? outer.getThisType() : outer.getThisType().type.stored(header.storage);
+		this.thisType = outer.getThisType();
 		this.dollar = dollar;
 		
 		if (outer.getLocalTypeParameters() == null)
@@ -113,12 +111,7 @@ public class FunctionScope extends StatementScope {
 	}
 
 	@Override
-	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
-		return outer.getStorageTag(position, name, parameters);
-	}
-
-	@Override
-	public StoredType getThisType() {
+	public TypeID getThisType() {
 		return thisType;
 	}
 

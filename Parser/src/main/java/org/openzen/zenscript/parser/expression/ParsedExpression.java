@@ -16,6 +16,8 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.StringExpansion;
 import static org.openzen.zencode.shared.StringExpansion.unescape;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
+
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
@@ -25,7 +27,6 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
@@ -597,7 +598,7 @@ public abstract class ParsedExpression {
 		return compile(scope).eval();
 	}
 	
-	public SwitchValue compileToSwitchValue(StoredType type, ExpressionScope scope) throws CompileException {
+	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
 	}
 	
@@ -609,7 +610,7 @@ public abstract class ParsedExpression {
 		throw new ParseException(position, "Not a valid lambda parameter");
 	}
 	
-	public boolean isCompatibleWith(BaseScope scope, StoredType type) {
+	public boolean isCompatibleWith(BaseScope scope, TypeID type) {
 		return true;
 	}
 	

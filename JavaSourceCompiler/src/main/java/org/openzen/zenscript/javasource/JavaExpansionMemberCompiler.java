@@ -30,7 +30,6 @@ import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.UniqueStorageTag;
 import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaMethod;
 

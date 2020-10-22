@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  * Using to cast a class type to a base type.
@@ -17,7 +17,7 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 public class SupertypeCastExpression extends Expression {
 	public final Expression value;
 	
-	public SupertypeCastExpression(CodePosition position, Expression value, StoredType type) {
+	public SupertypeCastExpression(CodePosition position, Expression value, TypeID type) {
 		super(position, type, value.thrownType);
 		
 		this.value = value;

@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.context.*;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.codemodel.type.storage.*;
 import org.openzen.zenscript.javabytecode.*;
 import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.lexer.*;
@@ -44,7 +43,7 @@ public class ScriptingEngine {
     }
     
     public ScriptingEngine(ScriptingEngineLogger logger) {
-        this.space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
+        this.space = new ModuleSpace(registry, new ArrayList<>());
         this.logger = logger;
         try {
             ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.jar"));

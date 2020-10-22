@@ -8,16 +8,13 @@ import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.FileScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 
 /**
  *
@@ -44,7 +41,7 @@ public class ParsedFunctionParameter {
 		if (compiled != null)
 			return compiled;
 
-		StoredType cType = type.compile(context);
+		TypeID cType = type.compile(context);
 		Expression cDefaultValue = null;
 
 

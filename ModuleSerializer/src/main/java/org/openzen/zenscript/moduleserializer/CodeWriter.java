@@ -38,7 +38,6 @@ import org.openzen.zenscript.moduleserializer.encoder.SwitchValueSerializer;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.serialization.EncodingOperation;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.moduleserialization.CodePositionEncoding;
 import org.openzen.zenscript.moduleserialization.FunctionHeaderEncoding;
@@ -250,12 +249,6 @@ public class CodeWriter implements CodeSerializationOutput {
 		} else {
 			type.accept(context, typeSerializer);
 		}
-	}
-	
-	@Override
-	public void serialize(TypeContext context, StoredType type) {
-		serialize(type.storage);
-		serialize(context, type.type);
 	}
 	
 	@Override

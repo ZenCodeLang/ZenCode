@@ -20,11 +20,9 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -58,7 +56,7 @@ public class LambdaScope extends StatementScope {
 			if (name.hasNoArguments()) {
 				for (FunctionParameter parameter : header.parameters) {
 					if (parameter.name.equals(name.name)) {
-						if (parameter.type.isBasic(BasicTypeID.UNDETERMINED))
+						if (parameter.type == BasicTypeID.UNDETERMINED)
 							throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "parameter with undetermined type");
 						
 						return new GetFunctionParameterExpression(position, parameter);
@@ -88,12 +86,7 @@ public class LambdaScope extends StatementScope {
 	}
 
 	@Override
-	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
-		return outer.getStorageTag(position, name, parameters);
-	}
-
-	@Override
-	public StoredType getThisType() {
+	public TypeID getThisType() {
 		return outer.getThisType();
 	}
 

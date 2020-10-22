@@ -15,7 +15,6 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
@@ -149,15 +148,13 @@ public interface IParsedType {
 				break;
 			case K_STRING: {
 				tokens.next();
-				ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-				result = new ParsedString(position, storage);
+				result = ParsedTypeBasic.STRING;
 				break;
 			}
 			case K_FUNCTION: {
 				tokens.next();
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
-				ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-				result = new ParsedFunctionType(position, header, storage);
+				result = new ParsedFunctionType(header);
 				break;
 			}
 			case T_IDENTIFIER: {
@@ -167,8 +164,7 @@ public interface IParsedType {
 					List<IParsedType> generic = parseTypeArguments(tokens);
 					name.add(new ParsedNamedType.ParsedNamePart(namePart, generic));
 				} while (tokens.optional(ZSTokenType.T_DOT) != null);
-				ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-				result = new ParsedNamedType(position, name, storage);
+				result = new ParsedNamedType(position, name);
 				break;
 			}
 			default:
@@ -190,20 +186,17 @@ public interface IParsedType {
 						dimension++;
 					
 					if (tokens.optional(ZSTokenType.T_SQCLOSE) != null) {
-						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-						result = new ParsedTypeArray(position, result, dimension, storage);
+						result = new ParsedTypeArray(result, dimension);
 					} else if (tokens.isNext(T_LESS)) {
 						tokens.next();
 						ParsedTypeParameter parameter = ParsedTypeParameter.parse(tokens);
 						tokens.required(T_GREATER, "> expected");
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
-						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-						result = new ParsedTypeGenericMap(position, parameter, result, storage);
+						result = new ParsedTypeGenericMap(parameter, result);
 					} else {
 						IParsedType keyType = parse(tokens);
 						tokens.required(ZSTokenType.T_SQCLOSE, "] expected");
-						ParsedStorageTag storage = ParsedStorageTag.parse(tokens);
-						result = new ParsedTypeAssociative(position, keyType, result, storage);
+						result = new ParsedTypeAssociative(keyType, result);
 					}
 					break;
 				case T_QUEST:
@@ -223,27 +216,16 @@ public interface IParsedType {
 		if (typeParameters != null) {
 			result = new TypeID[typeParameters.size()];
 			for (int i = 0; i < typeParameters.size(); i++) {
-				result[i] = typeParameters.get(i).compileUnstored(context);
+				result[i] = typeParameters.get(i).compile(context);
 			}
 		}
 		return result;
 	}
 	
-	public static TypeID[] compileListUnstored(List<IParsedType> typeParameters, TypeResolutionContext context) {
+	public static TypeID[] compileTypes(List<IParsedType> typeParameters, TypeResolutionContext context) {
 		TypeID[] result = TypeID.NONE;
-		if (typeParameters != null) {
-			result = new TypeID[typeParameters.size()];
-			for (int i = 0; i < typeParameters.size(); i++) {
-				result[i] = typeParameters.get(i).compileUnstored(context);
-			}
-		}
-		return result;
-	}
-	
-	public static StoredType[] compileTypes(List<IParsedType> typeParameters, TypeResolutionContext context) {
-		StoredType[] result = StoredType.NONE;
 		if (typeParameters != null && typeParameters.size() > 0) {
-			result = new StoredType[typeParameters.size()];
+			result = new TypeID[typeParameters.size()];
 			for (int i = 0; i < typeParameters.size(); i++) {
 				result[i] = typeParameters.get(i).compile(context);
 			}
@@ -251,15 +233,13 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public StoredType compile(TypeResolutionContext context);
-	
-	public TypeID compileUnstored(TypeResolutionContext context);
+	public TypeID compile(TypeResolutionContext context);
 	
 	public default AnnotationDefinition compileAnnotation(BaseScope scope) {
 		return null;
 	}
 	
-	public default StoredType[] compileTypeArguments(BaseScope scope) {
-		return StoredType.NONE;
+	public default TypeID[] compileTypeArguments(BaseScope scope) {
+		return TypeID.NONE;
 	}
 }

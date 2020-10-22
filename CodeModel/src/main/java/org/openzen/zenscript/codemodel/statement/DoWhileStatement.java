@@ -11,7 +11,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -75,7 +75,7 @@ public class DoWhileStatement extends LoopStatement {
 	}
 
 	@Override
-	public StoredType getReturnType() {
+	public TypeID getReturnType() {
 		return content.getReturnType();
 	}
 }

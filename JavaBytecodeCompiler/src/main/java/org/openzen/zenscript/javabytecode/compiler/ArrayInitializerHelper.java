@@ -5,7 +5,6 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.FunctionExpression;
-import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 
 import java.util.ArrayList;
@@ -143,9 +142,6 @@ class ArrayInitializerHelper {
 	 * @return can expression be inLined
 	 */
 	static boolean canBeInLined(Expression expression) {
-		while (expression instanceof StorageCastExpression)
-			expression = ((StorageCastExpression) expression).value;
-
 		return expression instanceof FunctionExpression && ((FunctionExpression) expression).body instanceof ReturnStatement;
 	}
 

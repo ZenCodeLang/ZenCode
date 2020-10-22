@@ -41,22 +41,22 @@ public class GlobalTypeRegistry {
 		rangeTypes.put(RangeTypeID.USIZE, RangeTypeID.USIZE);
 	}
 	
-	public ArrayTypeID getArray(StoredType baseType, int dimension) {
+	public ArrayTypeID getArray(TypeID baseType, int dimension) {
 		ArrayTypeID id = new ArrayTypeID(this, baseType, dimension);
 		return internalize(arrayTypes, id);
 	}
 	
-	public AssocTypeID getAssociative(StoredType keyType, StoredType valueType) {
+	public AssocTypeID getAssociative(TypeID keyType, TypeID valueType) {
 		AssocTypeID id = new AssocTypeID(this, keyType, valueType);
 		return internalize(assocTypes, id);
 	}
 	
-	public GenericMapTypeID getGenericMap(StoredType valueType, TypeParameter key) {
+	public GenericMapTypeID getGenericMap(TypeID valueType, TypeParameter key) {
 		GenericMapTypeID id = new GenericMapTypeID(this, valueType, key);
 		return internalize(genericMapTypes, id);
 	}
 	
-	public IteratorTypeID getIterator(StoredType[] loopTypes) {
+	public IteratorTypeID getIterator(TypeID[] loopTypes) {
 		IteratorTypeID id = new IteratorTypeID(this, loopTypes);
 		return internalize(iteratorTypes, id);
 	}
@@ -66,7 +66,7 @@ public class GlobalTypeRegistry {
 		return internalize(functionTypes, id);
 	}
 	
-	public RangeTypeID getRange(StoredType type) {
+	public RangeTypeID getRange(TypeID type) {
 		RangeTypeID id = new RangeTypeID(this, type);
 		return internalize(rangeTypes, id);
 	}
@@ -77,11 +77,11 @@ public class GlobalTypeRegistry {
 	}
 	
 	public DefinitionTypeID getForMyDefinition(HighLevelDefinition definition) {
-		StoredType[] typeArguments = StoredType.NONE;
+		TypeID[] typeArguments = TypeID.NONE;
 		if (definition.getNumberOfGenericParameters() > 0) {
-			typeArguments = new StoredType[definition.getNumberOfGenericParameters()];
+			typeArguments = new TypeID[definition.getNumberOfGenericParameters()];
 			for (int i = 0; i < definition.typeParameters.length; i++)
-				typeArguments[i] = new StoredType(getGeneric(definition.typeParameters[i]), definition.typeParameters[i].storage);
+				typeArguments[i] = getGeneric(definition.typeParameters[i]);
 		}
 		DefinitionTypeID outer = null;
 		if (definition.outerDefinition != null)
@@ -90,11 +90,11 @@ public class GlobalTypeRegistry {
 		return getForDefinition(definition, typeArguments, outer);
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, StoredType... typeArguments) {
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeID... typeArguments) {
 		return this.getForDefinition(definition, typeArguments, null);
 	}
 	
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, StoredType[] typeArguments, DefinitionTypeID outer) {
+	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeID[] typeArguments, DefinitionTypeID outer) {
 		DefinitionTypeID id = new DefinitionTypeID(this, definition, typeArguments, definition.isStatic() ? null : outer);
 		return internalize(definitionTypes, id);
 	}

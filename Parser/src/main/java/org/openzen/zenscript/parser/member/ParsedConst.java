@@ -82,9 +82,9 @@ public class ParsedConst extends ParsedDefinitionMember {
 					.castImplicit(position, scope, compiled.getType());
 			compiled.value = initializer;
 			
-			if (compiled.getType().isBasic(BasicTypeID.UNDETERMINED))
+			if (compiled.getType() == BasicTypeID.UNDETERMINED)
 				compiled.setType(initializer.type);
-		} else if (compiled.getType().isBasic(BasicTypeID.UNDETERMINED)) {
+		} else if (compiled.getType() == BasicTypeID.UNDETERMINED) {
 			throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "No type or initializer given");
 		}
 	}

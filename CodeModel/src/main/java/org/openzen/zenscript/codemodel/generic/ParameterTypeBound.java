@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 
 /**
  *
@@ -33,19 +32,17 @@ public final class ParameterTypeBound implements TypeParameterBound {
 
 	@Override
 	public void registerMembers(LocalMemberCache cache, TypeMembers members) {
-		cache.get(type.stored(members.type.getSpecifiedStorage()))
-				.copyMembersTo(members, TypeMemberPriority.FROM_TYPE_BOUNDS);
+		cache.get(type).copyMembersTo(members, TypeMemberPriority.FROM_TYPE_BOUNDS);
 	}
 
 	@Override
 	public boolean matches(LocalMemberCache cache, TypeID type) {
-		return cache.get(type.stored(BorrowStorageTag.THIS))
-				.extendsOrImplements(this.type);
+		return cache.get(type).extendsOrImplements(this.type);
 	}
 
 	@Override
 	public TypeParameterBound instance(GenericMapper mapper) {
-		return new ParameterTypeBound(position, type.instance(mapper, null).type);
+		return new ParameterTypeBound(position, type.instance(mapper));
 	}
 
 	@Override

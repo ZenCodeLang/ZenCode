@@ -19,7 +19,7 @@ public class IsExpression extends Expression {
 	public final TypeID isType;
 	
 	public IsExpression(CodePosition position, Expression value, TypeID type) {
-		super(position, BasicTypeID.BOOL.stored, value.thrownType);
+		super(position, BasicTypeID.BOOL, value.thrownType);
 		
 		this.value = value;
 		this.isType = type;

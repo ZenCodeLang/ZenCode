@@ -17,7 +17,7 @@ public class ConstantShortExpression extends Expression {
 	public final short value;
 	
 	public ConstantShortExpression(CodePosition position, short value) {
-		super(position, BasicTypeID.SHORT.stored, null);
+		super(position, BasicTypeID.SHORT, null);
 		
 		this.value = value;
 	}

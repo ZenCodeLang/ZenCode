@@ -7,14 +7,14 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class DummyExpression extends Expression {
-	public DummyExpression(StoredType type) {
+	public DummyExpression(TypeID type) {
 		super(CodePosition.BUILTIN, type, null);
 	}
 

@@ -4,7 +4,6 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
@@ -13,7 +12,6 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 import java.util.ArrayList;
@@ -271,7 +269,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>(Arrays.asList(this.definition.typeParameters));
 
 		CompilerUtils.tagMethodParameters(context, javaModule, member.getHeader(), false, typeParameters);
-		member.toType.type.extractTypeParameters(typeParameters);
+		member.toType.extractTypeParameters(typeParameters);
 
 		final String methodSignature = context.getMethodSignature(member.getHeader());
 		final String methodDescriptor = context.getMethodDescriptor(member.getHeader());

@@ -19,7 +19,6 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.storage.StorageType;
 
 /**
  *
@@ -32,16 +31,14 @@ public final class ModuleSpace {
 	private final List<ExpansionDefinition> expansions = new ArrayList<>();
 	private final Map<String, ISymbol> globals = new HashMap<>();
 	private final AnnotationDefinition[] annotations;
-	private final StorageType[] storageTypes;
 	private final Map<String, SemanticModule> modules = new HashMap<>();
 	
-	public ModuleSpace(GlobalTypeRegistry registry, List<AnnotationDefinition> annotations, StorageType[] storageTypes) {
+	public ModuleSpace(GlobalTypeRegistry registry, List<AnnotationDefinition> annotations) {
 		this.registry = registry;
 		
 		annotations.add(NativeAnnotationDefinition.INSTANCE);
 		annotations.add(PreconditionAnnotationDefinition.INSTANCE);
 		this.annotations = annotations.toArray(new AnnotationDefinition[annotations.size()]);
-		this.storageTypes = storageTypes;
 	}
 	
 	public void addModule(String name, SemanticModule dependency) throws CompileException {
@@ -79,9 +76,5 @@ public final class ModuleSpace {
 	
 	public AnnotationDefinition[] getAnnotations() {
 		return annotations;
-	}
-	
-	public StorageType[] getStorageTypes() {
-		return storageTypes;
 	}
 }

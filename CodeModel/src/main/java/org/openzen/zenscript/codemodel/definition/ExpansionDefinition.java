@@ -8,14 +8,14 @@ package org.openzen.zenscript.codemodel.definition;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ExpansionDefinition extends HighLevelDefinition {
-	public StoredType target;
+	public TypeID target;
 	
 	public ExpansionDefinition(CodePosition position, Module module, ZSPackage pkg, int modifiers, HighLevelDefinition outerDefinition) {
 		super(position, module, pkg, null, modifiers, outerDefinition);

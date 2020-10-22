@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.member.ConstMember;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 public class ConstMemberRef extends PropertyRef {
 	public final ConstMember member;
 	
-	public ConstMemberRef(StoredType owner, ConstMember member, GenericMapper mapper) {
+	public ConstMemberRef(TypeID owner, ConstMember member, GenericMapper mapper) {
 		super(owner, member, mapper);
 		this.member = member;
 	}

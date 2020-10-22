@@ -35,9 +35,7 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.codemodel.serialization.EncodingOperation;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
 import org.openzen.zenscript.moduleserialization.TypeParameterEncoding;
 import org.openzen.zenscript.moduleserializer.encoder.DefinitionMemberSerializer;
 import org.openzen.zenscript.moduleserializer.encoder.DefinitionSerializer;
@@ -218,15 +216,6 @@ public class TableBuilder implements CodeSerializationOutput {
 	public void serialize(TypeContext context, TypeID type) {
 		if (type != null)
 			type.accept(context, typeSerializer);
-	}
-	
-	@Override
-	public void serialize(TypeContext context, StoredType type) {
-		if (type == null)
-			return;
-		
-		type.type.accept(context, typeSerializer);
-		type.storage;
 	}
 
 	@Override

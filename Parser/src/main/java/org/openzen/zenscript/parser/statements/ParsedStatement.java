@@ -11,8 +11,6 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
@@ -322,16 +320,5 @@ public abstract class ParsedStatement {
 		statement.setTag(WhitespaceInfo.class, whitespace);
 		statement.annotations = ParsedAnnotation.compileForStatement(annotations, statement, scope);
 		return statement;
-	}
-
-	protected static StoredType union(TypeScope scope, StoredType a, StoredType b) {
-		if (a == null)
-			return b;
-		if (b == null)
-			return a;
-		if (a == b)
-			return a;
-		
-		return scope.getTypeMembers(a).union(b);
 	}
 }

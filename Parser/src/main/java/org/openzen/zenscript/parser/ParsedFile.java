@@ -82,7 +82,6 @@ public class ParsedFile {
 		ModuleTypeResolutionContext moduleContext = new ModuleTypeResolutionContext(
 				registry.registry,
 				registry.getAnnotations(),
-				registry.getStorageTypes(),
 				rootPackage,
 				pkg,
 				globals);
@@ -110,8 +109,22 @@ public class ParsedFile {
             }
         }
 		
-		if (failed)
-			return new SemanticModule(pkg.module, dependencies, parameters, SemanticModule.State.INVALID, rootPackage, pkg.getPackage(), definitions, Collections.emptyList(), registry.registry, expansions, registry.getAnnotations(), registry.getStorageTypes(), logger);
+		if (failed) {
+			return new SemanticModule(
+					pkg.module,
+					dependencies,
+					parameters,
+					SemanticModule.State.INVALID,
+					rootPackage,
+					pkg.getPackage(),
+					definitions,
+					Collections.emptyList(),
+					registry.registry,
+					expansions,
+					registry.getAnnotations(),
+					logger
+			);
+		}
 		
 		// scripts will store all the script blocks encountered in the files
 		PrecompilationState precompiler = new PrecompilationState();
@@ -143,7 +156,7 @@ public class ParsedFile {
 				registry.registry,
 				expansions,
 				registry.getAnnotations(),
-				registry.getStorageTypes(), logger);
+				logger);
 	}
 	
 	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File file) throws ParseException {

@@ -11,17 +11,16 @@ import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class IteratorTypeID implements TypeID {
-	public final StoredType[] iteratorTypes;
+	public final TypeID[] iteratorTypes;
 	private final IteratorTypeID normalized;
 	
-	public IteratorTypeID(GlobalTypeRegistry registry, StoredType[] iteratorTypes) {
+	public IteratorTypeID(GlobalTypeRegistry registry, TypeID[] iteratorTypes) {
 		this.iteratorTypes = iteratorTypes;
 		
 		normalized = isDenormalized() ? normalize(registry) : this;
@@ -33,7 +32,7 @@ public class IteratorTypeID implements TypeID {
 	}
 	
 	private boolean isDenormalized() {
-		for (StoredType type : iteratorTypes)
+		for (TypeID type : iteratorTypes)
 			if (type.getNormalized() != type)
 				return true;
 		
@@ -41,7 +40,7 @@ public class IteratorTypeID implements TypeID {
 	}
 	
 	private IteratorTypeID normalize(GlobalTypeRegistry registry) {
-		StoredType[] normalizedTypes = new StoredType[iteratorTypes.length];
+		TypeID[] normalizedTypes = new TypeID[iteratorTypes.length];
 		for (int i = 0; i < normalizedTypes.length; i++)
 			normalizedTypes[i] = iteratorTypes[i].getNormalized();
 		return registry.getIterator(normalizedTypes);
@@ -61,31 +60,21 @@ public class IteratorTypeID implements TypeID {
 	public boolean isOptional() {
 		return false;
 	}
-	
-	@Override
-	public boolean isDestructible() {
-		return false;
-	}
-	
-	@Override
-	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
-		return false;
-	}
-	
+
 	@Override
 	public boolean isValueType() {
 		return false;
 	}
 	
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		StoredType[] instanced = mapper.map(iteratorTypes);
-		return mapper.registry.getIterator(instanced).stored(storage);
+	public TypeID instance(GenericMapper mapper) {
+		TypeID[] instanced = mapper.map(iteratorTypes);
+		return mapper.registry.getIterator(instanced);
 	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		for (StoredType type : iteratorTypes)
+		for (TypeID type : iteratorTypes)
 			if (type.hasInferenceBlockingTypeParameters(parameters))
 				return true;
 		
@@ -99,8 +88,8 @@ public class IteratorTypeID implements TypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		for (StoredType type : iteratorTypes)
-			type.type.extractTypeParameters(typeParameters);
+		for (TypeID type : iteratorTypes)
+			type.extractTypeParameters(typeParameters);
 	}
 
 	@Override

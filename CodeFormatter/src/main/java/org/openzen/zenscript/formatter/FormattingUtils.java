@@ -30,7 +30,7 @@ import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -78,7 +78,7 @@ public class FormattingUtils {
 			if (parameter.variadic)
 				result.append("...");
 			
-			if (!settings.showAnyInFunctionHeaders || !parameter.type.isBasic(BasicTypeID.UNDETERMINED)) {
+			if (!settings.showAnyInFunctionHeaders || parameter.type != BasicTypeID.UNDETERMINED) {
 				result.append(" as ");
 				result.append(typeFormatter.format(header.getReturnType()));
 			}
@@ -86,7 +86,7 @@ public class FormattingUtils {
 			parameterIndex++;
 		}
 		result.append(")");
-		if (!settings.showAnyInFunctionHeaders || !header.getReturnType().isBasic(BasicTypeID.UNDETERMINED)) {
+		if (!settings.showAnyInFunctionHeaders || header.getReturnType() != BasicTypeID.UNDETERMINED) {
 			result.append(" as ");
 			result.append(typeFormatter.format(header.getReturnType()));
 		}
@@ -128,7 +128,7 @@ public class FormattingUtils {
 			result.append("<");
 			
 			int index = 0;
-			for (StoredType typeArgument : arguments.typeArguments) {
+			for (TypeID typeArgument : arguments.typeArguments) {
 				if (index > 0)
 					result.append(", ");
 				result.append(typeFormatter.format(typeArgument));

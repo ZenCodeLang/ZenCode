@@ -18,13 +18,10 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
-import org.openzen.zenscript.codemodel.type.storage.InvalidStorageTag;
 import org.openzen.zenscript.validator.TypeContext;
 
 /**
@@ -39,16 +36,7 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 		this.validator = validator;
 		this.position = position;
 	}
-	
-	public void validate(TypeContext context, StoredType type) {
-		if (type.getActualStorage() instanceof InvalidStorageTag) {
-			InvalidStorageTag storage = (InvalidStorageTag)type.getActualStorage();
-			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, storage.position, storage.message);
-		}
-		
-		validate(context, type.type);
-	}
-	
+
 	public void validate(TypeContext context, TypeID type) {
 		type.accept(context, this);
 	}
@@ -58,11 +46,6 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 		if (basic == BasicTypeID.UNDETERMINED)
 			validator.logError(ValidationLogEntry.Code.INVALID_TYPE, position, context.display + " could not be determined");
 		
-		return null;
-	}
-	
-	@Override
-	public Void visitString(TypeContext context, StringTypeID string) {
 		return null;
 	}
 
@@ -95,7 +78,7 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 
 	@Override
 	public Void visitIterator(TypeContext context, IteratorTypeID iterator) {
-		for (StoredType type : iterator.iteratorTypes)
+		for (TypeID type : iterator.iteratorTypes)
 			validate(context, type);
 		
 		return null;

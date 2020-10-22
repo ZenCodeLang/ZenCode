@@ -12,7 +12,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -28,8 +28,8 @@ public class ReturnStatement extends Statement {
 	}
 	
 	@Override
-	public StoredType getReturnType() {
-		return value != null ? value.type : BasicTypeID.VOID.stored();
+	public TypeID getReturnType() {
+		return value != null ? value.type : BasicTypeID.VOID;
 	}
 	
 	@Override
@@ -38,7 +38,7 @@ public class ReturnStatement extends Statement {
 	}
 	
 	@Override
-	public Statement withReturnType(TypeScope scope, StoredType returnType) {
+	public Statement withReturnType(TypeScope scope, TypeID returnType) {
 		return new ReturnStatement(position, value == null ? null : value.castImplicit(position, scope, returnType));
 	}
 

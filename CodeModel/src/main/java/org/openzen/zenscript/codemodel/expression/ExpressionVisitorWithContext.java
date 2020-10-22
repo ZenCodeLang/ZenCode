@@ -113,7 +113,9 @@ public interface ExpressionVisitorWithContext<C, R> {
 	R visitOrOr(C context, OrOrExpression expression);
 	
 	R visitPanic(C context, PanicExpression expression);
-	
+
+	R visitPlatformSpecific(C context, Expression expression);
+
 	R visitPostCall(C context, PostCallExpression expression);
 	
 	R visitRange(C context, RangeExpression expression);
@@ -133,9 +135,7 @@ public interface ExpressionVisitorWithContext<C, R> {
 	R visitStaticGetter(C context, StaticGetterExpression expression);
 	
 	R visitStaticSetter(C context, StaticSetterExpression expression);
-	
-	R visitStorageCast(C context, StorageCastExpression expression);
-	
+
 	R visitSupertypeCast(C context, SupertypeCastExpression expression);
 	
 	R visitThis(C context, ThisExpression expression);

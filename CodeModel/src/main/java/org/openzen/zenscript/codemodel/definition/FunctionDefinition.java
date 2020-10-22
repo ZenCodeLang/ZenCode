@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.storage.StaticStorageTag;
 
 /**
  *
@@ -41,7 +40,7 @@ public class FunctionDefinition extends HighLevelDefinition {
 	public void setHeader(GlobalTypeRegistry registry, FunctionHeader header) {
 		this.header = header;
 		addMember(caller = new CallerMember(position, this, Modifiers.PUBLIC | Modifiers.STATIC, header, null));
-		callerGroup.addMethod(new FunctionalMemberRef(caller, registry.getFunction(header).stored(StaticStorageTag.INSTANCE), GenericMapper.EMPTY), TypeMemberPriority.SPECIFIED);
+		callerGroup.addMethod(new FunctionalMemberRef(caller, registry.getFunction(header), GenericMapper.EMPTY), TypeMemberPriority.SPECIFIED);
 	}
 	
 	public void setCode(Statement statement) {

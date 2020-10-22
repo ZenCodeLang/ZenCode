@@ -19,7 +19,7 @@ import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -42,7 +42,7 @@ public class PartialVariantOptionExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) {
 		if (arguments != option.getOption().types.length)
 			return new List[0];
 		
@@ -50,7 +50,7 @@ public class PartialVariantOptionExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
 		if (arguments != option.getOption().types.length)
 			return Collections.emptyList();
 		
@@ -58,17 +58,17 @@ public class PartialVariantOptionExpression implements IPartialExpression {
 	}
 
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Variant options don't have members");
 	}
 
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) {
+	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) {
 		return new VariantValueExpression(position, option.variant, option, arguments.arguments);
 	}
 
 	@Override
-	public StoredType[] getTypeArguments() {
-		return StoredType.NONE;
+	public TypeID[] getTypeArguments() {
+		return TypeID.NONE;
 	}
 }

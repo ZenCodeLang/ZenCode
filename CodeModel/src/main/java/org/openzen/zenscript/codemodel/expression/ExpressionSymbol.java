@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -26,12 +25,12 @@ public class ExpressionSymbol implements ISymbol {
 	}
 
 	@Override
-	public IPartialExpression getExpression(CodePosition position, BaseScope scope, StoredType[] typeArguments) {
+	public IPartialExpression getExpression(CodePosition position, BaseScope scope, TypeID[] typeArguments) {
 		return function.apply(position, scope);
 	}
 
 	@Override
-	public TypeID getType(CodePosition position, TypeResolutionContext context, StoredType[] typeArguments) {
+	public TypeID getType(CodePosition position, TypeResolutionContext context, TypeID[] typeArguments) {
 		return null;
 	}
 }

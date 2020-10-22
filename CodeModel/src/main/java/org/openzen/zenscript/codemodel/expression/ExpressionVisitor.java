@@ -117,7 +117,9 @@ public interface ExpressionVisitor<T> {
 	T visitOrOr(OrOrExpression expression);
 	
 	T visitPanic(PanicExpression expression);
-	
+
+	T visitPlatformSpecific(Expression expression);
+
 	T visitPostCall(PostCallExpression expression);
 	
 	T visitRange(RangeExpression expression);
@@ -137,9 +139,7 @@ public interface ExpressionVisitor<T> {
 	T visitStaticGetter(StaticGetterExpression expression);
 	
 	T visitStaticSetter(StaticSetterExpression expression);
-	
-	T visitStorageCast(StorageCastExpression expression);
-	
+
 	T visitSupertypeCast(SupertypeCastExpression expression);
 	
 	T visitThis(ThisExpression expression);

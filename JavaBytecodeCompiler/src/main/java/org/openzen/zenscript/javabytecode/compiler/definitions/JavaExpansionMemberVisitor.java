@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
@@ -24,13 +24,13 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 
 	private final ClassWriter writer;
 	private final JavaBytecodeContext context;
-	private final StoredType expandedClass;
+	private final TypeID expandedClass;
 	private final HighLevelDefinition definition;
 	private final JavaCompiledModule javaModule;
 
 	private final JavaStatementVisitor clinitStatementVisitor;
 
-	public JavaExpansionMemberVisitor(JavaBytecodeContext context, ClassWriter writer, StoredType expandedClass, HighLevelDefinition definition) {
+	public JavaExpansionMemberVisitor(JavaBytecodeContext context, ClassWriter writer, TypeID expandedClass, HighLevelDefinition definition) {
 		this.writer = writer;
 		this.expandedClass = expandedClass;
 		this.definition = definition;
@@ -85,7 +85,7 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 			return null;
 
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
-		expandedClass.type.extractTypeParameters(typeParameters);
+		expandedClass.extractTypeParameters(typeParameters);
 
 		CompilerUtils.tagMethodParameters(context, javaModule, member.header, member.isStatic(), typeParameters);
 
@@ -170,12 +170,12 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitGetter(GetterMember member) {
 		final boolean isStatic = member.isStatic();
-		final StoredType returnType = member.getType();
+		final TypeID returnType = member.getType();
 		final String descriptor;
 		final String signature;
 
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
-		expandedClass.type.extractTypeParameters(typeParameters);
+		expandedClass.extractTypeParameters(typeParameters);
 		{
 
 			final String descMiddle, signatureMiddle, signatureStart;
@@ -242,12 +242,12 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitSetter(SetterMember member) {
 		final boolean isStatic = member.isStatic();
-		final StoredType setterType = member.parameter.type;
+		final TypeID setterType = member.parameter.type;
 
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
-		expandedClass.type.extractTypeParameters(typeParameters);
+		expandedClass.extractTypeParameters(typeParameters);
 		CompilerUtils.tagMethodParameters(context, javaModule, member.getHeader(), isStatic, typeParameters);
-		setterType.type.extractTypeParameters(typeParameters);
+		setterType.extractTypeParameters(typeParameters);
 
 
 		final String signature = context.getMethodSignatureExpansion(member.getHeader(), expandedClass);
@@ -306,10 +306,10 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	public Void visitCaster(CasterMember member) {
 
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
-		expandedClass.type.extractTypeParameters(typeParameters);
+		expandedClass.extractTypeParameters(typeParameters);
 
 		CompilerUtils.tagMethodParameters(context, javaModule, member.getHeader(), false, typeParameters);
-		member.toType.type.extractTypeParameters(typeParameters);
+		member.toType.extractTypeParameters(typeParameters);
 
 		final String methodSignature = context.getMethodSignatureExpansion(member.getHeader(), expandedClass);
 		final String methodDescriptor = context.getMethodDescriptorExpansion(member.getHeader(), expandedClass);

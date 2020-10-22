@@ -160,8 +160,8 @@ public class JavaForeachWriter {
 	}
 	
 	private void downCast(int typeNumber, Type t) {
-        if(CompilerUtils.isPrimitive(variables[typeNumber].type.type)) {
-            variables[typeNumber].type.type.accept(variables[typeNumber].type, unboxingTypeVisitor);
+        if(CompilerUtils.isPrimitive(variables[typeNumber].type)) {
+            variables[typeNumber].type.accept(variables[typeNumber].type, unboxingTypeVisitor);
         } else {
             javaWriter.checkCast(t);
         }

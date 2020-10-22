@@ -66,7 +66,6 @@ public class JavaClass implements Comparable<JavaClass> {
 	public final Kind kind;
 	
 	public boolean empty = false;
-	public boolean destructible = false;
 	public boolean membersPrepared = false;
 	
 	private final String[] classNameParts;

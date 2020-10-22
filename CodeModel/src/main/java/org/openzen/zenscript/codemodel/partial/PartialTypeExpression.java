@@ -5,7 +5,6 @@
  */
 package org.openzen.zenscript.codemodel.partial;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.openzen.zencode.shared.CodePosition;
@@ -19,10 +18,8 @@ import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
-import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
 
 /**
  *
@@ -30,12 +27,12 @@ import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
  */
 public class PartialTypeExpression implements IPartialExpression {
 	private final CodePosition position;
-	private final StoredType type;
-	private final StoredType[] typeArguments;
+	private final TypeID type;
+	private final TypeID[] typeArguments;
 	
-	public PartialTypeExpression(CodePosition position, TypeID type, StoredType[] typeArguments) {
+	public PartialTypeExpression(CodePosition position, TypeID type, TypeID[] typeArguments) {
 		this.position = position;
-		this.type = type.stored(StaticExpressionStorageTag.INSTANCE);
+		this.type = type;
 		this.typeArguments = typeArguments;
 	}
 
@@ -45,7 +42,7 @@ public class PartialTypeExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) {
 		TypeMemberGroup group = scope.getTypeMembers(type).getOrCreateGroup(OperatorType.CALL);
 		if (group == null)
 			return new List[0];
@@ -54,7 +51,7 @@ public class PartialTypeExpression implements IPartialExpression {
 	}
 	
 	@Override
-	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
 		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
 		return group
 				.getMethodMembers().stream()
@@ -64,12 +61,12 @@ public class PartialTypeExpression implements IPartialExpression {
 	}
 
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) {
 		return scope.getTypeMembers(type).getStaticMemberExpression(position, scope, name);
 	}
 
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
+	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
 		if (arguments.getNumberOfTypeArguments() == 0 && (typeArguments != null && typeArguments.length > 0))
 			arguments = new CallArguments(typeArguments, arguments.arguments);
 
@@ -77,11 +74,11 @@ public class PartialTypeExpression implements IPartialExpression {
 		if (group == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "This type has not call operator");
 
-		return group.callStatic(position, type.type, scope, arguments);
+		return group.callStatic(position, type, scope, arguments);
 	}
 
 	@Override
-	public StoredType[] getTypeArguments() {
+	public TypeID[] getTypeArguments() {
 		return typeArguments;
 	}
 	

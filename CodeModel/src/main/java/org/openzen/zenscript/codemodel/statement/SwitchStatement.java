@@ -17,7 +17,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -85,9 +85,9 @@ public class SwitchStatement extends LoopStatement {
 	}
 
 	@Override
-	public StoredType getReturnType() {
+	public TypeID getReturnType() {
 		//return super.getReturnType();
-		final List<StoredType> collect = cases.stream()
+		final List<TypeID> collect = cases.stream()
 				.flatMap(aCase -> Arrays.stream(aCase.statements))
 				.map(Statement::getReturnType)
 				.filter(Objects::nonNull)
@@ -99,7 +99,7 @@ public class SwitchStatement extends LoopStatement {
 		if(collect.size() == 1)
 			return collect.get(0);
 
-		final long c = collect.stream().map(s -> s.type).distinct().count();
+		final long c = collect.stream().distinct().count();
 		if(c == 1)
 			return collect.get(0);
 		else

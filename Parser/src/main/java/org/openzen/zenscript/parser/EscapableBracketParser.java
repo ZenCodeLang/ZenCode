@@ -14,8 +14,8 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
@@ -111,7 +111,7 @@ public class EscapableBracketParser implements BracketExpressionParser {
 
         @Override
         public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-            final Expression methodCall = call.compile(scope.withHint(StringTypeID.AUTO)).eval();
+            final Expression methodCall = call.compile(scope.withHint(BasicTypeID.STRING)).eval();
             final CallArguments arguments = new CallArguments(methodCall);
             return new CallStaticExpression(position, targetType, method, method.getHeader(), arguments);
         }

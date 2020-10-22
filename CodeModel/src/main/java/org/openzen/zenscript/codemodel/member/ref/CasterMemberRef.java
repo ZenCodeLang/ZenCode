@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -22,10 +22,10 @@ import org.openzen.zenscript.codemodel.type.StoredType;
  */
 public class CasterMemberRef implements DefinitionMemberRef {
 	public final CasterMember member;
-	public final StoredType type;
-	public final StoredType toType;
+	public final TypeID type;
+	public final TypeID toType;
 	
-	public CasterMemberRef(CasterMember member, StoredType type, StoredType toType) {
+	public CasterMemberRef(CasterMember member, TypeID type, TypeID toType) {
 		this.member = member;
 		this.type = type;
 		this.toType = toType;
@@ -37,7 +37,7 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public StoredType getOwnerType() {
+	public TypeID getOwnerType() {
 		return type;
 	}
 

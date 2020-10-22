@@ -6,7 +6,6 @@
 package org.openzen.zenscript.javasource.scope;
 
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javasource.JavaSourceImporter;
 import org.openzen.zenscript.javasource.JavaSourceObjectTypeVisitor;
@@ -54,15 +53,7 @@ public class JavaSourceFileScope {
 		return typeVisitor.process(type);
 	}
 	
-	public String type(StoredType type) {
-		return typeVisitor.process(type);
-	}
-	
 	public String type(TypeID type, JavaClass rename) {
-		return new JavaSourceTypeVisitor(importer, context, rename).process(type);
-	}
-	
-	public String type(StoredType type, JavaClass rename) {
 		return new JavaSourceTypeVisitor(importer, context, rename).process(type);
 	}
 }

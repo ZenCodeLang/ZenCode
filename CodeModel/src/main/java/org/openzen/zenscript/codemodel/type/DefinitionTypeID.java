@@ -13,14 +13,12 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  *
@@ -28,18 +26,18 @@ import java.util.Set;
  */
 public class DefinitionTypeID implements TypeID {
 	public final HighLevelDefinition definition;
-	public final StoredType[] typeArguments;
+	public final TypeID[] typeArguments;
 	public final DefinitionTypeID outer;
 	private TypeID normalized;
 	
 	public TypeID superType;
 	
-	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, StoredType[] typeArguments) {
+	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, TypeID[] typeArguments) {
 		this(typeRegistry, definition, typeArguments, null);
 	}
 	
 	// For inner classes of generic outer classes
-	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, StoredType[] typeArguments, DefinitionTypeID outer) {
+	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, TypeID[] typeArguments, DefinitionTypeID outer) {
 		if (typeArguments == null)
 			throw new NullPointerException("typeParameters cannot be null");
 		if (typeArguments.length != definition.getNumberOfGenericParameters())
@@ -62,7 +60,7 @@ public class DefinitionTypeID implements TypeID {
 		if (definition instanceof AliasDefinition)
 			return true;
 		
-		for (StoredType typeArgument : typeArguments)
+		for (TypeID typeArgument : typeArguments)
 			if (!typeArgument.getNormalized().equals(typeArgument))
 				return true;
 		if (outer != null && !outer.getNormalized().equals(outer))
@@ -77,15 +75,14 @@ public class DefinitionTypeID implements TypeID {
 			if (alias.type == null)
 				throw new IllegalStateException("Alias type not yet initialized!");
 			
-			Map<TypeParameter, StoredType> typeMapping = new HashMap<>();
+			Map<TypeParameter, TypeID> typeMapping = new HashMap<>();
 			for (int i = 0; i < definition.typeParameters.length; i++)
 				typeMapping.put(definition.typeParameters[i], typeArguments[i].getNormalized());
 			GenericMapper mapper = new GenericMapper(definition.position, typeRegistry, typeMapping);
-			TypeID result = alias.type.instance(mapper, null).type.getNormalized();
-			return result;
+			return alias.type.instance(mapper).getNormalized();
 		}
-		
-		StoredType[] normalizedTypeParameters = new StoredType[typeArguments.length];
+
+		TypeID[] normalizedTypeParameters = new TypeID[typeArguments.length];
 		for (int i = 0; i < normalizedTypeParameters.length; i++)
 			normalizedTypeParameters[i] = typeArguments[i].getNormalized();
 		
@@ -96,8 +93,8 @@ public class DefinitionTypeID implements TypeID {
 		return typeArguments.length > 0;
 	}
 	
-	public Map<TypeParameter, StoredType> getTypeParameterMapping() {
-		Map<TypeParameter, StoredType> mapping = new HashMap<>();
+	public Map<TypeParameter, TypeID> getTypeParameterMapping() {
+		Map<TypeParameter, TypeID> mapping = new HashMap<>();
 		DefinitionTypeID current = this;
 		do {
 			if (current.typeArguments != null) {
@@ -116,7 +113,7 @@ public class DefinitionTypeID implements TypeID {
 	
 	public DefinitionTypeID(HighLevelDefinition definition) {
 		this.definition = definition;
-		this.typeArguments = StoredType.NONE;
+		this.typeArguments = TypeID.NONE;
 		this.superType = definition.getSuperType();
 		this.outer = null;
 	}
@@ -127,28 +124,28 @@ public class DefinitionTypeID implements TypeID {
 	}
 	
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
+	public TypeID instance(GenericMapper mapper) {
 		if (!hasTypeParameters() && outer == null)
-			return stored(storage);
+			return this;
 		if (mapper == null || mapper.getMapping().isEmpty())
-			return stored(storage);
+			return this;
 		if (mapper.registry == null)
 			throw new NullPointerException();
-		
-		StoredType[] instancedArguments = StoredType.NONE;
+
+		TypeID[] instancedArguments = TypeID.NONE;
 		if (hasTypeParameters()) {
-			instancedArguments = new StoredType[typeArguments.length];
+			instancedArguments = new TypeID[typeArguments.length];
 			for (int i = 0; i < typeArguments.length; i++)
 				instancedArguments[i] = typeArguments[i].instance(mapper);
 		}
 		
-		DefinitionTypeID instancedOuter = outer == null ? null : (DefinitionTypeID)outer.instance(mapper, storage).type;
-		return mapper.registry.getForDefinition(definition, instancedArguments, instancedOuter).stored(storage);
+		DefinitionTypeID instancedOuter = outer == null ? null : (DefinitionTypeID)outer.instance(mapper);
+		return mapper.registry.getForDefinition(definition, instancedArguments, instancedOuter);
 	}
 	
 	@Override
 	public TypeID getSuperType(GlobalTypeRegistry registry) {
-		return definition.getSuperType() == null ? null : definition.getSuperType().instance(new GenericMapper(definition.position, registry, getTypeParameterMapping()), null).type;
+		return definition.getSuperType() == null ? null : definition.getSuperType().instance(new GenericMapper(definition.position, registry, getTypeParameterMapping()));
 	}
 	
 	@Override
@@ -180,22 +177,12 @@ public class DefinitionTypeID implements TypeID {
 	public boolean isVariant() {
 		return definition instanceof VariantDefinition;
 	}
-	
-	@Override
-	public boolean isDestructible() {
-		return definition.isDestructible();
-	}
-	
-	@Override
-	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
-		return definition.isDestructible(scanning);
-	}
-	
+
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		if (hasTypeParameters()) {
-			for (StoredType typeArgument : typeArguments)
-				if (typeArgument.type.hasInferenceBlockingTypeParameters(parameters))
+			for (TypeID typeArgument : typeArguments)
+				if (typeArgument.hasInferenceBlockingTypeParameters(parameters))
 					return true;
 		}
 		
@@ -255,8 +242,8 @@ public class DefinitionTypeID implements TypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		for (StoredType type : this.typeArguments)
-			type.type.extractTypeParameters(typeParameters);
+		for (TypeID type : this.typeArguments)
+			type.extractTypeParameters(typeParameters);
 	}
 
 	public DefinitionTypeID getInnerType(GenericName name, GlobalTypeRegistry registry) {

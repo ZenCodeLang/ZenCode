@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 /**
  *
@@ -17,7 +17,7 @@ public class ConstantStringExpression extends Expression {
 	public final String value;
 	
 	public ConstantStringExpression(CodePosition position, String value) {
-		super(position, StringTypeID.STATIC, null);
+		super(position, BasicTypeID.STRING, null);
 		
 		this.value = value;
 	}

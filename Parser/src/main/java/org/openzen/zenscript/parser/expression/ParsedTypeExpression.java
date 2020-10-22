@@ -26,7 +26,7 @@ public class ParsedTypeExpression extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		return new PartialTypeExpression(position, type.compileUnstored(scope), null);
+		return new PartialTypeExpression(position, type.compile(scope), null);
 	}
 
 	@Override

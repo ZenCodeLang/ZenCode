@@ -13,8 +13,6 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 /**
  *
@@ -37,8 +35,8 @@ public class FunctionTypeID implements TypeID {
 	}
 	
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		return mapper.registry.getFunction(mapper.map(header)).stored(storage);
+	public TypeID instance(GenericMapper mapper) {
+		return mapper.registry.getFunction(mapper.map(header));
 	}
 	
 	@Override
@@ -60,16 +58,6 @@ public class FunctionTypeID implements TypeID {
 	public boolean isValueType() {
 		return false;
 	}
-	
-	@Override
-	public boolean isDestructible() {
-		return false;
-	}
-	
-	@Override
-	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
-		return false;
-	}
 
 	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
@@ -83,9 +71,9 @@ public class FunctionTypeID implements TypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		header.getReturnType().type.extractTypeParameters(typeParameters);
+		header.getReturnType().extractTypeParameters(typeParameters);
 		for (FunctionParameter parameter : header.parameters)
-			parameter.type.type.extractTypeParameters(typeParameters);
+			parameter.type.extractTypeParameters(typeParameters);
 	}
 
 	@Override
@@ -116,11 +104,6 @@ public class FunctionTypeID implements TypeID {
 	
 	@Override
 	public String toString() {
-		return toString(null);
-	}
-	
-	@Override
-	public String toString(StorageTag storage) {
 		StringBuilder result = new StringBuilder();
 		result.append("function");
 		if (header.typeParameters.length > 0) {
@@ -132,10 +115,6 @@ public class FunctionTypeID implements TypeID {
 				result.append(header.typeParameters[i].toString());
 			}
 			result.append('>');
-		}
-		if (storage != null && storage != ValueStorageTag.INSTANCE) {
-			result.append('`');
-			result.append(storage);
 		}
 		result.append('(');
 		for (int i = 0; i < header.parameters.length; i++) {

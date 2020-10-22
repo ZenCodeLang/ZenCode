@@ -13,10 +13,7 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -66,18 +63,12 @@ public class LocalTypeResolutionContext implements TypeResolutionContext {
 		
 		return outer.getType(position, name);
 	}
-
-	@Override
-	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
-		return outer.getStorageTag(position, name, parameters);
-	}
 	
 	@Override
-	public StoredType getThisType() {
+	public TypeID getThisType() {
 		if (type == null)
 			return null;
 		
-		TypeID self = getTypeRegistry().getForMyDefinition(type.load());
-		return self.stored(BorrowStorageTag.THIS);
+		return getTypeRegistry().getForMyDefinition(type.load());
 	}
 }

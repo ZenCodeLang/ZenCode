@@ -10,21 +10,19 @@ import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class RangeTypeID implements TypeID {
-	public static final RangeTypeID INT = new RangeTypeID(null, BasicTypeID.INT.stored);
-	public static final RangeTypeID USIZE = new RangeTypeID(null, BasicTypeID.USIZE.stored);
+	public static final RangeTypeID INT = new RangeTypeID(null, BasicTypeID.INT);
+	public static final RangeTypeID USIZE = new RangeTypeID(null, BasicTypeID.USIZE);
 	
-	public final StoredType baseType;
+	public final TypeID baseType;
 	private final RangeTypeID normalized;
-	public final StoredType stored;
-	
-	public RangeTypeID(GlobalTypeRegistry registry, StoredType baseType) {
+
+	public RangeTypeID(GlobalTypeRegistry registry, TypeID baseType) {
 		this.baseType = baseType;
 		
 		if (baseType.getNormalized().equals(baseType)) {
@@ -32,8 +30,6 @@ public class RangeTypeID implements TypeID {
 		} else {
 			normalized = registry.getRange(baseType.getNormalized());
 		}
-		
-		stored = new StoredType(this, baseType.getSpecifiedStorage());
 	}
 	
 	@Override
@@ -42,8 +38,8 @@ public class RangeTypeID implements TypeID {
 	}
 	
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		return mapper.registry.getRange(baseType.instance(mapper)).stored(storage);
+	public TypeID instance(GenericMapper mapper) {
+		return mapper.registry.getRange(baseType.instance(mapper));
 	}
 	
 	@Override
@@ -63,17 +59,7 @@ public class RangeTypeID implements TypeID {
 	
 	@Override
 	public boolean isValueType() {
-		return baseType.type.isValueType();
-	}
-	
-	@Override
-	public boolean isDestructible() {
-		return baseType.isDestructible();
-	}
-	
-	@Override
-	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
-		return baseType.isDestructible(scanning);
+		return baseType.isValueType();
 	}
 
 	@Override
@@ -88,7 +74,7 @@ public class RangeTypeID implements TypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		baseType.type.extractTypeParameters(typeParameters);
+		baseType.extractTypeParameters(typeParameters);
 	}
 
 	@Override

@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.type.StoredType;
 public class MakeConstExpression extends Expression {
 	public final Expression value;
 	
-	public MakeConstExpression(CodePosition position, Expression value, StoredType constType) {
+	public MakeConstExpression(CodePosition position, Expression value, TypeID constType) {
 		super(position, constType, value.thrownType);
 		
 		this.value = value;

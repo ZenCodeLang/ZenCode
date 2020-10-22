@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -36,16 +36,16 @@ public class ParsedExpressionAssign extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		try {
 			IPartialExpression cLeft = left.compile(scope);
-			List<StoredType> resultHints = cLeft.getAssignHints();
+			List<TypeID> resultHints = cLeft.getAssignHints();
 			Expression cRight = right.compile(scope.withHints(resultHints)).eval();
 			return cLeft.assign(position, scope, cRight);
 		} catch (CompileException ex) {
-			InvalidExpression invalid = new InvalidExpression(BasicTypeID.VOID.stored, ex);
+			InvalidExpression invalid = new InvalidExpression(BasicTypeID.VOID, ex);
 			Expression cRight;
 			try {
 				cRight = right.compile(scope).eval();
 			} catch (CompileException ex2) {
-				cRight = new InvalidExpression(BasicTypeID.VOID.stored, ex2);
+				cRight = new InvalidExpression(BasicTypeID.VOID, ex2);
 			}
 			return new InvalidAssignExpression(position, invalid, cRight);
 		}

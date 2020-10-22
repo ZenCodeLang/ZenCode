@@ -18,5 +18,4 @@ public class FunctionHeaderEncoding {
 	public static final int FLAG_PARAMETERS = 8;
 	public static final int FLAG_VARIADIC = 16;
 	public static final int FLAG_DEFAULT_VALUES = 32;
-	public static final int FLAG_STORAGE = 64;
 }

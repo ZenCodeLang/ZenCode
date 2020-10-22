@@ -17,7 +17,7 @@ public class ConstantBoolExpression extends Expression {
 	public final boolean value;
 	
 	public ConstantBoolExpression(CodePosition position, boolean value) {
-		super(position, BasicTypeID.BOOL.stored, null);
+		super(position, BasicTypeID.BOOL, null);
 		
 		this.value = value;
 	}

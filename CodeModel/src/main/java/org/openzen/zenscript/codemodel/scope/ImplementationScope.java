@@ -18,14 +18,10 @@ import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -33,14 +29,11 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
  */
 public class ImplementationScope extends BaseScope {
 	private final BaseScope outer;
-	private final ImplementationMember implementation;
 	private final TypeMembers members;
 	
 	public ImplementationScope(BaseScope outer, ImplementationMember implementation) {
 		this.outer = outer;
-		this.implementation = implementation;
-		
-		members = outer.getTypeMembers(implementation.type.stored(BorrowStorageTag.THIS));
+		members = outer.getTypeMembers(implementation.type);
 	}
 	
 	@Override
@@ -68,17 +61,12 @@ public class ImplementationScope extends BaseScope {
 		if (members.hasInnerType(name.get(0).name)) {
 			TypeID result = members.getInnerType(position, name.get(0));
 			for (int i = 1; i < name.size(); i++) {
-				result = getTypeMembers(result.stored(StaticExpressionStorageTag.INSTANCE)).getInnerType(position, name.get(i));
+				result = getTypeMembers(result).getInnerType(position, name.get(i));
 			}
 			return result;
 		}
 		
 		return outer.getType(position, name);
-	}
-
-	@Override
-	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
-		return outer.getStorageTag(position, name, parameters);
 	}
 
 	@Override
@@ -92,7 +80,7 @@ public class ImplementationScope extends BaseScope {
 	}
 
 	@Override
-	public StoredType getThisType() {
+	public TypeID getThisType() {
 		return outer.getThisType();
 	}
 

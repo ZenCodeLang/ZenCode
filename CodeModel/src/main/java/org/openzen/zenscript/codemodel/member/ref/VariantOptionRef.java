@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -15,10 +15,10 @@ import org.openzen.zenscript.codemodel.type.StoredType;
  */
 public class VariantOptionRef {
 	private final VariantDefinition.Option option;
-	public final StoredType variant;
-	public final StoredType[] types;
+	public final TypeID variant;
+	public final TypeID[] types;
 	
-	public VariantOptionRef(VariantDefinition.Option option, StoredType variant, StoredType[] types) {
+	public VariantOptionRef(VariantDefinition.Option option, TypeID variant, TypeID[] types) {
 		this.option = option;
 		this.variant = variant;
 		this.types = types;
@@ -28,7 +28,7 @@ public class VariantOptionRef {
 		return option.name;
 	}
 	
-	public StoredType getParameterType(int index) {
+	public TypeID getParameterType(int index) {
 		return types[index];
 	}
 	

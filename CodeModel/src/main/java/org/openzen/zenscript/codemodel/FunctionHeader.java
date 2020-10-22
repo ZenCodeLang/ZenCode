@@ -15,9 +15,7 @@ import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.storage.AutoStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -25,16 +23,15 @@ import org.openzen.zenscript.codemodel.type.storage.StorageTag;
  */
 public class FunctionHeader {
 	public final TypeParameter[] typeParameters;
-	private StoredType returnType;
+	private TypeID returnType;
 	public final FunctionParameter[] parameters;
-	public final StoredType thrownType;
-	public final StorageTag storage;
-	
+	public final TypeID thrownType;
+
 	public final int minParameters;
 	public final int maxParameters;
 	public final boolean hasUnknowns;
 	
-	public FunctionHeader(StoredType returnType) {
+	public FunctionHeader(TypeID returnType) {
 		if (returnType == null)
 			throw new NullPointerException();
 		
@@ -42,18 +39,13 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = FunctionParameter.NONE;
 		this.thrownType = null;
-		this.storage = null;
 		
 		minParameters = 0;
 		maxParameters = 0;
-		hasUnknowns = returnType.type == BasicTypeID.UNDETERMINED;
+		hasUnknowns = returnType == BasicTypeID.UNDETERMINED;
 	}
 	
-	public FunctionHeader(BasicTypeID returnType) {
-		this(returnType.stored);
-	}
-	
-	public FunctionHeader(StoredType returnType, StoredType... parameterTypes) {
+	public FunctionHeader(TypeID returnType, TypeID... parameterTypes) {
 		if (returnType == null)
 			throw new NullPointerException();
 		
@@ -61,7 +53,6 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = new FunctionParameter[parameterTypes.length];
 		this.thrownType = null;
-		this.storage = null;
 		
 		for (int i = 0; i < parameterTypes.length; i++)
 			parameters[i] = new FunctionParameter(parameterTypes[i], null);
@@ -71,11 +62,7 @@ public class FunctionHeader {
 		hasUnknowns = hasUnknowns(parameterTypes, returnType);
 	}
 	
-	public FunctionHeader(BasicTypeID returnType, StoredType... parameterTypes) {
-		this(returnType.stored, parameterTypes);
-	}
-	
-	public FunctionHeader(StoredType returnType, FunctionParameter... parameters) {
+	public FunctionHeader(TypeID returnType, FunctionParameter... parameters) {
 		if (returnType == null)
 			throw new NullPointerException();
 		
@@ -83,18 +70,13 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.thrownType = null;
-		this.storage = null;
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
 		hasUnknowns = hasUnknowns(parameters, returnType);
 	}
 	
-	public FunctionHeader(BasicTypeID returnType, FunctionParameter... parameters) {
-		this(returnType.stored, parameters);
-	}
-	
-	public FunctionHeader(TypeParameter[] typeParameters, StoredType returnType, StoredType thrownType, StorageTag storage, FunctionParameter... parameters) {
+	public FunctionHeader(TypeParameter[] typeParameters, TypeID returnType, TypeID thrownType, FunctionParameter... parameters) {
 		if (returnType == null)
 			throw new NullPointerException();
 		if (typeParameters == null)
@@ -104,7 +86,6 @@ public class FunctionHeader {
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.thrownType = thrownType;
-		this.storage = storage;
 		
 		minParameters = getMinParameters(parameters);
 		maxParameters = getMaxParameters(parameters);
@@ -149,26 +130,26 @@ public class FunctionHeader {
 		return useTypeParameters;
 	}
 	
-	public StoredType getReturnType() {
+	public TypeID getReturnType() {
 		return returnType;
 	}
 	
-	public void setReturnType(StoredType returnType) {
+	public void setReturnType(TypeID returnType) {
 		if (returnType == null)
 			throw new NullPointerException();
 		
 		this.returnType = returnType;
 	}
 	
-	public StoredType getParameterType(boolean isVariadic, int index) {
+	public TypeID getParameterType(boolean isVariadic, int index) {
 		return getParameter(isVariadic, index).type;
 	}
 	
 	public FunctionParameter getParameter(boolean isVariadic, int index) {
 		if (isVariadic && index >= parameters.length - 1) {
 			final FunctionParameter parameter = parameters[parameters.length - 1];
-			if(parameter.type.type instanceof ArrayTypeID) {
-				return new FunctionParameter(((ArrayTypeID) parameter.type.type).elementType, parameter.name);
+			if(parameter.type instanceof ArrayTypeID) {
+				return new FunctionParameter(((ArrayTypeID) parameter.type).elementType, parameter.name);
 			}
 			return parameter;
 		} else {
@@ -193,7 +174,7 @@ public class FunctionHeader {
 		FunctionParameter[] normalizedParameters = new FunctionParameter[parameters.length];
 		for (int i = 0; i < normalizedParameters.length; i++)
 			normalizedParameters[i] = parameters[i].normalize(registry);
-		return new FunctionHeader(typeParameters, returnType.getNormalized(), thrownType == null ? null : thrownType.getNormalized(), storage, normalizedParameters);
+		return new FunctionHeader(typeParameters, returnType.getNormalized(), thrownType == null ? null : thrownType.getNormalized(), normalizedParameters);
 	}
 	
 	public int getNumberOfTypeParameters() {
@@ -210,28 +191,24 @@ public class FunctionHeader {
 	
 	public FunctionHeader inferFromOverride(GlobalTypeRegistry registry, FunctionHeader overridden) {
 		TypeParameter[] resultTypeParameters = typeParameters;
-		StoredType resultReturnType = this.returnType;
-		if (resultReturnType.type == BasicTypeID.UNDETERMINED)
+		TypeID resultReturnType = this.returnType;
+		if (resultReturnType == BasicTypeID.UNDETERMINED)
 			resultReturnType = overridden.returnType;
-		
-		StoredType resultThrownType = this.thrownType;
+
+		TypeID resultThrownType = this.thrownType;
 		if (resultThrownType == null && overridden.thrownType != null)
 			resultThrownType = overridden.thrownType;
 		
 		FunctionParameter[] resultParameters = Arrays.copyOf(parameters, parameters.length);
 		for (int i = 0; i < resultParameters.length; i++) {
-			if (resultParameters[i].type.type == BasicTypeID.UNDETERMINED) {
+			if (resultParameters[i].type == BasicTypeID.UNDETERMINED) {
 				FunctionParameter parameter = resultParameters[i];
 				FunctionParameter original = overridden.parameters[i];
 				resultParameters[i] = new FunctionParameter(original.type, parameter.name, parameter.defaultValue, original.variadic);
 			}
 		}
 		
-		StorageTag resultStorage = this.storage;
-		if (resultStorage == null)
-			resultStorage = overridden.storage;
-		
-		return new FunctionHeader(resultTypeParameters, resultReturnType, resultThrownType, resultStorage, resultParameters);
+		return new FunctionHeader(resultTypeParameters, resultReturnType, resultThrownType, resultParameters);
 	}
 	
 	public boolean matchesExactly(CodePosition position, CallArguments arguments, TypeScope scope) {
@@ -285,8 +262,6 @@ public class FunctionHeader {
 			}
 			result.append('>');
 		}
-		if (storage != null && storage != AutoStorageTag.INSTANCE)
-			result.append('`').append(storage);
 		result.append('(');
 		for (int i = 0; i < parameters.length; i++) {
 			if (i > 0)
@@ -298,7 +273,7 @@ public class FunctionHeader {
 	}
 	
 	public String getCanonical() {
-		return getCanonicalWithoutReturnType() + returnType.type.toString();
+		return getCanonicalWithoutReturnType() + returnType.toString();
 	}
 	
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
@@ -326,11 +301,11 @@ public class FunctionHeader {
 			throw new NullPointerException();
 		if (parameters.length != other.parameters.length)
 			return false;
-		if (returnType.type != BasicTypeID.UNDETERMINED && !scope.getTypeMembers(returnType).canCastImplicit(other.returnType))
+		if (returnType != BasicTypeID.UNDETERMINED && !scope.getTypeMembers(returnType).canCastImplicit(other.returnType))
 			return false;
 		
 		for (int i = 0; i < parameters.length; i++) {
-			if (parameters[i].type.type == BasicTypeID.UNDETERMINED)
+			if (parameters[i].type == BasicTypeID.UNDETERMINED)
 				continue;
 			
 			if (parameters[i].variadic != other.parameters[i].variadic)
@@ -395,7 +370,7 @@ public class FunctionHeader {
 	
 	public FunctionHeader instanceForCall(CodePosition position, GlobalTypeRegistry registry, CallArguments arguments) {
 		if (arguments.getNumberOfTypeArguments() > 0) {
-			Map<TypeParameter, StoredType> typeParameters = StoredType.getMapping(this.typeParameters, arguments.typeArguments);
+			Map<TypeParameter, TypeID> typeParameters = TypeID.getMapping(this.typeParameters, arguments.typeArguments);
 			return instance(new GenericMapper(position, registry, typeParameters));
 		} else {
 			return this;
@@ -404,37 +379,37 @@ public class FunctionHeader {
 	
 	public FunctionHeader withGenericArguments(GenericMapper mapper) {
 		if (typeParameters.length > 0)
-			mapper = mapper.getInner(mapper.position, mapper.registry, StoredType.getSelfMapping(mapper.registry, typeParameters));
+			mapper = mapper.getInner(mapper.position, mapper.registry, TypeID.getSelfMapping(mapper.registry, typeParameters));
 		
 		return instance(mapper);
 	}
 	
 	private FunctionHeader instance(GenericMapper mapper) {
-		StoredType returnType = this.returnType.instance(mapper);
+		TypeID returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
 			parameters[i] = this.parameters[i].withGenericArguments(mapper);
 		}
-		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), storage, parameters);
+		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
 	}
 	
-	public FunctionHeader fillGenericArguments(CodePosition position, TypeScope scope, StoredType[] arguments) {
+	public FunctionHeader fillGenericArguments(CodePosition position, TypeScope scope, TypeID[] arguments) {
 		if (arguments == null || arguments.length == 0)
 			return this;
 		
-		Map<TypeParameter, StoredType> typeArguments = StoredType.getMapping(typeParameters, arguments);
+		Map<TypeParameter, TypeID> typeArguments = TypeID.getMapping(typeParameters, arguments);
 		GenericMapper mapper = scope.getLocalTypeParameters().getInner(position, scope.getTypeRegistry(), typeArguments);
-		
-		StoredType returnType = this.returnType.instance(mapper);
+
+		TypeID returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
 			parameters[i] = this.parameters[i].withGenericArguments(mapper);
 		}
-		return new FunctionHeader(TypeParameter.NONE, returnType, thrownType == null ? null : thrownType.instance(mapper), storage, parameters);
+		return new FunctionHeader(TypeParameter.NONE, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
 	}
 	
 	public FunctionHeader forTypeParameterInference() {
-		return new FunctionHeader(BasicTypeID.UNDETERMINED.stored, parameters);
+		return new FunctionHeader(BasicTypeID.UNDETERMINED, parameters);
 	}
 	
 	public FunctionHeader forLambda(FunctionHeader lambdaHeader) {
@@ -442,7 +417,7 @@ public class FunctionHeader {
 		for (int i = 0; i < lambdaHeader.parameters.length; i++)
 			parameters[i] = new FunctionParameter(this.parameters[i].type, lambdaHeader.parameters[i].name);
 		
-		return new FunctionHeader(typeParameters, returnType, thrownType, storage, parameters);
+		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
 	}
 	
 	public FunctionParameter getVariadicParameter() {
@@ -508,23 +483,23 @@ public class FunctionHeader {
 		return parameters[parameters.length - 1].variadic ? Integer.MAX_VALUE : parameters.length;
 	}
 	
-	private static boolean hasUnknowns(StoredType[] types, StoredType returnType) {
-		if (returnType.type == BasicTypeID.UNDETERMINED)
+	private static boolean hasUnknowns(TypeID[] types, TypeID returnType) {
+		if (returnType == BasicTypeID.UNDETERMINED)
 			return true;
 		
-		for (StoredType type : types)
-			if (type.type == BasicTypeID.UNDETERMINED)
+		for (TypeID type : types)
+			if (type == BasicTypeID.UNDETERMINED)
 				return true;
 		
 		return false;
 	}
 	
-	private static boolean hasUnknowns(FunctionParameter[] parameters, StoredType returnType) {
-		if (returnType.type == BasicTypeID.UNDETERMINED)
+	private static boolean hasUnknowns(FunctionParameter[] parameters, TypeID returnType) {
+		if (returnType == BasicTypeID.UNDETERMINED)
 			return true;
 		
 		for (FunctionParameter parameter : parameters)
-			if (parameter.type.type == BasicTypeID.UNDETERMINED)
+			if (parameter.type == BasicTypeID.UNDETERMINED)
 				return true;
 		
 		return false;
@@ -555,10 +530,8 @@ public class FunctionHeader {
             return false;
         if(!Arrays.equals(parameters, that.parameters))
             return false;
-        if(!Objects.equals(thrownType, that.thrownType))
-            return false;
-        return Objects.equals(storage, that.storage);
-    }
+		return thrownType == that.thrownType;
+	}
     
     @Override
     public int hashCode() {
@@ -566,7 +539,6 @@ public class FunctionHeader {
         result = 31 * result + returnType.hashCode();
         result = 31 * result + Arrays.hashCode(parameters);
         result = 31 * result + (thrownType != null ? thrownType.hashCode() : 0);
-        result = 31 * result + (storage != null ? storage.hashCode() : 0);
         result = 31 * result + minParameters;
         result = 31 * result + maxParameters;
         result = 31 * result + (hasUnknowns ? 1 : 0);

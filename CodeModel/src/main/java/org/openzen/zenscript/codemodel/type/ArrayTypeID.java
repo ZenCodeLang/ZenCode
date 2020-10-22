@@ -13,27 +13,26 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
  * @author Hoofdgebruiker
  */
 public class ArrayTypeID implements TypeID {
-	public static final ArrayTypeID INT = new ArrayTypeID(BasicTypeID.INT.stored, 1);
-	public static final ArrayTypeID CHAR = new ArrayTypeID(BasicTypeID.CHAR.stored, 1);
+	public static final ArrayTypeID INT = new ArrayTypeID(BasicTypeID.INT, 1);
+	public static final ArrayTypeID CHAR = new ArrayTypeID(BasicTypeID.CHAR, 1);
 	
-	public final StoredType elementType;
+	public final TypeID elementType;
 	public final int dimension;
 	private final ArrayTypeID normalized;
 
-	private ArrayTypeID(StoredType elementType, int dimension) {
+	private ArrayTypeID(TypeID elementType, int dimension) {
 		this.elementType = elementType;
 		this.dimension = dimension;
 		this.normalized = this;
 	}
 	
-	public ArrayTypeID(GlobalTypeRegistry registry, StoredType elementType, int dimension) {
+	public ArrayTypeID(GlobalTypeRegistry registry, TypeID elementType, int dimension) {
 		this.elementType = elementType;
 		this.dimension = dimension;
 		this.normalized = elementType.getNormalized() == elementType ? this : registry.getArray(elementType.getNormalized(), dimension);
@@ -41,7 +40,7 @@ public class ArrayTypeID implements TypeID {
 	
 	@Override
 	public Expression getDefaultValue() {
-		return new ArrayExpression(CodePosition.UNKNOWN, Expression.NONE, this.stored());
+		return new ArrayExpression(CodePosition.UNKNOWN, Expression.NONE, this);
 	}
 	
 	@Override
@@ -68,20 +67,10 @@ public class ArrayTypeID implements TypeID {
 	public boolean isValueType() {
 		return false;
 	}
-	
+
 	@Override
-	public boolean isDestructible() {
-		return elementType.type.isDestructible();
-	}
-	
-	@Override
-	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
-		return elementType.type.isDestructible(scanning);
-	}
-	
-	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		return mapper.registry.getArray(elementType.instance(mapper), dimension).stored(storage);
+	public TypeID instance(GenericMapper mapper) {
+		return mapper.registry.getArray(elementType.instance(mapper), dimension);
 	}
 
 	@Override
@@ -96,7 +85,7 @@ public class ArrayTypeID implements TypeID {
 
 	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
-		elementType.type.extractTypeParameters(typeParameters);
+		elementType.extractTypeParameters(typeParameters);
 	}
 
 	@Override

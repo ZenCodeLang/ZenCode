@@ -10,13 +10,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.parser.type.ParsedStorageTag;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 /**
@@ -38,7 +37,7 @@ public class ParsedExpressionCast extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		StoredType type = this.type.compile(scope);
+		TypeID type = this.type.compile(scope);
 		return value.compile(scope.withHint(type))
 				.eval()
 				.castExplicit(position, scope, type, optional);
@@ -53,7 +52,7 @@ public class ParsedExpressionCast extends ParsedExpression {
 		if (header.returnType != ParsedTypeBasic.UNDETERMINED)
 			throw new ParseException(position, "Lambda parameter already has a return type");
 		
-		return new ParsedFunctionHeader(position, header.genericParameters, header.parameters, type, null, ParsedStorageTag.NULL);
+		return new ParsedFunctionHeader(position, header.genericParameters, header.parameters, type, null);
 	}
 	
 	@Override

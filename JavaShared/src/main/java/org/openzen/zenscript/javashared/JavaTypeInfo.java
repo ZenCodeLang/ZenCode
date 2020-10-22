@@ -5,19 +5,7 @@
  */
 package org.openzen.zenscript.javashared;
 
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.AssocTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
-import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
+import org.openzen.zenscript.codemodel.type.*;
 
 /**
  *
@@ -28,12 +16,12 @@ public class JavaTypeInfo {
 	private static final JavaTypeInfo OBJECT = new JavaTypeInfo(false);
 	private static final JavaTypeInfoVisitor VISITOR = new JavaTypeInfoVisitor();
 	
-	public static JavaTypeInfo get(StoredType type) {
-		return type.type.accept(type, VISITOR);
+	public static JavaTypeInfo get(TypeID type) {
+		return type.accept(type, VISITOR);
 	}
 	
-	public static boolean isPrimitive(StoredType type) {
-		return type.type.accept(type, VISITOR).primitive;
+	public static boolean isPrimitive(TypeID type) {
+		return type.accept(type, VISITOR).primitive;
 	}
 	
 	public final boolean primitive;
@@ -42,60 +30,55 @@ public class JavaTypeInfo {
 		this.primitive = primitive;
 	}
 	
-	private static class JavaTypeInfoVisitor implements TypeVisitorWithContext<StoredType, JavaTypeInfo, RuntimeException> {
+	private static class JavaTypeInfoVisitor implements TypeVisitorWithContext<TypeID, JavaTypeInfo, RuntimeException> {
 
 		@Override
-		public JavaTypeInfo visitBasic(StoredType context, BasicTypeID basic) {
-			return basic == BasicTypeID.NULL ? OBJECT : PRIMITIVE;
+		public JavaTypeInfo visitBasic(TypeID context, BasicTypeID basic) {
+			return (basic == BasicTypeID.NULL || basic == BasicTypeID.STRING) ? OBJECT : PRIMITIVE;
 		}
-		
+
 		@Override
-		public JavaTypeInfo visitString(StoredType context, StringTypeID string) {
+		public JavaTypeInfo visitArray(TypeID context, ArrayTypeID array) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitArray(StoredType context, ArrayTypeID array) {
+		public JavaTypeInfo visitAssoc(TypeID context, AssocTypeID assoc) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitAssoc(StoredType context, AssocTypeID assoc) {
+		public JavaTypeInfo visitGenericMap(TypeID context, GenericMapTypeID map) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitGenericMap(StoredType context, GenericMapTypeID map) {
+		public JavaTypeInfo visitIterator(TypeID context, IteratorTypeID iterator) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitIterator(StoredType context, IteratorTypeID iterator) {
+		public JavaTypeInfo visitFunction(TypeID context, FunctionTypeID function) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitFunction(StoredType context, FunctionTypeID function) {
+		public JavaTypeInfo visitDefinition(TypeID context, DefinitionTypeID definition) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitDefinition(StoredType context, DefinitionTypeID definition) {
+		public JavaTypeInfo visitGeneric(TypeID context, GenericTypeID generic) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitGeneric(StoredType context, GenericTypeID generic) {
+		public JavaTypeInfo visitRange(TypeID context, RangeTypeID range) {
 			return OBJECT;
 		}
 
 		@Override
-		public JavaTypeInfo visitRange(StoredType context, RangeTypeID range) {
-			return OBJECT;
-		}
-
-		@Override
-		public JavaTypeInfo visitOptional(StoredType context, OptionalTypeID type) {
+		public JavaTypeInfo visitOptional(TypeID context, OptionalTypeID type) {
 			return type.baseType.accept(null, this);
 		}
 	}

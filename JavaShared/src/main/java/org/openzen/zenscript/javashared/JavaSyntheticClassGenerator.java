@@ -13,6 +13,4 @@ public interface JavaSyntheticClassGenerator {
 	void synthesizeFunction(JavaSynthesizedFunction function);
 	
 	void synthesizeRange(JavaSynthesizedRange range);
-	
-	void synthesizeShared();
 }

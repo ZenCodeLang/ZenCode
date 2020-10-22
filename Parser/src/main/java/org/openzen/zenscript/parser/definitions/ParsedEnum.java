@@ -14,11 +14,11 @@ import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
@@ -84,7 +84,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 	@Override
 	protected void linkTypesLocal(TypeResolutionContext context) {
 		if (asType != null)
-			compiled.asType = asType.compileUnstored(context);
+			compiled.asType = asType.compile(context);
 		
 		for (ParsedEnumConstant constant : enumValues) {
 			compiled.addEnumConstant(constant.getCompiled());
@@ -97,7 +97,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 	public void compile(BaseScope scope) throws CompileException {
 		super.compile(scope);
 		
-		DefinitionTypeID type = scope.getTypeRegistry().getForDefinition(compiled, StoredType.NONE);
+		DefinitionTypeID type = scope.getTypeRegistry().getForDefinition(compiled, TypeID.NONE);
 		ExpressionScope evalScope = new ExpressionScope(scope);
 		for (ParsedEnumConstant constant : enumValues) {
 			constant.compileCode(type, evalScope);

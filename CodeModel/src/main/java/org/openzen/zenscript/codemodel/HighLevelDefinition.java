@@ -46,9 +46,7 @@ public abstract class HighLevelDefinition extends Taggable {
 	
 	public HighLevelDefinition outerDefinition;
 	private TypeID superType;
-	
-	private boolean isDestructible = false;
-	
+
 	public HighLevelDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
 		if (module == null)
 			throw new NullPointerException();
@@ -74,8 +72,6 @@ public abstract class HighLevelDefinition extends Taggable {
 	
 	public void setSuperType(TypeID superType) {
 		this.superType = superType;
-		if (outerDefinition != null)
-			isDestructible |= outerDefinition.isDestructible;
 	}
 	
 	public boolean isSubclassOf(HighLevelDefinition other) {
@@ -122,34 +118,6 @@ public abstract class HighLevelDefinition extends Taggable {
 			collector.member(member);
 	}
 	
-	public boolean isDestructible() {
-		Set<HighLevelDefinition> scanning = new HashSet<>();
-		return isDestructible(scanning);
-	}
-	
-	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
-		if (scanning.contains(this))
-			return false;
-		
-		scanning.add(this);
-		
-		boolean isDestructible = false;
-		for (IDefinitionMember member : members) {
-			if (member instanceof DestructorMember)
-				isDestructible = true;
-			if (member instanceof FieldMember) {
-				FieldMember field = (FieldMember)member;
-				if (field.getType().isDestructible(scanning))
-					isDestructible = true;
-			}
-			if ((member instanceof ImplementationMember) && ((ImplementationMember)member).type.isDestructible())
-				isDestructible = true;
-		}
-		
-		scanning.remove(this);
-		return isDestructible;
-	}
-	
 	public void setTypeParameters(TypeParameter[] typeParameters) {
 		this.typeParameters = typeParameters;
 	}
@@ -183,22 +151,13 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 	
 	public void normalize(TypeScope scope) {
-		DestructorMember destructor = null;
 		List<FieldMember> fields = new ArrayList<>();
 		
 		for (IDefinitionMember member : members) {
 			member.normalize(scope);
 			
-			if (member instanceof DestructorMember)
-				destructor = (DestructorMember)member;
 			if (member instanceof FieldMember)
 				fields.add((FieldMember)member);
-		}
-		
-		if (isDestructible() && destructor == null && !(this instanceof ExpansionDefinition)) {
-			//System.out.println("Added destructor to " + position);
-			destructor = new DestructorMember(position, this, Modifiers.PUBLIC);
-			members.add(destructor);
 		}
 		
 		for (FieldMember field : fields) {

@@ -97,9 +97,9 @@ public class ParsedField extends ParsedDefinitionMember {
 					.castImplicit(position, scope, compiled.getType());
 			compiled.setInitializer(initializer);
 			
-			if (compiled.getType().isBasic(BasicTypeID.UNDETERMINED))
+			if (compiled.getType() == BasicTypeID.UNDETERMINED)
 				compiled.setType(initializer.type);
-		} else if (compiled.getType().isBasic(BasicTypeID.UNDETERMINED)) {
+		} else if (compiled.getType() == BasicTypeID.UNDETERMINED) {
 			throw new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not infer type since no initializer is given");
 		}
 	}

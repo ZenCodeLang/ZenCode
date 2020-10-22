@@ -17,9 +17,7 @@ import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.storage.BorrowStorageTag;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -72,19 +70,19 @@ public class ParsedGetter extends ParsedDefinitionMember {
 	
 	private void inferHeaders(BaseScope scope) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(scope, implementation.getCompiled().type.stored(BorrowStorageTag.THIS));
+			fillOverride(scope, implementation.getCompiled().type);
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 			
-			fillOverride(scope, definition.getSuperType().stored(BorrowStorageTag.THIS));
+			fillOverride(scope, definition.getSuperType());
 		}
 		
 		if (compiled == null)
 			throw new IllegalStateException("Types not yet linked");
 	}
 
-	private void fillOverride(TypeScope scope, StoredType baseType) {
+	private void fillOverride(TypeScope scope, TypeID baseType) {
 		GetterMemberRef getter = scope.getTypeMembers(baseType).getOrCreateGroup(name, false).getGetter();
 		if (getter != null)
 			compiled.setOverrides(getter);

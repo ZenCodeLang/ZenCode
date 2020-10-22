@@ -12,7 +12,6 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -35,8 +34,8 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		return stored(storage);
+	public TypeID instance(GenericMapper mapper) {
+		return this;
 	}
 
 	@Override
@@ -50,17 +49,7 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean isDestructible() {
-		return false;
-	}
-	
-	@Override
 	public boolean isValueType() {
-		return false;
-	}
-	
-	@Override
-	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
 		return false;
 	}
 

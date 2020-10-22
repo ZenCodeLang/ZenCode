@@ -43,9 +43,9 @@ public class ParsedStatementDoWhile extends ParsedStatement {
 			condition = this.condition
 				.compile(new ExpressionScope(scope, BasicTypeID.HINT_BOOL))
 				.eval()
-				.castImplicit(position, scope, BasicTypeID.BOOL.stored);
+				.castImplicit(position, scope, BasicTypeID.BOOL);
 		} catch (CompileException ex) {
-			condition = new InvalidExpression(BasicTypeID.BOOL.stored, ex);
+			condition = new InvalidExpression(BasicTypeID.BOOL, ex);
 		}
 		
 		DoWhileStatement result = new DoWhileStatement(position, label, condition);

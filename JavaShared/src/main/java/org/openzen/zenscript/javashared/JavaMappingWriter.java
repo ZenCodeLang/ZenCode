@@ -261,7 +261,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 				return null;
 			
 			result.append(":caster:");
-			result.append(member.toType.type.toString());
+			result.append(member.toType.toString());
 			result.append("=");
 			result.append(method.getMapping(definition));
 			result.append('\n');

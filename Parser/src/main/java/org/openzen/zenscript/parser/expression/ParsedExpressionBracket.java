@@ -15,7 +15,6 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
-import org.openzen.zenscript.parser.type.ParsedStorageTag;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 /**

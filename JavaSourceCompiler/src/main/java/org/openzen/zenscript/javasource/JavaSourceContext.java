@@ -7,7 +7,6 @@ package org.openzen.zenscript.javasource;
 
 import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaCompileSpace;
 import org.openzen.zenscript.javashared.JavaContext;
@@ -33,11 +32,6 @@ public class JavaSourceContext extends JavaContext {
 	
 	@Override
 	public String getDescriptor(TypeID type) {
-		return typeDescriptorVisitor.process(type);
-	}
-	
-	@Override
-	public String getDescriptor(StoredType type) {
 		return typeDescriptorVisitor.process(type);
 	}
 

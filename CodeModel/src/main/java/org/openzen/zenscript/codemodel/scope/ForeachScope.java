@@ -18,11 +18,9 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -69,11 +67,6 @@ public class ForeachScope extends StatementScope {
 	}
 
 	@Override
-	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
-		return outer.getStorageTag(position, name, parameters);
-	}
-
-	@Override
 	public LoopStatement getLoop(String name) {
 		if (name == null)
 			return statement;
@@ -92,7 +85,7 @@ public class ForeachScope extends StatementScope {
 	}
 
 	@Override
-	public StoredType getThisType() {
+	public TypeID getThisType() {
 		return outer.getThisType();
 	}
 

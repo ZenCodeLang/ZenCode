@@ -84,7 +84,7 @@ public class ParsedInterface extends BaseParsedDefinition {
 		ParsedTypeParameter.compile(context, compiled.typeParameters, typeParameters);
 		
 		for (IParsedType superInterface : superInterfaces)
-			compiled.addBaseInterface(superInterface.compileUnstored(context));
+			compiled.addBaseInterface(superInterface.compile(context));
 		
 		super.linkTypesLocal(context);
 	}

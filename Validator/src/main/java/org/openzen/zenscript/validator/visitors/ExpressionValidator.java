@@ -38,13 +38,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.left.accept(this);
 		expression.right.accept(this);
 		
-		if (!expression.left.type.isBasic(BasicTypeID.BOOL)) {
+		if (expression.left.type != BasicTypeID.BOOL) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
 					"left hand side operand of && must be a bool");
 		}
-		if (!expression.right.type.isBasic(BasicTypeID.BOOL)) {
+		if (expression.right.type != BasicTypeID.BOOL) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
 					expression.position,
@@ -159,7 +159,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.condition.accept(this);
 		expression.ifThen.accept(this);
 		expression.ifElse.accept(this);
-		if (!expression.condition.type.isBasic(BasicTypeID.BOOL)) {
+		if (expression.condition.type != BasicTypeID.BOOL) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "conditional expression condition must be a bool");
 		}
 		return null;
@@ -375,7 +375,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitMap(MapExpression expression) {
-		AssocTypeID type = (AssocTypeID) expression.type.type;
+		AssocTypeID type = (AssocTypeID) expression.type;
 		for (int i = 0; i < expression.keys.length; i++) {
 			Expression key = expression.keys[i];
 			Expression value = expression.values[i];
@@ -420,7 +420,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			}
 			
 			if (!hasDefault) {
-				VariantDefinition variant = (VariantDefinition)(expression.value.type.asDefinition().definition);
+				VariantDefinition variant = (VariantDefinition)((DefinitionTypeID)expression.value.type).definition;
 				for (VariantDefinition.Option option : variant.options) {
 					if (!options.contains(option))
 						validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: missing option for " + option.name);
@@ -446,7 +446,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			}
 			
 			if (!hasDefault) {
-				EnumDefinition enum_ = (EnumDefinition)(expression.value.type.asDefinition().definition);
+				EnumDefinition enum_ = (EnumDefinition)((DefinitionTypeID)expression.value.type).definition;
 				for (EnumConstantMember option : enum_.enumConstants) {
 					if (!options.contains(option))
 						validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: missing option for " + option.name);
@@ -470,7 +470,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitNew(NewExpression expression) {
-		new TypeValidator(validator, expression.position).validate(TypeContext.CONSTRUCTOR_TYPE, expression.constructor.getOwnerType().type);
+		new TypeValidator(validator, expression.position).validate(TypeContext.CONSTRUCTOR_TYPE, expression.constructor.getOwnerType());
 		checkMemberAccess(expression.position, expression.constructor);
 		checkCallArguments(
 				expression.position,
@@ -490,9 +490,9 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.left.accept(this);
 		expression.right.accept(this);
 		
-		if (!expression.left.type.isBasic(BasicTypeID.BOOL))
+		if (expression.left.type != BasicTypeID.BOOL)
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Left hand side of || expression is not a bool");
-		if (!expression.right.type.isBasic(BasicTypeID.BOOL))
+		if (expression.right.type != BasicTypeID.BOOL)
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Right hand side of || expression is not a bool");
 		
 		return null;
@@ -501,9 +501,15 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitPanic(PanicExpression expression) {
 		expression.value.accept(this);
-		if (!(expression.value.type.type instanceof StringTypeID))
+		if (expression.value.type != BasicTypeID.STRING)
 			validator.logError(ValidationLogEntry.Code.PANIC_ARGUMENT_NO_STRING, expression.position, "Argument to a panic must be a string");
 		
+		return null;
+	}
+
+	@Override
+	public Void visitPlatformSpecific(Expression expression) {
+		// TODO: how to validate these expressions?
 		return null;
 	}
 	
@@ -522,7 +528,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.from.accept(this);
 		expression.to.accept(this);
 		
-		RangeTypeID rangeType = (RangeTypeID) expression.type.type;
+		RangeTypeID rangeType = (RangeTypeID) expression.type;
 		if (!expression.from.type.equals(rangeType.baseType)) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "From operand is not a " + rangeType.baseType.toString());
 		}
@@ -647,17 +653,6 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		}
 		return null;
 	}
-	
-	@Override
-	public Void visitStorageCast(StorageCastExpression expression) {
-		if (expression.value.type.type != expression.type.type)
-			validator.logError(ValidationLogEntry.Code.INVALID_STORAGE_CAST, expression.position, "Invalid storage cast");
-		if (!expression.value.type.getActualStorage().canCastTo(expression.type.getActualStorage()) && !expression.type.getActualStorage().canCastFrom(expression.value.type.getActualStorage()))
-			validator.logError(ValidationLogEntry.Code.INVALID_STORAGE_CAST, expression.position, "Invalid storage cast");
-		
-		expression.value.accept(this);
-		return null;
-	}
 
 	@Override
 	public Void visitSupertypeCast(SupertypeCastExpression expression) {
@@ -756,8 +751,8 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 				if (variadic == null) {
 					validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "too many call arguments");
 					break;
-				} else if (variadic.type.type instanceof ArrayTypeID) {
-					StoredType elementType = ((ArrayTypeID)variadic.type.type).elementType;
+				} else if (variadic.type instanceof ArrayTypeID) {
+					TypeID elementType = ((ArrayTypeID)variadic.type).elementType;
 					if (!elementType.equals(argument.type)) {
 						validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "invalid type for variadic call argument");
 						break;
@@ -767,7 +762,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			
 			FunctionParameter parameter = instancedHeader.getParameter(isVariadic, i);
 			if (!parameter.type.equals(argument.type) && (parameter.defaultValue == null || !Objects.equals(parameter.defaultValue.type, argument.type))) {
-				if(!parameter.type.type.equals(argument.type.type))
+				if(!parameter.type.equals(argument.type))
 				validator.logError(
 						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
 						position,

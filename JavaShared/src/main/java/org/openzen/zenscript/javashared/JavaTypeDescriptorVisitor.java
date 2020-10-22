@@ -21,15 +21,6 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 		forOptional = optional ? this : new JavaTypeDescriptorVisitor(context, true);
 	}
 	
-	public String process(StoredType type) {
-		if (JavaTypeUtils.isShared(type)) {
-			context.useShared();
-			return "L" + JavaClass.SHARED.internalName + ";";
-		}
-		
-		return type.type.accept(this);
-	}
-	
 	public String process(TypeID type) {
 		return type.accept(this);
 	}
@@ -70,22 +61,18 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 				case USIZE: return "I";
 				case FLOAT: return "F";
 				case DOUBLE: return "D";
+				case STRING: return "Ljava/lang/String;";
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}
 		}
     }
-	
-	@Override
-	public String visitString(StringTypeID string) {
-		return "Ljava/lang/String;";
-	}
 
     @Override
     public String visitArray(ArrayTypeID array) {
-		if (array.elementType.type == BasicTypeID.BYTE)
+		if (array.elementType == BasicTypeID.BYTE)
 			return "[B"; // instead of int[], save memory, save compatibility
-		else if (array.elementType.type == BasicTypeID.USHORT)
+		else if (array.elementType == BasicTypeID.USHORT)
 			return "[S"; // instead of int[], save memory
 		else {
 			char[] arrayDepth = new char[array.dimension];

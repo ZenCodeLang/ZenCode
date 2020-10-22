@@ -12,14 +12,11 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -77,8 +74,8 @@ public class BlockStatement extends Statement {
 		return unchanged ? this : new BlockStatement(position, tStatements);
 	}
 	
-	private static StoredType getThrownType(Statement[] statements) {
-		StoredType result = null;
+	private static TypeID getThrownType(Statement[] statements) {
+		TypeID result = null;
 		for (Statement statement : statements)
 			result = Expression.binaryThrow(statement.position, result, statement.thrownType);
 		return result;
@@ -94,23 +91,19 @@ public class BlockStatement extends Statement {
 	}
 
 	@Override
-	public StoredType getReturnType() {
-		final List<StoredType> collect = Arrays.stream(statements)
+	public TypeID getReturnType() {
+		final List<TypeID> collect = Arrays.stream(statements)
 				.map(Statement::getReturnType)
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.toList());
+
 		if(collect.isEmpty())
 			return super.getReturnType();
-		if(collect.size() == 1)
+		else if(collect.size() == 1)
 			return collect.get(0);
-
-		final long count = collect.stream().map(s -> s.type).distinct().count();
-		if(count == 1L)
-			return collect.get(0);
-
 		else
 			//TODO make this real?
-			throw new IllegalStateException("More than one possible storedType: " + count);
+			throw new IllegalStateException("More than one possible type: " + collect.size());
 	}
 }

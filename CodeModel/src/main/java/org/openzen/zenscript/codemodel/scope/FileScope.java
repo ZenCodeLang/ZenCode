@@ -22,12 +22,9 @@ import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
-import org.openzen.zenscript.codemodel.type.storage.StaticExpressionStorageTag;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 import java.util.Collections;
 import java.util.List;
@@ -88,7 +85,7 @@ public class FileScope extends BaseScope {
 			try {
 				return root.getMember(position, context.getTypeRegistry(), name);
 			} catch (CompileException ex) {
-				return new InvalidExpression(BasicTypeID.UNDETERMINED.stored, ex);
+				return new InvalidExpression(BasicTypeID.UNDETERMINED, ex);
 			}
 		}
 		
@@ -104,7 +101,7 @@ public class FileScope extends BaseScope {
 		if (globals.containsKey(name.get(0).name)) {
 			type = globals.get(name.get(0).name).getType(position, context, name.get(0).arguments);
 			for (int i = 1; i < name.size(); i++) {
-				type = getTypeMembers(type.stored(StaticExpressionStorageTag.INSTANCE)).getInnerType(position, name.get(i));
+				type = getTypeMembers(type).getInnerType(position, name.get(i));
 				if (type == null)
 					break;
 			}
@@ -114,11 +111,6 @@ public class FileScope extends BaseScope {
 		}
 		
 		return null;
-	}
-
-	@Override
-	public StorageTag getStorageTag(CodePosition position, String name, String[] parameters) {
-		return context.getStorageTag(position, name, parameters);
 	}
 
 	@Override
@@ -132,7 +124,7 @@ public class FileScope extends BaseScope {
 	}
 
 	@Override
-	public StoredType getThisType() {
+	public TypeID getThisType() {
 		return null;
 	}
 

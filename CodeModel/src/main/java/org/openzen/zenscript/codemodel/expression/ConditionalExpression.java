@@ -7,7 +7,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -23,7 +23,7 @@ public class ConditionalExpression extends Expression {
 			Expression condition,
 			Expression ifThen,
 			Expression ifElse,
-			StoredType type) {
+			TypeID type) {
 		super(position, type, binaryThrow(position, condition.thrownType, binaryThrow(position, ifThen.thrownType, ifElse.thrownType)));
 		
 		if (!ifThen.type.equals(ifElse.type))

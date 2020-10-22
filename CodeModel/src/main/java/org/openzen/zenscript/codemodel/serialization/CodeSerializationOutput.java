@@ -20,7 +20,6 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -67,8 +66,6 @@ public interface CodeSerializationOutput {
 	void serialize(TypeContext context, IDefinitionMember member);
 	
 	void serialize(TypeContext context, TypeID type);
-	
-	void serialize(TypeContext context, StoredType type);
 	
 	void serialize(TypeContext context, TypeParameter parameter);
 	

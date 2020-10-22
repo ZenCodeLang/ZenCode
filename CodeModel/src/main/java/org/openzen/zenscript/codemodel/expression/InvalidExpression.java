@@ -5,12 +5,11 @@
  */
 package org.openzen.zenscript.codemodel.expression;
 
-import jdk.nashorn.internal.ir.Assignment;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -20,14 +19,14 @@ public class InvalidExpression extends Expression {
 	public final CompileExceptionCode code;
 	public final String message;
 	
-	public InvalidExpression(CodePosition position, StoredType type, CompileExceptionCode code, String message) {
+	public InvalidExpression(CodePosition position, TypeID type, CompileExceptionCode code, String message) {
 		super(position, type, null);
 		
 		this.code = code;
 		this.message = message;
 	}
 	
-	public InvalidExpression(StoredType type, CompileException cause) {
+	public InvalidExpression(TypeID type, CompileException cause) {
 		this(cause.position, type, cause.code, cause.message);
 	}
 	

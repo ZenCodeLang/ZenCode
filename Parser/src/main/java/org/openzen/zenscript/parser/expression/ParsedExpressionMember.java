@@ -13,7 +13,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -37,7 +37,7 @@ public class ParsedExpressionMember extends ParsedExpression {
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		IPartialExpression cValue = value.compile(scope.withoutHints());
-		StoredType[] typeArguments = IParsedType.compileTypes(genericParameters, scope);
+		TypeID[] typeArguments = IParsedType.compileTypes(genericParameters, scope);
 		IPartialExpression member = cValue.getMember(
 				position,
 				scope,

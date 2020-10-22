@@ -4,13 +4,12 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.generic.*;
 import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType, String, RuntimeException> {
+public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 
 	private final JavaContext context;
 
@@ -18,12 +17,12 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 		this.context = context;
 	}
 	
-	public String getGenericSignature(StoredType... types) {
+	public String getGenericSignature(TypeID... types) {
 		if (types == null || types.length == 0)
 			return "";
 		final StringBuilder builder = new StringBuilder();
-		for (StoredType type : types)
-			builder.append(type.type.accept(type, this));
+		for (TypeID type : types)
+			builder.append(type.accept( this));
 
 		return builder.toString();
 	}
@@ -52,7 +51,7 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 			return "";
 		final StringBuilder builder = new StringBuilder();
 		for (FunctionParameter parameter : parameters) {
-			builder.append(parameter.type.type.accept(parameter.type, this));
+			builder.append(parameter.type.accept(this));
 		}
 		return builder.toString();
 	}
@@ -103,7 +102,7 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 
 				@Override
 				public String visitType(ParameterTypeBound bound) {
-					return bound.type.accept(null, JavaTypeGenericVisitor.this);
+					return bound.type.accept(JavaTypeGenericVisitor.this);
 				}
 			});
 			if (s != null)
@@ -113,42 +112,37 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 	}
 
 	@Override
-	public String visitBasic(StoredType context, BasicTypeID basic) {
+	public String visitBasic(BasicTypeID basic) {
 		return this.context.getDescriptor(basic);
-	}
-	
-	@Override
-	public String visitString(StoredType context, StringTypeID string) {
-		return this.context.getDescriptor(string);
 	}
 
 	@Override
-	public String visitArray(StoredType context, ArrayTypeID array) {
+	public String visitArray(ArrayTypeID array) {
 		final char[] dim = new char[array.dimension];
 		Arrays.fill(dim, '[');
 		return new String(dim) + this.context.getSignature(array.elementType);
 	}
 
 	@Override
-	public String visitAssoc(StoredType context, AssocTypeID assoc) {
+	public String visitAssoc(AssocTypeID assoc) {
 		return "Ljava/util/Map<"
-				+ assoc.keyType.type.accept(context, this)
-				+ assoc.valueType.type.accept(context, this)
+				+ assoc.keyType.accept(this)
+				+ assoc.valueType.accept(this)
 				+ ">;";
 	}
 
 	@Override
-	public String visitGenericMap(StoredType context, GenericMapTypeID map) {
+	public String visitGenericMap(GenericMapTypeID map) {
 		return this.context.getDescriptor(map);
 	}
 
 	@Override
-	public String visitIterator(StoredType context, IteratorTypeID iterator) {
+	public String visitIterator(IteratorTypeID iterator) {
 		return this.context.getDescriptor(iterator);
 	}
 
 	@Override
-	public String visitFunction(StoredType context, FunctionTypeID function) {
+	public String visitFunction(FunctionTypeID function) {
 		final JavaSynthesizedFunctionInstance function1 = this.context.getFunction(function);
 		if(function1.typeArguments == null || function1.typeArguments.length == 0) {
 			return this.context.getDescriptor(function);
@@ -167,14 +161,14 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 	}
 
 	@Override
-	public String visitDefinition(StoredType context, DefinitionTypeID definition) {
+	public String visitDefinition(DefinitionTypeID definition) {
 		JavaClass cls = this.context.getJavaClass(definition.definition);
 		StringBuilder builder = new StringBuilder("L").append(cls.internalName);
 
 		if (definition.typeArguments.length > 0) {
 			builder.append("<");
-			for (StoredType typeParameter : definition.typeArguments) {
-				builder.append(typeParameter.type.accept(null, this));
+			for (TypeID typeParameter : definition.typeArguments) {
+				builder.append(typeParameter.accept(this));
 			}
 			builder.append(">");
 		}
@@ -183,24 +177,24 @@ public class JavaTypeGenericVisitor implements TypeVisitorWithContext<StoredType
 	}
 
 	@Override
-	public String visitGeneric(StoredType context, GenericTypeID generic) {
+	public String visitGeneric(GenericTypeID generic) {
 		return "T" + generic.parameter.name + ";";
 	}
 
 	@Override
-	public String visitRange(StoredType context, RangeTypeID range) {
+	public String visitRange(RangeTypeID range) {
 		return this.context.getDescriptor(range);
 	}
 
 	@Override
-	public String visitOptional(StoredType context, OptionalTypeID type) {
-		return type.baseType.accept(context, this);
+	public String visitOptional(OptionalTypeID type) {
+		return type.baseType.accept(this);
 	}
 
-	public String getMethodSignatureExpansion(FunctionHeader header, StoredType expandedClass) {
+	public String getMethodSignatureExpansion(FunctionHeader header, TypeID expandedClass) {
 		final StringBuilder stringBuilder = new StringBuilder();
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
-		expandedClass.type.extractTypeParameters(typeParameters);
+		expandedClass.extractTypeParameters(typeParameters);
 		for (TypeParameter typeParameter : header.typeParameters) {
 			if(!typeParameters.contains(typeParameter)){
 				typeParameters.add(typeParameter);

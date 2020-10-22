@@ -80,7 +80,7 @@ public class ParsedAlias extends ParsedDefinition {
 			return;
 		typesLinked = true;
 		
-		compiled.setType(type.compileUnstored(context));
+		compiled.setType(type.compile(context));
 		
 		for (int i = 0; i < compiled.typeParameters.length; i++) {
 			TypeParameter output = compiled.typeParameters[i];

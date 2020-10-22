@@ -18,7 +18,7 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -38,7 +38,7 @@ public class SetterMember extends PropertyMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
-			StoredType type,
+			TypeID type,
 			BuiltinID builtin)
 	{
 		super(position,
@@ -105,14 +105,14 @@ public class SetterMember extends PropertyMember {
 	public void setOverrides(SetterMemberRef overrides) {
 		this.overrides = overrides;
 		
-		if (getType().type == BasicTypeID.UNDETERMINED) {
+		if (getType() == BasicTypeID.UNDETERMINED) {
 			setType(overrides.getType());
 			parameter = new FunctionParameter(overrides.getType(), "value");
 		}
 	}
 
 	@Override
-	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
+	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
 		return new SetterMemberRef(type, this, mapper);
 	}
 	

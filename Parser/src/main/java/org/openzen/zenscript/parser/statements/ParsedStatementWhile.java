@@ -43,9 +43,9 @@ public class ParsedStatementWhile extends ParsedStatement {
 			condition = this.condition
 				.compile(new ExpressionScope(scope, BasicTypeID.HINT_BOOL))
 				.eval()
-				.castImplicit(position, scope, BasicTypeID.BOOL.stored);
+				.castImplicit(position, scope, BasicTypeID.BOOL);
 		} catch (CompileException ex) {
-			condition = new InvalidExpression(BasicTypeID.BOOL.stored, ex);
+			condition = new InvalidExpression(BasicTypeID.BOOL, ex);
 		}
 		
 		WhileStatement result = new WhileStatement(position, label, condition);

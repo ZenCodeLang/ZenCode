@@ -13,7 +13,7 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 /**
@@ -28,7 +28,7 @@ public abstract class BaseScope implements TypeScope {
 	public abstract FunctionHeader getFunctionHeader();
 	
 	@Override
-	public TypeMembers getTypeMembers(StoredType type) {
+	public TypeMembers getTypeMembers(TypeID type) {
 		return getMemberCache().get(type);
 	}
 	

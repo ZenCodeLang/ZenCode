@@ -11,7 +11,6 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -24,11 +23,8 @@ public class GenericTypeID implements TypeID {
 		this.parameter = parameter;
 	}
 	
-	public boolean matches(LocalMemberCache cache, StoredType type) {
-		if (type.getSpecifiedStorage() != null && parameter.storage != null && !type.getActualStorage().equals(parameter.storage))
-			return false;
-		
-		return parameter.matches(cache, type.type);
+	public boolean matches(LocalMemberCache cache, TypeID type) {
+		return parameter.matches(cache, type);
 	}
 	
 	@Override
@@ -37,9 +33,8 @@ public class GenericTypeID implements TypeID {
 	}
 	
 	@Override
-	public StoredType instance(GenericMapper mapper, StorageTag storage) {
-		StoredType mapped = mapper.map(this);
-		return new StoredType(mapped.type, StorageTag.union(mapper.position, mapped.getSpecifiedStorage(), storage));
+	public TypeID instance(GenericMapper mapper) {
+		return mapper.mapGeneric(this);
 	}
 	
 	@Override
@@ -61,17 +56,7 @@ public class GenericTypeID implements TypeID {
 	public boolean isValueType() {
 		return false;
 	}
-	
-	@Override
-	public boolean isDestructible() {
-		return false; // TODO: actually depends on the type..?
-	}
-	
-	@Override
-	public boolean isDestructible(Set<HighLevelDefinition> scanning) {
-		return false; // TODO: actually depends on the type..?
-	}
-	
+
 	@Override
 	public boolean isGeneric() {
 		return true;

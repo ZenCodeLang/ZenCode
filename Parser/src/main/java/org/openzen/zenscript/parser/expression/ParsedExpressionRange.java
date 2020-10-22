@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -33,12 +33,12 @@ public class ParsedExpressionRange extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		List<StoredType> fromHints = new ArrayList<>();
-		List<StoredType> toHints = new ArrayList<>();
+		List<TypeID> fromHints = new ArrayList<>();
+		List<TypeID> toHints = new ArrayList<>();
 		
-		for (StoredType hint : scope.hints) {
-			if (hint.type instanceof RangeTypeID) {
-				RangeTypeID rangeHint = (RangeTypeID) hint.type;
+		for (TypeID hint : scope.hints) {
+			if (hint instanceof RangeTypeID) {
+				RangeTypeID rangeHint = (RangeTypeID) hint;
 				if (!fromHints.contains(rangeHint.baseType))
 					fromHints.add(rangeHint.baseType);
 				if (!toHints.contains(rangeHint.baseType))
@@ -48,9 +48,9 @@ public class ParsedExpressionRange extends ParsedExpression {
 		
 		Expression from = this.from.compile(scope.withHints(fromHints)).eval();
 		Expression to = this.to.compile(scope.withHints(toHints)).eval();
-		
-		StoredType baseType = scope.getTypeMembers(from.type).union(to.type);
-		return new RangeExpression(position, scope.getTypeRegistry().getRange(baseType).stored(baseType.getSpecifiedStorage()), from, to);
+
+		TypeID baseType = scope.getTypeMembers(from.type).union(to.type);
+		return new RangeExpression(position, scope.getTypeRegistry().getRange(baseType), from, to);
 	}
 
 	@Override

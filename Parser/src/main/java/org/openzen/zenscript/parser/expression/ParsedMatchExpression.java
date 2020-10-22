@@ -15,7 +15,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -41,9 +41,9 @@ public class ParsedMatchExpression extends ParsedExpression {
 			cCases[i] = matchCase.compile(cValue.type, scope);
 		}
 
-		StoredType result = cCases[0].value.type;
+		TypeID result = cCases[0].value.type;
 		for (int i = 1; i < cCases.length; i++) {
-			StoredType oldResult = result;
+			TypeID oldResult = result;
 			result = scope.getTypeMembers(result).union(cCases[i].value.type);
 			if (result == null)
 				throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "Matches have different types: " + oldResult + " and " + cCases[i].value.type);
@@ -66,7 +66,7 @@ public class ParsedMatchExpression extends ParsedExpression {
 			this.value = body;
 		}
 		
-		public MatchExpression.Case compile(StoredType valueType, ExpressionScope scope) throws CompileException {
+		public MatchExpression.Case compile(TypeID valueType, ExpressionScope scope) throws CompileException {
 			if (name == null) {
 				ExpressionScope innerScope = scope.createInner(scope.hints, scope.getDollar());
 				Expression value = this.value.compile(innerScope).eval();

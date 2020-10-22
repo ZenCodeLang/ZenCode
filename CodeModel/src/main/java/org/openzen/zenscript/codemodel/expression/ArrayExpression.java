@@ -8,7 +8,7 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -18,11 +18,11 @@ public class ArrayExpression extends Expression {
 	public final Expression[] expressions;
 	public final ArrayTypeID arrayType;
 	
-	public ArrayExpression(CodePosition position, Expression[] expressions, StoredType type) {
+	public ArrayExpression(CodePosition position, Expression[] expressions, TypeID type) {
 		super(position, type, multiThrow(position, expressions));
 		
 		this.expressions = expressions;
-		this.arrayType = (ArrayTypeID)type.type;
+		this.arrayType = (ArrayTypeID)type;
 	}
 
 	@Override

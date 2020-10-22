@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
@@ -23,7 +23,6 @@ import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.TypeSymbol;
-import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.constructor.JSONUtils;
 import org.openzen.zenscript.constructor.ModuleLoader;

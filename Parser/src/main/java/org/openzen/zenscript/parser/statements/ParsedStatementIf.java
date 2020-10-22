@@ -32,7 +32,7 @@ public class ParsedStatementIf extends ParsedStatement {
 		try {
 			condition = this.condition.compile(new ExpressionScope(scope, BasicTypeID.HINT_BOOL)).eval();
 		} catch (CompileException ex) {
-			condition = new InvalidExpression(BasicTypeID.BOOL.stored, ex);
+			condition = new InvalidExpression(BasicTypeID.BOOL, ex);
 		}
 		
 		Statement onThen = this.onThen.compile(scope);

@@ -41,8 +41,7 @@ public class Main {
         
         final PrefixedBracketParser parser = new PrefixedBracketParser(null);
         
-        FunctionParameter parameter = new FunctionParameter(scriptingEngine.registry.getArray(StringTypeID.AUTO, 1)
-                .stored(), "args");
+        FunctionParameter parameter = new FunctionParameter(scriptingEngine.registry.getArray(BasicTypeID.STRING, 1), "args");
         SemanticModule scripts = scriptingEngine.createScriptedModule("script", sourceFiles, parser, new FunctionParameter[]{parameter});
         if(!scripts.isValid())
             return;

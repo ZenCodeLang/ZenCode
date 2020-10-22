@@ -7,9 +7,9 @@ import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 
@@ -126,7 +126,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		} else {
 			switch (statement.iterator.target.getBuiltin()) {
 				case ITERATOR_INT_RANGE:
-					iteratorWriter.visitIntRange(((RangeTypeID) statement.iterator.getOwnerType().type));
+					iteratorWriter.visitIntRange(((RangeTypeID) statement.iterator.getOwnerType()));
 					break;
 				case ITERATOR_ARRAY_VALUES:
 					iteratorWriter.visitArrayValueIterator();
@@ -219,7 +219,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 
 		javaWriter.label(start);
 		statement.value.accept(expressionVisitor);
-		if (statement.value.type.type == StringTypeID.INSTANCE)
+		if (statement.value.type == BasicTypeID.STRING)
 			javaWriter.invokeVirtual(JavaExpressionVisitor.OBJECT_HASHCODE);
 		boolean out = false;
 
@@ -237,7 +237,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		}
 
 		JavaSwitchLabel[] sortedSwitchLabels = Arrays.copyOf(switchLabels, switchLabels.length);
-		Arrays.sort(sortedSwitchLabels, (a, b) -> a.key - b.key);
+		Arrays.sort(sortedSwitchLabels, Comparator.comparingInt(a -> a.key));
 
 		javaWriter.lookupSwitch(defaultLabel, sortedSwitchLabels);
 

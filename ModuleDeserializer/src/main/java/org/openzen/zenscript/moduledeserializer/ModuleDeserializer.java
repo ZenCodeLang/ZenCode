@@ -34,7 +34,6 @@ import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.serialization.DecodingOperation;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.compiler.CompilationUnit;
 import org.openzen.zenscript.compiler.ModuleRegistry;
 import org.openzen.zenscript.compiler.SemanticModule;

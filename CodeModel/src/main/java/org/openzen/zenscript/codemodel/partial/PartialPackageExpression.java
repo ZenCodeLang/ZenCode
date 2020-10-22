@@ -16,7 +16,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -37,27 +37,27 @@ public class PartialPackageExpression implements IPartialExpression {
 	}
 
 	@Override
-	public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) {
 		return new List[arguments];
 	}
 	
 	@Override
-	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) {
+	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException {
+	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) throws CompileException {
 		return pkg.getMember(position, scope.getTypeRegistry(), name);
 	}
 
 	@Override
-	public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
+	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.USING_PACKAGE_AS_CALL_TARGET, "Cannot call a package");
 	}
 
 	@Override
-	public StoredType[] getTypeArguments() {
+	public TypeID[] getTypeArguments() {
 		return null;
 	}
 }

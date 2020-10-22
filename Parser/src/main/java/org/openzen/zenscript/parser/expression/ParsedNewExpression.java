@@ -16,9 +16,9 @@ import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.type.IParsedType;
 
@@ -39,7 +39,7 @@ public class ParsedNewExpression extends ParsedExpression{
 	
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
-		StoredType type = this.type.compile(scope);
+		TypeID type = this.type.compile(scope);
 		return compile(position, type, arguments, scope);
 	}
 
@@ -48,12 +48,12 @@ public class ParsedNewExpression extends ParsedExpression{
 		return true;
 	}
 	
-	public static Expression compile(CodePosition position, StoredType type, ParsedCallArguments arguments, ExpressionScope scope) {
+	public static Expression compile(CodePosition position, TypeID type, ParsedCallArguments arguments, ExpressionScope scope) {
 		try {
 			TypeMembers members = scope.getTypeMembers(type);
 			TypeMemberGroup constructors = members.getOrCreateGroup(OperatorType.CONSTRUCTOR);
 
-			//List<StoredType>[] predictedTypes = constructors.predictCallTypes(position, scope, scope.hints, arguments.arguments.size());
+			List<TypeID>[] predictedTypes = constructors.predictCallTypes(position, scope, scope.hints, arguments.arguments.size());
 			CallArguments compiledArguments = arguments.compileCall(position, scope, null, constructors);
 			FunctionalMemberRef member = constructors.selectMethod(position, scope, compiledArguments, true, true);
 			if (member == null)

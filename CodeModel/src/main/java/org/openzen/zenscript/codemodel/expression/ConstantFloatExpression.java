@@ -17,7 +17,7 @@ public class ConstantFloatExpression extends Expression {
 	public final float value;
 	
 	public ConstantFloatExpression(CodePosition position, float value) {
-		super(position, BasicTypeID.FLOAT.stored, null);
+		super(position, BasicTypeID.FLOAT, null);
 		
 		this.value = value;
 	}

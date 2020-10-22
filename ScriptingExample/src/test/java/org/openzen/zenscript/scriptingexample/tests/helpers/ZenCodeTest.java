@@ -10,7 +10,6 @@ import org.openzen.zenscript.parser.*;
 import org.openzen.zenscript.scriptingexample.tests.*;
 
 import java.util.*;
-import java.util.stream.*;
 
 
 public abstract class ZenCodeTest {
@@ -82,7 +81,7 @@ public abstract class ZenCodeTest {
     
     public FunctionParameterList getParameters() {
         final FunctionParameterList functionParameterList = new FunctionParameterList();
-        final StoredType stringArrayType = engine.registry.getArray(StringTypeID.AUTO, 1).stored();
+        final TypeID stringArrayType = engine.registry.getArray(BasicTypeID.STRING, 1);
         FunctionParameter args = new FunctionParameter(stringArrayType, "args");
         functionParameterList.addParameter(args, new String[]{"a", "b", "c"});
         return functionParameterList;

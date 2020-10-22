@@ -18,8 +18,6 @@ import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.OptionalTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.moduleserialization.TypeEncoding;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
@@ -54,14 +52,9 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void,
 			case CHAR: output.writeUInt(TypeEncoding.TYPE_CHAR); break;
 			case UNDETERMINED: output.writeUInt(TypeEncoding.TYPE_UNDETERMINED); break;
 			case NULL: output.writeUInt(TypeEncoding.TYPE_NULL); break;
+			case STRING: output.writeUInt(TypeEncoding.TYPE_STRING); break;
 			default: throw new IllegalArgumentException("Unknown basic type: " + basic);
 		}
-		return null;
-	}
-	
-	@Override
-	public Void visitString(TypeContext context, StringTypeID string) {
-		output.writeUInt(TypeEncoding.TYPE_STRING);
 		return null;
 	}
 
@@ -97,7 +90,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void,
 	public Void visitIterator(TypeContext context, IteratorTypeID iterator) {
 		output.writeUInt(TypeEncoding.TYPE_ITERATOR);
 		output.writeUInt(iterator.iteratorTypes.length);
-		for (StoredType type : iterator.iteratorTypes)
+		for (TypeID type : iterator.iteratorTypes)
 			output.serialize(context, type);
 		return null;
 	}

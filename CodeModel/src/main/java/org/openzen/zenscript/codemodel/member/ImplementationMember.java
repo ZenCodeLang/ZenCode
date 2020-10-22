@@ -20,7 +20,6 @@ import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -46,10 +45,10 @@ public class ImplementationMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		TypeID instancedType = mapper == null ? type : mapper.map(type.stored()).type;
-		members.addImplementation(new ImplementationMemberRef(this, members.type, instancedType.stored(members.type.getSpecifiedStorage())), priority);
+		TypeID instancedType = mapper == null ? type : mapper.map(type);
+		members.addImplementation(new ImplementationMemberRef(this, members.type, instancedType), priority);
 		
-		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType.stored(members.type.getActualStorage()));
+		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType);
 		interfaceTypeMembers.copyMembersTo(members, TypeMemberPriority.INTERFACE);
 	}
 
@@ -98,8 +97,8 @@ public class ImplementationMember extends DefinitionMember {
 				implemented.add(member.getOverrides().getTarget());
 		}
 		
-		TypeMembers interfaceMembers = scope.getTypeMembers(type.stored());
-		TypeMembers definitionMembers = scope.getTypeMembers(scope.getTypeRegistry().getForMyDefinition(definition).stored());
+		TypeMembers interfaceMembers = scope.getTypeMembers(type);
+		TypeMembers definitionMembers = scope.getTypeMembers(scope.getTypeRegistry().getForMyDefinition(definition));
 		
 		definitionBorrowedMembers.clear();
 		definitionBorrowedMembers.putAll(interfaceMembers.borrowInterfaceMembersFromDefinition(implemented, definitionMembers));
@@ -111,7 +110,7 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
-	public DefinitionMemberRef ref(StoredType type, GenericMapper mapper) {
+	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
 		throw new UnsupportedOperationException("Cannot create an implementation reference");
 	}
 

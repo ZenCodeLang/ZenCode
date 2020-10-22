@@ -18,7 +18,6 @@ import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.storage.ValueStorageTag;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.expression.ParsedCallArguments;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
@@ -74,7 +73,7 @@ public class ParsedEnumConstant {
 	
 	public void compileCode(DefinitionTypeID type, ExpressionScope scope) throws CompileException {
 		ParsedCallArguments arguments = new ParsedCallArguments(null, this.arguments);
-		compiled.constructor = (NewExpression)ParsedNewExpression.compile(position, type.stored(), arguments, scope);
+		compiled.constructor = (NewExpression)ParsedNewExpression.compile(position, type, arguments, scope);
 		
 		if (value != null)
 			compiled.value = value.compile(scope).eval();

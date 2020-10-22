@@ -1,11 +1,10 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
-import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 
-public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<StoredType, Void, RuntimeException> {
+public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, Void, RuntimeException> {
     
     private static final JavaMethod UNBOX_BOOLEAN = JavaMethod.getNativeVirtual(JavaClass.BOOLEAN, "booleanValue", "()Z");
     private static final JavaMethod UNBOX_BYTE = JavaMethod.getNativeVirtual(JavaClass.BYTE, "byteValue", "()B");
@@ -24,7 +23,7 @@ public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<StoredTyp
     
     
     @Override
-    public Void visitBasic(StoredType context, BasicTypeID basic) throws RuntimeException {
+    public Void visitBasic(TypeID context, BasicTypeID basic) throws RuntimeException {
         final JavaMethod method;
         
         switch(basic) {
@@ -76,61 +75,55 @@ public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<StoredTyp
     }
     
     @Override
-    public Void visitString(StoredType context, StringTypeID string) throws RuntimeException {
+    public Void visitArray(TypeID context, ArrayTypeID array) throws RuntimeException {
         //NO-OP
         return null;
     }
     
     @Override
-    public Void visitArray(StoredType context, ArrayTypeID array) throws RuntimeException {
+    public Void visitAssoc(TypeID context, AssocTypeID assoc) throws RuntimeException {
         //NO-OP
         return null;
     }
     
     @Override
-    public Void visitAssoc(StoredType context, AssocTypeID assoc) throws RuntimeException {
+    public Void visitGenericMap(TypeID context, GenericMapTypeID map) throws RuntimeException {
         //NO-OP
         return null;
     }
     
     @Override
-    public Void visitGenericMap(StoredType context, GenericMapTypeID map) throws RuntimeException {
+    public Void visitIterator(TypeID context, IteratorTypeID iterator) throws RuntimeException {
         //NO-OP
         return null;
     }
     
     @Override
-    public Void visitIterator(StoredType context, IteratorTypeID iterator) throws RuntimeException {
+    public Void visitFunction(TypeID context, FunctionTypeID function) throws RuntimeException {
         //NO-OP
         return null;
     }
     
     @Override
-    public Void visitFunction(StoredType context, FunctionTypeID function) throws RuntimeException {
+    public Void visitDefinition(TypeID context, DefinitionTypeID definition) throws RuntimeException {
         //NO-OP
         return null;
     }
     
     @Override
-    public Void visitDefinition(StoredType context, DefinitionTypeID definition) throws RuntimeException {
+    public Void visitGeneric(TypeID context, GenericTypeID generic) throws RuntimeException {
         //NO-OP
         return null;
     }
     
     @Override
-    public Void visitGeneric(StoredType context, GenericTypeID generic) throws RuntimeException {
+    public Void visitRange(TypeID context, RangeTypeID range) throws RuntimeException {
         //NO-OP
         return null;
     }
     
     @Override
-    public Void visitRange(StoredType context, RangeTypeID range) throws RuntimeException {
-        //NO-OP
-        return null;
-    }
-    
-    @Override
-    public Void visitOptional(StoredType context, OptionalTypeID type) throws RuntimeException {
+    public Void visitOptional(TypeID context, OptionalTypeID type) throws RuntimeException {
         //NO-OP
         return null;
     }

@@ -15,7 +15,6 @@ import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.VariableID;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
@@ -78,18 +77,10 @@ public class JavaSourceStatementScope {
 		return expression.accept(new JavaSourceExpressionFormatter(target, this));
 	}
 	
-	public String type(StoredType type) {
-		return fileScope.type(type);
-	}
-	
 	public String type(TypeID type) {
 		return fileScope.type(type);
 	}
-	
-	public String type(StoredType type, JavaClass renamed) {
-		return fileScope.type(type, renamed);
-	}
-	
+
 	public String type(TypeID type, JavaClass renamed) {
 		return fileScope.type(type, renamed);
 	}

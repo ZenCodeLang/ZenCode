@@ -18,7 +18,7 @@ import org.openzen.zenscript.codemodel.statement.SwitchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.VariableID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -28,7 +28,7 @@ public class MatchExpression extends Expression {
 	public final Expression value;
 	public final Case[] cases;
 	
-	public MatchExpression(CodePosition position, Expression value, StoredType type, Case[] cases) {
+	public MatchExpression(CodePosition position, Expression value, TypeID type, Case[] cases) {
 		super(position, type, binaryThrow(position, value.thrownType, getThrownType(position, cases)));
 		
 		this.value = value;
@@ -89,7 +89,7 @@ public class MatchExpression extends Expression {
 				hasDefault = true;
 		}
 		if (!hasDefault) {
-			Statement defaultCase = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID.stored, new ConstantStringExpression(position, "Missing case")));
+			Statement defaultCase = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID, new ConstantStringExpression(position, "Missing case")));
 			switchStatement.cases.add(new SwitchCase(null, new Statement[] { defaultCase }));
 		}
 		return new SwitchedMatch(result, switchStatement);
@@ -124,11 +124,11 @@ public class MatchExpression extends Expression {
 		}
 	}
 	
-	private static StoredType getThrownType(CodePosition position, Case[] cases) {
+	private static TypeID getThrownType(CodePosition position, Case[] cases) {
 		if (cases.length == 0)
 			return null;
-		
-		StoredType result = cases[0].value.thrownType;
+
+		TypeID result = cases[0].value.thrownType;
 		for (int i = 1; i < cases.length; i++)
 			result = binaryThrow(position, result, cases[i].value.thrownType);
 		

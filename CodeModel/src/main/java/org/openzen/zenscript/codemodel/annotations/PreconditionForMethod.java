@@ -90,7 +90,7 @@ public class PreconditionForMethod implements MemberAnnotation {
 			Expression inverseCondition = members.getGroup(OperatorType.NOT)
 					.call(position, scope, condition, CallArguments.EMPTY, false);
 
-			Statement throwStatement = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID.stored, message));
+			Statement throwStatement = new ExpressionStatement(position, new PanicExpression(position, BasicTypeID.VOID, message));
 			List<Statement> statements = new ArrayList<>();
 			statements.add(new IfStatement(position, inverseCondition, throwStatement, null));
 

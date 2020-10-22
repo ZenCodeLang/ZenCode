@@ -11,7 +11,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -19,10 +19,10 @@ import org.openzen.zenscript.codemodel.type.StoredType;
  */
 public class IteratorMemberRef implements DefinitionMemberRef {
 	public final IteratorMember target;
-	private final StoredType owner;
-	public final StoredType[] types;
+	private final TypeID owner;
+	public final TypeID[] types;
 	
-	public IteratorMemberRef(IteratorMember target, StoredType owner, StoredType... types) {
+	public IteratorMemberRef(IteratorMember target, TypeID owner, TypeID... types) {
 		this.target = target;
 		this.owner = owner;
 		this.types = types;
@@ -34,7 +34,7 @@ public class IteratorMemberRef implements DefinitionMemberRef {
 	}
 	
 	@Override
-	public StoredType getOwnerType() {
+	public TypeID getOwnerType() {
 		return owner;
 	}
 
@@ -64,11 +64,7 @@ public class IteratorMemberRef implements DefinitionMemberRef {
 
 	@Override
 	public MemberAnnotation[] getAnnotations() {
-		if (target instanceof IteratorMember) {
-			return ((IteratorMember)target).annotations;
-		} else {
-			return null;
-		}
+		return target.annotations;
 	}
 
 	@Override

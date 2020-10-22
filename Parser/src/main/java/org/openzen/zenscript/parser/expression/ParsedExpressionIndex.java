@@ -16,9 +16,9 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
 
 /**
  *
@@ -57,7 +57,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		@Override
 		public Expression eval() throws CompileException {
 			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXGET);
-			List<StoredType>[] predictedTypes = members.predictCallTypes(position, scope, scope.hints, indexes.size());
+			List<TypeID>[] predictedTypes = members.predictCallTypes(position, scope, scope.hints, indexes.size());
 			Expression[] arguments = new Expression[indexes.size()];
 			for (int i = 0; i < arguments.length; i++)
 				arguments[i] = indexes.get(i).compile(scope.createInner(predictedTypes[i], this::getLength)).eval();
@@ -66,29 +66,29 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		}
 
 		@Override
-		public List<StoredType>[] predictCallTypes(CodePosition position, TypeScope scope, List<StoredType> hints, int arguments) throws CompileException {
+		public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) throws CompileException {
 			return eval().predictCallTypes(position, scope, hints, arguments);
 		}
 		
 		@Override
-		public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<StoredType> hints, int arguments) throws CompileException {
+		public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) throws CompileException {
 			return eval().getPossibleFunctionHeaders(scope, hints, arguments);
 		}
 
 		@Override
-		public IPartialExpression getMember(CodePosition position, TypeScope scope, List<StoredType> hints, GenericName name) throws CompileException {
+		public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) throws CompileException {
 			return eval().getMember(position, scope, hints, name);
 		}
 
 		@Override
-		public Expression call(CodePosition position, TypeScope scope, List<StoredType> hints, CallArguments arguments) throws CompileException {
+		public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
 			return eval().call(position, scope, hints, arguments);
 		}
 		
 		@Override
 		public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXSET);
-			List<StoredType>[] predictedTypes = members.predictCallTypes(position, scope, this.scope.hints, indexes.size() + 1);
+			List<TypeID>[] predictedTypes = members.predictCallTypes(position, scope, this.scope.hints, indexes.size() + 1);
 			
 			Expression[] arguments = new Expression[indexes.size() + 1];
 			for (int i = 0; i < arguments.length - 1; i++)
@@ -99,9 +99,9 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		}
 		
 		@Override
-		public List<StoredType> getAssignHints() {
+		public List<TypeID> getAssignHints() {
 			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXSET);
-			List<StoredType>[] predictedTypes = members.predictCallTypes(position, scope, scope.hints, indexes.size() + 1);
+			List<TypeID>[] predictedTypes = members.predictCallTypes(position, scope, scope.hints, indexes.size() + 1);
 			return predictedTypes[indexes.size()];
 		}
 		
@@ -110,7 +110,7 @@ public class ParsedExpressionIndex extends ParsedExpression {
 		}
 
 		@Override
-		public StoredType[] getTypeArguments() {
+		public TypeID[] getTypeArguments() {
 			return null;
 		}
 	}

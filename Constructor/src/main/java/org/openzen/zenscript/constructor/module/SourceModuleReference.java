@@ -7,7 +7,7 @@ package org.openzen.zenscript.constructor.module;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.SourceFile;
@@ -21,7 +21,6 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.ConstructorException;
 import org.openzen.zenscript.constructor.ModuleLoader;
-import org.openzen.zenscript.codemodel.type.storage.StorageType;
 import org.openzen.zenscript.constructor.module.logging.*;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.BracketExpressionParser;

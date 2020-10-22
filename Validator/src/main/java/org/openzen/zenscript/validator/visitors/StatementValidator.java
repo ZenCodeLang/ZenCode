@@ -79,7 +79,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitDoWhile(DoWhileStatement statement) {
-		if (!statement.condition.type.isBasic(BasicTypeID.BOOL)) {
+		if (statement.condition.type != BasicTypeID.BOOL) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					statement.position,
@@ -160,12 +160,12 @@ public class StatementValidator implements StatementVisitor<Void> {
 					validator,
 					new StatementExpressionScope()));
 			
-			if (scope.getFunctionHeader().getReturnType().isBasic(BasicTypeID.VOID)) {
+			if (scope.getFunctionHeader().getReturnType() == BasicTypeID.VOID) {
 				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Function return type is void; cannot return a value");
 			} else if (!statement.value.type.equals(scope.getFunctionHeader().getReturnType())) {
 				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type.toString());
 			}
-		} else if (!scope.getFunctionHeader().getReturnType().isBasic(BasicTypeID.VOID)) {
+		} else if (scope.getFunctionHeader().getReturnType() != BasicTypeID.VOID) {
 			validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Missing return value");
 		}
 		
@@ -251,7 +251,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	private void validateCondition(Expression condition) {
 		condition.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		
-		if (!condition.type.isBasic(BasicTypeID.BOOL)) {
+		if (condition.type != BasicTypeID.BOOL) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					condition.position,

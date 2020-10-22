@@ -19,7 +19,6 @@ import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.IteratorTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.StringTypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaContext;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -45,7 +44,7 @@ public class JavaSourceSyntheticHelperGenerator {
 	}
 	
 	public JavaMethod createArrayContains(ArrayTypeID type) {
-		ArrayKind kind = type.elementType.type.accept(new ArrayKindVisitor());
+		ArrayKind kind = type.elementType.accept(new ArrayKindVisitor());
 		if (existingContains.containsKey(kind))
 			return existingContains.get(kind);
 		
@@ -141,14 +140,11 @@ public class JavaSourceSyntheticHelperGenerator {
 					return ArrayKind.DOUBLE;
 				case CHAR:
 					return ArrayKind.CHAR;
+				case STRING:
+					return ArrayKind.OBJECT;
 				default:
 					throw new UnsupportedOperationException("Invalid array base type: " + basic);
 			}
-		}
-		
-		@Override
-		public ArrayKind visitString(StringTypeID string) {
-			return ArrayKind.OBJECT;
 		}
 
 		@Override

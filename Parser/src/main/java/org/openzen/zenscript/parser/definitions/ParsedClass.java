@@ -71,7 +71,7 @@ public class ParsedClass extends BaseParsedDefinition {
 		ParsedTypeParameter.compile(context, compiled.typeParameters, this.parameters);
 		
 		if (superclass != null)
-			compiled.setSuperType(superclass.compileUnstored(context));
+			compiled.setSuperType(superclass.compile(context));
 		
 		super.linkTypesLocal(context);
 	}

@@ -24,13 +24,11 @@ import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import static org.openzen.zenscript.validator.ValidationLogEntry.Code.*;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.InvalidStorageTag;
 import org.openzen.zenscript.validator.TypeContext;
 
 /**
@@ -56,12 +54,7 @@ public class ValidationUtils {
 	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header, AccessScope access) {
 		TypeValidator typeValidator = new TypeValidator(target, position);
 		typeValidator.validate(TypeContext.RETURN_TYPE, header.getReturnType());
-		
-		if (header.storage instanceof InvalidStorageTag) {
-			InvalidStorageTag invalid = (InvalidStorageTag)header.storage;
-			target.logError(INVALID_TYPE, invalid.position, invalid.message);
-		}
-		
+
 		Set<String> parameterNames = new HashSet<>();
 		int i = 0;
 		for (FunctionParameter parameter : header.parameters) {
@@ -83,7 +76,7 @@ public class ValidationUtils {
 				if (i != header.parameters.length - 1) {
 					target.logError(VARIADIC_PARAMETER_MUST_BE_LAST, position, "variadic parameter must be the last parameter");
 				}
-				if (!(parameter.type.type instanceof ArrayTypeID)) {
+				if (!(parameter.type instanceof ArrayTypeID)) {
 					target.logError(INVALID_TYPE, position, "variadic parameter must be an array");
 				}
 			}
@@ -148,7 +141,7 @@ public class ValidationUtils {
 			Validator target,
 			CodePosition position,
 			TypeParameter[] typeParameters,
-			StoredType[] typeArguments)
+			TypeID[] typeArguments)
 	{
 		if (typeParameters == null || typeParameters.length == 0) {
 			if (typeArguments == null || typeArguments.length == 0) {

@@ -14,7 +14,7 @@ import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -56,7 +56,7 @@ public class ParsedMethod extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, StoredType baseType) throws CompileException {
+	protected void fillOverride(TypeScope scope, TypeID baseType) throws CompileException {
 		TypeMembers typeMembers = scope.getTypeMembers(baseType);
 		FunctionalMemberRef override = typeMembers
 				.getOrCreateGroup(name, false)

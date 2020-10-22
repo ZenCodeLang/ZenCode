@@ -50,7 +50,7 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 
 	@Override
 	public void linkTypes(TypeResolutionContext context) {
-		compiled = new ImplementationMember(position, definition, modifiers, type.compileUnstored(context));
+		compiled = new ImplementationMember(position, definition, modifiers, type.compile(context));
 		
 		for (ParsedDefinitionMember member : members) {
 			member.linkTypes(context);

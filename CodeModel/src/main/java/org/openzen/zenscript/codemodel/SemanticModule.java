@@ -20,7 +20,6 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.storage.StorageType;
 
 /**
  *
@@ -44,7 +43,6 @@ public class SemanticModule {
 	public final GlobalTypeRegistry registry;
 	public final List<ExpansionDefinition> expansions;
 	public final AnnotationDefinition[] annotations;
-	public final StorageType[] storageTypes;
 	public final IZSLogger logger;
 	
 	public SemanticModule(
@@ -59,7 +57,6 @@ public class SemanticModule {
             GlobalTypeRegistry registry,
             List<ExpansionDefinition> expansions,
             AnnotationDefinition[] annotations,
-            StorageType[] storageTypes,
             IZSLogger logger)
 	{
 		this.name = module.name;
@@ -76,7 +73,6 @@ public class SemanticModule {
 		this.registry = registry;
 		this.expansions = expansions;
 		this.annotations = annotations;
-		this.storageTypes = storageTypes;
         this.logger = logger;
     }
 	
@@ -88,7 +84,7 @@ public class SemanticModule {
 		if (state != State.ASSEMBLED)
 			throw new IllegalStateException("Module is invalid");
 		
-		ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, annotations, storageTypes, rootPackage, null, globals);
+		ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, annotations, rootPackage, null, globals);
 		AnnotationProcessor annotationProcessor = new AnnotationProcessor(context, expansions);
 		List<ScriptBlock> processedScripts = new ArrayList<>();
 		FileScope fileScope = new FileScope(context, expansions, globals, member -> {});
@@ -113,7 +109,6 @@ public class SemanticModule {
 				registry,
 				expansions,
 				annotations,
-				storageTypes,
                 logger);
 	}
 	

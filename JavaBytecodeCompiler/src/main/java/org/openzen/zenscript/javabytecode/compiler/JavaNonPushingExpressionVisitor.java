@@ -68,7 +68,6 @@ import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
 import org.openzen.zenscript.codemodel.expression.SetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
-import org.openzen.zenscript.codemodel.expression.StorageCastExpression;
 import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.expression.ThrowExpression;
@@ -81,11 +80,11 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
-import org.openzen.zenscript.javabytecode.JavaBytecodeModule;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javabytecode.compiler.JavaModificationExpressionVisitor.PushOption;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
+import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
 
 /**
  *
@@ -116,7 +115,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	
 	private void fallback(Expression expression) {
 		expression.accept(original);
-		if (expression.type.type != BasicTypeID.VOID)
+		if (expression.type != BasicTypeID.VOID)
 			javaWriter.pop(CompilerUtils.isLarge(expression.type));
 	}
 	
@@ -566,6 +565,16 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	}
 
 	@Override
+	public Void visitPlatformSpecific(Expression expression) {
+		if (expression instanceof JavaFunctionInterfaceCastExpression) {
+			((JavaFunctionInterfaceCastExpression) expression).value.accept(this);
+		} else {
+			throw new AssertionError("Unrecognized platform specific expression: " + expression);
+		}
+		return null;
+	}
+
+	@Override
 	public Void visitPostCall(PostCallExpression expression) {
 		if (!compileIncrementOrDecrement(expression.target, expression.member.getBuiltin()))
 			fallback(expression);
@@ -646,11 +655,6 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	@Override
 	public Void visitStaticSetter(StaticSetterExpression expression) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	public Void visitStorageCast(StorageCastExpression expression) {
-		return expression.value.accept(this);
 	}
 
 	@Override

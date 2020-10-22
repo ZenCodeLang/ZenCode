@@ -33,7 +33,6 @@ import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zenscript.javashared.JavaVariantOption;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -355,7 +354,6 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		JavaClass cls;
 		if (nativeClass == null) {
 			cls = outerClass == null ? new JavaClass(context.getPackageName(definition.pkg), definition.name, kind) : new JavaClass(outerClass, definition.name, kind);
-			cls.destructible = definition.isDestructible();
 			context.setJavaClass(definition, cls);
 		} else {
 			cls = outerClass == null ? new JavaClass(context.getPackageName(definition.pkg), definition.name + "Expansion", kind) : new JavaClass(outerClass, definition.name + "Expansion", kind);
@@ -363,9 +361,6 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			context.setJavaClass(definition, nativeClass.cls);
 			context.setJavaExpansionClass(definition, cls);
 			context.setJavaNativeClass(definition, nativeClass);
-			
-			if (nativeClass.nonDestructible)
-				cls.destructible = false;
 		}
 		
 		for (IDefinitionMember member : definition.members) {

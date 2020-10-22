@@ -16,9 +16,7 @@ import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.storage.StorageTag;
 
 /**
  *
@@ -80,14 +78,9 @@ public class FileResolutionContext implements TypeResolutionContext {
 		
 		return module.getType(position, name);
 	}
-	
-	@Override
-	public StorageTag getStorageTag(CodePosition position, String name, String[] arguments) {
-		return module.getStorageTag(position, name, arguments);
-	}
 
 	@Override
-	public StoredType getThisType() {
+	public TypeID getThisType() {
 		return null;
 	}
 }

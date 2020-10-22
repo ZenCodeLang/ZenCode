@@ -11,7 +11,7 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.StoredType;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  *
@@ -68,8 +68,8 @@ public class IfStatement extends Statement {
 				: new IfStatement(position, tCondition, tOnThen, tOnElse);
 	}
 	
-	private static StoredType getThrownType(Expression condition, Statement onThen, Statement onElse) {
-		StoredType result = Expression.binaryThrow(onThen.position, condition.thrownType, onThen.thrownType);
+	private static TypeID getThrownType(Expression condition, Statement onThen, Statement onElse) {
+		TypeID result = Expression.binaryThrow(onThen.position, condition.thrownType, onThen.thrownType);
 		if (onElse != null)
 			result = Expression.binaryThrow(onElse.position, result, onElse.thrownType);
 		return result;
@@ -85,22 +85,16 @@ public class IfStatement extends Statement {
 	}
 
 	@Override
-	public StoredType getReturnType() {
-		final StoredType thenType = onThen.getReturnType();
+	public TypeID getReturnType() {
+		final TypeID thenType = onThen.getReturnType();
 		if(onElse == null)
 			return thenType;
-		final StoredType elseType = onElse.getReturnType();
+		final TypeID elseType = onElse.getReturnType();
 		if(thenType == elseType)
 			return thenType;
 
 		if(thenType == null)
 			return elseType;
-		if(elseType == null)
-			return thenType;
-
-		if(thenType.type != elseType.type)
-			//TODO make this real?
-			throw new IllegalStateException("If and Else return different things?!?");
 		return thenType;
 	}
 }

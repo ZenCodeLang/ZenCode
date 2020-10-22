@@ -16,8 +16,8 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.StoredType;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
@@ -35,7 +35,7 @@ public class GetterMember extends PropertyMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
-			StoredType type,
+			TypeID type,
 			BuiltinID builtin) {
 		super(position, definition, modifiers, type, builtin);
 		
@@ -45,8 +45,8 @@ public class GetterMember extends PropertyMember {
 	public void setBody(Statement body) {
 		this.body = body;
 		
-		if (getType().type == BasicTypeID.UNDETERMINED) {
-			StoredType returnType = body.getReturnType();
+		if (getType() == BasicTypeID.UNDETERMINED) {
+			TypeID returnType = body.getReturnType();
 			if (returnType != null)
 				setType(returnType);
 		}
@@ -102,12 +102,12 @@ public class GetterMember extends PropertyMember {
 	public void setOverrides(GetterMemberRef override) {
 		this.overrides = override;
 		
-		if (getType().type == BasicTypeID.UNDETERMINED)
+		if (getType() == BasicTypeID.UNDETERMINED)
 			setType(override.getType());
 	}
 
 	@Override
-	public GetterMemberRef ref(StoredType type, GenericMapper mapper) {
+	public GetterMemberRef ref(TypeID type, GenericMapper mapper) {
 		return new GetterMemberRef(type, this, mapper);
 	}
 	
