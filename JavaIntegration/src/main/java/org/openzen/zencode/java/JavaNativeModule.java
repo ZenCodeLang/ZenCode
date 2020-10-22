@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.scope.*;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.*;
 import org.openzen.zenscript.javashared.*;
+import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 import org.openzen.zenscript.lexer.*;
 import org.openzen.zenscript.parser.*;
 import org.openzen.zenscript.parser.expression.*;
@@ -889,20 +890,14 @@ public class JavaNativeModule {
 			Expression defaultValue = getDefaultValue(parameter, type);
 			parameters[i] = new FunctionParameter(type, parameter.getName(), defaultValue, parameter.isVarArgs());
 		}
-		
-		TypeParameter[] typeParameters = new TypeParameter[javaTypeParameters.length];
-		for (int i = 0; i < javaTypeParameters.length; i++) {
-			TypeVariable<Method> javaTypeParameter = javaTypeParameters[i];
-			typeParameters[i] = new TypeParameter(CodePosition.UNKNOWN, javaTypeParameter.getName());
-			context.put(javaTypeParameter, typeParameters[i]);
-			
-			for (AnnotatedType bound : javaTypeParameter.getAnnotatedBounds())
-				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, loadType(context, bound)));
+		if (classParameters > 0 && classParameters == typeParameters.length) {
+			parameters = Arrays.copyOfRange(parameters, classParameters, parameters.length);
 		}
-		
+
 		if (exceptionTypes.length > 1)
 			throw new IllegalArgumentException("A method can only throw a single exception type!");
 
+		TypeID returnType = javaReturnType == null ? BasicTypeID.VOID : loadStoredType(context, javaReturnType);
 		TypeID thrownType = exceptionTypes.length == 0 ? null : loadStoredType(context, exceptionTypes[0]);
 		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
 	}
@@ -931,7 +926,7 @@ public class JavaNativeModule {
 		return loadType(context, annotatedType, nullable, unsigned);
 	}
 	
-	private TypeID loadType(TypeVariableContext context, Type type, boolean nullable, boolean unsigned) {
+	private TypeID loadType(TypeVariableContext context, AnnotatedElement type, boolean nullable, boolean unsigned) {
 		TypeID result = loadType(context, type, unsigned);
 		if (nullable)
 			result = registry.getOptional(result);
@@ -1045,7 +1040,7 @@ public class JavaNativeModule {
 				getMethodDescriptor(functionalInterfaceMethod),
 				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
 				header.getReturnType().isGeneric());
-		return registry.getFunction(header);
+		return new JavaFunctionalInterfaceTypeID(registry, header, functionalInterfaceMethod, method);
 	}
 
 	private <T> TypeVariableContext convertTypeParameters(Class<T> cls) {
