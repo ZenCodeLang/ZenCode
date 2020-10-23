@@ -589,7 +589,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		equals(builtin, BOOL_EQUALS, BOOL);
 		notequals(builtin, BOOL_NOTEQUALS, BOOL);
 		
-		castExplicit(builtin, BOOL_TO_STRING, STRING);
+		castImplicit(builtin, BOOL_TO_STRING, STRING);
 		staticMethod(builtin, BOOL_PARSE, "parse", BOOL, STRING);
 		
 		processType(builtin);

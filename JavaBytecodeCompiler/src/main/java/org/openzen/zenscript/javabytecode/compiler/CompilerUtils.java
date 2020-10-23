@@ -25,8 +25,11 @@ public class CompilerUtils {
 	private CompilerUtils() {}
 
 	public static boolean isPrimitive(TypeID id) {
-		return id instanceof BasicTypeID
-				|| (id.isOptional() && id.withoutOptional() == BasicTypeID.USIZE);
+        if(id instanceof BasicTypeID) {
+            return id != BasicTypeID.STRING;
+        }
+	    
+		return id.isOptional() && id.withoutOptional() == BasicTypeID.USIZE;
 	}
 
 	public static boolean isLarge(TypeID type) {

@@ -5,6 +5,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.annotations.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -81,8 +82,14 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	public Void visitMethod(MethodMember member) {
 		final boolean isStatic = member.isStatic();
 		final JavaMethod method = context.getJavaMethod(member);
-		if (!method.compile)
-			return null;
+        if(!method.compile) {
+            return null;
+        }
+        
+        if(member.body == null && member.hasTag(NativeTag.class)) {
+            //Is it an error that method.compile == true then?
+            return null;
+        }
 
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
 		expandedClass.extractTypeParameters(typeParameters);
