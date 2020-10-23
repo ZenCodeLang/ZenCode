@@ -602,8 +602,13 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitPanic(PanicExpression expression) {
 		return expression.value.accept(this).unaryPrefix(ZenScriptOperator.PANIC);
 	}
-	
-	@Override
+    
+    @Override
+    public ExpressionString visitPlatformSpecific(Expression expression) {
+	    throw new UnsupportedOperationException("Not yet implemented!");
+    }
+    
+    @Override
 	public ExpressionString visitPostCall(PostCallExpression expression) {
 		return unaryPostfix(expression.target, ZenScriptOperator.INCREMENT, expression.member.getOperator() == OperatorType.INCREMENT ? "++" : "--");
 	}
@@ -665,11 +670,6 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		return new ExpressionString(
 				typeFormatter.format(expression.type) + "." + expression.setter.member.name + " = " + expression.setter.member.name,
 				ZenScriptOperator.ASSIGN);
-	}
-	
-	@Override
-	public ExpressionString visitStorageCast(StorageCastExpression expression) {
-		return expression.value.accept(this);
 	}
 	
 	@Override
