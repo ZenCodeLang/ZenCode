@@ -9,7 +9,9 @@ public class HelloWorldTest extends ZenCodeTest {
     public void helloWorld() {
         addScript("println('hello world');");
         executeEngine();
-        
+    
+        logger.assertNoErrors();
+        logger.assertNoWarnings();
         logger.assertPrintOutputSize(1);
         logger.assertPrintOutput(0, "hello world");
     }

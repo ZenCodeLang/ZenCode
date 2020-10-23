@@ -13,6 +13,8 @@ public class AdditionTest extends ZenCodeTest {
         addScript(String.format("println(%d + %d);", i, j));
         executeEngine();
         
+        logger.assertNoErrors();
+        logger.assertNoWarnings();
         logger.assertPrintOutputSize(1);
         logger.assertPrintOutput(0, String.valueOf(i + j));
     }
@@ -21,7 +23,9 @@ public class AdditionTest extends ZenCodeTest {
     public void testChainedAdditions() {
         addScript("println(1+2+3+4+5+6+7+8+9+10);");
         executeEngine();
-        
+    
+        logger.assertNoErrors();
+        logger.assertNoWarnings();
         logger.assertPrintOutputSize(1);
         logger.assertPrintOutput(0, String.valueOf(55));
     }

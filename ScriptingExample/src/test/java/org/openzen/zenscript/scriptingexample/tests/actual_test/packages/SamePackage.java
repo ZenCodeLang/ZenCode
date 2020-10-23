@@ -11,6 +11,8 @@ public class SamePackage extends ZenCodeTest {
         addScript("println(doSomething());", "b.zs");
         
         executeEngine();
+        logger.assertNoErrors();
+        logger.assertNoWarnings();
         logger.assertPrintOutputSize(1);
         logger.assertPrintOutput(0, "Hello World");
     }
@@ -21,6 +23,8 @@ public class SamePackage extends ZenCodeTest {
         addScript("println(doSomething());", "some/test/package/b.zs");
     
         executeEngine();
+        logger.assertNoErrors();
+        logger.assertNoWarnings();
         logger.assertPrintOutputSize(1);
         logger.assertPrintOutput(0, "Hello World");
     }
