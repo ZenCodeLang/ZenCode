@@ -423,6 +423,8 @@ public final class TypeMembers {
 			throw new IllegalArgumentException("Cannot cast to undetermined type!");
 		if (type == BasicTypeID.NULL && toType.isOptional())
 			return true;
+		if (type.canCastImplicit(toType))
+			return true;
 		
 		if (toType.isOptional() && canCastImplicit(toType.withoutOptional()))
 			return true;
@@ -465,6 +467,8 @@ public final class TypeMembers {
 	public boolean canCast(TypeID toType) {
 		toType = toType.getNormalized();
 		if (canCastImplicit(toType))
+			return true;
+		if (type.canCastExplicit(toType))
 			return true;
 		
 		for (TypeMember<CasterMemberRef> caster : casters) {
@@ -552,6 +556,8 @@ public final class TypeMembers {
 			return value;
 		if (type == toType)
 			return value;
+		if (type.canCastImplicit(toType))
+			return type.castImplicit(position, toType, value);
 
 		if (type == BasicTypeID.NULL && toType.isOptional())
 			return new NullExpression(position, toType);
@@ -578,6 +584,8 @@ public final class TypeMembers {
 		toType = toType.getNormalized();
 		if (this.canCastImplicit(toType))
 			return castImplicit(position, value, toType, false);
+		if (type.canCastExplicit(toType))
+			return type.castExplicit(position, toType, value);
 		
         final TypeMembers typeMembers = cache.get(type);
         if(this.type != typeMembers.type && typeMembers.canCast(toType)) {

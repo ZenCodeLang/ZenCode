@@ -25,7 +25,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
  * @author Hoofdgebruiker
  */
 public interface IParsedType {
-	public static IParsedType parse(ZSTokenParser tokens) throws ParseException {
+	static IParsedType parse(ZSTokenParser tokens) throws ParseException {
 		IParsedType result = tryParse(tokens);
 		if (result == null)
 			throw new ParseException(tokens.getPosition(), "Type expected (got " + tokens.peek().content + ")");
@@ -33,7 +33,7 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public static List<IParsedType> parseTypeArguments(ZSTokenParser tokens) throws ParseException {
+	static List<IParsedType> parseTypeArguments(ZSTokenParser tokens) throws ParseException {
 		if (!tokens.isNext(T_LESS))
 			return null;
 		
@@ -67,7 +67,7 @@ public interface IParsedType {
 		return genericParameters;
 	}
 	
-	public static List<IParsedType> parseTypeArgumentsForCall(ZSTokenParser tokens) throws ParseException {
+	static List<IParsedType> parseTypeArgumentsForCall(ZSTokenParser tokens) throws ParseException {
 		List<IParsedType> typeArguments = null;
 		if (tokens.optional(ZSTokenType.T_LESS) != null) {
 			try {
@@ -85,7 +85,7 @@ public interface IParsedType {
 		return typeArguments;
 	}
 	
-	public static IParsedType tryParse(ZSTokenParser tokens) throws ParseException {
+	static IParsedType tryParse(ZSTokenParser tokens) throws ParseException {
 		CodePosition position = tokens.getPosition();
 		
 		IParsedType result;
@@ -211,7 +211,7 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public static TypeID[] compileList(List<IParsedType> typeParameters, TypeResolutionContext context) {
+	static TypeID[] compileList(List<IParsedType> typeParameters, TypeResolutionContext context) {
 		TypeID[] result = TypeID.NONE;
 		if (typeParameters != null) {
 			result = new TypeID[typeParameters.size()];
@@ -222,7 +222,7 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public static TypeID[] compileTypes(List<IParsedType> typeParameters, TypeResolutionContext context) {
+	static TypeID[] compileTypes(List<IParsedType> typeParameters, TypeResolutionContext context) {
 		TypeID[] result = TypeID.NONE;
 		if (typeParameters != null && typeParameters.size() > 0) {
 			result = new TypeID[typeParameters.size()];
@@ -233,13 +233,13 @@ public interface IParsedType {
 		return result;
 	}
 	
-	public TypeID compile(TypeResolutionContext context);
+	TypeID compile(TypeResolutionContext context);
 	
-	public default AnnotationDefinition compileAnnotation(BaseScope scope) {
+	default AnnotationDefinition compileAnnotation(BaseScope scope) {
 		return null;
 	}
 	
-	public default TypeID[] compileTypeArguments(BaseScope scope) {
+	default TypeID[] compileTypeArguments(BaseScope scope) {
 		return TypeID.NONE;
 	}
 }

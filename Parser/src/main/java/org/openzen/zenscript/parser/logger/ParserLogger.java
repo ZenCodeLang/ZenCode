@@ -5,6 +5,6 @@ import org.openzen.zenscript.lexer.*;
 
 public interface ParserLogger extends IZSLogger, CompileExceptionLogger {
     default void logParseException(ParseException exception) {
-        throwingErr("Parser Exeption", exception);
+        throwingErr("Parser Exception @ " + exception.position.toString() + " : " + exception.message, exception);
     }
 }

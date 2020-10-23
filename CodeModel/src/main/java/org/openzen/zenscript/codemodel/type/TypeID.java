@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -89,4 +91,12 @@ public interface TypeID {
 	default boolean isDefinition(HighLevelDefinition definition) {
 		return false;
 	}
+
+	default boolean canCastImplicit(TypeID other) { return false; }
+
+	default boolean canCastExplicit(TypeID other) { return false; }
+
+	default Expression castImplicit(CodePosition position, TypeID other, Expression value) { return null; }
+
+	default Expression castExplicit(CodePosition position, TypeID other, Expression value) { return null; }
 }

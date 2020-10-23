@@ -29,9 +29,7 @@ public class DefinitionTypeID implements TypeID {
 	public final TypeID[] typeArguments;
 	public final DefinitionTypeID outer;
 	private TypeID normalized;
-	
-	public TypeID superType;
-	
+
 	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, TypeID[] typeArguments) {
 		this(typeRegistry, definition, typeArguments, null);
 	}
@@ -50,7 +48,7 @@ public class DefinitionTypeID implements TypeID {
 		this.definition = definition;
 		this.typeArguments = typeArguments;
 		this.outer = outer;
-		
+
 		normalized = isDenormalized() ? normalize(typeRegistry) : this;
 		if (normalized instanceof DefinitionTypeID && ((DefinitionTypeID)normalized).isDenormalized())
 			throw new AssertionError();
@@ -63,10 +61,8 @@ public class DefinitionTypeID implements TypeID {
 		for (TypeID typeArgument : typeArguments)
 			if (!typeArgument.getNormalized().equals(typeArgument))
 				return true;
-		if (outer != null && !outer.getNormalized().equals(outer))
-			return true;
-		
-		return false;
+
+		return outer != null && !outer.getNormalized().equals(outer);
 	}
 	
 	private TypeID normalize(GlobalTypeRegistry typeRegistry) {
@@ -114,7 +110,6 @@ public class DefinitionTypeID implements TypeID {
 	public DefinitionTypeID(HighLevelDefinition definition) {
 		this.definition = definition;
 		this.typeArguments = TypeID.NONE;
-		this.superType = definition.getSuperType();
 		this.outer = null;
 	}
 	
@@ -185,7 +180,8 @@ public class DefinitionTypeID implements TypeID {
 				if (typeArgument.hasInferenceBlockingTypeParameters(parameters))
 					return true;
 		}
-		
+
+		TypeID superType = definition.getSuperType();
 		return superType != null && superType.hasInferenceBlockingTypeParameters(parameters);
 	}
 
