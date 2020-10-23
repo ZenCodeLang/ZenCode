@@ -284,7 +284,6 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 					new TypeParameter[] { mappedConstructorParameter },
 					VOID,
 					null,
-					null,
 					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter), dimension), "original"),
 					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithoutIndex), "projection"));
 			members.addConstructor(new ConstructorMember(
@@ -306,7 +305,6 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			FunctionHeader mappedConstructorFunctionWithIndex = new FunctionHeader(
 					new TypeParameter[] { mappedConstructorParameter },
 					VOID,
-					null,
 					null,
 					new FunctionParameter(registry.getArray(registry.getGeneric(mappedConstructorParameter), dimension), "original"),
 					new FunctionParameter(registry.getFunction(mappedConstructorHeaderWithIndex), "projection"));
@@ -388,7 +386,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 				registry.getOptional(valueType),
 				null,
 				FunctionParameter.NONE);
-		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, VOID, null, null, new FunctionParameter(valueType));
+		FunctionHeader putHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, VOID, null, new FunctionParameter(valueType));
 		FunctionHeader containsHeader = new FunctionHeader(new TypeParameter[] { functionParameter }, BOOL, null, FunctionParameter.NONE);
 		
 		ClassDefinition builtin = new ClassDefinition(BUILTIN, Module.BUILTIN, null, "", Modifiers.PUBLIC);
@@ -1351,9 +1349,9 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 				id);
 	}
 	
-	private void add(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
-		add(definition, id, operand, result);
-	}
+	////private void add(HighLevelDefinition definition, BuiltinID id, BasicTypeID operand, BasicTypeID result) {
+	////	add(definition, id, operand, (TypeID) result);
+	////}
 	
 	private void add(HighLevelDefinition definition, BuiltinID id, TypeID operand, TypeID result) {
 		addOp(definition, id, operand, result).registerTo(members, TypeMemberPriority.SPECIFIED, null);
