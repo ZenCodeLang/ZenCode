@@ -1,3 +1,3 @@
 [submodule "StdLibs"]
 	path = StdLibs
-	url = https://git.openzen.org/ZenCode/StdLibs.git
+	url = https://github.com/ZenCodeLang/StdLibs.git
