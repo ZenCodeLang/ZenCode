@@ -5,31 +5,21 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
-import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.AccessScope;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
-import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
-import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
-import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.validator.ValidationLogEntry;
-import static org.openzen.zenscript.validator.ValidationLogEntry.Code.*;
-import org.openzen.zenscript.validator.Validator;
+import org.openzen.zencode.shared.*;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.generic.*;
+import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.scope.*;
+import org.openzen.zenscript.codemodel.statement.*;
+import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.validator.*;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.validator.TypeContext;
+
+import java.util.*;
+import java.util.regex.*;
+
+import static org.openzen.zenscript.validator.ValidationLogEntry.Code.*;
 
 /**
  *
@@ -64,13 +54,15 @@ public class ValidationUtils {
 			
 			parameterNames.add(parameter.name);
 			typeValidator.validate(TypeContext.PARAMETER_TYPE, parameter.type);
-			
-			if (parameter.defaultValue != null) {
-				parameter.defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope(access)));
-				if (!parameter.defaultValue.type.equals(parameter.type)) {
-					target.logError(INVALID_TYPE, position, "default value does not match parameter type");
-				}
-			}
+            
+            final Expression defaultValue = parameter.defaultValue;
+            if (defaultValue != null) {
+				defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope(access)));
+                if(!defaultValue.type.equals(parameter.type) && !defaultValue.type
+                        .canCastImplicit(parameter.type)) {
+                    target.logError(INVALID_TYPE, position, "default value does not match parameter type");
+                }
+            }
 			
 			if (parameter.variadic) {
 				if (i != header.parameters.length - 1) {
