@@ -32,6 +32,7 @@ import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.*;
+import java.util.stream.*;
 
 
 /**
@@ -507,15 +508,13 @@ public class JavaNativeModule {
 			if(classFromType == null) {
 				//TODO REMOVE
 				logger.debug("Could not get class for type " + expandedType + " attempting to do stuff anyways");
-			} else if(!method.getParameterTypes()[0].isAssignableFrom(classFromType)) {
-                throw new IllegalArgumentException("Cannot add extension method " + method + " as its first parameter does not match the extended type.");
-            }
+			}
 
 
 			final ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
             if(methodAnnotation != null) {
+                checkExpandedType(classFromType, method);
                 String name = !methodAnnotation.value().isEmpty() ? methodAnnotation.value() : method.getName();
-
                 //TypeVariableContext context = new TypeVariableContext();
 
                 final Parameter[] parameters = getExpansionParameters(method);
@@ -530,6 +529,7 @@ public class JavaNativeModule {
             
             final ZenCodeType.Getter getterAnnotation = method.getAnnotation(ZenCodeType.Getter.class);
             if(getterAnnotation != null) {
+                checkExpandedType(classFromType, method);
 				TypeID type = loadStoredType(context, method.getAnnotatedReturnType());
                 int modifiers = getMethodModifiers(method) ^ Modifiers.STATIC;
                 final String name = getterAnnotation.value().isEmpty() ? translateGetterName(method.getName()) : getterAnnotation.value();
@@ -542,6 +542,7 @@ public class JavaNativeModule {
             
             final ZenCodeType.Caster casterAnnotation = method.getAnnotation(ZenCodeType.Caster.class);
             if(casterAnnotation != null) {
+                checkExpandedType(classFromType, method);
                 boolean implicit = casterAnnotation.implicit();
                 int modifiers = getMethodModifiers(method) ^ Modifiers.STATIC;
                 if (implicit) {
@@ -580,6 +581,15 @@ public class JavaNativeModule {
 
 		return expansion;
 	}
+	
+	private void checkExpandedType(Class<?> clsType, Method method) {
+        if(clsType == null){
+            return;
+        }
+        if(!method.getParameterTypes()[0].isAssignableFrom(clsType)) {
+            throw new IllegalArgumentException("Cannot add extension method " + method + " as its first parameter does not match the extended type.");
+        }
+    }
 
 	private Class<?> getClassFromType(TypeID type) {
 		if(type instanceof DefinitionTypeID) {
