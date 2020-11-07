@@ -36,6 +36,7 @@ public class JavaTypeInternalNameVisitor implements TypeVisitor<String> {
 				case USIZE: return "java/lang/Integer";
 				case FLOAT: return "java/lang/Float";
 				case DOUBLE: return "java/lang/Double";
+                case STRING: return "java/lang/String";
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}

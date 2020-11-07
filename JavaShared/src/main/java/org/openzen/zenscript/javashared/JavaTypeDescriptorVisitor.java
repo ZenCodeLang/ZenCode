@@ -42,6 +42,7 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 				case USIZE: return "I"; // special case: optional usize fits in an int where null = -1
 				case FLOAT: return "Ljava/lang/Float;";
 				case DOUBLE: return "Ljava/lang/Double;";
+				case STRING: return "Ljava/lang/String;";
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}
