@@ -4138,6 +4138,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				(FunctionTypeID)expression.value.type,
 				expression.functionType);
 
+		expression.value.accept(this);
 		javaWriter.newObject(wrapper.className);
 		javaWriter.dupX1();
 		javaWriter.swap();
@@ -4259,8 +4260,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				functionWriter.checkCast(rtype);
 			}
 			functionWriter.returnType(rtype);
-
-			functionWriter.ret();
 			functionWriter.end();
 		}
 
