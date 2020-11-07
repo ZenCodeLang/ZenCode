@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.scope.*;
 import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.member.*;
 import org.openzen.zenscript.validator.*;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 
@@ -42,7 +43,11 @@ public class ValidationUtils {
 	}
 	
 	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header, AccessScope access) {
-		TypeValidator typeValidator = new TypeValidator(target, position);
+	    validateHeader(target, position, header, access, new LocalMemberCache(target.registry, target.expansions));
+    }
+	
+	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header, AccessScope access, LocalMemberCache localMemberCache) {
+        TypeValidator typeValidator = new TypeValidator(target, position);
 		typeValidator.validate(TypeContext.RETURN_TYPE, header.getReturnType());
 
 		Set<String> parameterNames = new HashSet<>();
@@ -58,8 +63,8 @@ public class ValidationUtils {
             final Expression defaultValue = parameter.defaultValue;
             if (defaultValue != null) {
 				defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope(access)));
-                if(!defaultValue.type.equals(parameter.type) && !defaultValue.type
-                        .canCastImplicitTo(parameter.type)) {
+                typeValidator.validate(TypeContext.PARAMETER_TYPE, defaultValue.type);
+                if(!defaultValue.type.equals(parameter.type) && !localMemberCache.get(defaultValue.type).canCastImplicit(parameter.type)) {
                     target.logError(INVALID_TYPE, position, "default value does not match parameter type");
                 }
             }

@@ -115,7 +115,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 			}
 		}
 		constructors.add(member.header);
-		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope());
+		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope(), scope
+                .getMemberCache());
 		
 		if (member.body == null) {
 			if (!member.isExtern()) {
@@ -151,7 +152,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 	@Override
 	public Void visitMethod(MethodMember member) {
 		ValidationUtils.validateIdentifier(validator, member.position, member.name);
-		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope());
+		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope(), scope
+                .getMemberCache());
 		validateFunctional(member, new MethodStatementScope(member.header, member.getAccessScope()));
 		return null;
 	}
@@ -186,7 +188,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitOperator(OperatorMember member) {
-		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope());
+		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope(), scope
+                .getMemberCache());
 		validateFunctional(member, new MethodStatementScope(member.header, member.getAccessScope()));
 		return null;
 	}
@@ -212,7 +215,8 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitCaller(CallerMember member) {
-		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope());
+		ValidationUtils.validateHeader(validator, member.position, member.header, member.getAccessScope(), scope
+                .getMemberCache());
 		validateFunctional(member, new MethodStatementScope(member.header, member.getAccessScope()));
 		return null;
 	}
