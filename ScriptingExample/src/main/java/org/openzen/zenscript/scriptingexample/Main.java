@@ -27,10 +27,11 @@ public class Main {
         example.addClass(TimeSpan.class);
         example.addClass(TimeSpan.ExpandInt.class);
         example.addClass(ZCThread.class);
+        example.addClass(MyFunctionalInterfaceClass.class);
         
         scriptingEngine.registerNativeProvided(example);
         
-        File inputDirectory = new File("scripts");
+        File inputDirectory = new File("ScriptingExample/scripts");
         final SourceFile[] sourceFiles = Files.walk(inputDirectory.getAbsoluteFile().toPath())
                 .map(Path::toFile)
                 .filter(File::isFile)

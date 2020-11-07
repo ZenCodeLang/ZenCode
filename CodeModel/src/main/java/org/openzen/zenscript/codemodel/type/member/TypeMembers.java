@@ -249,10 +249,6 @@ public final class TypeMembers {
 		getOrCreateGroup(OperatorType.CALL).addMethod(caller, priority);
 	}
 	
-	public void addCaster(CasterMemberRef caster) throws CompileException {
-		addCaster(caster, TypeMemberPriority.SPECIFIED);
-	}
-	
 	public void addCaster(CasterMemberRef caster, TypeMemberPriority priority) {
 		for (int i = 0; i < casters.size(); i++) {
 			if (casters.get(i).member.toType == caster.toType)
@@ -265,10 +261,6 @@ public final class TypeMembers {
 	public void addConst(ConstMemberRef member) {
 		TypeMemberGroup group = getOrCreateGroup(member.member.name, true);
 		group.setConst(member, TypeMemberPriority.SPECIFIED);
-	}
-	
-	public void addField(FieldMemberRef member) {
-		addField(member, TypeMemberPriority.SPECIFIED);
 	}
 	
 	public void addField(FieldMemberRef member, TypeMemberPriority priority) {
@@ -423,7 +415,9 @@ public final class TypeMembers {
 			throw new IllegalArgumentException("Cannot cast to undetermined type!");
 		if (type == BasicTypeID.NULL && toType.isOptional())
 			return true;
-		if (type.canCastImplicit(toType))
+		if (type.canCastImplicitTo(toType))
+			return true;
+		if (toType.canCastImplicitFrom(type))
 			return true;
 		
 		if (toType.isOptional() && canCastImplicit(toType.withoutOptional()))
@@ -431,14 +425,12 @@ public final class TypeMembers {
 		if (type.isOptional() && type.withoutOptional() == toType)
 			return true;
    
-		if( getImplicitCaster(toType) != null || extendsOrImplements(toType))
+		if (getImplicitCaster(toType) != null || extendsOrImplements(toType))
 		    return true;
 
-		if(type.isGeneric() && type instanceof GenericTypeID) {
+		if (type.isGeneric() && type instanceof GenericTypeID) {
 			final GenericTypeID genericTypeID = (GenericTypeID) type;
-			if(genericTypeID.parameter.matches(cache, toType)) {
-				return true;
-			}
+			return genericTypeID.parameter.matches(cache, toType);
 		}
 
         return false;
@@ -468,7 +460,9 @@ public final class TypeMembers {
 		toType = toType.getNormalized();
 		if (canCastImplicit(toType))
 			return true;
-		if (type.canCastExplicit(toType))
+		if (type.canCastExplicitTo(toType))
+			return true;
+		if (toType.canCastImplicitFrom(type))
 			return true;
 		
 		for (TypeMember<CasterMemberRef> caster : casters) {
@@ -556,8 +550,10 @@ public final class TypeMembers {
 			return value;
 		if (type == toType)
 			return value;
-		if (type.canCastImplicit(toType))
-			return type.castImplicit(position, toType, value);
+		if (type.canCastImplicitTo(toType))
+			return type.castImplicitTo(position, value, toType);
+		if (toType.canCastImplicitFrom(type))
+			return toType.castImplicitFrom(position, value);
 
 		if (type == BasicTypeID.NULL && toType.isOptional())
 			return new NullExpression(position, toType);
@@ -584,8 +580,10 @@ public final class TypeMembers {
 		toType = toType.getNormalized();
 		if (this.canCastImplicit(toType))
 			return castImplicit(position, value, toType, false);
-		if (type.canCastExplicit(toType))
-			return type.castExplicit(position, toType, value);
+		if (type.canCastExplicitTo(toType))
+			return type.castExplicitTo(position, value, toType);
+		if (toType.canCastExplicitFrom(type))
+			return toType.castImplicitFrom(position, value);
 		
         final TypeMembers typeMembers = cache.get(type);
         if(this.type != typeMembers.type && typeMembers.canCast(toType)) {

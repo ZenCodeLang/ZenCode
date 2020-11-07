@@ -59,7 +59,7 @@ public class ValidationUtils {
             if (defaultValue != null) {
 				defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope(access)));
                 if(!defaultValue.type.equals(parameter.type) && !defaultValue.type
-                        .canCastImplicit(parameter.type)) {
+                        .canCastImplicitTo(parameter.type)) {
                     target.logError(INVALID_TYPE, position, "default value does not match parameter type");
                 }
             }

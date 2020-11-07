@@ -6,13 +6,14 @@ import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitorWithContext;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
 public class JavaFunctionInterfaceCastExpression extends Expression {
     public final Expression value;
-    public final JavaFunctionalInterfaceTypeID functionType;
+    public final FunctionTypeID functionType;
 
-    public JavaFunctionInterfaceCastExpression(CodePosition position, JavaFunctionalInterfaceTypeID type, Expression value) {
+    public JavaFunctionInterfaceCastExpression(CodePosition position, FunctionTypeID type, Expression value) {
         super(position, type, value.thrownType);
 
         this.value = value;

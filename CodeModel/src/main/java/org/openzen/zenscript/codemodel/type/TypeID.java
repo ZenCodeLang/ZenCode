@@ -92,11 +92,19 @@ public interface TypeID {
 		return false;
 	}
 
-	default boolean canCastImplicit(TypeID other) { return false; }
+	default boolean canCastImplicitTo(TypeID other) { return false; }
 
-	default boolean canCastExplicit(TypeID other) { return false; }
+	default boolean canCastExplicitTo(TypeID other) { return false; }
 
-	default Expression castImplicit(CodePosition position, TypeID other, Expression value) { return null; }
+	default boolean canCastImplicitFrom(TypeID other) { return false; }
 
-	default Expression castExplicit(CodePosition position, TypeID other, Expression value) { return null; }
+	default boolean canCastExplicitFrom(TypeID other) { return false; }
+
+	default Expression castImplicitTo(CodePosition position, Expression value, TypeID toType) { return null; }
+
+	default Expression castExplicitTo(CodePosition position, Expression value, TypeID toOther) { return null; }
+
+	default Expression castImplicitFrom(CodePosition position, Expression value) { return null; }
+
+	default Expression castExplicitFrom(CodePosition position, Expression value) { return null; }
 }

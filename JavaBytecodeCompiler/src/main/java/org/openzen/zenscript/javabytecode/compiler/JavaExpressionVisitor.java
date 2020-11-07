@@ -4,6 +4,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
@@ -4132,16 +4133,86 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 	
 	private void visitFunctionalInterfaceWrapping(JavaFunctionInterfaceCastExpression expression) {
-		final JavaFunctionalInterfaceTypeID type = expression.functionType;
-		final Method functionalInterfaceMethod = type.functionalInterfaceMethod;
+		final FunctionCastWrapperClass wrapper = generateFunctionCastWrapperClass(
+				expression.position,
+				(FunctionTypeID)expression.value.type,
+				expression.functionType);
 
-		final JavaMethod wrappedMethod = context.getFunctionalInterface(expression.value.type);
-		final String wrappedSignature = context.getDescriptor(expression.type);
+		javaWriter.newObject(wrapper.className);
+		javaWriter.dupX1();
+		javaWriter.swap();
+		javaWriter.invokeSpecial(wrapper.className, "<init>", wrapper.constructorDesc);
+	}
+
+	private static class FunctionCastWrapperClass {
+		final String className;
+		final String constructorDesc;
+
+		FunctionCastWrapperClass(String className, String constructorDesc) {
+			this.className = className;
+			this.constructorDesc = constructorDesc;
+		}
+	}
+
+	private FunctionCastWrapperClass generateFunctionCastWrapperClass(CodePosition position, FunctionTypeID fromType, FunctionTypeID toType) {
+		final String lambdaName = context.getLambdaCounter();
+		final JavaClass classInfo = new JavaClass("zsynthetic", lambdaName, JavaClass.Kind.CLASS);
+		final String className = "zsynthetic/" + lambdaName;
+
+		String[] interfaces;
+		String wrappedSignature;
+		String methodDescriptor;
+		Type[] methodParameterTypes;
+		JavaMethod implementationMethod;
+		if (toType instanceof JavaFunctionalInterfaceTypeID) {
+			JavaMethod javaMethod = ((JavaFunctionalInterfaceTypeID) toType).method;
+			implementationMethod = new JavaMethod(
+					classInfo,
+					JavaMethod.Kind.COMPILED,
+					javaMethod.name,
+					true,
+					javaMethod.descriptor,
+					javaMethod.modifiers & ~JavaModifiers.ABSTRACT,
+					javaMethod.genericResult,
+					javaMethod.typeParameterArguments);
+
+			final Method functionalInterfaceMethod = ((JavaFunctionalInterfaceTypeID) toType).functionalInterfaceMethod;
+
+			methodDescriptor = Type.getMethodDescriptor(functionalInterfaceMethod);
+			wrappedSignature = context.getDescriptor(toType);
+			interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
+
+			final Class<?>[] methodParameterClasses = functionalInterfaceMethod.getParameterTypes();
+			methodParameterTypes = new Type[methodParameterClasses.length];
+			for (int i = 0; i < methodParameterClasses.length; i++) {
+				final Class<?> methodParameterType = methodParameterClasses[i];
+				methodParameterTypes[i] = Type.getType(methodParameterType);
+			}
+		} else {
+			wrappedSignature = context.getMethodSignature(toType.header, true);
+			methodDescriptor = context.getMethodDescriptor(toType.header);
+			interfaces = new String[]{context.getInternalName(toType)};
+
+			JavaSynthesizedFunctionInstance function = context.getFunction(toType);
+
+			implementationMethod = new JavaMethod(
+					classInfo,
+					JavaMethod.Kind.COMPILED,
+					function.getMethod(),
+					true,
+					methodDescriptor,
+					JavaModifiers.PUBLIC,
+					false // TODO: generic result or not
+			);
+
+			methodParameterTypes = new Type[toType.header.parameters.length];
+			for (int i = 0; i < methodParameterTypes.length; i++) {
+				methodParameterTypes[i] = context.getType(toType.header.parameters[i].type);
+			}
+		}
+
+		final JavaMethod wrappedMethod = context.getFunctionalInterface(fromType);
 		final String constructorDesc = "(" + wrappedSignature + ")V";
-		
-		final String className = context.getLambdaCounter();
-		final String methodDescriptor = Type.getMethodDescriptor(functionalInterfaceMethod);
-		final String[] interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
 
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
@@ -4153,7 +4224,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		//Constructor
 		{
-			final JavaWriter constructorWriter = new JavaWriter(context.logger, expression.position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
+			final JavaWriter constructorWriter = new JavaWriter(context.logger, position, lambdaCW, JavaMethod.getConstructor(javaWriter.method.cls, constructorDesc, Opcodes.ACC_PUBLIC), null, null, null);
 			constructorWriter.start();
 			constructorWriter.loadObject(0);
 			constructorWriter.dup();
@@ -4168,16 +4239,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		//The actual method
 		{
-			final JavaMethod actualMethod = new JavaMethod(
-					type.method.cls,
-					type.method.kind,
-					type.method.name,
-					type.method.compile,
-					type.method.descriptor,
-					type.method.modifiers & ~JavaModifiers.ABSTRACT,
-					type.method.genericResult,
-					type.method.typeParameterArguments);
-			final JavaWriter functionWriter = new JavaWriter(context.logger, expression.position, lambdaCW, actualMethod, null, methodDescriptor, null, "java/lang/Override");
+			final JavaWriter functionWriter = new JavaWriter(context.logger, position, lambdaCW, implementationMethod, null, methodDescriptor, null, "java/lang/Override");
 			functionWriter.start();
 
 			//this.wrapped
@@ -4185,36 +4247,27 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			functionWriter.getField(className, "wrapped", wrappedSignature);
 
 			//Load all function parameters
-			{
-				final Class<?>[] methodParameterTypes = functionalInterfaceMethod.getParameterTypes();
-				for (int i = 0; i < methodParameterTypes.length; i++) {
-                    final Class<?> methodParameterType = methodParameterTypes[i];
-                    final Type ptype = Type.getType(methodParameterType);
-                    functionWriter.load(ptype, i + 1);
-				}
+			for (int i = 0; i < methodParameterTypes.length; i++) {
+				functionWriter.load(methodParameterTypes[i], i + 1);
 			}
 
 			//Invokes the wrapped interface's method and returns the result
 			functionWriter.invokeInterface(wrappedMethod);
-            final TypeID returnType = ((FunctionTypeID) expression.value.type).header.getReturnType();
-            final Type rtype = context.getType(returnType);
-            if(!CompilerUtils.isPrimitive(returnType)) {
-                functionWriter.checkCast(rtype);
-            }
-            functionWriter.returnType(rtype);
+			final TypeID returnType = fromType.header.getReturnType();
+			final Type rtype = context.getType(returnType);
+			if(!CompilerUtils.isPrimitive(returnType)) {
+				functionWriter.checkCast(rtype);
+			}
+			functionWriter.returnType(rtype);
 
 			functionWriter.ret();
 			functionWriter.end();
 		}
 
-
 		lambdaCW.visitEnd();
 		context.register(className, lambdaCW.toByteArray());
 
-		javaWriter.newObject(className);
-		javaWriter.dupX1();
-		javaWriter.swap();
-		javaWriter.invokeSpecial(className, "<init>", constructorDesc);
+		return new FunctionCastWrapperClass(className, constructorDesc);
 	}
 
 	@Override

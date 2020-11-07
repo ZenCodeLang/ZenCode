@@ -23,20 +23,32 @@ public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
     }
 
     @Override
-    public Expression castImplicit(CodePosition position, TypeID other, Expression value) {
-        if (other instanceof JavaFunctionalInterfaceTypeID) {
-            JavaFunctionalInterfaceTypeID otherType = (JavaFunctionalInterfaceTypeID)other;
-            if (header.isEquivalentTo(otherType.header))
-                return new JavaFunctionInterfaceCastExpression(position, otherType, value);
-
-            return null;
-        } else {
-            return null;
-        }
+    public boolean canCastImplicitTo(TypeID other) {
+        return other instanceof FunctionTypeID && ((FunctionTypeID) other).header.isEquivalentTo(header);
     }
 
     @Override
-    public Expression castExplicit(CodePosition position, TypeID other, Expression value) {
-        return this.castImplicit(position, other, value);
+    public boolean canCastImplicitFrom(TypeID other) {
+        return other instanceof FunctionTypeID && ((FunctionTypeID) other).header.isEquivalentTo(header);
+    }
+
+    @Override
+    public Expression castImplicitTo(CodePosition position, Expression value, TypeID other) {
+        if (other instanceof FunctionTypeID) {
+            FunctionTypeID otherType = (FunctionTypeID) other;
+            if (header.isEquivalentTo(otherType.header))
+                return new JavaFunctionInterfaceCastExpression(position, otherType, value);
+        }
+        return null;
+    }
+
+    @Override
+    public Expression castImplicitFrom(CodePosition position, Expression value) {
+        if (value.type instanceof FunctionTypeID) {
+            FunctionTypeID otherType = (FunctionTypeID) value.type;
+            if (header.isEquivalentTo(otherType.header))
+                return new JavaFunctionInterfaceCastExpression(position, this, value);
+        }
+        return null;
     }
 }
