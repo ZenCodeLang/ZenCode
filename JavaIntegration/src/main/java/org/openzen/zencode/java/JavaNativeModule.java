@@ -1017,10 +1017,15 @@ public class JavaNativeModule {
                     storedType = loadType(context, (AnnotatedElement) rawType, unsigned);
                 }
             } else {
-				if (((AnnotatedType) type).getType() instanceof WildcardType) {
+                final Type annotatedTypeType = ((AnnotatedType) type).getType();
+                if (annotatedTypeType instanceof WildcardType) {
 					storedType = BasicTypeID.UNDETERMINED;
-				} else {
-					storedType = loadType(context, (AnnotatedElement) ((AnnotatedType) type).getType(), unsigned);
+				} else if(annotatedTypeType instanceof GenericArrayType) {
+                    final Type genericComponentType = ((GenericArrayType) annotatedTypeType).getGenericComponentType();
+                    final TypeID baseType = loadType(context, (AnnotatedElement) genericComponentType, unsigned);
+                    storedType = registry.getArray(baseType, 1);
+                } else {
+					storedType = loadType(context, (AnnotatedElement) annotatedTypeType, unsigned);
 				}
             }
 
