@@ -35,9 +35,9 @@ public class JavaBytecodeModule extends JavaCompiledModule {
 			return;
 
 		if(name.startsWith("java")) {
-			logger.debug("Warning: Invalid name " + name);
+			logger.trace("Warning: Invalid name " + name);
 		} else if(classes.containsKey(name)) {
-			logger.error("Trying to register " + name + " a 2nd time");
+			logger.warning("Trying to register " + name + " a 2nd time");
 		} else {
 			classes.put(name, bytecode);
 		}

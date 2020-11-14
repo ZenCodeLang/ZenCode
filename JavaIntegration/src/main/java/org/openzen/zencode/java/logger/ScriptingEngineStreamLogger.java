@@ -7,17 +7,18 @@ import java.io.*;
 
 public class ScriptingEngineStreamLogger implements ScriptingEngineLogger {
     
-    private final PrintStream infoStream, debugStream, warningStream, errorStream;
+    private final PrintStream infoStream, debugStream, warningStream, errorStream, traceStream;
     
-    public ScriptingEngineStreamLogger(PrintStream debugStream, PrintStream infoStream, PrintStream warningStream, PrintStream errorStream) {
+    public ScriptingEngineStreamLogger(PrintStream traceStream, PrintStream debugStream, PrintStream infoStream, PrintStream warningStream, PrintStream errorStream){
         this.infoStream = infoStream;
         this.debugStream = debugStream;
         this.warningStream = warningStream;
         this.errorStream = errorStream;
+        this.traceStream = traceStream;
     }
     
     public ScriptingEngineStreamLogger(PrintStream normalStream, PrintStream errorStream) {
-        this(normalStream, normalStream, normalStream, errorStream);
+        this(normalStream, normalStream, normalStream, normalStream, errorStream);
     }
     
     public ScriptingEngineStreamLogger() {
@@ -59,6 +60,12 @@ public class ScriptingEngineStreamLogger implements ScriptingEngineLogger {
         warningStream.println("WARNING: " + message);
         throwable.printStackTrace(warningStream);
         warningStream.flush();
+    }
+    
+    @Override
+    public void trace(String message) {
+        traceStream.println("TRACE: " + message);
+        traceStream.flush();
     }
     
     @Override

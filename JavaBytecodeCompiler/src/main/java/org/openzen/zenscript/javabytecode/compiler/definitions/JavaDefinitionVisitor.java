@@ -133,7 +133,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 	@Override
 	public byte[] visitEnum(EnumDefinition definition) {
-		context.logger.debug("Compiling enum " + definition.name + " in " + definition.position.getFilename());
+		context.logger.trace("Compiling enum " + definition.name + " in " + definition.position.getFilename());
 
 		String superTypeInternalName = definition.getSuperType() == null ? "java/lang/Object" : context.getInternalName(definition.getSuperType());
 

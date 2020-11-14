@@ -52,7 +52,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 		if (definition.module != module.module)
 			throw new IllegalArgumentException("Definition is not in the same module as the current module!");
 		
-		context.logger.debug("~~ Preparing " + definition.name);
+		context.logger.trace("~~ Preparing " + definition.name);
 		definition.accept(this);
 	}
 	
@@ -152,7 +152,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	}
 	
 	private void visitClassMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass, boolean startsEmpty) {
-		context.logger.debug("Preparing " + cls.internalName);
+		context.logger.trace("Preparing " + cls.internalName);
 		JavaPrepareClassMethodVisitor methodVisitor = new JavaPrepareClassMethodVisitor(context, module, cls, nativeClass, this, startsEmpty);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);
@@ -161,7 +161,7 @@ public class JavaPrepareDefinitionMemberVisitor implements DefinitionVisitor<Jav
 	}
 	
 	private void visitExpansionMembers(HighLevelDefinition definition, JavaClass cls, JavaNativeClass nativeClass) {
-		context.logger.debug("Preparing " + cls.internalName);
+		context.logger.trace("Preparing " + cls.internalName);
 		JavaPrepareExpansionMethodVisitor methodVisitor = new JavaPrepareExpansionMethodVisitor(context, module, cls, nativeClass);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(methodVisitor);

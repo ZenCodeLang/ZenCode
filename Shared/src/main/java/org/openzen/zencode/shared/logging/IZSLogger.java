@@ -6,6 +6,8 @@ public interface IZSLogger {
     
     void debug(String message);
     
+    void trace(String message);
+    
     void warning(String message);
     
     void error(String message);

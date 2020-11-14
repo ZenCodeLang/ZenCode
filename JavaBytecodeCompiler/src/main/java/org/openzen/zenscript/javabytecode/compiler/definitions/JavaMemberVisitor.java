@@ -97,7 +97,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 		if (!member.isConstructorForwarded()) {
 			if (isEnum) {
-				context.logger.debug("Writing enum constructor");
+				context.logger.trace("Writing enum constructor");
 				constructorWriter.getVisitor().newLocal(Type.getType(String.class));
 				constructorWriter.getVisitor().newLocal(Type.getType(int.class));
 				constructorWriter.loadObject(0);
@@ -105,7 +105,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				constructorWriter.loadInt(2);
 				constructorWriter.invokeSpecial(Type.getInternalName(Enum.class), "<init>", "(Ljava/lang/String;I)V");
 			} else if (definition.getSuperType() == null) {
-				context.logger.debug("Writing regular constructor");
+				context.logger.trace("Writing regular constructor");
 				constructorWriter.loadObject(0);
 				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
 			}
