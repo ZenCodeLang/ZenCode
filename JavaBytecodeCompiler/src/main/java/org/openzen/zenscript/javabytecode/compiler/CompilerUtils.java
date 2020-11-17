@@ -75,7 +75,7 @@ public class CompilerUtils {
     }
 
     public static void tagConstructorParameters(JavaBytecodeContext context, JavaCompiledModule module, HighLevelDefinition definition, FunctionHeader header, boolean isEnum) {
-		int index = 1;
+		int index = isEnum ? 3 : 1;
 		for (TypeParameter typeParameter : definition.typeParameters) {
 			final JavaField field = new JavaField(context.getJavaClass(definition),
 					"typeOf" + typeParameter.name,

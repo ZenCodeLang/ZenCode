@@ -84,4 +84,19 @@ public class EnumMembers extends ZenCodeTest {
         logger.assertPrintOutputSize(1);
         logger.assertPrintOutput(0, "A");
     }
+    
+    @Test
+    public void complexEnumMembers() {
+        ScriptBuilder.create()
+                .add("public enum MyEnum {")
+                .add("    A('X1'), B('Y1'), C('Z1');")
+                .add("    public this(symbol as string) {this.symbol = symbol;}")
+                .add("    public var symbol as string;")
+                .add("}")
+                .add("println(MyEnum.A.symbol);")
+                .execute(this);
+        
+        logger.assertPrintOutputSize(1);
+        logger.assertPrintOutput(0, "X1");
+    }
 }
