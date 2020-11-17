@@ -87,4 +87,17 @@ public class AddingClasses extends ZenCodeTest {
         logger.assertPrintOutputSize(1);
         logger.assertPrintOutput(0, "Goodbye World");
     }
+    
+    @Test
+    public void staticMethodAccessibleWithoutInstance() {
+        ScriptBuilder.create()
+                .add("public class SomeClass {")
+                .add("    public static someMethod() as string => 'Hello World';")
+                .add("}")
+                .add("println(SomeClass.someMethod());")
+                .execute(this);
+        
+        logger.assertPrintOutputSize(1);
+        logger.assertPrintOutput(0, "Hello World");
+    }
 }

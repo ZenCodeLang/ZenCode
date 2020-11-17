@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.javashared;
 
-import org.openzen.zenscript.codemodel.Modifiers;
-
 /**
  *
  * @author Hoofdgebruiker
@@ -108,7 +106,7 @@ public class JavaMethod {
 	}
 	
 	public boolean isAbstract() {
-		return (modifiers & Modifiers.ABSTRACT) > 0;
+		return (modifiers & JavaModifiers.ABSTRACT) > 0;
 	}
 	
 	public enum Kind {
