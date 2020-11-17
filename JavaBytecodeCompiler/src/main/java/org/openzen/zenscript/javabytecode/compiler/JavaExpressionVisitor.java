@@ -1899,7 +1899,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.getStaticField(CHARACTER_MAX_VALUE);
 				break;
 			case ENUM_VALUES: {
-				DefinitionTypeID type = (DefinitionTypeID) expression.type;
+				DefinitionTypeID type = (DefinitionTypeID) ((ArrayTypeID) expression.type).elementType;
 				JavaClass cls = context.getJavaClass(type.definition);
 				javaWriter.invokeStatic(JavaMethod.getNativeStatic(cls, "values", "()[L" + cls.internalName + ";"));
 				break;
@@ -4115,7 +4115,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.getStaticField(CHARACTER_MAX_VALUE);
 				break;
 			case ENUM_VALUES: {
-				DefinitionTypeID type = (DefinitionTypeID) expression.type;
+				DefinitionTypeID type = (DefinitionTypeID) ((ArrayTypeID)expression.type).elementType;
 				JavaClass cls = context.getJavaClass(type.definition);
 				javaWriter.invokeStatic(JavaMethod.getNativeStatic(cls, "values", "()[L" + cls.internalName + ";"));
 				break;

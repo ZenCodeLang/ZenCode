@@ -8,10 +8,11 @@ package org.openzen.zenscript.codemodel.definition;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.scope.*;
+import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.member.*;
 
 /**
  *
@@ -42,8 +43,17 @@ public class EnumDefinition extends HighLevelDefinition {
 		for (EnumConstantMember member : enumConstants)
 			collector.enumConstant(member);
 	}
-	
-	public void addEnumConstant(EnumConstantMember constant) {
+    
+    @Override
+    public void normalize(TypeScope scope) {
+        if (members.stream().noneMatch(m -> m instanceof ConstructorMember)) {
+            ConstructorMember constructor = new ConstructorMember(position, this, Modifiers.PUBLIC | Modifiers.EXTERN, new FunctionHeader(BasicTypeID.VOID), BuiltinID.ENUM_EMPTY_CONSTRUCTOR);
+            addMember(constructor);
+        }
+        super.normalize(scope);
+    }
+    
+    public void addEnumConstant(EnumConstantMember constant) {
 		enumConstants.add(constant);
 	}
 }

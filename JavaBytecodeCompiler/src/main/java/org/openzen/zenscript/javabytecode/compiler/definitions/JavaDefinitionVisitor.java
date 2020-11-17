@@ -1,5 +1,6 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
+import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -13,8 +14,6 @@ import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
@@ -34,12 +33,8 @@ import java.util.List;
 
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
-	private final JavaMethod CLASS_FORNAME
-			= JavaMethod.getNativeStatic(JavaClass.CLASS, "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
 	private final JavaMethod ENUM_VALUEOF
 			= JavaMethod.getNativeStatic(JavaClass.CLASS, "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;");
-	private final JavaMethod ARRAY_CLONE
-			= JavaMethod.getNativeVirtual(JavaClass.ARRAYS, "clone", "()Ljava/lang/Object;");
 
 	private final JavaClassWriter outerWriter;
 	private final JavaBytecodeContext context;
@@ -135,12 +130,12 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	public byte[] visitEnum(EnumDefinition definition) {
 		context.logger.trace("Compiling enum " + definition.name + " in " + definition.position.getFilename());
 
-		String superTypeInternalName = definition.getSuperType() == null ? "java/lang/Object" : context.getInternalName(definition.getSuperType());
+		String superTypeInternalName = definition.getSuperType() == null ? "java/lang/Enum" : context.getInternalName(definition.getSuperType());
 
 		ClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
 		JavaClass toClass = context.getJavaClass(definition);
-		writer.visit(Opcodes.V1_8, Opcodes.ACC_ENUM | Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER | Opcodes.ACC_FINAL, toClass.internalName, "Ljava/lang/Enum<L" + toClass.internalName + ";>;", superTypeInternalName, null);
+		writer.visit(Opcodes.V1_8, Opcodes.ACC_ENUM | Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER | Opcodes.ACC_FINAL, toClass.internalName, null, superTypeInternalName, null);
 
 		//Enum Stuff(required!)
 		writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL | Opcodes.ACC_SYNTHETIC, "$VALUES", "[L" + toClass.internalName + ";", null, null).visitEnd();
@@ -149,12 +144,15 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
         for (IDefinitionMember member : definition.members) {
             member.accept(visitor);
         }
+        visitor.end();
 
 		JavaMethod valuesMethod = JavaMethod.getStatic(toClass, "values", "()[L" + toClass.internalName + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 		JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, true, valuesMethod, definition, null, null);
 		valuesWriter.start();
 		valuesWriter.getStaticField(toClass.internalName, "$VALUES", "[L" + toClass.internalName + ";");
-		valuesWriter.invokeVirtual(ARRAY_CLONE);
+		
+		final JavaMethod arrayClone = JavaMethod.getNativeVirtual(JavaClass.fromInternalName("[L" + toClass.internalName + ";", JavaClass.Kind.ARRAY), "clone", "()Ljava/lang/Object;");
+		valuesWriter.invokeVirtual(arrayClone);
 		valuesWriter.checkCast("[L" + toClass.internalName + ";");
 		valuesWriter.returnObject();
 		valuesWriter.end();
@@ -162,7 +160,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		JavaMethod valueOfMethod = JavaMethod.getStatic(toClass, "valueOf", "(Ljava/lang/String;)L" + toClass.internalName + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 		JavaWriter valueOfWriter = new JavaWriter(context.logger, definition.position, writer, true, valueOfMethod, definition, null, null);
 		valueOfWriter.start();
-		valueOfWriter.invokeStatic(CLASS_FORNAME);
+		valueOfWriter.constantClass(toClass);
 		valueOfWriter.loadObject(0);
 		valueOfWriter.invokeStatic(ENUM_VALUEOF);
 		valueOfWriter.checkCast(toClass.internalName);

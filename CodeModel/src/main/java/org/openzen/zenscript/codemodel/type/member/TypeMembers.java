@@ -621,6 +621,9 @@ public final class TypeMembers {
 			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID)type), name.arguments);
 		if (variantOptions.containsKey(name.name))
 			return new PartialVariantOptionExpression(position, scope, variantOptions.get(name.name));
+		if(enumMembers.containsKey(name.name)){
+		    return new EnumConstantExpression(position, type, enumMembers.get(name.name));
+        }
 		
 		return null;
 	}

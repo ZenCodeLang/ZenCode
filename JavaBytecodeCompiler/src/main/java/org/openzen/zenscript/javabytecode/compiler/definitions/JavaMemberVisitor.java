@@ -37,10 +37,14 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-        final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", 0, false), definition, null, null);
+        final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
         this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
         this.clinitStatementVisitor.start();
         CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
+        
+        if(definition instanceof EnumDefinition) {
+            this.enumDefinition = (EnumDefinition) definition;
+        }
     }
 
 	@Override
@@ -98,8 +102,6 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		if (!member.isConstructorForwarded()) {
 			if (isEnum) {
 				context.logger.trace("Writing enum constructor");
-				constructorWriter.getVisitor().newLocal(Type.getType(String.class));
-				constructorWriter.getVisitor().newLocal(Type.getType(int.class));
 				constructorWriter.loadObject(0);
 				constructorWriter.loadObject(1);
 				constructorWriter.loadInt(2);
@@ -347,8 +349,10 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	public void end() {
 
 		if (enumDefinition != null) {
+            JavaClass toClass = context.getJavaClass(enumDefinition);
+		    
 			for (EnumConstantMember constant : enumDefinition.enumConstants) {
-				writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_ENUM, constant.name, "L" + definition.name + ";", null, null).visitEnd();
+				writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_ENUM, constant.name, "L" + toClass.internalName + ";", null, null).visitEnd();
 				final String internalName = context.getInternalName(constant.constructor.type);
 				final JavaWriter clinitWriter = clinitStatementVisitor.getJavaWriter();
 				clinitWriter.newObject(internalName);
@@ -361,22 +365,20 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 
 				clinitWriter.invokeSpecial(internalName, "<init>", context.getEnumConstructorDescriptor(constant.constructor.constructor.getHeader()));
 				clinitWriter.putStaticField(internalName, constant.name, "L" + internalName + ";");
-
-				enumDefinition = (EnumDefinition) constant.definition;
 			}
 
 			final JavaWriter clinitWriter = clinitStatementVisitor.getJavaWriter();
 			final List<EnumConstantMember> enumConstants = enumDefinition.enumConstants;
 			clinitWriter.constant(enumConstants.size());
-			clinitWriter.newArray(Type.getType("L" + definition.name + ";"));
+			clinitWriter.newArray(Type.getType("L" + toClass.internalName + ";"));
 
 			for (EnumConstantMember enumConstant : enumConstants) {
 				clinitWriter.dup();
 				clinitWriter.constant(enumConstant.ordinal);
-				clinitWriter.getStaticField(definition.name, enumConstant.name, "L" + definition.name + ";");
-				clinitWriter.arrayStore(Type.getType("L" + definition.name + ";"));
+				clinitWriter.getStaticField(toClass.internalName, enumConstant.name, "L" + toClass.internalName + ";");
+				clinitWriter.arrayStore(Type.getType("L" + toClass.internalName + ";"));
 			}
-			clinitWriter.putStaticField(definition.name, "$VALUES", "[L" + definition.name + ";");
+			clinitWriter.putStaticField(toClass.internalName, "$VALUES", "[L" + toClass.internalName + ";");
 		}
 
 
