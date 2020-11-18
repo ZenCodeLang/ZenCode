@@ -380,6 +380,8 @@ public final class TypeMembers {
 					return equal.call(position, scope, left, new CallArguments(right), false);
 				}
 			}
+			final Expression compare = compare(position, scope, CompareType.EQ, left, right);
+			return scope.getTypeMembers(compare.type).unary(position, scope, OperatorType.NOT, compare);
 		}
 		
 		TypeMemberGroup compare = getOrCreateGroup(OperatorType.COMPARE);

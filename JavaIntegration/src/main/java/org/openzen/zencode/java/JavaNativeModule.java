@@ -20,7 +20,7 @@ import org.openzen.zenscript.codemodel.scope.*;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.*;
 import org.openzen.zenscript.javashared.*;
-import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
+import org.openzen.zenscript.javashared.types.*;
 import org.openzen.zenscript.lexer.*;
 import org.openzen.zenscript.parser.*;
 import org.openzen.zenscript.parser.expression.*;
@@ -32,7 +32,6 @@ import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.*;
-import java.util.stream.*;
 
 
 /**

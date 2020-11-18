@@ -103,16 +103,6 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			for (IDefinitionMember member : expansion.members)
 				member.registerTo(members, TypeMemberPriority.SPECIFIED, mapper);
 		}
-		
-		if (members.hasOperator(OperatorType.EQUALS)) {
-			TypeMemberGroup group = members.getOrCreateGroup(OperatorType.EQUALS);
-			TypeMemberGroup inverse = members.getOrCreateGroup(OperatorType.NOTEQUALS);
-			for (TypeMember<FunctionalMemberRef> method : group.getMethodMembers()) {
-				if (!inverse.hasMethod(method.member.getHeader())) {
-					notequals(definition, BuiltinID.AUTOOP_NOTEQUALS, method.member.getHeader().parameters[0].type);
-				}
-			}
-		}
 	}
 	
 	private Map<TypeParameter, TypeID> matchType(TypeID type, TypeID pattern) {
