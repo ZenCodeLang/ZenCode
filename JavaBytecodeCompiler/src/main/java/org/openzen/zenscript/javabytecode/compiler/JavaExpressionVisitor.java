@@ -1201,9 +1201,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case FUNCTION_CALL:
 				javaWriter.invokeInterface(context.getFunctionalInterface(expression.target.type));
 				break;
-			case AUTOOP_NOTEQUALS:
-				throw new UnsupportedOperationException("Not yet supported!");
-
 			default:
 				throw new UnsupportedOperationException("Unknown builtin: " + builtin);
 		}
