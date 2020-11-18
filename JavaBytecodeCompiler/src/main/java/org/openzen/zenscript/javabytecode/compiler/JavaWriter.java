@@ -1,21 +1,15 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.*;
-import org.objectweb.asm.commons.LocalVariablesSorter;
-import org.openzen.zencode.shared.CodePosition;
+import org.objectweb.asm.commons.*;
+import org.openzen.zencode.shared.*;
 import org.openzen.zencode.shared.logging.*;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.statement.VariableID;
-import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaParameterInfo;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.statement.*;
+import org.openzen.zenscript.javabytecode.*;
+import org.openzen.zenscript.javashared.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -509,14 +503,21 @@ public class JavaWriter {
 		visitor.visitInsn(ICONST_M1);
 		visitor.visitInsn(IXOR);
 	}
-	
-	public void iXorVs1() {
-		if (debug)
-			logger.debug("iXor against '1'");
-		
-		visitor.visitInsn(ICONST_1);
-		visitor.visitInsn(IXOR);
-	}
+    
+    public void invertBoolean() {
+        if(debug)
+            logger.debug("invert bool");
+        
+        final Label l1 = new Label();
+        final Label l2 = new Label();
+        
+        ifEQ(l1);
+        iConst0();
+        goTo(l2);
+        label(l1);
+        iConst1();
+        label(l2);
+    }
 	
 	public void iShr() {
 		if (debug)
