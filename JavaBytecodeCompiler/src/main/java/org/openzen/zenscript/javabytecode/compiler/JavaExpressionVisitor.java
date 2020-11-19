@@ -2566,6 +2566,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		}
 
 		javaWriter.label(end);
+		if(!CompilerUtils.isPrimitive(expression.type)) {
+            javaWriter.checkCast(context.getType(expression.type));
+        }
 		return null;
 	}
 
