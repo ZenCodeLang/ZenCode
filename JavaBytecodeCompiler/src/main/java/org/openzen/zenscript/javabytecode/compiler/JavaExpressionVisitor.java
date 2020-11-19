@@ -2810,7 +2810,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.newObject("java/lang/AssertionError");
 		javaWriter.dup();
 		expression.value.accept(this);
-		javaWriter.invokeSpecial(AssertionError.class, "<init>", "(Ljava/lang/String;)V");
+		javaWriter.invokeSpecial(AssertionError.class, "<init>", "(Ljava/lang/Object;)V");
 		javaWriter.aThrow();
 		return null;
 	}

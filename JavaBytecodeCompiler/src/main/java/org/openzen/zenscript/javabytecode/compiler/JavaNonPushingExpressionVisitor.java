@@ -559,7 +559,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		javaWriter.newObject("java/lang/AssertionError");
 		javaWriter.dup();
 		expression.value.accept(original);
-		javaWriter.invokeSpecial(AssertionError.class, "<init>", "(Ljava/lang/String;)V");
+		javaWriter.invokeSpecial(AssertionError.class, "<init>", "(Ljava/lang/Object;)V");
 		javaWriter.aThrow();
 		return null;
 	}
