@@ -12,6 +12,9 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javabytecode.compiler.*;
 
 import java.util.ArrayList;
@@ -110,7 +113,14 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				context.logger.trace("Writing regular constructor");
 				constructorWriter.loadObject(0);
 				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
-			}
+			} else if(member.builtin == BuiltinID.CLASS_DEFAULT_CONSTRUCTOR){ //Inherited classes needs to call super()
+                final HighLevelDefinition superType = ((DefinitionTypeID)definition.getSuperType()).definition;
+                if(!superType.hasEmptyConstructor()) {
+                    throw new IllegalStateException("Cannot implicitly create supertype with no empty constructor");
+                }
+                constructorWriter.loadObject(0);
+                constructorWriter.invokeSpecial(context.getJavaClass(superType).internalName, "<init>", "()V");
+            }
         }
     
         for(IDefinitionMember membersOfSameType : member.definition.members) {
