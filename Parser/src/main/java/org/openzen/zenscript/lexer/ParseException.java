@@ -12,4 +12,11 @@ public class ParseException extends Exception {
 		this.position = position;
 		this.message = message;
 	}
+	
+	public ParseException(CodePosition position, String message, Throwable cause) {
+		super(position + ": " + message, cause);
+		
+		this.position = position;
+		this.message = message;
+	}
 }
