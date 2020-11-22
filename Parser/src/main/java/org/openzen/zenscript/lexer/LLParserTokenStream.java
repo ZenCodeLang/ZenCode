@@ -115,10 +115,21 @@ public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> exte
 			next();
 	}
 
-	public void recoverUntilToken(ZSTokenType type) throws ParseException {
+    /**
+     * Moves further until peek type is provided type
+     */
+	public void recoverUntilBeforeToken(ZSTokenType type) throws ParseException {
 		while (peek().getType() != type && peek().getType() != getEOF())
 			next();
 	}
+
+    /**
+     * Moves further until pointer is standing on the given type
+     */
+	public void recoverUntilOnToken(ZSTokenType type) throws ParseException {
+	    recoverUntilBeforeToken(type);
+	    next();
+    }
 	
 	private class PositionedToken {
 		public final CodePosition position;

@@ -229,8 +229,7 @@ public class ParsedFile {
                         result.statements.add(ParsedStatement.parse(tokens, annotations));
                     }catch (ParseException e) {
 				        tokens.logError(e);
-				        tokens.recoverUntilToken(ZSTokenType.T_SEMICOLON);
-				        tokens.next();
+				        tokens.recoverUntilOnToken(ZSTokenType.T_SEMICOLON);
                     }
 				} else {
 					result.definitions.add(definition);

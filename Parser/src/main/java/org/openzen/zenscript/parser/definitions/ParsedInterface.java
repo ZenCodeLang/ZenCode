@@ -54,7 +54,7 @@ public class ParsedInterface extends BaseParsedDefinition {
 				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
 			}
 		} catch (ParseException ex) {
-			tokens.recoverUntilToken(ZSTokenType.T_ACLOSE);
+			tokens.recoverUntilOnToken(ZSTokenType.T_ACLOSE);
 		}
 		return result;
 	}
