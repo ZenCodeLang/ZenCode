@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -28,9 +23,6 @@ import org.openzen.zenscript.parser.expression.ParsedExpressionString;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author Hoofdgebruiker and kindlich
- */
 public class EscapableBracketParser implements BracketExpressionParser {
     private final FunctionalMemberRef method;
     private final TypeID targetType;

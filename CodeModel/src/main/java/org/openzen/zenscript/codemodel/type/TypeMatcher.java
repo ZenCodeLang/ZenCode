@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.HashMap;
@@ -10,10 +5,6 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching, Boolean, RuntimeException> {
 	public static Map<TypeParameter, TypeID> match(LocalMemberCache cache, TypeID type, TypeID pattern) {
 		Matching matching = new Matching(cache, type);

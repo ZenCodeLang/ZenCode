@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.context;
 
 import java.util.HashMap;
@@ -16,10 +11,6 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ModuleTypeResolutionContext implements TypeResolutionContext {
 	private final GlobalTypeRegistry registry;
 	private final Map<String, AnnotationDefinition> annotations = new HashMap<>();

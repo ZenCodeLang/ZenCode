@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser;
 
 import org.openzen.zenscript.lexer.ParseException;
@@ -35,10 +30,6 @@ import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.annotations.ParameterAnnotation;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedAnnotation {
 	public static final ParsedAnnotation[] NONE = new ParsedAnnotation[0];
 	
@@ -74,7 +65,7 @@ public class ParsedAnnotation {
 				parser.recoverUntilTokenOrNewline(ZSTokenType.T_SQCLOSE);
 			}
 		}
-		return results.toArray(new ParsedAnnotation[results.size()]);
+		return results.toArray(NONE);
 	}
 	
 	public static MemberAnnotation[] compileForMember(ParsedAnnotation[] annotations, IDefinitionMember member, BaseScope scope) {

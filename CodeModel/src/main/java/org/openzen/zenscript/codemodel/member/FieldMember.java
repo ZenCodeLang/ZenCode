@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -26,10 +21,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class FieldMember extends PropertyMember {
 	public final String name;
 	public Expression initializer;

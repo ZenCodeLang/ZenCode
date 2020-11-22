@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
@@ -12,10 +7,6 @@ import java.util.Map;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class PackageDefinitions {
 	private final List<HighLevelDefinition> definitions = new ArrayList<>();
 	private final Map<String, HighLevelDefinition> definitionsByName = new HashMap<>();

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.generic;
 
 import java.util.*;
@@ -12,10 +7,6 @@ import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class TypeParameter extends Taggable {
 	public static final TypeParameter[] NONE = new TypeParameter[0];
 	

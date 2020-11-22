@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser;
 
 import java.io.BufferedInputStream;
@@ -26,10 +21,6 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.logger.*;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ZippedPackage {
 	private Map<String, List<SourceFile>> files = new HashMap<>();
 	
@@ -56,10 +47,6 @@ public class ZippedPackage {
 				entry = zipInput.getNextEntry();
 			}
 		}
-	}
-	
-	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, FunctionParameter[] scriptParameters, ParserLogger logger) throws ParseException {
-		return loadModule(space, name, bracketParser, dependencies, scriptParameters, new ZSPackage(space.rootPackage, name), logger);
 	}
 	
 	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, FunctionParameter[] scriptParameters, ZSPackage pkg, ParserLogger logger) throws ParseException {

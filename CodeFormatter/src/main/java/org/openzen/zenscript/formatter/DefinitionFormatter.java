@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.formatter;
 
 import java.util.List;
@@ -19,10 +14,6 @@ import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class DefinitionFormatter implements DefinitionVisitor<Void> {
 	private final ScriptFormattingSettings settings;
 	private final TypeFormatter typeFormatter;

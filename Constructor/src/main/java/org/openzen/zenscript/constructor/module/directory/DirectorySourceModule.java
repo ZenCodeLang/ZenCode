@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.constructor.module.directory;
 
 import java.io.File;
@@ -29,10 +24,6 @@ import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.module.SourceModule;
 import org.openzen.zenscript.constructor.module.SourcePackage;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class DirectorySourceModule implements SourceModule {
 	private final String moduleName;
 	private final boolean isStdLib;
@@ -87,7 +78,7 @@ public class DirectorySourceModule implements SourceModule {
 			}
 		}
 		// TODO: annotation type registration
-		ModuleSpace space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
+		ModuleSpace space = new ModuleSpace(registry, new ArrayList<>());
 		SemanticModule[] dependencies = new SemanticModule[dependencyNames.size()];
 		for (int i = 0; i < dependencies.length; i++) {
 			String dependencyName = dependencyNames.get(i);
@@ -113,15 +104,13 @@ public class DirectorySourceModule implements SourceModule {
 		Map<String, ISymbol> result = new HashMap<>();
 		for (String key : jsonGlobals.keySet()) {
 			JSONObject global = jsonGlobals.getJSONObject(key);
-			switch (global.getString("type")) {
-				case "Definition":
-					HighLevelDefinition definition = module.definitions.getDefinition(global.getString("definition"));
-					if (definition == null)
-						throw new ConstructorException("No such definition: " + global.getString("definition"));
-					result.put(key, new TypeSymbol(definition));
-					break;
-				default:
-					throw new ConstructorException("Invalid global type: " + global.getString("type"));
+			if ("Definition".equals(global.getString("type"))) {
+				HighLevelDefinition definition = module.definitions.getDefinition(global.getString("definition"));
+				if (definition == null)
+					throw new ConstructorException("No such definition: " + global.getString("definition"));
+				result.put(key, new TypeSymbol(definition));
+			} else {
+				throw new ConstructorException("Invalid global type: " + global.getString("type"));
 			}
 		}
 		return result;

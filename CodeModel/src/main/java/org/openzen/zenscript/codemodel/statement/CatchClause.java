@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -10,10 +5,6 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class CatchClause {
 	public final CodePosition position;
 	public final Statement content;

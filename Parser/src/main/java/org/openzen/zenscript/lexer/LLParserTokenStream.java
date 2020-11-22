@@ -1,18 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.lexer;
 
 import java.util.LinkedList;
 import java.util.Stack;
 import org.openzen.zencode.shared.CodePosition;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class LLParserTokenStream<TT extends TokenType, T extends Token<TT>> extends WhitespaceFilteringParser<TT, T> {
     private final LinkedList<PositionedToken> tokenMemory = new LinkedList<>();
     private final Stack<Integer> marks = new Stack<>();

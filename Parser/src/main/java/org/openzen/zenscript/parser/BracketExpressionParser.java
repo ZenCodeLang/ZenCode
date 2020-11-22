@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -10,10 +5,6 @@ import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public interface BracketExpressionParser {
 	/**
 	 * Parses the given bracket expression. Note that the "&lt;" token is already

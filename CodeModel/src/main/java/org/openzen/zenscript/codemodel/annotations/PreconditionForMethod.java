@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.annotations;
 
 import java.util.ArrayList;
@@ -29,10 +24,6 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class PreconditionForMethod implements MemberAnnotation {
 	private final CodePosition position;
 	private final String enforcement;

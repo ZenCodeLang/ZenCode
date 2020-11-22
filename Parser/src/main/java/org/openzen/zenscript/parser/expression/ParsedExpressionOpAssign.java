@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -16,10 +10,6 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 
-/**
- *
- * @author Stanneke
- */
 public class ParsedExpressionOpAssign extends ParsedExpression {
 	private final ParsedExpression left;
 	private final ParsedExpression right;

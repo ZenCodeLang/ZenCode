@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.type.member;
 
 import java.util.Collections;
@@ -72,10 +67,6 @@ import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, RuntimeException> {
 	private final GlobalTypeRegistry registry;
 	private final TypeMembers members;

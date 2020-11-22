@@ -2,8 +2,6 @@ package org.openzen.zenscript.codemodel;
 
 /**
  * Enum used to indicate operator type.
- * 
- * @author Stan Hebben
  */
 public enum OperatorType {
 	ADD("+", "add"),

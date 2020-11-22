@@ -18,3 +18,7 @@ task mergedJavadoc(type: Javadoc, description: 'Creates Javadoc from all the pro
         subprojects*.configurations*.compile*.copyRecursive({ !(it instanceof ProjectDependency); })*.resolve()
     }
 }
+
+dependencies {
+    implementation 'org.jetbrains:annotations:15.0'
+}

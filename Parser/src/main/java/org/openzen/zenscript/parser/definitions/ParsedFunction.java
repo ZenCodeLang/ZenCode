@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -24,10 +18,6 @@ import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 
-/**
- *
- * @author Stanneke
- */
 public class ParsedFunction extends ParsedDefinition {
 	public static ParsedFunction parseFunction(
 			CompilingPackage pkg,

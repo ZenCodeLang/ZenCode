@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.compiler;
 
 import java.util.HashMap;
@@ -21,10 +16,6 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class CompileScope implements TypeScope {
 	private final GlobalTypeRegistry globalRegistry;
 	private final List<ExpansionDefinition> expansions;

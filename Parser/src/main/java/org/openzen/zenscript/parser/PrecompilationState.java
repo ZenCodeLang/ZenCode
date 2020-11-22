@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser;
 
 import java.util.HashMap;
@@ -15,10 +10,6 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class PrecompilationState implements TypeMemberPreparer {
 	private final Map<IDefinitionMember, CompilableMember> members = new HashMap<>();
 	private final Set<ParsedDefinitionMember> compilingMembers = new HashSet<>();

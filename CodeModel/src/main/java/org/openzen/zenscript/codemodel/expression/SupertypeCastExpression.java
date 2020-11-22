@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -11,8 +6,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
  * Using to cast a class type to a base type.
- * 
- * @author Hoofdgebruiker
  */
 public class SupertypeCastExpression extends Expression {
 	public final Expression value;

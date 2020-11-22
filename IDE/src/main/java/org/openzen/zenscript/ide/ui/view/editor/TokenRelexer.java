@@ -1,11 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.ide.ui.view.editor;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.openzen.zencode.shared.SourceFile;
@@ -16,21 +10,16 @@ import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class TokenRelexer {
 	private final List<TokenLine> lines;
 	private final SourceFile file;
 	private final int toLine;
 	private final int toToken;
-	private final int spacesPerTab;
 	
 	private int lineIndex;
 	private int token;
 	
-	public TokenRelexer(SourceFile file, List<TokenLine> lines, int fromLine, int fromToken, int toLine, int toToken, int spacesPerTab) {
+	public TokenRelexer(SourceFile file, List<TokenLine> lines, int fromLine, int fromToken, int toLine, int toToken) {
 		if (fromToken < 0 || toToken < 0)
 			throw new IllegalArgumentException("fromToken or toToken cannot be < 0");
 		
@@ -41,12 +30,11 @@ public class TokenRelexer {
 		
 		this.lineIndex = fromLine;
 		this.token = fromToken;
-		this.spacesPerTab = spacesPerTab;
 	}
 	
 	public List<ZSToken> relex() throws ParseException {
 		RelexCharReader reader = new RelexCharReader();
-		TokenParser<ZSToken, ZSTokenType> reparser = ZSTokenParser.createRaw(file, reader, spacesPerTab);
+		TokenParser<ZSToken, ZSTokenType> reparser = ZSTokenParser.createRaw(file, reader);
 		List<ZSToken> result = new ArrayList<>();
 		while ((lineIndex < toLine || token < toToken || !reader.isAtTokenBoundary()) && reparser.hasNext())
 			result.add(reparser.next());
@@ -94,12 +82,12 @@ public class TokenRelexer {
 		}
 
 		@Override
-		public int peek() throws IOException {
+		public int peek() {
 			return token == null ? -1 : token.charAt(tokenOffset);
 		}
 
 		@Override
-		public int next() throws IOException {
+		public int next() {
 			int result = peek();
 			tokenOffset++;
 			if (tokenOffset == token.length()) {

@@ -1,4 +1,3 @@
-/* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -12,7 +11,6 @@ import java.io.IOException;
  *
  * Token classes with a negative class are considered to be whitespace.
  *
- * @author Stan Hebben
  * @param <T> token class
  * @param <TT> token type class
  */

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.statements;
 
 import java.util.ArrayList;
@@ -16,10 +11,6 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedSwitchCase {
 	public final ParsedExpression value; // null for default
 	public final List<ParsedStatement> statements = new ArrayList<>();

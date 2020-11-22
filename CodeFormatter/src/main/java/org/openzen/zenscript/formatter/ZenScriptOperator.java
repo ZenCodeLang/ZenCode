@@ -1,17 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.formatter;
 
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.formattershared.FormattableOperator;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public enum ZenScriptOperator implements FormattableOperator {
 	ADD(6, " + "),
 	SUB(6, " - "),

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.type.member;
 
 import java.util.ArrayList;
@@ -13,10 +8,6 @@ import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class LocalMemberCache {
 	private final GlobalTypeRegistry registry;
 	private final Map<TypeID, TypeMembers> types = new HashMap<>();

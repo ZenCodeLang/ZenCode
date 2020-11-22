@@ -1,16 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.formattershared;
 
 import stdlib.Chars;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class FormattingSettings {
 	public final boolean useTabs; // use tabs instead of spaces
 	public final int spacesPerTab; // number of spaces per tab

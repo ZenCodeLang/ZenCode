@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.expression;
 
 import java.util.*;
@@ -27,10 +22,6 @@ import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.type.IParsedType;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedCallArguments {
 	public static final ParsedCallArguments NONE = new ParsedCallArguments(null, Collections.emptyList());
 	

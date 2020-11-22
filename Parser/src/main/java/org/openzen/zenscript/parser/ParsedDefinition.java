@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -24,10 +19,6 @@ import org.openzen.zenscript.parser.definitions.ParsedInterface;
 import org.openzen.zenscript.parser.definitions.ParsedStruct;
 import org.openzen.zenscript.parser.definitions.ParsedVariant;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public abstract class ParsedDefinition {
 	public static ParsedDefinition parse(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) throws ParseException {
 		if (tokens.optional(K_CLASS) != null) {

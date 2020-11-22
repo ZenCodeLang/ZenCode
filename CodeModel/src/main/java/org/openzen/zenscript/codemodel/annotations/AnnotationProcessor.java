@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.annotations;
 
 import java.util.ArrayList;
@@ -42,10 +37,6 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class AnnotationProcessor implements ModuleProcessor {
 	private final TypeResolutionContext context;
 	private final List<ExpansionDefinition> expansions;

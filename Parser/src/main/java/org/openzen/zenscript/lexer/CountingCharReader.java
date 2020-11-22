@@ -4,16 +4,6 @@ import java.io.IOException;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author Hoofdgebruiker
- */
 public class CountingCharReader implements CharReader {
 	private final CharReader reader;
 	private final SourceFile file;

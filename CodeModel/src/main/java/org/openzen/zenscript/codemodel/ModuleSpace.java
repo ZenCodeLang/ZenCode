@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
@@ -20,10 +15,6 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public final class ModuleSpace {
 	public final ZSPackage rootPackage = new ZSPackage(null, "");
 	public final GlobalTypeRegistry registry;

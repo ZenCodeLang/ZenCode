@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -49,10 +44,6 @@ import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.EOF;
 import static org.openzen.zenscript.lexer.ZSTokenType.K_IMPORT;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedFile {
 	public static SemanticModule compileSyntaxToSemantic(
 			SemanticModule[] dependencies,
@@ -169,7 +160,7 @@ public class ParsedFile {
 	
 	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, SourceFile file) throws ParseException {
 		try {
-			ZSTokenParser tokens = ZSTokenParser.create(file, bracketParser, 4);
+			ZSTokenParser tokens = ZSTokenParser.create(file, bracketParser);
 			return parse(compilingPackage, tokens);
 		} catch (IOException ex) {
 			throw new ParseException(new CodePosition(file, 0, 0, 0, 0), ex.getMessage());

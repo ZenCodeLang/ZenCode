@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -13,10 +8,6 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class GetterMemberRef extends PropertyRef {
 	public final GetterMember member;
 	

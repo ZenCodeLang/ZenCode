@@ -19,7 +19,6 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public abstract class ParsedStatement {
 	public static ParsedFunctionBody parseLambdaBody(ZSTokenParser tokens, boolean inExpression) throws ParseException {
 		CodePosition position = tokens.getPosition();
-		ZSToken start = tokens.peek();
 		if (tokens.optional(T_AOPEN) != null) {
 			List<ParsedStatement> statements = new ArrayList<>();
 			while (tokens.optional(T_ACLOSE) == null)
@@ -50,9 +49,8 @@ public abstract class ParsedStatement {
 		parser.skipWhitespaceNewline();
 
 		ArrayList<ParsedStatement> statements = new ArrayList<>();
-		ZSToken last;
 		boolean firstContent = true;
-		while ((last = parser.optional(T_ACLOSE)) == null) {
+		while (parser.optional(T_ACLOSE) == null) {
 			statements.add(parse(parser, annotations, firstContent));
 			firstContent = false;
 		}

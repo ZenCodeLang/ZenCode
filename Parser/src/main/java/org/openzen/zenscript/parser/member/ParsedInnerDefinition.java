@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.member;
 
 import java.util.Map;
@@ -15,10 +10,6 @@ import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.PrecompilationState;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedInnerDefinition extends ParsedDefinitionMember {
 	private final ParsedDefinition innerDefinition;
 	private final InnerDefinitionMember member;

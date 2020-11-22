@@ -1,4 +1,3 @@
-/* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
 
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.util.Map;
  * A compiled DFA can be converted to a compact integer array. This array can
  * then be hardcoded in an application.
  *
- * @author Stan Hebben
  * @param <T> final type
  */
 public class CompiledDFA<T>

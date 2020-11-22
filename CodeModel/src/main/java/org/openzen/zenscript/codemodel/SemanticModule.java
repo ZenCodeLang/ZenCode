@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel;
 
 import java.util.ArrayList;
@@ -21,10 +16,6 @@ import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class SemanticModule {
 	public static final SemanticModule[] NONE = new SemanticModule[0];
 	

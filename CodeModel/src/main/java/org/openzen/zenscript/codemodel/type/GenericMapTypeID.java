@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.List;
@@ -12,10 +7,6 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class GenericMapTypeID implements TypeID {
 	public final TypeID value;
 	public final TypeParameter key;

@@ -1,16 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.type.member;
 
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class TypeMember<T extends DefinitionMemberRef> {
 	public final TypeMemberPriority priority;
 	public final T member;
