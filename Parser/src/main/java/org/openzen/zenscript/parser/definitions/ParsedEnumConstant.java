@@ -31,7 +31,7 @@ public class ParsedEnumConstant {
 				tokens.required(ZSTokenType.T_BRCLOSE, ") expected");
 			} catch (ParseException ex) {
 				tokens.logError(ex);
-				tokens.recoverUntilToken(ZSTokenType.T_BRCLOSE);
+				tokens.recoverUntilOnToken(ZSTokenType.T_BRCLOSE);
 			}
 		}
 		

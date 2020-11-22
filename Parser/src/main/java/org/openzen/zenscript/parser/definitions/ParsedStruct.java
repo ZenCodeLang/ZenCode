@@ -32,7 +32,7 @@ public class ParsedStruct extends BaseParsedDefinition {
 			}
 		} catch (ParseException ex) {
 			tokens.logError(ex);
-			tokens.recoverUntilToken(ZSTokenType.T_ACLOSE);
+			tokens.recoverUntilOnToken(ZSTokenType.T_ACLOSE);
 		}
 		return result;
 	}

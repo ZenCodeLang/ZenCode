@@ -40,7 +40,7 @@ public class ParsedCallArguments {
 			}
 		} catch (ParseException ex) {
 			tokens.logError(ex);
-			tokens.recoverUntilToken(ZSTokenType.T_BRCLOSE);
+			tokens.recoverUntilOnToken(ZSTokenType.T_BRCLOSE);
 		}
 		
 		return new ParsedCallArguments(typeArguments, arguments);
@@ -61,7 +61,7 @@ public class ParsedCallArguments {
 				}
 			} catch (ParseException ex) {
 				tokens.logError(ex);
-				tokens.recoverUntilToken(ZSTokenType.T_BRCLOSE);
+				tokens.recoverUntilOnToken(ZSTokenType.T_BRCLOSE);
 			}
 		}
 		
