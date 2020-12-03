@@ -1,4 +1,3 @@
-/* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
 
 /**
@@ -9,8 +8,6 @@ package org.openzen.zenscript.lexer;
  * 
  * Note: if the whitespace is relevant to the parsing, take care to tag them as
  * non-whitespace, otherwise they will be discarded!
- * 
- * @author Stan Hebben
  */
 public interface TokenType
 {

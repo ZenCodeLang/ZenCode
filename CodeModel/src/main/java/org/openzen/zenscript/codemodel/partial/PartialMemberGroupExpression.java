@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.partial;
 
 import java.util.ArrayList;
@@ -21,10 +16,6 @@ import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.member.TypeMember;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class PartialMemberGroupExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final Expression target;

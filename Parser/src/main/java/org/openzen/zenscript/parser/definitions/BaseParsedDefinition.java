@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.definitions;
 
 import java.util.ArrayList;
@@ -23,10 +18,6 @@ import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public abstract class BaseParsedDefinition extends ParsedDefinition {
 	protected final List<ParsedDefinitionMember> members = new ArrayList<>();
 	private boolean typesCompiled = false;

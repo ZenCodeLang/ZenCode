@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.definitions;
 
 import java.util.ArrayList;
@@ -16,10 +11,6 @@ import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.type.IParsedType;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedTypeParameter {
 	public static ParsedTypeParameter parse(ZSTokenParser tokens) throws ParseException {
 		CodePosition position = tokens.getPosition();

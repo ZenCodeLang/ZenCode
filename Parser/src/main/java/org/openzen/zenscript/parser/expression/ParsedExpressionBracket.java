@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.expression;
 
 import java.util.ArrayList;
@@ -17,10 +12,6 @@ import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedExpressionBracket extends ParsedExpression {
 	public List<ParsedExpression> expressions;
 	

@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.openzen.zenscript.parser.expression;
 
 import java.util.List;
@@ -20,10 +14,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 
-/**
- *
- * @author Stanneke
- */
 public class ParsedExpressionIndex extends ParsedExpression {
 	private final ParsedExpression value;
 	private final List<ParsedExpression> indexes;

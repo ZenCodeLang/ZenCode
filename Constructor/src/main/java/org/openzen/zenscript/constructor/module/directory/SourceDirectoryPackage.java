@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.constructor.module.directory;
 
 import java.io.File;
@@ -10,14 +5,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.openzen.zencode.shared.FileSourceFile;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.constructor.module.SourcePackage;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class SourceDirectoryPackage implements SourcePackage {
 	public final File directory;
 	public final String name;

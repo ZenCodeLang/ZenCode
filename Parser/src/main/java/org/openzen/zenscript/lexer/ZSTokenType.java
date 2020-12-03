@@ -1,14 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.lexer;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public enum ZSTokenType implements TokenType {
 	T_COMMENT_SCRIPT("#[^\n]*[\n\\e]", true),
 	T_COMMENT_SINGLELINE("//[^\n]*", true),
@@ -208,7 +199,7 @@ public enum ZSTokenType implements TokenType {
 		this.regexp = regexp;
 		this.whitespace = false;
 		this.isKeyword = false;
-		this.flyweight = new ZSToken(this, content, content);
+		this.flyweight = new ZSToken(this, content);
 		this.multiline = false;
 	}
 	
@@ -216,7 +207,7 @@ public enum ZSTokenType implements TokenType {
 		this.regexp = regexp;
 		this.whitespace = isWhitespace;
 		this.isKeyword = false;
-		this.flyweight = new ZSToken(this, content, content);
+		this.flyweight = new ZSToken(this, content);
 		this.multiline = false;
 	}
 	
@@ -224,7 +215,7 @@ public enum ZSTokenType implements TokenType {
 		this.regexp = regexp;
 		this.whitespace = isWhitespace;
 		this.isKeyword = false;
-		this.flyweight = new ZSToken(this, content, content);
+		this.flyweight = new ZSToken(this, content);
 		this.multiline = multiline;
 	}
 	
@@ -232,7 +223,7 @@ public enum ZSTokenType implements TokenType {
 		this.regexp = null;
 		this.whitespace = false;
 		this.isKeyword = isKeyword;
-		this.flyweight = new ZSToken(this, content, content);
+		this.flyweight = new ZSToken(this, content);
 		this.multiline = false;
 	}
 

@@ -1,4 +1,3 @@
-/* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
 
 import java.util.ArrayList;
@@ -14,7 +13,6 @@ import java.util.Set;
 /**
  * Represents an NFA. NFAs can be compiled from a list of regular expressions.
  * 
- * @author Stan Hebben
  * @param <T> final state type (for a TokenStream, a TokenType)
  */
 public class NFA<T extends Comparable<T>>
@@ -25,69 +23,6 @@ public class NFA<T extends Comparable<T>>
 	private final Class<T> tokenClass;
 
     private HashMap<NodeSet, DFA.DFAState<T>> converted;
-
-    /**
-     * Creates a new NFA with the specified initial state.
-     *
-	 * @param tokenClass token class
-     * @param initial initial state
-     */
-    public NFA(Class<T> tokenClass, NFAState<T> initial)
-	{
-        this.initial = initial;
-		this.tokenClass = tokenClass;
-    }
-
-    /**
-     * Creates a new NFA from the specified regular expression.
-     *
-     * Note: the regular expression implementation is not complete. Shorthand
-     * character classes (\s, \w, \d), hexadecimal and unicode escape sequences and
-     * unicode properties are not implemented.
-     * 
-     * Anchors, lazy plus operators, lookbehind and lookforward are not implemented
-     * since they cannot be implemented in an NFA.
-     *
-     * @param regexp regular expression
-	 * @param state resulting state
-     */
-	@SuppressWarnings("unchecked")
-    public NFA(String regexp, T state)
-	{
-		tokenClass = (Class<T>) state.getClass();
-		
-        Partial<T> main = processRegExp(new CharStream(regexp));
-        initial = new NFAState<>();
-        initial.addTransition(main.tailLabel, main.tail);
-        main.head.setFinal(state);
-    }
-
-    /**
-     * Converts an array of regular expressions to an NFA. Each regular expression
-     * can have its own final class. The length of both arrays must match.
-     *
-     * @param regexp regular expression array
-     * @param finals final classes
-     */
-	@SuppressWarnings("unchecked")
-    public NFA(String[] regexp, T[] finals)
-	{
-		tokenClass = (Class<T>) finals[0].getClass();
-        initial = new NFAState<>();
-		
-        for (int i = 0; i < regexp.length; i++) {
-			if (regexp[i] == null)
-				continue;
-			
-			try {
-				Partial<T> partial = processRegExp(new CharStream(regexp[i]));
-				partial.head.setFinal(finals[i]);
-				initial.addTransition(partial.tailLabel, partial.tail);
-			} catch (IllegalArgumentException ex) {
-				throw new RuntimeException("Error parsing " + regexp[i], ex);
-			}
-        }
-    }
 	
 	/**
 	 * Converts a list of regular expressions to an NFA. Each regular expression

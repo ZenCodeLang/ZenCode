@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.type;
 
 import java.util.ArrayList;
@@ -16,10 +11,6 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedNamedType implements IParsedType {
 	private final CodePosition position;
 	public final List<ParsedNamePart> name;

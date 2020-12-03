@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.type;
 
 import java.util.HashMap;
@@ -17,10 +12,6 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public interface TypeID {
 	static Map<TypeParameter, TypeID> getMapping(TypeParameter[] parameters, TypeID[] arguments) {
 		Map<TypeParameter, TypeID> typeArguments = new HashMap<>();

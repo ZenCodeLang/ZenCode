@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.formatter;
 
 import org.openzen.zenscript.formattershared.Importer;
@@ -24,10 +19,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import stdlib.Chars;
 import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class TypeFormatter implements TypeVisitor<String>, GenericParameterBoundVisitor<String> {
 	private final ScriptFormattingSettings settings;
 	private final Importer importer;

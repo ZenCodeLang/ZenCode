@@ -1,18 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.annotations;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class InvalidParameterAnnotation implements ParameterAnnotation {
 	public final CodePosition position;
 	public final CompileExceptionCode code;

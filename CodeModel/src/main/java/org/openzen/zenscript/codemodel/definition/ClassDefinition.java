@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -17,10 +12,6 @@ import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ClassDefinition extends HighLevelDefinition {
 	public ClassDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers) {
 		this(position, module, pkg, name, modifiers, null);

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.definitions;
 
 import java.util.ArrayList;
@@ -18,30 +13,18 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.lexer.ZSTokenType;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedFunctionHeader {
 	public static ParsedFunctionHeader parse(ZSTokenParser tokens) throws ParseException {
 		CodePosition position = tokens.getPosition();
 		
-		List<ParsedTypeParameter> genericParameters = null;
-		if (tokens.optional(ZSTokenType.T_LESS) != null) {
-			genericParameters = new ArrayList<>();
-			do {
-				genericParameters.add(ParsedTypeParameter.parse(tokens));
-			} while (tokens.optional(ZSTokenType.T_COMMA) != null);
-			tokens.required(ZSTokenType.T_GREATER, "> expected");
-		}
-		
+		List<ParsedTypeParameter> genericParameters = ParsedTypeParameter.parseAll(tokens);
+
 		tokens.required(T_BROPEN, "( expected");
 
 		List<ParsedFunctionParameter> parameters = new ArrayList<>();
@@ -65,14 +48,12 @@ public class ParsedFunctionHeader {
 		}
 
 		IParsedType returnType = ParsedTypeBasic.UNDETERMINED;
-		if (tokens.optional(K_AS) != null) {
+		if (tokens.optional(K_AS) != null || tokens.optional(T_COLON) != null)
 			returnType = IParsedType.parse(tokens);
-		}
 		
 		IParsedType thrownType = null;
-		if (tokens.optional(K_THROWS) != null) {
+		if (tokens.optional(K_THROWS) != null)
 			thrownType = IParsedType.parse(tokens);
-		}
 		
 		return new ParsedFunctionHeader(position, genericParameters, parameters, returnType, thrownType);
 	}

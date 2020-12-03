@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.formatter;
 
 import org.openzen.zenscript.codemodel.member.CallerMember;
@@ -23,10 +18,6 @@ import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.statement.Statement;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class MemberFormatter implements MemberVisitor<Void> {
 	private final ScriptFormattingSettings settings;
 	private final StringBuilder output;

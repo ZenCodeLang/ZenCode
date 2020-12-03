@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.member;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -20,10 +15,6 @@ import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedField extends ParsedDefinitionMember {
 	private final CodePosition position;
 	private final int modifiers;

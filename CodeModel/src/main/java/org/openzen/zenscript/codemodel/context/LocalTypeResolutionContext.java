@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.context;
 
 import java.util.List;
@@ -15,10 +10,6 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class LocalTypeResolutionContext implements TypeResolutionContext {
 	private final TypeResolutionContext outer;
 	private final CompilingType type;

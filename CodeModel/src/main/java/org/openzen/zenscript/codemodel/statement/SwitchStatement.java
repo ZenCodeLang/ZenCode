@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.statement;
 
 import java.util.ArrayList;
@@ -19,10 +14,6 @@ import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class SwitchStatement extends LoopStatement {
 	public final Expression value;
 	public final List<SwitchCase> cases = new ArrayList<>();

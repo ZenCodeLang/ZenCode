@@ -1,6 +1,4 @@
-/* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
-
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -16,7 +14,6 @@ import java.util.Set;
  * Implements a DFA. Used as intermediate form when compiling an NFA to a
  * CompiledDFA for usage in a TokenStream.
  *
- * @author Stan Hebben
  * @param <T> final type
  */
 public class DFA<T>

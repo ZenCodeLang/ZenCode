@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.formatter;
 
 import org.openzen.zencode.shared.StringExpansion;
@@ -13,10 +8,6 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValueVisitor;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class SwitchValueFormatter implements SwitchValueVisitor<String> {
 	private final ScriptFormattingSettings settings;
 	

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.expression;
 
 import java.util.Collections;
@@ -25,10 +20,6 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.StatementTransformer;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public abstract class Expression implements IPartialExpression {
 	public static final Expression[] NONE = new Expression[0];
 	

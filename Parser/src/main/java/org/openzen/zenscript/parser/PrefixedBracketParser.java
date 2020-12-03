@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser;
 
 import java.util.HashMap;
@@ -14,10 +9,6 @@ import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class PrefixedBracketParser implements BracketExpressionParser {
 	private final Map<String, BracketExpressionParser> subParsers = new HashMap<>();
 	private final BracketExpressionParser defaultParser;

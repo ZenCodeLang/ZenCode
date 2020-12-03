@@ -1,12 +1,9 @@
-/* Licensed under GPLv3 - https://opensource.org/licenses/GPL-3.0 */
 package org.openzen.zenscript.lexer;
 
 /**
  * Represents a character stream. Suitable for character by character parsing.
  *
  * Used in the regular expression parser.
- * 
- * @author Stan Hebben
  */
 public class CharStream
 {

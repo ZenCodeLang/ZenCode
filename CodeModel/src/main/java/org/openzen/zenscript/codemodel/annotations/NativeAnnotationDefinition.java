@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.annotations;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -24,10 +19,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import java.util.Collections;
 import java.util.List;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class NativeAnnotationDefinition implements AnnotationDefinition {
 	public static final NativeAnnotationDefinition INSTANCE = new NativeAnnotationDefinition();
 	

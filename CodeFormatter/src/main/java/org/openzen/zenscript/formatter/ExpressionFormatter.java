@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.formatter;
 
 import org.openzen.zencode.shared.StringExpansion;
@@ -81,10 +76,6 @@ import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> {
 	private final ScriptFormattingSettings settings;
 	public final TypeFormatter typeFormatter;

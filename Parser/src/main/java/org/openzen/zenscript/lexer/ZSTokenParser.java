@@ -1,37 +1,27 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.lexer;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ZSTokenParser extends LLParserTokenStream<ZSTokenType, ZSToken> {
 	private static final CompiledDFA DFA = CompiledDFA.createLexerDFA(ZSTokenType.values(), ZSTokenType.class);
 	
-	public static TokenParser<ZSToken, ZSTokenType> createRaw(SourceFile file, CharReader reader, int spacesPerTab) {
+	public static TokenParser<ZSToken, ZSTokenType> createRaw(SourceFile file, CharReader reader) {
 		return new TokenParser<>(
 				file,
 				reader,
 				DFA,
 				ZSTokenType.EOF,
 				ZSTokenType.INVALID,
-				new ZSTokenFactory(spacesPerTab));
+				new ZSTokenFactory());
 	}
 	
-	public static ZSTokenParser create(SourceFile file, BracketExpressionParser bracketParser, int spacesPerTab) throws IOException, ParseException {
-		return new ZSTokenParser(createRaw(file, new ReaderCharReader(file.open()), spacesPerTab), bracketParser);
+	public static ZSTokenParser create(SourceFile file, BracketExpressionParser bracketParser) throws IOException, ParseException {
+		return new ZSTokenParser(createRaw(file, new ReaderCharReader(file.open())), bracketParser);
 	}
 	
 	public final BracketExpressionParser bracketParser;

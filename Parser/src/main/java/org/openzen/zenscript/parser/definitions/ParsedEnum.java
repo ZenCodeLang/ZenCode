@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.definitions;
 
 import java.util.ArrayList;
@@ -24,10 +19,6 @@ import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedEnum extends BaseParsedDefinition {
 	public static ParsedEnum parseEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;

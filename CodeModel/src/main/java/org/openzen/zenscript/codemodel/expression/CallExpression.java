@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -10,10 +5,6 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class CallExpression extends Expression {
 	public final Expression target;
 	public final FunctionalMemberRef member;

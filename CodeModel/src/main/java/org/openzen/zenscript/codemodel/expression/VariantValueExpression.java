@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.expression;
 
 import java.util.List;
@@ -12,10 +7,6 @@ import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class VariantValueExpression extends Expression {
 	public final VariantOptionRef option;
 	public final Expression[] arguments;

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.definitions;
 
 import java.util.List;
@@ -23,10 +18,6 @@ import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.type.IParsedType;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedAlias extends ParsedDefinition {
 	public static ParsedAlias parseAlias(
 			CompilingPackage pkg,
@@ -56,7 +47,16 @@ public class ParsedAlias extends ParsedDefinition {
 	private final AliasDefinition compiled;
 	private boolean typesLinked = false;
 	
-	public ParsedAlias(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> parameters, IParsedType type, HighLevelDefinition outerDefinition) {
+	public ParsedAlias(
+			CompilingPackage pkg,
+			CodePosition position,
+			int modifiers,
+			ParsedAnnotation[] annotations,
+			String name,
+			List<ParsedTypeParameter> parameters,
+			IParsedType type,
+			HighLevelDefinition outerDefinition)
+	{
 		super(position, modifiers, pkg, annotations);
 		
 		this.name = name;

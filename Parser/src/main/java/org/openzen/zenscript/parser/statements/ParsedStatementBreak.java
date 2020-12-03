@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -15,10 +10,6 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.InvalidStatement;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedStatementBreak extends ParsedStatement {
 	public final String name;
 	

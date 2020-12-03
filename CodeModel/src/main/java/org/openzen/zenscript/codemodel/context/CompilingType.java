@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.context;
 
 import java.util.List;
@@ -11,10 +6,6 @@ import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public interface CompilingType {
 	CompilingType getInner(String name);
 	

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.parser.definitions;
 
 import java.util.ArrayList;
@@ -23,10 +18,6 @@ import org.openzen.zenscript.parser.expression.ParsedCallArguments;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.expression.ParsedNewExpression;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ParsedEnumConstant {
 	public static ParsedEnumConstant parse(ZSTokenParser tokens, EnumDefinition definition, int value) throws ParseException {
 		CodePosition position = tokens.getPosition();

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.statement;
 
 import java.util.function.Consumer;
@@ -14,10 +9,6 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class ReturnStatement extends Statement {
 	public final Expression value;
 	

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.scope;
 
 import org.openzen.zencode.shared.CodePosition;
@@ -30,10 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class FileScope extends BaseScope {
 	private final TypeResolutionContext context;
 	private final ZSPackage root;

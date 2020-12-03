@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.codemodel.scope;
 
 import java.util.List;
@@ -24,10 +19,6 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class LambdaScope extends StatementScope {
 	private final BaseScope outer;
 	private final FunctionHeader header;
@@ -52,22 +43,21 @@ public class LambdaScope extends StatementScope {
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		IPartialExpression outer = this.outer.get(position, name);
-		if (outer == null) {
-			if (name.hasNoArguments()) {
-				for (FunctionParameter parameter : header.parameters) {
-					if (parameter.name.equals(name.name)) {
-						if (parameter.type == BasicTypeID.UNDETERMINED)
-							throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "parameter with undetermined type");
-						
-						return new GetFunctionParameterExpression(position, parameter);
-					}
+		if (outer != null)
+			return outer.capture(position, closure);
+
+		if (name.hasNoArguments()) {
+			for (FunctionParameter parameter : header.parameters) {
+				if (parameter.name.equals(name.name)) {
+					if (parameter.type == BasicTypeID.UNDETERMINED)
+						throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "parameter with undetermined type");
+
+					return new GetFunctionParameterExpression(position, parameter);
 				}
 			}
-
-			return null;
 		}
-		
-		return outer.capture(position, closure);
+
+		return null;
 	}
 
 	@Override

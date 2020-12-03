@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openzen.zenscript.formatter;
 
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
@@ -28,10 +23,6 @@ import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.statement.WhileStatement;
 
-/**
- *
- * @author Hoofdgebruiker
- */
 public class StatementFormatter implements StatementVisitor<Void> {
 	private final ScriptFormattingSettings settings;
 	private final StringBuilder output;
