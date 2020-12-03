@@ -650,7 +650,7 @@ public class JavaNativeModule {
 		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], pkg.parent, rootCompiling, globals);
 
 		try {
-			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep, 4);
+			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep);
 			return IParsedType.parse(tokens).compile(context);
 		} catch (Exception ignored) {
 		}
@@ -805,7 +805,7 @@ public class JavaNativeModule {
 					final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], pkg, rootCompiling, globals);
 					final FileResolutionContext fContext = new FileResolutionContext(context, pkg, rootCompiling);
 					final FileScope fileScope = new FileScope(fContext, Collections.emptyList(), globals, member -> {});
-					final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep, 4);
+					final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep);
 
 					return ParsedExpression.parse(tokens).compile(new ExpressionScope(fileScope)).eval().castExplicit(CodePosition.GENERATED, fileScope, type, type.isOptional());
 				} catch (IOException | ParseException | CompileException ex) {
