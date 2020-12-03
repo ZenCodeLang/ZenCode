@@ -34,10 +34,12 @@ import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.statement.EmptyStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
@@ -119,21 +121,35 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
                 .getMemberCache());
 		
 		if (member.body == null) {
+			if(member.getBuiltin() == BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) {
+				checkConstructorForwarded(member);
+			}
+
 			if (!member.isExtern()) {
 				validator.logError(ValidationLogEntry.Code.BODY_REQUIRED, member.position, "Constructors must have a body");
 				return null;
 			}
 		} else {
-			StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header, member.getAccessScope()));
-			member.body.accept(statementValidator);
-			validateThrow(member, member.header, member.body);
-			
-			if (member.definition.getSuperType() != null && !statementValidator.constructorForwarded) {
-				validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_MISSING, member.position, "Constructor not forwarded to base type");
-			}
+			checkConstructorForwarded(member);
 		}
 		
 		return null;
+	}
+
+	private void checkConstructorForwarded(ConstructorMember member) {
+		final Statement body = member.body == null ? new EmptyStatement(member.position) : member.body;
+		StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header, member.getAccessScope()));
+		body.accept(statementValidator);
+		validateThrow(member, member.header, body);
+
+		if (member.definition.getSuperType() != null && !statementValidator.constructorForwarded) {
+			//TODO: If the parent has an empty constructor, can we allow it?
+			if(member.definition.getSuperType() instanceof DefinitionTypeID && ((DefinitionTypeID) member.definition.getSuperType()).definition.hasEmptyConstructor()) {
+				return;
+			}
+
+			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_MISSING, member.position, "Constructor not forwarded to base type");
+		}
 	}
 	
 	@Override
