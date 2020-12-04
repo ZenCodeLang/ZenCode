@@ -27,7 +27,7 @@ import java.util.*;
  */
 public class ScriptingEngine {
 	private final ZSPackage root = ZSPackage.createRoot();
-	private final ZSPackage stdlib = new ZSPackage(root, "stdlib");
+	private final ZSPackage stdlib = root.getOrCreatePackage("stdlib");
 	public final GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
 	private final ModuleSpace space;
 	
@@ -47,15 +47,20 @@ public class ScriptingEngine {
         this.logger = logger;
         try {
             ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.jar"));
-            SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, SemanticModule.NONE, FunctionParameter.NONE, stdlib, logger);
-            stdlibModule = Validator.validate(stdlibModule, logger);
-            space.addModule("stdlib", stdlibModule);
-            registerCompiled(stdlibModule);
-        } catch (CompileException | ParseException | IOException ex) {
+			registerLibFromStdLibs(logger, stdlibs, "stdlib", stdlib);
+			registerLibFromStdLibs(logger, stdlibs, "math", root.getOrCreatePackage("math"));
+		} catch (CompileException | ParseException | IOException ex) {
             throw new RuntimeException(ex);
         }
     }
-	
+
+	private void registerLibFromStdLibs(ScriptingEngineLogger logger, ZippedPackage stdlibs, String name, ZSPackage zsPackage) throws ParseException, CompileException {
+		SemanticModule stdlibModule = stdlibs.loadModule(space, name, null, SemanticModule.NONE, FunctionParameter.NONE, zsPackage, logger);
+		stdlibModule = Validator.validate(stdlibModule, logger);
+		space.addModule(name, stdlibModule);
+		registerCompiled(stdlibModule);
+	}
+
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
 		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies);
