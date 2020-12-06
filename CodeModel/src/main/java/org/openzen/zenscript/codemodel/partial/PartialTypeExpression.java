@@ -1,26 +1,27 @@
 package org.openzen.zenscript.codemodel.partial;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
-import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class PartialTypeExpression implements IPartialExpression {
 	private final CodePosition position;
 	private final TypeID type;
 	private final TypeID[] typeArguments;
-	
+
 	public PartialTypeExpression(CodePosition position, TypeID type, TypeID[] typeArguments) {
 		this.position = position;
 		this.type = type;
@@ -40,7 +41,7 @@ public class PartialTypeExpression implements IPartialExpression {
 
 		return group.predictCallTypes(position, scope, hints, arguments);
 	}
-	
+
 	@Override
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
 		TypeMemberGroup group = scope.getTypeMembers(type).getGroup(OperatorType.CALL);
@@ -72,7 +73,7 @@ public class PartialTypeExpression implements IPartialExpression {
 	public TypeID[] getTypeArguments() {
 		return typeArguments;
 	}
-	
+
 	@Override
 	public IPartialExpression capture(CodePosition position, LambdaClosure closure) {
 		return this;

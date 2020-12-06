@@ -1,23 +1,25 @@
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching, Boolean, RuntimeException> {
+	private static final TypeMatcher INSTANCE = new TypeMatcher();
+
+	private TypeMatcher() {
+	}
+
 	public static Map<TypeParameter, TypeID> match(LocalMemberCache cache, TypeID type, TypeID pattern) {
 		Matching matching = new Matching(cache, type);
 		if (pattern.accept(matching, INSTANCE))
 			return matching.mapping;
-		
+
 		return null;
 	}
-	
-	private static final TypeMatcher INSTANCE = new TypeMatcher();
-	
-	private TypeMatcher() {}
-	
+
 	@Override
 	public Boolean visitBasic(Matching context, BasicTypeID basic) {
 		return context.type == basic;
@@ -46,7 +48,7 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 			return false;
 		}
 	}
-	
+
 	@Override
 	public Boolean visitInvalid(Matching context, InvalidTypeID invalid) {
 		return false;
@@ -151,24 +153,24 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	public Boolean visitGenericMap(Matching context, GenericMapTypeID map) {
 		return map == context.type; // TODO: improve this
 	}
-		
+
 	public static final class Matching {
 		public final LocalMemberCache cache;
 		public final TypeID type;
 		public final Map<TypeParameter, TypeID> mapping;
-		
+
 		public Matching(LocalMemberCache cache, TypeID type) {
 			this.cache = cache;
 			this.type = type;
 			mapping = new HashMap<>();
 		}
-		
+
 		private Matching(LocalMemberCache cache, TypeID type, Map<TypeParameter, TypeID> mapping) {
 			this.cache = cache;
 			this.type = type;
 			this.mapping = mapping;
 		}
-		
+
 		public Matching withType(TypeID type) {
 			return new Matching(cache, type, mapping);
 		}

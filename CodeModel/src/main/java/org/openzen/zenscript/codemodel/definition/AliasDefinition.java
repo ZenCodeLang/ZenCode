@@ -8,18 +8,18 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class AliasDefinition extends HighLevelDefinition {
 	public TypeID type;
-	
+
 	public AliasDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
-	
+
 	public void setType(TypeID type) {
 		if (type == null)
 			throw new NullPointerException("type cannot be null!");
-		
+
 		this.type = type;
 	}
-	
+
 	@Override
 	public boolean isStatic() {
 		return true;

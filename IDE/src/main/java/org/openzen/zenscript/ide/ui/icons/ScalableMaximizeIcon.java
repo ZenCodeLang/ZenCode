@@ -13,7 +13,7 @@ import org.openzen.drawablegui.draw.DDrawTarget;
 public class ScalableMaximizeIcon implements DColorableIcon {
 	private final DPath path;
 	private final float size;
-	
+
 	public ScalableMaximizeIcon(float scale) {
 		size = 24 * scale;
 		path = tracer -> {
@@ -24,7 +24,7 @@ public class ScalableMaximizeIcon implements DColorableIcon {
 			tracer.close();
 		};
 	}
-	
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.strokePath(z, path, transform, color, 1);

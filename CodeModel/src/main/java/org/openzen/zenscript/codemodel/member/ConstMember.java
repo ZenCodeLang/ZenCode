@@ -17,10 +17,10 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public class ConstMember extends PropertyMember {
 	public final String name;
 	public Expression value;
-	
+
 	public ConstMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, TypeID type, BuiltinID builtin) {
 		super(position, definition, modifiers, type, builtin);
-		
+
 		this.name = name;
 	}
 
@@ -38,7 +38,7 @@ public class ConstMember extends PropertyMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitConst(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitConst(context, this);
@@ -48,7 +48,7 @@ public class ConstMember extends PropertyMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
-	
+
 	@Override
 	public int getEffectiveModifiers() {
 		int result = modifiers;
@@ -56,7 +56,7 @@ public class ConstMember extends PropertyMember {
 			result |= Modifiers.PUBLIC;
 		if (!Modifiers.hasAccess(result))
 			result |= Modifiers.INTERNAL;
-		
+
 		return result;
 	}
 
@@ -75,7 +75,7 @@ public class ConstMember extends PropertyMember {
 	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
 		return new ConstMemberRef(type, this, mapper);
 	}
-	
+
 	@Override
 	public FunctionHeader getHeader() {
 		return null;

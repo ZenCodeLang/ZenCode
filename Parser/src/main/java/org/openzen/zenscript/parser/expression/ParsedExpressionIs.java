@@ -5,17 +5,17 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.IsExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 public class ParsedExpressionIs extends ParsedExpression {
 	private final ParsedExpression expression;
 	private final IParsedType type;
-	
+
 	public ParsedExpressionIs(CodePosition position, ParsedExpression expression, IParsedType type) {
 		super(position);
-		
+
 		this.expression = expression;
 		this.type = type;
 	}

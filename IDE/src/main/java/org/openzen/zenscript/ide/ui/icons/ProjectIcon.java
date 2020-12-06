@@ -14,9 +14,6 @@ public class ProjectIcon implements DColorableIcon {
 	public static final ProjectIcon INSTANCE = new ProjectIcon();
 	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
 	public static final ColoredIcon GREY = new ColoredIcon(INSTANCE, 0xFF888888);
-	
-	private ProjectIcon() {}
-	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(3f, 13f);
 		tracer.lineTo(11.0f, 13.0f);
@@ -43,7 +40,10 @@ public class ProjectIcon implements DColorableIcon {
 		tracer.lineTo(13.0f, 3.0f);
 		tracer.close();
 	};
-	
+
+	private ProjectIcon() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH, transform, color);

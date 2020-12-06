@@ -5,30 +5,13 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.AccessScope;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import static org.openzen.zenscript.codemodel.Modifiers.*;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.definition.AliasDefinition;
-import org.openzen.zenscript.codemodel.definition.ClassDefinition;
-import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
-import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
-import org.openzen.zenscript.codemodel.definition.StructDefinition;
-import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -37,13 +20,18 @@ import org.openzen.zenscript.validator.TypeContext;
 import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.openzen.zenscript.codemodel.Modifiers.*;
+
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DefinitionValidator implements DefinitionVisitor<Void> {
 	private final Validator validator;
-	
+
 	public DefinitionValidator(Validator validator) {
 		this.validator = validator;
 	}
@@ -60,10 +48,10 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				validator,
 				definition.position,
 				definition.name);
-		
+
 		if (definition.getSuperType() != null)
 			definition.getSuperType().accept(new SupertypeValidator(validator, definition.position, definition));
-		
+
 		validateMembers(definition, DefinitionMemberContext.DEFINITION);
 		return null;
 	}
@@ -80,7 +68,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				validator,
 				definition.position,
 				definition.name);
-		
+
 		validateMembers(definition, DefinitionMemberContext.DEFINITION);
 		return null;
 	}
@@ -97,7 +85,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				validator,
 				definition.position,
 				definition.name);
-		
+
 		validateMembers(definition, DefinitionMemberContext.DEFINITION);
 		return null;
 	}
@@ -107,7 +95,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		int validModifiers = PUBLIC | INTERNAL | PROTECTED | PRIVATE;
 		if (definition.outerDefinition != null)
 			validModifiers |= STATIC;
-		
+
 		ValidationUtils.validateModifiers(
 				validator,
 				definition.modifiers,
@@ -118,7 +106,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				validator,
 				definition.position,
 				definition.name);
-		
+
 		validateMembers(definition, DefinitionMemberContext.DEFINITION);
 		return null;
 	}
@@ -135,7 +123,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				validator,
 				definition.position,
 				definition.name);
-				
+
 		StatementValidator statementValidator = new StatementValidator(validator, new FunctionStatementScope(definition.header, definition.getAccessScope()));
 		definition.caller.body.accept(statementValidator);
 		return null;
@@ -149,7 +137,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				PUBLIC | INTERNAL | PROTECTED | PRIVATE,
 				definition.position,
 				"Invalid expansion modifier");
-		
+
 		new TypeValidator(validator, definition.position).validate(TypeContext.EXPANSION_TARGET_TYPE, definition.target);
 		validateMembers(definition, DefinitionMemberContext.EXPANSION);
 		return null;
@@ -167,10 +155,10 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				validator,
 				definition.position,
 				definition.name);
-		
+
 		return null;
 	}
-	
+
 	private void validateMembers(HighLevelDefinition definition, DefinitionMemberContext context) {
 		SimpleTypeScope scope = new SimpleTypeScope(validator.registry, validator.expansions, validator.annotations);
 		DefinitionMemberValidator memberValidator = new DefinitionMemberValidator(validator, definition, scope, context);
@@ -196,28 +184,28 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 				validator,
 				variant.position,
 				variant.name);
-		
+
 		for (VariantDefinition.Option option : variant.options)
 			validate(option);
-		
+
 		validateMembers(variant, DefinitionMemberContext.DEFINITION);
 		return null;
 	}
-	
+
 	private void validate(VariantDefinition.Option option) {
 		ValidationUtils.validateIdentifier(validator, option.position, option.name);
 		TypeValidator typeValidator = new TypeValidator(validator, option.position);
 		for (TypeID type : option.types)
 			typeValidator.validate(TypeContext.OPTION_MEMBER_TYPE, type);
 	}
-	
+
 	private class SimpleTypeScope implements TypeScope {
 		private final LocalMemberCache memberCache;
 		private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
-		
+
 		public SimpleTypeScope(GlobalTypeRegistry typeRegistry, List<ExpansionDefinition> expansions, AnnotationDefinition[] annotations) {
 			memberCache = new LocalMemberCache(typeRegistry, expansions);
-			
+
 			for (AnnotationDefinition annotation : annotations)
 				this.annotations.put(annotation.getAnnotationName(), annotation);
 		}
@@ -226,7 +214,7 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 		public ZSPackage getRootPackage() {
 			throw new UnsupportedOperationException();
 		}
-		
+
 		@Override
 		public LocalMemberCache getMemberCache() {
 			return memberCache;
@@ -249,7 +237,8 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 
 		@Override
 		public TypeMemberPreparer getPreparer() {
-			return member -> {};
+			return member -> {
+			};
 		}
 
 		@Override
@@ -257,11 +246,11 @@ public class DefinitionValidator implements DefinitionVisitor<Void> {
 			throw new UnsupportedOperationException();
 		}
 	}
-	
+
 	private class FunctionStatementScope implements StatementScope {
 		private final FunctionHeader header;
 		private final AccessScope access;
-		
+
 		public FunctionStatementScope(FunctionHeader header, AccessScope access) {
 			this.header = header;
 			this.access = access;

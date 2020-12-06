@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
@@ -47,20 +48,19 @@ import org.openzen.zenscript.moduleserializer.encoder.TypeParameterBoundSerializ
 import org.openzen.zenscript.moduleserializer.encoder.TypeSerializer;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class TableBuilder implements CodeSerializationOutput {
+	public final List<EncodingModule> modules = new ArrayList<>();
 	private final Map<String, Integer> strings = new HashMap<>();
 	private final Set<HighLevelDefinition> definitions = new HashSet<>();
 	private final Set<Module> moduleSet = new HashSet<>();
 	private final Set<SourceFile> sourceFiles = new HashSet<>();
-	public final List<EncodingModule> modules = new ArrayList<>();
 	private final List<IDefinitionMember> members = new ArrayList<>();
 	private final Set<AnnotationDefinition> annotations = new HashSet<>();
-	
+
 	private final SerializationOptions options;
-	
+
 	private final DefinitionSerializer definitionSerializer;
 	private final DefinitionMemberSerializer definitionMemberSerializer;
 	private final MemberSerializer memberSerializer;
@@ -69,10 +69,10 @@ public class TableBuilder implements CodeSerializationOutput {
 	private final ExpressionSerializer expressions;
 	private final TypeSerializer typeSerializer;
 	private final TypeParameterBoundSerializer typeParameterBoundSerializer;
-	
+
 	public TableBuilder(SerializationOptions options) {
 		this.options = options;
-		
+
 		definitionSerializer = new DefinitionSerializer(options, this);
 		definitionMemberSerializer = new DefinitionMemberSerializer(options, this);
 		memberSerializer = new MemberSerializer(this, options);
@@ -82,7 +82,7 @@ public class TableBuilder implements CodeSerializationOutput {
 		typeSerializer = new TypeSerializer(this);
 		typeParameterBoundSerializer = new TypeParameterBoundSerializer(this);
 	}
-	
+
 	public EncodingModule register(Module module, ModuleContext context) {
 		if (moduleSet.add(module)) {
 			EncodingModule encodedModule = new EncodingModule(module, context, true);
@@ -93,32 +93,32 @@ public class TableBuilder implements CodeSerializationOutput {
 			return module.getTag(EncodingModule.class);
 		}
 	}
-	
+
 	public SourceFile[] getSourceFileList() {
 		return sourceFiles.toArray(new SourceFile[sourceFiles.size()]);
 	}
-	
+
 	public String[] getStrings() {
 		Map.Entry<String, Integer>[] entries = strings.entrySet().toArray(new Map.Entry[strings.size()]);
 		Arrays.sort(entries, (a, b) -> b.getValue() - a.getValue());
-		
+
 		String[] result = new String[entries.length];
 		for (int i = 0; i < result.length; i++)
 			result[i] = entries[i].getKey();
 		return result;
 	}
-	
+
 	public List<IDefinitionMember> getMembers() {
 		return members;
 	}
-	
+
 	public AnnotationDefinition[] getAnnotations() {
 		return annotations.toArray(new AnnotationDefinition[annotations.size()]);
 	}
-	
+
 	private EncodingDefinition prepare(HighLevelDefinition definition) {
 		register(definition.module, null);
-		
+
 		if (definitions.add(definition)) {
 			EncodingDefinition result = new EncodingDefinition(definition);
 			definition.setTag(EncodingDefinition.class, result);
@@ -130,7 +130,7 @@ public class TableBuilder implements CodeSerializationOutput {
 			return result;
 		}
 	}
-	
+
 	public void serialize(ModuleContext context, HighLevelDefinition definition) {
 		definition.accept(context, definitionSerializer);
 		DefinitionTypeID thisType = context.registry.getForMyDefinition(definition);
@@ -138,40 +138,52 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void writeBool(boolean value) {}
+	public void writeBool(boolean value) {
+	}
 
 	@Override
-	public void writeByte(int value) {}
+	public void writeByte(int value) {
+	}
 
 	@Override
-	public void writeSByte(byte value) {}
+	public void writeSByte(byte value) {
+	}
 
 	@Override
-	public void writeShort(short value) {}
+	public void writeShort(short value) {
+	}
 
 	@Override
-	public void writeUShort(int value) {}
+	public void writeUShort(int value) {
+	}
 
 	@Override
-	public void writeInt(int value) {}
+	public void writeInt(int value) {
+	}
 
 	@Override
-	public void writeUInt(int value) {}
+	public void writeUInt(int value) {
+	}
 
 	@Override
-	public void writeLong(long value) {}
+	public void writeLong(long value) {
+	}
 
 	@Override
-	public void writeULong(long value) {}
+	public void writeULong(long value) {
+	}
 
 	@Override
-	public void writeFloat(float value) {}
+	public void writeFloat(float value) {
+	}
 
 	@Override
-	public void writeDouble(double value) {}
+	public void writeDouble(double value) {
+	}
 
 	@Override
-	public void writeChar(char value) {}
+	public void writeChar(char value) {
+	}
 
 	@Override
 	public void writeString(String value) {
@@ -201,7 +213,7 @@ public class TableBuilder implements CodeSerializationOutput {
 				members.add(member.getTarget());
 		}
 	}
-	
+
 	@Override
 	public void write(AnnotationDefinition annotationType) {
 		annotations.add(annotationType);
@@ -237,7 +249,7 @@ public class TableBuilder implements CodeSerializationOutput {
 				bound.accept(context, typeParameterBoundSerializer);
 		}
 	}
-	
+
 	@Override
 	public void serialize(TypeContext context, TypeParameter[] parameters) {
 		TypeContext inner = new TypeContext(context, context.thisType, parameters);
@@ -254,7 +266,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	public void serialize(TypeContext context, FunctionHeader header) {
 		serialize(context, header.typeParameters);
 		serialize(context, header.getReturnType());
-		
+
 		StatementContext statementContext = new StatementContext(context, header);
 		for (FunctionParameter parameter : header.parameters) {
 			// TODO: annotations
@@ -268,7 +280,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	public void serialize(StatementContext context, CallArguments arguments) {
 		for (TypeID typeArgument : arguments.typeArguments)
 			serialize(context, typeArgument);
-		
+
 		for (Expression expression : arguments.arguments)
 			serialize(context, expression);
 	}

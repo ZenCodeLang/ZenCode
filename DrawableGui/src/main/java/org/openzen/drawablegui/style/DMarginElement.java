@@ -8,12 +8,11 @@ package org.openzen.drawablegui.style;
 import org.openzen.drawablegui.DUIContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DMarginElement extends DStyleElement {
 	DMargin eval(DUIContext context);
-	
+
 	default DMarginElement asMargin() {
 		return this;
 	}

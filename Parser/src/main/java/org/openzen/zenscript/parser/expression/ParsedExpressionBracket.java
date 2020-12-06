@@ -1,7 +1,5 @@
 package org.openzen.zenscript.parser.expression;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -12,15 +10,18 @@ import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ParsedExpressionBracket extends ParsedExpression {
 	public List<ParsedExpression> expressions;
-	
+
 	public ParsedExpressionBracket(CodePosition position, List<ParsedExpression> expressions) {
 		super(position);
-		
+
 		this.expressions = expressions;
 	}
-	
+
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		if (expressions.size() != 1) {
@@ -29,13 +30,13 @@ public class ParsedExpressionBracket extends ParsedExpression {
 			return expressions.get(0).compile(scope);
 		}
 	}
-	
+
 	@Override
 	public ParsedFunctionHeader toLambdaHeader() throws ParseException {
 		List<ParsedFunctionParameter> parameters = new ArrayList<>();
 		for (ParsedExpression expression : expressions)
 			parameters.add(expression.toLambdaParameter());
-		
+
 		return new ParsedFunctionHeader(position, parameters, ParsedTypeBasic.UNDETERMINED);
 	}
 

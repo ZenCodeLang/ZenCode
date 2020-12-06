@@ -6,7 +6,6 @@
 package org.openzen.drawablegui;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DMouseEvent {
@@ -18,14 +17,14 @@ public class DMouseEvent {
 	public static final int SHIFT = 1024;
 	public static final int META = 2048;
 	public static final int ALT_GRAPH = 4096;
-	
+
 	public final DUIWindow window;
 	public final int x;
 	public final int y;
 	public final int modifiers;
 	public final int deltaZ;
 	public final int clickCount;
-	
+
 	public DMouseEvent(DUIWindow window, int x, int y, int modifiers, int deltaZ, int clickCount) {
 		this.window = window;
 		this.x = x;
@@ -34,19 +33,19 @@ public class DMouseEvent {
 		this.deltaZ = deltaZ;
 		this.clickCount = clickCount;
 	}
-	
+
 	public boolean isSingleClick() {
 		return clickCount == 1;
 	}
-	
+
 	public boolean isDoubleClick() {
 		return clickCount == 2;
 	}
-	
+
 	public boolean isTripleClick() {
 		return clickCount == 3;
 	}
-	
+
 	public boolean has(int modifiers) {
 		return (this.modifiers & modifiers) == modifiers;
 	}

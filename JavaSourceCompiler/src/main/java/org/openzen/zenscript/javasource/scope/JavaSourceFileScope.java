@@ -15,7 +15,6 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javasource.JavaSourceContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceFileScope {
@@ -28,15 +27,14 @@ public class JavaSourceFileScope {
 	public final boolean isInterface;
 	public final TypeID thisType;
 	public final JavaSourceContext context;
-	
+
 	public JavaSourceFileScope(
 			JavaSourceImporter importer,
 			JavaSourceContext context,
 			JavaClass cls,
 			TypeScope semanticScope,
 			boolean isInterface,
-			TypeID thisType)
-	{
+			TypeID thisType) {
 		this.importer = importer;
 		this.helperGenerator = context.helperGenerator;
 		this.cls = cls;
@@ -44,15 +42,15 @@ public class JavaSourceFileScope {
 		this.isInterface = isInterface;
 		this.thisType = thisType;
 		this.context = context;
-		
+
 		typeVisitor = new JavaSourceTypeVisitor(importer, context);
 		objectTypeVisitor = typeVisitor.objectTypeVisitor;
 	}
-	
+
 	public String type(TypeID type) {
 		return typeVisitor.process(type);
 	}
-	
+
 	public String type(TypeID type, JavaClass rename) {
 		return new JavaSourceTypeVisitor(importer, context, rename).process(type);
 	}

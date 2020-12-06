@@ -17,26 +17,30 @@ public class IteratorMember extends FunctionalMember {
 	private final TypeID[] iteratorTypes;
 	public Statement body;
 	public IteratorMemberRef overrides;
-	
+
 	public IteratorMember(CodePosition position, HighLevelDefinition definition, int modifiers, TypeID[] iteratorTypes, GlobalTypeRegistry registry, BuiltinID builtin) {
 		super(position, definition, modifiers, createIteratorHeader(registry, iteratorTypes), builtin);
-		
+
 		this.iteratorTypes = iteratorTypes;
 	}
-	
+
+	private static FunctionHeader createIteratorHeader(GlobalTypeRegistry registry, TypeID[] iteratorTypes) {
+		return new FunctionHeader(registry.getIterator(iteratorTypes));
+	}
+
 	public void setContent(Statement body) {
 		this.body = body;
 	}
-	
+
 	@Override
 	public String getCanonicalName() {
 		return definition.getFullName() + ":iterator:" + iteratorTypes.length;
 	}
-	
+
 	public int getLoopVariableCount() {
 		return iteratorTypes.length;
 	}
-	
+
 	public TypeID[] getLoopVariableTypes() {
 		return iteratorTypes;
 	}
@@ -55,27 +59,23 @@ public class IteratorMember extends FunctionalMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitCustomIterator(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitIterator(context, this);
-	}
-	
-	public void setOverrides(IteratorMemberRef overrides) {
-		this.overrides = overrides;
 	}
 
 	@Override
 	public DefinitionMemberRef getOverrides() {
 		return overrides;
 	}
-	
+
+	public void setOverrides(IteratorMemberRef overrides) {
+		this.overrides = overrides;
+	}
+
 	@Override
 	public FunctionalKind getKind() {
 		return FunctionalKind.ITERATOR;
-	}
-	
-	private static FunctionHeader createIteratorHeader(GlobalTypeRegistry registry, TypeID[] iteratorTypes) {
-		return new FunctionHeader(registry.getIterator(iteratorTypes));
 	}
 }

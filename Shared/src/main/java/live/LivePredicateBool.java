@@ -5,11 +5,12 @@
  */
 package live;
 
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import listeners.ListenerHandle;
 import listeners.ListenerList;
 import zsynthetic.FunctionBoolBoolToVoid;
+
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 // TODO: rewrite to zencode
 public class LivePredicateBool<T> implements LiveBool, AutoCloseable, BiConsumer<T, T> {
@@ -18,14 +19,14 @@ public class LivePredicateBool<T> implements LiveBool, AutoCloseable, BiConsumer
 	private final Predicate<T> predicate;
 	private final ListenerHandle<BiConsumer<T, T>> sourceListener;
 	private boolean value;
-	
+
 	public LivePredicateBool(LiveObject<T> source, Predicate<T> predicate) {
 		this.source = source;
 		this.predicate = predicate;
 		this.sourceListener = source.addListener(this);
 		setValueInternal(predicate.test(source.getValue()));
 	}
-	
+
 	@Override
 	public void close() {
 		sourceListener.close();
@@ -40,11 +41,11 @@ public class LivePredicateBool<T> implements LiveBool, AutoCloseable, BiConsumer
 	public ListenerHandle<FunctionBoolBoolToVoid> addListener(FunctionBoolBoolToVoid listener) {
 		return listeners.add(listener);
 	}
-	
+
 	private void setValueInternal(boolean value) {
 		if (value == this.value)
 			return;
-		
+
 		boolean oldValue = this.value;
 		this.value = value;
 		listeners.accept(listener -> listener.invoke(oldValue, value));

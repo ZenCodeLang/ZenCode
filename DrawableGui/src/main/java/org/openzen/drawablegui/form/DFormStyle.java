@@ -12,7 +12,6 @@ import org.openzen.drawablegui.style.DPxDimension;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DFormStyle {
@@ -21,21 +20,21 @@ public class DFormStyle {
 	public final int paddingRight;
 	public final int paddingBottom;
 	public final int spacing;
-	
+
 	public final int labelColor;
 	public final DFont labelFont;
 	public final int minimumLabelSize;
 	public final int minimumFieldSize;
-	
+
 	public DFormStyle(DStyleDefinition style) {
 		paddingLeft = style.getDimension("paddingLeft", DPxDimension.ZERO);
 		paddingTop = style.getDimension("paddingTop", DPxDimension.ZERO);
 		paddingRight = style.getDimension("paddingRight", DPxDimension.ZERO);
 		paddingBottom = style.getDimension("paddingBottom", DPxDimension.ZERO);
 		spacing = style.getDimension("spacing", new DDpDimension(8));
-		
+
 		labelColor = style.getColor("labelColor", 0xFF000000);
-		labelFont = style.getFont("labelFont", context -> new DFont(DFontFamily.UI, false, false, false, (int)(14 * context.getScale())));
+		labelFont = style.getFont("labelFont", context -> new DFont(DFontFamily.UI, false, false, false, (int) (14 * context.getScale())));
 		minimumLabelSize = style.getDimension("minimumLabelSize", new DDpDimension(150));
 		minimumFieldSize = style.getDimension("minimumFieldSize", new DDpDimension(150));
 	}

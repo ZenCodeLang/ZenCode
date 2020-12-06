@@ -7,6 +7,7 @@ package org.openzen.zenscript.javasource;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -34,13 +35,12 @@ import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javashared.JavaMethod;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	private final List<FieldMember> fields = new ArrayList<>();
 	private final TypeParameter[] expansionTypeParameters;
-	
+
 	public JavaExpansionMemberCompiler(
 			JavaSourceFormattingSettings settings,
 			TypeID targetType,
@@ -48,34 +48,33 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 			String indent,
 			StringBuilder output,
 			JavaSourceFileScope scope,
-			HighLevelDefinition definition)
-	{
+			HighLevelDefinition definition) {
 		super(settings, indent, output, scope, targetType, definition);
-		
+
 		this.expansionTypeParameters = expansionTypeParameters;
 	}
-	
+
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
 		JavaMethod method = scope.context.getJavaMethod(member);
 		if (!method.compile)
 			return;
-		
+
 		begin(ElementType.METHOD);
 		output.append(indent);
-		
+
 		modifiers(member.getEffectiveModifiers() | Modifiers.STATIC);
 		if (member.isStatic())
 			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
 		else
 			JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, expansionTypeParameters, header.typeParameters);
-		
+
 		output.append(scope.typeVisitor.process(header.getReturnType()));
 		output.append(" ");
 		output.append(method.name);
 		formatParameters(member.isStatic(), expansionTypeParameters, header);
 		compileBody(body, header);
 	}
-	
+
 	@Override
 	public Void visitConst(ConstMember member) {
 		begin(ElementType.FIELD);
@@ -92,7 +91,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 	@Override
 	public Void visitField(FieldMember member) {
 		begin(ElementType.FIELD);
-		
+
 		output.append(indent);
 		int modifiers = 0;
 		if (member.isStatic())
@@ -103,9 +102,9 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 			modifiers |= member.autoGetterAccess;
 		else
 			modifiers |= Modifiers.PRIVATE;
-		
+
 		this.modifiers(modifiers);
-		
+
 		output.append(scope.type(member.getType()));
 		output.append(" ");
 		output.append(member.name);
@@ -114,7 +113,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 			output.append(fieldInitializerScope.expression(null, member.initializer)); // TODO: formatting target
 		}
 		output.append(";\n");
-		
+
 		fields.add(member);
 		return null;
 	}
@@ -191,7 +190,7 @@ public class JavaExpansionMemberCompiler extends BaseMemberCompiler {
 		compileBody(member.body, new FunctionHeader(BasicTypeID.VOID));
 		return null;
 	}
-	
+
 	public void finish() {
 		// TODO: needs to be moved elsewhere (normalization stage?)
 		for (FieldMember field : fields) {

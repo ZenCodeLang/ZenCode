@@ -29,7 +29,7 @@ public enum OperatorType {
 	SHL("<<", "shl"),
 	SHR(">>", "shr"),
 	USHR(">>>", "ushr"),
-	
+
 	ADDASSIGN("+=", "addAssign", ADD),
 	SUBASSIGN("-=", "subAssign", SUB),
 	MULASSIGN("*=", "mulAssign", MUL),
@@ -42,27 +42,27 @@ public enum OperatorType {
 	SHLASSIGN("<<=", "shlAssign", SHL),
 	SHRASSIGN(">>=", "shrAssign", SHR),
 	USHRASSIGN(">>>=", "ushrAssign", USHR),
-	
+
 	INCREMENT("++", "increment"),
 	DECREMENT("--", "decrement"),
-	
+
 	RANGE("..", "rangeTo"),
-	
+
 	CONSTRUCTOR("this", "construct"),
 	DESTRUCTOR("~this", "destruct"),
 	CALL("()", "call"),
 	CAST("as", "cast");
-	
+
 	public final OperatorType assignOperatorFor;
 	public final String operator;
 	public final String compiledName;
-	
+
 	OperatorType(String operator, String compiledName) {
 		this.operator = operator;
 		this.compiledName = compiledName;
 		assignOperatorFor = null;
 	}
-	
+
 	OperatorType(String operator, String compiledName, OperatorType assignOperatorFor) {
 		this.operator = operator;
 		this.compiledName = compiledName;

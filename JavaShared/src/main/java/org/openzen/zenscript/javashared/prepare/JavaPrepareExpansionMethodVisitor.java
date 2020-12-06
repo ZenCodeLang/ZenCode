@@ -5,52 +5,27 @@
  */
 package org.openzen.zenscript.javashared.prepare;
 
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
-import org.openzen.zenscript.codemodel.member.CallerMember;
-import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.codemodel.member.ConstMember;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.IteratorMember;
-import org.openzen.zenscript.codemodel.member.DefinitionMember;
-import org.openzen.zenscript.codemodel.member.DestructorMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
-import org.openzen.zenscript.codemodel.member.MemberVisitor;
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaContext;
-import org.openzen.zenscript.javashared.JavaImplementation;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
+import org.openzen.zenscript.javashared.*;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
-	
+
 	private final JavaContext context;
 	private final JavaCompiledModule module;
 	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
-	
+
 	public JavaPrepareExpansionMethodVisitor(JavaContext context, JavaCompiledModule module, JavaClass cls, JavaNativeClass nativeClass) {
 		this.module = module;
 		this.cls = cls;
@@ -58,25 +33,25 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		this.context = context;
 		cls.empty = true;
 	}
-	
+
 	@Override
 	public Void visitConst(ConstMember member) {
 		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
 		module.setFieldInfo(member, field);
-		
+
 		if (DEBUG_EMPTY && cls.empty)
 			context.logger.trace("Class " + cls.fullName + " not empty because of const");
-		
+
 		cls.empty = false;
 		return null;
 	}
-	
+
 	@Override
 	public Void visitField(FieldMember member) {
 		// TODO: expansion fields
 		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
 		module.setFieldInfo(member, field);
-		
+
 		if (member.hasAutoGetter() || member.hasAutoSetter())
 			cls.empty = false;
 		return null;
@@ -92,7 +67,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 	public Void visitDestructor(DestructorMember member) {
 		if (nativeClass != null && nativeClass.nonDestructible)
 			return null;
-		
+
 		visitFunctional(member, member.header, "");
 		return null;
 	}
@@ -145,7 +120,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		module.setImplementationInfo(member, new JavaImplementation(false, implementationClass));
 		for (IDefinitionMember implementedMember : member.members)
 			implementedMember.accept(this);
-		
+
 		return null;
 	}
 
@@ -161,7 +136,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 		cls.empty = false;
 		return null;
 	}
-	
+
 	private void visitFunctional(DefinitionMember member, FunctionHeader header, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
 		JavaMethod method = null;
@@ -169,7 +144,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 			method = nativeClass.getMethod(nativeTag.value);
 		if (method == null) {
 
-			if(member instanceof ConstructorMember) {
+			if (member instanceof ConstructorMember) {
 				method = new JavaMethod(
 						cls,
 						getKind(member),
@@ -199,21 +174,21 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 						header.useTypeParameters());
 			}
 		}
-		
+
 		if (method.compile) {
 			if (DEBUG_EMPTY && cls.empty)
 				context.logger.trace("Class " + cls.fullName + " not empty because of " + member.describe());
-			
+
 			cls.empty = false;
 		}
-		
+
 		module.setMethodInfo(member, method);
 	}
-	
+
 	private JavaMethod.Kind getKind(DefinitionMember member) {
 		return member.isStatic() ? JavaMethod.Kind.STATIC : JavaMethod.Kind.EXPANSION;
 	}
-	
+
 	private String getOperatorName(OperatorType operator) {
 		switch (operator) {
 			case NEG:

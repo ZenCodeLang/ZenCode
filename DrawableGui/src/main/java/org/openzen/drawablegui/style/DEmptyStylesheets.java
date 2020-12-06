@@ -8,7 +8,6 @@ package org.openzen.drawablegui.style;
 import org.openzen.drawablegui.DUIContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DEmptyStylesheets implements DStyleSheets {

@@ -23,12 +23,11 @@ import org.openzen.zenscript.moduleserialization.TypeEncoding;
 import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void, RuntimeException> {
 	private final CodeSerializationOutput output;
-	
+
 	public TypeSerializer(CodeSerializationOutput output) {
 		this.output = output;
 	}
@@ -36,24 +35,59 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void,
 	@Override
 	public Void visitBasic(TypeContext context, BasicTypeID basic) {
 		switch (basic) {
-			case VOID: output.writeUInt(TypeEncoding.TYPE_VOID); break;
-			case BOOL: output.writeUInt(TypeEncoding.TYPE_BOOL); break;
-			case BYTE: output.writeUInt(TypeEncoding.TYPE_BYTE); break;
-			case SBYTE: output.writeUInt(TypeEncoding.TYPE_SBYTE); break;
-			case SHORT: output.writeUInt(TypeEncoding.TYPE_SHORT); break;
-			case USHORT: output.writeUInt(TypeEncoding.TYPE_USHORT); break;
-			case INT: output.writeUInt(TypeEncoding.TYPE_INT); break;
-			case UINT: output.writeUInt(TypeEncoding.TYPE_UINT); break;
-			case LONG: output.writeUInt(TypeEncoding.TYPE_LONG); break;
-			case ULONG: output.writeUInt(TypeEncoding.TYPE_ULONG); break;
-			case USIZE: output.writeUInt(TypeEncoding.TYPE_USIZE); break;
-			case FLOAT: output.writeUInt(TypeEncoding.TYPE_FLOAT); break;
-			case DOUBLE: output.writeUInt(TypeEncoding.TYPE_DOUBLE); break;
-			case CHAR: output.writeUInt(TypeEncoding.TYPE_CHAR); break;
-			case UNDETERMINED: output.writeUInt(TypeEncoding.TYPE_UNDETERMINED); break;
-			case NULL: output.writeUInt(TypeEncoding.TYPE_NULL); break;
-			case STRING: output.writeUInt(TypeEncoding.TYPE_STRING); break;
-			default: throw new IllegalArgumentException("Unknown basic type: " + basic);
+			case VOID:
+				output.writeUInt(TypeEncoding.TYPE_VOID);
+				break;
+			case BOOL:
+				output.writeUInt(TypeEncoding.TYPE_BOOL);
+				break;
+			case BYTE:
+				output.writeUInt(TypeEncoding.TYPE_BYTE);
+				break;
+			case SBYTE:
+				output.writeUInt(TypeEncoding.TYPE_SBYTE);
+				break;
+			case SHORT:
+				output.writeUInt(TypeEncoding.TYPE_SHORT);
+				break;
+			case USHORT:
+				output.writeUInt(TypeEncoding.TYPE_USHORT);
+				break;
+			case INT:
+				output.writeUInt(TypeEncoding.TYPE_INT);
+				break;
+			case UINT:
+				output.writeUInt(TypeEncoding.TYPE_UINT);
+				break;
+			case LONG:
+				output.writeUInt(TypeEncoding.TYPE_LONG);
+				break;
+			case ULONG:
+				output.writeUInt(TypeEncoding.TYPE_ULONG);
+				break;
+			case USIZE:
+				output.writeUInt(TypeEncoding.TYPE_USIZE);
+				break;
+			case FLOAT:
+				output.writeUInt(TypeEncoding.TYPE_FLOAT);
+				break;
+			case DOUBLE:
+				output.writeUInt(TypeEncoding.TYPE_DOUBLE);
+				break;
+			case CHAR:
+				output.writeUInt(TypeEncoding.TYPE_CHAR);
+				break;
+			case UNDETERMINED:
+				output.writeUInt(TypeEncoding.TYPE_UNDETERMINED);
+				break;
+			case NULL:
+				output.writeUInt(TypeEncoding.TYPE_NULL);
+				break;
+			case STRING:
+				output.writeUInt(TypeEncoding.TYPE_STRING);
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown basic type: " + basic);
 		}
 		return null;
 	}
@@ -82,7 +116,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void,
 	public Void visitGenericMap(TypeContext context, GenericMapTypeID map) {
 		output.writeUInt(TypeEncoding.TYPE_GENERIC_MAP);
 		output.serialize(context, map.key);
-		output.serialize(new TypeContext(context, context.thisType, new TypeParameter[] { map.key }), map.value);
+		output.serialize(new TypeContext(context, context.thisType, new TypeParameter[]{map.key}), map.value);
 		return null;
 	}
 
@@ -108,7 +142,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void,
 		output.write(definition.definition);
 		for (TypeID type : definition.typeArguments)
 			type.accept(context, this);
-		
+
 		return null;
 	}
 
@@ -143,7 +177,7 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void,
 		} else {
 			throw new IllegalArgumentException("modified type is not modified");
 		}
-		
+
 		return null;
 	}
 }

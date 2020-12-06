@@ -32,35 +32,34 @@ import org.openzen.zenscript.ide.ui.view.output.OutputView;
 import org.openzen.zenscript.ide.ui.view.project.ProjectBrowser;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public final class WindowView extends DSideLayout {
+	public final LiveString status = new SimpleLiveString("IDE initialized");
 	private final IDEWindow window;
 	private final TabbedView tabs;
-	public final LiveString status = new SimpleLiveString("IDE initialized");
 	private final ProjectBrowser projectBrowser;
-	
+
 	private final LiveObject<IDECompileState> compileState;
-	
+
 	public WindowView(IDEWindow window, DevelopmentHost host, IDEPropertyDirectory settings, LiveObject<IDECompileState> compileState) {
 		super(DStyleClass.inline(
 				new DStylesheetBuilder().color("backgroundColor", 0xFFEEEEEE).build()),
 				DEmptyView.INSTANCE);
 		this.window = window;
 		this.compileState = compileState;
-		
+
 		projectBrowser = new ProjectBrowser(window, host, settings.getSubdirectory("projectBrowserExpansionState"));
-		
+
 		OutputView output = new OutputView(DStyleClass.EMPTY, window.output);
-		
+
 		DScalableSize outputSize = new DScalableSize(new DDpDimension(250), new DDpDimension(250));
 		DScrollPane scrollOutput = new DScrollPane(DStyleClass.inline(new DStylesheetBuilder()
-							.marginDp("margin", 3)
-							.color("backgroundColor", 0xFFFFFFFF)
-							.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
-							.build()), output, new SimpleLiveObject<>(outputSize));
-		
+				.marginDp("margin", 3)
+				.color("backgroundColor", 0xFFFFFFFF)
+				.shadow("shadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 3 * context.getScale()))
+				.build()), output, new SimpleLiveObject<>(outputSize));
+
 		setMain(tabs = new TabbedView(DStyleClass.inline(new DStylesheetBuilder()
 				.marginDp("margin", 3)
 				.build())));
@@ -68,10 +67,10 @@ public final class WindowView extends DSideLayout {
 		add(Side.LEFT, projectBrowser.view);
 		add(Side.BOTTOM, new StatusBarView(DStyleClass.EMPTY, status));
 		add(Side.TOP, new AspectBarView(DStyleClass.EMPTY, window.aspectBar));
-		
+
 		window.dockWindow.addListener(new DockWindowListener());
 	}
-	
+
 	private class DockWindowListener implements IDEDockWindow.Listener {
 		@Override
 		public void onOpen(IDESourceFile sourceFile) {

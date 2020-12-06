@@ -15,13 +15,12 @@ import org.openzen.zenscript.ide.host.IDELibrary;
 import org.openzen.zenscript.ide.host.IDEModule;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class LocalLibrary implements IDELibrary {
 	private final Library library;
 	private final MutableLiveList<IDEModule> modules;
-	
+
 	public LocalLibrary(Library library) {
 		this.library = library;
 		modules = new LiveArrayList<>();

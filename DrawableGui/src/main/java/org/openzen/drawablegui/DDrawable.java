@@ -8,13 +8,12 @@ package org.openzen.drawablegui;
 import org.openzen.drawablegui.draw.DDrawTarget;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DDrawable {
 	void draw(DDrawTarget target, int z, DTransform2D transform);
-	
+
 	float getNominalWidth();
-	
+
 	float getNominalHeight();
 }

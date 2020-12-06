@@ -2,11 +2,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -20,28 +16,27 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public class SetterMember extends PropertyMember {
 	public final String name;
-	private SetterMemberRef overrides;
 	public Statement body;
 	public FunctionParameter parameter;
-	
+	private SetterMemberRef overrides;
+
 	public SetterMember(
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
 			String name,
 			TypeID type,
-			BuiltinID builtin)
-	{
+			BuiltinID builtin) {
 		super(position,
 				definition,
 				modifiers,
 				type,
 				builtin);
-		
+
 		this.name = name;
 		this.parameter = new FunctionParameter(type, "value");
 	}
-	
+
 	public void setBody(Statement body) {
 		this.body = body;
 	}
@@ -60,7 +55,7 @@ public class SetterMember extends PropertyMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitSetter(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitSetter(context, this);
@@ -70,7 +65,16 @@ public class SetterMember extends PropertyMember {
 	public SetterMemberRef getOverrides() {
 		return overrides;
 	}
-	
+
+	public void setOverrides(SetterMemberRef overrides) {
+		this.overrides = overrides;
+
+		if (getType() == BasicTypeID.UNDETERMINED) {
+			setType(overrides.getType());
+			parameter = new FunctionParameter(overrides.getType(), "value");
+		}
+	}
+
 	@Override
 	public int getEffectiveModifiers() {
 		int result = modifiers;
@@ -78,7 +82,7 @@ public class SetterMember extends PropertyMember {
 			result |= Modifiers.PUBLIC;
 		if (!Modifiers.hasAccess(result))
 			result |= Modifiers.INTERNAL;
-		
+
 		return result;
 	}
 
@@ -87,26 +91,17 @@ public class SetterMember extends PropertyMember {
 		if (body != null)
 			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}
-	
+
 	@Override
 	public boolean isAbstract() {
 		return body == null && builtin == null;
-	}
-	
-	public void setOverrides(SetterMemberRef overrides) {
-		this.overrides = overrides;
-		
-		if (getType() == BasicTypeID.UNDETERMINED) {
-			setType(overrides.getType());
-			parameter = new FunctionParameter(overrides.getType(), "value");
-		}
 	}
 
 	@Override
 	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
 		return new SetterMemberRef(type, this, mapper);
 	}
-	
+
 	@Override
 	public FunctionHeader getHeader() {
 		return new FunctionHeader(BasicTypeID.VOID, getType());

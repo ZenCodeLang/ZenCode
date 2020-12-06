@@ -7,6 +7,7 @@ package org.openzen.zenscript.ide.ui.view.output;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import listeners.ListenerHandle;
 import live.LiveList;
 import live.LiveObject;
@@ -24,23 +25,20 @@ import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class OutputView implements DComponent {
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final DStyleClass styleClass;
 	private final LiveList<OutputLine> lines;
-	
+	private final List<List<DDrawnText>> outputText = new ArrayList<>();
 	private DComponentContext context;
 	private DIRectangle bounds;
 	private OutputViewStyle style;
 	private DFontMetrics fontMetrics;
 	private ListenerHandle<LiveList.Listener<OutputLine>> linesListener;
-	
 	private DDrawnShape shape;
-	private final List<List<DDrawnText>> outputText = new ArrayList<>();
-	
+
 	public OutputView(DStyleClass styleClass, LiveList<OutputLine> lines) {
 		this.styleClass = styleClass;
 		this.lines = lines;
@@ -50,30 +48,30 @@ public class OutputView implements DComponent {
 	public void mount(DComponentContext parent) {
 		if (context != null)
 			unmount();
-		
+
 		context = parent.getChildContext("outputview", styleClass);
 		style = context.getStyle(OutputViewStyle::new);
 		fontMetrics = context.getFontMetrics(style.font);
-		
+
 		for (OutputLine line : lines)
 			outputText.add(draw(line));
-		
+
 		linesListener = lines.addListener(new LinesListener());
 		updateSizing();
 	}
-	
+
 	@Override
 	public void unmount() {
 		context = null;
-		
+
 		if (shape != null) {
 			shape.close();
 			shape = null;
 		}
-		
+
 		for (List<DDrawnText> line : outputText)
 			Destructible.close(line);
-		
+
 		outputText.clear();
 		linesListener.close();
 	}
@@ -89,41 +87,41 @@ public class OutputView implements DComponent {
 	}
 
 	@Override
-	public int getBaselineY() {
-		return -1;
+	public void setBounds(DIRectangle bounds) {
+		this.bounds = bounds;
+
+		DIRectangle available = style.margin.apply(bounds);
+		shape = context.shadowPath(0, style.shape.instance(available), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
+
+		layout(0);
 	}
 
 	@Override
-	public void setBounds(DIRectangle bounds) {
-		this.bounds = bounds;
-		
-		DIRectangle available = style.margin.apply(bounds);
-		shape = context.shadowPath(0, style.shape.instance(available), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
-		
-		layout(0);
+	public int getBaselineY() {
+		return -1;
 	}
 
 	@Override
 	public void close() {
 		unmount();
 	}
-	
+
 	private void updateSizing() {
 		sizing.setValue(new DSizing(100, lines.getLength() * fontMetrics.getLineHeight() + style.margin.getVertical() + style.border.getPaddingVertical()));
 	}
-	
+
 	private List<DDrawnText> draw(OutputLine line) {
 		List<DDrawnText> lineText = new ArrayList<>();
 		for (OutputSpan span : line.spans)
 			lineText.add(context.drawText(1, style.font, span.getColor(), 0, 0, span.getText()));
 		return lineText;
 	}
-	
+
 	private void layout(int fromIndex) {
 		for (int i = fromIndex; i < outputText.size(); i++)
 			layout(i, outputText.get(i));
 	}
-	
+
 	private void layout(int index, List<DDrawnText> line) {
 		int x = bounds.x + style.margin.left + style.border.getPaddingTop();
 		int y = bounds.y + style.margin.top + style.border.getPaddingTop() + index * fontMetrics.getLineHeight() + fontMetrics.getAscent();
@@ -132,7 +130,7 @@ public class OutputView implements DComponent {
 			x += text.getBounds().width;
 		}
 	}
-	
+
 	private class LinesListener implements LiveList.Listener<OutputLine> {
 		@Override
 		public void onInserted(int index, OutputLine value) {

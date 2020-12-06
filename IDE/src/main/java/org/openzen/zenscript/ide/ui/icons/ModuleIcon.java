@@ -13,9 +13,6 @@ import org.openzen.drawablegui.draw.DDrawTarget;
 public class ModuleIcon implements DColorableIcon {
 	public static final ModuleIcon INSTANCE = new ModuleIcon();
 	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
-	
-	private ModuleIcon() {}
-	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(3f, 19f);
 		tracer.lineTo(9.0f, 19.0f);
@@ -36,7 +33,10 @@ public class ModuleIcon implements DColorableIcon {
 		tracer.lineTo(3.0f, 5.0f);
 		tracer.close();
 	};
-	
+
+	private ModuleIcon() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH, transform, color);

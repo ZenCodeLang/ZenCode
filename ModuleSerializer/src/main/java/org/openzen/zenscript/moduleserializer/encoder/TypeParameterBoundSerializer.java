@@ -13,12 +13,11 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.moduleserialization.TypeParameterEncoding;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class TypeParameterBoundSerializer implements GenericParameterBoundVisitorWithContext<TypeContext, Void> {
 	private final CodeSerializationOutput output;
-	
+
 	public TypeParameterBoundSerializer(CodeSerializationOutput output) {
 		this.output = output;
 	}

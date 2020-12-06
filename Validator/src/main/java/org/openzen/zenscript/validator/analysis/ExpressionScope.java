@@ -12,27 +12,26 @@ import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface ExpressionScope {
 	boolean isConstructor();
-	
+
 	boolean isFirstStatement();
-	
+
 	boolean hasThis();
-	
+
 	boolean isFieldInitialized(FieldMember field);
-	
+
 	boolean isEnumConstantInitialized(EnumConstantMember member);
-	
+
 	boolean isLocalVariableInitialized(VarStatement variable);
-	
+
 	void markConstructorForwarded();
-	
+
 	boolean isStaticInitializer();
-	
+
 	HighLevelDefinition getDefinition();
-	
+
 	AccessScope getAccessScope();
 }

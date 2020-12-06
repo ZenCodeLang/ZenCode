@@ -1,40 +1,39 @@
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class FunctionTypeID implements TypeID {
 	public final FunctionHeader header;
 	private final FunctionTypeID normalized;
-	
+
 	public FunctionTypeID(GlobalTypeRegistry registry, FunctionHeader header) {
 		this.header = header;
-		
+
 		FunctionHeader normalizedHeader = header.normalize(registry);
 		normalized = header == normalizedHeader ? this : registry.getFunction(normalizedHeader);
 	}
-	
+
 	@Override
 	public FunctionTypeID getNormalized() {
 		return normalized;
 	}
-	
+
 	@Override
 	public TypeID instance(GenericMapper mapper) {
 		return mapper.registry.getFunction(mapper.map(header));
 	}
-	
+
 	@Override
 	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitFunction(this);
 	}
-	
+
 	@Override
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitFunction(context, this);
@@ -44,7 +43,7 @@ public class FunctionTypeID implements TypeID {
 	public boolean isOptional() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isValueType() {
 		return false;
@@ -92,7 +91,7 @@ public class FunctionTypeID implements TypeID {
 				&& Arrays.deepEquals(this.header.parameters, other.header.parameters)
 				&& Arrays.deepEquals(this.header.typeParameters, other.header.typeParameters);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
@@ -102,7 +101,7 @@ public class FunctionTypeID implements TypeID {
 			for (int i = 0; i < header.typeParameters.length; i++) {
 				if (i > 0)
 					result.append(", ");
-				
+
 				result.append(header.typeParameters[i].toString());
 			}
 			result.append('>');

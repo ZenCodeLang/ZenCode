@@ -9,36 +9,51 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.type.*;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaTypeNameVisitor implements TypeVisitor<String> {
 	public static final JavaTypeNameVisitor INSTANCE = new JavaTypeNameVisitor();
-	
-	private JavaTypeNameVisitor() {}
+
+	private JavaTypeNameVisitor() {
+	}
 
 	public String process(TypeID type) {
 		return type.accept(this);
 	}
-	
+
 	@Override
 	public String visitBasic(BasicTypeID basic) {
 		switch (basic) {
-			case VOID: return "Void";
-			case BOOL: return "Bool";
-			case BYTE: return "Byte";
-			case SBYTE: return "SByte";
-			case SHORT: return "Short";
-			case USHORT: return "UShort";
-			case INT: return "Int";
-			case UINT: return "UInt";
-			case LONG: return "Long";
-			case ULONG: return "ULong";
-			case FLOAT: return "Float";
-			case DOUBLE: return "Double";
-			case CHAR: return "Char";
-			case STRING: return "String";
-			default: throw new IllegalArgumentException("Invalid type: " + basic);
+			case VOID:
+				return "Void";
+			case BOOL:
+				return "Bool";
+			case BYTE:
+				return "Byte";
+			case SBYTE:
+				return "SByte";
+			case SHORT:
+				return "Short";
+			case USHORT:
+				return "UShort";
+			case INT:
+				return "Int";
+			case UINT:
+				return "UInt";
+			case LONG:
+				return "Long";
+			case ULONG:
+				return "ULong";
+			case FLOAT:
+				return "Float";
+			case DOUBLE:
+				return "Double";
+			case CHAR:
+				return "Char";
+			case STRING:
+				return "String";
+			default:
+				throw new IllegalArgumentException("Invalid type: " + basic);
 		}
 	}
 

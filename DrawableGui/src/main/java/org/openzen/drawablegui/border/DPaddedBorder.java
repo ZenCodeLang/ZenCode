@@ -9,7 +9,6 @@ import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DIRectangle;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DPaddedBorder implements DBorder {
@@ -17,14 +16,14 @@ public class DPaddedBorder implements DBorder {
 	private final int top;
 	private final int right;
 	private final int bottom;
-	
+
 	public DPaddedBorder(int left, int top, int right, int bottom) {
 		this.left = left;
 		this.top = top;
 		this.right = right;
 		this.bottom = bottom;
 	}
-	
+
 	public DPaddedBorder(int size) {
 		this(size, size, size, size);
 	}
@@ -56,6 +55,6 @@ public class DPaddedBorder implements DBorder {
 
 	@Override
 	public void close() {
-		
+
 	}
 }

@@ -1,25 +1,18 @@
 package org.openzen.zenscript.formatter;
 
-import java.util.List;
-import org.openzen.zenscript.codemodel.definition.AliasDefinition;
-import org.openzen.zenscript.codemodel.definition.ClassDefinition;
-import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
-import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
-import org.openzen.zenscript.codemodel.definition.StructDefinition;
-import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.member.CallerMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+
+import java.util.List;
 
 public class DefinitionFormatter implements DefinitionVisitor<Void> {
 	private final ScriptFormattingSettings settings;
 	private final TypeFormatter typeFormatter;
 	private final StringBuilder output = new StringBuilder();
 	private final String indent;
-	
+
 	public DefinitionFormatter(ScriptFormattingSettings settings, TypeFormatter typeFormatter, String indent) {
 		this.settings = settings;
 		this.typeFormatter = typeFormatter;
@@ -45,12 +38,12 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 					.append(indent)
 					.append("{\n");
 		}
-		
+
 		MemberFormatter memberFormatter = new MemberFormatter(settings, output, indent + settings.indent, typeFormatter);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberFormatter);
 		}
-		
+
 		output.append("}\n");
 		return null;
 	}
@@ -62,7 +55,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		output.append(definition.name);
 		FormattingUtils.formatTypeParameters(output, definition.typeParameters, typeFormatter);
 		output.append(" ");
-		
+
 		if (settings.classBracketOnSameLine) {
 			output.append("{\n");
 		} else {
@@ -70,12 +63,12 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 					.append(indent)
 					.append("{\n");
 		}
-		
+
 		MemberFormatter memberFormatter = new MemberFormatter(settings, output, indent + settings.indent, typeFormatter);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberFormatter);
 		}
-		
+
 		output.append("}\n");
 		return null;
 	}
@@ -87,7 +80,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		output.append(definition.name);
 		FormattingUtils.formatTypeParameters(output, definition.typeParameters, typeFormatter);
 		output.append(" ");
-		
+
 		if (settings.classBracketOnSameLine) {
 			output.append("{\n");
 		} else {
@@ -95,7 +88,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 					.append(indent)
 					.append("{\n");
 		}
-		
+
 		List<EnumConstantMember> enumConstants = definition.enumConstants;
 		boolean first = true;
 		ExpressionFormatter expressionFormatter = new ExpressionFormatter(settings, typeFormatter, indent);
@@ -104,13 +97,13 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 				first = false;
 			else
 				output.append(",\n");
-			
+
 			output.append(indent).append(settings.indent).append(enumConstant.name);
 			if (enumConstant.constructor != null) {
 				FormattingUtils.formatCall(output, typeFormatter, expressionFormatter, enumConstant.constructor.arguments);
 			}
 		}
-		
+
 		if (definition.members.size() > enumConstants.size()) {
 			output.append(";\n").append(indent).append(settings.indent).append("\n");
 
@@ -119,7 +112,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 				member.accept(memberFormatter);
 			}
 		}
-		
+
 		output.append("}\n");
 		return null;
 	}
@@ -137,12 +130,12 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 				FormattingUtils.formatModifiers(output, definition.modifiers);
 				output.append("function ");
 				output.append(definition.name);
-				
+
 				FormattingUtils.formatHeader(output, settings, caller.header, typeFormatter);
 				FormattingUtils.formatBody(output, settings, indent, typeFormatter, caller.body);
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -163,7 +156,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 		output.append(variant.name);
 		FormattingUtils.formatTypeParameters(output, variant.typeParameters, typeFormatter);
 		output.append(" ");
-		
+
 		if (settings.classBracketOnSameLine) {
 			output.append("{\n");
 		} else {
@@ -171,7 +164,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 					.append(indent)
 					.append("{\n");
 		}
-		
+
 		List<VariantDefinition.Option> options = variant.options;
 		boolean first = true;
 		for (VariantDefinition.Option option : options) {
@@ -179,7 +172,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 				first = false;
 			else
 				output.append(",\n");
-			
+
 			output.append(indent).append(settings.indent).append(option.name);
 			if (option.types.length > 0) {
 				output.append("(");
@@ -190,7 +183,7 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 				}
 			}
 		}
-		
+
 		if (variant.members.size() > options.size()) {
 			output.append(";\n").append(indent).append(settings.indent).append("\n");
 
@@ -199,11 +192,11 @@ public class DefinitionFormatter implements DefinitionVisitor<Void> {
 				member.accept(memberFormatter);
 			}
 		}
-		
+
 		output.append("}\n");
 		return null;
 	}
-	
+
 	@Override
 	public String toString() {
 		return output.toString();

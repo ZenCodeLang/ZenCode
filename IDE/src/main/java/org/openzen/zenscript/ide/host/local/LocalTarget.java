@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
+
 import live.LiveObject;
 import live.SimpleLiveObject;
 import org.openzen.zencode.shared.logging.*;
@@ -38,14 +39,13 @@ import org.openzen.zenscript.validator.logger.*;
 import stdlib.Strings;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class LocalTarget implements IDETarget {
 	private final Project project;
 	private final Target target;
 	private final SimpleLiveObject<IDECompileState> state = new SimpleLiveObject<>(null);
-	
+
 	public LocalTarget(Project project, Target target) {
 		this.project = project;
 		this.target = target;
@@ -65,12 +65,12 @@ public class LocalTarget implements IDETarget {
 	public boolean canRun() {
 		return target.canRun();
 	}
-	
+
 	@Override
 	public LiveObject<IDECompileState> load() {
 		if (state.getValue() == null)
 			state.setValue(precompile());
-		
+
 		return state;
 	}
 
@@ -85,25 +85,26 @@ public class LocalTarget implements IDETarget {
 		if (compiler != null)
 			compiler.run();
 	}
-	
+
 	private IDECompileState precompile() {
 		LocalCompileState result = new LocalCompileState();
-		buildInternal(line -> {}, result, false);
+		buildInternal(line -> {
+		}, result, false);
 		return result;
 	}
-	
+
 	private ZenCodeCompiler buildInternal(Consumer<OutputLine> output, LocalCompileState state, boolean compile) {
 		ZSPackage root = ZSPackage.createRoot();
 		ZSPackage stdlibPackage = new ZSPackage(root, "stdlib");
 		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlibPackage);
-        final LocalModuleLogger localModuleLogger = new LocalModuleLogger(state, output);
-        ModuleLoader moduleLoader = new ModuleLoader(registry, localModuleLogger);
-        
+		final LocalModuleLogger localModuleLogger = new LocalModuleLogger(state, output);
+		ModuleLoader moduleLoader = new ModuleLoader(registry, localModuleLogger);
+
 		//moduleLoader.register("stdlib", new DirectoryModuleReference("stdlib", new File("../../StdLibs/stdlib"), true));
 		moduleLoader.register("stdlib", new SourceModuleReference(new DirectorySourceModule("stdlib", new File("../../StdLibs/stdlib"), true), true));
 		Set<String> compiledModules = new HashSet<>();
-        
-        try {
+
+		try {
 			for (Library library : project.libraries) {
 				for (ModuleReference module : library.modules)
 					moduleLoader.register(module.getName(), module);
@@ -111,10 +112,10 @@ public class LocalTarget implements IDETarget {
 			for (ModuleReference module : project.modules) {
 				moduleLoader.register(module.getName(), module);
 			}
-			
+
 			SemanticModule module = moduleLoader.getModule(target.getModule());
 			module = Validator.validate(module.normalize(), localModuleLogger);
-			
+
 			if (compile) {
 				ZenCodeCompiler compiler = target.createCompiler(module, localModuleLogger);
 				if (!module.isValid())
@@ -140,7 +141,7 @@ public class LocalTarget implements IDETarget {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			
+
 			for (String line : Strings.split(ex.toString(), '\n'))
 				output.accept(new OutputLine(new ErrorOutputSpan(line)));
 			for (StackTraceElement element : ex.getStackTrace()) {
@@ -152,47 +153,47 @@ public class LocalTarget implements IDETarget {
 				}
 				output.accept(new OutputLine(new ErrorOutputSpan("    at " + element.getClassName() + "." + element.getMethodName() + source)));
 			}
-			
+
 			return null;
 		}
 	}
-	
+
 	private boolean compileDependencies(ModuleLoader loader, ZenCodeCompiler compiler, Set<String> compiledModules, Stack<String> compilingModules, SemanticModule module, ValidatorLogger logger) {
 		for (SemanticModule dependency : module.dependencies) {
 			if (compiledModules.contains(dependency.name))
 				continue;
 			compiledModules.add(dependency.name);
 			System.out.println("== Compiling module " + dependency.name + " ==");
-			
+
 			if (compilingModules.contains(dependency.name)) {
 				StringBuilder message = new StringBuilder("Circular dependency:\n");
 				for (String s : compilingModules)
 					message.append("    ").append(s).append("\n");
-				
+
 				throw new IllegalStateException(message.toString());
 			}
 			compilingModules.push(dependency.name);
-			
+
 			if (!dependency.isValid()) {
 				compilingModules.pop();
 				return false;
 			}
-			
+
 			dependency = Validator.validate(dependency.normalize(), logger);
 			if (!dependency.isValid()) {
 				compilingModules.pop();
 				return false;
 			}
-			
+
 			if (!compileDependencies(loader, compiler, compiledModules, compilingModules, dependency, logger)) {
 				compilingModules.pop();
 				return false;
 			}
-			
+
 			compiler.addModule(dependency);
 			compilingModules.pop();
 		}
-		
+
 		return true;
 	}
 }

@@ -14,7 +14,6 @@ import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DTreeViewStyle {

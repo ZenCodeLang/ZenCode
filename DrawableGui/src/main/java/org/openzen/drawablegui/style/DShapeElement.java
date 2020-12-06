@@ -8,13 +8,12 @@ package org.openzen.drawablegui.style;
 import org.openzen.drawablegui.DUIContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 @FunctionalInterface
 public interface DShapeElement extends DStyleElement {
 	DShape eval(DUIContext context);
-	
+
 	@Override
 	default DShapeElement asShape() {
 		return this;

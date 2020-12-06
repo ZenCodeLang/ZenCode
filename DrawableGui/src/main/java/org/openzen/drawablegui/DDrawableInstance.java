@@ -8,6 +8,7 @@ package org.openzen.drawablegui;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.openzen.drawablegui.draw.DDrawSurface;
 import org.openzen.drawablegui.draw.DDrawTarget;
 import org.openzen.drawablegui.draw.DDrawnColorableElement;
@@ -18,30 +19,29 @@ import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.style.DShadow;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DDrawableInstance implements Closeable {
 	private final List<DDrawnElement> elements = new ArrayList<>();
-	
+
 	public DDrawableInstance(DDrawSurface surface, int z, DDrawable icon, DTransform2D transform) {
 		icon.draw(new DrawTarget(surface), z, transform);
 	}
-	
+
 	public void setTransform(DTransform2D transform) {
 		for (DDrawnElement element : elements)
 			element.setTransform(transform);
 	}
-	
+
 	@Override
 	public void close() {
 		for (DDrawnElement element : elements)
 			element.close();
 	}
-	
+
 	private class DrawTarget implements DDrawTarget {
 		private final DDrawSurface surface;
-		
+
 		public DrawTarget(DDrawSurface surface) {
 			this.surface = surface;
 		}
@@ -85,7 +85,7 @@ public class DDrawableInstance implements Closeable {
 		public DDrawnShape shadowPath(int z, DPath path, DTransform2D transform, int color, DShadow shadow) {
 			return addElement(surface.shadowPath(z, path, transform, color, shadow));
 		}
-		
+
 		private <T extends DDrawnColorableElement> T addElement(T colorable) {
 			elements.add(colorable);
 			return colorable;

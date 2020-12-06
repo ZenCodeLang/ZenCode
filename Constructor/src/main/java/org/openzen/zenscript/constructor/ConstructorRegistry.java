@@ -34,28 +34,28 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ConstructorRegistry {
 	private static final Map<String, TargetType> targetTypes = new HashMap<>();
-	
+
 	static {
 		registerTargetType("javaSource", new JavaSourceTargetType());
 		registerTargetType("javaBytecodeJar", new JavaBytecodeTargetType());
 		registerTargetType("javaBytecodeRun", new JavaBytecodeTargetType());
 	}
-	
+
+	private ConstructorRegistry() {
+	}
+
 	public static void registerTargetType(String name, TargetType type) {
 		targetTypes.put(name, type);
 	}
-	
+
 	public static TargetType getTargetType(String name) {
 		return targetTypes.get(name);
 	}
 
-	private ConstructorRegistry() {}
-	
 	private static class JavaSourceTargetType implements TargetType {
 
 		@Override
@@ -63,7 +63,7 @@ public class ConstructorRegistry {
 			return new JavaSourceTarget(projectDir, definition);
 		}
 	}
-	
+
 	private static class JavaSourceTarget implements Target {
 		private final String module;
 		private final String name;
@@ -100,29 +100,28 @@ public class ConstructorRegistry {
 			return true;
 		}
 	}
-	
+
 	private static class JavaSourceZenCompiler implements ZenCodeCompiler {
+		public final GlobalTypeRegistry registry;
 		private final File output;
 		private final JavaSourceCompiler compiler;
 		private final List<JavaSourceModule> modules = new ArrayList<>();
-		
-		public final GlobalTypeRegistry registry;
 		private final SimpleJavaCompileSpace space;
 		private final IZSLogger logger;
-		
+
 		public JavaSourceZenCompiler(File output, GlobalTypeRegistry registry, IZSLogger logger) {
 			this.output = output;
 			compiler = new JavaSourceCompiler(registry);
 			this.registry = registry;
 			space = new SimpleJavaCompileSpace(registry);
-            this.logger = logger;
-        }
+			this.logger = logger;
+		}
 
 		@Override
 		public void addModule(SemanticModule module) {
 			JavaSourceModule result = compiler.compile(logger, module, space, module.modulePackage.fullName);
 			writeMappings(result);
-			
+
 			modules.add(result);
 			space.register(result);
 		}
@@ -139,17 +138,17 @@ public class ConstructorRegistry {
 		public void run() {
 			throw new UnsupportedOperationException();
 		}
-		
+
 		private void writeMappings(JavaCompiledModule module) {
 			String mappings = module.generateMappings();
 			try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(new File(output, "java.map")), StandardCharsets.UTF_8)) {
 				writer.write(mappings);
 			} catch (IOException ex) {
-				
+
 			}
 		}
 	}
-	
+
 	private static class JavaBytecodeTargetType implements TargetType {
 
 		@Override
@@ -157,7 +156,7 @@ public class ConstructorRegistry {
 			return new JavaBytecodeJarTarget(definition);
 		}
 	}
-	
+
 	private static class JavaBytecodeJarTarget implements Target {
 		private final String module;
 		private final String name;
@@ -196,23 +195,23 @@ public class ConstructorRegistry {
 			return true;
 		}
 	}
-	
+
 	private static class JavaBytecodeJarCompiler implements ZenCodeCompiler {
 		private final ZSPackage root = ZSPackage.createRoot();
 		private final ZSPackage stdlib = new ZSPackage(root, "stdlib");
 		public final GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
-		
+
 		private final JavaCompiler compiler;
 		private final List<JavaBytecodeModule> modules = new ArrayList<>();
 		private final SimpleJavaCompileSpace space = new SimpleJavaCompileSpace(registry);
-        private final IZSLogger logger;
-        
-        public JavaBytecodeJarCompiler(IZSLogger logger) {
-            this.logger = logger;
-            compiler = new JavaCompiler(logger);
-        }
-        
-        @Override
+		private final IZSLogger logger;
+
+		public JavaBytecodeJarCompiler(IZSLogger logger) {
+			this.logger = logger;
+			compiler = new JavaCompiler(logger);
+		}
+
+		@Override
 		public void addModule(SemanticModule module) {
 			JavaBytecodeModule result = compiler.compile(module.modulePackage.fullName, module, space);
 			modules.add(result);
@@ -221,7 +220,7 @@ public class ConstructorRegistry {
 
 		@Override
 		public void finish() {
-			
+
 		}
 
 		@Override
@@ -230,11 +229,11 @@ public class ConstructorRegistry {
 			for (JavaBytecodeModule module : modules)
 				unit.add(module);
 			//unit.add(compiler.helpers);
-            try {
-                unit.run();
-            } catch(ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
+			try {
+				unit.run();
+			} catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

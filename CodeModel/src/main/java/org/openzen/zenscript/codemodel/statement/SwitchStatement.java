@@ -1,12 +1,5 @@
 package org.openzen.zenscript.codemodel.statement;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -14,13 +7,20 @@ import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 public class SwitchStatement extends LoopStatement {
 	public final Expression value;
 	public final List<SwitchCase> cases = new ArrayList<>();
-	
+
 	public SwitchStatement(CodePosition position, String label, Expression value) {
 		super(position, label, null); // TODO: thrown type
-		
+
 		this.value = value;
 	}
 
@@ -28,12 +28,12 @@ public class SwitchStatement extends LoopStatement {
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitSwitch(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
 		return visitor.visitSwitch(context, this);
 	}
-	
+
 	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
@@ -84,14 +84,14 @@ public class SwitchStatement extends LoopStatement {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 
-		if(collect.isEmpty())
+		if (collect.isEmpty())
 			return null;
 
-		if(collect.size() == 1)
+		if (collect.size() == 1)
 			return collect.get(0);
 
 		final long c = collect.stream().distinct().count();
-		if(c == 1)
+		if (c == 1)
 			return collect.get(0);
 		else
 			//TODO make this real

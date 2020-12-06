@@ -7,10 +7,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class StaticGetterExpression extends Expression {
 	public final GetterMemberRef getter;
-	
+
 	public StaticGetterExpression(CodePosition position, GetterMemberRef getter) {
 		super(position, getter.getType(), null);
-		
+
 		this.getter = getter;
 	}
 
@@ -33,7 +33,7 @@ public class StaticGetterExpression extends Expression {
 	public Expression normalize(TypeScope scope) {
 		return this;
 	}
-	
+
 	@Override
 	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 		return scope.getTypeMembers(getter.getOwnerType())

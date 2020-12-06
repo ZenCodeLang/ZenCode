@@ -7,10 +7,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class SetStaticFieldExpression extends Expression {
 	public final FieldMemberRef field;
 	public final Expression value;
-	
+
 	public SetStaticFieldExpression(CodePosition position, FieldMemberRef field, Expression value) {
 		super(position, field.getType(), value.thrownType);
-		
+
 		this.field = field;
 		this.value = value;
 	}

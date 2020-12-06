@@ -6,7 +6,6 @@
 package org.openzen.zenscript.javasource;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public enum ParentStatementType {

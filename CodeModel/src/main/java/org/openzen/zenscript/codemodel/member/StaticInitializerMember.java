@@ -17,11 +17,11 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public class StaticInitializerMember extends DefinitionMember {
 	public Statement body;
-	
+
 	public StaticInitializerMember(CodePosition position, HighLevelDefinition definition) {
 		super(position, definition, 0);
 	}
-	
+
 	@Override
 	public BuiltinID getBuiltin() {
 		return null;
@@ -34,14 +34,14 @@ public class StaticInitializerMember extends DefinitionMember {
 
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		
+
 	}
 
 	@Override
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitStaticInitializer(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitStaticInitializer(context, this);
@@ -51,7 +51,7 @@ public class StaticInitializerMember extends DefinitionMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
-	
+
 	@Override
 	public int getEffectiveModifiers() {
 		return modifiers;
@@ -71,7 +71,7 @@ public class StaticInitializerMember extends DefinitionMember {
 	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
 		throw new UnsupportedOperationException("Cannot reference a static initializer");
 	}
-	
+
 	@Override
 	public FunctionHeader getHeader() {
 		return new FunctionHeader(BasicTypeID.VOID);

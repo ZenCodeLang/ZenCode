@@ -9,12 +9,11 @@ import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.border.DBorder;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DBorderElement extends DStyleElement {
 	DBorder eval(DUIContext context);
-	
+
 	@Override
 	default DBorderElement asBorder() {
 		return this;

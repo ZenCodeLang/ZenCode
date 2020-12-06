@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package org.openzen.zenscript.ide.ui.icons;
+
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
@@ -13,9 +14,6 @@ public class SettingsIcon implements DColorableIcon {
 	public static final SettingsIcon INSTANCE = new SettingsIcon();
 	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
 	public static final ColoredIcon PURPLE = new ColoredIcon(INSTANCE, 0xFF5758BB);
-	
-	private SettingsIcon() {}
-	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(15.95f, 10.78f);
 		tracer.bezierCubic(15.98f, 10.53f, 16.0f, 10.2699995f, 16.0f, 10.0f);
@@ -64,7 +62,10 @@ public class SettingsIcon implements DColorableIcon {
 		tracer.bezierCubic(13.0f, 11.65f, 11.65f, 13.0f, 10.0f, 13.0f);
 		tracer.close();
 	};
-	
+
+	private SettingsIcon() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH, transform, color);

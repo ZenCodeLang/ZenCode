@@ -12,7 +12,6 @@ import org.openzen.drawablegui.style.DShadow;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class AspectBarStyle {
@@ -24,24 +23,24 @@ public class AspectBarStyle {
 	public final int backgroundColorBottom;
 	public final int foregroundColor;
 	public final int marginBottom;
-	
+
 	public final int aspectSelectorButtonSpacing;
 	public final int toolbarTitleToControlsSpacing;
-	
+
 	public final DShadow aspectBarShadow;
 	public final int aspectBarPaddingTop;
-	
+
 	public final int controlHeight;
 	public final int controlPaddingTop;
 	public final int controlPaddingBottom;
-	
+
 	public final DFont activeToolbarTitleFont;
 	public final int activeToolbarTitleColor;
-	
+
 	public final int windowControlSpacingLeft;
 	public final int windowControlSpacingBottom;
 	public final DShadow windowControlShadow;
-	
+
 	public AspectBarStyle(DStyleDefinition style) {
 		aspectSelectorPaddingLeft = style.getDimension("aspectSelectorPaddingLeft", new DDpDimension(4));
 		aspectSelectorToToolbarSpacing = style.getDimension("aspectSelectorToToolbarSpacing", new DDpDimension(16));
@@ -51,24 +50,24 @@ public class AspectBarStyle {
 		backgroundColorBottom = style.getColor("backgroundColorBottom", 0xFFEEEEEE);
 		foregroundColor = style.getColor("foregroundColor", 0xFFFFFFFF);
 		marginBottom = style.getDimension("marginBottom", new DDpDimension(2));
-		
+
 		aspectSelectorButtonSpacing = style.getDimension("aspectSelectorButtonSpacing", new DDpDimension(4));
-		
+
 		aspectBarShadow = style.getShadow("aspectBarShadow", context -> new DShadow(0xFF888888, 0, 0.5f * context.getScale(), 2 * context.getScale()));
 		aspectBarPaddingTop = style.getDimension("aspectBarPaddingTop", new DDpDimension(4));
-		
+
 		controlHeight = style.getDimension("controlHeight", new DDpDimension(28));
 		controlPaddingTop = style.getDimension("controlPaddingTop", new DDpDimension(2));
 		controlPaddingBottom = style.getDimension("controlPaddingBottom", new DDpDimension(2));
-		
-		activeToolbarTitleFont = style.getFont("activeToolbarTitleFont", context -> new DFont(DFontFamily.UI, false, false, false, (int)(12.0f * context.getScale())));
+
+		activeToolbarTitleFont = style.getFont("activeToolbarTitleFont", context -> new DFont(DFontFamily.UI, false, false, false, (int) (12.0f * context.getScale())));
 		activeToolbarTitleColor = style.getColor("activeToolbarTitleColor", 0xFF888888);
-		
+
 		windowControlSpacingLeft = style.getDimension("windowControlSpacingLeft", new DDpDimension(4));
 		windowControlSpacingBottom = style.getDimension("windowControlSpacingBottom", new DDpDimension(4));
 		//windowControlShadow = style.getShadow("windowControlShadow", context -> DShadow.NONE);
 		windowControlShadow = style.getShadow("windowControlShadow", context -> new DShadow(0x80888888, 0, 0, 2 * context.getScale()));
-		
+
 		height = aspectBarPaddingTop + controlPaddingTop + controlHeight + controlPaddingBottom + marginBottom;
 	}
 }

@@ -12,10 +12,10 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+
 import org.openzen.drawablegui.DClipboard;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaClipboard implements DClipboard {
@@ -32,12 +32,12 @@ public class JavaClipboard implements DClipboard {
 		Transferable contents = clipboard.getContents(null);
 		if (contents == null)
 			return null;
-		
+
 		if (!contents.isDataFlavorSupported(DataFlavor.stringFlavor))
 			return null;
-		
+
 		try {
-			return (String)contents.getTransferData(DataFlavor.stringFlavor);
+			return (String) contents.getTransferData(DataFlavor.stringFlavor);
 		} catch (UnsupportedFlavorException | IOException ex) {
 			ex.printStackTrace();
 			return null;

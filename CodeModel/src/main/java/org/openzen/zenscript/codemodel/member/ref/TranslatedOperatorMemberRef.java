@@ -12,10 +12,10 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class TranslatedOperatorMemberRef extends FunctionalMemberRef {
 	private final CallTranslator translator;
-	
+
 	public TranslatedOperatorMemberRef(OperatorMember member, TypeID type, GenericMapper mapper, CallTranslator translator) {
 		super(member, type, mapper);
-		
+
 		this.translator = translator;
 	}
 

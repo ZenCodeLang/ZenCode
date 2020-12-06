@@ -4,15 +4,15 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
-import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.IteratorMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class IteratorMemberRef implements DefinitionMemberRef {
 	public final IteratorMember target;
-	private final TypeID owner;
 	public final TypeID[] types;
-	
+	private final TypeID owner;
+
 	public IteratorMemberRef(IteratorMember target, TypeID owner, TypeID... types) {
 		this.target = target;
 		this.owner = owner;
@@ -23,7 +23,7 @@ public class IteratorMemberRef implements DefinitionMemberRef {
 	public CodePosition getPosition() {
 		return target.getPosition();
 	}
-	
+
 	@Override
 	public TypeID getOwnerType() {
 		return owner;
@@ -38,7 +38,7 @@ public class IteratorMemberRef implements DefinitionMemberRef {
 	public <T extends Tag> T getTag(Class<T> type) {
 		return target.getTag(type);
 	}
-	
+
 	public int getLoopVariableCount() {
 		return types.length;
 	}

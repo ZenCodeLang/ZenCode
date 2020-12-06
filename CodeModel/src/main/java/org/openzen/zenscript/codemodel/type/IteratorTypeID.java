@@ -1,47 +1,46 @@
 package org.openzen.zenscript.codemodel.type;
 
+import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
+
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 public class IteratorTypeID implements TypeID {
 	public final TypeID[] iteratorTypes;
 	private final IteratorTypeID normalized;
-	
+
 	public IteratorTypeID(GlobalTypeRegistry registry, TypeID[] iteratorTypes) {
 		this.iteratorTypes = iteratorTypes;
-		
+
 		normalized = isDenormalized() ? normalize(registry) : this;
 	}
-	
+
 	@Override
 	public IteratorTypeID getNormalized() {
 		return normalized;
 	}
-	
+
 	private boolean isDenormalized() {
 		for (TypeID type : iteratorTypes)
 			if (type.getNormalized() != type)
 				return true;
-		
+
 		return false;
 	}
-	
+
 	private IteratorTypeID normalize(GlobalTypeRegistry registry) {
 		TypeID[] normalizedTypes = new TypeID[iteratorTypes.length];
 		for (int i = 0; i < normalizedTypes.length; i++)
 			normalizedTypes[i] = iteratorTypes[i].getNormalized();
 		return registry.getIterator(normalizedTypes);
 	}
-	
+
 	@Override
 	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitIterator(this);
 	}
-	
+
 	@Override
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitIterator(context, this);
@@ -56,7 +55,7 @@ public class IteratorTypeID implements TypeID {
 	public boolean isValueType() {
 		return false;
 	}
-	
+
 	@Override
 	public TypeID instance(GenericMapper mapper) {
 		TypeID[] instanced = mapper.map(iteratorTypes);
@@ -68,7 +67,7 @@ public class IteratorTypeID implements TypeID {
 		for (TypeID type : iteratorTypes)
 			if (type.hasInferenceBlockingTypeParameters(parameters))
 				return true;
-		
+
 		return false;
 	}
 

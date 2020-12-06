@@ -22,12 +22,12 @@ public class ParsedSetter extends ParsedDefinitionMember {
 	private final int modifiers;
 	private final ParsedImplementation implementation;
 	private final ParsedFunctionBody body;
-	
+
 	private final String name;
 	private final IParsedType type;
 	private SetterMember compiled;
 	private boolean isCompiled = false;
-	
+
 	public ParsedSetter(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -36,15 +36,14 @@ public class ParsedSetter extends ParsedDefinitionMember {
 			ParsedAnnotation[] annotations,
 			String name,
 			IParsedType type,
-			ParsedFunctionBody body)
-	{
+			ParsedFunctionBody body) {
 		super(definition, annotations);
-		
+
 		this.implementation = implementation;
 		this.position = position;
 		this.modifiers = modifiers;
 		this.body = body;
-		
+
 		this.name = name;
 		this.type = type;
 	}
@@ -58,17 +57,17 @@ public class ParsedSetter extends ParsedDefinitionMember {
 	public SetterMember getCompiled() {
 		return compiled;
 	}
-	
+
 	private void inferHeaders(BaseScope scope) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
 			fillOverride(scope, implementation.getCompiled().type);
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
-			
+
 			fillOverride(scope, definition.getSuperType());
 		}
-		
+
 		if (compiled == null)
 			throw new IllegalStateException("Types not yet linked");
 	}
@@ -76,15 +75,15 @@ public class ParsedSetter extends ParsedDefinitionMember {
 	private void fillOverride(TypeScope scope, TypeID baseType) {
 		compiled.setOverrides(scope.getTypeMembers(baseType).getOrCreateGroup(name, true).getSetter());
 	}
-	
+
 	@Override
 	public final void compile(BaseScope scope) throws CompileException {
 		if (isCompiled)
 			return;
 		isCompiled = true;
-		
+
 		inferHeaders(scope);
-		
+
 		FunctionHeader header = new FunctionHeader(compiled.getType());
 		FunctionScope innerScope = new FunctionScope(
 				position,

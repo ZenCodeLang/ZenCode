@@ -9,12 +9,11 @@ import org.openzen.drawablegui.DComponentContext;
 import org.openzen.drawablegui.DIRectangle;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DCompositeBorder implements DBorder {
 	private final DBorder[] borders;
-	
+
 	public DCompositeBorder(DBorder... borders) {
 		this.borders = borders;
 	}
@@ -62,7 +61,7 @@ public class DCompositeBorder implements DBorder {
 			total += border.getPaddingBottom();
 		return total;
 	}
-	
+
 	@Override
 	public void close() {
 		for (DBorder border : borders)

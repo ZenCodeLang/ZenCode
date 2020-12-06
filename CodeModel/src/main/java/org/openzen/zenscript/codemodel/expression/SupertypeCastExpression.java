@@ -9,10 +9,10 @@ import org.openzen.zenscript.codemodel.type.TypeID;
  */
 public class SupertypeCastExpression extends Expression {
 	public final Expression value;
-	
+
 	public SupertypeCastExpression(CodePosition position, Expression value, TypeID type) {
 		super(position, type, value.thrownType);
-		
+
 		this.value = value;
 	}
 

@@ -2,5 +2,5 @@ package zsynthetic;
 
 @FunctionalInterface
 public interface FunctionTToVoid<T> {
-    void invoke(T listener);
+	void invoke(T listener);
 }

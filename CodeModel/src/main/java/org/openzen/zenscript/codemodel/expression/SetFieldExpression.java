@@ -10,10 +10,10 @@ public class SetFieldExpression extends Expression {
 	public final FieldMemberRef field;
 	public final Expression value;
 	public final FunctionParameter parameter;
-	
+
 	public SetFieldExpression(CodePosition position, Expression target, FieldMemberRef field, Expression value) {
 		super(position, field.getType(), binaryThrow(position, target.thrownType, value.thrownType));
-		
+
 		this.target = target;
 		this.field = field;
 		this.value = value;

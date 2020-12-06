@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -23,7 +24,6 @@ import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.ParsedFile;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ParsedModule {
@@ -34,12 +34,12 @@ public class ParsedModule {
 	public final String javaPackageName;
 	public final String host;
 	//private final CompileExceptionLogger exceptionLogger;
-	
+
 	public ParsedModule(String name, File directory, File moduleFile, CompileExceptionLogger exceptionLogger) throws IOException {
 		this.name = name;
 		this.sourceDirectory = new File(directory, "src");
 		//this.exceptionLogger = exceptionLogger;
-		
+
 		BufferedInputStream input = new BufferedInputStream(new FileInputStream(moduleFile));
 		JSONObject json = new JSONObject(new JSONTokener(input));
 		packageName = json.getString("package");
@@ -54,14 +54,7 @@ public class ParsedModule {
 				this.dependencies[i] = dependencies.getString(i);
 		}
 	}
-	
-	public ParsedFile[] parse(CompilingPackage compilingPackage) throws ParseException {
-		// TODO: load bracket parsers from host plugins
-		List<ParsedFile> files = new ArrayList<>();
-		parse(files, compilingPackage, null, sourceDirectory);
-		return files.toArray(new ParsedFile[files.size()]);
-	}
-	
+
 	public static void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, File directory) throws ParseException {
 		for (File file : directory.listFiles()) {
 			if (file.getName().endsWith(".zs")) {
@@ -72,5 +65,12 @@ public class ParsedModule {
 				parse(files, innerPackage, bracketParser, file);
 			}
 		}
+	}
+
+	public ParsedFile[] parse(CompilingPackage compilingPackage) throws ParseException {
+		// TODO: load bracket parsers from host plugins
+		List<ParsedFile> files = new ArrayList<>();
+		parse(files, compilingPackage, null, sourceDirectory);
+		return files.toArray(new ParsedFile[files.size()]);
 	}
 }

@@ -16,13 +16,12 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import org.openzen.zenscript.moduleserialization.SwitchValueEncoding;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SwitchValueSerializer implements SwitchValueVisitorWithContext<TypeContext, Void> {
 	private final CodeSerializationOutput output;
 	private final boolean localVariableNames;
-	
+
 	public SwitchValueSerializer(CodeSerializationOutput output, boolean localVariableNames) {
 		this.output = output;
 		this.localVariableNames = localVariableNames;

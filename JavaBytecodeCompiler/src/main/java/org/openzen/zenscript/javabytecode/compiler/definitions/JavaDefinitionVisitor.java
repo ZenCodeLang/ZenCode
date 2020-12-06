@@ -1,31 +1,20 @@
 package org.openzen.zenscript.javabytecode.compiler.definitions;
 
-import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
-import org.openzen.zenscript.codemodel.definition.AliasDefinition;
-import org.openzen.zenscript.codemodel.definition.ClassDefinition;
-import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
-import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
-import org.openzen.zenscript.codemodel.definition.StructDefinition;
-import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
 import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
-import org.openzen.zenscript.javashared.JavaTypeGenericVisitor;
-import org.openzen.zenscript.javashared.JavaVariantOption;
+import org.openzen.zenscript.javashared.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,37 +22,36 @@ import java.util.List;
 
 
 public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
+	final JavaTypeGenericVisitor javaTypeGenericVisitor;
 	private final JavaMethod ENUM_VALUEOF
 			= JavaMethod.getNativeStatic(JavaClass.CLASS, "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;");
-
 	private final JavaClassWriter outerWriter;
 	private final JavaBytecodeContext context;
-	final JavaTypeGenericVisitor javaTypeGenericVisitor;
 
-    public JavaDefinitionVisitor(JavaBytecodeContext context, JavaClassWriter outerWriter) {
+	public JavaDefinitionVisitor(JavaBytecodeContext context, JavaClassWriter outerWriter) {
 		this.context = context;
 		this.outerWriter = outerWriter;
-	    this.javaTypeGenericVisitor = new JavaTypeGenericVisitor(context);
+		this.javaTypeGenericVisitor = new JavaTypeGenericVisitor(context);
 	}
 
 	@Override
 	public byte[] visitClass(ClassDefinition definition) {
-        final String superTypeInternalName = definition.getSuperType() == null ? "java/lang/Object" : context.getInternalName(definition.getSuperType());
+		final String superTypeInternalName = definition.getSuperType() == null ? "java/lang/Object" : context.getInternalName(definition.getSuperType());
 
 		JavaClass toClass = context.getJavaClass(definition);
 		JavaClassWriter writer = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-        //TODO: Calculate signature from generic parameters
+		//TODO: Calculate signature from generic parameters
 		List<String> interfaces = new ArrayList<>();
 		for (IDefinitionMember member : definition.members) {
 			if (member instanceof ImplementationMember)
 				interfaces.add(context.getInternalName(((ImplementationMember) member).type));
 		}
-        String signature;
+		String signature;
 
 		{
 			final StringBuilder signatureBuilder = new StringBuilder();
-			if(definition.typeParameters.length != 0) {
+			if (definition.typeParameters.length != 0) {
 				signatureBuilder.append("<");
 				for (TypeParameter typeParameter : definition.typeParameters) {
 					signatureBuilder.append(typeParameter.name);
@@ -75,7 +63,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 
 			signatureBuilder.append("L").append(superTypeInternalName).append(";");
 			for (IDefinitionMember member : definition.members) {
-				if(member instanceof ImplementationMember) {
+				if (member instanceof ImplementationMember) {
 					signatureBuilder.append(context.getInternalName(((ImplementationMember) member).type));
 				}
 			}
@@ -83,7 +71,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			signature = signatureBuilder.toString();
 		}
 
-        writer.visit(Opcodes.V1_8, JavaModifiers.getJavaModifiers(definition.modifiers), toClass.internalName, signature, superTypeInternalName, interfaces.toArray(new String[0]));
+		writer.visit(Opcodes.V1_8, JavaModifiers.getJavaModifiers(definition.modifiers), toClass.internalName, signature, superTypeInternalName, interfaces.toArray(new String[0]));
 		for (TypeParameter typeParameter : definition.typeParameters) {
 			//Add it to the class
 			writer.visitField(
@@ -97,9 +85,9 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		}
 
 		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(context, writer, toClass, definition);
-        for (IDefinitionMember member : definition.members) {
-            member.accept(memberVisitor);
-        }
+		for (IDefinitionMember member : definition.members) {
+			member.accept(memberVisitor);
+		}
 		memberVisitor.end();
 		writer.visitEnd();
 		return writer.toByteArray();
@@ -140,17 +128,17 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		//Enum Stuff(required!)
 		writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL | Opcodes.ACC_SYNTHETIC, "$VALUES", "[L" + toClass.internalName + ";", null, null).visitEnd();
 
-        final JavaMemberVisitor visitor = new JavaMemberVisitor(context, writer, toClass, definition);
-        for (IDefinitionMember member : definition.members) {
-            member.accept(visitor);
-        }
-        visitor.end();
+		final JavaMemberVisitor visitor = new JavaMemberVisitor(context, writer, toClass, definition);
+		for (IDefinitionMember member : definition.members) {
+			member.accept(visitor);
+		}
+		visitor.end();
 
 		JavaMethod valuesMethod = JavaMethod.getStatic(toClass, "values", "()[L" + toClass.internalName + ";", Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC);
 		JavaWriter valuesWriter = new JavaWriter(context.logger, definition.position, writer, true, valuesMethod, definition, null, null);
 		valuesWriter.start();
 		valuesWriter.getStaticField(toClass.internalName, "$VALUES", "[L" + toClass.internalName + ";");
-		
+
 		final JavaMethod arrayClone = JavaMethod.getNativeVirtual(JavaClass.fromInternalName("[L" + toClass.internalName + ";", JavaClass.Kind.ARRAY), "clone", "()Ljava/lang/Object;");
 		valuesWriter.invokeVirtual(arrayClone);
 		valuesWriter.checkCast("[L" + toClass.internalName + ";");
@@ -179,14 +167,14 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 	@Override
 	public byte[] visitFunction(FunctionDefinition definition) {
 		CompilerUtils.tagMethodParameters(context, context.getJavaModule(definition.module), definition.header, true, Collections
-                .emptyList());
+				.emptyList());
 
-        final String signature = context.getMethodSignature(definition.header);
+		final String signature = context.getMethodSignature(definition.header);
 		final JavaMethod method = context.getJavaMethod(definition.caller);
 
 		final JavaWriter writer = new JavaWriter(context.logger, definition.position, outerWriter, true, method, definition, signature, null);
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer);
-        statementVisitor.start();
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, context.getJavaModule(definition.module), writer);
+		statementVisitor.start();
 		boolean returns = definition.caller.body.accept(statementVisitor);
 		if (!returns) {
 			TypeID type = definition.header.getReturnType();
@@ -208,7 +196,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		final JavaClass expansionClassInfo = context.getJavaModule(definition.module).getExpansionClassInfo(definition);
 		final String internalName = expansionClassInfo.internalName;
 
-		writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC |Opcodes.ACC_STATIC, internalName, null, "java/lang/Object", null);
+		writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, internalName, null, "java/lang/Object", null);
 		JavaExpansionMemberVisitor memberVisitor = new JavaExpansionMemberVisitor(context, writer, definition.target, definition);
 
 		for (IDefinitionMember member : definition.members) {

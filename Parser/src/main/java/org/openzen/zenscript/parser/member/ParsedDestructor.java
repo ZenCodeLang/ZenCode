@@ -13,7 +13,7 @@ import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
 public class ParsedDestructor extends ParsedFunctionalMember {
 	private DestructorMember compiled;
-	
+
 	public ParsedDestructor(
 			CodePosition position,
 			HighLevelDefinition definition,

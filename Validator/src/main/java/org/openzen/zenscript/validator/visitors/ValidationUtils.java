@@ -5,49 +5,54 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import org.openzen.zencode.shared.*;
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.*;
-import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.scope.*;
-import org.openzen.zenscript.codemodel.statement.*;
-import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.codemodel.type.member.*;
-import org.openzen.zenscript.validator.*;
+import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.member.FieldMember;
+import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.validator.TypeContext;
+import org.openzen.zenscript.validator.ValidationLogEntry;
+import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import static org.openzen.zenscript.validator.ValidationLogEntry.Code.*;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ValidationUtils {
 	private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z_0-9]*$");
 
+	private ValidationUtils() {
+	}
+
 	public static void validateValidOverride(Validator target, CodePosition position, TypeScope scope, FunctionHeader header, FunctionHeader overridden) {
 		if (!header.canOverride(scope, overridden))
 			target.logError(INVALID_OVERRIDE, position, "Invalid override: incompatible parameters or return type");
 	}
-	
-	private ValidationUtils() {}
-	
-	public static void validateIdentifier(Validator target, CodePosition position, String identifier) { 
+
+	public static void validateIdentifier(Validator target, CodePosition position, String identifier) {
 		if (identifier == null || !IDENTIFIER_PATTERN.matcher(identifier).matches()) {
 			target.logError(INVALID_IDENTIFIER, position, "Invalid identifier: " + identifier);
 		}
 	}
-	
+
 	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header, AccessScope access) {
-	    validateHeader(target, position, header, access, new LocalMemberCache(target.registry, target.expansions));
-    }
-	
+		validateHeader(target, position, header, access, new LocalMemberCache(target.registry, target.expansions));
+	}
+
 	public static void validateHeader(Validator target, CodePosition position, FunctionHeader header, AccessScope access, LocalMemberCache localMemberCache) {
-        TypeValidator typeValidator = new TypeValidator(target, position);
+		TypeValidator typeValidator = new TypeValidator(target, position);
 		typeValidator.validate(TypeContext.RETURN_TYPE, header.getReturnType());
 
 		Set<String> parameterNames = new HashSet<>();
@@ -56,19 +61,19 @@ public class ValidationUtils {
 			if (parameterNames.contains(parameter.name)) {
 				target.logError(DUPLICATE_PARAMETER_NAME, position, "Duplicate parameter name: " + parameter.name);
 			}
-			
+
 			parameterNames.add(parameter.name);
 			typeValidator.validate(TypeContext.PARAMETER_TYPE, parameter.type);
-            
-            final Expression defaultValue = parameter.defaultValue;
-            if (defaultValue != null) {
+
+			final Expression defaultValue = parameter.defaultValue;
+			if (defaultValue != null) {
 				defaultValue.accept(new ExpressionValidator(target, new DefaultParameterValueExpressionScope(access)));
-                typeValidator.validate(TypeContext.PARAMETER_TYPE, defaultValue.type);
-                if(!defaultValue.type.equals(parameter.type) && !localMemberCache.get(defaultValue.type).canCastImplicit(parameter.type)) {
-                    target.logError(INVALID_TYPE, position, "default value does not match parameter type");
-                }
-            }
-			
+				typeValidator.validate(TypeContext.PARAMETER_TYPE, defaultValue.type);
+				if (!defaultValue.type.equals(parameter.type) && !localMemberCache.get(defaultValue.type).canCastImplicit(parameter.type)) {
+					target.logError(INVALID_TYPE, position, "default value does not match parameter type");
+				}
+			}
+
 			if (parameter.variadic) {
 				if (i != header.parameters.length - 1) {
 					target.logError(VARIADIC_PARAMETER_MUST_BE_LAST, position, "variadic parameter must be the last parameter");
@@ -80,14 +85,13 @@ public class ValidationUtils {
 			i++;
 		}
 	}
-	
+
 	public static void validateModifiers(
 			Validator target,
 			int modifiers,
 			int allowedModifiers,
 			CodePosition position,
-			String error)
-	{
+			String error) {
 		if (Modifiers.isPublic(modifiers) && Modifiers.isInternal(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine public and internal");
 		if (Modifiers.isPublic(modifiers) && Modifiers.isPrivate(modifiers))
@@ -100,18 +104,18 @@ public class ValidationUtils {
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine internal and protected");
 		if (Modifiers.isPrivate(modifiers) && Modifiers.isProtected(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine private and protected");
-		
+
 		if (Modifiers.isConst(modifiers) && Modifiers.isConstOptional(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine const and const?");
 		if (Modifiers.isFinal(modifiers) && Modifiers.isAbstract(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine abstract and final");
 		if (Modifiers.isFinal(modifiers) && Modifiers.isVirtual(modifiers))
 			target.logError(INVALID_MODIFIER, position, error + ": cannot combine final and virtual");
-		
+
 		int invalid = modifiers & ~allowedModifiers;
 		if (invalid == 0)
 			return;
-		
+
 		if (Modifiers.isPublic(invalid))
 			target.logError(INVALID_MODIFIER, position, error + ": public");
 		if (Modifiers.isInternal(invalid))
@@ -133,23 +137,22 @@ public class ValidationUtils {
 		if (Modifiers.isVirtual(invalid))
 			target.logError(INVALID_MODIFIER, position, error + ": virtual");
 	}
-	
+
 	public static void validateTypeArguments(
 			Validator target,
 			CodePosition position,
 			TypeParameter[] typeParameters,
-			TypeID[] typeArguments)
-	{
+			TypeID[] typeArguments) {
 		if (typeParameters == null || typeParameters.length == 0) {
 			if (typeArguments == null || typeArguments.length == 0) {
 				return;
 			} else {
 				target.logError(
-					ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
-					position,
-					"Invalid number of type arguments: "
-							+ typeArguments.length
-							+ " arguments given but none expected");
+						ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
+						position,
+						"Invalid number of type arguments: "
+								+ typeArguments.length
+								+ " arguments given but none expected");
 				return;
 			}
 		}
@@ -162,7 +165,7 @@ public class ValidationUtils {
 							+ " arguments expected but none given");
 			return;
 		}
-		
+
 		if (typeParameters.length != typeArguments.length) {
 			target.logError(
 					ValidationLogEntry.Code.INVALID_TYPE_ARGUMENT,
@@ -174,7 +177,7 @@ public class ValidationUtils {
 							+ " expected");
 			return;
 		}
-		
+
 		for (int i = 0; i < typeParameters.length; i++) {
 			TypeParameter typeParameter = typeParameters[i];
 			for (TypeParameterBound bound : typeParameter.bounds) {
@@ -189,11 +192,11 @@ public class ValidationUtils {
 			}
 		}
 	}
-	
+
 	private static class TypeParameterBoundErrorVisitor implements GenericParameterBoundVisitor<String> {
 		private final TypeID type;
 		private final Validator target;
-		
+
 		public TypeParameterBoundErrorVisitor(TypeID type, Validator target) {
 			this.type = type;
 			this.target = target;
@@ -209,14 +212,14 @@ public class ValidationUtils {
 			return type.toString() + " is does not extend or implement " + bound.type.toString();
 		}
 	}
-	
+
 	private static class DefaultParameterValueExpressionScope implements ExpressionScope {
 		private final AccessScope access;
-		
+
 		public DefaultParameterValueExpressionScope(AccessScope access) {
 			this.access = access;
 		}
-		
+
 		@Override
 		public boolean isConstructor() {
 			return false;
@@ -239,7 +242,7 @@ public class ValidationUtils {
 
 		@Override
 		public void markConstructorForwarded() {
-			
+
 		}
 
 		@Override

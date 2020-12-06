@@ -15,11 +15,11 @@ public class SourceDirectoryPackage implements SourcePackage {
 	public final String name;
 	public final Map<String, SourceDirectoryPackage> subPackages = new HashMap<>();
 	public final Map<String, SourceFile> sourceFiles = new HashMap<>();
-	
+
 	public SourceDirectoryPackage(File directory, String name) {
 		this.directory = directory;
 		this.name = name;
-		
+
 		for (File file : directory.listFiles()) {
 			if (file.isDirectory())
 				subPackages.put(file.getName(), new SourceDirectoryPackage(file, file.getName()));
@@ -27,11 +27,11 @@ public class SourceDirectoryPackage implements SourcePackage {
 				sourceFiles.put(file.getName(), new FileSourceFile(file.getName(), file));
 		}
 	}
-	
+
 	public void addPackage(SourceDirectoryPackage pkg) {
 		subPackages.put(pkg.name, pkg);
 	}
-	
+
 	public void addFile(SourceFile file) {
 		sourceFiles.put(file.getFilename(), file);
 	}
@@ -55,7 +55,7 @@ public class SourceDirectoryPackage implements SourcePackage {
 	public SourcePackage createSubPackage(String name) {
 		File file = new File(directory, name);
 		file.mkdir();
-		
+
 		SourceDirectoryPackage sourcePackage = new SourceDirectoryPackage(file, name);
 		subPackages.put(name, sourcePackage);
 		return sourcePackage;
@@ -69,7 +69,7 @@ public class SourceDirectoryPackage implements SourcePackage {
 		} catch (IOException ex) {
 			ex.printStackTrace(); // TODO
 		}
-		
+
 		FileSourceFile sourceFile = new FileSourceFile(name, file);
 		sourceFiles.put(name, sourceFile);
 		return sourceFile;

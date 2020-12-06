@@ -9,31 +9,30 @@ import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public class CasterMember extends FunctionalMember {
 	public TypeID toType;
 	public CasterMemberRef overrides;
-	
+
 	public CasterMember(
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
 			TypeID toType,
-			BuiltinID builtin)
-	{
+			BuiltinID builtin) {
 		super(position, definition, modifiers, new FunctionHeader(toType), builtin);
-		
+
 		this.toType = toType;
 	}
-	
+
 	@Override
 	public String getCanonicalName() {
 		return definition.getFullName() + ":caster:" + toType.toString();
 	}
-	
+
 	@Override
 	public FunctionalKind getKind() {
 		return FunctionalKind.CASTER;
@@ -48,11 +47,11 @@ public class CasterMember extends FunctionalMember {
 	public String describe() {
 		return "caster to " + toType.toString();
 	}
-	
+
 	public TypeID getTargetType() {
 		return toType;
 	}
-	
+
 	public boolean isImplicit() {
 		return Modifiers.isImplicit(modifiers);
 	}
@@ -61,21 +60,21 @@ public class CasterMember extends FunctionalMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitCaster(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitCaster(context, this);
 	}
-	
+
 	@Override
 	public int getEffectiveModifiers() {
 		int result = super.getEffectiveModifiers();
 		if (overrides != null && overrides.getTarget().getDefinition().isInterface())
 			result |= Modifiers.PUBLIC;
-		
+
 		return result;
 	}
-	
+
 	public void setOverrides(GlobalTypeRegistry registry, CasterMemberRef overrides) {
 		this.overrides = overrides;
 	}
@@ -84,7 +83,7 @@ public class CasterMember extends FunctionalMember {
 	public CasterMemberRef getOverrides() {
 		return overrides;
 	}
-	
+
 	@Override
 	public void normalize(TypeScope scope) {
 		super.normalize(scope);

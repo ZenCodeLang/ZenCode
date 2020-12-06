@@ -9,16 +9,16 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class EnumConstantExpression extends Expression {
 	public final EnumConstantMember value;
-	
+
 	public EnumConstantExpression(CodePosition position, TypeID type, EnumConstantMember value) {
 		super(position, type, null);
-		
+
 		this.value = value;
 	}
-	
+
 	public EnumConstantExpression(CodePosition position, GlobalTypeRegistry registry, EnumDefinition type, EnumConstantMember value) {
 		super(position, registry.getForDefinition(type), null);
-		
+
 		this.value = value;
 	}
 
@@ -36,7 +36,7 @@ public class EnumConstantExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}
-	
+
 	@Override
 	public EnumConstantMember evaluateEnumConstant() {
 		return value;

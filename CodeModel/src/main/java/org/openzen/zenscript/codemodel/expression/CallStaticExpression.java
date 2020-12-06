@@ -11,10 +11,10 @@ public class CallStaticExpression extends Expression {
 	public final TypeID target;
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
-	
+
 	public CallStaticExpression(CodePosition position, TypeID target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments) {
 		super(position, instancedHeader.getReturnType(), multiThrow(position, arguments.arguments));
-		
+
 		this.member = member;
 		this.target = target;
 		this.arguments = arguments;

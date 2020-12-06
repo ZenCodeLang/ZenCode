@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ExpansionDefinition extends HighLevelDefinition {
 	public TypeID target;
-	
+
 	public ExpansionDefinition(CodePosition position, Module module, ZSPackage pkg, int modifiers, HighLevelDefinition outerDefinition) {
 		super(position, module, pkg, null, modifiers, outerDefinition);
 	}

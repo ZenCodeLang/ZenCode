@@ -1,6 +1,5 @@
 package org.openzen.zenscript.parser.expression;
 
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -10,6 +9,8 @@ import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.List;
 
 public class ParsedExpressionAssign extends ParsedExpression {
 	private final ParsedExpression left;

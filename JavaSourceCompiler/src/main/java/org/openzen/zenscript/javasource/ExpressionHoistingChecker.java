@@ -76,13 +76,13 @@ import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
 import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	public static final ExpressionHoistingChecker INSTANCE = new ExpressionHoistingChecker();
-	
-	private ExpressionHoistingChecker() {}
+
+	private ExpressionHoistingChecker() {
+	}
 
 	@Override
 	public Boolean visitAndAnd(AndAndExpression expression) {
@@ -153,7 +153,7 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	public Boolean visitConditional(ConditionalExpression expression) {
 		return true;
 	}
-	
+
 	@Override
 	public Boolean visitConst(ConstExpression expression) {
 		return false;
@@ -328,7 +328,7 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	public Boolean visitOrOr(OrOrExpression expression) {
 		return true;
 	}
-	
+
 	@Override
 	public Boolean visitPanic(PanicExpression expression) {
 		return true;
@@ -383,7 +383,7 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	public Boolean visitStaticSetter(StaticSetterExpression expression) {
 		return true;
 	}
-	
+
 	@Override
 	public Boolean visitStorageCast(StorageCastExpression expression) {
 		return false;

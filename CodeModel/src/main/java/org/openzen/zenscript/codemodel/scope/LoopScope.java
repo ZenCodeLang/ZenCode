@@ -1,28 +1,29 @@
 package org.openzen.zenscript.codemodel.scope;
 
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 
+import java.util.List;
+
 public class LoopScope extends StatementScope {
 	private final StatementScope outer;
 	private final LoopStatement statement;
-	
+
 	public LoopScope(LoopStatement statement, StatementScope outer) {
 		this.statement = statement;
 		this.outer = outer;
 	}
-	
+
 	@Override
 	public ZSPackage getRootPackage() {
 		return outer.getRootPackage();
@@ -38,7 +39,7 @@ public class LoopScope extends StatementScope {
 		IPartialExpression result = super.get(position, name);
 		if (result != null)
 			return result;
-		
+
 		return outer.get(position, name);
 	}
 
@@ -51,10 +52,10 @@ public class LoopScope extends StatementScope {
 	public LoopStatement getLoop(String name) {
 		if (name == null)
 			return statement;
-		
+
 		if (statement.label != null && statement.label.equals(name))
 			return statement;
-		
+
 		return outer.getLoop(name);
 	}
 
@@ -72,7 +73,7 @@ public class LoopScope extends StatementScope {
 	public DollarEvaluator getDollar() {
 		return outer.getDollar();
 	}
-	
+
 	@Override
 	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);

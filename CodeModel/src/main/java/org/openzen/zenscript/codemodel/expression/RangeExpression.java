@@ -8,17 +8,17 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public class RangeExpression extends Expression {
 	public final Expression from;
 	public final Expression to;
-	
+
 	public RangeExpression(CodePosition position, TypeID type, Expression from, Expression to) {
 		super(position, type, binaryThrow(position, from.thrownType, to.thrownType));
-	
+
 		this.from = from;
 		this.to = to;
 	}
-	
+
 	private RangeExpression(CodePosition position, TypeID type, Expression from, Expression to, TypeID thrownType) {
 		super(position, type, thrownType);
-		
+
 		this.from = from;
 		this.to = to;
 	}
@@ -42,7 +42,7 @@ public class RangeExpression extends Expression {
 
 	@Override
 	public Expression normalize(TypeScope scope) {
-		TypeID baseType = ((RangeTypeID)type).baseType;
+		TypeID baseType = ((RangeTypeID) type).baseType;
 		return new RangeExpression(
 				position,
 				type.getNormalized(),

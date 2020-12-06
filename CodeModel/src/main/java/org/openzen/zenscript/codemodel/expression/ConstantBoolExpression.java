@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ConstantBoolExpression extends Expression {
 	public final boolean value;
-	
+
 	public ConstantBoolExpression(CodePosition position, boolean value) {
 		super(position, BasicTypeID.BOOL, null);
-		
+
 		this.value = value;
 	}
 

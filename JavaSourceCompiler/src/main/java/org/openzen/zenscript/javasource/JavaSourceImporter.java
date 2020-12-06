@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceImporter {
@@ -23,20 +23,20 @@ public class JavaSourceImporter {
 	private final Map<String, JavaClass> imports = new HashMap<>();
 	private final Set<JavaClass> usedImports = new HashSet<>();
 	private final JavaContext context;
-	
+
 	public JavaSourceImporter(JavaContext context, JavaClass cls) {
 		this.cls = cls;
 		this.context = context;
 	}
-	
+
 	public String importType(HighLevelDefinition definition) {
 		return importType(context.getJavaClass(definition));
 	}
-	
+
 	public String importType(JavaClass cls) {
 		if (cls == null)
 			throw new NullPointerException();
-		
+
 		if (cls.outer != null && imports.containsKey(cls.outer.getName())) {
 			JavaClass imported = imports.get(cls.outer.getName());
 			usedImports.add(imported);
@@ -44,12 +44,12 @@ public class JavaSourceImporter {
 		}
 		if (cls.pkg.equals(this.cls.pkg))
 			return cls.getClassName();
-		
+
 		imports.put(cls.outer.getName(), cls.outer);
 		usedImports.add(cls.outer);
 		return cls.getClassName();
 	}
-	
+
 	public JavaClass[] getUsedImports() {
 		JavaClass[] imports = usedImports.toArray(new JavaClass[usedImports.size()]);
 		Arrays.sort(imports);

@@ -1,21 +1,17 @@
 package org.openzen.zenscript.parser.statements;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.statement.CatchClause;
-import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.statement.InvalidStatement;
-import org.openzen.zenscript.codemodel.statement.VariableID;
+import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParsedStatementTryCatch extends ParsedStatement {
 	public final String resourceName;
@@ -23,7 +19,7 @@ public class ParsedStatementTryCatch extends ParsedStatement {
 	public final ParsedStatement statement;
 	public final List<ParsedCatchClause> catchClauses;
 	public final ParsedStatement finallyClause;
-	
+
 	public ParsedStatementTryCatch(
 			CodePosition position,
 			ParsedAnnotation[] annotations,
@@ -34,7 +30,7 @@ public class ParsedStatementTryCatch extends ParsedStatement {
 			List<ParsedCatchClause> catchClauses,
 			ParsedStatement finallyClause) {
 		super(position, annotations, whitespace);
-		
+
 		this.resourceName = resourceName;
 		this.resourceInitializer = resourceInitializer;
 		this.statement = statement;

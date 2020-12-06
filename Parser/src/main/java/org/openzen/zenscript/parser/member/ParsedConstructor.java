@@ -16,10 +16,10 @@ import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 public class ParsedConstructor extends ParsedFunctionalMember {
 	private final ParsedFunctionHeader header;
 	private ConstructorMember compiled;
-	
+
 	public ParsedConstructor(CodePosition position, HighLevelDefinition definition, ParsedImplementation implementation, int modifiers, ParsedAnnotation[] annotations, ParsedFunctionHeader header, ParsedFunctionBody body) {
 		super(position, definition, implementation, modifiers, annotations, body);
-		
+
 		this.header = header;
 	}
 

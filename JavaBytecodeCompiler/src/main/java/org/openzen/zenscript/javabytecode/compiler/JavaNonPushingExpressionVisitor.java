@@ -6,76 +6,7 @@
 package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
-import org.openzen.zenscript.codemodel.expression.AndAndExpression;
-import org.openzen.zenscript.codemodel.expression.ArrayExpression;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
-import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedClosureExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedDirectExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedParameterExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedThisExpression;
-import org.openzen.zenscript.codemodel.expression.CastExpression;
-import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
-import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
-import org.openzen.zenscript.codemodel.expression.CompareExpression;
-import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
-import org.openzen.zenscript.codemodel.expression.ConstExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantLongExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantSByteExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantShortExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
-import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
-import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
-import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
-import org.openzen.zenscript.codemodel.expression.FunctionExpression;
-import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
-import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
-import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
-import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
-import org.openzen.zenscript.codemodel.expression.GetterExpression;
-import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
-import org.openzen.zenscript.codemodel.expression.GlobalExpression;
-import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
-import org.openzen.zenscript.codemodel.expression.IsExpression;
-import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
-import org.openzen.zenscript.codemodel.expression.MapExpression;
-import org.openzen.zenscript.codemodel.expression.MatchExpression;
-import org.openzen.zenscript.codemodel.expression.NewExpression;
-import org.openzen.zenscript.codemodel.expression.NullExpression;
-import org.openzen.zenscript.codemodel.expression.OrOrExpression;
-import org.openzen.zenscript.codemodel.expression.PanicExpression;
-import org.openzen.zenscript.codemodel.expression.PostCallExpression;
-import org.openzen.zenscript.codemodel.expression.RangeExpression;
-import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
-import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
-import org.openzen.zenscript.codemodel.expression.SetFunctionParameterExpression;
-import org.openzen.zenscript.codemodel.expression.SetLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
-import org.openzen.zenscript.codemodel.expression.SetterExpression;
-import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
-import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
-import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
-import org.openzen.zenscript.codemodel.expression.ThisExpression;
-import org.openzen.zenscript.codemodel.expression.ThrowExpression;
-import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
-import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
-import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
-import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
-import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
+import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -87,7 +18,6 @@ import org.openzen.zenscript.javashared.JavaParameterInfo;
 import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExpression;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> {
@@ -95,7 +25,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	private final JavaCompiledModule module;
 	private final JavaWriter javaWriter;
 	private final JavaExpressionVisitor original;
-	
+
 	public JavaNonPushingExpressionVisitor(JavaBytecodeContext context, JavaCompiledModule module, JavaWriter javaWriter, JavaExpressionVisitor original) {
 		this.context = context;
 		this.module = module;
@@ -112,21 +42,21 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		javaWriter.label(end);
 		return null;
 	}
-	
+
 	private void fallback(Expression expression) {
 		expression.accept(original);
 		if (expression.type != BasicTypeID.VOID)
 			javaWriter.pop(CompilerUtils.isLarge(expression.type));
 	}
-	
+
 	private void modify(Expression source, Runnable modification) {
 		source.accept(new JavaModificationExpressionVisitor(context, module, javaWriter, original, modification, PushOption.NONE));
 	}
-	
+
 	private boolean compileIncrementOrDecrement(Expression target, BuiltinID builtin) {
 		if (builtin == null)
 			return false;
-		
+
 		switch (builtin) {
 			case BYTE_INC:
 				modify(target, () -> {
@@ -192,7 +122,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 			case UINT_INC:
 			case USIZE_INC:
 				if (target instanceof GetLocalVariableExpression) {
-					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)target).variable.variable);
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) target).variable.variable);
 					javaWriter.iinc(local.local);
 				} else {
 					modify(target, () -> {
@@ -205,7 +135,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 			case UINT_DEC:
 			case USIZE_DEC:
 				if (target instanceof GetLocalVariableExpression) {
-					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression)target).variable.variable);
+					JavaLocalVariableInfo local = javaWriter.getLocalVariable(((GetLocalVariableExpression) target).variable.variable);
 					javaWriter.iinc(local.local, -1);
 				} else {
 					modify(target, () -> {
@@ -261,7 +191,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	public Void visitArray(ArrayExpression expression) {
 		for (Expression value : expression.expressions)
 			value.accept(this);
-		
+
 		return null;
 	}
 
@@ -276,7 +206,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	public Void visitCall(CallExpression expression) {
 		if (!compileIncrementOrDecrement(expression.target, expression.member.getBuiltin()))
 			fallback(expression);
-		
+
 		return null;
 	}
 
@@ -578,7 +508,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 	public Void visitPostCall(PostCallExpression expression) {
 		if (!compileIncrementOrDecrement(expression.target, expression.member.getBuiltin()))
 			fallback(expression);
-		
+
 		return null;
 	}
 

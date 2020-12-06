@@ -5,55 +5,29 @@
  */
 package org.openzen.zenscript.javashared.prepare;
 
-import org.openzen.zenscript.javashared.JavaNativeClass;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
-import org.openzen.zenscript.codemodel.member.CallerMember;
-import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.codemodel.member.ConstMember;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.IteratorMember;
-import org.openzen.zenscript.codemodel.member.DefinitionMember;
-import org.openzen.zenscript.codemodel.member.DestructorMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
-import org.openzen.zenscript.codemodel.member.MemberVisitor;
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaContext;
-import org.openzen.zenscript.javashared.JavaImplementation;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaModifiers;
+import org.openzen.zenscript.javashared.*;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	private static final boolean DEBUG_EMPTY = true;
-	
+
 	private final JavaContext context;
 	private final JavaCompiledModule module;
 	private final JavaClass cls;
 	private final JavaNativeClass nativeClass;
 	private final JavaPrepareDefinitionMemberVisitor memberPreparer;
-	
+
 	public JavaPrepareClassMethodVisitor(
 			JavaContext context,
 			JavaCompiledModule module,
@@ -66,20 +40,20 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		this.cls = cls;
 		this.nativeClass = nativeClass;
 		this.memberPreparer = memberPreparer;
-		
+
 		cls.empty = startsEmpty;
 	}
-	
+
 	@Override
 	public Void visitConst(ConstMember member) {
 		if (DEBUG_EMPTY && cls.empty)
 			context.logger.trace("Class " + cls.fullName + " not empty because of const " + member.name);
-		
+
 		cls.empty = false;
 		module.setFieldInfo(member, new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType())));
 		return null;
 	}
-	
+
 	@Override
 	public Void visitField(FieldMember member) {
 		JavaField field = new JavaField(cls, member.name, context.getDescriptor(member.getType()), context.getSignature(member.getType()));
@@ -92,7 +66,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 			visitSetter(member.autoSetter);
 			module.setFieldInfo(member.autoSetter, field);
 		}
-		
+
 		return null;
 	}
 
@@ -106,7 +80,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	public Void visitDestructor(DestructorMember member) {
 		if (DEBUG_EMPTY && cls.empty)
 			context.logger.trace("Class " + cls.fullName + " not empty because of destructor");
-		
+
 		cls.empty = false;
 		return null;
 	}
@@ -156,7 +130,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitImplementation(ImplementationMember member) {
 		memberPreparer.prepare(member.type);
-		
+
 		if (canMergeImplementation(member)) {
 			module.setImplementationInfo(member, new JavaImplementation(true, cls));
 			for (IDefinitionMember m : member.members)
@@ -164,19 +138,19 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 		} else {
 			if (DEBUG_EMPTY && cls.empty)
 				context.logger.trace("Class " + cls.fullName + " not empty because of unmergeable implementation");
-			
+
 			cls.empty = false;
-			
+
 			JavaClass implementationClass = new JavaClass(cls, JavaTypeNameVisitor.INSTANCE.process(member.type) + "Implementation", JavaClass.Kind.CLASS);
 			module.setImplementationInfo(member, new JavaImplementation(false, implementationClass));
-			
+
 			JavaPrepareClassMethodVisitor visitor = new JavaPrepareClassMethodVisitor(context, module, implementationClass, null, memberPreparer, true);
 			for (IDefinitionMember m : member.members)
 				m.accept(visitor);
 		}
 		return null;
 	}
-	
+
 	private boolean canMergeImplementation(ImplementationMember member) {
 		return true; // TODO: implementation merge check
 	}
@@ -185,7 +159,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	public Void visitInnerDefinition(InnerDefinitionMember member) {
 		JavaPrepareDefinitionMemberVisitor innerDefinitionPrepare = new JavaPrepareDefinitionMemberVisitor(context, module);
 		member.innerDefinition.accept(innerDefinitionPrepare);
-		
+
 		if (DEBUG_EMPTY && cls.empty)
 			context.logger.trace("Class " + cls.fullName + " not empty because of inner definition " + member.innerDefinition.name);
 		cls.empty = false;
@@ -196,18 +170,18 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 	public Void visitStaticInitializer(StaticInitializerMember member) {
 		if (DEBUG_EMPTY && cls.empty)
 			context.logger.trace("Class " + cls.fullName + " not empty because of static initializer");
-		
+
 		cls.empty = false;
 		return null;
 	}
-	
+
 	private JavaMethod.Kind getKind(DefinitionMember member) {
 		if (member instanceof ConstructorMember)
 			return JavaMethod.Kind.CONSTRUCTOR;
-		
+
 		return member.isStatic() ? JavaMethod.Kind.STATIC : JavaMethod.Kind.INSTANCE;
 	}
-	
+
 	private String getOperatorName(OperatorType operator) {
 		switch (operator) {
 			case NEG:
@@ -290,19 +264,19 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 				throw new IllegalArgumentException("Invalid operator: " + operator);
 		}
 	}
-	
+
 	private void visitFunctional(DefinitionMember member, FunctionHeader header, String name) {
 		NativeTag nativeTag = member.getTag(NativeTag.class);
 		JavaMethod method = null;
 		if (nativeTag != null && nativeClass != null)
 			method = nativeClass.getMethod(nativeTag.value);
-		
+
 		int modifiers = cls.kind == JavaClass.Kind.INTERFACE ? JavaModifiers.ABSTRACT : 0;
 		if (member.getOverrides() != null) {
 			DefinitionMemberRef base = member.getOverrides();
-			
+
 			JavaMethod baseMethod = context.getJavaMethod(base.getTarget());
-			
+
 			method = new JavaMethod(
 					cls,
 					baseMethod.kind,
@@ -313,7 +287,7 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 					header.getReturnType() instanceof GenericTypeID,
 					header.useTypeParameters());
 		} else if (method == null) {
-			if(member instanceof ConstructorMember) {
+			if (member instanceof ConstructorMember) {
 				method = new JavaMethod(
 						cls,
 						getKind(member),
@@ -336,14 +310,14 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 						header.useTypeParameters());
 			}
 		}
-		
+
 		if (method.compile && member.getBuiltin() != BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) {
 			if (DEBUG_EMPTY && cls.empty)
 				context.logger.trace("Class " + cls.fullName + " not empty because of " + member.describe());
-			
+
 			cls.empty = false;
 		}
-		
+
 		module.setMethodInfo(member, method);
 	}
 }

@@ -9,7 +9,6 @@ import org.openzen.drawablegui.border.DBorder;
 import org.openzen.drawablegui.border.DEmptyBorder;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DBaseStyle {
@@ -18,7 +17,7 @@ public class DBaseStyle {
 	public final DShadow shadow;
 	public final DShape shape;
 	public final int backgroundColor;
-	
+
 	public DBaseStyle(DStyleDefinition style) {
 		border = style.getBorder("border", DEmptyBorder.ELEMENT);
 		backgroundColor = style.getColor("backgroundColor", 0);
@@ -26,7 +25,7 @@ public class DBaseStyle {
 		shape = style.getShape("shape", DRectangleShape.ELEMENT);
 		shadow = style.getShadow("shadow", DShadow.NONE_ELEMENT);
 	}
-	
+
 	public DBaseStyle(DStyleDefinition style, DBorderElement defaultBorder, int defaultBackgroundColor) {
 		border = style.getBorder("border", defaultBorder);
 		backgroundColor = style.getColor("backgroundColor", defaultBackgroundColor);
@@ -34,7 +33,7 @@ public class DBaseStyle {
 		shape = style.getShape("shape", DRectangleShape.ELEMENT);
 		shadow = style.getShadow("shadow", DShadow.NONE_ELEMENT);
 	}
-	
+
 	public DBaseStyle(DStyleDefinition style, DBorderElement defaultBorder, int defaultBackgroundColor, DShapeElement defaultShape, DShadowElement defaultShadow) {
 		border = style.getBorder("border", defaultBorder);
 		backgroundColor = style.getColor("backgroundColor", defaultBackgroundColor);

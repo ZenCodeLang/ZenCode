@@ -1,11 +1,5 @@
 package org.openzen.zenscript.codemodel.statement;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -13,25 +7,38 @@ import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 public class BlockStatement extends Statement {
 	public final Statement[] statements;
-	
+
 	public BlockStatement(CodePosition position, Statement[] statements) {
 		super(position, getThrownType(statements));
-		
+
 		this.statements = statements;
+	}
+
+	private static TypeID getThrownType(Statement[] statements) {
+		TypeID result = null;
+		for (Statement statement : statements)
+			result = Expression.binaryThrow(statement.position, result, statement.thrownType);
+		return result;
 	}
 
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitBlock(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
 		return visitor.visitBlock(context, this);
 	}
-	
+
 	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
@@ -39,7 +46,7 @@ public class BlockStatement extends Statement {
 			s.forEachStatement(consumer);
 		}
 	}
-	
+
 	@Override
 	public Statement transform(StatementTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Statement[] tStatements = new Statement[statements.length];
@@ -64,13 +71,6 @@ public class BlockStatement extends Statement {
 		}
 		return unchanged ? this : new BlockStatement(position, tStatements);
 	}
-	
-	private static TypeID getThrownType(Statement[] statements) {
-		TypeID result = null;
-		for (Statement statement : statements)
-			result = Expression.binaryThrow(statement.position, result, statement.thrownType);
-		return result;
-	}
 
 	@Override
 	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
@@ -89,9 +89,9 @@ public class BlockStatement extends Statement {
 				.distinct()
 				.collect(Collectors.toList());
 
-		if(collect.isEmpty())
+		if (collect.isEmpty())
 			return super.getReturnType();
-		else if(collect.size() == 1)
+		else if (collect.size() == 1)
 			return collect.get(0);
 		else
 			//TODO make this real?

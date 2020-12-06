@@ -5,10 +5,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class CapturedClosureExpression extends CapturedExpression {
 	public final CapturedExpression value;
-	
+
 	public CapturedClosureExpression(CodePosition position, CapturedExpression value, LambdaClosure closure) {
 		super(position, value.type, closure);
-		
+
 		this.value = value;
 	}
 
@@ -33,7 +33,7 @@ public class CapturedClosureExpression extends CapturedExpression {
 		if (!(tValue instanceof CapturedExpression)) {
 			throw new IllegalStateException("Transformed CapturedExpression must also be a CapturedExpression!");
 		} else {
-			return tValue == value ? this : new CapturedClosureExpression(position, (CapturedExpression)tValue, closure);
+			return tValue == value ? this : new CapturedClosureExpression(position, (CapturedExpression) tValue, closure);
 		}
 	}
 

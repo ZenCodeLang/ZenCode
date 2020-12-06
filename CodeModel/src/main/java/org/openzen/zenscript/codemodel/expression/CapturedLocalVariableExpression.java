@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
 
 public class CapturedLocalVariableExpression extends CapturedExpression {
 	public final VarStatement variable;
-	
+
 	public CapturedLocalVariableExpression(CodePosition position, VarStatement variable, LambdaClosure closure) {
 		super(position, variable.type, closure);
-		
+
 		this.variable = variable;
 	}
 

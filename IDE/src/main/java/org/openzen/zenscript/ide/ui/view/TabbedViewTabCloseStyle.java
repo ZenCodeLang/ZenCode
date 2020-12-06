@@ -9,12 +9,11 @@ import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class TabbedViewTabCloseStyle {
 	public final int size;
-	
+
 	public TabbedViewTabCloseStyle(DStyleDefinition style) {
 		size = style.getDimension("size", new DDpDimension(16));
 	}

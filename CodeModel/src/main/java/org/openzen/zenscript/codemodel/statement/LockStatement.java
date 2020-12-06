@@ -1,19 +1,20 @@
 package org.openzen.zenscript.codemodel.statement;
 
-import java.util.function.Consumer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 
+import java.util.function.Consumer;
+
 public class LockStatement extends Statement {
 	public final Expression object;
 	public final Statement content;
-	
+
 	public LockStatement(CodePosition position, Expression object, Statement content) {
 		super(position, Expression.binaryThrow(position, object.thrownType, content.thrownType));
-		
+
 		this.object = object;
 		this.content = content;
 	}
@@ -22,12 +23,12 @@ public class LockStatement extends Statement {
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitLock(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
 		return visitor.visitLock(context, this);
 	}
-	
+
 	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);

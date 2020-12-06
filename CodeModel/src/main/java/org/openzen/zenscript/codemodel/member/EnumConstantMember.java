@@ -10,10 +10,10 @@ public class EnumConstantMember {
 	public final HighLevelDefinition definition;
 	public final String name;
 	public final int ordinal;
-	
+
 	public Expression value = null;
 	public NewExpression constructor = null;
-	
+
 	public EnumConstantMember(CodePosition position, HighLevelDefinition definition, String name, int ordinal) {
 		this.position = position;
 		this.definition = definition;

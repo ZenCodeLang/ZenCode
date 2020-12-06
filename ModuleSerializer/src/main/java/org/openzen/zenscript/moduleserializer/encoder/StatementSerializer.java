@@ -29,32 +29,30 @@ import org.openzen.zenscript.codemodel.statement.WhileStatement;
 import org.openzen.zenscript.moduleserialization.StatementEncoding;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class StatementSerializer implements StatementVisitorWithContext<StatementContext, Void> {
 	private final CodeSerializationOutput output;
 	private final boolean positions;
 	private final boolean localVariableNames;
-	
+
 	public StatementSerializer(
 			CodeSerializationOutput output,
 			boolean positions,
-			boolean localVariableNames)
-	{
+			boolean localVariableNames) {
 		this.output = output;
 		this.positions = positions;
 		this.localVariableNames = localVariableNames;
 	}
-	
+
 	private int getFlags(Statement statement) {
 		int flags = 0;
 		if (statement.position != CodePosition.UNKNOWN && positions)
 			flags |= StatementEncoding.FLAG_POSITION;
-		
+
 		return flags;
 	}
-	
+
 	private void encode(int flags, Statement statement) {
 		if ((flags & StatementEncoding.FLAG_POSITION) > 0)
 			output.serialize(statement.position);
@@ -65,7 +63,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		output.writeUInt(StatementEncoding.TYPE_BLOCK);
 		int flags = getFlags(statement);
 		encode(flags, statement);
-		
+
 		output.writeUInt(statement.statements.length);
 		StatementContext inner = new StatementContext(context);
 		for (Statement s : statement.statements)
@@ -78,7 +76,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		output.writeUInt(StatementEncoding.TYPE_BREAK);
 		int flags = getFlags(statement);
 		encode(flags, statement);
-		
+
 		output.writeUInt(context.getLoopId(statement.target));
 		return null;
 	}
@@ -88,7 +86,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		output.writeUInt(StatementEncoding.TYPE_CONTINUE);
 		int flags = getFlags(statement);
 		encode(flags, statement);
-		
+
 		output.writeUInt(context.getLoopId(statement.target));
 		return null;
 	}
@@ -100,7 +98,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		if (statement.label != null)
 			flags |= StatementEncoding.FLAG_LABEL;
 		encode(flags, statement);
-		
+
 		output.serialize(context, statement.condition);
 		if ((flags & StatementEncoding.FLAG_LABEL) > 0)
 			output.writeString(statement.label);
@@ -142,7 +140,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		StatementContext inner = new StatementContext(context, statement);
 		for (VarStatement variable : statement.loopVariables)
 			inner.add(variable);
-		
+
 		output.serialize(inner, statement.content);
 		return null;
 	}
@@ -186,12 +184,12 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		if (localVariableNames)
 			flags |= StatementEncoding.FLAG_NAME;
 		encode(flags, statement);
-		
+
 		output.serialize(context, statement.value);
 		if ((flags & StatementEncoding.FLAG_LABEL) > 0)
 			output.writeString(statement.label);
 		output.writeUInt(statement.cases.size());
-		
+
 		StatementContext inner = new StatementContext(context, statement);
 		for (SwitchCase case_ : statement.cases) {
 			output.serialize(context, case_.value);
@@ -217,7 +215,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		output.writeUInt(StatementEncoding.TYPE_TRY_CATCH);
 		int flags = getFlags(statement);
 		encode(flags, statement);
-		
+
 		throw new UnsupportedOperationException("Not supported yet");
 	}
 
@@ -230,12 +228,12 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		if (statement.name != null && localVariableNames)
 			flags |= StatementEncoding.FLAG_NAME;
 		encode(flags, statement);
-		
+
 		output.serialize(context, statement.type);
 		if ((flags & StatementEncoding.FLAG_NAME) > 0)
 			output.writeString(statement.name);
 		output.serialize(context, statement.initializer);
-		
+
 		context.add(statement);
 		return null;
 	}
@@ -247,7 +245,7 @@ public class StatementSerializer implements StatementVisitorWithContext<Statemen
 		if (statement.label != null)
 			flags |= StatementEncoding.FLAG_LABEL;
 		encode(flags, statement);
-		
+
 		output.serialize(context, statement.condition);
 		if ((flags & StatementEncoding.FLAG_LABEL) > 0)
 			output.writeString(statement.label);

@@ -6,13 +6,12 @@
 package org.openzen.drawablegui.scroll;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DScrollContext {
 	void scrollInView(int x, int y, int width, int height);
-	
+
 	int getViewportWidth();
-	
+
 	int getViewportHeight();
 }

@@ -1,8 +1,9 @@
 package live;
 
-import java.util.Iterator;
 import listeners.ListenerHandle;
 import listeners.ListenerList;
+
+import java.util.Iterator;
 
 // TODO: convert to zencode
 public class LivePrefixedList<T> implements LiveList<T> {
@@ -10,13 +11,13 @@ public class LivePrefixedList<T> implements LiveList<T> {
 	private final T prefix;
 	private final LiveList<T> values;
 	private final ListenerHandle<LiveList.Listener<T>> baseListener;
-	
+
 	public LivePrefixedList(T prefix, LiveList<T> values) {
 		this.prefix = prefix;
 		this.values = values;
 		this.baseListener = values.addListener(new BaseListener());
 	}
-	
+
 	@Override
 	public void close() {
 		baseListener.close();
@@ -59,7 +60,7 @@ public class LivePrefixedList<T> implements LiveList<T> {
 	public int indexOf(T value) {
 		if (value.equals(prefix))
 			return 0;
-		
+
 		int base = values.indexOf(value);
 		return base < 0 ? base : base - 1;
 	}
@@ -68,7 +69,7 @@ public class LivePrefixedList<T> implements LiveList<T> {
 	public int getLength() {
 		return values.getLength() + 1;
 	}
-	
+
 	@Override
 	public T getAt(int index) {
 		return index == 0 ? prefix : values.getAt(index);
@@ -83,7 +84,7 @@ public class LivePrefixedList<T> implements LiveList<T> {
 	public ListenerHandle<Listener<T>> addListener(Listener<T> listener) {
 		return listeners.add(listener);
 	}
-	
+
 	private class PrefixIterator implements Iterator<T> {
 		private boolean first = true;
 		private Iterator<T> others = values.iterator();
@@ -103,7 +104,7 @@ public class LivePrefixedList<T> implements LiveList<T> {
 			}
 		}
 	}
-	
+
 	private class BaseListener implements Listener<T> {
 		@Override
 		public void onInserted(int index, T value) {

@@ -10,13 +10,13 @@ public class InvalidStatementAnnotation implements StatementAnnotation {
 	public final CodePosition position;
 	public final CompileExceptionCode code;
 	public final String message;
-	
+
 	public InvalidStatementAnnotation(CodePosition position, CompileExceptionCode code, String message) {
 		this.position = position;
 		this.code = code;
 		this.message = message;
 	}
-	
+
 	public InvalidStatementAnnotation(CompileException ex) {
 		this.position = ex.position;
 		this.code = ex.code;

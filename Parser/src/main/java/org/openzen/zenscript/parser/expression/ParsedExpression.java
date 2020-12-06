@@ -1,48 +1,45 @@
 package org.openzen.zenscript.parser.expression;
 
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.StringExpansion;
-import static org.openzen.zencode.shared.StringExpansion.unescape;
-import static org.openzen.zenscript.lexer.ZSTokenType.*;
-
-import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.lexer.ParseException;
+import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 import org.openzen.zenscript.parser.type.IParsedType;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.openzen.zencode.shared.StringExpansion.unescape;
+import static org.openzen.zenscript.lexer.ZSTokenType.*;
+
 public abstract class ParsedExpression {
-	public static class ParsingOptions {
-		public static final ParsingOptions DEFAULT = new ParsingOptions(true);
-		
-		public final boolean allowLambda;
-		
-		public ParsingOptions(boolean allowLambda) {
-			this.allowLambda = allowLambda;
-		}
+	public final CodePosition position;
+
+	public ParsedExpression(CodePosition position) {
+		this.position = position;
 	}
-	
+
 	public static ParsedExpression parse(ZSTokenParser parser) throws ParseException {
 		return readAssignExpression(parser, ParsingOptions.DEFAULT);
 	}
-	
+
 	public static ParsedExpression parse(ZSTokenParser parser, ParsingOptions options) throws ParseException {
 		return readAssignExpression(parser, options);
 	}
@@ -116,12 +113,12 @@ public abstract class ParsedExpression {
 			ParsedExpression right = readAndAndExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionOrOr(position, left, right);
 		}
-		
+
 		while (parser.optional(T_COALESCE) != null) {
 			ParsedExpression right = readAndAndExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionCoalesce(position, left, right);
 		}
-		
+
 		return left;
 	}
 
@@ -235,10 +232,10 @@ public abstract class ParsedExpression {
 
 		return left;
 	}
-	
+
 	private static ParsedExpression readShiftExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
 		ParsedExpression left = readAddExpression(position, parser, options);
-		
+
 		while (true) {
 			if (parser.optional(T_SHL) != null) {
 				ParsedExpression right = readAddExpression(parser.getPosition(), parser, options);
@@ -253,13 +250,13 @@ public abstract class ParsedExpression {
 				break;
 			}
 		}
-		
+
 		return left;
 	}
 
 	private static ParsedExpression readAddExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
 		ParsedExpression left = readMulExpression(position, parser, options);
-		
+
 		while (true) {
 			if (parser.optional(T_ADD) != null) {
 				ParsedExpression right = readMulExpression(parser.getPosition(), parser, options);
@@ -368,7 +365,7 @@ public abstract class ParsedExpression {
 					ZSToken indexString2 = parser.optional(T_STRING_SQ);
 					if (indexString2 == null)
 						indexString2 = parser.optional(T_STRING_DQ);
-					
+
 					if (indexString2 != null) {
 						// TODO: handle this properly
 						base = new ParsedExpressionMember(position.until(parser.getPositionBeforeWhitespace()), base, unescape(indexString2.content).orElse("INVALID STRING"), Collections.emptyList());
@@ -408,7 +405,7 @@ public abstract class ParsedExpression {
 
 		return base;
 	}
-	
+
 	private static ParsedExpression readPrimaryExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
 		switch (parser.peek().getType()) {
 			case T_INT:
@@ -433,7 +430,7 @@ public abstract class ParsedExpression {
 				String name = parser.next().content;
 				if (name.startsWith("@"))
 					name = name.substring(1);
-				
+
 				List<IParsedType> genericParameters = IParsedType.parseTypeArguments(parser);
 				return new ParsedExpressionVariable(position.until(parser.getPositionBeforeWhitespace()), name, genericParameters);
 			}
@@ -499,7 +496,7 @@ public abstract class ParsedExpression {
 				parser.next();
 				List<ParsedExpression> expressions = new ArrayList<>();
 				do {
-					if(parser.peek().type == T_BRCLOSE) {
+					if (parser.peek().type == T_BRCLOSE) {
 						break;
 					}
 					expressions.add(readAssignExpression(parser, options));
@@ -513,7 +510,7 @@ public abstract class ParsedExpression {
 				ParsedCallArguments newArguments = ParsedCallArguments.NONE;
 				if (parser.isNext(ZSTokenType.T_BROPEN) || parser.isNext(ZSTokenType.T_LESS))
 					newArguments = ParsedCallArguments.parse(parser);
-				
+
 				return new ParsedNewExpression(position, type, newArguments);
 			}
 			case K_THROW: {
@@ -530,17 +527,17 @@ public abstract class ParsedExpression {
 				parser.next();
 				ParsedExpression source = parse(parser);
 				parser.required(T_AOPEN, "{ expected");
-				
+
 				List<ParsedMatchExpression.Case> cases = new ArrayList<>();
 				while (parser.optional(T_ACLOSE) == null) {
 					ParsedExpression key = null;
 					if (parser.optional(K_DEFAULT) == null)
 						key = parse(parser, new ParsingOptions(false));
-					
+
 					parser.required(T_LAMBDA, "=> expected");
 					ParsedExpression value = parse(parser);
 					cases.add(new ParsedMatchExpression.Case(key, value));
-					
+
 					if (parser.optional(T_COMMA) == null)
 						break;
 				}
@@ -551,7 +548,7 @@ public abstract class ParsedExpression {
 				parser.next();
 				if (parser.bracketParser == null)
 					throw new ParseException(position, "Bracket expression detected but no bracket parser present");
-				
+
 				return parser.bracketParser.parse(position, parser);
 			default: {
 				IParsedType type = IParsedType.parse(parser);
@@ -564,45 +561,49 @@ public abstract class ParsedExpression {
 			}
 		}
 	}
-	
-	public final CodePosition position;
-	
-	public ParsedExpression(CodePosition position) {
-		this.position = position;
-	}
-	
+
 	/**
 	 * Compiles the given parsed expression to a high-level expression or
 	 * partial expression.
-	 * 
+	 * <p>
 	 * If the asType parameter is provided, the given type determines the output
 	 * type of the expression. The output type of the expression MUST in that
 	 * case be equal to the given type.
-	 * 
+	 *
 	 * @param scope
-	 * @return 
+	 * @return
 	 */
 	public abstract IPartialExpression compile(ExpressionScope scope) throws CompileException;
 
 	public Expression compileKey(ExpressionScope scope) throws CompileException {
 		return compile(scope).eval();
 	}
-	
+
 	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
 	}
-	
+
 	public ParsedFunctionHeader toLambdaHeader() throws ParseException {
 		throw new ParseException(position, "Not a valid lambda header");
 	}
-	
+
 	public ParsedFunctionParameter toLambdaParameter() throws ParseException {
 		throw new ParseException(position, "Not a valid lambda parameter");
 	}
-	
+
 	public boolean isCompatibleWith(BaseScope scope, TypeID type) {
 		return true;
 	}
-	
+
 	public abstract boolean hasStrongType();
+
+	public static class ParsingOptions {
+		public static final ParsingOptions DEFAULT = new ParsingOptions(true);
+
+		public final boolean allowLambda;
+
+		public ParsingOptions(boolean allowLambda) {
+			this.allowLambda = allowLambda;
+		}
+	}
 }

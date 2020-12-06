@@ -22,13 +22,12 @@ import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class LocalSourceFile implements IDESourceFile {
 	private final SourceFile file;
 	private final MutableLiveString name;
-	
+
 	public LocalSourceFile(SourceFile file) {
 		this.file = file;
 		this.name = new SimpleLiveString(file.getFilename());
@@ -48,7 +47,7 @@ public class LocalSourceFile implements IDESourceFile {
 	public void update(String content) {
 		try {
 			if (file instanceof FileSourceFile) {
-				Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(((FileSourceFile)file).file)), StandardCharsets.UTF_8);
+				Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(((FileSourceFile) file).file)), StandardCharsets.UTF_8);
 				writer.write(content);
 				writer.close();
 			} else {

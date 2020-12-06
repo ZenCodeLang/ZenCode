@@ -6,13 +6,13 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class TryConvertExpression extends Expression {
 	public final Expression value;
-	
+
 	public TryConvertExpression(CodePosition position, TypeID type, Expression value) {
 		super(position, type, null);
-		
+
 		this.value = value;
 	}
-	
+
 	@Override
 	public <T> T accept(ExpressionVisitor<T> visitor) {
 		return visitor.visitTryConvert(this);

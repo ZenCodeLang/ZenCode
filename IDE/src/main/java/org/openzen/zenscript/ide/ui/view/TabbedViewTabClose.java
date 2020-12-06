@@ -21,24 +21,23 @@ import org.openzen.drawablegui.style.DStyleClass;
 import org.openzen.zenscript.ide.ui.icons.ScalableCloseIcon;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class TabbedViewTabClose implements DComponent {
 	private final TabbedViewTab tab;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
-	
+
 	private DComponentContext context;
 	private DIRectangle bounds;
 	private TabbedViewTabCloseStyle style;
 	private DColorableIcon icon;
-	
+
 	private boolean hover;
 	private boolean press;
-	
+
 	private DDrawnRectangle background;
 	private DColorableIconInstance drawnIcon;
-	
+
 	public TabbedViewTabClose(TabbedViewTab tab) {
 		this.tab = tab;
 	}
@@ -49,7 +48,7 @@ public class TabbedViewTabClose implements DComponent {
 		style = context.getStyle(TabbedViewTabCloseStyle::new);
 		sizing.setValue(new DSizing(style.size, style.size));
 		icon = new ScalableCloseIcon(style.size / 24 * parent.getScale() / 1.75f);
-		
+
 		if (background != null)
 			background.close();
 		background = context.fillRect(1, DIRectangle.EMPTY, hover ? 0xFFE81123 : 0);
@@ -57,7 +56,7 @@ public class TabbedViewTabClose implements DComponent {
 			drawnIcon.close();
 		drawnIcon = new DColorableIconInstance(context.surface, context.z + 2, icon, DTransform2D.IDENTITY, 0xFF000000);
 	}
-	
+
 	@Override
 	public void unmount() {
 		if (background != null)
@@ -75,18 +74,13 @@ public class TabbedViewTabClose implements DComponent {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
-	
-	@Override
-	public int getBaselineY() {
-		return -1;
-	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-		
+
 		background.setRectangle(bounds);
-		
+
 		if (drawnIcon != null)
 			drawnIcon.close();
 		drawnIcon = new DColorableIconInstance(context.surface, context.z + 2, icon, DTransform2D.translate(
@@ -95,24 +89,29 @@ public class TabbedViewTabClose implements DComponent {
 	}
 
 	@Override
+	public int getBaselineY() {
+		return -1;
+	}
+
+	@Override
 	public void close() {
 		unmount();
 	}
-	
+
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		hover = true;
 		background.setColor(0xFFE81123);
 		drawnIcon.setColor(0xFFFFFFFF);
 	}
-	
+
 	@Override
 	public void onMouseExit(DMouseEvent e) {
 		hover = false;
 		background.setColor(0);
 		drawnIcon.setColor(0xFF000000);
 	}
-	
+
 	@Override
 	public void onMouseClick(DMouseEvent e) {
 		tab.closeTab();

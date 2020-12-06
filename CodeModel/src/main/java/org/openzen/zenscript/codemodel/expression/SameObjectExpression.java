@@ -8,10 +8,10 @@ public class SameObjectExpression extends Expression {
 	public final Expression left;
 	public final Expression right;
 	public final boolean inverted;
-	
+
 	public SameObjectExpression(CodePosition position, Expression left, Expression right, boolean inverted) {
 		super(position, BasicTypeID.BOOL, binaryThrow(position, left.thrownType, right.thrownType));
-		
+
 		this.left = left;
 		this.right = right;
 		this.inverted = inverted;

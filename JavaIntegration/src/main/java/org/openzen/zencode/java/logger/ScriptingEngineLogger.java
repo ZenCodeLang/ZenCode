@@ -1,7 +1,8 @@
 package org.openzen.zencode.java.logger;
 
-import org.openzen.zencode.shared.logging.*;
-import org.openzen.zenscript.parser.logger.*;
-import org.openzen.zenscript.validator.logger.*;
+import org.openzen.zencode.shared.logging.SourceFileLogger;
+import org.openzen.zenscript.parser.logger.ParserLogger;
+import org.openzen.zenscript.validator.logger.ValidatorLogger;
 
-public interface ScriptingEngineLogger extends ValidatorLogger, SourceFileLogger, ParserLogger {}
+public interface ScriptingEngineLogger extends ValidatorLogger, SourceFileLogger, ParserLogger {
+}

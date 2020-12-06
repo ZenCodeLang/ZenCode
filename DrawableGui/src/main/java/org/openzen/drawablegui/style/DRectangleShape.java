@@ -9,7 +9,6 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DRectangleShape implements DShape {

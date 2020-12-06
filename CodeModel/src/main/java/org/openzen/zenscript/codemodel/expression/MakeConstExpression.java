@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class MakeConstExpression extends Expression {
 	public final Expression value;
-	
+
 	public MakeConstExpression(CodePosition position, Expression value, TypeID constType) {
 		super(position, constType, value.thrownType);
-		
+
 		this.value = value;
 	}
 

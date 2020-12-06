@@ -5,29 +5,19 @@
  */
 package org.openzen.zenscript.javabytecode.compiler;
 
-import java.util.Iterator;
-import java.util.Map;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.AssocTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.TypeVisitorWithContext;
+import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
 import org.openzen.zenscript.javashared.JavaTypeParameterInfo;
 
+import java.util.Iterator;
+import java.util.Map;
+
 /**
- *
  * @author Stan Hebben
  */
 public class JavaTypeExpressionVisitor implements TypeVisitorWithContext<JavaWriter, Void, RuntimeException> {
 	private final JavaBytecodeContext context;
-	
+
 	public JavaTypeExpressionVisitor(JavaBytecodeContext context) {
 		this.context = context;
 	}

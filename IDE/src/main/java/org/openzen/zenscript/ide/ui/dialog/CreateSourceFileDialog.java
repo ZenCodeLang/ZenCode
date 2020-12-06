@@ -32,31 +32,30 @@ import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.IDEWindow;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class CreateSourceFileDialog {
 	private final IDEWindow ideWindow;
 	private final IDEModule module;
 	private final IDEPackage pkg;
-	
+
 	private final SimpleLiveString name;
-	
+
 	private final DComponent root;
 	private final DInputField input;
-	
+
 	private DUIWindow window;
-	
+
 	public CreateSourceFileDialog(IDEWindow ideWindow, IDEModule module, IDEPackage pkg) {
 		this.ideWindow = ideWindow;
 		this.module = module;
 		this.pkg = pkg;
-		
+
 		name = new SimpleLiveString("");
 		input = new DInputField(DStyleClass.EMPTY, name, new DDpDimension(100));
 		input.setOnEnter(this::ok);
 		input.setOnEscape(this::cancel);
-		
+
 		DForm form = new DForm(
 				DStyleClass.EMPTY,
 				new DFormComponent("Module:", new DLabel(DStyleClass.EMPTY, new ImmutableLiveString(module.getName()))),
@@ -67,8 +66,8 @@ public class CreateSourceFileDialog {
 		DButton cancel = new DButton(DStyleClass.EMPTY, new SimpleLiveString("Cancel"), ImmutableLiveBool.FALSE, this::cancel);
 		DLinearLayout buttons = new DLinearLayout(
 				DStyleClass.inline(new DStylesheetBuilder()
-					.dimensionDp("spacing", 8)
-					.build()),
+						.dimensionDp("spacing", 8)
+						.build()),
 				Orientation.HORIZONTAL,
 				Alignment.RIGHT,
 				new Element(cancel, 0, 0, ElementAlignment.TOP),
@@ -83,17 +82,17 @@ public class CreateSourceFileDialog {
 				new Element(form, 1, 1, ElementAlignment.CENTER),
 				new Element(buttons, 0, 0, ElementAlignment.RIGHT));
 	}
-	
+
 	public void open(DUIWindow parent) {
 		DIRectangle rectangle = parent.getWindowBounds().getValue();
 		window = parent.getContext().openDialog(rectangle.width / 2, rectangle.height / 2, DAnchor.MIDDLE_CENTER, "Create source file", root);
 		window.focus(input);
 	}
-	
+
 	private void cancel() {
 		window.close();
 	}
-	
+
 	private void ok() {
 		window.close();
 		IDESourceFile file = pkg.createSourceFile(name.getValue() + ".zs");

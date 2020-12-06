@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ConstantUShortExpression extends Expression {
 	public final int value;
-	
+
 	public ConstantUShortExpression(CodePosition position, int value) {
 		super(position, BasicTypeID.USHORT, null);
-		
+
 		this.value = value;
 	}
 

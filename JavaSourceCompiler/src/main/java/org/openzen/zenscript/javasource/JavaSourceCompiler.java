@@ -7,6 +7,7 @@ package org.openzen.zenscript.javasource;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -20,24 +21,23 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompileSpace;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceCompiler {
 	public final JavaSourceFormattingSettings settings;
 	public final JavaSourceModule helpers;
-	
+
 	public JavaSourceCompiler(GlobalTypeRegistry registry) {
 		helpers = new JavaSourceModule(new Module("helpers"), FunctionParameter.NONE);
 		settings = new JavaSourceFormattingSettings.Builder().build();
 	}
-	
+
 	public JavaSourceModule compile(IZSLogger logger, SemanticModule module, JavaCompileSpace space, String basePackage) {
 		JavaSourceContext context = new JavaSourceContext(logger, helpers, settings, space, module.modulePackage, basePackage);
-		
+
 		JavaSourceModule result = new JavaSourceModule(module.module, module.parameters);
 		context.addModule(module.module, result);
-		
+
 		Map<String, JavaSourceFile> sourceFiles = new HashMap<>();
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			String name = getFilename(definition);
@@ -52,11 +52,11 @@ public class JavaSourceCompiler {
 
 			sourceFile.add(definition);
 		}
-		
+
 		for (ScriptBlock scriptBlock : module.scripts) {
 			// TODO
 		}
-		
+
 		for (JavaSourceFile sourceFile : sourceFiles.values()) {
 			sourceFile.prepare(context);
 		}
@@ -64,15 +64,15 @@ public class JavaSourceCompiler {
 		String baseDirectory = basePackage.replace('.', '/');
 		for (Map.Entry<String, JavaSourceFile> entry : sourceFiles.entrySet())
 			result.addFile(baseDirectory + "/" + entry.getKey(), entry.getValue().generate());
-		
+
 		context.helperGenerator.write(); // TODO: move this elsewhere
 		return result;
 	}
-	
+
 	public String getFullName(HighLevelDefinition definition) {
 		return definition.pkg.fullName + "." + definition.name;
 	}
-	
+
 	private String getFilename(HighLevelDefinition definition) {
 		SourceFile source = definition.position.file;
 		if (source != null) {

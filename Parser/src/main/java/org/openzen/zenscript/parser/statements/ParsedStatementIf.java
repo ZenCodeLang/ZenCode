@@ -5,11 +5,11 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.IfStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
@@ -34,9 +34,9 @@ public class ParsedStatementIf extends ParsedStatement {
 		} catch (CompileException ex) {
 			condition = new InvalidExpression(BasicTypeID.BOOL, ex);
 		}
-		
+
 		Statement onThen = this.onThen.compile(scope);
 		Statement onElse = this.onElse == null ? null : this.onElse.compile(scope);
- 		return result(new IfStatement(position, condition, onThen, onElse), scope);
+		return result(new IfStatement(position, condition, onThen, onElse), scope);
 	}
 }

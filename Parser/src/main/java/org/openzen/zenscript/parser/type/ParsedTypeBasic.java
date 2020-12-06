@@ -20,15 +20,15 @@ public enum ParsedTypeBasic implements IParsedType {
 	DOUBLE(BasicTypeID.DOUBLE),
 	CHAR(BasicTypeID.CHAR),
 	STRING(BasicTypeID.STRING),
-	
+
 	UNDETERMINED(BasicTypeID.UNDETERMINED);
-	
+
 	private final BasicTypeID type;
 
 	private ParsedTypeBasic(BasicTypeID type) {
 		this.type = type;
 	}
-	
+
 	@Override
 	public TypeID compile(TypeResolutionContext context) {
 		return type;

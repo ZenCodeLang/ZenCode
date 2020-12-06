@@ -11,7 +11,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface ZenCodeGlobals {

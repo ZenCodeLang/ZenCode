@@ -8,10 +8,10 @@ import org.openzen.zenscript.parser.type.IParsedType;
 
 public class ParsedTypeExpression extends ParsedExpression {
 	private final IParsedType type;
-	
+
 	public ParsedTypeExpression(CodePosition position, IParsedType type) {
 		super(position);
-		
+
 		this.type = type;
 	}
 

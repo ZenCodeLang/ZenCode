@@ -8,7 +8,6 @@ package org.openzen.drawablegui;
 import java.util.List;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface Destructible extends AutoCloseable {
@@ -16,7 +15,7 @@ public interface Destructible extends AutoCloseable {
 		for (T item : list)
 			item.close();
 	}
-	
+
 	@Override
 	public void close();
 }

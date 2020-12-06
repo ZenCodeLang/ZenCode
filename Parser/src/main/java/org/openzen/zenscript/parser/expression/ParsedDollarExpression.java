@@ -20,7 +20,7 @@ public class ParsedDollarExpression extends ParsedExpression {
 					position,
 					CompileExceptionCode.NO_DOLLAR_HERE,
 					"No dollar expression available in this context");
-		
+
 		return dollar.apply(position);
 	}
 

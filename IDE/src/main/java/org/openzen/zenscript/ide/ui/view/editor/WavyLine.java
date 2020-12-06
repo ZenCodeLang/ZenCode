@@ -9,7 +9,6 @@ import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DPathTracer;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class WavyLine implements DPath {
@@ -18,7 +17,7 @@ public class WavyLine implements DPath {
 	private final int width;
 	private final int height;
 	private final float stride;
-	
+
 	public WavyLine(int x, int y, int width, int height, float stride) {
 		this.x = x;
 		this.y = y;
@@ -26,7 +25,7 @@ public class WavyLine implements DPath {
 		this.height = height;
 		this.stride = stride;
 	}
-	
+
 	@Override
 	public void trace(DPathTracer tracer) {
 		tracer.moveTo(x, y);

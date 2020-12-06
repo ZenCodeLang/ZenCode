@@ -12,25 +12,25 @@ import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceUtils {
-	private JavaSourceUtils() {}
-	
+	private JavaSourceUtils() {
+	}
+
 	public static void formatTypeParameters(JavaSourceTypeVisitor typeFormatter, StringBuilder output, TypeParameter[] parameters, boolean space) {
 		if (parameters == null || parameters.length == 0)
 			return;
-		
+
 		TypeParameterBoundVisitor boundVisitor = new TypeParameterBoundVisitor(typeFormatter, output);
 		output.append("<");
 		for (int i = 0; i < parameters.length; i++) {
 			if (i > 0)
 				output.append(", ");
-			
+
 			TypeParameter typeParameter = parameters[i];
 			output.append(typeParameter.name);
-			
+
 			if (typeParameter.bounds.size() > 0) {
 				for (TypeParameterBound bound : typeParameter.bounds)
 					bound.accept(boundVisitor);
@@ -40,11 +40,11 @@ public class JavaSourceUtils {
 		if (space)
 			output.append(" ");
 	}
-	
+
 	public static void formatTypeParameters(JavaSourceTypeVisitor typeFormatter, StringBuilder output, TypeParameter[] expansion, TypeParameter[] parameters) {
 		if (((parameters == null ? 0 : parameters.length) + (expansion == null ? 0 : expansion.length)) == 0)
 			return;
-		
+
 		TypeParameterBoundVisitor boundVisitor = new TypeParameterBoundVisitor(typeFormatter, output);
 		output.append("<");
 		boolean first = true;
@@ -82,11 +82,11 @@ public class JavaSourceUtils {
 		}
 		output.append("> ");
 	}
-	
+
 	private static class TypeParameterBoundVisitor implements GenericParameterBoundVisitor<Void> {
 		private final JavaSourceTypeVisitor typeFormatter;
 		private final StringBuilder output;
-		
+
 		public TypeParameterBoundVisitor(JavaSourceTypeVisitor typeFormatter, StringBuilder output) {
 			this.typeFormatter = typeFormatter;
 			this.output = output;

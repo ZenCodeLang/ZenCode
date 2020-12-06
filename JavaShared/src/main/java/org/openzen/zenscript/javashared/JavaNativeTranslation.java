@@ -8,7 +8,6 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.expression.Expression;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 @FunctionalInterface

@@ -9,7 +9,7 @@ public class ParsedExpressionThis extends ParsedExpression {
 	public ParsedExpressionThis(CodePosition position) {
 		super(position);
 	}
-	
+
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) {
 		return new ThisExpression(position, scope.getThisType());

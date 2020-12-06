@@ -5,8 +5,6 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
-import java.util.*;
-
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -14,20 +12,28 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.expression.switchvalue.*;
-import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.member.ref.*;
+import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.validator.*;
-import org.openzen.zenscript.validator.analysis.*;
+import org.openzen.zenscript.validator.TypeContext;
+import org.openzen.zenscript.validator.ValidationLogEntry;
+import org.openzen.zenscript.validator.Validator;
+import org.openzen.zenscript.validator.analysis.ExpressionScope;
+
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ExpressionValidator implements ExpressionVisitor<Void> {
 	private final Validator validator;
 	private final ExpressionScope scope;
-	
+
 	public ExpressionValidator(Validator validator, ExpressionScope scope) {
 		this.validator = validator;
 		this.scope = scope;
@@ -37,7 +43,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitAndAnd(AndAndExpression expression) {
 		expression.left.accept(this);
 		expression.right.accept(this);
-		
+
 		if (expression.left.type != BasicTypeID.BOOL) {
 			validator.logError(
 					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
@@ -58,9 +64,9 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		for (Expression element : expression.expressions) {
 			if (!element.type.equals(expression.arrayType.elementType)) {
 				validator.logError(
-					ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
-					expression.position,
-					"array element expression type " + element.type + " doesn't match array type " + expression.arrayType.elementType);
+						ValidationLogEntry.Code.INVALID_OPERAND_TYPE,
+						expression.position,
+						"array element expression type " + element.type + " doesn't match array type " + expression.arrayType.elementType);
 			}
 			element.accept(this);
 		}
@@ -71,10 +77,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitCompare(CompareExpression expression) {
 		if (!expression.right.type.equals(expression.operator.getHeader().parameters[0].type))
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "comparison has invalid right type!");
-		
+
 		checkMemberAccess(expression.position, expression.operator);
 		checkNotStatic(expression.position, expression.operator);
-		
+
 		expression.left.accept(this);
 		expression.right.accept(this);
 		return null;
@@ -83,7 +89,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitCall(CallExpression expression) {
 		expression.target.accept(this);
-		
+
 		checkMemberAccess(expression.position, expression.member);
 		checkCallArguments(expression.position, expression.member.getHeader(), expression.instancedHeader, expression.arguments);
 		checkNotStatic(expression.position, expression.member);
@@ -97,7 +103,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		checkStatic(expression.position, expression.member);
 		return null;
 	}
-	
+
 	@Override
 	public Void visitConst(ConstExpression expression) {
 		checkMemberAccess(expression.position, expression.constant);
@@ -251,7 +257,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	@Override
 	public Void visitConstructorSuperCall(ConstructorSuperCallExpression expression) {
 		checkMemberAccess(expression.position, expression.constructor);
-		
+
 		if (!scope.isConstructor()) {
 			validator.logError(ValidationLogEntry.Code.CONSTRUCTOR_FORWARD_OUTSIDE_CONSTRUCTOR, expression.position, "Can only forward constructors inside constructors");
 		}
@@ -276,7 +282,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 
 	@Override
 	public Void visitFunction(FunctionExpression expression) {
-		
+
 		// TODO
 		return null;
 	}
@@ -285,7 +291,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitGetField(GetFieldExpression expression) {
 		checkFieldAccess(expression.position, expression.field);
 		checkNotStatic(expression.position, expression.field);
-		
+
 		expression.target.accept(this);
 		if (expression.target instanceof ThisExpression && !scope.isFieldInitialized(expression.field.member)) {
 			validator.logError(
@@ -308,7 +314,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public Void visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		if (expression.index >= expression.value.parameters.length) {
@@ -330,12 +336,12 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		checkNotStatic(expression.position, expression.getter);
 		return expression.target.accept(this);
 	}
-	
+
 	@Override
 	public Void visitGlobal(GlobalExpression expression) {
 		return expression.resolution.accept(this);
 	}
-	
+
 	@Override
 	public Void visitGlobalCall(GlobalCallExpression expression) {
 		return expression.resolution.accept(this);
@@ -347,13 +353,13 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		new TypeValidator(validator, expression.position).validate(TypeContext.CAST_TARGET_TYPE, expression.type);
 		return null;
 	}
-	
+
 	@Override
 	public Void visitInvalid(InvalidExpression expression) {
 		validator.logError(ValidationLogEntry.Code.INVALID_EXPRESSION, expression.position, expression.message);
 		return null;
 	}
-	
+
 	@Override
 	public Void visitInvalidAssign(InvalidAssignExpression expression) {
 		expression.target.accept(this);
@@ -379,7 +385,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		for (int i = 0; i < expression.keys.length; i++) {
 			Expression key = expression.keys[i];
 			Expression value = expression.values[i];
-			
+
 			key.accept(this);
 			value.accept(this);
 			if (!key.type.equals(type.keyType)) {
@@ -398,7 +404,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		for (MatchExpression.Case case_ : expression.cases) {
 			case_.value.accept(this);
 		}
-		
+
 		boolean hasDefault = false;
 		if (expression.value.type.isVariant()) {
 			Set<VariantDefinition.Option> options = new HashSet<>();
@@ -406,21 +412,21 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 				if (case_.key == null) {
 					if (hasDefault)
 						validator.logError(ValidationLogEntry.Code.DUPLICATE_DEFAULT_CASE, expression.position, "Duplicate default in match");
-					
+
 					hasDefault = true;
 				} else if (case_.key instanceof VariantOptionSwitchValue) {
-					VariantDefinition.Option option = ((VariantOptionSwitchValue)case_.key).option.getOption();
+					VariantDefinition.Option option = ((VariantOptionSwitchValue) case_.key).option.getOption();
 					if (options.contains(option))
 						validator.logError(ValidationLogEntry.Code.DUPLICATE_CASE, expression.position, "Duplicate case in match: " + option.name);
-					
+
 					options.add(option);
 				} else {
 					validator.logError(ValidationLogEntry.Code.INVALID_CASE, expression.position, "Invalid case: must be default or option value");
 				}
 			}
-			
+
 			if (!hasDefault) {
-				VariantDefinition variant = (VariantDefinition)((DefinitionTypeID)expression.value.type).definition;
+				VariantDefinition variant = (VariantDefinition) ((DefinitionTypeID) expression.value.type).definition;
 				for (VariantDefinition.Option option : variant.options) {
 					if (!options.contains(option))
 						validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: missing option for " + option.name);
@@ -432,21 +438,21 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 				if (case_.key == null) {
 					if (hasDefault)
 						validator.logError(ValidationLogEntry.Code.DUPLICATE_DEFAULT_CASE, expression.position, "Duplicate default in match");
-					
+
 					hasDefault = true;
 				} else if (case_.key instanceof EnumConstantSwitchValue) {
-					EnumConstantMember option = ((EnumConstantSwitchValue)case_.key).constant;
+					EnumConstantMember option = ((EnumConstantSwitchValue) case_.key).constant;
 					if (options.contains(option))
 						validator.logError(ValidationLogEntry.Code.DUPLICATE_CASE, expression.position, "Duplicate case in match: " + option.name);
-					
+
 					options.add(option);
 				} else {
 					validator.logError(ValidationLogEntry.Code.INVALID_CASE, expression.position, "Invalid case: must be default or enum value");
 				}
 			}
-			
+
 			if (!hasDefault) {
-				EnumDefinition enum_ = (EnumDefinition)((DefinitionTypeID)expression.value.type).definition;
+				EnumDefinition enum_ = (EnumDefinition) ((DefinitionTypeID) expression.value.type).definition;
 				for (EnumConstantMember option : enum_.enumConstants) {
 					if (!options.contains(option))
 						validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: missing option for " + option.name);
@@ -457,11 +463,11 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 				if (case_.key == null) {
 					if (hasDefault)
 						validator.logError(ValidationLogEntry.Code.DUPLICATE_DEFAULT_CASE, expression.position, "Duplicate default in match");
-					
+
 					hasDefault = true;
 				}
 			}
-			
+
 			if (!hasDefault)
 				validator.logError(ValidationLogEntry.Code.INCOMPLETE_MATCH, expression.position, "Incomplete match: must have a default option");
 		}
@@ -489,21 +495,21 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitOrOr(OrOrExpression expression) {
 		expression.left.accept(this);
 		expression.right.accept(this);
-		
+
 		if (expression.left.type != BasicTypeID.BOOL)
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Left hand side of || expression is not a bool");
 		if (expression.right.type != BasicTypeID.BOOL)
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "Right hand side of || expression is not a bool");
-		
+
 		return null;
 	}
-	
+
 	@Override
 	public Void visitPanic(PanicExpression expression) {
 		expression.value.accept(this);
 		if (expression.value.type != BasicTypeID.STRING)
 			validator.logError(ValidationLogEntry.Code.PANIC_ARGUMENT_NO_STRING, expression.position, "Argument to a panic must be a string");
-		
+
 		return null;
 	}
 
@@ -512,12 +518,12 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		// TODO: how to validate these expressions?
 		return null;
 	}
-	
+
 	@Override
 	public Void visitPostCall(PostCallExpression expression) {
 		checkMemberAccess(expression.position, expression.member);
 		checkNotStatic(expression.position, expression.member);
-		
+
 		expression.target.accept(this);
 		// TODO: is target a valid increment target?
 		return null;
@@ -527,7 +533,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitRange(RangeExpression expression) {
 		expression.from.accept(this);
 		expression.to.accept(this);
-		
+
 		RangeTypeID rangeType = (RangeTypeID) expression.type;
 		if (!expression.from.type.equals(rangeType.baseType)) {
 			validator.logError(ValidationLogEntry.Code.INVALID_OPERAND_TYPE, expression.position, "From operand is not a " + rangeType.baseType.toString());
@@ -537,7 +543,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public Void visitSameObject(SameObjectExpression expression) {
 		expression.left.accept(this);
@@ -549,12 +555,12 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitSetField(SetFieldExpression expression) {
 		checkFieldAccess(expression.position, expression.field);
 		checkNotStatic(expression.position, expression.field);
-		
+
 		expression.target.accept(this);
 		expression.value.accept(this);
 		if (!expression.value.type.equals(expression.field.getType())) {
 			validator.logError(
-					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
+					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
 					"Trying to set a field of type " + expression.field.getType() + " to a value of type " + expression.value.type);
 		}
@@ -571,7 +577,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 		if (!expression.value.type.equals(expression.parameter.type)) {
 			validator.logError(
-					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
+					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
 					"Trying to set a parameter of type " + expression.parameter.type + " to a value of type " + expression.value.type);
 		}
@@ -583,7 +589,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 		if (!expression.value.type.equals(expression.variable.type)) {
 			validator.logError(
-					ValidationLogEntry.Code.INVALID_SOURCE_TYPE, 
+					ValidationLogEntry.Code.INVALID_SOURCE_TYPE,
 					expression.position,
 					"Trying to set a variable of type " + expression.variable.type + " to a value of type " + expression.value.type);
 		}
@@ -597,7 +603,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitSetStaticField(SetStaticFieldExpression expression) {
 		checkFieldAccess(expression.position, expression.field);
 		checkStatic(expression.position, expression.field);
-		
+
 		expression.value.accept(this);
 		if (!expression.value.type.equals(expression.field.getType())) {
 			validator.logError(
@@ -620,7 +626,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitSetter(SetterExpression expression) {
 		checkMemberAccess(expression.position, expression.setter);
 		checkNotStatic(expression.position, expression.setter);
-		
+
 		expression.target.accept(this);
 		expression.value.accept(this);
 		if (!expression.value.type.equals(expression.setter.getType())) {
@@ -643,7 +649,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitStaticSetter(StaticSetterExpression expression) {
 		checkMemberAccess(expression.position, expression.setter);
 		checkStatic(expression.position, expression.setter);
-		
+
 		expression.value.accept(this);
 		if (!expression.value.type.equals(expression.setter.getType())) {
 			validator.logError(
@@ -665,10 +671,10 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		if (!scope.hasThis()) {
 			validator.logError(ValidationLogEntry.Code.THIS_IN_STATIC_SCOPE, expression.position, "Cannot use this in a static scope");
 		}
-		
+
 		return null;
 	}
-	
+
 	@Override
 	public Void visitThrow(ThrowExpression expression) {
 		return expression.value.accept(this);
@@ -685,7 +691,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		expression.value.accept(this);
 		return null;
 	}
-	
+
 	@Override
 	public Void visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
 		expression.value.accept(this);
@@ -716,7 +722,7 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		}
 		return null;
 	}
-	
+
 	private void checkMemberAccess(CodePosition position, DefinitionMemberRef member) {
 		if (!scope.getAccessScope().hasAccessTo(member.getTarget().getAccessScope(), member.getTarget().getEffectiveModifiers())) {
 			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no access to " + member.describe());
@@ -727,49 +733,49 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 		if (!scope.getAccessScope().hasAccessTo(field.getTarget().getAccessScope(), field.getTarget().getEffectiveModifiers()))
 			validator.logError(ValidationLogEntry.Code.NO_ACCESS, position, "no field access to " + field.describe());
 	}
-	
+
 	private void checkStatic(CodePosition position, DefinitionMemberRef member) {
 		if (!Modifiers.isStatic(member.getTarget().getSpecifiedModifiers()))
 			validator.logError(ValidationLogEntry.Code.MUST_BE_STATIC, position, "Member is not static");
 	}
-	
+
 	private void checkNotStatic(CodePosition position, DefinitionMemberRef member) {
 		if (Modifiers.isStatic(member.getTarget().getSpecifiedModifiers()))
 			validator.logError(ValidationLogEntry.Code.MUST_NOT_BE_STATIC, position, "Member must not be static");
 	}
-	
+
 	private void checkCallArguments(CodePosition position, FunctionHeader originalHeader, FunctionHeader instancedHeader, CallArguments arguments) {
 		ValidationUtils.validateTypeArguments(validator, position, originalHeader.typeParameters, arguments.typeArguments);
-		
+
 		boolean isVariadic = instancedHeader.isVariadicCall(arguments);
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			Expression argument = arguments.arguments[i];
 			argument.accept(this);
-			
+
 			if (i >= instancedHeader.parameters.length) {
 				FunctionParameter variadic = instancedHeader.getVariadicParameter();
 				if (variadic == null) {
 					validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "too many call arguments");
 					break;
 				} else if (variadic.type instanceof ArrayTypeID) {
-					TypeID elementType = ((ArrayTypeID)variadic.type).elementType;
+					TypeID elementType = ((ArrayTypeID) variadic.type).elementType;
 					if (!elementType.equals(argument.type)) {
 						validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "invalid type for variadic call argument");
 						break;
 					}
 				}
 			}
-			
+
 			FunctionParameter parameter = instancedHeader.getParameter(isVariadic, i);
 			if (!parameter.type.equals(argument.type) && (parameter.defaultValue == null || !Objects.equals(parameter.defaultValue.type, argument.type))) {
-				if(!parameter.type.equals(argument.type))
-				validator.logError(
-						ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
-						position,
-						"invalid value for parameter " + parameter.name + ": " + parameter.type.toString() + " expected but " + arguments.arguments[i].type + " given");
+				if (!parameter.type.equals(argument.type))
+					validator.logError(
+							ValidationLogEntry.Code.INVALID_CALL_ARGUMENT,
+							position,
+							"invalid value for parameter " + parameter.name + ": " + parameter.type.toString() + " expected but " + arguments.arguments[i].type + " given");
 			}
 		}
-		
+
 		for (int i = arguments.arguments.length; i < instancedHeader.parameters.length; i++) {
 			FunctionParameter parameter = instancedHeader.parameters[i];
 			if (parameter.defaultValue == null && !parameter.variadic) {

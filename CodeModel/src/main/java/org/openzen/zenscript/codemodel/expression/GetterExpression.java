@@ -8,10 +8,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class GetterExpression extends Expression {
 	public final Expression target;
 	public final GetterMemberRef getter;
-	
+
 	public GetterExpression(CodePosition position, Expression target, GetterMemberRef getter) {
 		super(position, getter.getType(), target.thrownType);
-		
+
 		this.target = target;
 		this.getter = getter;
 	}
@@ -36,7 +36,7 @@ public class GetterExpression extends Expression {
 	public Expression normalize(TypeScope scope) {
 		return new GetterExpression(position, target.normalize(scope), getter);
 	}
-	
+
 	@Override
 	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 		return scope.getTypeMembers(getter.getOwnerType())

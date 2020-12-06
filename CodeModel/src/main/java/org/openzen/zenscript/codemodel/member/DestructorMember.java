@@ -13,16 +13,16 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public class DestructorMember extends FunctionalMember {
 	private static final FunctionHeader HEADER = new FunctionHeader(BasicTypeID.VOID);
 	public FunctionalMemberRef overrides;
-	
+
 	public DestructorMember(CodePosition position, HighLevelDefinition definition, int modifiers) {
 		super(position, definition, modifiers, HEADER, null);
 	}
-	
+
 	@Override
 	public String getCanonicalName() {
 		return definition.getFullName() + ":destructor";
 	}
-	
+
 	@Override
 	public FunctionalKind getKind() {
 		return FunctionalKind.DESTRUCTOR;
@@ -43,7 +43,7 @@ public class DestructorMember extends FunctionalMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitDestructor(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitDestructor(context, this);

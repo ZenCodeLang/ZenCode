@@ -10,11 +10,11 @@
 // prefer. In this case NetBeans will not add these tasks but you may rely on
 // your own implementation.
 if (!hasProperty('mainClass')) {
-    ext.mainClass = ''
+	ext.mainClass = ''
 }
 
 dependencies {
-    compile project(':CompilerShared')
+	compile project(':CompilerShared')
 	compile project(':Constructor')
 	compile project(':ModuleSerializationShared')
 }

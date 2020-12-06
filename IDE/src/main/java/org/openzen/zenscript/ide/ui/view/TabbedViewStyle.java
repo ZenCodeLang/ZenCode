@@ -16,25 +16,24 @@ import org.openzen.drawablegui.style.DDpDimension;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class TabbedViewStyle extends DBaseStyle {
 	public final DFont tabFont;
 	public final int tabFontColor;
 	public final DBorder tabBorder;
-	
+
 	public final int tabBarSpacingLeft;
 	public final int tabBarSpacingRight;
 	public final int tabSpacing;
-	
+
 	public TabbedViewStyle(DStyleDefinition style) {
 		super(style);
-		
-		tabFont = style.getFont("tabFont", context -> new DFont(DFontFamily.UI, false, false, false, (int)(12 * context.getScale())));
+
+		tabFont = style.getFont("tabFont", context -> new DFont(DFontFamily.UI, false, false, false, (int) (12 * context.getScale())));
 		tabFontColor = style.getColor("tabFontColor", 0xFF000000);
 		tabBorder = style.getBorder("tabBorder", context -> new DCompositeBorder(new DLineBorder(0xFF888888, 1), new DPaddedBorder(context.dp(4))));
-		
+
 		tabBarSpacingLeft = style.getDimension("tabBarSpacingLeft", new DDpDimension(4));
 		tabBarSpacingRight = style.getDimension("tabBarSpacingRight", new DDpDimension(4));
 		tabSpacing = style.getDimension("tabSpacing", new DDpDimension(4));

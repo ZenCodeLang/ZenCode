@@ -9,7 +9,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.logging.*;
+import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -23,11 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Hoofdgebruiker
@@ -37,15 +33,55 @@ public class JavaBytecodeRunUnit {
 	private final List<JavaScriptMethod> scripts = new ArrayList<>();
 	private final List<FunctionParameter> scriptParameters = new ArrayList<>();
 	private final List<JavaParameterInfo> scriptParameterInfo = new ArrayList<>();
-
-	private boolean scriptsWritten = false;
 	private final IZSLogger logger;
-    
-    public JavaBytecodeRunUnit(IZSLogger logger) {
-        this.logger = logger;
-    }
-    
-    public void add(JavaBytecodeModule module) {
+	private boolean scriptsWritten = false;
+
+	public JavaBytecodeRunUnit(IZSLogger logger) {
+		this.logger = logger;
+	}
+
+	private static Class<?> loadClass(ClassLoader classLoader, String descriptor) throws ClassNotFoundException {
+		switch (descriptor) {
+			case "Z":
+				return boolean.class;
+			case "B":
+				return byte.class;
+			case "S":
+				return short.class;
+			case "I":
+				return int.class;
+			case "J":
+				return long.class;
+			case "F":
+				return float.class;
+			case "D":
+				return double.class;
+			case "C":
+				return char.class;
+			case "Ljava/lang/Object;":
+				return Object.class;
+			case "Ljava/lang/String;":
+				return String.class;
+			case "[Ljava/lang/Object;":
+				return Object[].class;
+			case "[Ljava/lang/String;":
+				return String[].class;
+		}
+
+		return classLoader.loadClass(getClassName(descriptor));
+	}
+
+	private static String getClassName(String descriptor) {
+		if (descriptor.startsWith("[")) {
+			return "[" + getClassName(descriptor.substring(1));
+		} else if (descriptor.startsWith("L")) {
+			return descriptor.substring(1, descriptor.length() - 1);
+		} else {
+			throw new IllegalArgumentException("Invalid descriptor: " + descriptor);
+		}
+	}
+
+	public void add(JavaBytecodeModule module) {
 		scriptsWritten = false;
 
 		for (Map.Entry<String, byte[]> classEntry : module.getClasses().entrySet())
@@ -85,10 +121,10 @@ public class JavaBytecodeRunUnit {
 
 			argumentsArray[i] = arguments.get(parameter);
 		}
-			Class[] classes = new Class[scriptParameters.size()];
-			for (int i = 0; i < classes.length; i++)
-				classes[i] = loadClass(classLoader, scriptParameterInfo.get(i).typeDescriptor);
-			classLoader.loadClass("Scripts").getMethod("run", classes).invoke(null, argumentsArray);
+		Class[] classes = new Class[scriptParameters.size()];
+		for (int i = 0; i < classes.length; i++)
+			classes[i] = loadClass(classLoader, scriptParameterInfo.get(i).typeDescriptor);
+		classLoader.loadClass("Scripts").getMethod("run", classes).invoke(null, argumentsArray);
 	}
 
 	public void dump(File directory) {
@@ -164,36 +200,6 @@ public class JavaBytecodeRunUnit {
 				return customClasses.get(name);
 			}
 			return getParent().loadClass(name);
-		}
-	}
-
-
-	private static Class<?> loadClass(ClassLoader classLoader, String descriptor) throws ClassNotFoundException {
-		switch (descriptor) {
-			case "Z": return boolean.class;
-			case "B": return byte.class;
-			case "S": return short.class;
-			case "I": return int.class;
-			case "J": return long.class;
-			case "F": return float.class;
-			case "D": return double.class;
-			case "C": return char.class;
-			case "Ljava/lang/Object;": return Object.class;
-			case "Ljava/lang/String;": return String.class;
-			case "[Ljava/lang/Object;": return Object[].class;
-			case "[Ljava/lang/String;": return String[].class;
-		}
-
-		return classLoader.loadClass(getClassName(descriptor));
-	}
-
-	private static String getClassName(String descriptor) {
-		if (descriptor.startsWith("[")) {
-			return "[" + getClassName(descriptor.substring(1));
-		} else if (descriptor.startsWith("L")) {
-			return descriptor.substring(1, descriptor.length() - 1);
-		} else {
-			throw new IllegalArgumentException("Invalid descriptor: " + descriptor);
 		}
 	}
 }

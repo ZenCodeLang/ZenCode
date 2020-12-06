@@ -16,41 +16,41 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public interface IDefinitionMember {
 	CodePosition getPosition();
-	
+
 	int getSpecifiedModifiers();
-	
+
 	int getEffectiveModifiers();
-	
+
 	MemberAnnotation[] getAnnotations();
-	
+
 	HighLevelDefinition getDefinition();
-	
+
 	String describe();
-	
+
 	BuiltinID getBuiltin();
-	
+
 	void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper);
-	
+
 	<T> T accept(MemberVisitor<T> visitor);
-	
+
 	<C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor);
-	
+
 	<T extends Tag> T getTag(Class<T> tag);
-	
+
 	<T extends Tag> void setTag(Class<T> tag, T value);
 
 	<T extends Tag> boolean hasTag(Class<T> tag);
-	
+
 	DefinitionMemberRef getOverrides();
 
 	void normalize(TypeScope scope);
-	
+
 	boolean isAbstract();
-	
+
 	DefinitionMemberRef ref(TypeID type, GenericMapper mapper);
-	
+
 	FunctionHeader getHeader();
-	
+
 	default AccessScope getAccessScope() {
 		return getDefinition().getAccessScope();
 	}

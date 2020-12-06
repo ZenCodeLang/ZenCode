@@ -9,11 +9,11 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 
 public class TypeSymbol implements ISymbol {
 	private final HighLevelDefinition definition;
-	
+
 	public TypeSymbol(HighLevelDefinition definition) {
 		this.definition = definition;
 	}
-	
+
 	@Override
 	public IPartialExpression getExpression(CodePosition position, BaseScope scope, TypeID[] typeArguments) {
 		return new PartialTypeExpression(position, scope.getTypeRegistry().getForDefinition(definition, typeArguments), typeArguments);

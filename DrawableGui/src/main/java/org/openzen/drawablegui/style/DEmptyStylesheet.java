@@ -8,13 +8,13 @@ package org.openzen.drawablegui.style;
 import org.openzen.drawablegui.DUIContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DEmptyStylesheet implements DStylesheet {
 	public static final DEmptyStylesheet INSTANCE = new DEmptyStylesheet();
-	
-	private DEmptyStylesheet() {}
+
+	private DEmptyStylesheet() {
+	}
 
 	@Override
 	public DStyleDefinition getInstance(DUIContext context) {

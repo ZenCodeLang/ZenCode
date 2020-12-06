@@ -5,7 +5,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.annotations.*;
+import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -82,14 +82,14 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 	public Void visitMethod(MethodMember member) {
 		final boolean isStatic = member.isStatic();
 		final JavaMethod method = context.getJavaMethod(member);
-        if(!method.compile) {
-            return null;
-        }
-        
-        if(member.body == null && member.hasTag(NativeTag.class)) {
-            //Is it an error that method.compile == true then?
-            return null;
-        }
+		if (!method.compile) {
+			return null;
+		}
+
+		if (member.body == null && member.hasTag(NativeTag.class)) {
+			//Is it an error that method.compile == true then?
+			return null;
+		}
 
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
 		expandedClass.extractTypeParameters(typeParameters);
@@ -104,16 +104,15 @@ public class JavaExpansionMemberVisitor implements MemberVisitor<Void> {
 		final String methodDescriptor;
 
 
-
 		if (!isStatic) {
 			String methodSignature1 = context.getMethodSignature(member.header);
 
 			//Add the expanded type as first generic parameter to the list.
-			if(!typeParameters.isEmpty()){
+			if (!typeParameters.isEmpty()) {
 				final String collect = typeParameters.stream()
 						.map(t -> t.name + ":" + "Ljava/lang/Object;")
 						.collect(Collectors.joining("", "<", ""));
-				if(methodSignature1.startsWith("<")) {
+				if (methodSignature1.startsWith("<")) {
 					methodSignature1 = collect + methodSignature1.substring(1);
 				} else {
 					methodSignature1 = collect + ">" + methodSignature1;

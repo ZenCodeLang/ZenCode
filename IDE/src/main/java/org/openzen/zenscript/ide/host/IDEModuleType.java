@@ -6,7 +6,6 @@
 package org.openzen.zenscript.ide.host;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface IDEModuleType {

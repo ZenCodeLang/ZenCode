@@ -8,7 +8,6 @@ package org.openzen.zenscript.javasource;
 import org.openzen.zenscript.formattershared.ExpressionString;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface JavaSourceBuiltinBinary {

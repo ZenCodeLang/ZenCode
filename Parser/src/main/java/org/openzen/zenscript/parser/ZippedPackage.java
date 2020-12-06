@@ -1,5 +1,16 @@
 package org.openzen.zenscript.parser;
 
+import org.openzen.zencode.shared.LiteralSourceFile;
+import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.ModuleSpace;
+import org.openzen.zenscript.codemodel.SemanticModule;
+import org.openzen.zenscript.codemodel.context.CompilingPackage;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.lexer.ParseException;
+import org.openzen.zenscript.parser.logger.ParserLogger;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,20 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.openzen.zencode.shared.LiteralSourceFile;
-import org.openzen.zencode.shared.SourceFile;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.Module;
-import org.openzen.zenscript.codemodel.ModuleSpace;
-import org.openzen.zenscript.codemodel.SemanticModule;
-import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.lexer.ParseException;
-import org.openzen.zenscript.parser.logger.*;
 
 public class ZippedPackage {
 	private Map<String, List<SourceFile>> files = new HashMap<>();
-	
+
 	public ZippedPackage(InputStream input) throws IOException {
 		try (ZipInputStream zipInput = new ZipInputStream(new BufferedInputStream(input))) {
 			ZipEntry entry = zipInput.getNextEntry();
@@ -34,32 +35,32 @@ public class ZippedPackage {
 					String filename = entry.getName().substring(slash + 5);
 					if (!files.containsKey(moduleName))
 						files.put(moduleName, new ArrayList<>());
-					
-					byte[] data = new byte[(int)entry.getSize()];
+
+					byte[] data = new byte[(int) entry.getSize()];
 					int read = 0;
 					while (read < data.length)
 						read += zipInput.read(data, read, data.length - read);
-					
+
 					files.get(moduleName).add(new LiteralSourceFile(filename, new String(data, StandardCharsets.UTF_8)));
 				}
-				
+
 				zipInput.closeEntry();
 				entry = zipInput.getNextEntry();
 			}
 		}
 	}
-	
+
 	public SemanticModule loadModule(ModuleSpace space, String name, BracketExpressionParser bracketParser, SemanticModule[] dependencies, FunctionParameter[] scriptParameters, ZSPackage pkg, ParserLogger logger) throws ParseException {
 		List<SourceFile> sourceFiles = files.get(name);
 		if (sourceFiles == null)
 			return null; // no such module
-		
+
 		Module scriptModule = new Module(name);
 		CompilingPackage scriptPackage = new CompilingPackage(pkg, scriptModule);
 		ParsedFile[] files = new ParsedFile[sourceFiles.size()];
 		for (int i = 0; i < files.length; i++)
 			files[i] = ParsedFile.parse(scriptPackage, bracketParser, sourceFiles.get(i));
-		
+
 		SemanticModule scripts = ParsedFile.compileSyntaxToSemantic(
 				dependencies,
 				scriptPackage,

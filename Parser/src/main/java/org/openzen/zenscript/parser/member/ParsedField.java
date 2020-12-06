@@ -22,13 +22,13 @@ public class ParsedField extends ParsedDefinitionMember {
 	private final IParsedType type;
 	private final ParsedExpression expression;
 	private final boolean isFinal;
-	
+
 	private final int autoGetter;
 	private final int autoSetter;
-	
+
 	private FieldMember compiled;
 	private boolean isCompiled = false;
-	
+
 	public ParsedField(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -39,10 +39,9 @@ public class ParsedField extends ParsedDefinitionMember {
 			ParsedExpression expression,
 			boolean isFinal,
 			int autoGetter,
-			int autoSetter)
-	{
+			int autoSetter) {
 		super(definition, annotations);
-		
+
 		this.position = position;
 		this.modifiers = modifiers;
 		this.name = name;
@@ -78,16 +77,16 @@ public class ParsedField extends ParsedDefinitionMember {
 		if (isCompiled)
 			return;
 		isCompiled = true;
-		
+
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
-		
+
 		if (expression != null) {
 			Expression initializer = expression
 					.compile(new ExpressionScope(scope, compiled.getType()))
 					.eval()
 					.castImplicit(position, scope, compiled.getType());
 			compiled.setInitializer(initializer);
-			
+
 			if (compiled.getType() == BasicTypeID.UNDETERMINED)
 				compiled.setType(initializer.type);
 		} else if (compiled.getType() == BasicTypeID.UNDETERMINED) {

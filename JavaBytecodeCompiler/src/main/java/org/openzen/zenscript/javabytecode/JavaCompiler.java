@@ -5,77 +5,91 @@
  */
 package org.openzen.zenscript.javabytecode;
 
-import org.objectweb.asm.*;
-import org.openzen.zencode.shared.*;
-import org.openzen.zencode.shared.logging.*;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.SourceFile;
+import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.definition.*;
-import org.openzen.zenscript.codemodel.statement.*;
-import org.openzen.zenscript.codemodel.type.*;
-import org.openzen.zenscript.javabytecode.compiler.*;
-import org.openzen.zenscript.javabytecode.compiler.definitions.*;
-import org.openzen.zenscript.javashared.*;
-import org.openzen.zenscript.javashared.prepare.*;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
+import org.openzen.zenscript.codemodel.statement.Statement;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.javabytecode.compiler.JavaClassWriter;
+import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
+import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
+import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
+import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
+import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaCompileSpace;
+import org.openzen.zenscript.javashared.JavaMethod;
+import org.openzen.zenscript.javashared.JavaParameterInfo;
+import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
+import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
-import java.io.*;
-import java.util.*;
-import java.util.stream.*;
+import java.io.File;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Hoofdgebruiker
  */
 public class JavaCompiler {
-    
-    private int generatedScriptBlockCounter = 0;
-	private int expansionCounter = 0;
+
 	private final IZSLogger logger;
-    
-    public JavaCompiler(IZSLogger logger) {
-        this.logger = logger;
-    }
-	
+	private int generatedScriptBlockCounter = 0;
+	private int expansionCounter = 0;
+
+	public JavaCompiler(IZSLogger logger) {
+		this.logger = logger;
+	}
+
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space) {
 		Map<String, JavaScriptFile> scriptBlocks = new LinkedHashMap<>();
 		Set<JavaScriptFile> scriptFilesThatAreActuallyUsedInScripts = new HashSet<>();
-		
+
 		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters, logger);
 		JavaBytecodeContext context = new JavaBytecodeContext(target, space, module.modulePackage, packageName, logger);
 		context.addModule(module.module, target);
-		
+
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			final String className = getClassName(getFilename(definition));
 			final String filename;
-            if(definition instanceof FunctionDefinition) {
-                filename = className;
-            } else {
-                filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
-            }
-            JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null, filename);
-            definition.accept(definitionPreparer);
+			if (definition instanceof FunctionDefinition) {
+				filename = className;
+			} else {
+				filename = className + "_" + (definition.name == null ? "generated" : definition.name) + "_" + expansionCounter++;
+			}
+			JavaPrepareDefinitionVisitor definitionPreparer = new JavaPrepareDefinitionVisitor(context, target, filename, null, filename);
+			definition.accept(definitionPreparer);
 		}
-		
+
 		for (HighLevelDefinition definition : module.definitions.getAll()) {
 			JavaPrepareDefinitionMemberVisitor memberPreparer = new JavaPrepareDefinitionMemberVisitor(context, target);
 			definition.accept(memberPreparer);
 		}
-        
-        for(HighLevelDefinition definition : module.definitions.getAll()) {
-            final String internalName;
-            final JavaScriptFile scriptFile;
-            if(definition instanceof FunctionDefinition) {
-                internalName = getClassName(getFilename(definition));
-                scriptFile = getScriptFile(scriptBlocks, module.modulePackage.fullName + "/" + internalName);
-                scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
-            } else {
-                JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context
-                        .getJavaClass(definition);
-                scriptFile = getScriptFile(scriptBlocks, cls.fullName);
-                internalName = cls.internalName;
-            }
-            scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
-            target.addClass(internalName, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
-        }
-		
+
+		for (HighLevelDefinition definition : module.definitions.getAll()) {
+			final String internalName;
+			final JavaScriptFile scriptFile;
+			if (definition instanceof FunctionDefinition) {
+				internalName = getClassName(getFilename(definition));
+				scriptFile = getScriptFile(scriptBlocks, module.modulePackage.fullName + "/" + internalName);
+				scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
+			} else {
+				JavaClass cls = definition instanceof ExpansionDefinition ? context.getJavaExpansionClass(definition) : context
+						.getJavaClass(definition);
+				scriptFile = getScriptFile(scriptBlocks, cls.fullName);
+				internalName = cls.internalName;
+			}
+			scriptFile.classWriter.visitSource(definition.position.getFilename(), null);
+			target.addClass(internalName, definition.accept(new JavaDefinitionVisitor(context, scriptFile.classWriter)));
+		}
+
 		FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, module.parameters);
 		String scriptDescriptor = context.getMethodDescriptor(scriptHeader);
 		JavaParameterInfo[] javaScriptParameters = new JavaParameterInfo[module.parameters.length];
@@ -85,15 +99,15 @@ public class JavaCompiler {
 			target.setParameterInfo(parameter, javaParameter);
 			javaScriptParameters[i] = javaParameter;
 		}
-		
+
 		for (ScriptBlock script : module.scripts) {
 			final SourceFile sourceFile = script.file;
 			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
 			JavaScriptFile scriptFile = getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
 			scriptFilesThatAreActuallyUsedInScripts.add(scriptFile);
-			if(sourceFile != null) {
-                scriptFile.classWriter.visitSource(sourceFile.getFilename(), null);
-            }
+			if (sourceFile != null) {
+				scriptFile.classWriter.visitSource(sourceFile.getFilename(), null);
+			}
 
 			String methodName = scriptFile.scriptMethods.isEmpty() ? "run" : "run" + scriptFile.scriptMethods.size();
 
@@ -110,20 +124,20 @@ public class JavaCompiler {
 			}
 			statementVisitor.end();
 		}
-		
+
 		for (Map.Entry<String, JavaScriptFile> entry : scriptBlocks.entrySet()) {
 			for (JavaScriptMethod method : entry.getValue().scriptMethods)
 				target.addScript(method);
 
 			entry.getValue().classWriter.visitEnd();
-			if(scriptFilesThatAreActuallyUsedInScripts.contains(entry.getValue())) {
+			if (scriptFilesThatAreActuallyUsedInScripts.contains(entry.getValue())) {
 				target.addClass(entry.getKey(), entry.getValue().classWriter.toByteArray());
 			}
 		}
 
 		return target;
 	}
-	
+
 	private String getFilename(HighLevelDefinition definition) {
 		SourceFile source = definition.position.file;
 		if (source != null) {
@@ -141,17 +155,17 @@ public class JavaCompiler {
 		if (filename == null) {
 			return "generatedBlock" + (generatedScriptBlockCounter++);
 		} else {
-            // TODO: find all special characters
-            final String specialCharRegex = Stream.of('/', '\\', '.', ';')
-                    .filter(character -> character != File.separatorChar)
-                    .map(String::valueOf)
-                    .collect(Collectors.joining("", "[", "]"));
-            
+			// TODO: find all special characters
+			final String specialCharRegex = Stream.of('/', '\\', '.', ';')
+					.filter(character -> character != File.separatorChar)
+					.map(String::valueOf)
+					.collect(Collectors.joining("", "[", "]"));
+
 			return filename
-                    .substring(0, filename.lastIndexOf('.')) //remove the .zs part
-                    .replaceAll(specialCharRegex, "_")
-                    .replace('[', '_')
-                    .replace(File.separatorChar, '/');
+					.substring(0, filename.lastIndexOf('.')) //remove the .zs part
+					.replaceAll(specialCharRegex, "_")
+					.replace('[', '_')
+					.replace(File.separatorChar, '/');
 		}
 	}
 

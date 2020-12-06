@@ -15,28 +15,27 @@ import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ProjectTreeNode extends ProjectOverviewNode {
 	private final ProjectBrowser browser;
 	private final DevelopmentHost host;
 	private final LiveList<ProjectOverviewNode> modules;
-	
+
 	public ProjectTreeNode(ProjectBrowser browser, DevelopmentHost host, IDEPropertyDirectory treeState) {
 		super(treeState.getLiveBool("collapsed", false));
-		
+
 		this.browser = browser;
 		this.host = host;
-		
+
 		modules = new LiveMappedList<>(host.getModules(), module -> new ModuleTreeNode(browser, module, treeState.getSubdirectory(module.getName())));
 	}
-	
+
 	@Override
-	public void close(){
+	public void close() {
 		modules.close();
 	}
-	
+
 	@Override
 	public DColorableIcon getIcon() {
 		return ProjectIcon.INSTANCE;
@@ -61,7 +60,7 @@ public class ProjectTreeNode extends ProjectOverviewNode {
 	public boolean isLeaf() {
 		return false;
 	}
-	
+
 	@Override
 	public void onMouseClick(DMouseEvent e) {
 		browser.setContextProject();

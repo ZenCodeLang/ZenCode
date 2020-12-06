@@ -9,7 +9,6 @@ import org.openzen.drawablegui.style.DBaseStyle;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DScrollPaneStyle extends DBaseStyle {

@@ -49,15 +49,15 @@ public class FileScope extends BaseScope {
 		this.globals = globals;
 		this.preparer = preparer;
 		this.root = context.getRootPackage();
-		
+
 		memberCache = new LocalMemberCache(context.getTypeRegistry(), expansions);
 	}
-	
+
 	@Override
 	public ZSPackage getRootPackage() {
 		return root;
 	}
-	
+
 	@Override
 	public LocalMemberCache getMemberCache() {
 		return memberCache;
@@ -68,7 +68,7 @@ public class FileScope extends BaseScope {
 		TypeID type = context.getType(position, Collections.singletonList(name));
 		if (type != null)
 			return new PartialTypeExpression(position, type, name.arguments);
-		
+
 		if (globals.containsKey(name.name)) {
 			IPartialExpression resolution = globals.get(name.name).getExpression(position, this, name.arguments);
 			return new PartialGlobalExpression(position, name.name, resolution, name.arguments);
@@ -79,7 +79,7 @@ public class FileScope extends BaseScope {
 				return new InvalidExpression(BasicTypeID.UNDETERMINED, ex);
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -88,7 +88,7 @@ public class FileScope extends BaseScope {
 		TypeID type = context.getType(position, name);
 		if (type != null)
 			return type;
-		
+
 		if (globals.containsKey(name.get(0).name)) {
 			type = globals.get(name.get(0).name).getType(position, context, name.get(0).arguments);
 			for (int i = 1; i < name.size(); i++) {
@@ -96,11 +96,11 @@ public class FileScope extends BaseScope {
 				if (type == null)
 					break;
 			}
-			
+
 			if (type != null)
 				return type;
 		}
-		
+
 		return null;
 	}
 
@@ -123,7 +123,7 @@ public class FileScope extends BaseScope {
 	public DollarEvaluator getDollar() {
 		return null;
 	}
-	
+
 	@Override
 	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.NO_OUTER_BECAUSE_OUTSIDE_TYPE, "Not in an inner type");

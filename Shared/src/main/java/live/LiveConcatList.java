@@ -5,30 +5,30 @@
  */
 package live;
 
-import java.util.Iterator;
 import listeners.ListenerHandle;
 import listeners.ListenerList;
 
+import java.util.Iterator;
+
 /**
- *
  * @author Hoofdgebruiker
  */
 public class LiveConcatList<T> implements AutoCloseable, LiveList<T> {
 	private final ListenerList<Listener<T>> listeners = new ListenerList<>();
 	private final LiveList<T> a;
 	private final LiveList<T> b;
-	
+
 	private final ListenerHandle<Listener<T>> aListener;
 	private final ListenerHandle<Listener<T>> bListener;
-	
+
 	public LiveConcatList(LiveList<T> a, LiveList<T> b) {
 		this.a = a;
 		this.b = b;
-		
+
 		aListener = a.addListener(new FirstListListener());
 		bListener = b.addListener(new SecondListListener());
 	}
-	
+
 	@Override
 	public void close() {
 		aListener.close();
@@ -40,7 +40,7 @@ public class LiveConcatList<T> implements AutoCloseable, LiveList<T> {
 		int result = a.indexOf(value);
 		if (result >= 0)
 			return result;
-		
+
 		result = b.indexOf(value);
 		return result < 0 ? -1 : result + a.getLength();
 	}
@@ -64,7 +64,7 @@ public class LiveConcatList<T> implements AutoCloseable, LiveList<T> {
 	public ListenerHandle<Listener<T>> addListener(Listener<T> listener) {
 		return listeners.add(listener);
 	}
-	
+
 	private class ConcatIterator implements Iterator<T> {
 		private boolean firstList = true;
 		private Iterator<T> iterator;
@@ -76,7 +76,7 @@ public class LiveConcatList<T> implements AutoCloseable, LiveList<T> {
 				iterator = b.iterator();
 			}
 		}
-		
+
 		@Override
 		public boolean hasNext() {
 			return iterator.hasNext();
@@ -92,7 +92,7 @@ public class LiveConcatList<T> implements AutoCloseable, LiveList<T> {
 			return result;
 		}
 	}
-	
+
 	private class FirstListListener implements Listener<T> {
 		@Override
 		public void onInserted(int index, T value) {
@@ -109,7 +109,7 @@ public class LiveConcatList<T> implements AutoCloseable, LiveList<T> {
 			listeners.accept(listener -> listener.onRemoved(index, oldValue));
 		}
 	}
-	
+
 	private class SecondListListener implements Listener<T> {
 		@Override
 		public void onInserted(int index, T value) {

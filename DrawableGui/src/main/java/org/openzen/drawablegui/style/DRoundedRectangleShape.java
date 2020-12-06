@@ -9,7 +9,6 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DRoundedRectangleShape implements DShape {
@@ -17,11 +16,11 @@ public class DRoundedRectangleShape implements DShape {
 	private final float radiusTopRight;
 	private final float radiusBottomLeft;
 	private final float radiusBottomRight;
-	
+
 	public DRoundedRectangleShape(float radius) {
 		this(radius, radius, radius, radius);
 	}
-	
+
 	public DRoundedRectangleShape(float radiusTopLeft, float radiusTopRight, float radiusBottomLeft, float radiusBottomRight) {
 		this.radiusTopLeft = radiusTopLeft;
 		this.radiusTopRight = radiusTopRight;

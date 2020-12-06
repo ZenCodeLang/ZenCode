@@ -6,7 +6,6 @@
 package org.openzen.drawablegui;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DPath {
@@ -16,7 +15,7 @@ public interface DPath {
 			tracer.lineTo(x2, y2);
 		};
 	}
-	
+
 	public static DPath circle(float x, float y, float radius) {
 		// see http://spencermortensen.com/articles/bezier-circle/
 		return tracer -> {
@@ -40,7 +39,7 @@ public interface DPath {
 					x, y + radius);
 		};
 	}
-	
+
 	public static DPath rectangle(float x, float y, float width, float height) {
 		return tracer -> {
 			tracer.moveTo(x, y);
@@ -50,11 +49,11 @@ public interface DPath {
 			tracer.close();
 		};
 	}
-	
+
 	public static DPath roundedRectangle(float x, float y, float width, float height, float radius) {
 		if (radius < 0.01f)
 			return rectangle(x, y, width, height);
-		
+
 		return tracer -> {
 			float c = radius - radius * 0.551915024494f;
 			tracer.moveTo(x + width - radius, y + height);
@@ -80,14 +79,14 @@ public interface DPath {
 			tracer.close();
 		};
 	}
-	
+
 	public static DPath roundedRectangle(float x, float y, float width, float height, float radiusTopLeft, float radiusTopRight, float radiusBottomLeft, float radiusBottomRight) {
 		return tracer -> {
 			float cTopLeft = radiusTopLeft - radiusTopLeft * 0.551915024494f;
 			float cTopRight = radiusTopRight - radiusTopRight * 0.551915024494f;
 			float cBottomLeft = radiusBottomLeft - radiusBottomLeft * 0.551915024494f;
 			float cBottomRight = radiusBottomRight - radiusBottomRight * 0.551915024494f;
-			
+
 			tracer.moveTo(x + width - radiusBottomRight, y + height);
 			if (radiusBottomRight > 0.01f) {
 				tracer.bezierCubic(
@@ -119,6 +118,6 @@ public interface DPath {
 			tracer.close();
 		};
 	}
-	
+
 	void trace(DPathTracer tracer);
 }

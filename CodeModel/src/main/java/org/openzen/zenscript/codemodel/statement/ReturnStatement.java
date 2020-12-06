@@ -1,6 +1,5 @@
 package org.openzen.zenscript.codemodel.statement;
 
-import java.util.function.Consumer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -9,25 +8,27 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.function.Consumer;
+
 public class ReturnStatement extends Statement {
 	public final Expression value;
-	
+
 	public ReturnStatement(CodePosition position, Expression value) {
 		super(position, value == null ? null : value.thrownType);
-		
+
 		this.value = value;
 	}
-	
+
 	@Override
 	public TypeID getReturnType() {
 		return value != null ? value.type : BasicTypeID.VOID;
 	}
-	
+
 	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
 	}
-	
+
 	@Override
 	public Statement withReturnType(TypeScope scope, TypeID returnType) {
 		return new ReturnStatement(position, value == null ? null : value.castImplicit(position, scope, returnType));
@@ -37,7 +38,7 @@ public class ReturnStatement extends Statement {
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitReturn(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
 		return visitor.visitReturn(context, this);

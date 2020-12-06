@@ -10,9 +10,9 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ImplementationMemberRef implements DefinitionMemberRef {
 	public final ImplementationMember member;
-	private final TypeID type;
 	public final TypeID implementsType;
-	
+	private final TypeID type;
+
 	public ImplementationMemberRef(ImplementationMember member, TypeID owner, TypeID implementsType) {
 		this.member = member;
 		this.type = owner;
@@ -23,7 +23,7 @@ public class ImplementationMemberRef implements DefinitionMemberRef {
 	public CodePosition getPosition() {
 		return member.position;
 	}
-	
+
 	@Override
 	public TypeID getOwnerType() {
 		return type;

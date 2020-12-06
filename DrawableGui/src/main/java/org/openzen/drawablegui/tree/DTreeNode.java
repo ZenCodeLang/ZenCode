@@ -12,21 +12,21 @@ import org.openzen.drawablegui.DColorableIcon;
 import org.openzen.drawablegui.DMouseEvent;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DTreeNode<N extends DTreeNode<N>> {
 	void close();
-	
+
 	DColorableIcon getIcon();
-	
+
 	String getTitle();
-	
+
 	LiveList<N> getChildren();
-	
+
 	MutableLiveBool isCollapsed();
-	
+
 	boolean isLeaf();
-	
-	default void onMouseClick(DMouseEvent e) {}
+
+	default void onMouseClick(DMouseEvent e) {
+	}
 }

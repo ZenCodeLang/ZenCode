@@ -8,14 +8,13 @@ package org.openzen.zenscript.ide;
 import java.io.IOException;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaBytecodeMain {
 	/**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws IOException {
+	 * @param args the command line arguments
+	 */
+	public static void main(String[] args) throws IOException {
 		Main.main("../../ZenCode", "SharedJavaBytecode");
-    }
+	}
 }

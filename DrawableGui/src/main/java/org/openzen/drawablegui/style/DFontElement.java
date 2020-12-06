@@ -9,13 +9,12 @@ import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DUIContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 @FunctionalInterface
 public interface DFontElement extends DStyleElement {
 	DFont eval(DUIContext context);
-	
+
 	@Override
 	default DFontElement asFont() {
 		return this;

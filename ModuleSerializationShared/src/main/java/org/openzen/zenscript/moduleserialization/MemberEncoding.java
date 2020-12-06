@@ -6,18 +6,14 @@
 package org.openzen.zenscript.moduleserialization;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class MemberEncoding {
-	private MemberEncoding() {}
-	
 	public static final int FLAG_POSITION = 1;
 	public static final int FLAG_NAME = 2;
 	public static final int FLAG_AUTO_GETTER = 4;
 	public static final int FLAG_AUTO_SETTER = 8;
 	public static final int FLAG_ANNOTATIONS = 16;
-	
 	public static final int TYPE_BUILTIN = 1;
 	public static final int TYPE_CONST = 2;
 	public static final int TYPE_FIELD = 3;
@@ -33,7 +29,6 @@ public class MemberEncoding {
 	public static final int TYPE_IMPLEMENTATION = 13;
 	public static final int TYPE_INNER_DEFINITION = 14;
 	public static final int TYPE_STATIC_INITIALIZER = 15;
-	
 	public static final int OPERATOR_ADD = 1;
 	public static final int OPERATOR_SUB = 2;
 	public static final int OPERATOR_MUL = 3;
@@ -59,7 +54,6 @@ public class MemberEncoding {
 	public static final int OPERATOR_SHL = 23;
 	public static final int OPERATOR_SHR = 24;
 	public static final int OPERATOR_USHR = 25;
-	
 	public static final int OPERATOR_ADDASSIGN = 26;
 	public static final int OPERATOR_SUBASSIGN = 27;
 	public static final int OPERATOR_MULASSIGN = 28;
@@ -72,9 +66,10 @@ public class MemberEncoding {
 	public static final int OPERATOR_SHLASSIGN = 35;
 	public static final int OPERATOR_SHRASSIGN = 36;
 	public static final int OPERATOR_USHRASSIGN = 37;
-	
 	public static final int OPERATOR_INCREMENT = 38;
 	public static final int OPERATOR_DECREMENT = 39;
-	
 	public static final int OPERATOR_RANGE = 40;
+
+	private MemberEncoding() {
+	}
 }

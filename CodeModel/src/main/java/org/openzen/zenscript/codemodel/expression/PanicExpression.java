@@ -6,13 +6,13 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class PanicExpression extends Expression {
 	public final Expression value;
-	
+
 	public PanicExpression(CodePosition position, TypeID type, Expression value) {
 		super(position, type, null);
-		
+
 		this.value = value;
 	}
-	
+
 	@Override
 	public boolean aborts() {
 		return true;

@@ -7,10 +7,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class SetFunctionParameterExpression extends Expression {
 	public final FunctionParameter parameter;
 	public final Expression value;
-	
+
 	public SetFunctionParameterExpression(CodePosition position, FunctionParameter parameter, Expression value) {
 		super(position, parameter.type, value.thrownType);
-		
+
 		this.parameter = parameter;
 		this.value = value;
 	}

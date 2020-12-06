@@ -10,16 +10,16 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 
 public interface MemberAnnotation {
 	MemberAnnotation[] NONE = new MemberAnnotation[0];
-	
+
 	AnnotationDefinition getDefinition();
-	
+
 	void apply(IDefinitionMember member, BaseScope scope);
-	
+
 	void applyOnOverridingMethod(FunctionalMember member, BaseScope scope);
-	
+
 	void applyOnOverridingGetter(GetterMember member, BaseScope scope);
-	
+
 	void applyOnOverridingSetter(SetterMember member, BaseScope scope);
-	
+
 	void serialize(CodeSerializationOutput output, IDefinitionMember member, TypeContext context);
 }

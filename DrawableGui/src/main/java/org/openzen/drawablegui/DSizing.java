@@ -9,23 +9,17 @@ import live.MutableLiveObject;
 import live.SimpleLiveObject;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DSizing {
-	public static MutableLiveObject<DSizing> create() {
-		return new SimpleLiveObject<>(DSizing.EMPTY);
-	}
-	
 	public static final DSizing EMPTY = new DSizing(0, 0);
-	
 	public final int minimumWidth;
 	public final int minimumHeight;
 	public final int preferredWidth;
 	public final int preferredHeight;
 	public final int maximumWidth;
 	public final int maximumHeight;
-	
+
 	public DSizing(int preferredWidth, int preferredHeight) {
 		this.minimumWidth = 0;
 		this.minimumHeight = 0;
@@ -34,7 +28,7 @@ public class DSizing {
 		this.maximumWidth = 1000000;
 		this.maximumHeight = 1000000;
 	}
-	
+
 	public DSizing(int minimumWidth, int minimumHeight, int preferredWidth, int preferredHeight, int maximumWidth, int maximumHeight) {
 		this.minimumWidth = minimumWidth;
 		this.minimumHeight = minimumHeight;
@@ -42,5 +36,9 @@ public class DSizing {
 		this.preferredHeight = preferredHeight;
 		this.maximumWidth = maximumWidth;
 		this.maximumHeight = maximumHeight;
+	}
+
+	public static MutableLiveObject<DSizing> create() {
+		return new SimpleLiveObject<>(DSizing.EMPTY);
 	}
 }

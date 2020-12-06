@@ -10,16 +10,16 @@ public class CallExpression extends Expression {
 	public final FunctionalMemberRef member;
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
-	
+
 	public CallExpression(CodePosition position, Expression target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments) {
 		super(position, instancedHeader.getReturnType(), multiThrow(position, arguments.arguments));
-		
+
 		this.target = target;
 		this.member = member;
 		this.arguments = arguments;
 		this.instancedHeader = instancedHeader;
 	}
-	
+
 	public Expression getFirstArgument() {
 		return arguments.arguments[0];
 	}
@@ -42,12 +42,12 @@ public class CallExpression extends Expression {
 				? this
 				: new CallExpression(position, tTarget, member, instancedHeader, tArguments);
 	}
-	
+
 	@Override
 	public String evaluateStringConstant() {
 		if (member.getBuiltin() == null)
 			throw new UnsupportedOperationException("Cannot evaluate to a string constant!");
-		
+
 		switch (member.getBuiltin()) {
 			case STRING_ADD_STRING:
 				return target.evaluateStringConstant() + arguments.arguments[0].evaluateStringConstant();

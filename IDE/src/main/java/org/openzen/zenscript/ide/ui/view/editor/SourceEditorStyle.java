@@ -10,7 +10,6 @@ import org.openzen.drawablegui.style.DPxDimension;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SourceEditorStyle {
@@ -30,9 +29,9 @@ public class SourceEditorStyle {
 	public final int selectionPaddingBottom;
 	public final int cursorWidth;
 	public final int cursorColor;
-	
+
 	public final int errorWavyLineColor;
-	
+
 	public SourceEditorStyle(DStyleDefinition style) {
 		this.backgroundColor = style.getColor("backgroundColor", 0xFFFFFFFF);
 		this.lineBarBackgroundColor = style.getColor("lineBarBackgroundColor", 0xFFE9E8E2);
@@ -43,16 +42,16 @@ public class SourceEditorStyle {
 		this.lineBarSpacingRight = style.getDimension("lineBarSpacingRight", new DDpDimension(2));
 		this.lineBarMargin = style.getDimension("lineBarMargin", new DDpDimension(7));
 		this.lineBarTextColor = style.getColor("lineBarTextColor", 0xFFA0A0A0);
-		
+
 		this.extraLineSpacing = style.getDimension("extraLineSpacing", new DDpDimension(2));
 		this.currentLineHighlight = style.getColor("currentLineHighlight", 0xFFE9EFF8);
 		this.selectionColor = style.getColor("selectionColor", 0xFFB0C5E3);
 		this.selectionPaddingTop = style.getDimension("selectionPaddingTop", new DDpDimension(1));
 		this.selectionPaddingBottom = style.getDimension("selectionPaddingBottom", new DDpDimension(1));
-		
+
 		this.cursorWidth = style.getDimension("cursorWidth", new DDpDimension(1));
 		this.cursorColor = style.getColor("cursorColor", 0xFF000000);
-		
+
 		this.errorWavyLineColor = style.getColor("errorWavyLineColor", 0xFFFF0000);
 	}
 }

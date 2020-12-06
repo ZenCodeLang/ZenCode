@@ -19,7 +19,7 @@ public class ParsedOperator extends ParsedFunctionalMember {
 	private final OperatorType operator;
 	private final ParsedFunctionHeader header;
 	private OperatorMember compiled;
-	
+
 	public ParsedOperator(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -28,10 +28,9 @@ public class ParsedOperator extends ParsedFunctionalMember {
 			ParsedAnnotation[] annotations,
 			OperatorType operator,
 			ParsedFunctionHeader header,
-			ParsedFunctionBody body)
-	{
+			ParsedFunctionBody body) {
 		super(position, definition, implementation, modifiers, annotations, body);
-		
+
 		this.operator = operator;
 		this.header = header;
 	}
@@ -52,14 +51,14 @@ public class ParsedOperator extends ParsedFunctionalMember {
 		FunctionalMemberRef override = group.getOverride(position, scope, compiled);
 		if (override == null)
 			return;
-		
+
 		if (override.getHeader().hasUnknowns) {
 			scope.getPreparer().prepare(override.getTarget());
 			override = scope.getTypeMembers(baseType)
-				.getOrCreateGroup(operator)
-				.getOverride(position, scope, compiled); // to refresh the header
+					.getOrCreateGroup(operator)
+					.getOverride(position, scope, compiled); // to refresh the header
 		}
-		
+
 		compiled.setOverrides(scope.getTypeRegistry(), override);
 	}
 }

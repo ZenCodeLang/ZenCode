@@ -1,8 +1,5 @@
 package org.openzen.zenscript.codemodel.annotations;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.OperatorType;
@@ -24,12 +21,16 @@ import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class PreconditionForMethod implements MemberAnnotation {
 	private final CodePosition position;
 	private final String enforcement;
 	private final Expression condition;
 	private final Expression message;
-	
+
 	public PreconditionForMethod(
 			CodePosition position,
 			String enforcement,
@@ -40,7 +41,7 @@ public class PreconditionForMethod implements MemberAnnotation {
 		this.condition = condition;
 		this.message = message;
 	}
-	
+
 	@Override
 	public AnnotationDefinition getDefinition() {
 		return PreconditionAnnotationDefinition.INSTANCE;
@@ -49,11 +50,11 @@ public class PreconditionForMethod implements MemberAnnotation {
 	@Override
 	public void apply(IDefinitionMember member, BaseScope scope) {
 		if (member instanceof GetterMember) {
-			applyOnOverridingGetter((GetterMember)member, scope);
+			applyOnOverridingGetter((GetterMember) member, scope);
 		} else if (member instanceof SetterMember) {
-			applyOnOverridingSetter((SetterMember)member, scope);
+			applyOnOverridingSetter((SetterMember) member, scope);
 		} else if (member instanceof FunctionalMember) {
-			applyOnOverridingMethod((FunctionalMember)member, scope);
+			applyOnOverridingMethod((FunctionalMember) member, scope);
 		}
 	}
 
@@ -71,11 +72,11 @@ public class PreconditionForMethod implements MemberAnnotation {
 	public void applyOnOverridingSetter(SetterMember member, BaseScope scope) {
 		member.body = applyOnOverride(member.body, scope);
 	}
-	
+
 	private Statement applyOnOverride(Statement body, BaseScope scope) {
 		if (body == null)
 			return body;
-		
+
 		try {
 			TypeMembers members = scope.getTypeMembers(condition.type);
 			Expression inverseCondition = members.getGroup(OperatorType.NOT)
@@ -86,7 +87,7 @@ public class PreconditionForMethod implements MemberAnnotation {
 			statements.add(new IfStatement(position, inverseCondition, throwStatement, null));
 
 			if (body instanceof BlockStatement) {
-				statements.addAll(Arrays.asList(((BlockStatement)body).statements));
+				statements.addAll(Arrays.asList(((BlockStatement) body).statements));
 			} else {
 				statements.add(body);
 			}

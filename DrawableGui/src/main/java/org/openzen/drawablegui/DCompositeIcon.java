@@ -8,20 +8,19 @@ package org.openzen.drawablegui;
 import org.openzen.drawablegui.draw.DDrawTarget;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DCompositeIcon implements DColorableIcon {
 	private final DColorableIcon base;
 	private final DColorableIcon addition;
 	private final DTransform2D additionTransform;
-	
+
 	public DCompositeIcon(DColorableIcon base, DColorableIcon addition, DTransform2D additionTransform) {
 		this.base = base;
 		this.addition = addition;
 		this.additionTransform = additionTransform;
 	}
-	
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		base.draw(target, z, transform, color);

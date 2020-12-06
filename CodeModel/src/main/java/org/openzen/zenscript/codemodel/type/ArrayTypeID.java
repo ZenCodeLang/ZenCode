@@ -1,18 +1,17 @@
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.List;
-import java.util.Set;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
+import java.util.List;
+
 public class ArrayTypeID implements TypeID {
 	public static final ArrayTypeID INT = new ArrayTypeID(BasicTypeID.INT, 1);
 	public static final ArrayTypeID CHAR = new ArrayTypeID(BasicTypeID.CHAR, 1);
-	
+
 	public final TypeID elementType;
 	public final int dimension;
 	private final ArrayTypeID normalized;
@@ -22,28 +21,28 @@ public class ArrayTypeID implements TypeID {
 		this.dimension = dimension;
 		this.normalized = this;
 	}
-	
+
 	public ArrayTypeID(GlobalTypeRegistry registry, TypeID elementType, int dimension) {
 		this.elementType = elementType;
 		this.dimension = dimension;
 		this.normalized = elementType.getNormalized() == elementType ? this : registry.getArray(elementType.getNormalized(), dimension);
 	}
-	
+
 	@Override
 	public Expression getDefaultValue() {
 		return new ArrayExpression(CodePosition.UNKNOWN, Expression.NONE, this);
 	}
-	
+
 	@Override
 	public ArrayTypeID getNormalized() {
 		return normalized;
 	}
-	
+
 	@Override
 	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitArray(this);
 	}
-	
+
 	@Override
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitArray(context, this);
@@ -53,7 +52,7 @@ public class ArrayTypeID implements TypeID {
 	public boolean isOptional() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isValueType() {
 		return false;

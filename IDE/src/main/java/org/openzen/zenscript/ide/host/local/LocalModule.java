@@ -6,6 +6,7 @@
 package org.openzen.zenscript.ide.host.local;
 
 import java.util.function.Consumer;
+
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.module.ModuleReference;
@@ -18,13 +19,12 @@ import org.openzen.zenscript.validator.*;
 import org.openzen.zenscript.validator.logger.*;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class LocalModule implements IDEModule {
 	private final ModuleReference module;
 	private final LocalPackage rootPackage;
-	
+
 	public LocalModule(ModuleReference module) {
 		this.module = module;
 		rootPackage = new LocalPackage(module.getRootPackage());
@@ -34,7 +34,7 @@ public class LocalModule implements IDEModule {
 	public String getName() {
 		return module.getName();
 	}
-	
+
 	@Override
 	public IDEModuleType getType() {
 		return UniversalModuleType.INSTANCE;
@@ -44,7 +44,7 @@ public class LocalModule implements IDEModule {
 	public IDEPackage getRootPackage() {
 		return rootPackage;
 	}
-	
+
 	@Override
 	public void prebuild(ModuleLoader loader, Consumer<IDECodeError> errors) {
 		SemanticModule module = loader.getModule(this.module.getName());

@@ -3,6 +3,7 @@ package org.openzen.zenscript.compiler;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
@@ -28,11 +29,11 @@ public class CompileScope implements TypeScope {
 		this.rootPackage = rootPackage;
 		this.expansions = expansions;
 		this.cache = new LocalMemberCache(globalRegistry, expansions);
-		
+
 		for (AnnotationDefinition annotation : annotations)
 			this.annotations.put(annotation.getAnnotationName(), annotation);
 	}
-	
+
 	@Override
 	public ZSPackage getRootPackage() {
 		return rootPackage;
@@ -62,7 +63,7 @@ public class CompileScope implements TypeScope {
 	public TypeID getType(CodePosition position, List<GenericName> name) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
-	
+
 	@Override
 	public TypeID getThisType() {
 		return null;
@@ -70,7 +71,8 @@ public class CompileScope implements TypeScope {
 
 	@Override
 	public TypeMemberPreparer getPreparer() {
-		return member -> {};
+		return member -> {
+		};
 	}
 
 	@Override

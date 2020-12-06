@@ -5,12 +5,12 @@ import java.util.Objects;
 public final class AccessScope {
 	public final Module module;
 	public final HighLevelDefinition definition;
-	
+
 	public AccessScope(Module module, HighLevelDefinition definition) {
 		this.module = module;
 		this.definition = definition;
 	}
-	
+
 	public boolean hasAccessTo(AccessScope other, int access) {
 		if (Modifiers.isPublic(access))
 			return true;
@@ -24,7 +24,7 @@ public final class AccessScope {
 			return module == other.module;
 		if (Modifiers.isProtected(access))
 			return definition.isSubclassOf(other.definition);
-		
+
 		return false;
 	}
 
@@ -42,7 +42,7 @@ public final class AccessScope {
 			return true;
 		if (obj == null || getClass() != obj.getClass())
 			return false;
-		
+
 		final AccessScope other = (AccessScope) obj;
 		return module == other.module && definition == other.definition;
 	}

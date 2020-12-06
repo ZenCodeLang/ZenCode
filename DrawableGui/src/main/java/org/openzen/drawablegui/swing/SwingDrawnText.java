@@ -8,28 +8,28 @@ package org.openzen.drawablegui.swing;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.draw.DDrawnText;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SwingDrawnText extends SwingDrawnElement implements DDrawnText {
-	private float x;
-	private float y;
 	private final int width;
 	private final int ascent;
 	private final int descent;
-	private Color awtColor;
 	private final Font font;
 	private final String text;
-	
+	private float x;
+	private float y;
+	private Color awtColor;
+
 	public SwingDrawnText(SwingDrawSurface target, int z, float x, float y, int color, DFont font, String text, int ascent, int descent, int width) {
 		super(target, z);
 		SwingDrawSurface.prepare(font);
-		
+
 		this.x = x;
 		this.y = y;
 		this.awtColor = new Color(color, true);
@@ -50,9 +50,9 @@ public class SwingDrawnText extends SwingDrawnElement implements DDrawnText {
 
 	@Override
 	public DIRectangle getBounds() {
-		return new DIRectangle((int)x, (int)y - ascent, width, ascent + descent);
+		return new DIRectangle((int) x, (int) y - ascent, width, ascent + descent);
 	}
-	
+
 	@Override
 	public void setColor(int color) {
 		this.awtColor = new Color(color, true);

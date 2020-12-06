@@ -6,9 +6,11 @@
 package org.openzen.zenscript.javasource;
 
 import org.openzen.zenscript.javashared.JavaTypeNameVisitor;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -42,7 +44,6 @@ import org.openzen.zenscript.javashared.JavaImplementation;
 import org.openzen.zenscript.javashared.JavaMethod;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaMemberCompiler extends BaseMemberCompiler {
@@ -51,10 +52,10 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	private final List<FieldMember> fields = new ArrayList<>();
 	private final boolean isInterface;
 	private final JavaSourceContext context;
-	public boolean hasDestructor = false;
 	private final JavaCompiledModule module;
 	private final SemanticModule semanticModule;
-	
+	public boolean hasDestructor = false;
+
 	public JavaMemberCompiler(
 			JavaSourceCompiler compiler,
 			JavaSourceContext context,
@@ -66,10 +67,9 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			JavaSourceFileScope scope,
 			boolean isInterface,
 			HighLevelDefinition definition,
-			SemanticModule semanticModule)
-	{
+			SemanticModule semanticModule) {
 		super(settings, indent, output, scope, null, definition);
-		
+
 		this.file = file;
 		this.isInterface = isInterface;
 		this.compiler = compiler;
@@ -77,40 +77,40 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		this.module = module;
 		this.semanticModule = semanticModule;
 	}
-	
+
 	private void compileMethod(DefinitionMember member, FunctionHeader header, Statement body) {
 		JavaMethod method = module.getMethodInfo(member);
 		if (!method.compile)
 			return;
-		
+
 		boolean hasBody = body != null && !(body instanceof EmptyStatement);
 		if (isInterface && method.name.equals("toString") && header.parameters.length == 0) {
 			hasBody = false;
 		}
-		
+
 		begin(ElementType.METHOD);
 		override(member.getOverrides() != null);
 		output.append(indent);
 		if (isInterface && hasBody)
 			output.append("default ");
-		
+
 		modifiers(member.getEffectiveModifiers());
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, header.typeParameters, true);
 		output.append(scope.typeVisitor.process(header.getReturnType()));
 		output.append(" ");
 		output.append(method.name);
 		formatParameters(member.isStatic(), header);
-		
+
 		if (hasBody)
 			compileBody(body, header);
 		else
 			output.append(";\n");
 	}
-	
+
 	@Override
 	public Void visitConst(ConstMember member) {
 		begin(ElementType.FIELD);
-		
+
 		output.append(indent);
 		modifiers(member.getEffectiveModifiers() | Modifiers.STATIC | Modifiers.FINAL);
 		output.append(scope.type(member.getType()));
@@ -125,7 +125,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	@Override
 	public Void visitField(FieldMember member) {
 		begin(ElementType.FIELD);
-		
+
 		output.append(indent);
 		int modifiers = 0;
 		if (member.isStatic())
@@ -136,9 +136,9 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			modifiers |= member.autoGetterAccess;
 		else
 			modifiers |= Modifiers.PRIVATE;
-		
+
 		this.modifiers(modifiers);
-		
+
 		output.append(scope.type(member.getType()));
 		output.append(" ");
 		output.append(member.name);
@@ -147,7 +147,7 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 			output.append(fieldInitializerScope.expression(null, member.initializer)); // TODO: duplicable expressions -> initializer helpers!
 		}
 		output.append(";\n");
-		
+
 		fields.add(member);
 		return null;
 	}
@@ -156,9 +156,9 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	public Void visitConstructor(ConstructorMember member) {
 		if (member.body == null)
 			return null; // happens with default constructors
-		
+
 		begin(ElementType.CONSTRUCTOR);
-		
+
 		output.append(indent);
 		modifiers(member.getEffectiveModifiers());
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, member.header.typeParameters, true);
@@ -172,14 +172,14 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 	public Void visitDestructor(DestructorMember member) {
 		hasDestructor = true;
 		begin(ElementType.METHOD);
-		
+
 		output.append(indent).append("@Override\n");
 		output.append(indent).append("public void close()");
-		
+
 		Statement body = member.body;
 		if ((body == null || body instanceof EmptyStatement) && !(definition instanceof InterfaceDefinition))
 			body = new BlockStatement(member.position, new Statement[0]);
-		
+
 		compileBody(body, member.header);
 		return null;
 	}
@@ -236,12 +236,12 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		} else {
 			String interfaceName = JavaTypeNameVisitor.INSTANCE.process(member.type);
 			String implementationName = interfaceName + "Implementation";
-			
+
 			begin(ElementType.FIELD);
 			output.append(indent);
 			modifiers(member.getEffectiveModifiers());
 			output.append("final ").append(scope.type(member.type)).append(" as").append(interfaceName).append(" = new ").append(implementationName).append("();\n");
-			
+
 			begin(ElementType.INNERCLASS);
 			output.append("private class ").append(implementationName).append(" implements ").append(scope.type(member.type)).append(" {\n");
 			JavaMemberCompiler memberCompiler = new JavaMemberCompiler(compiler, context, module, file, settings, indent + settings.indent, output, scope, isInterface, definition, semanticModule);
@@ -258,9 +258,9 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		JavaClass cls = context.optJavaClass(member.innerDefinition);
 		if (cls == null)
 			return null;
-		
+
 		JavaDefinitionVisitor visitor = new JavaDefinitionVisitor(
-				indent, 
+				indent,
 				compiler,
 				context,
 				module,
@@ -280,8 +280,8 @@ public class JavaMemberCompiler extends BaseMemberCompiler {
 		compileBody(member.body, new FunctionHeader(BasicTypeID.VOID));
 		return null;
 	}
-	
+
 	public void finish() {
-		
+
 	}
 }

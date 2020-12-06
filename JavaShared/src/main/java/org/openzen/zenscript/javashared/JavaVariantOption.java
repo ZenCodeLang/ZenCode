@@ -6,13 +6,12 @@
 package org.openzen.zenscript.javashared;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaVariantOption {
 	public final JavaClass variantClass;
 	public final JavaClass variantOptionClass;
-	
+
 	public JavaVariantOption(JavaClass variantClass, JavaClass variantOptionClass) {
 		this.variantClass = variantClass;
 		this.variantOptionClass = variantOptionClass;

@@ -6,13 +6,13 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ThrowExpression extends Expression {
 	public final Expression value;
-	
+
 	public ThrowExpression(CodePosition position, TypeID type, Expression value) {
 		super(position, type, value.type);
-		
+
 		this.value = value;
 	}
-	
+
 	@Override
 	public boolean aborts() {
 		return true;

@@ -10,17 +10,17 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class GetterMemberRef extends PropertyRef {
 	public final GetterMember member;
-	
+
 	public GetterMemberRef(TypeID owner, GetterMember member, GenericMapper mapper) {
 		super(owner, member, mapper);
-		
+
 		this.member = member;
 	}
-	
+
 	public Expression get(CodePosition position, Expression target) {
 		return new GetterExpression(position, target, this);
 	}
-	
+
 	public Expression getStatic(CodePosition position) {
 		return new StaticGetterExpression(position, this);
 	}

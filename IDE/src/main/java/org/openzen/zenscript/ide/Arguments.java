@@ -8,17 +8,16 @@ package org.openzen.zenscript.ide;
 import java.io.File;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class Arguments {
 	public final File projectDirectory;
 	public final String defaultTarget;
-	
+
 	public Arguments(String[] arguments) {
 		File projectDir = null;
 		String defaultTarget = null;
-		
+
 		int positional = 0;
 		for (int i = 0; i < arguments.length; i++) {
 			switch (positional) {
@@ -33,10 +32,10 @@ public class Arguments {
 			}
 			positional++;
 		}
-		
+
 		if (projectDir.isFile()) // means we're opening a project file instead of a directory
 			projectDir = projectDir.getParentFile();
-		
+
 		this.projectDirectory = projectDir;
 		this.defaultTarget = defaultTarget;
 	}

@@ -7,6 +7,7 @@ package org.openzen.zenscript.moduleserializer.encoder;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -28,18 +29,17 @@ import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 import org.openzen.zenscript.moduleserializer.SerializationOptions;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DefinitionSerializer implements DefinitionVisitorWithContext<ModuleContext, Void> {
 	private final SerializationOptions options;
 	private final CodeSerializationOutput output;
-	
+
 	public DefinitionSerializer(SerializationOptions options, CodeSerializationOutput output) {
 		this.options = options;
 		this.output = output;
 	}
-	
+
 	private void visit(ModuleContext context, HighLevelDefinition definition) {
 		int flags = 0;
 		if (definition.position != null && options.positions)
@@ -50,7 +50,7 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 			flags |= DefinitionEncoding.FLAG_TYPE_PARAMETERS;
 		if (definition.annotations.length > 0)
 			flags |= DefinitionEncoding.FLAG_ANNOTATIONS;
-		
+
 		output.writeUInt(flags);
 		output.writeUInt(definition.modifiers);
 		if (definition.position != CodePosition.UNKNOWN && options.positions)
@@ -58,11 +58,11 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 		output.writeString(definition.pkg.fullName);
 		if (definition.name != null)
 			output.writeString(definition.name);
-		
+
 		TypeContext typeContext = new TypeContext(context, definition.typeParameters, null);
 		if (definition.typeParameters.length > 0)
 			output.serialize(typeContext, definition.typeParameters);
-		
+
 		if (definition.annotations.length > 0) {
 			output.enqueueCode(output -> {
 				output.writeUInt(definition.annotations.length);
@@ -73,13 +73,13 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 			});
 		}
 	}
-	
+
 	private void encodeMembers(ModuleContext moduleContext, HighLevelDefinition definition) {
 		List<InnerDefinitionMember> innerDefinitions = new ArrayList<>();
 		for (IDefinitionMember member : definition.members)
 			if ((member instanceof InnerDefinitionMember))
-				innerDefinitions.add((InnerDefinitionMember)member);
-		
+				innerDefinitions.add((InnerDefinitionMember) member);
+
 		output.writeUInt(innerDefinitions.size());
 		for (InnerDefinitionMember innerDefinition : innerDefinitions) {
 			System.out.println("Inner definition: " + innerDefinition.definition.name);
@@ -87,14 +87,14 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 			output.writeUInt(innerDefinition.getSpecifiedModifiers());
 			innerDefinition.innerDefinition.accept(moduleContext, this);
 		}
-		
+
 		output.enqueueMembers(output -> {
 			DefinitionMemberSerializer memberEncoder = new DefinitionMemberSerializer(options, output);
 			TypeContext context = new TypeContext(moduleContext, definition.typeParameters, moduleContext.registry.getForMyDefinition(definition));
 			definition.accept(context, memberEncoder);
 		});
 	}
-	
+
 	@Override
 	public Void visitClass(ModuleContext context, ClassDefinition definition) {
 		output.writeUInt(DefinitionEncoding.TYPE_CLASS);

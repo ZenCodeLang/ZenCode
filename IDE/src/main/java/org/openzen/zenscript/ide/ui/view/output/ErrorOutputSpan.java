@@ -8,16 +8,15 @@ package org.openzen.zenscript.ide.ui.view.output;
 import org.openzen.zenscript.ide.ui.IDEStyling;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ErrorOutputSpan implements OutputSpan {
 	private final String value;
-	
+
 	public ErrorOutputSpan(String value) {
 		this.value = value;
 	}
-	
+
 	@Override
 	public String toString() {
 		return value;

@@ -1,23 +1,23 @@
 package org.openzen.zenscript.parser.expression;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+
 public class ParsedExpressionArray extends ParsedExpression {
-    
-    public static final List<BiFunction<ParsedExpressionArray, ExpressionScope, IPartialExpression>> compileOverrides = new ArrayList<>(0);
-    public final List<ParsedExpression> contents;
+
+	public static final List<BiFunction<ParsedExpressionArray, ExpressionScope, IPartialExpression>> compileOverrides = new ArrayList<>(0);
+	public final List<ParsedExpression> contents;
 
 	public ParsedExpressionArray(CodePosition position, List<ParsedExpression> contents) {
 		super(position);
@@ -27,17 +27,17 @@ public class ParsedExpressionArray extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-        
-        for(BiFunction<ParsedExpressionArray, ExpressionScope, IPartialExpression> compileOverride : compileOverrides) {
-            final IPartialExpression apply = compileOverride.apply(this, scope);
-            if(apply != null)
-                return apply;
-        }
-        
+
+		for (BiFunction<ParsedExpressionArray, ExpressionScope, IPartialExpression> compileOverride : compileOverrides) {
+			final IPartialExpression apply = compileOverride.apply(this, scope);
+			if (apply != null)
+				return apply;
+		}
+
 		TypeID asBaseType = null;
 		TypeID asType = null;
 		boolean couldHintType = false;
-		
+
 		for (TypeID hint : scope.hints) {
 			// TODO: what if multiple hints fit?
 			if (hint instanceof ArrayTypeID) {
@@ -49,7 +49,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 				}
 			}
 		}
-		
+
 		Expression[] cContents = new Expression[contents.size()];
 		if (couldHintType) {
 			ExpressionScope contentScope = scope.withHint(asBaseType);
@@ -65,7 +65,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 				TypeID joinedType = resultType == null ? cContents[i].type : scope.getTypeMembers(resultType).union(cContents[i].type);
 				if (joinedType == null)
 					throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "Could not combine " + resultType + " with " + cContents[i].type);
-				
+
 				resultType = joinedType;
 			}
 			for (int i = 0; i < contents.size(); i++)

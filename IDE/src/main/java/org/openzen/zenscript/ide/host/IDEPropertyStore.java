@@ -6,11 +6,10 @@
 package org.openzen.zenscript.ide.host;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface IDEPropertyStore {
 	IDEPropertyDirectory getRoot();
-	
+
 	void save();
 }

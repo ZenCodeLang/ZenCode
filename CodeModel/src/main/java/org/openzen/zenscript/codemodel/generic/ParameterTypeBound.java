@@ -2,20 +2,20 @@ package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public final class ParameterTypeBound implements TypeParameterBound {
 	public final CodePosition position;
 	public final TypeID type;
-	
+
 	public ParameterTypeBound(CodePosition position, TypeID type) {
 		this.position = position;
 		this.type = type;
 	}
-	
+
 	@Override
 	public String getCanonical() {
 		return type.toString();

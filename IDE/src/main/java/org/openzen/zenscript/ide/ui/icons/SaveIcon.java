@@ -14,9 +14,6 @@ public class SaveIcon implements DColorableIcon {
 	public static final SaveIcon INSTANCE = new SaveIcon();
 	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
 	public static final ColoredIcon GREY = new ColoredIcon(INSTANCE, 0xFF888888);
-	
-	private SaveIcon() {}
-	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(17f, 3f);
 		tracer.lineTo(5.0f, 3.0f);
@@ -41,7 +38,10 @@ public class SaveIcon implements DColorableIcon {
 		tracer.lineTo(15.0f, 9.0f);
 		tracer.close();
 	};
-	
+
+	private SaveIcon() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH, transform, color);

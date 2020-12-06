@@ -2,5 +2,5 @@ package zsynthetic;
 
 @FunctionalInterface
 public interface FunctionUSizeTToU<T, U> {
-    U invoke(int a, T b);
+	U invoke(int a, T b);
 }

@@ -1,45 +1,46 @@
 package org.openzen.zenscript.codemodel.scope;
 
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+
+import java.util.List;
 
 public class LambdaScope extends StatementScope {
 	private final BaseScope outer;
 	private final FunctionHeader header;
 	private final LambdaClosure closure;
-	
+
 	public LambdaScope(BaseScope outer, LambdaClosure closure, FunctionHeader header) {
 		this.outer = outer;
 		this.header = header;
 		this.closure = closure;
 	}
-	
+
 	@Override
 	public ZSPackage getRootPackage() {
 		return outer.getRootPackage();
 	}
-	
+
 	@Override
 	public LocalMemberCache getMemberCache() {
 		return outer.getMemberCache();
 	}
-	
+
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		IPartialExpression outer = this.outer.get(position, name);
@@ -85,10 +86,10 @@ public class LambdaScope extends StatementScope {
 		DollarEvaluator outerDollar = outer.getDollar();
 		if (outerDollar == null)
 			return null;
-		
+
 		return position -> outerDollar.apply(position).capture(position, closure).eval();
 	}
-	
+
 	@Override
 	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);

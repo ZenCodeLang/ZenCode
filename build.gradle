@@ -1,5 +1,3 @@
-import org.gradle.api.artifacts.*
-
 apply plugin: 'base' // To add "clean" task to the root project.
 
 subprojects {
@@ -12,10 +10,10 @@ task mergedJavadoc(type: Javadoc, description: 'Creates Javadoc from all the pro
 
     // Note: The closures below are executed lazily.
     source {
-       subprojects*.sourceSets*.main*.allSource
+        subprojects*.sourceSets*.main*.allSource
     }
     classpath.from {
-        subprojects*.configurations*.compile*.copyRecursive({ !(it instanceof ProjectDependency); })*.resolve()
+        subprojects*.configurations*.compile*.copyRecursive({ !(it instanceof ProjectDependency) })*.resolve()
     }
 }
 

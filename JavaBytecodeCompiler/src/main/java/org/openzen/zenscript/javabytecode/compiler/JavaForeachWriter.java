@@ -11,6 +11,7 @@ import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaModifiers;
 
 import java.util.Map;
+
 @SuppressWarnings("Duplicates")
 public class JavaForeachWriter {
 
@@ -29,8 +30,8 @@ public class JavaForeachWriter {
 		this.content = content;
 		this.startLabel = start;
 		this.endLabel = end;
-        this.unboxingTypeVisitor = new JavaUnboxingTypeVisitor(this.javaWriter);
-    }
+		this.unboxingTypeVisitor = new JavaUnboxingTypeVisitor(this.javaWriter);
+	}
 
 	public void visitIntRange(RangeTypeID type) {
 		final String owner = statementVisitor.context.getInternalName(type);
@@ -59,7 +60,7 @@ public class JavaForeachWriter {
 	}
 
 	public void visitStringCharacterIterator() {
-        javaWriter.invokeVirtual(JavaMethod.getVirtual(JavaClass.STRING, "toCharArray", "()[C", JavaModifiers.PUBLIC));
+		javaWriter.invokeVirtual(JavaMethod.getVirtual(JavaClass.STRING, "toCharArray", "()[C", JavaModifiers.PUBLIC));
 		handleArray(javaWriter.local(int.class), javaWriter.getLocalVariable(variables[0].variable));
 	}
 
@@ -84,11 +85,11 @@ public class JavaForeachWriter {
 		javaWriter.label(startLabel);
 		javaWriter.dup();
 		javaWriter.arrayLength();
-        javaWriter.loadInt(z);
-        
-        javaWriter.ifICmpLE(endLabel);
-        javaWriter.dup();
-        javaWriter.loadInt(z);
+		javaWriter.loadInt(z);
+
+		javaWriter.ifICmpLE(endLabel);
+		javaWriter.dup();
+		javaWriter.loadInt(z);
 
 		javaWriter.arrayLoad(arrayTypeInfo.type);
 		javaWriter.store(arrayTypeInfo.type, arrayTypeInfo.local);
@@ -97,38 +98,38 @@ public class JavaForeachWriter {
 	}
 
 	public void visitCustomIterator() {
-        javaWriter.invokeInterface(JavaMethod.getVirtual(new JavaClass("java.lang", "Iterable", JavaClass.Kind.INTERFACE), "iterator", "()Ljava/util/Iterator;", 0));
-        
-        javaWriter.label(startLabel);
-        javaWriter.dup();
-        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-        javaWriter.ifEQ(endLabel);
-        javaWriter.dup();
-        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
-        
-        final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
-        this.downCast(0, keyVariable.type);
-        javaWriter.store(keyVariable.type, keyVariable.local);
-        
-        content.accept(statementVisitor);
+		javaWriter.invokeInterface(JavaMethod.getVirtual(new JavaClass("java.lang", "Iterable", JavaClass.Kind.INTERFACE), "iterator", "()Ljava/util/Iterator;", 0));
+
+		javaWriter.label(startLabel);
+		javaWriter.dup();
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
+		javaWriter.ifEQ(endLabel);
+		javaWriter.dup();
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+
+		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
+		this.downCast(0, keyVariable.type);
+		javaWriter.store(keyVariable.type, keyVariable.local);
+
+		content.accept(statementVisitor);
 	}
 
 	public void visitAssocKeyIterator() {
-	    javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.MAP, "keySet", "()Ljava/util/Set;", 0));
-        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.COLLECTION, "iterator", "()Ljava/util/Iterator;", 0));
-        
-        javaWriter.label(startLabel);
-        javaWriter.dup();
-        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
-        javaWriter.ifEQ(endLabel);
-        javaWriter.dup();
-        javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
-        
-        final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
-        this.downCast(0, keyVariable.type);
-        javaWriter.store(keyVariable.type, keyVariable.local);
-        
-        content.accept(statementVisitor);
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.MAP, "keySet", "()Ljava/util/Set;", 0));
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.COLLECTION, "iterator", "()Ljava/util/Iterator;", 0));
+
+		javaWriter.label(startLabel);
+		javaWriter.dup();
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "hasNext", "()Z", 0));
+		javaWriter.ifEQ(endLabel);
+		javaWriter.dup();
+		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
+
+		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
+		this.downCast(0, keyVariable.type);
+		javaWriter.store(keyVariable.type, keyVariable.local);
+
+		content.accept(statementVisitor);
 	}
 
 	public void visitAssocKeyValueIterator() {
@@ -151,19 +152,19 @@ public class JavaForeachWriter {
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getKey", "()Ljava/lang/Object;", 0));
 		this.downCast(0, keyVariable.type);
 		javaWriter.store(keyVariable.type, keyVariable.local);
-		
+
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getValue", "()Ljava/lang/Object;", 0));
-        this.downCast(1, valueVariable.type);
+		this.downCast(1, valueVariable.type);
 		javaWriter.store(valueVariable.type, valueVariable.local);
-		
+
 		content.accept(statementVisitor);
 	}
-	
+
 	private void downCast(int typeNumber, Type t) {
-        if(CompilerUtils.isPrimitive(variables[typeNumber].type)) {
-            variables[typeNumber].type.accept(variables[typeNumber].type, unboxingTypeVisitor);
-        } else {
-            javaWriter.checkCast(t);
-        }
-    }
+		if (CompilerUtils.isPrimitive(variables[typeNumber].type)) {
+			variables[typeNumber].type.accept(variables[typeNumber].type, unboxingTypeVisitor);
+		} else {
+			javaWriter.checkCast(t);
+		}
+	}
 }

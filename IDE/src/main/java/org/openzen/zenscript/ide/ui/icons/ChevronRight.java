@@ -12,9 +12,6 @@ import org.openzen.drawablegui.draw.DDrawTarget;
 
 public class ChevronRight implements DColorableIcon {
 	public static final ChevronRight INSTANCE = new ChevronRight();
-	
-	private ChevronRight() {}
-	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(10f, 6f);
 		tracer.lineTo(8.59f, 7.41f);
@@ -24,7 +21,10 @@ public class ChevronRight implements DColorableIcon {
 		tracer.lineTo(16.0f, 12.0f);
 		tracer.close();
 	};
-	
+
+	private ChevronRight() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH, transform, color);

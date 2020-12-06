@@ -16,33 +16,32 @@ import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.ui.icons.ProjectIcon;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class RootTreeNode extends ProjectOverviewNode {
 	private final DevelopmentHost host;
 	private final LiveList<ProjectOverviewNode> children;
-	
+
 	public RootTreeNode(ProjectBrowser browser, DevelopmentHost host, IDEPropertyDirectory treeState) {
 		super(new SimpleLiveBool(false));
-		
+
 		this.host = host;
-		
+
 		children = new LivePrefixedList<>(
 				new ProjectTreeNode(browser, host, treeState.getSubdirectory("project")),
 				new LiveMappedList<>(host.getLibraries(), library -> new LibraryTreeNode(browser, library, treeState.getSubdirectory(library.getName()))));
 	}
-	
+
 	@Override
 	public void close() {
 		children.close();
 	}
-	
+
 	@Override
 	public DColorableIcon getIcon() {
 		return ProjectIcon.INSTANCE;
 	}
-	
+
 	@Override
 	public Kind getKind() {
 		return Kind.ROOT;

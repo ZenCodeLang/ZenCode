@@ -6,9 +6,8 @@
 package org.openzen.zenscript.validator;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ValidationSettings {
-	
+
 }

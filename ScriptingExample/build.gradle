@@ -10,23 +10,23 @@
 // prefer. In this case NetBeans will not add these tasks but you may rely on
 // your own implementation.
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'org.openzen.zenscript.scriptingexample.Main'
+	ext.mainClass = 'org.openzen.zenscript.scriptingexample.Main'
 }
 
 dependencies {
-    compile project(':JavaIntegration')
-    testCompile group: "org.junit.jupiter", name: "junit-jupiter", version: "5.4.2"
-    testRuntime group: "org.junit.jupiter", name: "junit-jupiter", version: "5.4.2"
+	compile project(':JavaIntegration')
+	testCompile group: "org.junit.jupiter", name: "junit-jupiter", version: "5.4.2"
+	testRuntime group: "org.junit.jupiter", name: "junit-jupiter", version: "5.4.2"
 }
 
 processResources {
-    dependsOn(":StdLibs:zipItUp")
-    from files(evaluationDependsOn(":StdLibs").tasks.getByName("zipItUp").outputs)
+	dependsOn(":StdLibs:zipItUp")
+	from files(evaluationDependsOn(":StdLibs").tasks.getByName("zipItUp").outputs)
 }
 
 test {
-    useJUnitPlatform()
-    testLogging {
-        events "PASSED", "FAILED", "SKIPPED"
-    }
+	useJUnitPlatform()
+	testLogging {
+		events "PASSED", "FAILED", "SKIPPED"
+	}
 }

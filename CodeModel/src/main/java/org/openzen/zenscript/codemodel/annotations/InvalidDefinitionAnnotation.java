@@ -12,13 +12,13 @@ public class InvalidDefinitionAnnotation implements DefinitionAnnotation {
 	public final CodePosition position;
 	public final CompileExceptionCode code;
 	public final String message;
-	
+
 	public InvalidDefinitionAnnotation(CodePosition position, CompileExceptionCode code, String message) {
 		this.position = position;
 		this.code = code;
 		this.message = message;
 	}
-	
+
 	public InvalidDefinitionAnnotation(CompileException ex) {
 		this.position = ex.position;
 		this.code = ex.code;
@@ -32,12 +32,12 @@ public class InvalidDefinitionAnnotation implements DefinitionAnnotation {
 
 	@Override
 	public void apply(HighLevelDefinition definition, BaseScope scope) {
-		
+
 	}
 
 	@Override
 	public void applyOnSubtype(HighLevelDefinition definition, BaseScope scope) {
-		
+
 	}
 
 	@Override

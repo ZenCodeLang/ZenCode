@@ -8,7 +8,6 @@ package org.openzen.zenscript.ide.host;
 import live.LiveList;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface IDECompileState {

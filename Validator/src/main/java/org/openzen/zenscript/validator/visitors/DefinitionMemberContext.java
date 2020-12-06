@@ -6,7 +6,6 @@
 package org.openzen.zenscript.validator.visitors;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public enum DefinitionMemberContext {

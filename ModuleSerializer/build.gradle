@@ -15,6 +15,6 @@ if (!hasProperty('mainClass')) {
 
 dependencies {
     compile project(':CompilerShared')
-	compile project(':Constructor')
-	compile project(':ModuleSerializationShared')
+    compile project(':Constructor')
+    compile project(':ModuleSerializationShared')
 }

@@ -8,10 +8,10 @@ public class SetterExpression extends Expression {
 	public final Expression target;
 	public final SetterMemberRef setter;
 	public final Expression value;
-	
+
 	public SetterExpression(CodePosition position, Expression target, SetterMemberRef setter, Expression value) {
 		super(position, setter.getType(), value.thrownType);
-		
+
 		this.target = target;
 		this.setter = setter;
 		this.value = value;

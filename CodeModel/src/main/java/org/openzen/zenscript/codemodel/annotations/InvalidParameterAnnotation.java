@@ -8,13 +8,13 @@ public class InvalidParameterAnnotation implements ParameterAnnotation {
 	public final CodePosition position;
 	public final CompileExceptionCode code;
 	public final String message;
-	
+
 	public InvalidParameterAnnotation(CodePosition position, CompileExceptionCode code, String message) {
 		this.position = position;
 		this.code = code;
 		this.message = message;
 	}
-	
+
 	public InvalidParameterAnnotation(CompileException ex) {
 		this.position = ex.position;
 		this.code = ex.code;
@@ -28,6 +28,6 @@ public class InvalidParameterAnnotation implements ParameterAnnotation {
 
 	@Override
 	public void apply() {
-		
+
 	}
 }

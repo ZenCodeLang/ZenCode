@@ -9,44 +9,44 @@ import live.ImmutableLiveObject;
 import live.LiveObject;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DEmptyView implements DComponent {
 	public static final DEmptyView INSTANCE = new DEmptyView();
-	
+
 	private static final LiveObject<DSizing> DIMENSION = new ImmutableLiveObject(DSizing.EMPTY);
-	
-	private DEmptyView() {}
+
+	private DEmptyView() {
+	}
 
 	@Override
 	public void mount(DComponentContext parent) {
-		
+
 	}
-	
+
 	@Override
 	public void unmount() {
-		
+
 	}
-	
+
 	@Override
 	public LiveObject<DSizing> getSizing() {
 		return DIMENSION;
 	}
-	
+
 	@Override
 	public DIRectangle getBounds() {
 		return DIRectangle.EMPTY;
 	}
 
 	@Override
+	public void setBounds(DIRectangle bounds) {
+
+	}
+
+	@Override
 	public int getBaselineY() {
 		return -1;
-	}
-	
-	@Override
-	public void setBounds(DIRectangle bounds) {
-		
 	}
 
 	@Override

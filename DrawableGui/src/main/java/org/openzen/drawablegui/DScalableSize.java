@@ -8,13 +8,12 @@ package org.openzen.drawablegui;
 import org.openzen.drawablegui.style.DDimension;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DScalableSize {
 	public final DDimension width;
 	public final DDimension height;
-	
+
 	public DScalableSize(DDimension width, DDimension height) {
 		this.width = width;
 		this.height = height;

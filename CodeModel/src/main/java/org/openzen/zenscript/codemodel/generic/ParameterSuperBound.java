@@ -1,17 +1,17 @@
 package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public final class ParameterSuperBound implements TypeParameterBound {
 	public final TypeID type;
-	
+
 	public ParameterSuperBound(TypeID type) {
 		this.type = type;
 	}
-	
+
 	@Override
 	public String getCanonical() {
 		return "super|" + type.toString();
@@ -32,7 +32,7 @@ public final class ParameterSuperBound implements TypeParameterBound {
 		TypeID translated = type.instance(mapper);
 		if (translated == type)
 			return this;
-		
+
 		return new ParameterSuperBound(translated);
 	}
 

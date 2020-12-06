@@ -6,7 +6,6 @@
 package org.openzen.drawablegui.draw;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DDrawnColorableElement extends DDrawnElement {

@@ -14,18 +14,18 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public class MethodMember extends FunctionalMember {
 	public final String name;
 	private FunctionalMemberRef overrides;
-	
+
 	public MethodMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header, BuiltinID builtin) {
 		super(position, definition, modifiers, header, builtin);
-		
+
 		this.name = name;
 	}
-	
+
 	@Override
 	public String getCanonicalName() {
 		return definition.getFullName() + ":" + name + header.getCanonical();
 	}
-	
+
 	@Override
 	public FunctionalKind getKind() {
 		return FunctionalKind.METHOD;
@@ -45,12 +45,12 @@ public class MethodMember extends FunctionalMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitMethod(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitMethod(context, this);
 	}
-	
+
 	@Override
 	public int getEffectiveModifiers() {
 		int result = super.getEffectiveModifiers();
@@ -67,7 +67,7 @@ public class MethodMember extends FunctionalMember {
 	public FunctionalMemberRef getOverrides() {
 		return overrides;
 	}
-	
+
 	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {
 		this.overrides = overrides;
 		header = header.inferFromOverride(registry, overrides.getHeader());

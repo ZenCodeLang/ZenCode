@@ -13,22 +13,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.host.IDEPropertyStore;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class FilePropertyStore implements IDEPropertyStore {
 	private final File file;
 	private JSONObject data;
-	
+
 	public FilePropertyStore(File file) {
 		this.file = file;
-		
+
 		if (!file.exists()) {
 			data = new JSONObject();
 			save();
@@ -40,12 +40,12 @@ public class FilePropertyStore implements IDEPropertyStore {
 			}
 		}
 	}
-	
+
 	@Override
 	public IDEPropertyDirectory getRoot() {
 		return new JSONPropertyDirectory(data);
 	}
-	
+
 	@Override
 	public void save() {
 		try (OutputStreamWriter output = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {

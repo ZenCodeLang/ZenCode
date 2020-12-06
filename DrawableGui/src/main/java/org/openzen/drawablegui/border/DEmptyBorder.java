@@ -10,18 +10,18 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.style.DBorderElement;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DEmptyBorder implements DBorder {
 	public static final DEmptyBorder INSTANCE = new DEmptyBorder();
 	public static final DBorderElement ELEMENT = context -> INSTANCE;
-	
-	private DEmptyBorder() {}
-	
+
+	private DEmptyBorder() {
+	}
+
 	@Override
 	public void update(DComponentContext context, DIRectangle bounds) {
-		
+
 	}
 
 	@Override
@@ -46,6 +46,6 @@ public class DEmptyBorder implements DBorder {
 
 	@Override
 	public void close() {
-		
+
 	}
 }

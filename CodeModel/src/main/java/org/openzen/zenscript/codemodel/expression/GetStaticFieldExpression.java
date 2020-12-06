@@ -1,27 +1,28 @@
 package org.openzen.zenscript.codemodel.expression;
 
-import java.util.Collections;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Collections;
+import java.util.List;
+
 public class GetStaticFieldExpression extends Expression {
 	public final FieldMemberRef field;
-	
+
 	public GetStaticFieldExpression(CodePosition position, FieldMemberRef field) {
 		super(position, field.getType(), null);
-		
+
 		this.field = field;
 	}
-	
+
 	@Override
 	public List<TypeID> getAssignHints() {
 		return Collections.singletonList(field.getType());
 	}
-	
+
 	@Override
 	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
 		return new CapturedDirectExpression(position, closure, this);
@@ -41,7 +42,7 @@ public class GetStaticFieldExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}
-	
+
 	@Override
 	public IDefinitionMember getMember() {
 		return field.member;

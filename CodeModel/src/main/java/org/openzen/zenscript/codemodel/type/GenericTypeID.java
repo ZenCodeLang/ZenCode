@@ -1,11 +1,10 @@
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.List;
-import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+
+import java.util.List;
 
 public class GenericTypeID implements TypeID {
 	public final TypeParameter parameter;
@@ -13,26 +12,26 @@ public class GenericTypeID implements TypeID {
 	public GenericTypeID(TypeParameter parameter) {
 		this.parameter = parameter;
 	}
-	
+
 	public boolean matches(LocalMemberCache cache, TypeID type) {
 		return parameter.matches(cache, type);
 	}
-	
+
 	@Override
 	public GenericTypeID getNormalized() {
 		return this;
 	}
-	
+
 	@Override
 	public TypeID instance(GenericMapper mapper) {
 		return mapper.mapGeneric(this);
 	}
-	
+
 	@Override
 	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitGeneric(this);
 	}
-	
+
 	@Override
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitGeneric(context, this);
@@ -42,7 +41,7 @@ public class GenericTypeID implements TypeID {
 	public boolean isOptional() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isValueType() {
 		return false;
@@ -58,7 +57,7 @@ public class GenericTypeID implements TypeID {
 		for (TypeParameter parameter : parameters)
 			if (parameter == this.parameter)
 				return true;
-		
+
 		return false;
 	}
 
@@ -94,7 +93,7 @@ public class GenericTypeID implements TypeID {
 		final GenericTypeID other = (GenericTypeID) obj;
 		return this.parameter.equals(other.parameter);
 	}
-	
+
 	@Override
 	public String toString() {
 		return parameter.toString();

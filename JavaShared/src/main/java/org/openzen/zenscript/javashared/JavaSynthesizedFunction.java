@@ -9,7 +9,6 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSynthesizedFunction {
@@ -17,7 +16,7 @@ public class JavaSynthesizedFunction {
 	public final TypeParameter[] typeParameters;
 	public final FunctionHeader header;
 	public final String method;
-	
+
 	public JavaSynthesizedFunction(JavaClass cls, TypeParameter[] parameters, FunctionHeader header, String method) {
 		this.cls = cls;
 		this.typeParameters = parameters;

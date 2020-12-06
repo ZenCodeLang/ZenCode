@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class TryRethrowAsResultExpression extends Expression {
 	public final Expression value;
-	
+
 	public TryRethrowAsResultExpression(CodePosition position, TypeID type, Expression value) {
 		super(position, type, null);
-		
+
 		this.value = value;
 	}
 

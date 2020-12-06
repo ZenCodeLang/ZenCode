@@ -8,12 +8,11 @@ package org.openzen.drawablegui.layout;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DSideLayoutStyle {
 	public final int backgroundColor;
-	
+
 	public DSideLayoutStyle(DStyleDefinition style) {
 		backgroundColor = style.getColor("backgroundColor", 0);
 	}

@@ -8,7 +8,6 @@ package org.openzen.drawablegui;
 import java.util.Objects;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DFont {
@@ -17,9 +16,9 @@ public class DFont {
 	public final boolean italic;
 	public final boolean underline;
 	public final int size;
-	
+
 	public Object cached;
-	
+
 	public DFont(DFontFamily family, boolean bold, boolean italic, boolean underline, int size) {
 		this.family = family;
 		this.bold = bold;

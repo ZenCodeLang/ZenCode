@@ -7,17 +7,17 @@ import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 
 public class ParsedExpressionCoalesce extends ParsedExpression {
 	private final ParsedExpression left;
 	private final ParsedExpression right;
-	
+
 	public ParsedExpressionCoalesce(CodePosition position, ParsedExpression left, ParsedExpression right) {
 		super(position);
-		
+
 		this.left = left;
 		this.right = right;
 	}
@@ -31,12 +31,12 @@ public class ParsedExpressionCoalesce extends ParsedExpression {
 
 		TypeID resultType = cLeftType.withoutOptional();
 		Expression cRight = right.compile(scope.withHint(resultType)).eval();
-		
+
 		TypeMembers resultTypeMembers = scope.getTypeMembers(resultType);
 		resultType = resultTypeMembers.union(cRight.type);
 		cLeft = cLeft.castImplicit(position, scope, resultType.isOptional() ? resultType : scope.getTypeRegistry().getOptional(resultType));
 		cRight = cRight.castImplicit(position, scope, resultType);
-		
+
 		return new CoalesceExpression(position, cLeft, cRight);
 	}
 

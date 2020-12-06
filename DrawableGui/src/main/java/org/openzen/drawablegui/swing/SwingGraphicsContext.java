@@ -13,6 +13,7 @@ import java.awt.geom.GeneralPath;
 import java.util.WeakHashMap;
 import javax.swing.JFrame;
 import javax.swing.Timer;
+
 import org.openzen.drawablegui.DAnchor;
 import org.openzen.drawablegui.DClipboard;
 import org.openzen.drawablegui.DComponent;
@@ -30,7 +31,6 @@ import org.openzen.drawablegui.style.DStylePathRoot;
 import org.openzen.drawablegui.style.DStyleSheets;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SwingGraphicsContext implements DUIContext {
@@ -43,18 +43,18 @@ public class SwingGraphicsContext implements DUIContext {
 	private Graphics graphics;
 	private DUIWindow window;
 	private DDrawSurface surface;
-	
+
 	public SwingGraphicsContext(DStyleSheets stylesheets, float scale, float textScale, SwingRoot root) {
 		this.stylesheets = stylesheets;
 		this.scale = scale;
 		this.textScale = textScale;
 		this.root = root;
 	}
-	
+
 	public void setSurface(DDrawSurface surface) {
 		this.surface = surface;
 	}
-	
+
 	public GeneralPath getPath(DPath path) {
 		GeneralPath generalPath = preparedPaths.get(path);
 		if (generalPath == null) {
@@ -64,26 +64,22 @@ public class SwingGraphicsContext implements DUIContext {
 		}
 		return generalPath;
 	}
-	
-	public void setWindow(DUIWindow window) {
-		this.window = window;
-	}
-	
+
 	@Override
 	public DStyleSheets getStylesheets() {
 		return stylesheets;
 	}
-	
+
 	@Override
 	public float getScale() {
 		return scale;
 	}
-	
+
 	@Override
 	public float getTextScale() {
 		return textScale;
 	}
-	
+
 	@Override
 	public void repaint(int x, int y, int width, int height) {
 		root.repaint(x, y, width, height);
@@ -125,10 +121,10 @@ public class SwingGraphicsContext implements DUIContext {
 	public DFontMetrics getFontMetrics(DFont font) {
 		if (graphics == null)
 			graphics = root.getGraphics();
-		
+
 		if (graphics == null)
 			throw new AssertionError("No graphics available!");
-		
+
 		SwingDrawSurface.prepare(font);
 		return new SwingFontMetrics(graphics.getFontMetrics((Font) font.cached), graphics);
 	}
@@ -150,26 +146,30 @@ public class SwingGraphicsContext implements DUIContext {
 		return window;
 	}
 
+	public void setWindow(DUIWindow window) {
+		this.window = window;
+	}
+
 	@Override
 	public DUIWindow openDialog(int x, int y, DAnchor anchor, String title, DComponent root) {
-		SwingWindow swingWindow = (SwingWindow)this.window;
+		SwingWindow swingWindow = (SwingWindow) this.window;
 		SwingDialog window = new SwingDialog(swingWindow, title, root, false);
 		SwingGraphicsContext windowContext = window.swingComponent.context;
 		windowContext.setWindow(window);
 		windowContext.graphics = this.graphics; // help a little...
 		windowContext.setSurface(window.swingComponent.surface);
-		
+
 		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();
-		
+
 		root.mount(new DComponentContext(null, DStylePathRoot.INSTANCE, 0, windowContext.surface));
 		DSizing dimension = root.getSizing().getValue();
 		//int tx = (int)(x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
 		//int ty = (int)(y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
-		int dx = (int)(anchor.alignX * dimension.preferredWidth);
-		int dy = (int)(anchor.alignY * dimension.preferredHeight);
+		int dx = (int) (anchor.alignX * dimension.preferredWidth);
+		int dy = (int) (anchor.alignY * dimension.preferredHeight);
 		int tx = rootLocation.x + x - dx;
 		int ty = rootLocation.y + y - dy;
-		
+
 		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		window.swingComponent.setPreferredSize(new Dimension(dimension.preferredWidth, dimension.preferredHeight));
 		window.pack();
@@ -180,33 +180,33 @@ public class SwingGraphicsContext implements DUIContext {
 
 	@Override
 	public DUIWindow openView(int x, int y, DAnchor anchor, DComponent root) {
-		SwingWindow swingWindow = (SwingWindow)this.window;
+		SwingWindow swingWindow = (SwingWindow) this.window;
 		SwingInlineWindow window = new SwingInlineWindow(swingWindow, "", root);
 		SwingGraphicsContext windowContext = window.swingComponent.context;
 		windowContext.setWindow(window);
 		windowContext.graphics = this.graphics; // help a little...
 		windowContext.setSurface(window.swingComponent.surface);
-		
+
 		root.mount(new DComponentContext(null, DStylePathRoot.INSTANCE, 0, windowContext.surface));
 		DSizing dimension = root.getSizing().getValue();
-		
+
 		Point rootLocation = swingWindow.swingComponent.getLocationOnScreen();
-		
-		int tx = (int)(x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
-		int ty = (int)(y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
-		
+
+		int tx = (int) (x + rootLocation.x - anchor.alignX * dimension.preferredWidth);
+		int ty = (int) (y + rootLocation.y - anchor.alignY * dimension.preferredHeight);
+
 		window.swingComponent.setPreferredSize(new Dimension(dimension.preferredWidth, dimension.preferredHeight));
 		window.setLocation(tx, ty);
 		window.pack();
 		window.setVisible(true);
 		window.swingComponent.repaint();
-		
+
 		return window;
 	}
-	
+
 	private class PathTracer implements DPathTracer {
 		private final GeneralPath path;
-		
+
 		public PathTracer(GeneralPath path) {
 			this.path = path;
 		}

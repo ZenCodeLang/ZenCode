@@ -22,8 +22,7 @@ public class ConstructorMember extends FunctionalMember {
 			HighLevelDefinition definition,
 			int modifiers,
 			FunctionHeader header,
-			BuiltinID builtin)
-	{
+			BuiltinID builtin) {
 		super(
 				position,
 				definition,
@@ -31,7 +30,7 @@ public class ConstructorMember extends FunctionalMember {
 				new FunctionHeader(header.typeParameters, BasicTypeID.VOID, header.thrownType, header.parameters),
 				builtin);
 	}
-	
+
 	public boolean isConstructorForwarded() {
 		ExpressionStatement firstExpression = null;
 		if (body instanceof ExpressionStatement) {
@@ -41,17 +40,17 @@ public class ConstructorMember extends FunctionalMember {
 			if (blockBody.statements.length > 0 && blockBody.statements[0] instanceof ExpressionStatement)
 				firstExpression = (ExpressionStatement) blockBody.statements[0];
 		}
-		
+
 		return firstExpression != null && (
 				firstExpression.expression instanceof ConstructorSuperCallExpression
-				|| firstExpression.expression instanceof ConstructorThisCallExpression);
+						|| firstExpression.expression instanceof ConstructorThisCallExpression);
 	}
-	
+
 	@Override
 	public String getCanonicalName() {
 		return definition.getFullName() + ":this" + header.getCanonical();
 	}
-	
+
 	@Override
 	public FunctionalKind getKind() {
 		return FunctionalKind.CONSTRUCTOR;
@@ -72,7 +71,7 @@ public class ConstructorMember extends FunctionalMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitConstructor(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitConstructor(context, this);
@@ -82,7 +81,7 @@ public class ConstructorMember extends FunctionalMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
-	
+
 	@Override
 	public int getEffectiveModifiers() {
 		int result = modifiers;
@@ -90,7 +89,7 @@ public class ConstructorMember extends FunctionalMember {
 			result |= Modifiers.PRIVATE;
 		else if (!Modifiers.hasAccess(result))
 			result |= Modifiers.INTERNAL;
-		
+
 		return result;
 	}
 }

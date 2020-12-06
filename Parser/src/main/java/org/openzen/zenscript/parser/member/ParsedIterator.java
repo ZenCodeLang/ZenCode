@@ -18,19 +18,18 @@ public class ParsedIterator extends ParsedDefinitionMember {
 	private final int modifiers;
 	private final ParsedFunctionHeader header;
 	private final ParsedFunctionBody body;
-	
+
 	private IteratorMember compiled;
-	
+
 	public ParsedIterator(
 			CodePosition position,
 			HighLevelDefinition definition,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			ParsedFunctionHeader header,
-			ParsedFunctionBody body)
-	{
+			ParsedFunctionBody body) {
 		super(definition, annotations);
-		
+
 		this.position = position;
 		this.modifiers = modifiers;
 		this.header = header;
@@ -42,7 +41,7 @@ public class ParsedIterator extends ParsedDefinitionMember {
 		TypeID[] loopVariableTypes = new TypeID[header.parameters.size()];
 		for (int i = 0; i < loopVariableTypes.length; i++)
 			loopVariableTypes[i] = header.parameters.get(i).type.compile(context);
-		
+
 		compiled = new IteratorMember(position, definition, modifiers, loopVariableTypes, context.getTypeRegistry(), null);
 	}
 

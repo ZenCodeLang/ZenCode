@@ -29,7 +29,6 @@ import org.openzen.drawablegui.border.DCustomWindowBorder;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public final class SwingDialog extends JDialog implements WindowListener, WindowStateListener, DUIWindow {
@@ -38,17 +37,17 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 	private final SimpleLiveObject<State> state = new SimpleLiveObject<>(State.NORMAL);
 	private final SimpleLiveBool active = new SimpleLiveBool(true);
 	private final MutableLiveObject<DIRectangle> bounds = new SimpleLiveObject<>(DIRectangle.EMPTY);
-	
+
 	public SwingDialog(SwingWindow owner, String title, DComponent root, boolean noTitleBar) {
 		super(owner, title);
 		this.noTitleBar = noTitleBar;
-		
+
 		if (noTitleBar) {
-		    setUndecorated(true);
+			setUndecorated(true);
 			root = new DCustomWindowBorder(DStyleClass.EMPTY, root);
 			setBackground(new Color(0, 0, 0, 0));
 		}
-		
+
 		addWindowListener(this);
 		addWindowStateListener(this);
 		addComponentListener(new ComponentAdapter() {
@@ -56,36 +55,36 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 			public void componentMoved(ComponentEvent componentEvent) {
 				updateBounds();
 			}
-			
+
 			@Override
 			public void componentResized(ComponentEvent componentEvent) {
 				updateBounds();
 			}
 		});
-		
+
 		getContentPane().add(swingComponent = new SwingRoot(root), BorderLayout.CENTER);
 		swingComponent.setWindow(this);
 		swingComponent.requestFocusInWindow();
 	}
-	
+
 	public SwingDialog(SwingDialog owner, String title, DComponent root, boolean noTitleBar) {
 		super(owner, title);
 		this.noTitleBar = noTitleBar;
-		
+
 		if (noTitleBar) {
-		    setUndecorated(true);
+			setUndecorated(true);
 			root = new DCustomWindowBorder(DStyleClass.EMPTY, root);
 			setBackground(new Color(0, 0, 0, 0));
 		}
-		
+
 		addWindowListener(this);
 		addWindowStateListener(this);
-		
+
 		getContentPane().add(swingComponent = new SwingRoot(root), BorderLayout.CENTER);
 		swingComponent.setWindow(this);
 		swingComponent.requestFocusInWindow();
 	}
-	
+
 	@Override
 	public DUIContext getContext() {
 		return swingComponent.context;
@@ -125,22 +124,22 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 	public LiveObject<State> getWindowState() {
 		return state;
 	}
-	
+
 	@Override
 	public LiveBool getActive() {
 		return active;
 	}
-	
+
 	@Override
 	public void focus(DComponent component) {
 		swingComponent.focus(component);
 	}
-	
+
 	@Override
 	public DUIWindow openModal(String title, DComponent component) {
 		SwingDialog result = new SwingDialog(this, title, component, false);
 		result.setResizable(false);
-		
+
 		DSizing size = component.getSizing().getValue();
 		result.setLocation(
 				getX() + (getWidth() - size.preferredWidth) / 2,
@@ -156,22 +155,22 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		
+
 	}
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		
+
 	}
 
 	@Override
 	public void windowIconified(WindowEvent e) {
-		
+
 	}
 
 	@Override
 	public void windowDeiconified(WindowEvent e) {
-		
+
 	}
 
 	@Override
@@ -188,11 +187,11 @@ public final class SwingDialog extends JDialog implements WindowListener, Window
 	public void windowStateChanged(WindowEvent e) {
 		state.setValue(getStateFromWindowState());
 	}
-	
+
 	private void updateBounds() {
 		bounds.setValue(new DIRectangle(getX(), getY(), getWidth(), getHeight()));
 	}
-	
+
 	private State getStateFromWindowState() {
 		/*switch (ge()) {
 			case NORMAL:

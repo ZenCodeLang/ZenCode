@@ -7,10 +7,10 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 public class OrOrExpression extends Expression {
 	public final Expression left;
 	public final Expression right;
-	
+
 	public OrOrExpression(CodePosition position, Expression left, Expression right) {
 		super(position, BasicTypeID.BOOL, binaryThrow(position, left.thrownType, right.thrownType));
-		
+
 		this.left = left;
 		this.right = right;
 	}
