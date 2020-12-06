@@ -83,7 +83,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 			signature = signatureBuilder.toString();
 		}
 
-        writer.visit(Opcodes.V1_8, definition.modifiers, toClass.internalName, signature, superTypeInternalName, interfaces.toArray(new String[0]));
+        writer.visit(Opcodes.V1_8, JavaModifiers.getJavaModifiers(definition.modifiers), toClass.internalName, signature, superTypeInternalName, interfaces.toArray(new String[0]));
 		for (TypeParameter typeParameter : definition.typeParameters) {
 			//Add it to the class
 			writer.visitField(
@@ -116,7 +116,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<byte[]> {
 		for (int i = 0; i < baseInterfaces.length; i++)
 			baseInterfaces[i] = context.getInternalName(definition.baseInterfaces.get(i));
 
-		writer.visit(Opcodes.V1_8, definition.modifiers | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, toClass.internalName, signature, "java/lang/Object", baseInterfaces);
+		writer.visit(Opcodes.V1_8, JavaModifiers.getJavaModifiers(definition.modifiers) | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT, toClass.internalName, signature, "java/lang/Object", baseInterfaces);
 		JavaMemberVisitor memberVisitor = new JavaMemberVisitor(context, writer, toClass, definition);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberVisitor);

@@ -302,11 +302,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 					throw new UnsupportedOperationException("Unknown builtin comparator: " + expression.operator.getBuiltin());
 			}
 		} else {
-			if (!checkAndExecuteMethodInfo(expression.operator, expression.type, expression))
-				throw new IllegalStateException("Call target has no method info!");
-
 			expression.left.accept(this);
 			expression.right.accept(this);
+
+			if (!checkAndExecuteMethodInfo(expression.operator, expression.type, expression))
+				throw new IllegalStateException("Call target has no method info!");
+			
 			compareGeneric(expression.comparison);
 		}
 
@@ -2566,6 +2567,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		}
 
 		javaWriter.label(end);
+		if(!CompilerUtils.isPrimitive(expression.type)) {
+            javaWriter.checkCast(context.getType(expression.type));
+        }
 		return null;
 	}
 
@@ -2810,7 +2814,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.newObject("java/lang/AssertionError");
 		javaWriter.dup();
 		expression.value.accept(this);
-		javaWriter.invokeSpecial(AssertionError.class, "<init>", "(Ljava/lang/String;)V");
+		javaWriter.invokeSpecial(AssertionError.class, "<init>", "(Ljava/lang/Object;)V");
 		javaWriter.aThrow();
 		return null;
 	}

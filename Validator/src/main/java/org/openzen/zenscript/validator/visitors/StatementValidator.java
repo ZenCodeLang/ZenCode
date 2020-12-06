@@ -48,7 +48,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	private final Set<String> variables = new HashSet<>();
 	private boolean firstStatement = true;
 	
-	public boolean constructorForwarded = true;
+	public boolean constructorForwarded = false;
 	
 	public StatementValidator(Validator validator, StatementScope scope) {
 		this.validator = validator;
@@ -57,9 +57,9 @@ public class StatementValidator implements StatementVisitor<Void> {
 	
 	@Override
 	public Void visitBlock(BlockStatement block) {
-		StatementValidator blockValidator = new StatementValidator(validator, scope);
-		for (Statement statement : block.statements)
-			statement.accept(blockValidator);
+		for (Statement statement : block.statements) {
+			statement.accept(this);
+		}
 		
 		firstStatement = false;
 		return null;
