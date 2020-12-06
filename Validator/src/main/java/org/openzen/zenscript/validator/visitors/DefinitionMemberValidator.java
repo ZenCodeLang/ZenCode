@@ -136,6 +136,10 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		return null;
 	}
 
+	/**
+	 * Checks that the constructor forwards to a super/this constructor
+	 * If it does not, asserts that the supertype has an empty constructor
+	 */
 	private void checkConstructorForwarded(ConstructorMember member) {
 		final Statement body = member.body == null ? new EmptyStatement(member.position) : member.body;
 		StatementValidator statementValidator = new StatementValidator(validator, new ConstructorStatementScope(member.header, member.getAccessScope()));
@@ -143,7 +147,6 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 		validateThrow(member, member.header, body);
 
 		if (member.definition.getSuperType() != null && !statementValidator.constructorForwarded) {
-			//TODO: If the parent has an empty constructor, can we allow it?
 			if(member.definition.getSuperType() instanceof DefinitionTypeID && ((DefinitionTypeID) member.definition.getSuperType()).definition.hasEmptyConstructor()) {
 				return;
 			}
