@@ -12,9 +12,6 @@ import org.openzen.drawablegui.draw.DDrawTarget;
 
 public class CloseIcon implements DColorableIcon {
 	public static final CloseIcon INSTANCE = new CloseIcon();
-	
-	private CloseIcon() {}
-	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(19f, 6.41f);
 		tracer.lineTo(17.59f, 5f);
@@ -30,7 +27,10 @@ public class CloseIcon implements DColorableIcon {
 		tracer.lineTo(13.41f, 12f);
 		tracer.close();
 	};
-	
+
+	private CloseIcon() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH, transform, color);

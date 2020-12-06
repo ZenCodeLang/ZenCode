@@ -6,24 +6,23 @@
 package org.openzen.zenscript.ide.ui.view.output;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class OutputLine {
 	public final OutputSpan[] spans;
-	
+
 	public OutputLine(String line) {
-		spans = new OutputSpan[] { new BasicOutputSpan(line) };
+		spans = new OutputSpan[]{new BasicOutputSpan(line)};
 	}
-	
+
 	public OutputLine(OutputSpan span) {
-		spans = new OutputSpan[] { span };
+		spans = new OutputSpan[]{span};
 	}
-	
+
 	public OutputLine(OutputSpan[] spans) {
 		this.spans = spans;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();

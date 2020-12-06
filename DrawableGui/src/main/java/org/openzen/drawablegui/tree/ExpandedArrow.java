@@ -10,13 +10,13 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawTarget;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ExpandedArrow implements DDrawable {
 	public static final ExpandedArrow INSTANCE = new ExpandedArrow();
-	
-	private ExpandedArrow() {}
+
+	private ExpandedArrow() {
+	}
 
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform) {

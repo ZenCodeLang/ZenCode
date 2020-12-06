@@ -10,20 +10,19 @@ import listeners.ListenerList;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class IDEDockWindow {
 	private final ListenerList<Listener> listeners = new ListenerList<>();
-	
+
 	public ListenerHandle<Listener> addListener(Listener listener) {
 		return listeners.add(listener);
 	}
-	
+
 	public void open(IDESourceFile sourceFile) {
 		listeners.accept(listener -> listener.onOpen(sourceFile));
 	}
-	
+
 	public interface Listener {
 		void onOpen(IDESourceFile sourceFile);
 	}

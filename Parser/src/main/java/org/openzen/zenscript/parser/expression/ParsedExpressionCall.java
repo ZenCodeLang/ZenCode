@@ -1,28 +1,25 @@
 package org.openzen.zenscript.parser.expression;
 
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
-import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
-import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
+import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
+
+import java.util.List;
 
 public class ParsedExpressionCall extends ParsedExpression {
 	private final ParsedExpression receiver;
@@ -53,7 +50,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 				}
 			}
 		}
-		
+
 		if (receiver instanceof ParsedExpressionSuper) {
 			// super call (intended as first call in constructor)
 			TypeID targetType = scope.getThisType().getSuperType(scope.getTypeRegistry());
@@ -85,19 +82,19 @@ public class ParsedExpressionCall extends ParsedExpression {
 		CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getTypeArguments(), headers);
 		return cReceiver.call(position, scope, scope.hints, callArguments);
 	}
-	
+
 	@Override
 	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
 		if (!(receiver instanceof ParsedExpressionVariable))
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
-		
-		String name = ((ParsedExpressionVariable)receiver).name;
+
+		String name = ((ParsedExpressionVariable) receiver).name;
 		TypeMembers members = scope.getTypeMembers(type);
 		if (type.isVariant()) {
 			VariantOptionRef option = members.getVariantOption(name);
 			if (option == null)
 				throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Variant option does not exist: " + name);
-			
+
 			String[] values = new String[arguments.arguments.size()];
 			for (int i = 0; i < values.length; i++) {
 				try {
@@ -108,7 +105,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 					throw new CompileException(ex.position, CompileExceptionCode.INVALID_SWITCH_CASE, ex.getMessage());
 				}
 			}
-			
+
 			return new VariantOptionSwitchValue(option, values);
 		} else {
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");

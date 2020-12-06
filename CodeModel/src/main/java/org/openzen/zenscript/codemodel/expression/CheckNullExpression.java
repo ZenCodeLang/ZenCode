@@ -8,10 +8,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
  */
 public class CheckNullExpression extends Expression {
 	public final Expression value;
-	
+
 	public CheckNullExpression(CodePosition position, Expression value) {
 		super(position, value.type.withoutOptional(), value.thrownType);
-		
+
 		this.value = value;
 	}
 

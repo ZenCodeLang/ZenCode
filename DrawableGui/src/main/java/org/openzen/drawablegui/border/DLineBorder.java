@@ -11,15 +11,14 @@ import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.draw.DDrawnShape;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DLineBorder implements DBorder {
 	private final int color;
 	private final int borderWidth;
-	
+
 	private DDrawnShape shape;
-	
+
 	public DLineBorder(int color, int borderWidth) {
 		this.color = color;
 		this.borderWidth = borderWidth;
@@ -29,14 +28,14 @@ public class DLineBorder implements DBorder {
 	public void update(DComponentContext context, DIRectangle bounds) {
 		if (shape != null)
 			shape.close();
-		
+
 		shape = context.strokePath(1, tracer -> {
-				tracer.moveTo(bounds.x, bounds.y);
-				tracer.lineTo(bounds.x + bounds.width - borderWidth, bounds.y);
-				tracer.lineTo(bounds.x + bounds.width - borderWidth, bounds.y + bounds.height - borderWidth);
-				tracer.lineTo(bounds.x, bounds.y + bounds.height - borderWidth);
-				tracer.close();
-			}, DTransform2D.IDENTITY, color, borderWidth);
+			tracer.moveTo(bounds.x, bounds.y);
+			tracer.lineTo(bounds.x + bounds.width - borderWidth, bounds.y);
+			tracer.lineTo(bounds.x + bounds.width - borderWidth, bounds.y + bounds.height - borderWidth);
+			tracer.lineTo(bounds.x, bounds.y + bounds.height - borderWidth);
+			tracer.close();
+		}, DTransform2D.IDENTITY, color, borderWidth);
 	}
 
 	@Override

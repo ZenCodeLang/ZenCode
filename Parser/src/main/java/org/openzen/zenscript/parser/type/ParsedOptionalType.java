@@ -5,7 +5,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedOptionalType implements IParsedType {
 	private final IParsedType type;
-	
+
 	public ParsedOptionalType(IParsedType type) {
 		this.type = type;
 	}

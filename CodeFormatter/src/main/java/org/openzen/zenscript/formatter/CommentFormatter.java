@@ -1,12 +1,13 @@
 package org.openzen.zenscript.formatter;
 
 public class CommentFormatter {
-	private CommentFormatter() {}
-	
+	private CommentFormatter() {
+	}
+
 	public static String[] format(String[] commentLines) {
 		if (commentLines.length == 0)
 			return commentLines;
-		
+
 		boolean isInMultilineComment = false;
 		String[] result = new String[commentLines.length];
 		for (int i = 0; i < commentLines.length; i++) {
@@ -16,14 +17,14 @@ public class CommentFormatter {
 					comment = "* " + comment;
 				comment = " " + comment;
 			}
-			
+
 			result[i] = comment;
-			
+
 			int index = 0;
 			while (true) {
 				if (!isInMultilineComment && comment.indexOf("//", index) > 0)
 					break;
-				
+
 				int newIndexOpen = comment.indexOf("/*", index);
 				if (newIndexOpen >= 0) {
 					isInMultilineComment = true;
@@ -31,7 +32,7 @@ public class CommentFormatter {
 				} else {
 					break;
 				}
-				
+
 				int newIndexClose = comment.indexOf("*/", newIndexOpen);
 				if (newIndexClose >= 0) {
 					isInMultilineComment = false;
@@ -41,7 +42,7 @@ public class CommentFormatter {
 				}
 			}
 		}
-		
+
 		return result;
 	}
 }

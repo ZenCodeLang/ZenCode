@@ -9,14 +9,13 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSynthesizedRange {
 	public final JavaClass cls;
 	public final TypeParameter[] typeParameters;
 	public final TypeID baseType;
-	
+
 	public JavaSynthesizedRange(JavaClass cls, TypeParameter[] typeParameters, TypeID baseType) {
 		this.cls = cls;
 		this.typeParameters = typeParameters;

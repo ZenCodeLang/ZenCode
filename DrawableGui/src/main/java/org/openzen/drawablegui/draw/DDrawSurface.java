@@ -10,13 +10,12 @@ import org.openzen.drawablegui.style.DStyleDefinition;
 import org.openzen.drawablegui.style.DStylePath;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DDrawSurface extends DDrawTarget {
 	DUIContext getContext();
-	
+
 	DStyleDefinition getStylesheet(DStylePath path);
-	
+
 	DSubSurface createSubSurface(int z);
 }

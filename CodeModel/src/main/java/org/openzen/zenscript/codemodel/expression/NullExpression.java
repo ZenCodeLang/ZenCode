@@ -9,7 +9,7 @@ public class NullExpression extends Expression {
 	public NullExpression(CodePosition position) {
 		super(position, BasicTypeID.NULL, null);
 	}
-	
+
 	public NullExpression(CodePosition position, TypeID optionalType) {
 		super(position, optionalType, null);
 	}

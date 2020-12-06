@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class CapturedParameterExpression extends CapturedExpression {
 	public final FunctionParameter parameter;
-	
+
 	public CapturedParameterExpression(CodePosition position, FunctionParameter parameter, LambdaClosure closure) {
 		super(position, parameter.type, closure);
-		
+
 		this.parameter = parameter;
 	}
 

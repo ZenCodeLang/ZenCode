@@ -12,43 +12,43 @@ import org.openzen.zenscript.javashared.expressions.JavaFunctionInterfaceCastExp
 import java.lang.reflect.Method;
 
 public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
-    public final Method functionalInterfaceMethod;
-    public final JavaMethod method;
+	public final Method functionalInterfaceMethod;
+	public final JavaMethod method;
 
-    public JavaFunctionalInterfaceTypeID(GlobalTypeRegistry registry, FunctionHeader header, Method functionalInterfaceMethod, JavaMethod method) {
-        super(registry, header);
+	public JavaFunctionalInterfaceTypeID(GlobalTypeRegistry registry, FunctionHeader header, Method functionalInterfaceMethod, JavaMethod method) {
+		super(registry, header);
 
-        this.functionalInterfaceMethod = functionalInterfaceMethod;
-        this.method = method;
-    }
+		this.functionalInterfaceMethod = functionalInterfaceMethod;
+		this.method = method;
+	}
 
-    @Override
-    public boolean canCastImplicitTo(TypeID other) {
-        return other instanceof FunctionTypeID && ((FunctionTypeID) other).header.isEquivalentTo(header);
-    }
+	@Override
+	public boolean canCastImplicitTo(TypeID other) {
+		return other instanceof FunctionTypeID && ((FunctionTypeID) other).header.isEquivalentTo(header);
+	}
 
-    @Override
-    public boolean canCastImplicitFrom(TypeID other) {
-        return other instanceof FunctionTypeID && ((FunctionTypeID) other).header.isEquivalentTo(header);
-    }
+	@Override
+	public boolean canCastImplicitFrom(TypeID other) {
+		return other instanceof FunctionTypeID && ((FunctionTypeID) other).header.isEquivalentTo(header);
+	}
 
-    @Override
-    public Expression castImplicitTo(CodePosition position, Expression value, TypeID other) {
-        if (other instanceof FunctionTypeID) {
-            FunctionTypeID otherType = (FunctionTypeID) other;
-            if (header.isEquivalentTo(otherType.header))
-                return new JavaFunctionInterfaceCastExpression(position, otherType, value);
-        }
-        return null;
-    }
+	@Override
+	public Expression castImplicitTo(CodePosition position, Expression value, TypeID other) {
+		if (other instanceof FunctionTypeID) {
+			FunctionTypeID otherType = (FunctionTypeID) other;
+			if (header.isEquivalentTo(otherType.header))
+				return new JavaFunctionInterfaceCastExpression(position, otherType, value);
+		}
+		return null;
+	}
 
-    @Override
-    public Expression castImplicitFrom(CodePosition position, Expression value) {
-        if (value.type instanceof FunctionTypeID) {
-            FunctionTypeID otherType = (FunctionTypeID) value.type;
-            if (header.isEquivalentTo(otherType.header))
-                return new JavaFunctionInterfaceCastExpression(position, this, value);
-        }
-        return null;
-    }
+	@Override
+	public Expression castImplicitFrom(CodePosition position, Expression value) {
+		if (value.type instanceof FunctionTypeID) {
+			FunctionTypeID otherType = (FunctionTypeID) value.type;
+			if (header.isEquivalentTo(otherType.header))
+				return new JavaFunctionInterfaceCastExpression(position, this, value);
+		}
+		return null;
+	}
 }

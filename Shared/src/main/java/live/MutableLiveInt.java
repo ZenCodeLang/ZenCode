@@ -1,5 +1,5 @@
 package live;
 
 public interface MutableLiveInt extends LiveInt {
-    void setValue(int value);
+	void setValue(int value);
 }

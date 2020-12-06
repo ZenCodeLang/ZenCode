@@ -1,23 +1,23 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.statement.VarStatement;
 
 public class GetLocalVariableExpression extends Expression {
 	public final VarStatement variable;
-	
+
 	public GetLocalVariableExpression(CodePosition position, VarStatement variable) {
 		super(position, variable.type, null);
-		
+
 		this.variable = variable;
 	}
-	
+
 	@Override
 	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
 		return new SetLocalVariableExpression(position, variable, value.castImplicit(position, scope, type));
 	}
-	
+
 	@Override
 	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
 		CapturedExpression result = new CapturedLocalVariableExpression(position, variable, closure);

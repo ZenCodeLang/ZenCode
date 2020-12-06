@@ -21,12 +21,11 @@ import org.openzen.drawablegui.draw.DDrawnText;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class StatusBarView implements DComponent {
 	private final SimpleLiveObject<DSizing> dimensionPreferences = new SimpleLiveObject<>(new DSizing(0, 0));
-	
+
 	private final DStyleClass styleClass;
 	private final LiveString content;
 	private DComponentContext context;
@@ -36,22 +35,22 @@ public class StatusBarView implements DComponent {
 
 	private DDrawnShape shape;
 	private DDrawnText text;
-	
+
 	public StatusBarView(DStyleClass styleClass, LiveString content) {
 		this.styleClass = styleClass;
 		this.content = content;
 	}
-	
+
 	@Override
 	public void mount(DComponentContext parent) {
 		context = parent.getChildContext("statusbar", styleClass);
 		style = context.getStyle(StatusBarStyle::new);
 		fontMetrics = context.getFontMetrics(style.font);
-		
+
 		dimensionPreferences.setValue(new DSizing(0, style.paddingTop + fontMetrics.getAscent() + fontMetrics.getDescent() + style.paddingBottom));
 		text = context.drawText(1, style.font, style.textColor, 0, 0, content.getValue());
 	}
-	
+
 	@Override
 	public void unmount() {
 		if (shape != null)
@@ -59,30 +58,30 @@ public class StatusBarView implements DComponent {
 		if (text != null)
 			text.close();
 	}
-	
+
 	@Override
 	public LiveObject<DSizing> getSizing() {
 		return dimensionPreferences;
 	}
-	
+
 	@Override
 	public DIRectangle getBounds() {
 		return bounds;
-	}
-	
-	@Override
-	public int getBaselineY() {
-		return style.paddingTop + fontMetrics.getAscent();
 	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-		
+
 		if (shape != null)
 			shape.close();
 		shape = context.shadowPath(0, DPath.rectangle(bounds.x, bounds.y, bounds.width, bounds.height), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
 		text.setPosition(bounds.x + style.paddingLeft, bounds.y + style.paddingTop + fontMetrics.getAscent());
+	}
+
+	@Override
+	public int getBaselineY() {
+		return style.paddingTop + fontMetrics.getAscent();
 	}
 
 	@Override

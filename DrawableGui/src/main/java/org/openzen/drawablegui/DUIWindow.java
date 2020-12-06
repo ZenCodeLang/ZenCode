@@ -9,35 +9,36 @@ import live.LiveBool;
 import live.LiveObject;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DUIWindow {
 	LiveObject<DIRectangle> getWindowBounds();
-	
+
 	DUIContext getContext();
-	
+
 	boolean hasTitleBar();
-	
+
 	void close();
-	
+
 	void maximize();
-	
+
 	void restore();
-	
+
 	void minimize();
-	
+
 	LiveObject<State> getWindowState();
-	
+
 	LiveBool getActive();
-	
+
 	void focus(DComponent component);
-	
+
 	DUIWindow openModal(String title, DComponent root);
-	
+
 	enum State {
 		NORMAL,
 		MAXIMIZED,
 		MINIMIZED
-	};
+	}
+
+	;
 }

@@ -9,18 +9,18 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public class InvalidExpression extends Expression {
 	public final CompileExceptionCode code;
 	public final String message;
-	
+
 	public InvalidExpression(CodePosition position, TypeID type, CompileExceptionCode code, String message) {
 		super(position, type, null);
-		
+
 		this.code = code;
 		this.message = message;
 	}
-	
+
 	public InvalidExpression(TypeID type, CompileException cause) {
 		this(cause.position, type, cause.code, cause.message);
 	}
-	
+
 	@Override
 	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
 		return new InvalidAssignExpression(position, this, value);

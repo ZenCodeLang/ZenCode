@@ -14,7 +14,7 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedCaster extends ParsedFunctionalMember {
 	private final IParsedType type;
 	private CasterMember compiled;
-	
+
 	public ParsedCaster(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -24,7 +24,7 @@ public class ParsedCaster extends ParsedFunctionalMember {
 			IParsedType type,
 			ParsedFunctionBody body) {
 		super(position, definition, implementation, modifiers, annotations, body);
-		
+
 		this.type = type;
 	}
 

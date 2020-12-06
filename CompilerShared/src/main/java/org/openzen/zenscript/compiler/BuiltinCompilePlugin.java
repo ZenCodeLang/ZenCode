@@ -8,6 +8,7 @@ package org.openzen.zenscript.compiler;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.NativeAnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.PreconditionAnnotationDefinition;

@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ConstantUSizeExpression extends Expression {
 	public final long value;
-	
+
 	public ConstantUSizeExpression(CodePosition position, long value) {
 		super(position, BasicTypeID.USIZE, null);
-		
+
 		this.value = value;
 	}
 

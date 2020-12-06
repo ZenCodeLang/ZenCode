@@ -45,26 +45,25 @@ import org.openzen.zenscript.ide.ui.icons.AddBoxIcon;
 import org.openzen.zenscript.ide.ui.view.IconButtonControl;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ProjectBrowser {
 	public final IDEWindow window;
 	public final DComponent view;
-	
+
 	public final MutableLiveObject<IDEModule> contextModule = new SimpleLiveObject<>(null);
 	public final MutableLiveObject<IDEPackage> contextPackage = new SimpleLiveObject<>(null);
 	public final MutableLiveObject<IDESourceFile> contextFile = new SimpleLiveObject<>(null);
 	public final LiveBool addContentDisabled = new LivePredicateBool(contextPackage, pkg -> pkg == null);
-	
+
 	public ProjectBrowser(IDEWindow window, DevelopmentHost host, IDEPropertyDirectory expanded) {
 		this.window = window;
-		
+
 		DStyleClass minimalButtonPadding = DStyleClass.inline(new DStylesheetBuilder()
 				.dimensionDp("margin", 3)
 				.dimensionDp("padding", 0)
 				.build());
-		
+
 		DLabel label = new DLabel(
 				DStyleClass.inline(new DStylesheetBuilder()
 						.font("font", context -> new DFont(DFontFamily.UI, false, false, false, context.sp(14)))
@@ -91,7 +90,7 @@ public class ProjectBrowser {
 					CreateSourceFileDialog dialog = new CreateSourceFileDialog(window, contextModule.getValue(), contextPackage.getValue());
 					dialog.open(e.window);
 				});
-		
+
 		DLinearLayout toolbar = new DLinearLayout(
 				DStyleClass.inline(new DStylesheetBuilder()
 						.border("border", context -> new DPaddedBorder(0, context.dp(2), 0, 0))
@@ -110,7 +109,7 @@ public class ProjectBrowser {
 				ExpandedArrow.INSTANCE,
 				CollapsedArrow.INSTANCE,
 				new RootTreeNode(this, host, expanded), false);
-		
+
 		DScalableSize treeSize = new DScalableSize(new DDpDimension(280), new DDpDimension(280));
 		DScrollPane treeScrollPane = new DScrollPane(
 				DStyleClass.inline("projectView", new DStylesheetBuilder()
@@ -120,7 +119,7 @@ public class ProjectBrowser {
 						.build()),
 				projectTree,
 				new SimpleLiveObject<>(treeSize));
-		
+
 		view = new DLinearLayout(
 				DStyleClass.inline(new DStylesheetBuilder()
 						.border("border", DEmptyBorder.ELEMENT)
@@ -132,32 +131,32 @@ public class ProjectBrowser {
 				new Element(toolbar, 0, 0, ElementAlignment.STRETCH),
 				new Element(treeScrollPane, 1, 1, ElementAlignment.STRETCH));
 	}
-	
+
 	public void setContextModule(IDEModule module) {
 		contextModule.setValue(module);
 		contextPackage.setValue(module.getRootPackage());
 		contextFile.setValue(null);
 	}
-	
+
 	public void setContextPackage(IDEModule module, IDEPackage pkg) {
 		contextModule.setValue(module);
 		contextPackage.setValue(pkg);
 		contextFile.setValue(null);
 	}
-	
+
 	public void setContextFile(IDESourceFile file) {
 		contextModule.setValue(null);
 		contextPackage.setValue(null);
 		contextFile.setValue(file);
 	}
-	
+
 	public void setContextProject() {
 		contextModule.setValue(null);
 		contextPackage.setValue(null);
 		contextFile.setValue(null);
 		window.aspectBar.active.setValue(window.projectToolbar);
 	}
-	
+
 	public void open(IDESourceFile file) {
 		window.open(file);
 	}

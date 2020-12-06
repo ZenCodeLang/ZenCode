@@ -5,17 +5,12 @@
  */
 package live;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-
 import listeners.ListenerHandle;
 import listeners.ListenerList;
 
+import java.util.*;
+
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SortedLiveList<T> implements LiveList<T>, LiveList.Listener<T> {
@@ -24,19 +19,19 @@ public class SortedLiveList<T> implements LiveList<T>, LiveList.Listener<T> {
 	private final List<T> sorted;
 	private final ListenerHandle<LiveList.Listener<T>> originalListener;
 	private final ListenerList<Listener<T>> listeners = new ListenerList<>();
-	
+
 	public SortedLiveList(LiveList<T> original, Comparator<T> ordering) {
 		this.original = original;
 		this.ordering = ordering;
-		
+
 		sorted = new ArrayList<>();
 		for (T item : original)
 			sorted.add(item);
-		
+
 		Collections.sort(sorted, ordering);
 		originalListener = original.addListener(this);
 	}
-	
+
 	@Override
 	public void close() {
 		original.close();
@@ -83,22 +78,22 @@ public class SortedLiveList<T> implements LiveList<T>, LiveList.Listener<T> {
 	public void onRemoved(int index, T oldValue) {
 		internalRemove(oldValue);
 	}
-	
+
 	private void internalAdd(T value) {
 		int atIndex = 0;
 		while (atIndex < sorted.size() && ordering.compare(value, sorted.get(atIndex)) > 0)
 			atIndex++;
-		
+
 		sorted.add(atIndex, value);
 		final int finalAtIndex = atIndex;
 		listeners.accept(listener -> listener.onInserted(finalAtIndex, value));
 	}
-	
+
 	private void internalRemove(T value) {
 		int index = sorted.indexOf(value);
 		if (index < 0)
 			return;
-		
+
 		sorted.remove(index);
 		listeners.accept(listener -> listener.onRemoved(index, value));
 	}

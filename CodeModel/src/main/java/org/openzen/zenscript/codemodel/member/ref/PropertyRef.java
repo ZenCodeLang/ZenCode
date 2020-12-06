@@ -12,15 +12,15 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public abstract class PropertyRef implements DefinitionMemberRef {
 	private final PropertyMember member;
-	
+
 	private final TypeID owner;
 	private TypeID type;
 	private GenericMapper mapper;
-	
+
 	public PropertyRef(TypeID owner, PropertyMember member, GenericMapper mapper) {
 		this.owner = owner;
 		this.member = member;
-		
+
 		if (member.getType() == BasicTypeID.UNDETERMINED) {
 			type = null;
 			this.mapper = mapper;
@@ -29,21 +29,21 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 			this.mapper = null;
 		}
 	}
-	
+
 	@Override
 	public final TypeID getOwnerType() {
 		return owner;
 	}
-	
+
 	public final TypeID getType() {
 		if (type == null) {
 			//if (member.getType().type == BasicTypeID.UNDETERMINED)
 			//	throw new IllegalStateException("Property is not yet resolved!");
-			
+
 			type = mapper == null ? member.getType() : member.getType().instance(mapper);
 			mapper = null;
 		}
-		
+
 		return type;
 	}
 
@@ -61,11 +61,11 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 	public final <T extends Tag> T getTag(Class<T> type) {
 		return member.getTag(type);
 	}
-	
+
 	public final boolean isStatic() {
 		return member.isStatic();
 	}
-	
+
 	public final boolean isFinal() {
 		return member.isFinal();
 	}
@@ -79,7 +79,7 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 	public final MemberAnnotation[] getAnnotations() {
 		return member.getAnnotations();
 	}
-	
+
 	@Override
 	public final IDefinitionMember getTarget() {
 		return member;

@@ -13,36 +13,35 @@ import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import zsynthetic.FunctionBoolBoolToVoid;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JSONPropertyDirectory implements IDEPropertyDirectory {
 	private final JSONObject data;
-	
+
 	public JSONPropertyDirectory(JSONObject data) {
 		this.data = data;
 	}
-	
+
 	@Override
 	public boolean getBool(String name, boolean defaultValue) {
 		return data.optBoolean(name, defaultValue);
 	}
-	
+
 	@Override
 	public void setBool(String name, boolean value) {
 		data.put(name, value);
 	}
-	
+
 	@Override
 	public MutableLiveBool getLiveBool(String name, boolean defaultValue) {
 		return new JSONLiveBool(name, defaultValue);
 	}
-	
+
 	@Override
 	public int getInt(String name, int defaultValue) {
 		return data.optInt(name, defaultValue);
 	}
-	
+
 	@Override
 	public void setInt(String name, int value) {
 		data.put(name, value);
@@ -52,7 +51,7 @@ public class JSONPropertyDirectory implements IDEPropertyDirectory {
 	public String getString(String name, String defaultValue) {
 		return data.optString(name, defaultValue);
 	}
-	
+
 	@Override
 	public void setString(String name, String value) {
 		data.put(name, value);
@@ -63,15 +62,15 @@ public class JSONPropertyDirectory implements IDEPropertyDirectory {
 		if (!data.has(name)) {
 			data.put(name, new JSONObject());
 		}
-		
+
 		return new JSONPropertyDirectory(data.getJSONObject(name));
 	}
-	
+
 	private class JSONLiveBool implements MutableLiveBool {
 		private final ListenerList<FunctionBoolBoolToVoid> listeners = new ListenerList<>();
 		private final String key;
 		private final boolean defaultValue;
-		
+
 		public JSONLiveBool(String key, boolean defaultValue) {
 			this.key = key;
 			this.defaultValue = defaultValue;
@@ -81,7 +80,7 @@ public class JSONPropertyDirectory implements IDEPropertyDirectory {
 		public boolean getValue() {
 			return data.optBoolean(key, defaultValue);
 		}
-		
+
 		@Override
 		public void setValue(boolean value) {
 			boolean current = getValue();

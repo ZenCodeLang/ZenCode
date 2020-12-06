@@ -7,10 +7,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class StaticSetterExpression extends Expression {
 	public final SetterMemberRef setter;
 	public final Expression value;
-	
+
 	public StaticSetterExpression(CodePosition position, SetterMemberRef setter, Expression value) {
 		super(position, setter.getType(), value.thrownType);
-		
+
 		this.setter = setter;
 		this.value = value;
 	}

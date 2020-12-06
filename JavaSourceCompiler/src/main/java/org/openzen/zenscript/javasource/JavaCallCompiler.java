@@ -9,7 +9,6 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.formattershared.ExpressionString;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface JavaCallCompiler {

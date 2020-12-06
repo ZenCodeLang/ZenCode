@@ -8,7 +8,6 @@ package org.openzen.drawablegui;
 import java.io.Closeable;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DTimerHandle extends Closeable {

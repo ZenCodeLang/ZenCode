@@ -12,16 +12,16 @@ import org.openzen.drawablegui.draw.DDrawTarget;
 
 public class ColoredCollapsedArrow implements DColorableIcon {
 	public static final ColoredCollapsedArrow INSTANCE = new ColoredCollapsedArrow();
-	
-	private ColoredCollapsedArrow() {}
-	
 	private static final DPath PATH_0 = tracer -> {
 		tracer.moveTo(10, 19);
 		tracer.lineTo(17, 12);
 		tracer.lineTo(10, 5);
 		tracer.close();
 	};
-	
+
+	private ColoredCollapsedArrow() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH_0, transform, color);

@@ -12,14 +12,13 @@ import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceLambdaStatementFormatter extends JavaSourceStatementFormatter {
 	public JavaSourceLambdaStatementFormatter(JavaSourceStatementScope scope) {
 		super(scope);
 	}
-	
+
 	@Override
 	public void formatEmpty(StatementFormattingTarget target, EmptyStatement statement) {
 		target.writeLine("{}");

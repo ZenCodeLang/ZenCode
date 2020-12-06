@@ -8,10 +8,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class ConstExpression extends Expression {
 	public final ConstMemberRef constant;
-	
+
 	public ConstExpression(CodePosition position, ConstMemberRef constant) {
 		super(position, constant.getType(), null);
-		
+
 		this.constant = constant;
 	}
 
@@ -29,17 +29,17 @@ public class ConstExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}
-	
+
 	@Override
 	public String evaluateStringConstant() {
 		return constant.member.value.evaluateStringConstant();
 	}
-	
+
 	@Override
 	public EnumConstantMember evaluateEnumConstant() {
 		return constant.member.value.evaluateEnumConstant();
 	}
-	
+
 	@Override
 	public IDefinitionMember getMember() {
 		return constant.member;

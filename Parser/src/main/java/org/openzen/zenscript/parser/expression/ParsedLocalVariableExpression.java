@@ -12,10 +12,10 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public class ParsedLocalVariableExpression extends ParsedExpression {
 	private final String name;
-	
+
 	public ParsedLocalVariableExpression(CodePosition position, String name) {
 		super(position);
-		
+
 		this.name = name;
 	}
 
@@ -27,7 +27,7 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "No such field: " + name);
 		if (group.getField() == null)
 			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "No such field: " + name);
-		
+
 		return new GetFieldExpression(position, new ThisExpression(position, scope.getThisType()), group.getField());
 	}
 

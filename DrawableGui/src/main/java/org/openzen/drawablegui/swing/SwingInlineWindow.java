@@ -26,7 +26,6 @@ import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.DUIWindow;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public final class SwingInlineWindow extends JWindow implements WindowListener, WindowStateListener, DUIWindow {
@@ -34,13 +33,13 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 	private final LiveObject<State> state = new ImmutableLiveObject<>(State.NORMAL);
 	private final SimpleLiveBool active = new SimpleLiveBool(true);
 	private final MutableLiveObject<DIRectangle> bounds = new SimpleLiveObject<>(DIRectangle.EMPTY);
-	
+
 	public SwingInlineWindow(SwingWindow owner, String title, DComponent root) {
 		super(owner);
-		
+
 		addWindowListener(this);
 		addWindowStateListener(this);
-		
+
 		getContentPane().add(swingComponent = new SwingRoot(root), BorderLayout.CENTER);
 		swingComponent.setWindow(this);
 		swingComponent.requestFocusInWindow();
@@ -49,14 +48,14 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 			public void componentMoved(ComponentEvent componentEvent) {
 				updateBounds();
 			}
-			
+
 			@Override
 			public void componentResized(ComponentEvent componentEvent) {
 				updateBounds();
 			}
 		});
 	}
-	
+
 	@Override
 	public DUIContext getContext() {
 		return swingComponent.context;
@@ -96,17 +95,17 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 	public LiveObject<State> getWindowState() {
 		return state;
 	}
-	
+
 	@Override
 	public LiveBool getActive() {
 		return active;
 	}
-	
+
 	@Override
 	public void focus(DComponent component) {
 		swingComponent.focus(component);
 	}
-	
+
 	@Override
 	public DUIWindow openModal(String title, DComponent component) {
 		throw new IllegalArgumentException("Cannot open a modal from an inline window!");
@@ -119,22 +118,22 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		
+
 	}
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		
+
 	}
 
 	@Override
 	public void windowIconified(WindowEvent e) {
-		
+
 	}
 
 	@Override
 	public void windowDeiconified(WindowEvent e) {
-		
+
 	}
 
 	@Override
@@ -149,9 +148,9 @@ public final class SwingInlineWindow extends JWindow implements WindowListener, 
 
 	@Override
 	public void windowStateChanged(WindowEvent e) {
-		
+
 	}
-	
+
 	private void updateBounds() {
 		bounds.setValue(new DIRectangle(getX(), getY(), getWidth(), getHeight()));
 	}

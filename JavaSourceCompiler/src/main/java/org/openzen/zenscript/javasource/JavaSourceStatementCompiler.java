@@ -9,7 +9,6 @@ import org.openzen.zenscript.formattershared.StatementFormatter;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceStatementCompiler extends StatementFormatter {

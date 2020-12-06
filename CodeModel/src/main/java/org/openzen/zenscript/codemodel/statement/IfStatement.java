@@ -1,6 +1,5 @@
 package org.openzen.zenscript.codemodel.statement;
 
-import java.util.function.Consumer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -8,29 +7,38 @@ import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.function.Consumer;
+
 public class IfStatement extends Statement {
 	public final Expression condition;
 	public final Statement onThen;
 	public final Statement onElse;
-	
+
 	public IfStatement(CodePosition position, Expression condition, Statement onThen, Statement onElse) {
 		super(position, getThrownType(condition, onThen, onElse));
-		
+
 		this.condition = condition;
 		this.onThen = onThen;
 		this.onElse = onElse;
+	}
+
+	private static TypeID getThrownType(Expression condition, Statement onThen, Statement onElse) {
+		TypeID result = Expression.binaryThrow(onThen.position, condition.thrownType, onThen.thrownType);
+		if (onElse != null)
+			result = Expression.binaryThrow(onElse.position, result, onElse.thrownType);
+		return result;
 	}
 
 	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitIf(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor) {
 		return visitor.visitIf(context, this);
 	}
-	
+
 	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 		consumer.accept(this);
@@ -58,13 +66,6 @@ public class IfStatement extends Statement {
 				? this
 				: new IfStatement(position, tCondition, tOnThen, tOnElse);
 	}
-	
-	private static TypeID getThrownType(Expression condition, Statement onThen, Statement onElse) {
-		TypeID result = Expression.binaryThrow(onThen.position, condition.thrownType, onThen.thrownType);
-		if (onElse != null)
-			result = Expression.binaryThrow(onElse.position, result, onElse.thrownType);
-		return result;
-	}
 
 	@Override
 	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
@@ -78,13 +79,13 @@ public class IfStatement extends Statement {
 	@Override
 	public TypeID getReturnType() {
 		final TypeID thenType = onThen.getReturnType();
-		if(onElse == null)
+		if (onElse == null)
 			return thenType;
 		final TypeID elseType = onElse.getReturnType();
-		if(thenType == elseType)
+		if (thenType == elseType)
 			return thenType;
 
-		if(thenType == null)
+		if (thenType == null)
 			return elseType;
 		return thenType;
 	}

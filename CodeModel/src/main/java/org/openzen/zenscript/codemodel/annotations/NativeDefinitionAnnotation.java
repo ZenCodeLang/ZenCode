@@ -7,7 +7,7 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 
 public class NativeDefinitionAnnotation implements DefinitionAnnotation {
 	private final String identifier;
-	
+
 	public NativeDefinitionAnnotation(String identifier) {
 		this.identifier = identifier;
 	}
@@ -16,7 +16,7 @@ public class NativeDefinitionAnnotation implements DefinitionAnnotation {
 	public AnnotationDefinition getDefinition() {
 		return NativeAnnotationDefinition.INSTANCE;
 	}
-	
+
 	@Override
 	public void apply(HighLevelDefinition definition, BaseScope scope) {
 		definition.setTag(NativeTag.class, new NativeTag(identifier));

@@ -15,10 +15,10 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public class InnerDefinitionMember extends DefinitionMember {
 	public final HighLevelDefinition innerDefinition;
-	
+
 	public InnerDefinitionMember(CodePosition position, HighLevelDefinition outer, int modifiers, HighLevelDefinition definition) {
 		super(position, outer, definition instanceof InterfaceDefinition ? modifiers | Modifiers.STATIC : modifiers);
-		
+
 		this.innerDefinition = definition;
 	}
 
@@ -35,7 +35,7 @@ public class InnerDefinitionMember extends DefinitionMember {
 	public String describe() {
 		return "inner type " + innerDefinition.name;
 	}
-	
+
 	@Override
 	public BuiltinID getBuiltin() {
 		return null;
@@ -45,7 +45,7 @@ public class InnerDefinitionMember extends DefinitionMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitInnerDefinition(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitInnerDefinition(context, this);
@@ -55,7 +55,7 @@ public class InnerDefinitionMember extends DefinitionMember {
 	public DefinitionMemberRef getOverrides() {
 		return null;
 	}
-	
+
 	@Override
 	public int getEffectiveModifiers() {
 		int result = modifiers;
@@ -63,7 +63,7 @@ public class InnerDefinitionMember extends DefinitionMember {
 			result |= Modifiers.PUBLIC;
 		if (!Modifiers.hasAccess(result))
 			result |= Modifiers.INTERNAL;
-		
+
 		return result;
 	}
 
@@ -81,7 +81,7 @@ public class InnerDefinitionMember extends DefinitionMember {
 	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
 		throw new UnsupportedOperationException("Cannot create an inner definition reference");
 	}
-	
+
 	@Override
 	public FunctionHeader getHeader() {
 		return null;

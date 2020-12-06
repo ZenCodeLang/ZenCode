@@ -10,7 +10,7 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 
 public class NativeMemberAnnotation implements MemberAnnotation {
 	private final String identifier;
-	
+
 	public NativeMemberAnnotation(String identifier) {
 		this.identifier = identifier;
 	}
@@ -19,7 +19,7 @@ public class NativeMemberAnnotation implements MemberAnnotation {
 	public AnnotationDefinition getDefinition() {
 		return NativeAnnotationDefinition.INSTANCE;
 	}
-	
+
 	@Override
 	public void apply(IDefinitionMember member, BaseScope scope) {
 		member.setTag(NativeTag.class, new NativeTag(identifier));

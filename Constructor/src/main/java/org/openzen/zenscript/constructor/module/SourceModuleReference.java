@@ -27,22 +27,36 @@ import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.ParsedFile;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SourceModuleReference implements ModuleReference {
 	private final SourceModule module;
 	private final boolean isStdlib;
-	
+
 	public SourceModuleReference(SourceModule module) {
 		this(module, false);
 	}
-	
+
 	public SourceModuleReference(SourceModule module, boolean isStdlib) {
 		this.module = module;
 		this.isStdlib = isStdlib;
 	}
-	
+
+	private static void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, SourcePackage directory, CompileExceptionLogger exceptionLogger) {
+		for (SourceFile file : directory.getFiles()) {
+			try {
+				files.add(ParsedFile.parse(pkg, bracketParser, file));
+			} catch (ParseException ex) {
+				exceptionLogger.logCompileException(new CompileException(ex.position, CompileExceptionCode.PARSE_ERROR, ex.message));
+			}
+		}
+		for (SourcePackage subpkg : directory.getSubPackages()) {
+			CompilingPackage innerPackage = pkg.getOrCreatePackage(subpkg.getName());
+			pkg.addPackage(subpkg.getName(), innerPackage);
+			parse(files, innerPackage, bracketParser, subpkg, exceptionLogger);
+		}
+	}
+
 	@Override
 	public String getName() {
 		return module.getName();
@@ -70,31 +84,16 @@ public class SourceModuleReference implements ModuleReference {
 		result.globals.putAll(this.module.getGlobals(result));
 		return result;
 	}
-	
+
 	@Override
 	public SourcePackage getRootPackage() {
 		return module.getRootPackage();
 	}
-	
+
 	public ParsedFile[] parse(CompilingPackage compilingPackage, CompileExceptionLogger exceptionLogger) {
 		// TODO: load bracket parsers from host plugins
 		List<ParsedFile> files = new ArrayList<>();
 		parse(files, compilingPackage, null, module.getRootPackage(), exceptionLogger);
 		return files.toArray(new ParsedFile[files.size()]);
-	}
-	
-	private static void parse(List<ParsedFile> files, CompilingPackage pkg, BracketExpressionParser bracketParser, SourcePackage directory, CompileExceptionLogger exceptionLogger) {
-		for (SourceFile file : directory.getFiles()) {
-			try {
-				files.add(ParsedFile.parse(pkg, bracketParser, file));
-			} catch (ParseException ex) {
-				exceptionLogger.logCompileException(new CompileException(ex.position, CompileExceptionCode.PARSE_ERROR, ex.message));
-			}
-		}
-		for (SourcePackage subpkg : directory.getSubPackages()) {
-			CompilingPackage innerPackage = pkg.getOrCreatePackage(subpkg.getName());
-			pkg.addPackage(subpkg.getName(), innerPackage);
-			parse(files, innerPackage, bracketParser, subpkg, exceptionLogger);
-		}
 	}
 }

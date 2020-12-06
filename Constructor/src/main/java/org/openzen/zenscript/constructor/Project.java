@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zenscript.constructor.module.ModuleReference;
@@ -18,7 +19,6 @@ import org.openzen.zenscript.constructor.module.SourceModuleReference;
 import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class Project {
@@ -27,22 +27,22 @@ public class Project {
 	public final ModuleReference[] modules;
 	public final Library[] libraries;
 	public final Target[] targets;
-	
+
 	public Project(File directory) throws IOException {
 		this.directory = directory;
 		name = directory.getName();
-		
+
 		if (!directory.exists())
 			throw new ConstructorException("Project directory doesn't exist");
 		if (!directory.isDirectory())
 			throw new ConstructorException("Project directory isn't a directory");
-		
+
 		File projectFile = new File(directory, "project.zcp");
 		if (!projectFile.exists())
 			throw new ConstructorException("Missing project.zcp file in project directory");
-		
+
 		JSONObject json = JSONUtils.load(projectFile);
-		
+
 		JSONObject jsonLibraries = json.getJSONObject("libraries");
 		libraries = new Library[jsonLibraries.length()];
 		int k = 0;
@@ -50,7 +50,7 @@ public class Project {
 			libraries[k] = new Library(directory, key, jsonLibraries.getJSONObject(key));
 			k++;
 		}
-		
+
 		JSONArray jsonModules = json.getJSONArray("modules");
 		modules = new ModuleReference[jsonModules.length()];
 		for (int i = 0; i < jsonModules.length(); i++) {
@@ -69,7 +69,7 @@ public class Project {
 				}
 			}
 		}
-		
+
 		JSONArray jsonTargets = json.getJSONArray("targets");
 		List<Target> targetList = new ArrayList<>();
 		for (int i = 0; i < jsonTargets.length(); i++) {
@@ -79,7 +79,7 @@ public class Project {
 				System.out.println("Unknown target type: " + jsonTarget.getString("type"));
 				continue;
 			}
-			
+
 			targetList.add(targetType.create(directory, jsonTarget));
 		}
 		targets = targetList.toArray(new Target[targetList.size()]);

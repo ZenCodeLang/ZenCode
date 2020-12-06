@@ -1,24 +1,23 @@
 package org.openzen.zenscript.codemodel.type;
 
+import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
+
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 public class GenericMapTypeID implements TypeID {
 	public final TypeID value;
 	public final TypeParameter key;
 	private final GenericMapTypeID normalized;
-	
+
 	public GenericMapTypeID(GlobalTypeRegistry registry, TypeID value, TypeParameter key) {
 		this.value = value;
 		this.key = key;
-		
+
 		normalized = value.getNormalized() == value ? this : registry.getGenericMap(value.getNormalized(), key);
 	}
-	
+
 	@Override
 	public GenericMapTypeID getNormalized() {
 		return normalized;
@@ -28,7 +27,7 @@ public class GenericMapTypeID implements TypeID {
 	public <T> T accept(TypeVisitor<T> visitor) {
 		return visitor.visitGenericMap(this);
 	}
-	
+
 	@Override
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitGenericMap(context, this);
@@ -38,7 +37,7 @@ public class GenericMapTypeID implements TypeID {
 	public boolean isOptional() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isValueType() {
 		return false;
@@ -64,7 +63,7 @@ public class GenericMapTypeID implements TypeID {
 		value.extractTypeParameters(typeParameters);
 		typeParameters.remove(key);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
@@ -91,7 +90,7 @@ public class GenericMapTypeID implements TypeID {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		
+
 		final GenericMapTypeID other = (GenericMapTypeID) obj;
 		return Objects.equals(this.value, other.value)
 				&& Objects.equals(this.key, other.key);

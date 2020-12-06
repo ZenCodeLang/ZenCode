@@ -5,31 +5,16 @@ import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.statement.BlockStatement;
-import org.openzen.zenscript.codemodel.statement.BreakStatement;
-import org.openzen.zenscript.codemodel.statement.ContinueStatement;
-import org.openzen.zenscript.codemodel.statement.DoWhileStatement;
-import org.openzen.zenscript.codemodel.statement.EmptyStatement;
-import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
-import org.openzen.zenscript.codemodel.statement.ForeachStatement;
-import org.openzen.zenscript.codemodel.statement.IfStatement;
-import org.openzen.zenscript.codemodel.statement.LockStatement;
-import org.openzen.zenscript.codemodel.statement.ReturnStatement;
-import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.StatementVisitor;
-import org.openzen.zenscript.codemodel.statement.SwitchStatement;
-import org.openzen.zenscript.codemodel.statement.ThrowStatement;
-import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.statement.WhileStatement;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
+import org.openzen.zenscript.codemodel.statement.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class FormattingUtils {
-	private FormattingUtils() {}
-	
+	private FormattingUtils() {
+	}
+
 	public static void formatModifiers(StringBuilder output, int modifiers) {
 		if (Modifiers.isPrivate(modifiers))
 			output.append("private ");
@@ -56,7 +41,7 @@ public class FormattingUtils {
 		if (Modifiers.isConstOptional(modifiers))
 			output.append("const? ");
 	}
-	
+
 	public static void formatHeader(StringBuilder result, ScriptFormattingSettings settings, FunctionHeader header, TypeFormatter typeFormatter) {
 		FormattingUtils.formatTypeParameters(result, header.typeParameters, typeFormatter);
 		result.append("(");
@@ -64,16 +49,16 @@ public class FormattingUtils {
 		for (FunctionParameter parameter : header.parameters) {
 			if (parameterIndex > 0)
 				result.append(", ");
-			
+
 			result.append(parameter.name);
 			if (parameter.variadic)
 				result.append("...");
-			
+
 			if (!settings.showAnyInFunctionHeaders || parameter.type != BasicTypeID.UNDETERMINED) {
 				result.append(" as ");
 				result.append(typeFormatter.format(header.getReturnType()));
 			}
-			
+
 			parameterIndex++;
 		}
 		result.append(")");
@@ -82,7 +67,7 @@ public class FormattingUtils {
 			result.append(typeFormatter.format(header.getReturnType()));
 		}
 	}
-	
+
 	public static void formatTypeParameters(StringBuilder result, TypeParameter[] parameters, TypeFormatter typeFormatter) {
 		if (parameters != null && parameters.length > 0) {
 			result.append("<");
@@ -90,34 +75,34 @@ public class FormattingUtils {
 			for (TypeParameter parameter : parameters) {
 				if (index > 0)
 					result.append(", ");
-				
+
 				result.append(parameter.name);
-				
+
 				if (parameter.bounds.size() > 0) {
 					for (TypeParameterBound bound : parameter.bounds) {
 						result.append(": ");
 						result.append(bound.accept(typeFormatter));
 					}
 				}
-				
+
 				index++;
 			}
 			result.append(">");
 		}
 	}
-	
+
 	public static void formatBody(StringBuilder output, ScriptFormattingSettings settings, String indent, TypeFormatter typeFormatter, Statement body) {
 		body.accept(new BodyFormatter(output, settings, indent, typeFormatter));
 		output.append("\n");
 	}
-	
+
 	public static void formatCall(StringBuilder result, TypeFormatter typeFormatter, ExpressionFormatter expressionFormatter, CallArguments arguments) {
 		if (arguments == null || arguments.typeArguments == null)
 			throw new IllegalArgumentException("Arguments cannot be null!");
-		
+
 		if (arguments.typeArguments.length > 0) {
 			result.append("<");
-			
+
 			int index = 0;
 			for (TypeID typeArgument : arguments.typeArguments) {
 				if (index > 0)
@@ -137,21 +122,21 @@ public class FormattingUtils {
 		}
 		result.append(")");
 	}
-	
+
 	private static class BodyFormatter implements StatementVisitor<Void> {
 		private final StringBuilder output;
 		private final ScriptFormattingSettings settings;
 		private final StatementFormatter statementFormatter;
 		private final String indent;
 		private final TypeFormatter typeFormatter;
-		
+
 		public BodyFormatter(StringBuilder output, ScriptFormattingSettings settings, String indent, TypeFormatter typeFormatter) {
 			this.output = output;
 			this.settings = settings;
 			this.indent = indent;
 			this.typeFormatter = typeFormatter;
-			
-			statementFormatter = new StatementFormatter(output, indent, settings, new ExpressionFormatter(settings, typeFormatter, indent)); 
+
+			statementFormatter = new StatementFormatter(output, indent, settings, new ExpressionFormatter(settings, typeFormatter, indent));
 		}
 
 		@Override
@@ -187,7 +172,7 @@ public class FormattingUtils {
 			} else {
 				output.append("\n").append(indent).append(settings.indent).append("=> ");
 			}
-			
+
 			output.append(statement.expression.accept(new ExpressionFormatter(settings, typeFormatter, indent)));
 			output.append(";");
 			return null;
@@ -215,7 +200,7 @@ public class FormattingUtils {
 			} else {
 				output.append("\n").append(indent).append(settings.indent).append("=> ");
 			}
-			
+
 			output.append(statement.value.accept(new ExpressionFormatter(settings, typeFormatter, indent)));
 			output.append(";");
 			return null;

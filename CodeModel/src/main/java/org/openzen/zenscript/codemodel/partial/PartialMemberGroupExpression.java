@@ -1,20 +1,21 @@
 package org.openzen.zenscript.codemodel.partial;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
-import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMember;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class PartialMemberGroupExpression implements IPartialExpression {
 	private final CodePosition position;
@@ -23,15 +24,14 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	private final TypeID[] typeArguments;
 	private final boolean allowStaticUsage;
 	private final TypeScope scope;
-	
+
 	public PartialMemberGroupExpression(
 			CodePosition position,
 			TypeScope scope,
 			Expression target,
 			TypeMemberGroup group,
 			TypeID[] typeArguments,
-			boolean allowStaticMembers)
-	{
+			boolean allowStaticMembers) {
 		this.position = position;
 		this.scope = scope;
 		this.target = target;
@@ -39,7 +39,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 		this.typeArguments = typeArguments;
 		this.allowStaticUsage = allowStaticMembers;
 	}
-	
+
 	public PartialMemberGroupExpression(
 			CodePosition position,
 			TypeScope scope,
@@ -47,8 +47,7 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 			String name,
 			FunctionalMemberRef member,
 			TypeID[] typeArguments,
-			boolean allowStaticMembers)
-	{
+			boolean allowStaticMembers) {
 		this.position = position;
 		this.scope = scope;
 		this.target = target;
@@ -61,14 +60,14 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	public Expression eval() throws CompileException {
 		return group.getter(position, scope, target, allowStaticUsage);
 	}
-	
+
 	@Override
 	public List<TypeID> getAssignHints() {
 		if (group.getSetter() != null)
 			return Collections.singletonList(group.getSetter().getType());
 		if (group.getField() != null)
 			return Collections.singletonList(group.getField().getType());
-		
+
 		return Collections.emptyList();
 	}
 
@@ -76,14 +75,14 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) {
 		return group.predictCallTypes(position, scope, hints, arguments);
 	}
-	
+
 	@Override
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
 		List<FunctionHeader> results = new ArrayList<>();
 		for (TypeMember<FunctionalMemberRef> method : group.getMethodMembers()) {
 			if (!method.member.accepts(arguments) || method.member.isStatic())
 				continue;
-			
+
 			try {
 				scope.getPreparer().prepare(method.member.getTarget());
 				results.add(method.member.getHeader());
@@ -105,12 +104,12 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
 		return group.call(position, scope, target, arguments, allowStaticUsage);
 	}
-	
+
 	@Override
 	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 		return group.setter(position, scope, target, value, allowStaticUsage);
 	}
-	
+
 	@Override
 	public IPartialExpression capture(CodePosition position, LambdaClosure closure) throws CompileException {
 		return new PartialMemberGroupExpression(position, scope, target.capture(position, closure).eval(), group, typeArguments, allowStaticUsage);

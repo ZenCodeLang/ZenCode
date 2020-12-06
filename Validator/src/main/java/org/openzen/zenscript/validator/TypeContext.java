@@ -6,7 +6,6 @@
 package org.openzen.zenscript.validator;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public enum TypeContext {
@@ -22,9 +21,9 @@ public enum TypeContext {
 	CAST_TARGET_TYPE("cast target type"),
 	TYPE_CHECK_TYPE("type check type"),
 	CONSTRUCTOR_TYPE("constructed object type");
-	
+
 	public final String display;
-	
+
 	TypeContext(String display) {
 		this.display = display;
 	}

@@ -17,7 +17,7 @@ import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 public class ParsedCaller extends ParsedFunctionalMember {
 	private final ParsedFunctionHeader header;
 	private CallerMember compiled;
-	
+
 	public ParsedCaller(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -27,10 +27,10 @@ public class ParsedCaller extends ParsedFunctionalMember {
 			ParsedFunctionHeader header,
 			ParsedFunctionBody body) {
 		super(position, definition, implementation, modifiers, annotations, body);
-		
+
 		this.header = header;
 	}
-	
+
 	@Override
 	public void linkTypes(TypeResolutionContext context) {
 		compiled = new CallerMember(position, definition, modifiers, header.compile(context), null);
@@ -49,10 +49,10 @@ public class ParsedCaller extends ParsedFunctionalMember {
 		if (base.getHeader().hasUnknowns) {
 			scope.getPreparer().prepare(base.getTarget());
 			base = scope.getTypeMembers(baseType)
-				.getOrCreateGroup(OperatorType.CALL)
-				.getOverride(position, scope, compiled); // to refresh the header
+					.getOrCreateGroup(OperatorType.CALL)
+					.getOverride(position, scope, compiled); // to refresh the header
 		}
-		
+
 		compiled.setOverrides(scope.getTypeRegistry(), base);
 	}
 }

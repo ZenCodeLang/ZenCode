@@ -11,13 +11,12 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawTarget;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ScalableMinimizeIcon implements DColorableIcon {
 	private final float scale;
 	private final DPath path;
-	
+
 	public ScalableMinimizeIcon(float scale) {
 		this.scale = scale;
 		path = tracer -> {
@@ -25,7 +24,7 @@ public class ScalableMinimizeIcon implements DColorableIcon {
 			tracer.lineTo(scale * 16, scale * 14);
 		};
 	}
-	
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.strokePath(z, path, transform, color, 1);

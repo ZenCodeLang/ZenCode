@@ -5,8 +5,8 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
 
 public interface ZenCodeCompilingModule {
 	void addDefinition(HighLevelDefinition definition);
-	
+
 	void addScriptBlock(ScriptBlock script);
-	
+
 	void finish();
 }

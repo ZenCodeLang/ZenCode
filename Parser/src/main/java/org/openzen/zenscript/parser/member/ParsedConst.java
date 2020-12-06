@@ -20,10 +20,10 @@ public class ParsedConst extends ParsedDefinitionMember {
 	private final String name;
 	private final IParsedType type;
 	private final ParsedExpression expression;
-	
+
 	private boolean isCompiled = false;
 	private ConstMember compiled;
-	
+
 	public ParsedConst(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -31,10 +31,9 @@ public class ParsedConst extends ParsedDefinitionMember {
 			ParsedAnnotation[] annotations,
 			String name,
 			IParsedType type,
-			ParsedExpression expression)
-	{
+			ParsedExpression expression) {
 		super(definition, annotations);
-		
+
 		this.position = position;
 		this.modifiers = modifiers;
 		this.name = name;
@@ -63,16 +62,16 @@ public class ParsedConst extends ParsedDefinitionMember {
 		if (isCompiled)
 			return;
 		isCompiled = true;
-		
+
 		compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, scope);
-		
+
 		if (expression != null) {
 			Expression initializer = expression
 					.compile(new ExpressionScope(scope, compiled.getType()))
 					.eval()
 					.castImplicit(position, scope, compiled.getType());
 			compiled.value = initializer;
-			
+
 			if (compiled.getType() == BasicTypeID.UNDETERMINED)
 				compiled.setType(initializer.type);
 		} else if (compiled.getType() == BasicTypeID.UNDETERMINED) {

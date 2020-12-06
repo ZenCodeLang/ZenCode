@@ -5,9 +5,10 @@
  */
 package org.openzen.zenscript.javabytecode.compiler;
 
+import org.openzen.zenscript.javabytecode.JavaScriptMethod;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.openzen.zenscript.javabytecode.JavaScriptMethod;
 
 /**
  * @author Hoofdgebruiker

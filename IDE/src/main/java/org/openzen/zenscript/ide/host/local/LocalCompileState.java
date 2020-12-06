@@ -7,6 +7,7 @@ package org.openzen.zenscript.ide.host.local;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import live.LiveArrayList;
 import live.LiveList;
 import org.openzen.zenscript.ide.host.IDECodeError;
@@ -14,7 +15,6 @@ import org.openzen.zenscript.ide.host.IDECompileState;
 import org.openzen.zenscript.ide.host.IDESourceFile;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class LocalCompileState implements IDECompileState {
@@ -23,10 +23,10 @@ public class LocalCompileState implements IDECompileState {
 	public void addError(IDESourceFile file, IDECodeError error) {
 		if (!errors.containsKey(file))
 			errors.put(file, new LiveArrayList<>());
-		
+
 		errors.get(file).add(error);
 	}
-	
+
 	@Override
 	public LiveList<IDECodeError> getErrors(IDESourceFile file) {
 		return errors.getOrDefault(file, new LiveArrayList<>());

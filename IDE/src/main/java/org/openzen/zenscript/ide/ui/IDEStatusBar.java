@@ -9,26 +9,25 @@ import listeners.ListenerHandle;
 import listeners.ListenerList;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class IDEStatusBar {
 	private final ListenerList<Listener> listeners = new ListenerList<>();
 	private String message;
-	
+
 	public ListenerHandle<Listener> addListener(Listener listener) {
 		return listeners.add(listener);
 	}
-	
+
 	public String getMessage() {
 		return message;
 	}
-	
+
 	public void setMessage(String message) {
 		this.message = message;
 		listeners.accept(listener -> listener.onMessageUpdated(message));
 	}
-	
+
 	public interface Listener {
 		void onMessageUpdated(String message);
 	}

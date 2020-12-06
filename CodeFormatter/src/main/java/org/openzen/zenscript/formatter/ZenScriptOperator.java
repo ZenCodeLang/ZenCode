@@ -36,13 +36,13 @@ public enum ZenScriptOperator implements FormattableOperator {
 	ORASSIGN(0, " |= "),
 	ANDASSIGN(0, " &= "),
 	XORASSIGN(0, " ^= "),
-	
+
 	ANDAND(3, " && "),
 	OROR(2, " || "),
-	
+
 	TERNARY(1, null),
 	COALESCE(2, " ?? "),
-	
+
 	INCREMENT(8, "++"),
 	DECREMENT(8, "--"),
 	MEMBER(9, null),
@@ -50,39 +50,45 @@ public enum ZenScriptOperator implements FormattableOperator {
 	INDEX(9, null),
 	CALL(9, null),
 	CAST(9, null),
-	
+
 	PANIC(10, "panic "),
 	PRIMARY(10, null),
 	FUNCTION(10, null);
-	
+
 	private final int priority;
 	private final String operatorString;
-	
+
 	private ZenScriptOperator(int priority, String operatorString) {
 		this.priority = priority;
 		this.operatorString = operatorString;
+	}
+
+	public static ZenScriptOperator getComparison(CompareType compare) {
+		switch (compare) {
+			case EQ:
+				return EQUALS;
+			case NE:
+				return NOTEQUALS;
+			case LT:
+				return LESS;
+			case GT:
+				return GREATER;
+			case LE:
+				return LESS_EQUALS;
+			case GE:
+				return GREATER_EQUALS;
+			default:
+				return null;
+		}
 	}
 
 	@Override
 	public int getPriority() {
 		return priority;
 	}
-	
+
 	@Override
 	public String getOperatorString() {
 		return operatorString;
-	}
-	
-	public static ZenScriptOperator getComparison(CompareType compare) {
-		switch (compare) {
-			case EQ: return EQUALS;
-			case NE: return NOTEQUALS;
-			case LT: return LESS;
-			case GT: return GREATER;
-			case LE: return LESS_EQUALS;
-			case GE: return GREATER_EQUALS;
-			default:
-				return null;
-		}
 	}
 }

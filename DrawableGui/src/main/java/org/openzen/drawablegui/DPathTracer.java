@@ -6,17 +6,16 @@
 package org.openzen.drawablegui;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DPathTracer {
 	public void moveTo(float x, float y);
-	
+
 	public void lineTo(float x, float y);
-	
+
 	public void bezierCubic(float x1, float y1, float x2, float y2, float x3, float y3);
-	
+
 	public void bezierQuadratic(float x1, float y1, float x2, float y2);
-	
+
 	public void close();
 }

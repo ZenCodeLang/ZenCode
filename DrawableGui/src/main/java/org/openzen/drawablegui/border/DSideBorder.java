@@ -12,7 +12,6 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawnShape;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DSideBorder implements DBorder {
@@ -24,12 +23,12 @@ public class DSideBorder implements DBorder {
 	public final int rightColor;
 	public final int bottomWidth;
 	public final int bottomColor;
-	
+
 	private DDrawnShape left;
 	private DDrawnShape top;
 	private DDrawnShape right;
 	private DDrawnShape bottom;
-	
+
 	public DSideBorder(
 			int leftWidth, int leftColor,
 			int topWidth, int topColor,

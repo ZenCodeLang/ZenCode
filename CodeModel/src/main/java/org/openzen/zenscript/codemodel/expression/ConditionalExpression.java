@@ -8,7 +8,7 @@ public class ConditionalExpression extends Expression {
 	public final Expression condition;
 	public final Expression ifThen;
 	public final Expression ifElse;
-	
+
 	public ConditionalExpression(
 			CodePosition position,
 			Expression condition,
@@ -16,10 +16,10 @@ public class ConditionalExpression extends Expression {
 			Expression ifElse,
 			TypeID type) {
 		super(position, type, binaryThrow(position, condition.thrownType, binaryThrow(position, ifThen.thrownType, ifElse.thrownType)));
-		
+
 		if (!ifThen.type.equals(ifElse.type))
 			throw new AssertionError();
-		
+
 		this.condition = condition;
 		this.ifThen = ifThen;
 		this.ifElse = ifElse;

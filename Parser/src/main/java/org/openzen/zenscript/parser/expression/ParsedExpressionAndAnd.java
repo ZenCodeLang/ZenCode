@@ -31,10 +31,10 @@ public class ParsedExpressionAndAnd extends ParsedExpression {
 		TypeID resultType = scope.getTypeMembers(left.type).union(right.type);
 		if (resultType == null)
 			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + left.type + " and " + right.type);
-		
+
 		left = left.castImplicit(position, scope, resultType);
 		right = right.castImplicit(position, scope, resultType);
-		
+
 		return new AndAndExpression(position, left, right);
 	}
 

@@ -10,7 +10,6 @@ import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface JavaSourceBuiltin {

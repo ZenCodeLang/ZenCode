@@ -8,12 +8,11 @@ package org.openzen.drawablegui.style;
 import org.openzen.drawablegui.DUIContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DDpDimension implements DDimension {
 	private final float value;
-	
+
 	public DDpDimension(float value) {
 		this.value = value;
 	}

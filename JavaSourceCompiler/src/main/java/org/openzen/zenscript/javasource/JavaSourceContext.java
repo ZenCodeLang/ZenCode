@@ -14,22 +14,21 @@ import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 import org.openzen.zenscript.javashared.JavaTypeDescriptorVisitor;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceContext extends JavaContext {
+	public final JavaSourceSyntheticHelperGenerator helperGenerator;
 	private final JavaTypeDescriptorVisitor typeDescriptorVisitor;
 	private final JavaSyntheticClassGenerator generator;
-	public final JavaSourceSyntheticHelperGenerator helperGenerator;
-	
+
 	public JavaSourceContext(IZSLogger logger, JavaSourceModule helpers, JavaSourceFormattingSettings settings, JavaCompileSpace space, ZSPackage modulePackage, String basePackage) {
 		super(space, modulePackage, basePackage, logger);
-		
+
 		typeDescriptorVisitor = new JavaTypeDescriptorVisitor(this);
 		this.generator = new JavaSourceSyntheticTypeGenerator(helpers, settings, this);
 		helperGenerator = new JavaSourceSyntheticHelperGenerator(helpers, this, settings);
 	}
-	
+
 	@Override
 	public String getDescriptor(TypeID type) {
 		return typeDescriptorVisitor.process(type);

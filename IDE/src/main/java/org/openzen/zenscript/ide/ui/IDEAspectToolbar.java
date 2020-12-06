@@ -11,7 +11,6 @@ import live.MutableLiveList;
 import org.openzen.drawablegui.DDrawable;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class IDEAspectToolbar {
@@ -20,7 +19,7 @@ public class IDEAspectToolbar {
 	public final String title;
 	public final String description;
 	public final MutableLiveList<IDEAspectBarControl> controls = new LiveArrayList<>();
-	
+
 	public IDEAspectToolbar(int order, DDrawable icon, String title, String description) {
 		this.order = order;
 		this.icon = icon;

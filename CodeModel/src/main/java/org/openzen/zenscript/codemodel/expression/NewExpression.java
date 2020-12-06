@@ -10,25 +10,23 @@ public class NewExpression extends Expression {
 	public final FunctionalMemberRef constructor;
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
-	
+
 	public NewExpression(
 			CodePosition position,
 			TypeID type,
 			FunctionalMemberRef constructor,
-			CallArguments arguments)
-	{
+			CallArguments arguments) {
 		this(position, type, constructor, arguments, constructor.getHeader());
 	}
-	
+
 	public NewExpression(
 			CodePosition position,
 			TypeID type,
 			FunctionalMemberRef constructor,
 			CallArguments arguments,
-			FunctionHeader instancedHeader)
-	{
+			FunctionHeader instancedHeader) {
 		super(position, type, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));
-		
+
 		this.constructor = constructor;
 		this.arguments = arguments;
 		this.instancedHeader = instancedHeader;

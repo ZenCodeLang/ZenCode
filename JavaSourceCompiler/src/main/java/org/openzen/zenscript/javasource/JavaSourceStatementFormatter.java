@@ -8,6 +8,7 @@ package org.openzen.zenscript.javasource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -45,16 +46,15 @@ import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 import org.openzen.zenscript.javashared.JavaClass;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceStatementFormatter implements StatementFormatter.Formatter, SwitchValueVisitor<String> {
 	protected final JavaSourceStatementScope scope;
-	
+
 	public JavaSourceStatementFormatter(JavaSourceStatementScope scope) {
 		this.scope = scope;
 	}
-	
+
 	@Override
 	public JavaSourceStatementFormatter forLoop(LoopStatement statement) {
 		return new JavaSourceStatementFormatter(scope.createBlockScope(statement));
@@ -103,7 +103,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			iterateOverCustomIterator(target, statement);
 			return;
 		}
-		
+
 		switch (statement.iterator.target.getBuiltin()) {
 			case ITERATOR_INT_RANGE:
 				iterateOverIntRange(target, statement);
@@ -156,12 +156,12 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			Expression value = scope.duplicable(target, statement.value);
 			ExpressionString valueString = scope.expression(target, value);
 			List<StatementFormattingSubBlock> blocks = new ArrayList<>();
-			
+
 			DefinitionTypeID variantType = statement.value.type.asDefinition();
 			HighLevelDefinition variant = variantType.definition;
 			String variantTypeName = scope.type(variant);
 			for (SwitchCase switchCase : statement.cases) {
-				VariantOptionSwitchValue switchValue = (VariantOptionSwitchValue)switchCase.value;
+				VariantOptionSwitchValue switchValue = (VariantOptionSwitchValue) switchCase.value;
 				String header = switchValue == null ? "default:" : "case " + switchValue.option.getName() + ":";
 				List<String> statements = new ArrayList<>();
 				if (switchValue != null) {
@@ -206,7 +206,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 		target.writeInner("try", statement.content, null, "");
 		for (CatchClause catchClause : statement.catchClauses)
 			target.writeInner("catch " + catchClause.exceptionVariable.name, catchClause.content, null, "");
-		if (statement.finallyClause  != null)
+		if (statement.finallyClause != null)
 			target.writeInner("finally", statement.finallyClause, null, "");
 	}
 
@@ -221,7 +221,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			result.append(scope.expression(target, statement.initializer));
 		}
 		result.append(";");
-		
+
 		target.writeLine(result.toString());
 	}
 
@@ -229,7 +229,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 	public void formatWhile(StatementFormattingTarget target, WhileStatement statement) {
 		target.writeInner("while (" + scope.expression(target, statement.condition) + ")", statement.content, statement, "");
 	}
-	
+
 	@Override
 	public String acceptInt(IntSwitchValue value) {
 		return Integer.toString(value.value);
@@ -254,13 +254,13 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 	public String acceptVariantOption(VariantOptionSwitchValue value) {
 		return value.option.getName();
 	}
-	
+
 	private void iterateOverIntRange(StatementFormattingTarget target, ForeachStatement statement) {
 		String name = statement.loopVariables[0].name;
 
 		if (statement.list instanceof RangeExpression) {
 			String limitName = "limitFor" + StringExpansion.capitalize(name);
-			RangeExpression range = (RangeExpression)(statement.list);
+			RangeExpression range = (RangeExpression) (statement.list);
 			target.writeLine("int " + limitName + " = " + scope.expression(target, range.to) + ";");
 			target.writeInner(
 					"for (int " + name + " = " + scope.expression(target, range.from) + "; " + name + " < " + limitName + "; " + name + "++)",
@@ -290,8 +290,8 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 
 		target.writeInner(
 				"for (int " + statement.loopVariables[0].name + " = 0; i < " + list.value + ".length; i++) {",
-				new String[] {
-					scope.type(statement.loopVariables[1].type) + " " + statement.loopVariables[1].name + " = " + list.value + "[" + statement.loopVariables[0].name + "];"
+				new String[]{
+						scope.type(statement.loopVariables[1].type) + " " + statement.loopVariables[1].name + " = " + list.value + "[" + statement.loopVariables[0].name + "];"
 				},
 				statement.content,
 				statement,
@@ -300,10 +300,10 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 
 	private void iterateOverCustomIterator(StatementFormattingTarget target, ForeachStatement statement) {
 		target.writeInner(
-					"for (" + scope.type(statement.loopVariables[0].type) + " " + statement.loopVariables[0].name + " : " + scope.expression(target, statement.list) + ")",
-					statement.content,
-					statement,
-					"");
+				"for (" + scope.type(statement.loopVariables[0].type) + " " + statement.loopVariables[0].name + " : " + scope.expression(target, statement.list) + ")",
+				statement.content,
+				statement,
+				"");
 	}
 
 	private void iterateOverStringCharacters(StatementFormattingTarget target, ForeachStatement statement) {
@@ -329,9 +329,9 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 		VarStatement value = statement.loopVariables[1];
 		target.writeInner(
 				"for (Map.Entry<" + scope.type(key.type) + ", " + scope.type(value.type) + "> " + temp + " : " + scope.expression(target, statement.list).value + ".entrySet()) {",
-				new String[] {
-					scope.type(key.type) + " " + key.name + " = " + temp + ".getKey();",
-					scope.type(value.type) + " " + value.name + " = " + temp + ".getValue();"
+				new String[]{
+						scope.type(key.type) + " " + key.name + " = " + temp + ".getKey();",
+						scope.type(value.type) + " " + value.name + " = " + temp + ".getValue();"
 				},
 				statement.content,
 				statement,

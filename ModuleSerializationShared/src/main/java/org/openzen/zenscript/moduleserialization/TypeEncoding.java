@@ -6,12 +6,9 @@
 package org.openzen.zenscript.moduleserialization;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class TypeEncoding {
-	private TypeEncoding() {}
-	
 	public static final int TYPE_NONE = 0;
 	public static final int TYPE_VOID = 1;
 	public static final int TYPE_NULL = 2;
@@ -41,4 +38,7 @@ public class TypeEncoding {
 	public static final int TYPE_RANGE = 26;
 	public static final int TYPE_ITERATOR = 27;
 	public static final int TYPE_OPTIONAL = 28;
+
+	private TypeEncoding() {
+	}
 }

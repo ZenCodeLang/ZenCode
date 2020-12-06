@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class Main {
@@ -29,14 +29,14 @@ public class Main {
 			System.out.println("No such file: " + filename);
 			return;
 		}
-		
+
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		Document doc = dBuilder.parse(file);
 		doc.getDocumentElement().normalize();
-		
+
 		List<String> pathNames = new ArrayList<>();
-		
+
 		Element rootElement = doc.getDocumentElement();
 		String width = rootElement.getAttribute("width");
 		String height = rootElement.getAttribute("height");
@@ -52,12 +52,12 @@ public class Main {
 		output.append("\t\n");
 		output.append("\tprivate ").append(className).append("() {}\n");
 		output.append("\t\n");
-		
+
 		NodeList childNodes = rootElement.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			Node node = childNodes.item(i);
 			if (node.getNodeName().equals("path")) {
-				Element pathElement = (Element)node;
+				Element pathElement = (Element) node;
 				String pathName = "PATH_" + pathNames.size();
 				output.append("\tprivate static final DPath ").append(pathName).append(" = tracer -> {\n");
 				convertPath(pathElement.getAttribute("d"), output, "\t\t");
@@ -69,7 +69,7 @@ public class Main {
 				System.out.println("Warning: " + node.getNodeName() + " not supported");
 			}
 		}
-		
+
 		output.append("\t\n");
 		output.append("\t@Override\n");
 		output.append("\tpublic void draw(DDrawTarget target, int z, DTransform2D transform, int color) {\n");
@@ -90,7 +90,7 @@ public class Main {
 		output.append("}\n");
 		System.out.println(output.toString());
 	}
-	
+
 	private static void convertPath(String path, StringBuilder output, String indent) {
 		CharStream stream = new CharStream(path);
 		float x = 0;
@@ -101,7 +101,7 @@ public class Main {
 		while (stream.hasMore()) {
 			if (!stream.nextIsNumber())
 				instruction = stream.next();
-			
+
 			switch (instruction) {
 				case 'M': {
 					String sx = stream.nextFloat();
@@ -267,37 +267,37 @@ public class Main {
 			}
 		}
 	}
-	
+
 	private static class CharStream {
-		private int index;
 		private final String value;
-		
+		private int index;
+
 		public CharStream(String value) {
 			this.index = 0;
 			this.value = value;
 		}
-		
+
 		public char next() {
 			skipWhitespace();
 			return value.charAt(index++);
 		}
-		
+
 		public boolean hasMore() {
 			return index < value.length();
 		}
-		
+
 		public boolean nextIsNumber() {
 			skipWhitespace();
 			char c = value.charAt(index);
 			return c == '-' || (c >= '0' && c <= '9');
 		}
-		
+
 		public String nextFloat() {
 			skipWhitespace();
 			int from = index;
 			if (value.charAt(index) == '-')
 				index++;
-			
+
 			char next = value.charAt(index);
 			while (next >= '0' && next <= '9')
 				next = value.charAt(++index);
@@ -307,14 +307,14 @@ public class Main {
 				while (next >= '0' && next <= '9')
 					next = value.charAt(++index);
 			}
-			
+
 			return value.substring(from, index);
 		}
-		
+
 		public float parseFloat() {
 			return Float.parseFloat(nextFloat());
 		}
-		
+
 		public void skipWhitespace() {
 			char next = value.charAt(index);
 			while (next == ' ' || next == '\t' || next == '\r' || next == '\n' || next == ',')

@@ -5,7 +5,7 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class CapturedDirectExpression extends CapturedExpression {
 	public final Expression value;
-	
+
 	public CapturedDirectExpression(CodePosition position, LambdaClosure closure, Expression value) {
 		super(position, value.type, closure);
 		this.value = value;

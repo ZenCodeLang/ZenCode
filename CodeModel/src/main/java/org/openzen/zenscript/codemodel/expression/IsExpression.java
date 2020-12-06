@@ -8,10 +8,10 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public class IsExpression extends Expression {
 	public final Expression value;
 	public final TypeID isType;
-	
+
 	public IsExpression(CodePosition position, Expression value, TypeID type) {
 		super(position, BasicTypeID.BOOL, value.thrownType);
-		
+
 		this.value = value;
 		this.isType = type;
 	}

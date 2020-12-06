@@ -7,10 +7,10 @@ import org.openzen.zenscript.codemodel.statement.VarStatement;
 public class SetLocalVariableExpression extends Expression {
 	public final VarStatement variable;
 	public final Expression value;
-	
+
 	public SetLocalVariableExpression(CodePosition position, VarStatement variable, Expression value) {
 		super(position, variable.type, value.thrownType);
-		
+
 		this.variable = variable;
 		this.value = value;
 	}

@@ -9,24 +9,24 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 public interface DefinitionMemberRef {
 	CodePosition getPosition();
-	
+
 	String describe();
-	
+
 	default <T extends Tag> T getTag(Class<T> type) {
 		return getTarget().getTag(type);
 	}
-	
+
 	default <T extends Tag> boolean hasTag(Class<T> type) {
 		return getTarget().hasTag(type);
 	}
-	
+
 	TypeID getOwnerType();
-	
+
 	DefinitionMemberRef getOverrides();
-	
+
 	FunctionHeader getHeader();
-	
+
 	MemberAnnotation[] getAnnotations();
-	
+
 	IDefinitionMember getTarget();
 }

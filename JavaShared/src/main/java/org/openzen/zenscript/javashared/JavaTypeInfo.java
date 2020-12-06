@@ -8,28 +8,26 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.type.*;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaTypeInfo {
 	private static final JavaTypeInfo PRIMITIVE = new JavaTypeInfo(true);
 	private static final JavaTypeInfo OBJECT = new JavaTypeInfo(false);
 	private static final JavaTypeInfoVisitor VISITOR = new JavaTypeInfoVisitor();
-	
-	public static JavaTypeInfo get(TypeID type) {
-		return type.accept(type, VISITOR);
-	}
-	
-	public static boolean isPrimitive(TypeID type) {
-		return type.accept(type, VISITOR).primitive;
-	}
-	
 	public final boolean primitive;
-	
+
 	private JavaTypeInfo(boolean primitive) {
 		this.primitive = primitive;
 	}
-	
+
+	public static JavaTypeInfo get(TypeID type) {
+		return type.accept(type, VISITOR);
+	}
+
+	public static boolean isPrimitive(TypeID type) {
+		return type.accept(type, VISITOR).primitive;
+	}
+
 	private static class JavaTypeInfoVisitor implements TypeVisitorWithContext<TypeID, JavaTypeInfo, RuntimeException> {
 
 		@Override

@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+
 import org.openzen.drawablegui.DIRectangle;
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DPathBoundsCalculator;
@@ -17,18 +18,16 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawnShape;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SwingStrokedPath extends SwingDrawnElement implements DDrawnShape {
-	private AffineTransform transform;
-	private Color awtColor;
-	
 	private final DPath originalPath;
 	private final GeneralPath path;
 	private final BasicStroke stroke;
+	private AffineTransform transform;
+	private Color awtColor;
 	private DIRectangle bounds;
-	
+
 	public SwingStrokedPath(
 			SwingDrawSurface target,
 			int z,
@@ -38,13 +37,13 @@ public class SwingStrokedPath extends SwingDrawnElement implements DDrawnShape {
 			GeneralPath path,
 			float lineWidth) {
 		super(target, z);
-		
+
 		this.transform = SwingDrawSurface.getTransform(transform);
 		this.awtColor = color == 0 ? null : new Color(color, true);
 		this.originalPath = originalPath;
 		this.path = path;
 		this.stroke = new BasicStroke(lineWidth);
-		this.bounds = DPathBoundsCalculator.getBounds(originalPath, transform).expand((int)(lineWidth + 0.5f));
+		this.bounds = DPathBoundsCalculator.getBounds(originalPath, transform).expand((int) (lineWidth + 0.5f));
 	}
 
 	@Override
@@ -59,7 +58,7 @@ public class SwingStrokedPath extends SwingDrawnElement implements DDrawnShape {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
-	
+
 	@Override
 	public void setColor(int color) {
 		awtColor = color == 0 ? null : new Color(color, true);
@@ -70,7 +69,7 @@ public class SwingStrokedPath extends SwingDrawnElement implements DDrawnShape {
 	public void paint(Graphics2D g, DIRectangle clip) {
 		if (awtColor == null)
 			return;
-		
+
 		AffineTransform old = g.getTransform();
 		g.setColor(awtColor);
 		g.setStroke(stroke);

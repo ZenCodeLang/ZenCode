@@ -7,10 +7,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class GetMatchingVariantField extends Expression {
 	public final VariantOptionSwitchValue value;
 	public final int index;
-	
+
 	public GetMatchingVariantField(CodePosition position, VariantOptionSwitchValue value, int index) {
 		super(position, value.option.types[index], null);
-		
+
 		this.value = value;
 		this.index = index;
 	}

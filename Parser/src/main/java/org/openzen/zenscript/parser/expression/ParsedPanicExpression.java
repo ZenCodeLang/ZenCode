@@ -9,13 +9,13 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ParsedPanicExpression extends ParsedExpression {
 	public final ParsedExpression value;
-	
+
 	public ParsedPanicExpression(CodePosition position, ParsedExpression value) {
 		super(position);
-		
+
 		this.value = value;
 	}
-	
+
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		return new PanicExpression(position, scope.getResultTypeHints().isEmpty() ? BasicTypeID.VOID : scope.getResultTypeHints().get(0), value.compile(scope).eval());

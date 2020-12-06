@@ -9,7 +9,7 @@ public class ThisExpression extends Expression {
 	public ThisExpression(CodePosition position, TypeID type) {
 		super(position, type, null);
 	}
-	
+
 	@Override
 	public IPartialExpression capture(CodePosition position, LambdaClosure closure) {
 		CapturedExpression result = new CapturedThisExpression(position, type, closure);

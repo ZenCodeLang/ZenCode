@@ -1,33 +1,22 @@
 package org.openzen.zenscript.formatter;
 
-import org.openzen.zenscript.formattershared.Importer;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitor;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.AssocTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.formattershared.Importer;
 import stdlib.Chars;
-import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 public class TypeFormatter implements TypeVisitor<String>, GenericParameterBoundVisitor<String> {
 	private final ScriptFormattingSettings settings;
 	private final Importer importer;
-	
+
 	public TypeFormatter(ScriptFormattingSettings settings, Importer importer) {
 		this.settings = settings;
 		this.importer = importer;
 	}
-	
+
 	public String format(TypeID type) {
 		return type.accept(this);
 	}
@@ -72,7 +61,7 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		String importedName = importer.importDefinition(definition.definition);
 		if (definition.typeArguments == null || definition.typeArguments.length == 0)
 			return importedName;
-		
+
 		StringBuilder result = new StringBuilder();
 		result.append(importedName);
 		result.append("<");
@@ -80,7 +69,7 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		for (TypeID typeParameter : definition.typeArguments) {
 			if (index > 0)
 				result.append(", ");
-			
+
 			result.append(format(typeParameter));
 		}
 		result.append(">");
@@ -117,7 +106,7 @@ public class TypeFormatter implements TypeVisitor<String>, GenericParameterBound
 		StringBuilder result = new StringBuilder();
 		result.append(format(map.value));
 		result.append("[<");
-		FormattingUtils.formatTypeParameters(result, new TypeParameter[] { map.key }, this);
+		FormattingUtils.formatTypeParameters(result, new TypeParameter[]{map.key}, this);
 		result.append("]>");
 		return result.toString();
 	}

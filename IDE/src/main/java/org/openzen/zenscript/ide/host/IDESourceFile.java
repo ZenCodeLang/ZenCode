@@ -10,13 +10,12 @@ import live.LiveString;
 import org.openzen.zencode.shared.SourceFile;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface IDESourceFile {
 	public LiveString getName();
-	
+
 	public SourceFile getFile();
-	
+
 	public void update(String content);
 }

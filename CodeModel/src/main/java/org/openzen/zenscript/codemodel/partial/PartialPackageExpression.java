@@ -1,17 +1,18 @@
 package org.openzen.zenscript.codemodel.partial;
 
-import java.util.Collections;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.Collections;
+import java.util.List;
 
 public class PartialPackageExpression implements IPartialExpression {
 	private final CodePosition position;
@@ -21,7 +22,7 @@ public class PartialPackageExpression implements IPartialExpression {
 		this.position = position;
 		this.pkg = pkg;
 	}
-	
+
 	@Override
 	public Expression eval() throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.USING_PACKAGE_AS_EXPRESSION, "Cannot evaluate a package as expression");
@@ -31,7 +32,7 @@ public class PartialPackageExpression implements IPartialExpression {
 	public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) {
 		return new List[arguments];
 	}
-	
+
 	@Override
 	public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) {
 		return Collections.emptyList();

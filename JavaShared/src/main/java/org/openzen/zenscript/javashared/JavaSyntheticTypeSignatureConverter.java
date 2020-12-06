@@ -5,50 +5,65 @@
  */
 package org.openzen.zenscript.javashared;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> {
 	private static final String[] TYPE_PARAMETER_NAMES = {"T", "U", "V", "W", "X", "Y", "Z"}; // if we have more than this, make it Tx with x the number
-	private final Map<TypeParameter, String> typeParameters = new HashMap<>();
 	public final List<TypeParameter> typeParameterList = new ArrayList<>();
-	
+	private final Map<TypeParameter, String> typeParameters = new HashMap<>();
+
 	private String process(TypeID type) {
 		return type.accept(this);
 	}
-	
+
 	@Override
 	public String visitBasic(BasicTypeID basic) {
 		switch (basic) {
-			case VOID: return "Void";
-			case BOOL: return "Bool";
-			case BYTE: return "Byte";
-			case SBYTE: return "SByte";
-			case SHORT: return "Short";
-			case USHORT: return "UShort";
-			case INT: return "Int";
-			case UINT: return "UInt";
-			case LONG: return "Long";
-			case ULONG: return "ULong";
-			case USIZE: return "USize";
-			case FLOAT: return "Float";
-			case DOUBLE: return "Double";
-			case CHAR: return "Char";
-			case STRING: return "String";
+			case VOID:
+				return "Void";
+			case BOOL:
+				return "Bool";
+			case BYTE:
+				return "Byte";
+			case SBYTE:
+				return "SByte";
+			case SHORT:
+				return "Short";
+			case USHORT:
+				return "UShort";
+			case INT:
+				return "Int";
+			case UINT:
+				return "UInt";
+			case LONG:
+				return "Long";
+			case ULONG:
+				return "ULong";
+			case USIZE:
+				return "USize";
+			case FLOAT:
+				return "Float";
+			case DOUBLE:
+				return "Double";
+			case CHAR:
+				return "Char";
+			case STRING:
+				return "String";
 			default:
 				throw new IllegalArgumentException("Invalid type: " + basic);
 		}
 	}
-	
+
 	@Override
 	public String visitArray(ArrayTypeID array) {
 		StringBuilder result = new StringBuilder();
@@ -109,7 +124,7 @@ public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> 
 	public String visitGeneric(GenericTypeID generic) {
 		if (typeParameters.containsKey(generic.parameter))
 			return typeParameters.get(generic.parameter);
-		
+
 		String name = typeParameters.size() < TYPE_PARAMETER_NAMES.length ? TYPE_PARAMETER_NAMES[typeParameters.size()] : "T" + typeParameters.size();
 		typeParameters.put(generic.parameter, name);
 		typeParameterList.add(generic.parameter);
@@ -126,8 +141,8 @@ public class JavaSyntheticTypeSignatureConverter implements TypeVisitor<String> 
 		StringBuilder result = new StringBuilder();
 		if (type.isOptional())
 			result.append("Optional");
-		
-		result.append(type.baseType.accept( this));
+
+		result.append(type.baseType.accept(this));
 		return result.toString();
 	}
 }

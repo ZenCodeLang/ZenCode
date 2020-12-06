@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ConstantByteExpression extends Expression {
 	public final int value;
-	
+
 	public ConstantByteExpression(CodePosition position, int value) {
 		super(position, BasicTypeID.BYTE, null);
-		
+
 		this.value = value;
 	}
 

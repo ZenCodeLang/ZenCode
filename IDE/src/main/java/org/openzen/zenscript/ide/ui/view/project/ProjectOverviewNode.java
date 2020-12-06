@@ -9,23 +9,22 @@ import live.MutableLiveBool;
 import org.openzen.drawablegui.tree.DTreeNode;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public abstract class ProjectOverviewNode implements DTreeNode<ProjectOverviewNode> {
 	private final MutableLiveBool collapsed;
-	
+
 	public ProjectOverviewNode(MutableLiveBool collapsed) {
 		this.collapsed = collapsed;
 	}
-	
+
 	public abstract Kind getKind();
-	
+
 	@Override
 	public MutableLiveBool isCollapsed() {
 		return collapsed;
 	}
-	
+
 	public enum Kind {
 		ROOT,
 		PROJECT,

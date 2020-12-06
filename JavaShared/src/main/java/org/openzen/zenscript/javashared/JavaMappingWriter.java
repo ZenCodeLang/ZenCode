@@ -7,44 +7,20 @@ package org.openzen.zenscript.javashared;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.definition.AliasDefinition;
-import org.openzen.zenscript.codemodel.definition.ClassDefinition;
-import org.openzen.zenscript.codemodel.definition.DefinitionVisitor;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
-import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
-import org.openzen.zenscript.codemodel.definition.StructDefinition;
-import org.openzen.zenscript.codemodel.definition.VariantDefinition;
-import org.openzen.zenscript.codemodel.member.CallerMember;
-import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.codemodel.member.ConstMember;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.DestructorMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
-import org.openzen.zenscript.codemodel.member.IteratorMember;
-import org.openzen.zenscript.codemodel.member.MemberVisitor;
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.member.SetterMember;
-import org.openzen.zenscript.codemodel.member.StaticInitializerMember;
+import org.openzen.zenscript.codemodel.definition.*;
+import org.openzen.zenscript.codemodel.member.*;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaMappingWriter implements DefinitionVisitor<Void> {
 	private final JavaCompiledModule module;
 	private final StringBuilder result = new StringBuilder();
-	
+
 	public JavaMappingWriter(JavaCompiledModule module) {
 		this.module = module;
 	}
-	
+
 	public String getOutput() {
 		return result.toString();
 	}
@@ -103,11 +79,11 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 		writeDefinitionDescriptor(variant);
 		return null;
 	}
-	
+
 	private void writeFunctionDescriptor(FunctionHeader header) {
 		result.append(header.getCanonical());
 	}
-	
+
 	private void writeDefinitionDescriptor(HighLevelDefinition definition) {
 		if (definition.name != null)
 			result.append(definition.name);
@@ -120,7 +96,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			}
 			result.append('>');
 		}
-		
+
 		JavaClass definitionClass = definition instanceof ExpansionDefinition
 				? module.getExpansionClassInfo(definition)
 				: module.getClassInfo(definition);
@@ -128,16 +104,16 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			result.append('@').append(definitionClass.internalName);
 		}
 		result.append('\n');
-		
+
 		MemberMappingWriter memberWriter = new MemberMappingWriter(definitionClass);
 		for (IDefinitionMember member : definition.members) {
 			member.accept(memberWriter);
 		}
 	}
-	
+
 	private class MemberMappingWriter implements MemberVisitor<Void> {
 		private final JavaClass definition;
-		
+
 		public MemberMappingWriter(JavaClass definition) {
 			this.definition = definition;
 		}
@@ -147,7 +123,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaField field = module.optFieldInfo(member);
 			if (field == null)
 				return null;
-			
+
 			result.append(":const:");
 			result.append(member.name);
 			result.append("=");
@@ -161,7 +137,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaField field = module.optFieldInfo(member);
 			if (field == null)
 				return null;
-			
+
 			result.append(":field:");
 			result.append(member.name);
 			result.append("=");
@@ -175,7 +151,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
-			
+
 			result.append(":constructor:");
 			result.append(member.header.getCanonicalWithoutReturnType());
 			result.append("=");
@@ -189,7 +165,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
-			
+
 			result.append(":destructor=");
 			result.append(method.getMapping(definition));
 			result.append('\n');
@@ -201,7 +177,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
-			
+
 			result.append(":method:");
 			result.append(member.name);
 			result.append(member.header.getCanonical());
@@ -216,7 +192,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
-			
+
 			result.append(":getter:");
 			result.append(member.name);
 			result.append("=");
@@ -230,7 +206,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
-			
+
 			result.append(":setter:");
 			result.append(member.name);
 			result.append("=");
@@ -244,7 +220,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
-			
+
 			result.append(":operator:");
 			result.append(member.operator.name().toLowerCase());
 			result.append(member.header.getCanonical());
@@ -259,7 +235,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
-			
+
 			result.append(":caster:");
 			result.append(member.toType.toString());
 			result.append("=");
@@ -278,7 +254,7 @@ public class JavaMappingWriter implements DefinitionVisitor<Void> {
 			JavaMethod method = module.optMethodInfo(member);
 			if (method == null)
 				return null;
-			
+
 			result.append(":caller:");
 			result.append(member.header.getCanonical());
 			result.append("=");

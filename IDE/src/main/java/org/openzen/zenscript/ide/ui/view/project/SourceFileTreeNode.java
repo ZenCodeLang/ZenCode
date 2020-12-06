@@ -14,23 +14,22 @@ import org.openzen.zenscript.ide.host.IDESourceFile;
 import org.openzen.zenscript.ide.ui.icons.CodeIcon;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SourceFileTreeNode extends ProjectOverviewNode {
 	private final ProjectBrowser browser;
 	private final IDESourceFile sourceFile;
-	
+
 	public SourceFileTreeNode(ProjectBrowser browser, IDESourceFile sourceFile) {
 		super(new SimpleLiveBool(false));
-		
+
 		this.browser = browser;
 		this.sourceFile = sourceFile;
 	}
-	
+
 	@Override
 	public void close() {
-		
+
 	}
 
 	@Override
@@ -57,7 +56,7 @@ public class SourceFileTreeNode extends ProjectOverviewNode {
 	public boolean isLeaf() {
 		return true;
 	}
-	
+
 	@Override
 	public void onMouseClick(DMouseEvent e) {
 		browser.setContextFile(sourceFile);

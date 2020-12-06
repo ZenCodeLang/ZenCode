@@ -5,25 +5,16 @@
  */
 package org.openzen.zencode.shared;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class FileSourceFile implements SourceFile {
 	public final String name;
 	public final File file;
-	
+
 	public FileSourceFile(String name, File file) {
 		this.name = name;
 		this.file = file;

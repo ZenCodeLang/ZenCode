@@ -63,7 +63,7 @@ public class JavaBoxingTypeVisitor implements TypeVisitorWithContext<TypeID, Voi
 			default:
 				return null;
 		}
-		
+
 		if (method != null)
 			writer.invokeStatic(method);
 		return null;

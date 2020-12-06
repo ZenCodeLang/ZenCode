@@ -2,5 +2,5 @@ package zsynthetic;
 
 @FunctionalInterface
 public interface FunctionTToBool<T> {
-    boolean invoke(T value);
+	boolean invoke(T value);
 }

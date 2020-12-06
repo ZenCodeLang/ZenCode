@@ -12,15 +12,14 @@ import org.openzen.drawablegui.style.DBaseStyle;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class OutputViewStyle extends DBaseStyle {
 	public final DFont font;
-	
+
 	public OutputViewStyle(DStyleDefinition style) {
 		super(style, context -> new DPaddedBorder(context.dp(8)), 0);
-		
+
 		font = style.getFont("font", context -> new DFont(DFontFamily.CODE, false, false, false, context.sp(14)));
 	}
 }

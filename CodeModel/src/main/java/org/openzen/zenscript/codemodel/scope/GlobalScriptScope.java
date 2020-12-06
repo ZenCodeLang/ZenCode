@@ -1,30 +1,31 @@
 package org.openzen.zenscript.codemodel.scope;
 
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
+import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 
+import java.util.List;
+
 public class GlobalScriptScope extends StatementScope {
 	private final BaseScope file;
 	private final FunctionHeader header;
-	
+
 	public GlobalScriptScope(BaseScope file, FunctionHeader scriptHeader) {
 		this.file = file;
 		header = scriptHeader;
 	}
-	
+
 	@Override
 	public ZSPackage getRootPackage() {
 		return file.getRootPackage();
@@ -34,13 +35,13 @@ public class GlobalScriptScope extends StatementScope {
 	public LocalMemberCache getMemberCache() {
 		return file.getMemberCache();
 	}
-	
+
 	@Override
 	public IPartialExpression get(CodePosition position, GenericName name) throws CompileException {
 		IPartialExpression result = super.get(position, name);
 		if (result != null)
 			return result;
-		
+
 		if (name.hasNoArguments()) {
 			for (FunctionParameter parameter : header.parameters) {
 				if (parameter.name.equals(name.name)) {
@@ -48,7 +49,7 @@ public class GlobalScriptScope extends StatementScope {
 				}
 			}
 		}
-		
+
 		return file.get(position, name);
 	}
 

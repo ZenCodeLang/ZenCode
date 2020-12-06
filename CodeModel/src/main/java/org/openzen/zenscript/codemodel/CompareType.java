@@ -10,9 +10,9 @@ public enum CompareType {
 	NE("!="),
 	LE("<="),
 	GE(">=");
-	
+
 	public final String str;
-	
+
 	CompareType(String str) {
 		this.str = str;
 	}

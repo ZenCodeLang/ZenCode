@@ -8,16 +8,15 @@ package org.openzen.drawablegui.style;
 import org.openzen.drawablegui.DUIContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DDimension extends DStyleElement {
 	float eval(DUIContext context);
-	
+
 	default int evalInt(DUIContext context) {
-		return (int)(eval(context) + 0.5f);
+		return (int) (eval(context) + 0.5f);
 	}
-	
+
 	@Override
 	default DDimension asDimension() {
 		return this;

@@ -19,7 +19,7 @@ public class ParsedMethod extends ParsedFunctionalMember {
 	private final String name;
 	private final ParsedFunctionHeader header;
 	private MethodMember compiled;
-	
+
 	public ParsedMethod(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -28,10 +28,9 @@ public class ParsedMethod extends ParsedFunctionalMember {
 			ParsedAnnotation[] annotations,
 			String name,
 			ParsedFunctionHeader header,
-			ParsedFunctionBody body)
-	{
+			ParsedFunctionBody body) {
 		super(position, definition, implementation, modifiers, annotations, body);
-		
+
 		this.name = name;
 		this.header = header;
 	}
@@ -57,10 +56,10 @@ public class ParsedMethod extends ParsedFunctionalMember {
 		if (override.getHeader().hasUnknowns) {
 			scope.getPreparer().prepare(override.getTarget());
 			override = scope.getTypeMembers(baseType)
-				.getOrCreateGroup(name, false)
-				.getOverride(position, scope, compiled); // to refresh the header
+					.getOrCreateGroup(name, false)
+					.getOverride(position, scope, compiled); // to refresh the header
 		}
-		
+
 		compiled.setOverrides(scope.getTypeRegistry(), override);
 	}
 }

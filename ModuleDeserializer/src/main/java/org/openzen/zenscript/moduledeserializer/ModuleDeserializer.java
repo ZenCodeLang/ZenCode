@@ -8,9 +8,11 @@ package org.openzen.zenscript.moduledeserializer;
 import org.openzen.zenscript.codemodel.serialization.DeserializationException;
 import compactio.CompactBytesDataInput;
 import compactio.CompactDataInput;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zencode.shared.VirtualSourceFile;
@@ -40,7 +42,6 @@ import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ModuleDeserializer {
@@ -49,59 +50,58 @@ public class ModuleDeserializer {
 	private final AnnotationDefinition[] annotations;
 	private final StorageType[] storageTypes;
 	private final ZSPackage rootPackage;
-	
+
 	public ModuleDeserializer(
 			ModuleRegistry modules,
 			CompilationUnit compilationUnit,
 			AnnotationDefinition[] annotations,
 			StorageType[] storageTypes,
-			ZSPackage rootPackage)
-	{
+			ZSPackage rootPackage) {
 		this.modules = modules;
 		this.compilationUnit = compilationUnit;
 		this.annotations = annotations;
 		this.storageTypes = storageTypes;
 		this.rootPackage = rootPackage;
 	}
-	
+
 	public SemanticModule[] deserialize(byte[] data) throws DeserializationException {
 		CompactDataInput input = new CompactBytesDataInput(data);
 		if (input.readInt() != 0x5A43424D)
 			throw new DeserializationException("Invalid marker; not a binary module");
-		
+
 		int version = input.readVarUInt();
 		if (version != 0)
 			throw new DeserializationException("Unsupported version: " + version);
-		
+
 		String[] stringTable = input.readStringArray();
 		SourceFile[] sourceFiles = new SourceFile[input.readVarUInt()];
 		for (int i = 0; i < sourceFiles.length; i++)
 			sourceFiles[i] = new VirtualSourceFile(input.readString());
-		
+
 		AnnotationDefinition[] annotations = new AnnotationDefinition[input.readVarUInt()];
 		for (int i = 0; i < annotations.length; i++) {
 			String name = stringTable[input.readVarUInt()];
 			for (AnnotationDefinition annotation : this.annotations)
 				if (annotation.getAnnotationName().equals(name))
 					annotations[i] = annotation;
-			
+
 			if (annotations[i] == null)
 				throw new DeserializationException("Annotation type not found: " + name);
 		}
-		
+
 		CodeReader decoder = new CodeReader(
 				input,
 				stringTable,
 				sourceFiles,
 				annotations,
 				compilationUnit.globalTypeRegistry);
-		
+
 		DeserializingModule[] packagedModules = new DeserializingModule[decoder.readUInt()];
 		String[][] dependencyNames = new String[packagedModules.length][];
 		for (int i = 0; i < packagedModules.length; i++) {
 			int flags = decoder.readUInt();
 			String name = decoder.readString();
-			
+
 			ZSPackage modulePackage = rootPackage;
 			int packageNameParts = decoder.readUInt();
 			for (int j = 0; j < packageNameParts; j++)
@@ -112,7 +112,7 @@ public class ModuleDeserializer {
 			dependencyNames[i] = dependencyNames2;
 			for (int j = 0; j < dependencyNames2.length; j++)
 				dependencyNames2[j] = decoder.readString();
-			
+
 			packagedModules[i] = new DeserializingModule(
 					name,
 					compilationUnit.globalTypeRegistry,
@@ -124,7 +124,7 @@ public class ModuleDeserializer {
 			decoder.code.enqueue(new ModuleDecodeScriptsOperation(packagedModules[i]));
 			decoder.classes.enqueue(new ModuleDecodeClassesOperation(packagedModules[i], decoder));
 		}
-		
+
 		DeserializingModule[] allModules = Arrays.copyOf(packagedModules, packagedModules.length + input.readVarUInt());
 		for (int i = packagedModules.length; i < allModules.length; i++) {
 			int flags = input.readVarUInt();
@@ -132,7 +132,7 @@ public class ModuleDeserializer {
 			allModules[i] = new DeserializingModule(modules.load(name));
 			decoder.classes.enqueue(new ModuleDecodeClassesOperation(allModules[i], decoder));
 		}
-		
+
 		System.out.println("Decoding classes");
 		decoder.startClasses();
 		decoder.classes.decode(decoder);
@@ -142,7 +142,7 @@ public class ModuleDeserializer {
 		System.out.println("Decoding code");
 		decoder.startCode();
 		decoder.code.decode(decoder);
-		
+
 		SemanticModule[] results = new SemanticModule[packagedModules.length];
 		for (int i = 0; i < results.length; i++) {
 			DeserializingModule module = packagedModules[i];
@@ -150,27 +150,7 @@ public class ModuleDeserializer {
 		}
 		return results;
 	}
-	
-	private class ModuleDecodeClassesOperation implements DecodingOperation {
-		private final DeserializingModule module;
-		private final CodeReader reader;
-		
-		public ModuleDecodeClassesOperation(DeserializingModule module, CodeReader reader) {
-			this.module = module;
-			this.reader = reader;
-		}
 
-		@Override
-		public void decode(CodeSerializationInput input) throws DeserializationException {
-			int numDefinitions = input.readUInt();
-			for (int i = 0; i < numDefinitions; i++) {
-				HighLevelDefinition definition = deserializeDefinition(reader, module.context, null);
-				reader.add(definition);
-				module.add(definition);
-			}
-		}
-	}
-	
 	private HighLevelDefinition deserializeDefinition(CodeReader reader, ModuleContext context, HighLevelDefinition outer) throws DeserializationException {
 		int type = reader.readUInt();
 		int flags = reader.readUInt();
@@ -187,7 +167,7 @@ public class ModuleDeserializer {
 			typeParameters = reader.deserializeTypeParameters(new TypeContext(context, TypeParameter.NONE, null));
 
 		HighLevelDefinition result;
-		switch (type) { 
+		switch (type) {
 			case DefinitionEncoding.TYPE_CLASS:
 				result = new ClassDefinition(position, context.module, pkg, name, modifiers, outer);
 				break;
@@ -215,18 +195,17 @@ public class ModuleDeserializer {
 			default:
 				throw new DeserializationException("Invalid definition type: " + type);
 		}
-		
+
 		result.typeParameters = typeParameters;
 		decodeMembers(reader, context, result);
 		reader.add(result);
 		return result;
 	}
-	
+
 	private void decodeMembers(
 			CodeReader reader,
 			ModuleContext moduleContext,
-			HighLevelDefinition definition) throws DeserializationException
-	{
+			HighLevelDefinition definition) throws DeserializationException {
 		int innerClasses = reader.readUInt();
 		for (int i = 0; i < innerClasses; i++) {
 			CodePosition position = reader.deserializePosition();
@@ -234,17 +213,37 @@ public class ModuleDeserializer {
 			HighLevelDefinition inner = deserializeDefinition(reader, moduleContext, definition);
 			definition.addMember(new InnerDefinitionMember(position, inner, modifiers, definition));
 		}
-		
+
 		reader.enqueueMembers(input -> {
 			TypeContext context = new TypeContext(moduleContext, definition.typeParameters, moduleContext.registry.getForMyDefinition(definition));
 			DefinitionMemberDeserializer memberDeserializer = new DefinitionMemberDeserializer(reader);
 			definition.accept(context, memberDeserializer);
 		});
 	}
-	
+
+	private class ModuleDecodeClassesOperation implements DecodingOperation {
+		private final DeserializingModule module;
+		private final CodeReader reader;
+
+		public ModuleDecodeClassesOperation(DeserializingModule module, CodeReader reader) {
+			this.module = module;
+			this.reader = reader;
+		}
+
+		@Override
+		public void decode(CodeSerializationInput input) throws DeserializationException {
+			int numDefinitions = input.readUInt();
+			for (int i = 0; i < numDefinitions; i++) {
+				HighLevelDefinition definition = deserializeDefinition(reader, module.context, null);
+				reader.add(definition);
+				module.add(definition);
+			}
+		}
+	}
+
 	private class ModuleDecodeScriptsOperation implements DecodingOperation {
 		private final DeserializingModule module;
-		
+
 		public ModuleDecodeScriptsOperation(DeserializingModule module) {
 			this.module = module;
 		}
@@ -258,7 +257,7 @@ public class ModuleDeserializer {
 				int numStatements = input.readUInt();
 				for (int j = 0; j < numStatements; j++)
 					statements.add(input.deserializeStatement(context));
-				
+
 				module.add(new ScriptBlock(rootPackage, statements));
 			}
 		}

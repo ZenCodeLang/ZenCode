@@ -8,6 +8,7 @@ package org.openzen.drawablegui.layout;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
 import listeners.ListenerHandle;
 import live.LiveObject;
 import live.MutableLiveObject;
@@ -22,7 +23,6 @@ import org.openzen.drawablegui.draw.DDrawnShape;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DLinearLayout extends BaseComponentGroup {
@@ -32,27 +32,27 @@ public class DLinearLayout extends BaseComponentGroup {
 	private final Element[] components;
 	private final ListenerHandle<BiConsumer<DSizing, DSizing>>[] componentSizeListeners;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
-	
+
 	private DComponentContext context;
 	private DLinearLayoutStyle style;
 	private DIRectangle bounds;
 	private float totalGrow;
 	private float totalShrink;
 	private DDrawnShape shape;
-	
+
 	public DLinearLayout(DStyleClass styleClass, Orientation orientation, Alignment alignment, Element... components) {
 		this.styleClass = styleClass;
 		this.orientation = orientation;
 		this.alignment = alignment;
 		this.components = components;
-		
+
 		componentSizeListeners = new ListenerHandle[components.length];
 		totalGrow = 0;
 		totalShrink = 0;
-		
+
 		for (int i = 0; i < componentSizeListeners.length; i++) {
 			componentSizeListeners[i] = components[i].component.getSizing().addListener((oldValue, newValue) -> updateSizing());
-			
+
 			totalGrow += components[i].grow;
 			totalShrink += components[i].shrink;
 		}
@@ -69,7 +69,7 @@ public class DLinearLayout extends BaseComponentGroup {
 		for (Element element : components)
 			if (predicate.test(element.component))
 				return element.component;
-		
+
 		return null;
 	}
 
@@ -77,11 +77,11 @@ public class DLinearLayout extends BaseComponentGroup {
 	public void mount(DComponentContext parent) {
 		context = parent.getChildContext("linearlayout", styleClass);
 		style = context.getStyle(DLinearLayoutStyle::new);
-		
+
 		for (Element element : components)
 			element.component.mount(context);
 	}
-	
+
 	@Override
 	public void unmount() {
 		for (Element element : components)
@@ -99,23 +99,23 @@ public class DLinearLayout extends BaseComponentGroup {
 	}
 
 	@Override
-	public int getBaselineY() {
-		return components[0].component.getBaselineY();
-	}
-
-	@Override
 	public void setBounds(DIRectangle bounds) {
 		if (bounds.equals(this.bounds))
 			return;
-		
+
 		this.bounds = bounds;
 		style.border.update(context, bounds);
-		
+
 		if (shape != null)
 			shape.close();
 		shape = context.shadowPath(0, style.shape.instance(style.margin.apply(bounds)), DTransform2D.IDENTITY, style.backgroundColor, style.shadow);
-		
+
 		layout();
+	}
+
+	@Override
+	public int getBaselineY() {
+		return components[0].component.getBaselineY();
 	}
 
 	@Override
@@ -126,36 +126,36 @@ public class DLinearLayout extends BaseComponentGroup {
 		for (Element element : components)
 			element.component.close();
 	}
-	
+
 	private int getInnerWidth() {
 		return bounds.width - style.margin.getHorizontal() - style.border.getPaddingHorizontal();
 	}
-	
+
 	private int getInnerHeight() {
 		return bounds.height - style.margin.getVertical() - style.border.getPaddingVertical();
 	}
-	
+
 	private int getPreferredInnerWidth() {
 		DSizing myPreferences = sizing.getValue();
 		return myPreferences.preferredWidth - style.margin.getHorizontal() - style.border.getPaddingHorizontal();
 	}
-	
+
 	private int getPreferredInnerHeight() {
 		DSizing myPreferences = sizing.getValue();
 		return myPreferences.preferredHeight - style.margin.getVertical() - style.border.getPaddingVertical();
 	}
-	
+
 	private void layout() {
 		if (bounds == null || context == null)
 			return;
-		
+
 		if (orientation == Orientation.HORIZONTAL) {
 			layoutHorizontal();
 		} else {
 			layoutVertical();
 		}
 	}
-	
+
 	private void layoutHorizontal() {
 		DSizing myPreferences = sizing.getValue();
 		if (bounds.width < myPreferences.preferredWidth) {
@@ -164,7 +164,7 @@ public class DLinearLayout extends BaseComponentGroup {
 			layoutHorizontalGrown();
 		}
 	}
-	
+
 	private void layoutVertical() {
 		DSizing myPreferences = sizing.getValue();
 		if (bounds.height < myPreferences.preferredHeight) {
@@ -173,20 +173,20 @@ public class DLinearLayout extends BaseComponentGroup {
 			layoutVerticalGrown();
 		}
 	}
-	
+
 	private void layoutHorizontalShrinked() {
 		float availableWidth = getInnerWidth() - (components.length - 1) * style.spacing;
 		float preferredInnerWidth = getPreferredInnerWidth() - (components.length - 1) * style.spacing;
-		
+
 		if (totalShrink == 0) {
 			// now what?
 			// shrink proportionally, we have to shrink...
 			float scale = availableWidth / preferredInnerWidth;
 			int x = bounds.x + style.margin.left + style.border.getPaddingLeft();
-			
+
 			for (Element element : components) {
 				DSizing preferences = element.component.getSizing().getValue();
-				int newX = (int)(x + preferences.preferredWidth * scale + 0.5f);
+				int newX = (int) (x + preferences.preferredWidth * scale + 0.5f);
 				layoutHorizontal(element, bounds.x + x, newX - x);
 				x = newX + style.spacing;
 			}
@@ -198,27 +198,27 @@ public class DLinearLayout extends BaseComponentGroup {
 				DSizing preferences = element.component.getSizing().getValue();
 				float scaledSize = preferences.preferredHeight + deltaScaled * element.shrink;
 				float idealUnspacedY = y + scaledSize;
-				int newX = (int)(idealUnspacedY + 0.5f);
+				int newX = (int) (idealUnspacedY + 0.5f);
 				layoutHorizontal(element, y, newX - y);
 				y = newX + style.spacing;
 			}
 		}
 	}
-	
+
 	private void layoutVerticalShrinked() {
 		float availableHeight = getInnerHeight() - (components.length - 1) * style.spacing;
 		float preferredInnerHeight = getPreferredInnerHeight() - (components.length - 1) * style.spacing;
-		
+
 		if (totalShrink == 0) {
 			// now what?
 			// shrink proportionally, we have to shrink...
 			float scale = availableHeight / preferredInnerHeight;
 			int y = bounds.y + style.margin.top + style.border.getPaddingTop();
-			
+
 			for (int i = 0; i < components.length; i++) {
 				Element element = components[i];
 				DSizing preferences = element.component.getSizing().getValue();
-				int newY = (int)(y + preferences.preferredHeight * scale + 0.5f);
+				int newY = (int) (y + preferences.preferredHeight * scale + 0.5f);
 				layoutVertical(element, bounds.y + y, newY - y);
 				y = newY + style.spacing;
 			}
@@ -230,18 +230,18 @@ public class DLinearLayout extends BaseComponentGroup {
 				DSizing preferences = element.component.getSizing().getValue();
 				float scaledSize = preferences.preferredHeight + deltaScaled * element.shrink;
 				float idealUnspacedY = y + scaledSize;
-				int newY = (int)(idealUnspacedY + 0.5f);
+				int newY = (int) (idealUnspacedY + 0.5f);
 				layoutVertical(element, y, newY - y);
 				y = newY + style.spacing;
 			}
 		}
 	}
-	
+
 	private void layoutHorizontalGrown() {
 		// resize according to grow values
 		int delta = getPreferredInnerWidth() - getInnerWidth();
 		if (totalGrow == 0) {
-			int x = bounds.x + style.margin.left + style.border.getPaddingLeft() + (int)(delta * alignment.align);
+			int x = bounds.x + style.margin.left + style.border.getPaddingLeft() + (int) (delta * alignment.align);
 			for (Element element : components) {
 				DSizing preferences = element.component.getSizing().getValue();
 				int newX = x + preferences.preferredWidth;
@@ -255,18 +255,18 @@ public class DLinearLayout extends BaseComponentGroup {
 				DSizing preferences = element.component.getSizing().getValue();
 				float scaledSize = preferences.preferredWidth - deltaScaled * element.grow;
 				float idealUnspacedX = x + scaledSize;
-				int newX = (int)(idealUnspacedX + 0.5f);
+				int newX = (int) (idealUnspacedX + 0.5f);
 				layoutHorizontal(element, x, newX - x);
 				x = newX + style.spacing;
 			}
 		}
 	}
-	
+
 	private void layoutVerticalGrown() {
 		// resize according to grow values
 		int delta = getPreferredInnerHeight() - getInnerHeight();
 		if (totalGrow == 0) {
-			int y = bounds.y + style.margin.top + style.border.getPaddingTop() + (int)(delta * alignment.align);
+			int y = bounds.y + style.margin.top + style.border.getPaddingTop() + (int) (delta * alignment.align);
 			for (Element element : components) {
 				DSizing preferences = element.component.getSizing().getValue();
 				int newY = y + preferences.preferredHeight;
@@ -280,13 +280,13 @@ public class DLinearLayout extends BaseComponentGroup {
 				DSizing preferences = element.component.getSizing().getValue();
 				float scaledSize = preferences.preferredHeight - deltaScaled * element.grow;
 				float idealUnspacedY = y + scaledSize;
-				int newY = (int)(idealUnspacedY + 0.5f);
+				int newY = (int) (idealUnspacedY + 0.5f);
 				layoutVertical(element, y, newY - y);
 				y = newY + style.spacing;
 			}
 		}
 	}
-	
+
 	private void layoutHorizontal(Element element, int x, int width) {
 		DSizing preferences = element.component.getSizing().getValue();
 		int height;
@@ -312,7 +312,7 @@ public class DLinearLayout extends BaseComponentGroup {
 		}
 		element.component.setBounds(new DIRectangle(x, y, width, height));
 	}
-	
+
 	private void layoutVertical(Element element, int y, int height) {
 		DSizing preferences = element.component.getSizing().getValue();
 		int x;
@@ -338,7 +338,7 @@ public class DLinearLayout extends BaseComponentGroup {
 		}
 		element.component.setBounds(new DIRectangle(x, y, width, height));
 	}
-	
+
 	private void updateSizing() {
 		if (orientation == Orientation.HORIZONTAL) {
 			updateSizingHorizontal();
@@ -346,7 +346,7 @@ public class DLinearLayout extends BaseComponentGroup {
 			updateSizingVertical();
 		}
 	}
-	
+
 	private void updateSizingHorizontal() {
 		int preferredWidth = -style.spacing;
 		int preferredHeight = 0;
@@ -354,19 +354,19 @@ public class DLinearLayout extends BaseComponentGroup {
 		int minimumHeight = Integer.MAX_VALUE;
 		int maximumWidth = -style.spacing;
 		int maximumHeight = 0;
-		
+
 		for (Element element : components) {
 			DSizing preferences = element.component.getSizing().getValue();
 			preferredWidth += preferences.preferredWidth + style.spacing;
 			preferredHeight = Math.max(preferredHeight, preferences.preferredHeight);
-			
+
 			minimumWidth += preferences.minimumWidth + style.spacing;
 			minimumHeight = Math.max(minimumHeight, preferences.minimumHeight);
-			
+
 			maximumHeight += preferences.maximumWidth + style.spacing;
 			maximumWidth = Math.min(maximumHeight, preferences.maximumHeight);
 		}
-		
+
 		int paddingHorizontal = style.border.getPaddingHorizontal() + style.margin.getHorizontal();
 		int paddingVertical = style.border.getPaddingVertical() + style.margin.getVertical();
 		DSizing preferences = new DSizing(
@@ -378,7 +378,7 @@ public class DLinearLayout extends BaseComponentGroup {
 				maximumHeight + paddingVertical);
 		sizing.setValue(preferences);
 	}
-	
+
 	private void updateSizingVertical() {
 		int preferredWidth = 0;
 		int preferredHeight = -style.spacing;
@@ -386,19 +386,19 @@ public class DLinearLayout extends BaseComponentGroup {
 		int minimumHeight = -style.spacing;
 		int maximumWidth = Integer.MAX_VALUE;
 		int maximumHeight = -style.spacing;
-		
+
 		for (Element element : components) {
 			DSizing preferences = element.component.getSizing().getValue();
 			preferredWidth = Math.max(preferredWidth, preferences.preferredWidth);
 			preferredHeight += preferences.preferredHeight + style.spacing;
-			
+
 			minimumWidth = Math.max(minimumWidth, preferences.minimumWidth);
 			minimumHeight += preferences.minimumHeight + style.spacing;
-			
+
 			maximumWidth = Math.min(maximumWidth, preferences.maximumWidth);
 			maximumHeight += preferences.maximumHeight + style.spacing;
 		}
-		
+
 		int paddingHorizontal = style.border.getPaddingHorizontal() + style.margin.getHorizontal();
 		int paddingVertical = style.border.getPaddingVertical() + style.margin.getVertical();
 		DSizing preferences = new DSizing(
@@ -410,12 +410,12 @@ public class DLinearLayout extends BaseComponentGroup {
 				maximumHeight + paddingVertical);
 		sizing.setValue(preferences);
 	}
-	
+
 	public static enum Orientation {
 		HORIZONTAL,
 		VERTICAL
 	}
-	
+
 	public static enum Alignment {
 		TOP(0),
 		LEFT(0),
@@ -423,14 +423,14 @@ public class DLinearLayout extends BaseComponentGroup {
 		CENTER(0.5f),
 		BOTTOM(1),
 		RIGHT(1);
-		
+
 		public final float align;
-		
+
 		Alignment(float align) {
 			this.align = align;
 		}
 	}
-	
+
 	public static enum ElementAlignment {
 		LEFT,
 		CENTER,
@@ -440,13 +440,13 @@ public class DLinearLayout extends BaseComponentGroup {
 		BOTTOM,
 		STRETCH
 	}
-	
+
 	public static class Element {
 		public final DComponent component;
 		public final float grow;
 		public final float shrink;
 		public final ElementAlignment alignment;
-		
+
 		public Element(DComponent component, float grow, float shrink, ElementAlignment alignment) {
 			this.component = component;
 			this.grow = grow;

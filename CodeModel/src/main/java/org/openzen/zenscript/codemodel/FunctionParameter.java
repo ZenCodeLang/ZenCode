@@ -1,21 +1,21 @@
 package org.openzen.zenscript.codemodel;
 
-import java.util.Objects;
 import org.openzen.zencode.shared.Taggable;
+import org.openzen.zenscript.codemodel.annotations.ParameterAnnotation;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.annotations.ParameterAnnotation;
 import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.Objects;
 
 public class FunctionParameter extends Taggable {
 	public static final FunctionParameter[] NONE = new FunctionParameter[0];
-	
-	public ParameterAnnotation[] annotations;
 	public final TypeID type;
 	public final String name;
-	public Expression defaultValue;
 	public final boolean variadic;
-	
+	public ParameterAnnotation[] annotations;
+	public Expression defaultValue;
+
 	public FunctionParameter(TypeID type) {
 		this.annotations = ParameterAnnotation.NONE;
 		this.type = type;
@@ -23,7 +23,7 @@ public class FunctionParameter extends Taggable {
 		this.defaultValue = null;
 		this.variadic = false;
 	}
-	
+
 	public FunctionParameter(TypeID type, String name) {
 		this.annotations = ParameterAnnotation.NONE;
 		this.type = type;
@@ -31,7 +31,7 @@ public class FunctionParameter extends Taggable {
 		this.defaultValue = null;
 		this.variadic = false;
 	}
-	
+
 	public FunctionParameter(TypeID type, String name, Expression defaultValue, boolean variadic) {
 		this.annotations = ParameterAnnotation.NONE;
 		this.type = type;
@@ -39,24 +39,24 @@ public class FunctionParameter extends Taggable {
 		this.defaultValue = defaultValue;
 		this.variadic = variadic;
 	}
-	
+
 	public FunctionParameter normalize(GlobalTypeRegistry registry) {
 		FunctionParameter result = new FunctionParameter(type.getNormalized(), name, defaultValue, variadic);
 		result.annotations = this.annotations;
 		return result;
 	}
-	
+
 	public FunctionParameter withGenericArguments(GenericMapper mapper) {
 		TypeID instanced = type.instance(mapper);
 		if (instanced.equals(type))
 			return this;
-		
+
 		FunctionParameter result = new FunctionParameter(instanced, name, defaultValue, variadic);
 		result.annotations = annotations;
 		result.addAllTagsFrom(this); // TODO: this will cause trouble -> references?
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
 		return name + " as " + type.toString();

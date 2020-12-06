@@ -10,13 +10,13 @@ public class ConstructorThisCallExpression extends Expression {
 	public final TypeID objectType;
 	public final FunctionalMemberRef constructor;
 	public final CallArguments arguments;
-	
+
 	public ConstructorThisCallExpression(CodePosition position, TypeID type, FunctionalMemberRef constructor, CallArguments arguments) {
 		super(position, BasicTypeID.VOID, binaryThrow(position, constructor.getHeader().thrownType, multiThrow(position, arguments.arguments)));
-		
+
 		if (type instanceof BasicTypeID)
 			throw new IllegalArgumentException("Type cannot be basic type");
-		
+
 		this.objectType = type;
 		this.constructor = constructor;
 		this.arguments = arguments;

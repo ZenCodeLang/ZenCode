@@ -8,13 +8,13 @@ package org.openzen.zenscript.ide.host.local;
 import org.openzen.zenscript.ide.host.IDEModuleType;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class UniversalModuleType implements IDEModuleType {
 	public static final UniversalModuleType INSTANCE = new UniversalModuleType();
-	
-	private UniversalModuleType() {}
+
+	private UniversalModuleType() {
+	}
 
 	@Override
 	public String getName() {

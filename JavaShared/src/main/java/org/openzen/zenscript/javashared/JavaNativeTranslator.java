@@ -10,29 +10,28 @@ import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface JavaNativeTranslator<T> {
 	T isEmptyAsLengthZero(Expression value);
-	
+
 	T listToArray(CastExpression value);
-	
+
 	T containsAsIndexOf(Expression target, Expression value);
-	
+
 	T sorted(Expression value);
-	
+
 	T sortedWithComparator(Expression value, Expression comparator);
-	
+
 	T copy(Expression value);
-	
+
 	T copyTo(CallExpression call);
-	
+
 	T stringToAscii(Expression value);
-	
+
 	T stringToUTF8(Expression value);
-	
+
 	T bytesAsciiToString(Expression value);
-	
+
 	T bytesUTF8ToString(Expression value);
 }

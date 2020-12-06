@@ -8,12 +8,11 @@ package org.openzen.drawablegui.style;
 import org.openzen.drawablegui.DUIContext;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DShadowElement extends DStyleElement {
 	DShadow eval(DUIContext context);
-	
+
 	@Override
 	default DShadowElement asShadow() {
 		return this;

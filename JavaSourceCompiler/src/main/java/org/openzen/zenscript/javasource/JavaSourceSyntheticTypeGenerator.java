@@ -12,25 +12,24 @@ import org.openzen.zenscript.javashared.JavaSynthesizedRange;
 import org.openzen.zenscript.javashared.JavaSyntheticClassGenerator;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGenerator {
 	private final JavaSourceModule helpers;
 	private final JavaSourceFormattingSettings settings;
 	private final JavaSourceContext context;
-	
+
 	public JavaSourceSyntheticTypeGenerator(JavaSourceModule helpers, JavaSourceFormattingSettings settings, JavaSourceContext context) {
 		this.helpers = helpers;
 		this.settings = settings;
 		this.context = context;
 	}
-	
+
 	@Override
 	public void synthesizeFunction(JavaSynthesizedFunction function) {
 		JavaSourceImporter importer = new JavaSourceImporter(context, function.cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, context);
-		
+
 		StringBuilder contents = new StringBuilder();
 		contents.append("@FunctionalInterface\n");
 		contents.append("public interface ");
@@ -56,15 +55,15 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		}
 		contents.append(");\n");
 		contents.append("}\n");
-		
+
 		writeFile(function.cls, importer, contents);
 	}
-	
+
 	@Override
 	public void synthesizeRange(JavaSynthesizedRange range) {
 		JavaSourceImporter importer = new JavaSourceImporter(context, range.cls);
 		JavaSourceTypeVisitor typeVisitor = new JavaSourceTypeVisitor(importer, context);
-		
+
 		StringBuilder contents = new StringBuilder();
 		contents.append("public final class ").append(range.cls.getName()).append(" {\n");
 		contents.append(settings.indent).append("public final ").append(typeVisitor.process(range.baseType)).append(" from;\n");
@@ -82,14 +81,14 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		contents.append(settings.indent).append(settings.indent).append("this.to = to;\n");
 		contents.append(settings.indent).append("}\n");
 		contents.append("}\n");
-		
+
 		writeFile(range.cls, importer, contents);
 	}
-	
+
 	@Override
 	public void synthesizeShared() {
 		JavaSourceImporter importer = new JavaSourceImporter(context, JavaClass.SHARED);
-		
+
 		StringBuilder contents = new StringBuilder();
 		contents.append("public final class Shared<T extends AutoCloseable> {\n");
 		contents.append(settings.indent).append("private final T value;\n");
@@ -116,15 +115,15 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 		contents.append(settings.indent).append(settings.indent).append("}\n");
 		contents.append(settings.indent).append("}\n");
 		contents.append("}\n");
-		
+
 		writeFile(JavaClass.SHARED, importer, contents);
 	}
-	
+
 	private void line(StringBuilder output, int level) {
 		for (int i = 0; i < level; i++)
 			output.append(settings.indent);
 	}
-	
+
 	private void writeFile(JavaClass cls, JavaSourceImporter importer, StringBuilder contents) {
 		StringBuilder output = new StringBuilder();
 		output.append("package zsynthetic;\n");
@@ -145,7 +144,7 @@ public class JavaSourceSyntheticTypeGenerator implements JavaSyntheticClassGener
 
 		output.append('\n');
 		output.append(contents.toString());
-		
+
 		String target = "zsynthetic/" + cls.getName() + ".java";
 		helpers.addFile(target, output.toString());
 	}

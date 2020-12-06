@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.annotations;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
@@ -16,7 +15,7 @@ public class InvalidMemberAnnotation implements MemberAnnotation {
 	public final CodePosition position;
 	public final CompileExceptionCode code;
 	public final String message;
-	
+
 	public InvalidMemberAnnotation(CompileException ex) {
 		this.position = ex.position;
 		this.code = ex.code;
@@ -30,22 +29,22 @@ public class InvalidMemberAnnotation implements MemberAnnotation {
 
 	@Override
 	public void apply(IDefinitionMember member, BaseScope scope) {
-		
+
 	}
 
 	@Override
 	public void applyOnOverridingMethod(FunctionalMember member, BaseScope scope) {
-		
+
 	}
 
 	@Override
 	public void applyOnOverridingGetter(GetterMember member, BaseScope scope) {
-		
+
 	}
 
 	@Override
 	public void applyOnOverridingSetter(SetterMember member, BaseScope scope) {
-		
+
 	}
 
 	@Override

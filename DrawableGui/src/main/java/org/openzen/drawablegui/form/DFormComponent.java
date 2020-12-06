@@ -8,13 +8,12 @@ package org.openzen.drawablegui.form;
 import org.openzen.drawablegui.DComponent;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DFormComponent {
 	public final String label;
 	public final DComponent component;
-	
+
 	public DFormComponent(String label, DComponent component) {
 		this.label = label;
 		this.component = component;

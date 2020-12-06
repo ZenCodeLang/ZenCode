@@ -14,9 +14,6 @@ public class CodeIcon implements DColorableIcon {
 	public static final CodeIcon INSTANCE = new CodeIcon();
 	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
 	public static final ColoredIcon GREY = new ColoredIcon(INSTANCE, 0xFF888888);
-	
-	private CodeIcon() {}
-	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(9.4f, 16.6f);
 		tracer.lineTo(4.8f, 12f);
@@ -35,7 +32,10 @@ public class CodeIcon implements DColorableIcon {
 		tracer.lineTo(14.6f, 16.6f);
 		tracer.close();
 	};
-	
+
+	private CodeIcon() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH, transform, color);

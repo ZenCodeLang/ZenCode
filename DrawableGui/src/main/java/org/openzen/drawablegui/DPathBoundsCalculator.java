@@ -6,34 +6,33 @@
 package org.openzen.drawablegui;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DPathBoundsCalculator implements DPathTracer {
-	public static DIRectangle getBounds(DPath path, DTransform2D transform) {
-		DPathBoundsCalculator calculator = new DPathBoundsCalculator(transform);
-		path.trace(calculator);
-		return new DIRectangle(
-				(int)calculator.minX,
-				(int)calculator.minY,
-				(int)Math.ceil(calculator.maxX - calculator.minX),
-				(int)Math.ceil(calculator.maxY - calculator.minY));
-	}
-	
 	private final DTransform2D transform;
 	private float minX = Float.MAX_VALUE;
 	private float minY = Float.MAX_VALUE;
 	private float maxX = Float.MIN_VALUE;
 	private float maxY = Float.MIN_VALUE;
-	
+
 	private DPathBoundsCalculator(DTransform2D transform) {
 		this.transform = transform;
 	}
-	
+
+	public static DIRectangle getBounds(DPath path, DTransform2D transform) {
+		DPathBoundsCalculator calculator = new DPathBoundsCalculator(transform);
+		path.trace(calculator);
+		return new DIRectangle(
+				(int) calculator.minX,
+				(int) calculator.minY,
+				(int) Math.ceil(calculator.maxX - calculator.minX),
+				(int) Math.ceil(calculator.maxY - calculator.minY));
+	}
+
 	private void add(float x, float y) {
 		float tx = transform.getX(x, y);
 		float ty = transform.getY(x, y);
-		
+
 		minX = Math.min(minX, tx);
 		minY = Math.min(minY, ty);
 		maxX = Math.max(maxX, tx);
@@ -65,6 +64,6 @@ public class DPathBoundsCalculator implements DPathTracer {
 
 	@Override
 	public void close() {
-		
+
 	}
 }

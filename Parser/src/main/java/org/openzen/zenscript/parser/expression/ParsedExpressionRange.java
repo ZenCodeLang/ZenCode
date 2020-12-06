@@ -1,23 +1,24 @@
 package org.openzen.zenscript.parser.expression;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.RangeExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParsedExpressionRange extends ParsedExpression {
 	private final ParsedExpression from;
 	private final ParsedExpression to;
-	
+
 	public ParsedExpressionRange(CodePosition position, ParsedExpression from, ParsedExpression to) {
 		super(position);
-		
+
 		this.from = from;
 		this.to = to;
 	}
@@ -26,7 +27,7 @@ public class ParsedExpressionRange extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		List<TypeID> fromHints = new ArrayList<>();
 		List<TypeID> toHints = new ArrayList<>();
-		
+
 		for (TypeID hint : scope.hints) {
 			if (hint instanceof RangeTypeID) {
 				RangeTypeID rangeHint = (RangeTypeID) hint;
@@ -36,7 +37,7 @@ public class ParsedExpressionRange extends ParsedExpression {
 					toHints.add(rangeHint.baseType);
 			}
 		}
-		
+
 		Expression from = this.from.compile(scope.withHints(fromHints)).eval();
 		Expression to = this.to.compile(scope.withHints(toHints)).eval();
 

@@ -12,7 +12,6 @@ import org.openzen.drawablegui.DComponent;
 import org.openzen.drawablegui.DDrawable;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class TabbedViewComponent {
@@ -20,7 +19,7 @@ public class TabbedViewComponent {
 	public final DDrawable icon;
 	public final DComponent content;
 	public final LiveBool updated;
-	
+
 	public TabbedViewComponent(LiveString title, DDrawable icon, DComponent content, LiveBool updated) {
 		this.title = title;
 		this.icon = icon;

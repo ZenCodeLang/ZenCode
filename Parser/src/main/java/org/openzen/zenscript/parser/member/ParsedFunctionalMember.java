@@ -20,7 +20,7 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	protected final ParsedImplementation implementation;
 	protected final ParsedFunctionBody body;
 	private boolean isCompiled = false;
-	
+
 	public ParsedFunctionalMember(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -29,42 +29,42 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 			ParsedAnnotation[] annotations,
 			ParsedFunctionBody body) {
 		super(definition, annotations);
-		
+
 		this.implementation = implementation;
 		this.position = position;
 		this.modifiers = modifiers;
 		this.body = body;
 	}
-	
+
 	@Override
 	public abstract FunctionalMember getCompiled();
-	
+
 	protected void inferHeaders(BaseScope scope) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
 			fillOverride(scope, implementation.getCompiled().type);
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
-			
+
 			fillOverride(scope, definition.getSuperType());
 		}
-		
+
 		if (getCompiled() == null || getCompiled().header == null)
 			throw new IllegalStateException("Types not yet linked");
 	}
-	
+
 	@Override
 	public final void compile(BaseScope scope) throws CompileException {
 		if (isCompiled)
 			return;
 		isCompiled = true;
-		
+
 		inferHeaders(scope);
-		
+
 		FunctionScope innerScope = new FunctionScope(position, scope, getCompiled().header);
 		getCompiled().annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
 		getCompiled().setBody(body.compile(innerScope, getCompiled().header));
-		
+
 		if (getCompiled().header.getReturnType() == BasicTypeID.UNDETERMINED) {
 			if (getCompiled().body == null)
 				throw new CompileException(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Method return type could not be inferred");
@@ -77,6 +77,6 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 			}
 		}
 	}
-	
+
 	protected abstract void fillOverride(TypeScope scope, TypeID baseType) throws CompileException;
 }

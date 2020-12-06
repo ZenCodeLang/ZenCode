@@ -15,7 +15,7 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	public final CasterMember member;
 	public final TypeID type;
 	public final TypeID toType;
-	
+
 	public CasterMemberRef(CasterMember member, TypeID type, TypeID toType) {
 		this.member = member;
 		this.type = type;
@@ -26,7 +26,7 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	public CodePosition getPosition() {
 		return member.position;
 	}
-	
+
 	@Override
 	public TypeID getOwnerType() {
 		return type;
@@ -41,11 +41,11 @@ public class CasterMemberRef implements DefinitionMemberRef {
 	public <T extends Tag> T getTag(Class<T> type) {
 		return member.getTag(type);
 	}
-	
+
 	public Expression cast(CodePosition position, Expression value, boolean implicit) {
 		return new CastExpression(position, value, this, implicit);
 	}
-	
+
 	public boolean isImplicit() {
 		return Modifiers.isImplicit(member.getSpecifiedModifiers());
 	}

@@ -4,21 +4,21 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.statement.LockStatement;
-import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.InvalidStatement;
+import org.openzen.zenscript.codemodel.statement.LockStatement;
+import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 public class ParsedStatementLock extends ParsedStatement {
 	public final ParsedExpression object;
 	public final ParsedStatement content;
-	
+
 	public ParsedStatementLock(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, ParsedExpression object, ParsedStatement content) {
 		super(position, annotations, whitespace);
-		
+
 		this.object = object;
 		this.content = content;
 	}

@@ -73,7 +73,7 @@ public enum ZSTokenType implements TokenType {
 	T_NOT("!", "!"),
 	T_DOLLAR("$", "$"),
 	T_BACKTICK("`", "`"),
-	
+
 	K_IMPORT(true, "import"),
 	K_ALIAS(true, "alias"),
 	K_CLASS(true, "class"),
@@ -83,7 +83,7 @@ public enum ZSTokenType implements TokenType {
 	K_STRUCT(true, "struct"),
 	K_EXPAND(true, "expand"),
 	K_VARIANT(true, "variant"),
-	
+
 	K_ABSTRACT(true, "abstract"),
 	K_FINAL(true, "final"),
 	K_OVERRIDE(true, "override"),
@@ -98,13 +98,13 @@ public enum ZSTokenType implements TokenType {
 	K_VIRTUAL(true, "virtual"),
 	K_EXTERN(true, "extern"),
 	K_IMMUTABLE(true, "immutable"),
-	
+
 	K_VAL(true, "val"),
 	K_VAR(true, "var"),
 	K_GET(true, "get"),
 	K_IMPLEMENTS(true, "implements"),
 	K_SET(true, "set"),
-	
+
 	K_VOID(true, "void"),
 	K_BOOL(true, "bool"),
 	K_BYTE(true, "byte"),
@@ -120,7 +120,7 @@ public enum ZSTokenType implements TokenType {
 	K_DOUBLE(true, "double"),
 	K_CHAR(true, "char"),
 	K_STRING(true, "string"),
-	
+
 	K_IF(true, "if"),
 	K_ELSE(true, "else"),
 	K_DO(true, "do"),
@@ -138,31 +138,29 @@ public enum ZSTokenType implements TokenType {
 	K_SWITCH(true, "switch"),
 	K_CASE(true, "case"),
 	K_DEFAULT(true, "default"),
-	
+
 	K_IN(true, "in"),
 	K_IS(true, "is"),
 	K_AS(true, "as"),
 	K_MATCH(true, "match"),
 	K_THROWS(true, "throws"),
-	
+
 	K_SUPER(true, "super"),
 	K_THIS(true, "this"),
 	K_NULL(true, "null"),
 	K_TRUE(true, "true"),
 	K_FALSE(true, "false"),
 	K_NEW(true, "new"),
-	
+
 	INVALID,
-	EOF
-	;
-		
-	private final String regexp;
-	private final boolean whitespace;
-	
+	EOF;
+
 	public final ZSToken flyweight;
 	public final boolean isKeyword;
 	public final boolean multiline;
-	
+	private final String regexp;
+	private final boolean whitespace;
+
 	ZSTokenType() {
 		this.regexp = null;
 		this.whitespace = false;
@@ -170,7 +168,7 @@ public enum ZSTokenType implements TokenType {
 		this.flyweight = null;
 		this.multiline = false;
 	}
-	
+
 	ZSTokenType(String regexp) {
 		this.regexp = regexp;
 		this.whitespace = false;
@@ -178,7 +176,7 @@ public enum ZSTokenType implements TokenType {
 		this.flyweight = null;
 		this.multiline = false;
 	}
-	
+
 	ZSTokenType(String regexp, boolean whitespace) {
 		this.regexp = regexp;
 		this.whitespace = whitespace;
@@ -186,7 +184,7 @@ public enum ZSTokenType implements TokenType {
 		this.flyweight = null;
 		this.multiline = false;
 	}
-	
+
 	ZSTokenType(String regexp, boolean whitespace, boolean multiline) {
 		this.regexp = regexp;
 		this.whitespace = whitespace;
@@ -194,7 +192,7 @@ public enum ZSTokenType implements TokenType {
 		this.flyweight = null;
 		this.multiline = multiline;
 	}
-	
+
 	ZSTokenType(String regexp, String content) {
 		this.regexp = regexp;
 		this.whitespace = false;
@@ -202,7 +200,7 @@ public enum ZSTokenType implements TokenType {
 		this.flyweight = new ZSToken(this, content);
 		this.multiline = false;
 	}
-	
+
 	ZSTokenType(boolean isWhitespace, String regexp, String content) {
 		this.regexp = regexp;
 		this.whitespace = isWhitespace;
@@ -210,7 +208,7 @@ public enum ZSTokenType implements TokenType {
 		this.flyweight = new ZSToken(this, content);
 		this.multiline = false;
 	}
-	
+
 	ZSTokenType(boolean isWhitespace, String regexp, String content, boolean multiline) {
 		this.regexp = regexp;
 		this.whitespace = isWhitespace;
@@ -218,7 +216,7 @@ public enum ZSTokenType implements TokenType {
 		this.flyweight = new ZSToken(this, content);
 		this.multiline = multiline;
 	}
-	
+
 	ZSTokenType(boolean isKeyword, String content) {
 		this.regexp = null;
 		this.whitespace = false;

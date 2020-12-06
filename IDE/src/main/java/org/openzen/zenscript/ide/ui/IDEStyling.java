@@ -11,7 +11,6 @@ import org.openzen.drawablegui.style.DShadowElement;
 import org.openzen.drawablegui.style.DShapeElement;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class IDEStyling {

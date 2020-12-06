@@ -1,43 +1,42 @@
 package org.openzen.zenscript.codemodel.type;
 
-import java.util.List;
-import java.util.Set;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+
+import java.util.List;
 
 public class AssocTypeID implements TypeID {
 	public final TypeID keyType;
 	public final TypeID valueType;
 	private final AssocTypeID normalized;
-	
+
 	public AssocTypeID(GlobalTypeRegistry typeRegistry, TypeID keyType, TypeID valueType) {
 		this.keyType = keyType;
 		this.valueType = valueType;
-		
+
 		if (keyType != keyType.getNormalized() || valueType != valueType.getNormalized())
 			normalized = typeRegistry.getAssociative(keyType.getNormalized(), valueType.getNormalized());
 		else
 			normalized = this;
 	}
-	
+
 	@Override
 	public TypeID instance(GenericMapper mapper) {
 		return mapper.registry.getAssociative(
 				keyType.instance(mapper),
 				valueType.instance(mapper));
 	}
-	
+
 	@Override
 	public AssocTypeID getNormalized() {
 		return normalized;
 	}
-	
+
 	@Override
 	public <R> R accept(TypeVisitor<R> visitor) {
 		return visitor.visitAssoc(this);
 	}
-	
+
 	@Override
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitAssoc(context, this);
@@ -47,7 +46,7 @@ public class AssocTypeID implements TypeID {
 	public boolean isOptional() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isValueType() {
 		return false;
@@ -92,7 +91,7 @@ public class AssocTypeID implements TypeID {
 		return this.keyType.equals(other.keyType)
 				&& this.valueType.equals(other.valueType);
 	}
-	
+
 	@Override
 	public String toString() {
 		return valueType.toString() + '[' + keyType.toString() + ']';

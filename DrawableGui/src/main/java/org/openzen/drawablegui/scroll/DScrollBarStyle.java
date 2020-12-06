@@ -11,7 +11,6 @@ import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DScrollBarStyle {
@@ -20,7 +19,7 @@ public class DScrollBarStyle {
 	public final int scrollBarHoverColor;
 	public final int scrollBarPressColor;
 	public final int width;
-	
+
 	public DScrollBarStyle(DStyleDefinition style) {
 		this.scrollBarBackgroundColor = style.getColor("scrollbar.background.color", 0xFFF0F0F0);
 		this.scrollBarNormalColor = style.getColor("scrollbar.color.normal", 0xFFCDCDCD);

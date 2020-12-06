@@ -1,19 +1,18 @@
-
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
 	compile 'org.ow2.asm:asm-debug-all:6.0_BETA'
 }
 
-def javaScriptingProjects = [':JavaIntegration',':JavaAnnotations',':JavaBytecodeCompiler', ':JavaShared', ':Validator', ':Parser', ':CodeModel', ':Shared']
+def javaScriptingProjects = [':JavaIntegration', ':JavaAnnotations', ':JavaBytecodeCompiler', ':JavaShared', ':Validator', ':Parser', ':CodeModel', ':Shared']
 jar {
-	dependsOn javaScriptingProjects.collect{ it+":compileJava"}
-    from files(javaScriptingProjects.collect{ project(it).sourceSets.main.output })
+	dependsOn javaScriptingProjects.collect { it + ":compileJava" }
+	from files(javaScriptingProjects.collect { project(it).sourceSets.main.output })
 }
 sourcesJar {
-    from files(javaScriptingProjects.collect { project(it).sourceSets.main.allSource })
+	from files(javaScriptingProjects.collect { project(it).sourceSets.main.allSource })
 }
 install {
 	repositories.mavenInstaller {

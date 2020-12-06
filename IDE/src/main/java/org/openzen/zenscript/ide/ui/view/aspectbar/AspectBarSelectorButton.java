@@ -29,37 +29,33 @@ import org.openzen.drawablegui.style.DStyleClass;
 import zsynthetic.FunctionBoolBoolToVoid;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class AspectBarSelectorButton implements DComponent {
 	public final LiveBool active;
-	
+
 	private final DStyleClass styleClass;
 	private final DDrawable icon;
 	private final MutableLiveObject<DSizing> sizing = DSizing.create();
 	private final Consumer<DMouseEvent> onClick;
-	
+	private final DSimpleTooltip tooltip;
+	private final ListenerHandle<FunctionBoolBoolToVoid> activeListener;
 	private DComponentContext context;
 	private AspectBarSelectorButtonStyle style;
 	private DIRectangle bounds = DIRectangle.EMPTY;
 	private DDrawnShape shape;
 	private DShadow shadow;
 	private DDrawableInstance iconInstance;
-	
 	private boolean hovering;
 	private boolean pressing;
-	private final DSimpleTooltip tooltip;
-	
-	private final ListenerHandle<FunctionBoolBoolToVoid> activeListener;
-	
+
 	public AspectBarSelectorButton(DStyleClass styleClass, DDrawable icon, LiveBool active, String tooltip, Consumer<DMouseEvent> onClick) {
 		this.active = active;
 		this.styleClass = styleClass;
 		this.icon = icon;
 		this.onClick = onClick;
 		this.tooltip = new DSimpleTooltip(DStyleClass.EMPTY, new ImmutableLiveString(tooltip));
-		
+
 		activeListener = active.addListener((oldValue, newValue) -> update());
 	}
 
@@ -68,7 +64,7 @@ public class AspectBarSelectorButton implements DComponent {
 		context = parent.getChildContext("selectorbutton", styleClass);
 		style = context.getStyle(AspectBarSelectorButtonStyle::new);
 		sizing.setValue(new DSizing(style.width, style.height));
-		
+
 		tooltip.setContext(context.getUIContext());
 	}
 
@@ -81,19 +77,14 @@ public class AspectBarSelectorButton implements DComponent {
 	public DIRectangle getBounds() {
 		return bounds;
 	}
-	
-	@Override
-	public int getBaselineY() {
-		return -1;
-	}
 
 	@Override
 	public void setBounds(DIRectangle bounds) {
 		this.bounds = bounds;
-		
+
 		if (shape != null)
 			shape.close();
-		
+
 		shadow = getShadow();
 		shape = context.shadowPath(
 				0,
@@ -101,7 +92,7 @@ public class AspectBarSelectorButton implements DComponent {
 				DTransform2D.IDENTITY,
 				getColor(),
 				shadow);
-		
+
 		if (iconInstance != null)
 			iconInstance.close();
 		iconInstance = new DDrawableInstance(context.surface, context.z + 1, icon, DTransform2D.scaleAndTranslate(
@@ -109,29 +100,34 @@ public class AspectBarSelectorButton implements DComponent {
 				bounds.y + (style.height - icon.getNominalHeight() * context.getScale()) / 2,
 				context.getScale()));
 	}
-	
+
+	@Override
+	public int getBaselineY() {
+		return -1;
+	}
+
 	@Override
 	public void unmount() {
 		if (shape != null)
 			shape.close();
 		if (iconInstance != null)
 			iconInstance.close();
-		
+
 		tooltip.close();
 	}
-	
+
 	@Override
 	public void onMouseEnter(DMouseEvent e) {
 		hovering = true;
 		tooltip.onTargetMouseEnter(e);
 		update();
 	}
-	
+
 	@Override
 	public void onMouseMove(DMouseEvent e) {
 		tooltip.onTargetMouseMove(e);
 	}
-	
+
 	@Override
 	public void onMouseExit(DMouseEvent e) {
 		hovering = false;
@@ -139,18 +135,18 @@ public class AspectBarSelectorButton implements DComponent {
 		tooltip.onTargetMouseExit(e);
 		update();
 	}
-	
+
 	@Override
 	public void onMouseDown(DMouseEvent e) {
 		pressing = true;
 		update();
 	}
-	
+
 	@Override
 	public void onMouseRelease(DMouseEvent e) {
 		if (pressing)
 			onClick.accept(e);
-		
+
 		pressing = false;
 		update();
 	}
@@ -159,32 +155,32 @@ public class AspectBarSelectorButton implements DComponent {
 	public void close() {
 		activeListener.close();
 		tooltip.close();
-		
+
 		unmount();
 	}
-	
+
 	private void update() {
 		if (context == null)
 			return;
-		
+
 		DShadow newShadow = getShadow();
 		if (newShadow != shadow) {
 			shadow = newShadow;
-			
+
 			if (shape != null)
 				shape.close();
-			
+
 			shape = context.shadowPath(
-				0,
-				DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.roundingRadius),
-				DTransform2D.IDENTITY,
-				getColor(),
-				shadow);
+					0,
+					DPath.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, style.roundingRadius),
+					DTransform2D.IDENTITY,
+					getColor(),
+					shadow);
 		} else {
 			shape.setColor(getColor());
 		}
 	}
-	
+
 	private DShadow getShadow() {
 		if (active.getValue())
 			return style.shadowActive;
@@ -192,10 +188,10 @@ public class AspectBarSelectorButton implements DComponent {
 			return style.shadowPress;
 		if (hovering)
 			return style.shadowHover;
-		
+
 		return style.shadowNormal;
 	}
-	
+
 	private int getColor() {
 		if (active.getValue())
 			return style.colorActive;
@@ -203,7 +199,7 @@ public class AspectBarSelectorButton implements DComponent {
 			return style.colorPress;
 		if (hovering)
 			return style.colorHover;
-		
+
 		return style.colorNormal;
 	}
 }

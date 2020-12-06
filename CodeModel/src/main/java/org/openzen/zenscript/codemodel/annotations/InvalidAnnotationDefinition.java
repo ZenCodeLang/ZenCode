@@ -1,7 +1,5 @@
 package org.openzen.zenscript.codemodel.annotations;
 
-import java.util.Collections;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -16,10 +14,14 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.statement.Statement;
 
+import java.util.Collections;
+import java.util.List;
+
 public class InvalidAnnotationDefinition implements AnnotationDefinition {
 	public static final InvalidAnnotationDefinition INSTANCE = new InvalidAnnotationDefinition();
-	
-	private InvalidAnnotationDefinition() {}
+
+	private InvalidAnnotationDefinition() {
+	}
 
 	@Override
 	public String getAnnotationName() {

@@ -6,9 +6,8 @@
 package org.openzen.drawablegui;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DPreparedPath {
-	
+
 }

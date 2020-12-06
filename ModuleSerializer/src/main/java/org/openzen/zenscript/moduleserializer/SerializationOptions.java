@@ -6,7 +6,6 @@
 package org.openzen.zenscript.moduleserializer;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SerializationOptions {
@@ -15,7 +14,7 @@ public class SerializationOptions {
 	public final boolean positionOffsets;
 	public final boolean typeParameterNames;
 	public final boolean localVariableNames;
-	
+
 	public SerializationOptions(
 			boolean positions,
 			boolean expressionPositions,

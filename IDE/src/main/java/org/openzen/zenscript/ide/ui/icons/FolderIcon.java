@@ -13,9 +13,6 @@ import org.openzen.drawablegui.draw.DDrawTarget;
 public class FolderIcon implements DColorableIcon {
 	public static final FolderIcon INSTANCE = new FolderIcon();
 	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
-	
-	private FolderIcon() {}
-	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(10f, 4f);
 		tracer.lineTo(4.0f, 4.0f);
@@ -30,7 +27,10 @@ public class FolderIcon implements DColorableIcon {
 		tracer.lineTo(10.0f, 4.0f);
 		tracer.close();
 	};
-	
+
+	private FolderIcon() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH, transform, color);

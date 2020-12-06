@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class InvalidAssignExpression extends Expression {
 	public final InvalidExpression target;
 	public final Expression source;
-	
+
 	public InvalidAssignExpression(CodePosition position, InvalidExpression target, Expression source) {
 		super(position, source.type, source.thrownType);
-		
+
 		this.target = target;
 		this.source = source;
 	}

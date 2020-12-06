@@ -17,13 +17,13 @@ import org.openzen.zenscript.parser.expression.ParsedExpression;
 public class SimpleBracketParser implements BracketExpressionParser {
 	private final FunctionalMemberRef method;
 	private final TypeID targetType;
-	
+
 	public SimpleBracketParser(GlobalTypeRegistry registry, FunctionalMemberRef method) {
 		if (!method.isStatic())
 			throw new IllegalArgumentException("Method must be static");
 		if (method.getHeader().getNumberOfTypeParameters() > 0)
 			throw new IllegalArgumentException("Method cannot have type parameters");
-		
+
 		this.method = method;
 		this.targetType = registry.getForDefinition(method.getTarget().definition);
 	}
@@ -37,13 +37,13 @@ public class SimpleBracketParser implements BracketExpressionParser {
 		}
 		return new StaticMethodCallExpression(position, string.toString());
 	}
-	
+
 	private class StaticMethodCallExpression extends ParsedExpression {
 		private final String value;
-		
+
 		public StaticMethodCallExpression(CodePosition position, String value) {
 			super(position);
-			
+
 			this.value = value;
 		}
 

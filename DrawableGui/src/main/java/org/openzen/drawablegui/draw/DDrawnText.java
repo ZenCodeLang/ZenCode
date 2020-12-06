@@ -8,7 +8,6 @@ package org.openzen.drawablegui.draw;
 import org.openzen.drawablegui.DTransform2D;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DDrawnText extends DDrawnColorableElement {
@@ -16,6 +15,6 @@ public interface DDrawnText extends DDrawnColorableElement {
 	default void setTransform(DTransform2D transform) { // only uses position, not scaling or rotation
 		setPosition(transform.xx, transform.yy);
 	}
-	
+
 	void setPosition(float x, float y);
 }

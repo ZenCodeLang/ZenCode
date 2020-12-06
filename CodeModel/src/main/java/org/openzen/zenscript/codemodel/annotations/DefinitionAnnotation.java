@@ -7,12 +7,12 @@ import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 
 public interface DefinitionAnnotation {
 	DefinitionAnnotation[] NONE = new DefinitionAnnotation[0];
-	
+
 	AnnotationDefinition getDefinition();
-	
+
 	void apply(HighLevelDefinition definition, BaseScope scope);
-	
+
 	void applyOnSubtype(HighLevelDefinition definition, BaseScope scope);
-	
+
 	void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeContext context);
 }

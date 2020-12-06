@@ -8,14 +8,13 @@ package org.openzen.zenscript.ide.host;
 import org.openzen.zencode.shared.CodePosition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class IDECodeError {
 	public final IDESourceFile file;
 	public final CodePosition position;
 	public final String message;
-	
+
 	public IDECodeError(IDESourceFile file, CodePosition position, String message) {
 		this.file = file;
 		this.position = position;

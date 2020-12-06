@@ -1,25 +1,9 @@
 package org.openzen.zenscript.formattershared;
 
-import java.util.List;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
-import org.openzen.zenscript.codemodel.statement.BlockStatement;
-import org.openzen.zenscript.codemodel.statement.BreakStatement;
-import org.openzen.zenscript.codemodel.statement.ContinueStatement;
-import org.openzen.zenscript.codemodel.statement.DoWhileStatement;
-import org.openzen.zenscript.codemodel.statement.EmptyStatement;
-import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
-import org.openzen.zenscript.codemodel.statement.ForeachStatement;
-import org.openzen.zenscript.codemodel.statement.IfStatement;
-import org.openzen.zenscript.codemodel.statement.LockStatement;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.statement.ReturnStatement;
-import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.StatementVisitor;
-import org.openzen.zenscript.codemodel.statement.SwitchStatement;
-import org.openzen.zenscript.codemodel.statement.ThrowStatement;
-import org.openzen.zenscript.codemodel.statement.TryCatchStatement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
-import org.openzen.zenscript.codemodel.statement.WhileStatement;
+import org.openzen.zenscript.codemodel.statement.*;
+
+import java.util.List;
 
 public class StatementFormatter implements StatementVisitor<Void>, StatementFormattingTarget {
 	private final StringBuilder output;
@@ -27,7 +11,7 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 	private final String indent;
 	private final FormattingSettings settings;
 	private final LoopStatement innerLoop;
-	
+
 	public StatementFormatter(StringBuilder output, FormattingSettings settings, Formatter formatter, String indent, LoopStatement innerLoop) {
 		this.output = output;
 		this.formatter = formatter;
@@ -170,9 +154,9 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 		endSingleLine(whitespace);
 		return null;
 	}
-	
+
 	// == StatementFormattingTarget implementation ==
-	
+
 	@Override
 	public LoopStatement getInnerLoop() {
 		return innerLoop;
@@ -182,7 +166,7 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 	public String getIndent() {
 		return indent;
 	}
-	
+
 	@Override
 	public void writeLine(String line) {
 		output.append('\n').append(indent).append(line);
@@ -192,11 +176,11 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 	public void writeInner(String lineBefore, Statement contents, LoopStatement loop, String lineAfter) {
 		output.append('\n').append(indent).append(lineBefore);
 		contents.accept(new StatementFormatter(output, settings, formatter, indent + settings.indent, loop == null ? innerLoop : loop));
-		
+
 		if (!lineAfter.isEmpty())
 			output.append('\n').append(indent).append(lineAfter);
 	}
-	
+
 	@Override
 	public void writeInner(String lineBefore, String[] inlineContents, Statement contents, LoopStatement loop, String lineAfter) {
 		output.append('\n').append(indent).append(lineBefore);
@@ -209,7 +193,7 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 		} else {
 			contents.accept(innerFormatter);
 		}
-		
+
 		if (!lineAfter.isEmpty())
 			output.append('\n').append(indent).append(lineAfter);
 	}
@@ -217,10 +201,10 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 	@Override
 	public void writeInnerMulti(String lineBefore, List<StatementFormattingSubBlock> contents, LoopStatement loop, String lineAfter) {
 		output.append('\n').append(indent).append(lineBefore);
-		
+
 		String newIndent = indent + settings.indent + settings.indent;
 		StatementFormatter inner = new StatementFormatter(output, settings, formatter.forLoop(loop), newIndent, innerLoop);
-		
+
 		for (StatementFormattingSubBlock subBlock : contents) {
 			output.append('\n').append(indent).append(settings.indent).append(subBlock.header);
 			for (String literal : subBlock.literalStatements)
@@ -228,7 +212,7 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 			for (Statement statement : subBlock.statements)
 				statement.accept(inner);
 		}
-		
+
 		if (!lineAfter.isEmpty())
 			output.append('\n').append(indent).append(lineAfter);
 	}
@@ -236,29 +220,29 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 	@Override
 	public void writeBlock(String lineBefore, BlockStatement contents, String lineAfter) {
 		output.append(' ').append(lineBefore);
-		
+
 		StatementFormatter inner = new StatementFormatter(output, settings, formatter, indent, innerLoop);
 		for (Statement statement : contents.statements)
 			statement.accept(inner);
-		
+
 		if (!lineAfter.isEmpty())
 			output.append('\n').append(indent.substring(0, indent.length() - settings.indent.length())).append(lineAfter);
 	}
-	
+
 	private void beginBlock(WhitespaceInfo whitespace) {
 		if (whitespace != null && whitespace.emptyLine) {
 			output.append("\n").append(indent);
 		}
-		
+
 		if (whitespace != null)
 			writeComments(whitespace.commentsBefore);
 	}
-	
+
 	private void endBlock(WhitespaceInfo whitespace) {
 		if (whitespace != null && !whitespace.commentsAfter.isEmpty())
 			output.append(' ').append(whitespace.commentsAfter);
 	}
-	
+
 	private void beginSingleLine(WhitespaceInfo whitespace) {
 		if (whitespace != null) {
 			if (whitespace.emptyLine) {
@@ -267,29 +251,29 @@ public class StatementFormatter implements StatementVisitor<Void>, StatementForm
 			writeComments(whitespace.commentsBefore);
 		}
 	}
-	
+
 	private void endSingleLine(WhitespaceInfo whitespace) {
 		if (whitespace != null && !whitespace.commentsAfter.isEmpty())
 			output.append(' ').append(whitespace.commentsAfter);
 	}
-	
+
 	private void writeComments(String[] comments) {
 		for (String comment : settings.commentFormatter.format(comments)) {
 			output.append(comment).append("\n").append(indent);
 		}
 	}
-	
+
 	private void writePostComments(String[] comments) {
 		for (String comment : settings.commentFormatter.format(comments)) {
 			output.append("\n").append(indent).append(comment);
 		}
 	}
-	
+
 	public interface Formatter {
 		public Formatter forLoop(LoopStatement statement);
-		
+
 		public void formatBlock(StatementFormattingTarget target, BlockStatement statement);
-	
+
 		public void formatBreak(StatementFormattingTarget target, BreakStatement statement);
 
 		public void formatContinue(StatementFormattingTarget target, ContinueStatement statement);

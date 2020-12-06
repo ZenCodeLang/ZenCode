@@ -9,17 +9,17 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedExpressionString extends ParsedExpression {
 	public final String value;
 	public final boolean singleQuote;
-	
+
 	public ParsedExpressionString(CodePosition position, String value, boolean singleQuote) {
 		super(position);
-		
+
 		this.value = value;
 		this.singleQuote = singleQuote;
 	}
@@ -28,16 +28,16 @@ public class ParsedExpressionString extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) {
 		if (value.length() == 1 && (singleQuote || scope.hints.contains(BasicTypeID.CHAR)))
 			return new ConstantCharExpression(position, value.charAt(0));
-		
+
 		return new ConstantStringExpression(position, value);
 	}
-	
+
 	@Override
 	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
 		if (type == BasicTypeID.CHAR) {
 			if (value.length() != 1)
 				throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "char value expected but string given");
-			
+
 			return new CharSwitchValue(value.charAt(0));
 		} else if (type == BasicTypeID.STRING) {
 			return new StringSwitchValue(value);

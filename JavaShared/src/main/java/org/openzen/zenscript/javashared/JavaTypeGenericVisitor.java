@@ -16,17 +16,17 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 	public JavaTypeGenericVisitor(JavaContext context) {
 		this.context = context;
 	}
-	
+
 	public String getGenericSignature(TypeID... types) {
 		if (types == null || types.length == 0)
 			return "";
 		final StringBuilder builder = new StringBuilder();
 		for (TypeID type : types)
-			builder.append(type.accept( this));
+			builder.append(type.accept(this));
 
 		return builder.toString();
 	}
-	
+
 	public String getGenericSignature(TypeParameter... parameters) {
 		if (parameters == null || parameters.length == 0)
 			return "";
@@ -39,7 +39,7 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 	}
 
 	public String getSignatureWithBound(TypeID type) {
-		if (type instanceof GenericTypeID){
+		if (type instanceof GenericTypeID) {
 			final TypeParameter parameter = ((GenericTypeID) type).parameter;
 			return parameter.name + ":" + getGenericBounds(parameter.bounds);
 		}
@@ -65,7 +65,7 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 		final StringBuilder sb = new StringBuilder();
 		final boolean doGenerics = addGenerics && header.typeParameters.length > 0;
 
-		if(doGenerics) {
+		if (doGenerics) {
 			sb.append("<");
 			for (TypeParameter typeParameter : header.typeParameters) {
 				//TODO: Eventually replace with upper bound
@@ -76,7 +76,7 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 
 
 		sb.append("(");
-		if(doGenerics) {
+		if (doGenerics) {
 			for (TypeParameter typeParameter : header.typeParameters) {
 				//TODO: Eventually replace with -TT; or +TT; for "? super T" and "? extends T"
 				sb.append("Ljava/lang/Class<T").append(typeParameter.name).append(";>;");
@@ -144,7 +144,7 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 	@Override
 	public String visitFunction(FunctionTypeID function) {
 		final JavaSynthesizedFunctionInstance function1 = this.context.getFunction(function);
-		if(function1.typeArguments == null || function1.typeArguments.length == 0) {
+		if (function1.typeArguments == null || function1.typeArguments.length == 0) {
 			return this.context.getDescriptor(function);
 		}
 
@@ -196,12 +196,12 @@ public class JavaTypeGenericVisitor implements TypeVisitor<String> {
 		final ArrayList<TypeParameter> typeParameters = new ArrayList<>();
 		expandedClass.extractTypeParameters(typeParameters);
 		for (TypeParameter typeParameter : header.typeParameters) {
-			if(!typeParameters.contains(typeParameter)){
+			if (!typeParameters.contains(typeParameter)) {
 				typeParameters.add(typeParameter);
 			}
 		}
 
-		if(typeParameters.size() != 0) {
+		if (typeParameters.size() != 0) {
 			stringBuilder.append("<");
 			for (TypeParameter typeParameter : typeParameters) {
 				stringBuilder.append(typeParameter.name);

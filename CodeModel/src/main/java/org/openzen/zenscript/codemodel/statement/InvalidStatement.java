@@ -1,6 +1,5 @@
 package org.openzen.zenscript.codemodel.statement;
 
-import java.util.function.Consumer;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
@@ -8,20 +7,22 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 
+import java.util.function.Consumer;
+
 public class InvalidStatement extends Statement {
 	public final CompileExceptionCode code;
 	public final String message;
-	
+
 	public InvalidStatement(CodePosition position, CompileExceptionCode code, String message) {
 		super(position, null);
-		
+
 		this.code = code;
 		this.message = message;
 	}
-	
+
 	public InvalidStatement(CompileException ex) {
 		super(ex.position, null);
-		
+
 		this.code = ex.code;
 		this.message = ex.message;
 	}
@@ -38,7 +39,7 @@ public class InvalidStatement extends Statement {
 
 	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
-		
+
 	}
 
 	@Override

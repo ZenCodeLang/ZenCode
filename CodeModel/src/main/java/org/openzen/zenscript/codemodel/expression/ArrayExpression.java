@@ -8,12 +8,12 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public class ArrayExpression extends Expression {
 	public final Expression[] expressions;
 	public final ArrayTypeID arrayType;
-	
+
 	public ArrayExpression(CodePosition position, Expression[] expressions, TypeID type) {
 		super(position, type, multiThrow(position, expressions));
-		
+
 		this.expressions = expressions;
-		this.arrayType = (ArrayTypeID)type;
+		this.arrayType = (ArrayTypeID) type;
 	}
 
 	@Override

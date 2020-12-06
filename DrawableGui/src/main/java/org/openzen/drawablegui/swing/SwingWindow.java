@@ -29,7 +29,6 @@ import org.openzen.drawablegui.border.DCustomWindowBorder;
 import org.openzen.drawablegui.style.DStyleClass;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public final class SwingWindow extends JFrame implements WindowListener, WindowStateListener, DUIWindow {
@@ -38,17 +37,17 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 	private final SimpleLiveObject<State> state = new SimpleLiveObject<>(State.NORMAL);
 	private final SimpleLiveBool active = new SimpleLiveBool(true);
 	private final MutableLiveObject<DIRectangle> bounds = new SimpleLiveObject<>(DIRectangle.EMPTY);
-	
+
 	public SwingWindow(String title, DComponent root, boolean noTitleBar) {
 		super(title);
 		this.noTitleBar = noTitleBar;
-		
+
 		if (noTitleBar) {
-		    setUndecorated(true);
+			setUndecorated(true);
 			root = new DCustomWindowBorder(DStyleClass.EMPTY, root);
 			setBackground(new Color(0, 0, 0, 0));
 		}
-		
+
 		addWindowListener(this);
 		addWindowStateListener(this);
 		addComponentListener(new ComponentAdapter() {
@@ -56,19 +55,19 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 			public void componentMoved(ComponentEvent componentEvent) {
 				updateBounds();
 			}
-			
+
 			@Override
 			public void componentResized(ComponentEvent componentEvent) {
 				updateBounds();
 			}
 		});
-		
+
 		getContentPane().add(swingComponent = new SwingRoot(root), BorderLayout.CENTER);
 		swingComponent.setWindow(this);
 		swingComponent.requestFocusInWindow();
-		
+
 	}
-	
+
 	@Override
 	public DUIContext getContext() {
 		return swingComponent.context;
@@ -108,22 +107,22 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 	public LiveObject<State> getWindowState() {
 		return state;
 	}
-	
+
 	@Override
 	public LiveBool getActive() {
 		return active;
 	}
-	
+
 	@Override
 	public void focus(DComponent component) {
 		swingComponent.focus(component);
 	}
-	
+
 	@Override
 	public DUIWindow openModal(String title, DComponent component) {
 		SwingWindow result = new SwingWindow(title, component, false);
 		result.setResizable(false);
-		
+
 		DSizing size = component.getSizing().getValue();
 		result.setLocation(
 				getX() + (getWidth() - size.preferredWidth) / 2,
@@ -139,22 +138,22 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		
+
 	}
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		
+
 	}
 
 	@Override
 	public void windowIconified(WindowEvent e) {
-		
+
 	}
 
 	@Override
 	public void windowDeiconified(WindowEvent e) {
-		
+
 	}
 
 	@Override
@@ -172,13 +171,13 @@ public final class SwingWindow extends JFrame implements WindowListener, WindowS
 		state.setValue(getStateFromWindowState());
 		swingComponent.repaint();
 	}
-	
+
 	private void updateBounds() {
 		state.setValue(getStateFromWindowState());
 		bounds.setValue(new DIRectangle(getX(), getY(), getWidth(), getHeight()));
 		swingComponent.repaint();
 	}
-	
+
 	private State getStateFromWindowState() {
 		switch (getExtendedState()) {
 			case NORMAL:

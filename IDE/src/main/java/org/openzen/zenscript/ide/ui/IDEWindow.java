@@ -21,48 +21,45 @@ import org.openzen.zenscript.ide.ui.view.IconButtonControl;
 import org.openzen.zenscript.ide.ui.view.output.OutputLine;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class IDEWindow {
-	private final DevelopmentHost host;
-	private final String target;
-	
 	public final IDEAspectBar aspectBar;
 	public final IDEDockWindow dockWindow;
 	public final IDEStatusBar statusBar;
 	public final MutableLiveList<OutputLine> output = new LiveArrayList<>();
-	
+	private final DevelopmentHost host;
+	private final String target;
 	public IDEAspectToolbar projectToolbar;
-	
+
 	public IDEWindow(DevelopmentHost host, String target) {
 		this.host = host;
 		this.target = target;
-		
+
 		aspectBar = new IDEAspectBar();
 		dockWindow = new IDEDockWindow();
 		statusBar = new IDEStatusBar();
 		init();
 	}
-	
+
 	public IDEWindow(DevelopmentHost host, IDEAspectBar aspectBar, IDEDockWindow dockWindow, IDEStatusBar statusBar, String target) {
 		this.host = host;
 		this.target = target;
-		
+
 		this.aspectBar = aspectBar;
 		this.dockWindow = dockWindow;
 		this.statusBar = statusBar;
 		init();
 	}
-	
+
 	public void open(IDESourceFile sourceFile) {
 		dockWindow.open(sourceFile);
 	}
-	
+
 	private void init() {
 		projectToolbar = new IDEAspectToolbar(0, ShadedProjectIcon.PURPLE, "Project", "Project management");
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, SettingsIcon.PURPLE, new ImmutableLiveString("Project settings"), e -> {
-			
+
 		}));
 		projectToolbar.controls.add(() -> new IconButtonControl(DStyleClass.EMPTY, BuildIcon.BLUE, new ImmutableLiveString("Build"), e -> {
 			output.clear();

@@ -6,20 +6,19 @@
 package org.openzen.drawablegui;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DFontMetrics {
 	int getAscent();
-	
+
 	int getDescent();
-	
+
 	int getLeading();
-	
+
 	int getWidth(String str);
-	
+
 	int getWidth(String str, int offset, int length);
-	
+
 	default int getLineHeight() {
 		return getAscent() + getDescent();
 	}

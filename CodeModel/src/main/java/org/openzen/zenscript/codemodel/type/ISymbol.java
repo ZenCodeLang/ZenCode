@@ -7,6 +7,6 @@ import org.openzen.zenscript.codemodel.scope.BaseScope;
 
 public interface ISymbol {
 	IPartialExpression getExpression(CodePosition position, BaseScope scope, TypeID[] typeArguments);
-	
+
 	TypeID getType(CodePosition position, TypeResolutionContext context, TypeID[] typeArguments);
 }

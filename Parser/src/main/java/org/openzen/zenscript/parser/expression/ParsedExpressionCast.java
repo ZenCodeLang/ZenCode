@@ -32,28 +32,28 @@ public class ParsedExpressionCast extends ParsedExpression {
 				.eval()
 				.castExplicit(position, scope, type, optional);
 	}
-	
+
 	@Override
 	public ParsedFunctionHeader toLambdaHeader() throws ParseException {
 		if (optional)
 			throw new ParseException(position, "Not a valid lambda header");
-		
+
 		ParsedFunctionHeader header = value.toLambdaHeader();
 		if (header.returnType != ParsedTypeBasic.UNDETERMINED)
 			throw new ParseException(position, "Lambda parameter already has a return type");
-		
+
 		return new ParsedFunctionHeader(position, header.genericParameters, header.parameters, type, null);
 	}
-	
+
 	@Override
 	public ParsedFunctionParameter toLambdaParameter() throws ParseException {
 		if (optional)
 			throw new ParseException(position, "Not a valid lambda header");
-		
+
 		ParsedFunctionParameter parameter = value.toLambdaParameter();
 		if (parameter.type != ParsedTypeBasic.UNDETERMINED)
 			throw new ParseException(position, "Lambda parameter already has a type");
-		
+
 		return new ParsedFunctionParameter(ParsedAnnotation.NONE, parameter.name, type, null, false);
 	}
 

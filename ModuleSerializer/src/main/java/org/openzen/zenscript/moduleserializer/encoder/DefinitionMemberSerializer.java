@@ -27,27 +27,26 @@ import org.openzen.zenscript.moduleserializer.EncodingDefinition;
 import org.openzen.zenscript.moduleserializer.SerializationOptions;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<TypeContext, Void> {
 	private final SerializationOptions options;
 	private final CodeSerializationOutput output;
-	
+
 	public DefinitionMemberSerializer(SerializationOptions options, CodeSerializationOutput output) {
 		this.options = options;
 		this.output = output;
 	}
-	
+
 	private EncodingDefinition visit(TypeContext context, HighLevelDefinition definition) {
 		EncodingDefinition encoding = definition.getTag(EncodingDefinition.class);
-		
+
 		output.serialize(context, definition.getSuperType());
-		
+
 		output.writeUInt(encoding.members.size());
 		for (IDefinitionMember member : encoding.members)
 			output.serialize(context, member);
-		
+
 		return encoding;
 	}
 
@@ -60,30 +59,30 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 	@Override
 	public Void visitInterface(TypeContext context, InterfaceDefinition definition) {
 		visit(context, definition);
-		
+
 		output.writeUInt(definition.baseInterfaces.size());
 		for (TypeID baseInterface : definition.baseInterfaces)
 			output.serialize(context, baseInterface);
-		
+
 		return null;
 	}
 
 	@Override
 	public Void visitEnum(TypeContext context, EnumDefinition definition) {
 		visit(context, definition);
-		
+
 		output.writeUInt(definition.enumConstants.size());
 		StatementContext initContext = new StatementContext(context);
 		for (EnumConstantMember constant : definition.enumConstants) {
 			int flags = 0;
 			if (constant.position != CodePosition.UNKNOWN && options.positions)
 				flags |= DefinitionEncoding.FLAG_POSITION;
-			
+
 			output.writeUInt(flags);
 			output.writeString(constant.name);
 			if ((flags & DefinitionEncoding.FLAG_POSITION) > 0)
 				output.serialize(constant.position);
-			
+
 			output.enqueueCode(output -> {
 				output.write(context, constant.constructor.constructor);
 				output.serialize(initContext, constant.constructor.arguments);
@@ -120,7 +119,7 @@ public class DefinitionMemberSerializer implements DefinitionVisitorWithContext<
 	@Override
 	public Void visitVariant(TypeContext context, VariantDefinition variant) {
 		visit(context, variant);
-		
+
 		output.writeUInt(variant.options.size());
 		for (VariantDefinition.Option option : variant.options) {
 			output.writeString(option.name);

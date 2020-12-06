@@ -6,10 +6,10 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ConstantStringExpression extends Expression {
 	public final String value;
-	
+
 	public ConstantStringExpression(CodePosition position, String value) {
 		super(position, BasicTypeID.STRING, null);
-		
+
 		this.value = value;
 	}
 
@@ -27,7 +27,7 @@ public class ConstantStringExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}
-	
+
 	@Override
 	public String evaluateStringConstant() {
 		return value;

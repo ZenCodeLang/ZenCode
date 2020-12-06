@@ -10,11 +10,10 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.Destructible;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DDrawnElement extends Destructible {
 	void setTransform(DTransform2D transform);
-	
+
 	DIRectangle getBounds();
 }

@@ -12,15 +12,15 @@ import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public class GetterMember extends PropertyMember {
 	public final String name;
-	private GetterMemberRef overrides;
 	public Statement body = null;
-	
+	private GetterMemberRef overrides;
+
 	public GetterMember(
 			CodePosition position,
 			HighLevelDefinition definition,
@@ -29,25 +29,25 @@ public class GetterMember extends PropertyMember {
 			TypeID type,
 			BuiltinID builtin) {
 		super(position, definition, modifiers, type, builtin);
-		
+
 		this.name = name;
 	}
-	
+
 	public void setBody(Statement body) {
 		this.body = body;
-		
+
 		if (getType() == BasicTypeID.UNDETERMINED) {
 			TypeID returnType = body.getReturnType();
 			if (returnType != null)
 				setType(returnType);
 		}
 	}
-	
+
 	@Override
 	public boolean isAbstract() {
 		return body == null && builtin == null;
 	}
-	
+
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
 		members.addGetter(new GetterMemberRef(members.type, this, mapper), priority);
@@ -62,7 +62,7 @@ public class GetterMember extends PropertyMember {
 	public <T> T accept(MemberVisitor<T> visitor) {
 		return visitor.visitGetter(this);
 	}
-	
+
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitGetter(context, this);
@@ -72,7 +72,14 @@ public class GetterMember extends PropertyMember {
 	public GetterMemberRef getOverrides() {
 		return overrides;
 	}
-	
+
+	public void setOverrides(GetterMemberRef override) {
+		this.overrides = override;
+
+		if (getType() == BasicTypeID.UNDETERMINED)
+			setType(override.getType());
+	}
+
 	@Override
 	public int getEffectiveModifiers() {
 		int result = modifiers;
@@ -80,7 +87,7 @@ public class GetterMember extends PropertyMember {
 			result |= Modifiers.PUBLIC;
 		if (!Modifiers.hasAccess(result))
 			result |= Modifiers.INTERNAL;
-		
+
 		return result;
 	}
 
@@ -89,19 +96,12 @@ public class GetterMember extends PropertyMember {
 		if (body != null)
 			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}
-	
-	public void setOverrides(GetterMemberRef override) {
-		this.overrides = override;
-		
-		if (getType() == BasicTypeID.UNDETERMINED)
-			setType(override.getType());
-	}
 
 	@Override
 	public GetterMemberRef ref(TypeID type, GenericMapper mapper) {
 		return new GetterMemberRef(type, this, mapper);
 	}
-	
+
 	@Override
 	public FunctionHeader getHeader() {
 		return new FunctionHeader(getType());

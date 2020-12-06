@@ -10,12 +10,11 @@ import org.openzen.drawablegui.DUIContext;
 import org.openzen.drawablegui.border.DBorder;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DEmptyStyleDefinition implements DStyleDefinition {
 	private final DUIContext context;
-	
+
 	public DEmptyStyleDefinition(DUIContext context) {
 		this.context = context;
 	}
@@ -24,7 +23,7 @@ public class DEmptyStyleDefinition implements DStyleDefinition {
 	public int getDimension(String name, DDimension defaultValue) {
 		return defaultValue.evalInt(context);
 	}
-	
+
 	@Override
 	public float getFloatDimension(String name, DDimension defaultValue) {
 		return defaultValue.eval(context);
@@ -49,12 +48,12 @@ public class DEmptyStyleDefinition implements DStyleDefinition {
 	public DBorder getBorder(String name, DBorderElement defaultValue) {
 		return defaultValue.eval(context);
 	}
-	
+
 	@Override
 	public DMargin getMargin(String name, DMarginElement defaultValue) {
 		return defaultValue.eval(context);
 	}
-	
+
 	@Override
 	public DShape getShape(String name, DShapeElement defaultValue) {
 		return defaultValue.eval(context);

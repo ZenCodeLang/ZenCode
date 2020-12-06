@@ -7,10 +7,10 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 public class InterfaceCastExpression extends Expression {
 	public final Expression value;
 	public final ImplementationMemberRef implementation;
-	
+
 	public InterfaceCastExpression(CodePosition position, Expression value, ImplementationMemberRef implementation) {
 		super(position, implementation.implementsType, value.thrownType);
-		
+
 		this.value = value;
 		this.implementation = implementation;
 	}

@@ -28,26 +28,26 @@ public class DirectorySourceModule implements SourceModule {
 	private final String moduleName;
 	private final boolean isStdLib;
 	private final JSONObject json;
-	
+
 	private final SourcePackage rootPackage;
-	
+
 	public DirectorySourceModule(String moduleName, File directory) {
 		this(moduleName, directory, false);
 	}
-	
+
 	public DirectorySourceModule(String moduleName, File directory, boolean isStdLib) {
 		this.moduleName = moduleName;
 		this.isStdLib = isStdLib;
-		
+
 		this.rootPackage = new SourceDirectoryPackage(new File(directory, "src"), moduleName);
-		
+
 		if (!directory.exists())
 			throw new ConstructorException("Error: module directory not found: " + directory);
-		
+
 		File jsonFile = new File(directory, "module.json");
 		if (!jsonFile.exists())
 			throw new ConstructorException("Error: module.json file not found in module " + moduleName);
-		
+
 		try {
 			json = JSONUtils.load(jsonFile);
 		} catch (IOException ex) {
@@ -100,7 +100,7 @@ public class DirectorySourceModule implements SourceModule {
 		JSONObject jsonGlobals = json.optJSONObject("globals");
 		if (jsonGlobals == null)
 			return Collections.emptyMap();
-		
+
 		Map<String, ISymbol> result = new HashMap<>();
 		for (String key : jsonGlobals.keySet()) {
 			JSONObject global = jsonGlobals.getJSONObject(key);

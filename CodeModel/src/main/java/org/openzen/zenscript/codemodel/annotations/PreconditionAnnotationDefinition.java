@@ -1,11 +1,9 @@
 package org.openzen.zenscript.codemodel.annotations;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
+import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
@@ -21,16 +19,20 @@ import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.GenericName;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	public static final PreconditionAnnotationDefinition INSTANCE = new PreconditionAnnotationDefinition();
-	
+
 	private final List<GenericName> enforcementLevelName = Arrays.asList(
 			new GenericName("stdlib"),
 			new GenericName("EnforcementLevel"));
-	
-	private PreconditionAnnotationDefinition() {}
+
+	private PreconditionAnnotationDefinition() {
+	}
 
 	@Override
 	public String getAnnotationName() {
@@ -49,7 +51,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	@Override
 	public ExpressionScope getScopeForMember(IDefinitionMember member, BaseScope scope) {
 		if (member instanceof FunctionalMember) {
-			FunctionHeader header = ((FunctionalMember)member).header;
+			FunctionHeader header = ((FunctionalMember) member).header;
 			return new ExpressionScope(new FunctionScope(((FunctionalMember) member).position, scope, header));
 		} else {
 			throw new UnsupportedOperationException("Can only assign preconditions to methods");
@@ -59,7 +61,7 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 	@Override
 	public ExpressionScope getScopeForType(HighLevelDefinition definition, BaseScope scope) {
 		if (definition instanceof FunctionDefinition) {
-			FunctionHeader header = ((FunctionDefinition)definition).header;
+			FunctionHeader header = ((FunctionDefinition) definition).header;
 			return new ExpressionScope(new FunctionScope(((FunctionDefinition) definition).position, scope, header));
 		} else {
 			throw new UnsupportedOperationException("Can only assign preconditions to functions");

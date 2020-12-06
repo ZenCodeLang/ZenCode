@@ -6,16 +6,15 @@
 package org.openzen.zenscript.ide.ui.view.output;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class BasicOutputSpan implements OutputSpan {
 	private final String value;
-	
+
 	public BasicOutputSpan(String value) {
 		this.value = value;
 	}
-	
+
 	@Override
 	public String toString() {
 		return value;

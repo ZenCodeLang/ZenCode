@@ -15,12 +15,11 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitc
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSwitchValueCompiler implements SwitchValueVisitor<String> {
 	private final JavaSourceStatementScope scope;
-	
+
 	public JavaSwitchValueCompiler(JavaSourceStatementScope scope) {
 		this.scope = scope;
 	}

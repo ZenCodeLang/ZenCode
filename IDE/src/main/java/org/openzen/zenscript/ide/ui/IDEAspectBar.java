@@ -11,7 +11,6 @@ import live.MutableLiveObject;
 import live.SimpleLiveObject;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class IDEAspectBar {

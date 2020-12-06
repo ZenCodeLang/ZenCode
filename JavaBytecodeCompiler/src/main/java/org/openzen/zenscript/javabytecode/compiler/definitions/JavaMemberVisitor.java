@@ -13,68 +13,69 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.javabytecode.compiler.*;
+import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
+import org.openzen.zenscript.javabytecode.compiler.CompilerUtils;
+import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
+import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
+import org.openzen.zenscript.javashared.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.openzen.zenscript.javabytecode.JavaBytecodeContext;
-import org.openzen.zenscript.javashared.*;
 
 public class JavaMemberVisitor implements MemberVisitor<Void> {
-    private final ClassWriter writer;
+	private final ClassWriter writer;
 	private final JavaBytecodeContext context;
-    private final JavaClass toClass;
-    private final HighLevelDefinition definition;
-    private final JavaStatementVisitor clinitStatementVisitor;
-    private EnumDefinition enumDefinition = null;
+	private final JavaClass toClass;
+	private final HighLevelDefinition definition;
+	private final JavaStatementVisitor clinitStatementVisitor;
 	private final JavaCompiledModule javaModule;
+	private EnumDefinition enumDefinition = null;
 
-    public JavaMemberVisitor(JavaBytecodeContext context, ClassWriter writer, JavaClass toClass, HighLevelDefinition definition) {
-        this.writer = writer;
-        this.toClass = toClass;
-        this.definition = definition;
+	public JavaMemberVisitor(JavaBytecodeContext context, ClassWriter writer, JavaClass toClass, HighLevelDefinition definition) {
+		this.writer = writer;
+		this.toClass = toClass;
+		this.definition = definition;
 		this.context = context;
 		javaModule = context.getJavaModule(definition.module);
 
-        final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
-        this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
-        this.clinitStatementVisitor.start();
-        CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
-        
-        if(definition instanceof EnumDefinition) {
-            this.enumDefinition = (EnumDefinition) definition;
-        }
-    }
+		final JavaWriter javaWriter = new JavaWriter(context.logger, definition.position, writer, new JavaMethod(toClass, JavaMethod.Kind.STATICINIT, "<clinit>", true, "()V", Opcodes.ACC_STATIC, false), definition, null, null);
+		this.clinitStatementVisitor = new JavaStatementVisitor(context, javaModule, javaWriter);
+		this.clinitStatementVisitor.start();
+		CompilerUtils.writeDefaultFieldInitializers(context, javaWriter, definition, true);
+
+		if (definition instanceof EnumDefinition) {
+			this.enumDefinition = (EnumDefinition) definition;
+		}
+	}
 
 	@Override
 	public Void visitConst(ConstMember member) {
 		JavaField field = context.getJavaField(member);
-        writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
-        return null;
+		writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
+		return null;
 	}
 
 	@Override
 	public Void visitField(FieldMember member) {
 		JavaField field = context.getJavaField(member);
-        writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
-        return null;
-    }
+		writer.visitField(CompilerUtils.calcAccess(member.getEffectiveModifiers()), field.name, field.descriptor, field.signature, null).visitEnd();
+		return null;
+	}
 
-    @Override
-    public Void visitConstructor(ConstructorMember member) {
+	@Override
+	public Void visitConstructor(ConstructorMember member) {
 		final boolean isEnum = definition instanceof EnumDefinition;
-        final JavaMethod method = context.getJavaMethod(member);
+		final JavaMethod method = context.getJavaMethod(member);
 
-        final Label constructorStart = new Label();
-        final Label constructorEnd = new Label();
-        final JavaWriter constructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header), null);
-        constructorWriter.label(constructorStart);
-        CompilerUtils.tagConstructorParameters(context, javaModule, member.definition, member.header, isEnum);
-        if(isEnum) {
+		final Label constructorStart = new Label();
+		final Label constructorEnd = new Label();
+		final JavaWriter constructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header), null);
+		constructorWriter.label(constructorStart);
+		CompilerUtils.tagConstructorParameters(context, javaModule, member.definition, member.header, isEnum);
+		if (isEnum) {
 			constructorWriter.nameParameter(0, "name");
 			constructorWriter.nameParameter(0, "index");
 		}
@@ -90,17 +91,17 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 			);
 		}
 
-        for (FunctionParameter parameter : member.header.parameters) {
-            constructorWriter.nameVariable(
-                    javaModule.getParameterInfo(parameter).index,
-                    parameter.name,
-                    constructorStart,
-                    constructorEnd,
-                    context.getType(parameter.type));
-        }
+		for (FunctionParameter parameter : member.header.parameters) {
+			constructorWriter.nameVariable(
+					javaModule.getParameterInfo(parameter).index,
+					parameter.name,
+					constructorStart,
+					constructorEnd,
+					context.getType(parameter.type));
+		}
 
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, constructorWriter);
-        statementVisitor.start();
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, constructorWriter);
+		statementVisitor.start();
 
 		if (!member.isConstructorForwarded()) {
 			if (isEnum) {
@@ -113,24 +114,24 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 				context.logger.trace("Writing regular constructor");
 				constructorWriter.loadObject(0);
 				constructorWriter.invokeSpecial(Type.getInternalName(Object.class), "<init>", "()V");
-			} else if(member.builtin == BuiltinID.CLASS_DEFAULT_CONSTRUCTOR){ //Inherited classes needs to call super()
-                final HighLevelDefinition superType = ((DefinitionTypeID)definition.getSuperType()).definition;
-                constructorWriter.loadObject(0);
-                constructorWriter.invokeSpecial(context.getJavaClass(superType).internalName, "<init>", "()V");
-            }
-        }
-    
-        for(IDefinitionMember membersOfSameType : member.definition.members) {
-            if(membersOfSameType instanceof FieldMember) {
-                final FieldMember fieldMember = ((FieldMember) membersOfSameType);
-                final Expression initializer = fieldMember.initializer;
-                if(initializer != null) {
-                    constructorWriter.loadObject(0);
-                    initializer.accept(statementVisitor.expressionVisitor);
-                    constructorWriter.putField(context.getJavaField(fieldMember));
-                }
-            }
-        }
+			} else if (member.builtin == BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) { //Inherited classes needs to call super()
+				final HighLevelDefinition superType = ((DefinitionTypeID) definition.getSuperType()).definition;
+				constructorWriter.loadObject(0);
+				constructorWriter.invokeSpecial(context.getJavaClass(superType).internalName, "<init>", "()V");
+			}
+		}
+
+		for (IDefinitionMember membersOfSameType : member.definition.members) {
+			if (membersOfSameType instanceof FieldMember) {
+				final FieldMember fieldMember = ((FieldMember) membersOfSameType);
+				final Expression initializer = fieldMember.initializer;
+				if (initializer != null) {
+					constructorWriter.loadObject(0);
+					initializer.accept(statementVisitor.expressionVisitor);
+					constructorWriter.putField(context.getJavaField(fieldMember));
+				}
+			}
+		}
 
 		for (TypeParameter typeParameter : definition.typeParameters) {
 			final JavaTypeParameterInfo typeParameterInfo = javaModule.getTypeParameterInfo(typeParameter);
@@ -146,7 +147,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		if (member.body != null) {
 			member.body.accept(statementVisitor);
 		}
-		
+
 		constructorWriter.label(constructorEnd);
 		statementVisitor.end();
 		return null;
@@ -157,7 +158,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		int modifiers = Opcodes.ACC_PUBLIC;
 		if (member.body == null)
 			modifiers |= Opcodes.ACC_ABSTRACT;
-		
+
 		final JavaMethod method = JavaMethod.getVirtual(toClass, "close", "()V", modifiers);
 		if (member.body == null)
 			return null;
@@ -166,9 +167,9 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		final Label constructorEnd = new Label();
 		final JavaWriter destructorWriter = new JavaWriter(context.logger, member.position, writer, method, definition, null, null);
 		destructorWriter.label(constructorStart);
-		
-        final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
-        statementVisitor.start();
+
+		final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, destructorWriter);
+		statementVisitor.start();
 		// TODO: destruction of members (to be done when memory tags are implemented)
 		member.body.accept(statementVisitor);
 		destructorWriter.label(constructorEnd);
@@ -176,22 +177,22 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		return null;
 	}
 
-    @Override
-    public Void visitMethod(MethodMember member) {
-        CompilerUtils.tagMethodParameters(context, javaModule, member.header, member.isStatic(), Collections.emptyList());
+	@Override
+	public Void visitMethod(MethodMember member) {
+		CompilerUtils.tagMethodParameters(context, javaModule, member.header, member.isStatic(), Collections.emptyList());
 
-        final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.getEffectiveModifiers());
-        final JavaMethod method = context.getJavaMethod(member);
-		
+		final boolean isAbstract = member.body == null || Modifiers.isAbstract(member.getEffectiveModifiers());
+		final JavaMethod method = context.getJavaMethod(member);
+
 		final JavaWriter methodWriter = new JavaWriter(context.logger, member.position, writer, method, definition, context.getMethodSignature(member.header), null);
 
 		if (!isAbstract) {
 			if (method.isAbstract() || method.cls.kind == JavaClass.Kind.INTERFACE)
 				throw new IllegalArgumentException();
-			
+
 			final Label methodStart = new Label();
 			final Label methodEnd = new Label();
-		
+
 			final JavaStatementVisitor statementVisitor = new JavaStatementVisitor(context, javaModule, methodWriter);
 
 			statementVisitor.start();
@@ -271,7 +272,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	@Override
 	public Void visitCaster(CasterMember member) {
 		final JavaMethod javaMethod = context.getJavaMethod(member);
-		if(javaMethod == null || !javaMethod.compile) {
+		if (javaMethod == null || !javaMethod.compile) {
 			return null;
 		}
 
@@ -332,7 +333,7 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		} else {
 			//TODO: Fixme???
 			// What should I do if a native class has interfaces to be visited?
-			if(javaModule.getNativeClassInfo(member.definition) != null) {
+			if (javaModule.getNativeClassInfo(member.definition) != null) {
 				return null;
 			}
 
@@ -356,8 +357,8 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 	public void end() {
 
 		if (enumDefinition != null) {
-            JavaClass toClass = context.getJavaClass(enumDefinition);
-		    
+			JavaClass toClass = context.getJavaClass(enumDefinition);
+
 			for (EnumConstantMember constant : enumDefinition.enumConstants) {
 				writer.visitField(Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_ENUM, constant.name, "L" + toClass.internalName + ";", null, null).visitEnd();
 				final String internalName = context.getInternalName(constant.constructor.type);

@@ -6,7 +6,6 @@
 package org.openzen.drawablegui;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public enum DAnchor {
@@ -19,10 +18,10 @@ public enum DAnchor {
 	BOTTOM_LEFT(0, 1),
 	BOTTOM_CENTER(0.5f, 1),
 	BOTTOM_RIGHT(1, 1);
-	
+
 	public final float alignX;
 	public final float alignY;
-	
+
 	DAnchor(float alignX, float alignY) {
 		this.alignX = alignX;
 		this.alignY = alignY;

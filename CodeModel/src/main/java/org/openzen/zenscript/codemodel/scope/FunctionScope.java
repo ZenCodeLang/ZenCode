@@ -1,22 +1,23 @@
 package org.openzen.zenscript.codemodel.scope;
 
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
+
+import java.util.List;
 
 public class FunctionScope extends StatementScope {
 	private final BaseScope outer;
@@ -24,30 +25,30 @@ public class FunctionScope extends StatementScope {
 	private final GenericMapper typeParameterMap;
 	private final TypeID thisType;
 	private final DollarEvaluator dollar;
-	
+
 	public FunctionScope(CodePosition position, BaseScope outer, FunctionHeader header) {
 		this(position, outer, header, null);
 	}
-	
+
 	public FunctionScope(CodePosition position, BaseScope outer, FunctionHeader header, DollarEvaluator dollar) {
 		this.outer = outer;
 		this.header = header;
 		this.thisType = outer.getThisType();
 		this.dollar = dollar;
-		
+
 		if (outer.getLocalTypeParameters() == null)
 			throw new NullPointerException();
 		if (header == null)
 			throw new NullPointerException();
-		
+
 		typeParameterMap = outer.getLocalTypeParameters().getInner(position, outer.getTypeRegistry(), header.typeParameters);
 	}
-	
+
 	@Override
 	public ZSPackage getRootPackage() {
 		return outer.getRootPackage();
 	}
-	
+
 	@Override
 	public LocalMemberCache getMemberCache() {
 		return outer.getMemberCache();
@@ -68,14 +69,14 @@ public class FunctionScope extends StatementScope {
 		IPartialExpression fromSuper = super.get(position, name);
 		if (fromSuper != null)
 			return fromSuper;
-		
+
 		if (name.hasNoArguments()) {
 			for (FunctionParameter parameter : header.parameters) {
 				if (parameter.name.equals(name.name)) {
 					return new GetFunctionParameterExpression(position, parameter);
 				}
 			}
-			
+
 			if (header.typeParameters != null) {
 				for (TypeParameter parameter : header.typeParameters) {
 					if (parameter.name.equals(name.name))
@@ -83,7 +84,7 @@ public class FunctionScope extends StatementScope {
 				}
 			}
 		}
-		
+
 		return outer.get(position, name);
 	}
 
@@ -97,7 +98,7 @@ public class FunctionScope extends StatementScope {
 				}
 			}
 		}
-		
+
 		return outer.getType(position, name);
 	}
 
@@ -110,7 +111,7 @@ public class FunctionScope extends StatementScope {
 	public DollarEvaluator getDollar() {
 		return dollar;
 	}
-	
+
 	@Override
 	public IPartialExpression getOuterInstance(CodePosition position) throws CompileException {
 		return outer.getOuterInstance(position);

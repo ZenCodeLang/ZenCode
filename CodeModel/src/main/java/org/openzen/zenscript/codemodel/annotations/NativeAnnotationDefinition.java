@@ -21,11 +21,12 @@ import java.util.List;
 
 public class NativeAnnotationDefinition implements AnnotationDefinition {
 	public static final NativeAnnotationDefinition INSTANCE = new NativeAnnotationDefinition();
-	
+
 	private final List<FunctionHeader> INITIALIZERS = Collections.singletonList(
 			new FunctionHeader(BasicTypeID.VOID, BasicTypeID.STRING));
-	
-	private NativeAnnotationDefinition() {}
+
+	private NativeAnnotationDefinition() {
+	}
 
 	@Override
 	public String getAnnotationName() {

@@ -8,17 +8,16 @@ package org.openzen.zenscript.ide.host;
 import live.LiveList;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DevelopmentHost {
 	public String getName();
-	
+
 	public IDEPropertyStore getPropertyStore();
-	
+
 	public LiveList<IDEModule> getModules();
-	
+
 	public LiveList<IDELibrary> getLibraries();
-	
+
 	public LiveList<IDETarget> getTargets();
 }

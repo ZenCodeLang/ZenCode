@@ -5,11 +5,11 @@
  */
 package org.openzen.zenscript.javashared;
 
-import java.util.Arrays;
 import stdlib.Strings;
 
+import java.util.Arrays;
+
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaClass implements Comparable<JavaClass> {
@@ -23,7 +23,7 @@ public class JavaClass implements Comparable<JavaClass> {
 	public static final JavaClass ITERATOR = new JavaClass("java.util", "Iterator", JavaClass.Kind.INTERFACE);
 	public static final JavaClass ITERABLE = new JavaClass("java.lang", "Iterable", Kind.INTERFACE);
 	public static final JavaClass ARRAYS = new JavaClass("java.util", "Arrays", Kind.CLASS);
-	
+
 	public static final JavaClass BOOLEAN = new JavaClass("java.lang", "Boolean", Kind.CLASS);
 	public static final JavaClass BYTE = new JavaClass("java.lang", "Byte", Kind.CLASS);
 	public static final JavaClass SHORT = new JavaClass("java.lang", "Short", Kind.CLASS);
@@ -34,42 +34,17 @@ public class JavaClass implements Comparable<JavaClass> {
 	public static final JavaClass CHARACTER = new JavaClass("java.lang", "Character", Kind.CLASS);
 	public static final JavaClass COLLECTION = new JavaClass("java.util", "Collection", Kind.INTERFACE);
 	public static final JavaClass COLLECTIONS = new JavaClass("java.util", "Collections", Kind.CLASS);
-	
+
 	public static final JavaClass SHARED = new JavaClass("zsynthetic", "Shared", Kind.CLASS);
-	
-	public static JavaClass fromInternalName(String internalName, Kind kind) {
-		if (kind == Kind.ARRAY)
-			return new JavaClass("", internalName, kind, new String[0]);
-		
-		int lastSlash = internalName.lastIndexOf('/');
-		//if (lastSlash < 0)
-		//	System.out.println(internalName);
-		
-		String pkg = lastSlash < 0 ? "" : internalName.substring(0, lastSlash);
-		String className = lastSlash < 0 ? internalName : internalName.substring(lastSlash + 1);
-		String[] nameParts = Strings.split(className, '$');
-		return new JavaClass(pkg, internalName, kind, nameParts);
-	}
-	
-	public static String getNameFromFile(String filename) {
-		if (filename.indexOf('.') > 0)
-			return filename.substring(0, filename.lastIndexOf('.'));
-		else
-			return filename;
-	}
-	
 	public final JavaClass outer;
-	
 	public final String pkg;
 	public final String fullName;
 	public final String internalName;
 	public final Kind kind;
-	
+	private final String[] classNameParts;
 	public boolean empty = false;
 	public boolean membersPrepared = false;
-	
-	private final String[] classNameParts;
-	
+
 	private JavaClass(String pkg, String internalName, Kind kind, String[] classNameParts) {
 		if (classNameParts.length > 1) {
 			String[] outerParts = Arrays.copyOf(classNameParts, classNameParts.length - 1);
@@ -77,24 +52,24 @@ public class JavaClass implements Comparable<JavaClass> {
 		} else {
 			outer = null;
 		}
-		
+
 		this.pkg = pkg;
 		this.fullName = String.join(".", classNameParts);
 		this.internalName = internalName;
 		this.kind = kind;
 		this.classNameParts = classNameParts;
 	}
-	
+
 	public JavaClass(String pkg, String name, Kind kind) {
 		this.pkg = pkg;
-		this.classNameParts = new String[] { name };
+		this.classNameParts = new String[]{name};
 		this.fullName = pkg + '.' + name;
 		this.internalName = pkg.isEmpty() ? name : pkg.replace('.', '/') + '/' + name;
 		this.kind = kind;
-		
+
 		outer = this;
 	}
-	
+
 	public JavaClass(JavaClass outer, String name, Kind kind) {
 		this.pkg = outer.pkg;
 		this.classNameParts = Arrays.copyOf(outer.classNameParts, outer.classNameParts.length + 1);
@@ -102,30 +77,51 @@ public class JavaClass implements Comparable<JavaClass> {
 		this.fullName = outer.fullName + '.' + name;
 		this.internalName = outer.internalName + '$' + name;
 		this.kind = kind;
-		
+
 		this.outer = outer.outer;
 	}
-	
+
+	public static JavaClass fromInternalName(String internalName, Kind kind) {
+		if (kind == Kind.ARRAY)
+			return new JavaClass("", internalName, kind, new String[0]);
+
+		int lastSlash = internalName.lastIndexOf('/');
+		//if (lastSlash < 0)
+		//	System.out.println(internalName);
+
+		String pkg = lastSlash < 0 ? "" : internalName.substring(0, lastSlash);
+		String className = lastSlash < 0 ? internalName : internalName.substring(lastSlash + 1);
+		String[] nameParts = Strings.split(className, '$');
+		return new JavaClass(pkg, internalName, kind, nameParts);
+	}
+
+	public static String getNameFromFile(String filename) {
+		if (filename.indexOf('.') > 0)
+			return filename.substring(0, filename.lastIndexOf('.'));
+		else
+			return filename;
+	}
+
 	/**
 	 * Retrieves the name of the class itself, excluding outer class or package
 	 * name.
-	 * 
-	 * @return 
+	 *
+	 * @return
 	 */
 	public String getName() {
 		return classNameParts[classNameParts.length - 1];
 	}
-	
+
 	/**
-	 * Retrieves the full name of the class, including outer class but excluding 
+	 * Retrieves the full name of the class, including outer class but excluding
 	 * package name.
-	 * 
-	 * @return 
+	 *
+	 * @return
 	 */
 	public String getClassName() {
 		return fullName.substring(pkg.length() + 1);
 	}
-	
+
 	@Override
 	public int compareTo(JavaClass o) {
 		return fullName.compareTo(o.fullName);
@@ -134,11 +130,11 @@ public class JavaClass implements Comparable<JavaClass> {
 	public boolean isEnum() {
 		return kind == Kind.ENUM;
 	}
-	
+
 	public boolean isInterface() {
 		return kind == Kind.INTERFACE;
 	}
-	
+
 	public enum Kind {
 		CLASS,
 		INTERFACE,

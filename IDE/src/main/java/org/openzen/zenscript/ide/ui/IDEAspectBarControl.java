@@ -8,7 +8,6 @@ package org.openzen.zenscript.ide.ui;
 import org.openzen.drawablegui.DComponent;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface IDEAspectBarControl {

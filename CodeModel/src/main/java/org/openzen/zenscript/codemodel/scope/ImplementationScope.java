@@ -1,32 +1,33 @@
 package org.openzen.zenscript.codemodel.scope;
 
-import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.ThisExpression;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.partial.PartialTypeExpression;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
-import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
+import java.util.List;
+
 public class ImplementationScope extends BaseScope {
 	private final BaseScope outer;
 	private final TypeMembers members;
-	
+
 	public ImplementationScope(BaseScope outer, ImplementationMember implementation) {
 		this.outer = outer;
 		members = outer.getTypeMembers(implementation.type);
 	}
-	
+
 	@Override
 	public ZSPackage getRootPackage() {
 		return outer.getRootPackage();
@@ -43,7 +44,7 @@ public class ImplementationScope extends BaseScope {
 			return new PartialTypeExpression(position, members.getInnerType(position, name), name.arguments);
 		if (members.hasMember(name.name))
 			return members.getMemberExpression(position, this, new ThisExpression(position, outer.getThisType()), name, true);
-		
+
 		return outer.get(position, name);
 	}
 
@@ -56,7 +57,7 @@ public class ImplementationScope extends BaseScope {
 			}
 			return result;
 		}
-		
+
 		return outer.getType(position, name);
 	}
 

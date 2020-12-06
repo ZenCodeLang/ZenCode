@@ -10,14 +10,14 @@ import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.draw.DDrawTarget;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class CollapsedArrow implements DDrawable {
 	public static final CollapsedArrow INSTANCE = new CollapsedArrow();
-	
-	private CollapsedArrow() {}
-	
+
+	private CollapsedArrow() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform) {
 		ColoredCollapsedArrow.INSTANCE.draw(target, z, transform, 0xFF000000);

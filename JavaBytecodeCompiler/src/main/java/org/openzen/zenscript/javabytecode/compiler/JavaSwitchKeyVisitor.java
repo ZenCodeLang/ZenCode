@@ -5,22 +5,17 @@
  */
 package org.openzen.zenscript.javabytecode.compiler;
 
-import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValueVisitor;
-import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.*;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSwitchKeyVisitor implements SwitchValueVisitor<Integer> {
 	public static final JavaSwitchKeyVisitor INSTANCE = new JavaSwitchKeyVisitor();
-	
-	private JavaSwitchKeyVisitor() {}
-	
+
+	private JavaSwitchKeyVisitor() {
+	}
+
 	@Override
 	public Integer acceptInt(IntSwitchValue value) {
 		return value.value;

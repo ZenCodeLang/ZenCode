@@ -8,11 +8,10 @@ package org.openzen.zenscript.ide.host;
 import live.LiveList;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface IDELibrary {
 	public String getName();
-	
+
 	public LiveList<IDEModule> getModules();
 }

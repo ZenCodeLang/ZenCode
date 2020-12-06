@@ -16,32 +16,31 @@ import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.ui.icons.FolderIcon;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class PackageTreeNode extends ProjectOverviewNode {
 	protected final ProjectBrowser browser;
-	protected IDEModule module;
 	private final IDEPackage pkg;
+	protected IDEModule module;
 	private LiveList<ProjectOverviewNode> contents;
-	
+
 	public PackageTreeNode(ProjectBrowser browser, IDEPackage pkg, IDEPropertyDirectory treeState) {
 		super(treeState.getLiveBool("collapsed", true));
-		
+
 		this.browser = browser;
 		this.pkg = pkg;
 	}
-	
+
 	public PackageTreeNode(ProjectBrowser browser, IDEModule module, IDEPackage pkg, IDEPropertyDirectory treeState) {
 		super(treeState.getLiveBool("collapsed", true));
-		
+
 		this.browser = browser;
 		this.module = module;
 		this.pkg = pkg;
-		
+
 		init(module, treeState);
 	}
-	
+
 	protected final void init(IDEModule module, IDEPropertyDirectory treeState) {
 		this.module = module;
 		contents = new LiveConcatList<>(
@@ -49,7 +48,7 @@ public class PackageTreeNode extends ProjectOverviewNode {
 				new LiveMappedList<>(pkg.getSourceFiles(), source -> new SourceFileTreeNode(browser, source))
 		);
 	}
-	
+
 	@Override
 	public void close() {
 		contents.close();
@@ -79,7 +78,7 @@ public class PackageTreeNode extends ProjectOverviewNode {
 	public boolean isLeaf() {
 		return false;
 	}
-	
+
 	@Override
 	public void onMouseClick(DMouseEvent e) {
 		browser.setContextPackage(module, pkg);

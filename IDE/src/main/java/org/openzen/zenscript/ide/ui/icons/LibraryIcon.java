@@ -6,9 +6,9 @@
 package org.openzen.zenscript.ide.ui.icons;
 
 /**
- *
  * @author Hoofdgebruiker
  */
+
 import org.openzen.drawablegui.DPath;
 import org.openzen.drawablegui.DTransform2D;
 import org.openzen.drawablegui.DColorableIcon;
@@ -17,9 +17,6 @@ import org.openzen.drawablegui.draw.DDrawTarget;
 public class LibraryIcon implements DColorableIcon {
 	public static final LibraryIcon INSTANCE = new LibraryIcon();
 	public static final ColoredIcon BLACK = new ColoredIcon(INSTANCE, 0xFF000000);
-	
-	private LibraryIcon() {}
-	
 	private static final DPath PATH = tracer -> {
 		tracer.moveTo(20.54f, 5.23f);
 		tracer.lineTo(19.15f, 3.55f);
@@ -42,7 +39,10 @@ public class LibraryIcon implements DColorableIcon {
 		tracer.lineTo(5.12f, 5f);
 		tracer.close();
 	};
-	
+
+	private LibraryIcon() {
+	}
+
 	@Override
 	public void draw(DDrawTarget target, int z, DTransform2D transform, int color) {
 		target.fillPath(z, PATH, transform, color);

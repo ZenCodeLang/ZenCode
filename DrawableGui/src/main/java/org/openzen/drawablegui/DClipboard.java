@@ -6,11 +6,10 @@
 package org.openzen.drawablegui;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DClipboard {
 	void copyAsString(String value);
-	
+
 	String getAsString();
 }

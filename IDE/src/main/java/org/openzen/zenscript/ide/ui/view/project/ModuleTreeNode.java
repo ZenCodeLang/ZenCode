@@ -12,13 +12,12 @@ import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.ui.icons.ModuleIcon;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ModuleTreeNode extends PackageTreeNode {
 	public ModuleTreeNode(ProjectBrowser projectBrowser, IDEModule module, IDEPropertyDirectory treeState) {
 		super(projectBrowser, module.getRootPackage(), treeState);
-		
+
 		init(module, treeState);
 	}
 
@@ -36,7 +35,7 @@ public class ModuleTreeNode extends PackageTreeNode {
 	public String getTitle() {
 		return module.getName() + " [" + module.getType().getName() + "]";
 	}
-	
+
 	@Override
 	public void onMouseClick(DMouseEvent e) {
 		browser.setContextModule(module);

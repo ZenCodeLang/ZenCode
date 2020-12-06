@@ -19,7 +19,6 @@ import org.openzen.zenscript.javasource.scope.JavaSourceFileScope;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
@@ -30,24 +29,23 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 	protected final JavaSourceFormattingSettings settings;
 	protected final TypeID expansionTarget;
 	protected final HighLevelDefinition definition;
-	
+
 	private ElementType currentElementType = null;
-	
+
 	public BaseMemberCompiler(
 			JavaSourceFormattingSettings settings,
 			String indent,
 			StringBuilder output,
 			JavaSourceFileScope scope,
 			TypeID expansionTarget,
-			HighLevelDefinition definition)
-	{
+			HighLevelDefinition definition) {
 		this.indent = indent;
 		this.output = output;
 		this.scope = scope;
 		this.settings = settings;
 		this.expansionTarget = expansionTarget;
 		this.definition = definition;
-		
+
 		fieldInitializerScope = new JavaSourceStatementScope(
 				scope,
 				settings,
@@ -57,22 +55,22 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 				null,
 				true);
 	}
-	
+
 	protected void begin(ElementType type) {
 		if (currentElementType != null) {
 			if (currentElementType != ElementType.FIELD || type != ElementType.FIELD)
 				output.append(indent).append('\n');
 		}
-		
+
 		this.currentElementType = type;
 	}
-	
+
 	protected void override(boolean override) {
 		if (override) {
 			output.append(indent).append("@Override\n");
 		}
 	}
-	
+
 	protected void modifiers(int modifiers) {
 		if (Modifiers.isPublic(modifiers) && !definition.isInterface())
 			output.append("public ");
@@ -87,24 +85,24 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 		if (Modifiers.isFinal(modifiers) && !definition.isInterface())
 			output.append("final ");
 	}
-	
+
 	protected void compileBody(Statement body, FunctionHeader header) {
 		if (body == null || body instanceof EmptyStatement) {
 			output.append(";\n");
 		} else {
 			if (!(body instanceof BlockStatement))
-				body = new BlockStatement(body.position, new Statement[] { body });
-			
+				body = new BlockStatement(body.position, new Statement[]{body});
+
 			JavaSourceStatementScope scope = new JavaSourceStatementScope(this.scope, settings, header, indent + settings.indent, null, null, expansionTarget != null);
 			body.accept(new JavaSourceStatementCompiler(scope, output, true, false));
 			output.append('\n');
 		}
 	}
-	
+
 	protected void formatParameters(boolean isStatic, FunctionHeader header) {
 		formatParameters(isStatic, null, header);
 	}
-	
+
 	protected void formatParameters(boolean isStatic, TypeParameter[] targetTypeParameters, FunctionHeader header) {
 		output.append("(");
 		boolean first = true;
@@ -123,7 +121,7 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 				first = false;
 			else
 				output.append(", ");
-			
+
 			output.append(scope.type(expansionTarget));
 			output.append(" self");
 		}
@@ -142,13 +140,13 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 						.append(typeParameter.name);
 			}
 		}
-		
+
 		for (int i = 0; i < header.parameters.length; i++) {
 			if (first)
 				first = false;
 			else
 				output.append(", ");
-			
+
 			FunctionParameter parameter = header.parameters[i];
 			output.append(scope.type(parameter.type));
 			output.append(" ").append(parameter.name);
@@ -156,13 +154,13 @@ public abstract class BaseMemberCompiler implements MemberVisitor<Void> {
 				output.append("...");
 		}
 		output.append(")");
-		
+
 		if (header.thrownType != null) {
 			output.append(" throws ");
 			output.append(scope.type(header.thrownType));
 		}
 	}
-	
+
 	public enum ElementType {
 		STATICINIT,
 		FIELD,

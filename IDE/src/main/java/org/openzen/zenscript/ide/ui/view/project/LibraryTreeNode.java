@@ -14,26 +14,25 @@ import org.openzen.zenscript.ide.host.IDEPropertyDirectory;
 import org.openzen.zenscript.ide.ui.icons.LibraryIcon;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class LibraryTreeNode extends ProjectOverviewNode {
 	private final IDELibrary library;
 	private final LiveList<ProjectOverviewNode> modules;
-	
+
 	public LibraryTreeNode(ProjectBrowser browser, IDELibrary library, IDEPropertyDirectory treeState) {
 		super(treeState.getLiveBool("collapsed", false));
-		
+
 		this.library = library;
-		
+
 		modules = new LiveMappedList<>(library.getModules(), module -> new ModuleTreeNode(browser, module, treeState.getSubdirectory(module.getName())));
 	}
-	
+
 	@Override
 	public void close() {
 		modules.close();
 	}
-	
+
 	@Override
 	public DColorableIcon getIcon() {
 		return LibraryIcon.INSTANCE;

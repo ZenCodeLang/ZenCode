@@ -15,23 +15,16 @@ import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaParameterInfo;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void> {
-	public enum PushOption {
-		NONE, // don't push result
-		BEFORE, // push result before modification (eg. i++)
-		AFTER // push result after modification (eg. ++i)
-	}
-	
 	private final JavaBytecodeContext context;
 	private final JavaCompiledModule module;
 	private final JavaWriter javaWriter;
 	private final JavaExpressionVisitor expressionVisitor;
 	private final Runnable modification;
 	private final PushOption push;
-	
+
 	public JavaModificationExpressionVisitor(
 			JavaBytecodeContext context,
 			JavaCompiledModule module,
@@ -51,7 +44,7 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 		boolean large = type == BasicTypeID.DOUBLE || type == BasicTypeID.LONG;
 		modify(large);
 	}
-	
+
 	private void modify(boolean large) {
 		if (push == PushOption.BEFORE)
 			javaWriter.dup(large);
@@ -422,5 +415,11 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	@Override
 	public Void visitWrapOptional(WrapOptionalExpression expression) {
 		throw new UnsupportedOperationException("Invalid lvalue: wrap optional");
+	}
+
+	public enum PushOption {
+		NONE, // don't push result
+		BEFORE, // push result before modification (eg. i++)
+		AFTER // push result after modification (eg. ++i)
 	}
 }

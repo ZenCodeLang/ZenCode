@@ -6,16 +6,16 @@
 package org.openzen.zenscript.javasource;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaSourceCommentFormatter {
-	private JavaSourceCommentFormatter() {}
-	
+	private JavaSourceCommentFormatter() {
+	}
+
 	public static String[] format(String[] commentLines) {
 		if (commentLines.length == 0)
 			return commentLines;
-		
+
 		boolean isInMultilineComment = false;
 		String[] result = new String[commentLines.length];
 		for (int i = 0; i < commentLines.length; i++) {
@@ -25,14 +25,14 @@ public class JavaSourceCommentFormatter {
 					comment = "* " + comment;
 				comment = " " + comment;
 			}
-			
+
 			result[i] = comment;
-			
+
 			int index = 0;
 			while (true) {
 				if (!isInMultilineComment && comment.indexOf("//", index) > 0)
 					break;
-				
+
 				int newIndexOpen = comment.indexOf("/*", index);
 				if (newIndexOpen >= 0) {
 					isInMultilineComment = true;
@@ -40,7 +40,7 @@ public class JavaSourceCommentFormatter {
 				} else {
 					break;
 				}
-				
+
 				int newIndexClose = comment.indexOf("*/", newIndexOpen);
 				if (newIndexClose >= 0) {
 					isInMultilineComment = false;
@@ -50,7 +50,7 @@ public class JavaSourceCommentFormatter {
 				}
 			}
 		}
-		
+
 		return result;
 	}
 }

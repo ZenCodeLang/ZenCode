@@ -1,16 +1,11 @@
 package org.openzen.zenscript.formatter;
 
 import org.openzen.zencode.shared.StringExpansion;
-import org.openzen.zenscript.codemodel.expression.switchvalue.CharSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.IntSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.StringSwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValueVisitor;
-import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.*;
 
 public class SwitchValueFormatter implements SwitchValueVisitor<String> {
 	private final ScriptFormattingSettings settings;
-	
+
 	public SwitchValueFormatter(ScriptFormattingSettings settings) {
 		this.settings = settings;
 	}
@@ -22,7 +17,7 @@ public class SwitchValueFormatter implements SwitchValueVisitor<String> {
 
 	@Override
 	public String acceptChar(CharSwitchValue value) {
-		return StringExpansion.escape(new String(new char[] { value.value }), '\'', true);
+		return StringExpansion.escape(new String(new char[]{value.value}), '\'', true);
 	}
 
 	@Override

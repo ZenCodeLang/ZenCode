@@ -7,6 +7,7 @@ package org.openzen.zenscript.constructor.module;
 
 import java.util.Map;
 import java.util.function.Consumer;
+
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.logging.*;
 import org.openzen.zenscript.codemodel.SemanticModule;
@@ -15,15 +16,14 @@ import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.constructor.ModuleLoader;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface SourceModule {
 	public String getName();
-	
+
 	public SourcePackage getRootPackage();
-	
+
 	public SemanticModule[] loadDependencies(ModuleLoader loader, GlobalTypeRegistry registry, CompileExceptionLogger exceptionLogger);
-	
+
 	public Map<String, ISymbol> getGlobals(SemanticModule module);
 }

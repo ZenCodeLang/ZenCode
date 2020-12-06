@@ -6,12 +6,14 @@
 package org.openzen.zenscript.constructor.module;
 
 import org.openzen.zenscript.constructor.module.directory.SourceDirectoryPackage;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.*;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openzen.zencode.shared.CompileException;
@@ -33,7 +35,6 @@ import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedFile;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DirectoryModuleReference implements ModuleReference {
@@ -41,13 +42,13 @@ public class DirectoryModuleReference implements ModuleReference {
 	private final File directory;
 	private final boolean isStdlib;
 	private SourceDirectoryPackage rootPackage = null;
-	
+
 	public DirectoryModuleReference(String moduleName, File directory, boolean isStdlib) {
 		this.moduleName = moduleName;
 		this.directory = directory;
 		this.isStdlib = isStdlib;
 	}
-	
+
 	@Override
 	public String getName() {
 		return moduleName;
@@ -57,11 +58,11 @@ public class DirectoryModuleReference implements ModuleReference {
 	public SemanticModule load(ModuleLoader loader, GlobalTypeRegistry registry, ModuleLogger exceptionLogger) {
 		if (!directory.exists())
 			throw new ConstructorException("Error: module directory not found: " + directory);
-		
+
 		File jsonFile = new File(directory, "module.json");
 		if (!jsonFile.exists())
 			throw new ConstructorException("Error: module.json file not found in module " + moduleName);
-		
+
 		try {
 			JSONObject json = JSONUtils.load(jsonFile);
 
@@ -83,7 +84,7 @@ public class DirectoryModuleReference implements ModuleReference {
 				String dependencyName = dependencyNames.get(i);
 				SemanticModule module = loader.getModule(dependencyName);
 				dependencies[i] = module;
-				
+
 				try {
 					space.addModule(dependencyName, module);
 				} catch (CompileException ex) {
@@ -95,10 +96,10 @@ public class DirectoryModuleReference implements ModuleReference {
 			ZSPackage pkg = isStdlib ? registry.stdlib : new ZSPackage(null, parsedModule.packageName);
 			Module module = new Module(moduleName);
 			CompilingPackage compilingPackage = new CompilingPackage(pkg, module);
-			
+
 			ParsedFile[] parsedFiles = parsedModule.parse(compilingPackage);
 			SemanticModule result = ParsedFile.compileSyntaxToSemantic(dependencies, compilingPackage, parsedFiles, space, FunctionParameter.NONE, exceptionLogger);
-			
+
 			JSONObject globals = json.optJSONObject("globals");
 			if (globals != null) {
 				for (String key : globals.keySet()) {
@@ -112,7 +113,7 @@ public class DirectoryModuleReference implements ModuleReference {
 					}
 				}
 			}
-			
+
 			return result;
 		} catch (IOException ex) {
 			throw new ConstructorException("Loading module files failed: " + ex.getMessage(), ex);
@@ -120,21 +121,21 @@ public class DirectoryModuleReference implements ModuleReference {
 			throw new ConstructorException("Loading module files failed: " + ex.getMessage(), ex);
 		}
 	}
-	
+
 	@Override
 	public SourceDirectoryPackage getRootPackage() {
 		if (rootPackage == null)
 			rootPackage = loadPackage("", new File(directory, "src"));
-		
+
 		return rootPackage;
 	}
-	
+
 	private SourceDirectoryPackage loadPackage(String name, File directory) {
 		if (!directory.exists())
 			throw new IllegalArgumentException("Directory does not exist: " + directory.getAbsolutePath());
-		
+
 		SourceDirectoryPackage pkg = new SourceDirectoryPackage(directory, name);
-		
+
 		for (File file : directory.listFiles()) {
 			if (file.isDirectory()) {
 				pkg.addPackage(loadPackage(file.getName(), file));
@@ -142,7 +143,7 @@ public class DirectoryModuleReference implements ModuleReference {
 				pkg.addFile(new FileSourceFile(file.getName(), file));
 			}
 		}
-		
+
 		return pkg;
 	}
 }

@@ -1,86 +1,17 @@
 package org.openzen.zenscript.formatter;
 
 import org.openzen.zencode.shared.StringExpansion;
-import org.openzen.zenscript.formattershared.ExpressionString;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.expression.AndAndExpression;
-import org.openzen.zenscript.codemodel.expression.ArrayExpression;
-import org.openzen.zenscript.codemodel.expression.CompareExpression;
-import org.openzen.zenscript.codemodel.expression.CallExpression;
-import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedClosureExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedDirectExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedParameterExpression;
-import org.openzen.zenscript.codemodel.expression.CapturedThisExpression;
-import org.openzen.zenscript.codemodel.expression.CastExpression;
-import org.openzen.zenscript.codemodel.expression.CheckNullExpression;
-import org.openzen.zenscript.codemodel.expression.CoalesceExpression;
-import org.openzen.zenscript.codemodel.expression.ConditionalExpression;
-import org.openzen.zenscript.codemodel.expression.ConstExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantBoolExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantByteExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantCharExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantDoubleExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantFloatExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantIntExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantLongExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantSByteExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantShortExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantStringExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUIntExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantULongExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUShortExpression;
-import org.openzen.zenscript.codemodel.expression.ConstantUSizeExpression;
-import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
-import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
-import org.openzen.zenscript.codemodel.expression.EnumConstantExpression;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
-import org.openzen.zenscript.codemodel.expression.FunctionExpression;
-import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
-import org.openzen.zenscript.codemodel.expression.GetFunctionParameterExpression;
-import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.GetMatchingVariantField;
-import org.openzen.zenscript.codemodel.expression.GetStaticFieldExpression;
-import org.openzen.zenscript.codemodel.expression.GetterExpression;
-import org.openzen.zenscript.codemodel.expression.GlobalCallExpression;
-import org.openzen.zenscript.codemodel.expression.GlobalExpression;
-import org.openzen.zenscript.codemodel.expression.InterfaceCastExpression;
-import org.openzen.zenscript.codemodel.expression.IsExpression;
-import org.openzen.zenscript.codemodel.expression.MakeConstExpression;
-import org.openzen.zenscript.codemodel.expression.MapExpression;
-import org.openzen.zenscript.codemodel.expression.MatchExpression;
-import org.openzen.zenscript.codemodel.expression.NewExpression;
-import org.openzen.zenscript.codemodel.expression.NullExpression;
-import org.openzen.zenscript.codemodel.expression.OrOrExpression;
-import org.openzen.zenscript.codemodel.expression.PanicExpression;
-import org.openzen.zenscript.codemodel.expression.PostCallExpression;
-import org.openzen.zenscript.codemodel.expression.RangeExpression;
-import org.openzen.zenscript.codemodel.expression.SameObjectExpression;
-import org.openzen.zenscript.codemodel.expression.SetFieldExpression;
-import org.openzen.zenscript.codemodel.expression.SetFunctionParameterExpression;
-import org.openzen.zenscript.codemodel.expression.SetLocalVariableExpression;
-import org.openzen.zenscript.codemodel.expression.SetStaticFieldExpression;
-import org.openzen.zenscript.codemodel.expression.SetterExpression;
-import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
-import org.openzen.zenscript.codemodel.expression.StaticSetterExpression;
-import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
-import org.openzen.zenscript.codemodel.expression.ThisExpression;
-import org.openzen.zenscript.codemodel.expression.ThrowExpression;
-import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
-import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
-import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
-import org.openzen.zenscript.codemodel.expression.VariantValueExpression;
-import org.openzen.zenscript.codemodel.expression.WrapOptionalExpression;
+import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
+import org.openzen.zenscript.formattershared.ExpressionString;
 
 public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> {
-	private final ScriptFormattingSettings settings;
 	public final TypeFormatter typeFormatter;
 	public final String indent;
-	
+	private final ScriptFormattingSettings settings;
+
 	public ExpressionFormatter(ScriptFormattingSettings settings, TypeFormatter typeFormatter, String indent) {
 		this.settings = settings;
 		this.typeFormatter = typeFormatter;
@@ -100,7 +31,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		for (Expression element : expression.expressions) {
 			if (index > 0)
 				result.append(", ");
-			
+
 			result.append(element.accept(this).value);
 			index++;
 		}
@@ -159,7 +90,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 					for (int i = 0; i < expression.arguments.arguments.length - 1; i++) {
 						if (i > 0)
 							result.append(", ");
-						
+
 						result.append(expression.arguments.arguments[i].accept(this).value);
 					}
 					result.append("] = ");
@@ -168,19 +99,19 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				}
 				case INDEXGET: {
 					StringBuilder result = new StringBuilder();
-                    if(expression.target instanceof GetLocalVariableExpression) {
-                        result.append(((GetLocalVariableExpression) expression.target).variable.name);
-                    } else if(expression.target instanceof GetFunctionParameterExpression) {
-                        result.append(((GetFunctionParameterExpression) expression.target).parameter.name);
-                    } else {
-                        result.append(expression.target);
-                    }
+					if (expression.target instanceof GetLocalVariableExpression) {
+						result.append(((GetLocalVariableExpression) expression.target).variable.name);
+					} else if (expression.target instanceof GetFunctionParameterExpression) {
+						result.append(((GetFunctionParameterExpression) expression.target).parameter.name);
+					} else {
+						result.append(expression.target);
+					}
 					result.append("[");
 					//why -1?
 					for (int i = 0; i < expression.arguments.arguments.length; i++) {
 						if (i > 0)
 							result.append(", ");
-						
+
 						result.append(expression.arguments.arguments[i].accept(this));
 					}
 					result.append("]");
@@ -302,7 +233,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitCapturedThis(CapturedThisExpression expression) {
 		return new ExpressionString("this", ZenScriptOperator.PRIMARY);
 	}
-	
+
 	@Override
 	public ExpressionString visitCast(CastExpression expression) {
 		StringBuilder result = new StringBuilder();
@@ -334,7 +265,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append(expression.ifElse.accept(this));
 		return new ExpressionString(result.toString(), ZenScriptOperator.TERNARY);
 	}
-	
+
 	@Override
 	public ExpressionString visitConst(ConstExpression expression) {
 		StringBuilder result = new StringBuilder();
@@ -363,12 +294,12 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 
 	@Override
 	public ExpressionString visitConstantDouble(ConstantDoubleExpression expression) {
-	    return new ExpressionString(Double.toString(expression.value), ZenScriptOperator.PRIMARY);
+		return new ExpressionString(Double.toString(expression.value), ZenScriptOperator.PRIMARY);
 	}
 
 	@Override
 	public ExpressionString visitConstantFloat(ConstantFloatExpression expression) {
-        return new ExpressionString(Float.toString(expression.value), ZenScriptOperator.PRIMARY);
+		return new ExpressionString(Float.toString(expression.value), ZenScriptOperator.PRIMARY);
 	}
 
 	@Override
@@ -390,7 +321,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitConstantShort(ConstantShortExpression expression) {
 		return new ExpressionString(Integer.toString(expression.value) + " as short", ZenScriptOperator.CAST);
 	}
-	
+
 	@Override
 	public ExpressionString visitConstantUSize(ConstantUSizeExpression expression) {
 		return new ExpressionString(Long.toUnsignedString(expression.value) + " as usize", ZenScriptOperator.CAST);
@@ -455,7 +386,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 			result.append(')');
 		}
 		result.append(" => ");
-		
+
 		if (expression.body instanceof ReturnStatement) {
 			result.append(((ReturnStatement) expression.body).value.accept(this));
 		} else if (expression.body instanceof ExpressionStatement) {
@@ -485,7 +416,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitGetLocalVariable(GetLocalVariableExpression expression) {
 		return new ExpressionString(expression.variable.name, ZenScriptOperator.PRIMARY);
 	}
-	
+
 	@Override
 	public ExpressionString visitGetMatchingVariantField(GetMatchingVariantField expression) {
 		return new ExpressionString(expression.value.parameters[expression.index], ZenScriptOperator.PRIMARY);
@@ -508,12 +439,12 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append(expression.getter.member.name);
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
-	
+
 	@Override
 	public ExpressionString visitGlobal(GlobalExpression expression) {
 		return new ExpressionString(expression.name, ZenScriptOperator.PRIMARY);
 	}
-	
+
 	@Override
 	public ExpressionString visitGlobalCall(GlobalCallExpression expression) {
 		StringBuilder result = new StringBuilder();
@@ -559,7 +490,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append("}");
 		return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
 	}
-	
+
 	@Override
 	public ExpressionString visitMatch(MatchExpression expression) {
 		StringBuilder result = new StringBuilder();
@@ -588,18 +519,18 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitOrOr(OrOrExpression expression) {
 		return binary(expression.left, expression.right, ZenScriptOperator.OROR);
 	}
-	
+
 	@Override
 	public ExpressionString visitPanic(PanicExpression expression) {
 		return expression.value.accept(this).unaryPrefix(ZenScriptOperator.PANIC);
 	}
-    
-    @Override
-    public ExpressionString visitPlatformSpecific(Expression expression) {
-	    throw new UnsupportedOperationException("Not yet implemented!");
-    }
-    
-    @Override
+
+	@Override
+	public ExpressionString visitPlatformSpecific(Expression expression) {
+		throw new UnsupportedOperationException("Not yet implemented!");
+	}
+
+	@Override
 	public ExpressionString visitPostCall(PostCallExpression expression) {
 		return unaryPostfix(expression.target, ZenScriptOperator.INCREMENT, expression.member.getOperator() == OperatorType.INCREMENT ? "++" : "--");
 	}
@@ -608,7 +539,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitRange(RangeExpression expression) {
 		return binary(expression.from, expression.to, ZenScriptOperator.RANGE);
 	}
-	
+
 	@Override
 	public ExpressionString visitSameObject(SameObjectExpression expression) {
 		return binary(expression.left, expression.right, expression.inverted ? ZenScriptOperator.NOTSAME : ZenScriptOperator.SAME);
@@ -617,7 +548,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitSetField(SetFieldExpression expression) {
 		return new ExpressionString(
-				expression.target.accept(this) + "." + expression.field.member.name + " = " + expression.value.accept(this).value, 
+				expression.target.accept(this) + "." + expression.field.member.name + " = " + expression.value.accept(this).value,
 				ZenScriptOperator.ASSIGN);
 	}
 
@@ -652,7 +583,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitStaticGetter(StaticGetterExpression expression) {
 		return new ExpressionString(
-				typeFormatter.format(expression.type) + "." + expression.getter.member.name, 
+				typeFormatter.format(expression.type) + "." + expression.getter.member.name,
 				ZenScriptOperator.MEMBER);
 	}
 
@@ -662,7 +593,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 				typeFormatter.format(expression.type) + "." + expression.setter.member.name + " = " + expression.setter.member.name,
 				ZenScriptOperator.ASSIGN);
 	}
-	
+
 	@Override
 	public ExpressionString visitSupertypeCast(SupertypeCastExpression expression) {
 		return expression.value.accept(this);
@@ -695,7 +626,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		ExpressionString value = expression.value.accept(this);
 		return new ExpressionString("try!" + value.value, value.priority);
 	}
-	
+
 	@Override
 	public ExpressionString visitVariantValue(VariantValueExpression expression) {
 		StringBuilder result = new StringBuilder();
@@ -708,15 +639,15 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	public ExpressionString visitWrapOptional(WrapOptionalExpression expression) {
 		return expression.value.accept(this);
 	}
-	
+
 	private ExpressionString unaryPrefix(Expression value, ZenScriptOperator operator, String operatorString) {
 		return new ExpressionString(operatorString + value.accept(this).value, operator);
 	}
-	
+
 	private ExpressionString unaryPostfix(Expression value, ZenScriptOperator operator, String operatorString) {
 		return new ExpressionString(value.accept(this).value + operatorString, operator);
 	}
-	
+
 	private ExpressionString binary(Expression left, Expression right, ZenScriptOperator operator) {
 		return ExpressionString.binary(left.accept(this), right.accept(this), operator);
 	}

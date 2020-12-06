@@ -6,7 +6,6 @@
 package org.openzen.zenscript.javashared;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class JavaField {
@@ -14,7 +13,7 @@ public class JavaField {
 	public final String name;
 	public final String descriptor;
 	public final String signature; // TODO: calculate signature too
-	
+
 	public JavaField(JavaClass cls, String name, String descriptor) {
 		this(cls, name, descriptor, null);
 	}
@@ -25,16 +24,16 @@ public class JavaField {
 		this.descriptor = descriptor;
 		this.signature = signature;
 	}
-	
+
 	public String getMapping(JavaClass definition) {
 		StringBuilder result = new StringBuilder();
 		result.append(name);
 		result.append(':');
 		result.append(descriptor);
-		
+
 		if (!cls.internalName.equals(definition.internalName))
 			result.append(definition.internalName);
-		
+
 		return result.toString();
 	}
 }

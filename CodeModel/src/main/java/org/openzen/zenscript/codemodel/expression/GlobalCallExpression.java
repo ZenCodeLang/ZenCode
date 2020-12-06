@@ -7,10 +7,10 @@ public class GlobalCallExpression extends Expression {
 	public final String name;
 	public final CallArguments arguments;
 	public final Expression resolution;
-	
+
 	public GlobalCallExpression(CodePosition position, String name, CallArguments arguments, Expression resolution) {
 		super(position, resolution.type, resolution.thrownType);
-		
+
 		this.name = name;
 		this.arguments = arguments;
 		this.resolution = resolution;

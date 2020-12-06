@@ -12,7 +12,6 @@ import org.openzen.drawablegui.border.DPaddedBorder;
 import org.openzen.drawablegui.style.DStyleDefinition;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DSimpleTooltipStyle {
@@ -20,7 +19,7 @@ public class DSimpleTooltipStyle {
 	public final DFont font;
 	public final int backgroundColor;
 	public final int textColor;
-	
+
 	public DSimpleTooltipStyle(DStyleDefinition style) {
 		border = style.getBorder("border", context -> new DCompositeBorder(
 				new DLineBorder(0xFF000000, 1),

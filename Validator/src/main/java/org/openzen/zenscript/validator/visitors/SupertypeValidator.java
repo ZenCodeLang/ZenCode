@@ -8,34 +8,22 @@ package org.openzen.zenscript.validator.visitors;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.AssocTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.OptionalTypeID;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.FunctionTypeID;
-import org.openzen.zenscript.codemodel.type.GenericMapTypeID;
-import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.IteratorTypeID;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
+import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.validator.ValidationLogEntry;
 import org.openzen.zenscript.validator.Validator;
-import org.openzen.zenscript.codemodel.type.TypeVisitor;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SupertypeValidator implements TypeVisitor<Void> {
 	private final Validator validator;
 	private final CodePosition position;
 	private final HighLevelDefinition subtype;
-	
+
 	public SupertypeValidator(
 			Validator validator,
 			CodePosition position,
-			HighLevelDefinition subtype)
-	{
+			HighLevelDefinition subtype) {
 		this.validator = validator;
 		this.position = position;
 		this.subtype = subtype;

@@ -6,14 +6,13 @@
 package org.openzen.zenscript.constructor;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ConstructorException extends RuntimeException {
 	public ConstructorException(String message) {
 		super(message);
 	}
-	
+
 	public ConstructorException(String message, Throwable cause) {
 		super(message, cause);
 	}

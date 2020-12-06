@@ -24,93 +24,93 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EscapableBracketParser implements BracketExpressionParser {
-    private final FunctionalMemberRef method;
-    private final TypeID targetType;
+	private final FunctionalMemberRef method;
+	private final TypeID targetType;
 
-    public EscapableBracketParser(GlobalTypeRegistry registry, FunctionalMemberRef method) {
-        if (!method.isStatic())
-            throw new IllegalArgumentException("Method must be static");
-        if (method.getHeader().getNumberOfTypeParameters() > 0)
-            throw new IllegalArgumentException("Method cannot have type parameters");
+	public EscapableBracketParser(GlobalTypeRegistry registry, FunctionalMemberRef method) {
+		if (!method.isStatic())
+			throw new IllegalArgumentException("Method must be static");
+		if (method.getHeader().getNumberOfTypeParameters() > 0)
+			throw new IllegalArgumentException("Method cannot have type parameters");
 
-        this.method = method;
-        this.targetType = registry.getForDefinition(method.getTarget().definition);
-    }
+		this.method = method;
+		this.targetType = registry.getForDefinition(method.getTarget().definition);
+	}
 
-    @Override
-    public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
-        StringBuilder string = new StringBuilder();
+	@Override
+	public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
+		StringBuilder string = new StringBuilder();
 
-        //This list will contain the BEP calls
-        //If this is only a normal BEP, then it will contain exactly one String ParsedExpression.
-        final List<ParsedExpression> expressionList = new ArrayList<>();
+		//This list will contain the BEP calls
+		//If this is only a normal BEP, then it will contain exactly one String ParsedExpression.
+		final List<ParsedExpression> expressionList = new ArrayList<>();
 
-        while (tokens.optional(ZSTokenType.T_GREATER) == null) {
-            ZSToken next = tokens.next();
+		while (tokens.optional(ZSTokenType.T_GREATER) == null) {
+			ZSToken next = tokens.next();
 
-            if (next.type != ZSTokenType.T_DOLLAR) {
-                string.append(next.content);
-                string.append(tokens.getLastWhitespace());
-                continue;
-            }
+			if (next.type != ZSTokenType.T_DOLLAR) {
+				string.append(next.content);
+				string.append(tokens.getLastWhitespace());
+				continue;
+			}
 
-            //We found a $, now check that it has a { directly after it.
-            final String ws = tokens.getLastWhitespace();
-            if (!ws.isEmpty()) {
-                //$  {..} is not ${..} so we print it as literal
-                string.append(next.content).append(ws);
-                continue;
-            }
+			//We found a $, now check that it has a { directly after it.
+			final String ws = tokens.getLastWhitespace();
+			if (!ws.isEmpty()) {
+				//$  {..} is not ${..} so we print it as literal
+				string.append(next.content).append(ws);
+				continue;
+			}
 
-            next = tokens.next();
-            //Now we check if it is a {
-            if (next.type == ZSTokenType.T_AOPEN) {
-                if (string.length() != 0) {
-                    expressionList.add(new ParsedExpressionString(position, string.toString(), false));
-                    string = new StringBuilder();
-                }
-                expressionList.add(ParsedExpression.parse(tokens));
-                tokens.required(ZSTokenType.T_ACLOSE, "} expected.");
-                string.append(tokens.getLastWhitespace());
-            } else {
-                //No { after the $, so we treat them both as literal
-                string.append("$").append(ws); //Technically, the whitespace here is empty, but let's be sure
-                string.append(next.content).append(tokens.getLastWhitespace());
-            }
+			next = tokens.next();
+			//Now we check if it is a {
+			if (next.type == ZSTokenType.T_AOPEN) {
+				if (string.length() != 0) {
+					expressionList.add(new ParsedExpressionString(position, string.toString(), false));
+					string = new StringBuilder();
+				}
+				expressionList.add(ParsedExpression.parse(tokens));
+				tokens.required(ZSTokenType.T_ACLOSE, "} expected.");
+				string.append(tokens.getLastWhitespace());
+			} else {
+				//No { after the $, so we treat them both as literal
+				string.append("$").append(ws); //Technically, the whitespace here is empty, but let's be sure
+				string.append(next.content).append(tokens.getLastWhitespace());
+			}
 
-        }
+		}
 
-        if (string.length() != 0) {
-            expressionList.add(new ParsedExpressionString(position, string.toString(), false));
-        }
+		if (string.length() != 0) {
+			expressionList.add(new ParsedExpressionString(position, string.toString(), false));
+		}
 
-        return new StaticMethodCallExpression(position, expressionList);
-    }
+		return new StaticMethodCallExpression(position, expressionList);
+	}
 
-    private class StaticMethodCallExpression extends ParsedExpression {
+	private class StaticMethodCallExpression extends ParsedExpression {
 
-        private final ParsedExpression call;
+		private final ParsedExpression call;
 
-        public StaticMethodCallExpression(CodePosition position, List<ParsedExpression> expressions) {
-            super(position);
-            ParsedExpression p = null;
-            for (ParsedExpression expression : expressions) {
-                p = p == null ? expression : new ParsedExpressionBinary(expression.position, p, expression, OperatorType.ADD);
-            }
+		public StaticMethodCallExpression(CodePosition position, List<ParsedExpression> expressions) {
+			super(position);
+			ParsedExpression p = null;
+			for (ParsedExpression expression : expressions) {
+				p = p == null ? expression : new ParsedExpressionBinary(expression.position, p, expression, OperatorType.ADD);
+			}
 
-            this.call = p;
-        }
+			this.call = p;
+		}
 
-        @Override
-        public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-            final Expression methodCall = call.compile(scope.withHint(BasicTypeID.STRING)).eval();
-            final CallArguments arguments = new CallArguments(methodCall);
-            return new CallStaticExpression(position, targetType, method, method.getHeader(), arguments);
-        }
+		@Override
+		public IPartialExpression compile(ExpressionScope scope) throws CompileException {
+			final Expression methodCall = call.compile(scope.withHint(BasicTypeID.STRING)).eval();
+			final CallArguments arguments = new CallArguments(methodCall);
+			return new CallStaticExpression(position, targetType, method, method.getHeader(), arguments);
+		}
 
-        @Override
-        public boolean hasStrongType() {
-            return true;
-        }
-    }
+		@Override
+		public boolean hasStrongType() {
+			return true;
+		}
+	}
 }

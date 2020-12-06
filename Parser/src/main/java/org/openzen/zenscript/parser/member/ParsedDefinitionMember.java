@@ -1,35 +1,45 @@
 package org.openzen.zenscript.parser.member;
 
-import java.util.Map;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.parser.ParsedDefinition;
-import org.openzen.zenscript.parser.expression.ParsedExpression;
-import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.scope.BaseScope;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
+import org.openzen.zenscript.parser.ParsedDefinition;
 import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
+import org.openzen.zenscript.parser.expression.ParsedExpression;
+import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 import org.openzen.zenscript.parser.statements.ParsedStatementBlock;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
+import java.util.Map;
+
 public abstract class ParsedDefinitionMember {
+	public final HighLevelDefinition definition;
+	public final ParsedAnnotation[] annotations;
+
+	public ParsedDefinitionMember(HighLevelDefinition definition, ParsedAnnotation[] annotations) {
+		this.definition = definition;
+		this.annotations = annotations;
+	}
+
 	public static ParsedDefinitionMember parse(ZSTokenParser tokens, ParsedDefinition forDefinition, ParsedImplementation forImplementation) throws ParseException {
 		CodePosition start = tokens.getPosition();
 		ParsedAnnotation[] annotations = ParsedAnnotation.parseAnnotations(tokens);
 		int modifiers = 0;
-		outer: while (true) {
+		outer:
+		while (true) {
 			switch (tokens.peek().type) {
 				case K_INTERNAL:
 					tokens.next();
@@ -83,7 +93,7 @@ public abstract class ParsedDefinitionMember {
 					break outer;
 			}
 		}
-		
+
 		switch (tokens.peek().type) {
 			case K_VAL:
 			case K_VAR: {
@@ -125,7 +135,7 @@ public abstract class ParsedDefinitionMember {
 				ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
 				if (body == null)
 					throw new ParseException(start, "Function body is required for constructors");
-				
+
 				return new ParsedConstructor(start, forDefinition.getCompiled(), forImplementation, modifiers, annotations, header, body);
 			}
 			case T_IDENTIFIER: {
@@ -140,7 +150,7 @@ public abstract class ParsedDefinitionMember {
 					tokens.required(ZSTokenType.T_SEMICOLON, "; expected");
 					return new ParsedConst(start, forDefinition.getCompiled(), modifiers & ~Modifiers.CONST, annotations, name, type, value);
 				}
-				
+
 				ParsedFunctionHeader header = ParsedFunctionHeader.parse(tokens);
 				ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
 				return new ParsedMethod(start, forDefinition.getCompiled(), forImplementation, modifiers, annotations, name, header, body);
@@ -198,7 +208,7 @@ public abstract class ParsedDefinitionMember {
 				tokens.next();
 				if (tokens.optional(ZSTokenType.K_THIS) != null) {
 					tokens.popMark();
-					
+
 					// destructor
 					ParsedFunctionBody body = ParsedStatement.parseFunctionBody(tokens);
 					return new ParsedDestructor(start, forDefinition.getCompiled(), forImplementation, modifiers, annotations, body);
@@ -215,7 +225,7 @@ public abstract class ParsedDefinitionMember {
 			case T_XOR:
 			case T_NOT:
 			case T_ADDASSIGN:
-			case T_SUBASSIGN: 
+			case T_SUBASSIGN:
 			case T_CATASSIGN:
 			case T_MULASSIGN:
 			case T_DIVASSIGN:
@@ -275,57 +285,79 @@ public abstract class ParsedDefinitionMember {
 				throw new ParseException(tokens.getPosition(), "Unexpected token: " + tokens.peek().content);
 		}
 	}
-	
+
 	private static OperatorType getOperator(ZSTokenType type) {
 		switch (type) {
-			case T_ADD: return OperatorType.ADD;
-			case T_SUB: return OperatorType.SUB;
-			case T_CAT: return OperatorType.CAT;
-			case T_MUL: return OperatorType.MUL;
-			case T_DIV: return OperatorType.DIV;
-			case T_MOD: return OperatorType.MOD;
-			case T_AND: return OperatorType.AND;
-			case T_OR: return OperatorType.OR;
-			case T_XOR: return OperatorType.XOR;
-			case T_NOT: return OperatorType.NOT;
-			case T_ADDASSIGN: return OperatorType.ADDASSIGN;
-			case T_SUBASSIGN: return OperatorType.SUBASSIGN;
-			case T_CATASSIGN: return OperatorType.CATASSIGN;
-			case T_MULASSIGN: return OperatorType.MULASSIGN;
-			case T_DIVASSIGN: return OperatorType.DIVASSIGN;
-			case T_MODASSIGN: return OperatorType.MODASSIGN;
-			case T_ANDASSIGN: return OperatorType.ANDASSIGN;
-			case T_ORASSIGN: return OperatorType.ORASSIGN;
-			case T_XORASSIGN: return OperatorType.XORASSIGN;
-			case T_INCREMENT: return OperatorType.INCREMENT;
-			case T_DECREMENT: return OperatorType.DECREMENT;
-			case T_DOT2: return OperatorType.RANGE;
-			case T_SHL: return OperatorType.SHL;
-			case T_SHR: return OperatorType.SHR;
-			case T_USHR: return OperatorType.USHR;
-			case T_SHLASSIGN: return OperatorType.SHLASSIGN;
-			case T_SHRASSIGN: return OperatorType.SHRASSIGN;
-			case T_USHRASSIGN: return OperatorType.USHRASSIGN;
+			case T_ADD:
+				return OperatorType.ADD;
+			case T_SUB:
+				return OperatorType.SUB;
+			case T_CAT:
+				return OperatorType.CAT;
+			case T_MUL:
+				return OperatorType.MUL;
+			case T_DIV:
+				return OperatorType.DIV;
+			case T_MOD:
+				return OperatorType.MOD;
+			case T_AND:
+				return OperatorType.AND;
+			case T_OR:
+				return OperatorType.OR;
+			case T_XOR:
+				return OperatorType.XOR;
+			case T_NOT:
+				return OperatorType.NOT;
+			case T_ADDASSIGN:
+				return OperatorType.ADDASSIGN;
+			case T_SUBASSIGN:
+				return OperatorType.SUBASSIGN;
+			case T_CATASSIGN:
+				return OperatorType.CATASSIGN;
+			case T_MULASSIGN:
+				return OperatorType.MULASSIGN;
+			case T_DIVASSIGN:
+				return OperatorType.DIVASSIGN;
+			case T_MODASSIGN:
+				return OperatorType.MODASSIGN;
+			case T_ANDASSIGN:
+				return OperatorType.ANDASSIGN;
+			case T_ORASSIGN:
+				return OperatorType.ORASSIGN;
+			case T_XORASSIGN:
+				return OperatorType.XORASSIGN;
+			case T_INCREMENT:
+				return OperatorType.INCREMENT;
+			case T_DECREMENT:
+				return OperatorType.DECREMENT;
+			case T_DOT2:
+				return OperatorType.RANGE;
+			case T_SHL:
+				return OperatorType.SHL;
+			case T_SHR:
+				return OperatorType.SHR;
+			case T_USHR:
+				return OperatorType.USHR;
+			case T_SHLASSIGN:
+				return OperatorType.SHLASSIGN;
+			case T_SHRASSIGN:
+				return OperatorType.SHRASSIGN;
+			case T_USHRASSIGN:
+				return OperatorType.USHRASSIGN;
 			default:
 				throw new AssertionError("Missing switch case in getOperator");
 		}
 	}
-	
-	public final HighLevelDefinition definition;
-	public final ParsedAnnotation[] annotations;
-	
-	public ParsedDefinitionMember(HighLevelDefinition definition, ParsedAnnotation[] annotations) {
-		this.definition = definition;
-		this.annotations = annotations;
-	}
-	
+
 	public abstract void linkTypes(TypeResolutionContext context);
-	
-	public void registerInnerTypes(Map<String, ParsedDefinition> innerTypes) {}
-	
+
+	public void registerInnerTypes(Map<String, ParsedDefinition> innerTypes) {
+	}
+
 	public abstract IDefinitionMember getCompiled();
-	
+
 	public abstract void compile(BaseScope scope) throws CompileException;
-	
-	public void registerMembers(BaseScope scope, PrecompilationState state) {}
+
+	public void registerMembers(BaseScope scope, PrecompilationState state) {
+	}
 }

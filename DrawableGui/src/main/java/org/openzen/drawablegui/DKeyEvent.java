@@ -6,12 +6,11 @@
 package org.openzen.drawablegui;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class DKeyEvent {
 	public static final char CHAR_UNDEFINED = 65535;
-	
+
 	public static final int BUTTON1 = 1;
 	public static final int BUTTON2 = 2;
 	public static final int BUTTON3 = 4;
@@ -20,21 +19,21 @@ public class DKeyEvent {
 	public static final int SHIFT = 1024;
 	public static final int META = 2048;
 	public static final int ALT_GRAPH = 4096;
-	
+
 	public final char character;
 	public final KeyCode keyCode;
 	public final int modifiers;
-	
+
 	public DKeyEvent(char character, KeyCode keyCode, int modifiers) {
 		this.character = character;
 		this.keyCode = keyCode;
 		this.modifiers = modifiers;
 	}
-	
+
 	public boolean has(int modifiers) {
 		return (this.modifiers & modifiers) == modifiers;
 	}
-	
+
 	public enum KeyCode {
 		ENTER,
 		BACKSPACE,

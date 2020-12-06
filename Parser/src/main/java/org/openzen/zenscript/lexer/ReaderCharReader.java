@@ -9,18 +9,17 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ReaderCharReader implements CharReader {
 	private final Reader reader;
 	private int next;
-	
+
 	public ReaderCharReader(Reader reader) throws IOException {
 		this.reader = reader;
 		next = reader.read();
 	}
-	
+
 	@Override
 	public int peek() {
 		return next;

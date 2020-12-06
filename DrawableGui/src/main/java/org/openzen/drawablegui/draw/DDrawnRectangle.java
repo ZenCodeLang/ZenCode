@@ -8,7 +8,6 @@ package org.openzen.drawablegui.draw;
 import org.openzen.drawablegui.DIRectangle;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public interface DDrawnRectangle extends DDrawnColorableElement {

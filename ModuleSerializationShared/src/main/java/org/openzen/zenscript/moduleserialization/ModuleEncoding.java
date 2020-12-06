@@ -6,11 +6,11 @@
 package org.openzen.zenscript.moduleserialization;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class ModuleEncoding {
-	private ModuleEncoding() {}
-	
 	public static final int FLAG_CODE = 1;
+
+	private ModuleEncoding() {
+	}
 }

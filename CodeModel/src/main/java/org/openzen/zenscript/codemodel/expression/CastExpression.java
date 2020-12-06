@@ -8,10 +8,10 @@ public class CastExpression extends Expression {
 	public final Expression target;
 	public final CasterMemberRef member;
 	public final boolean isImplicit;
-	
+
 	public CastExpression(CodePosition position, Expression target, CasterMemberRef member, boolean isImplicit) {
 		super(position, member.toType, binaryThrow(position, target.thrownType, member.member.header.thrownType));
-		
+
 		this.target = target;
 		this.member = member;
 		this.isImplicit = isImplicit;

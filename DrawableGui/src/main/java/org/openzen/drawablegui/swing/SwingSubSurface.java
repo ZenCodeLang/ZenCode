@@ -8,6 +8,7 @@ package org.openzen.drawablegui.swing;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+
 import org.openzen.drawablegui.DFont;
 import org.openzen.drawablegui.DFontMetrics;
 import org.openzen.drawablegui.DIRectangle;
@@ -23,39 +24,38 @@ import org.openzen.drawablegui.style.DStyleDefinition;
 import org.openzen.drawablegui.style.DStylePath;
 
 /**
- *
  * @author Hoofdgebruiker
  */
 public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 	private final SwingDrawSurface surface;
-	
+
 	private DIRectangle clip = null;
-	
+
 	public SwingSubSurface(SwingDrawSurface parent, int z) {
 		super(parent, z);
-		
+
 		this.surface = new SwingDrawSurface(parent.getContext(), 0, 0);
 	}
-	
+
 	@Override
 	public void paint(Graphics2D g, DIRectangle clip) {
 		Rectangle clipBounds = g.getClipBounds();
 		if (this.clip != null) {
 			g.setClip(this.clip.x, this.clip.y, this.clip.width, this.clip.height);
 		}
-		
+
 		AffineTransform oldTransform = g.getTransform();
 		g.transform(AffineTransform.getTranslateInstance(surface.offsetX, surface.offsetY));
-		
+
 		DIRectangle intersection = this.clip == null ? clip : this.clip.intersect(clip);
 		surface.paint(g, intersection.offset(-surface.offsetX, -surface.offsetY));
 		g.setTransform(oldTransform);
 		g.setClip(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 	}
-	
+
 	@Override
 	public void setTransform(DTransform2D transform) {
-		setOffset((int)transform.xx, (int)transform.yy);
+		setOffset((int) transform.xx, (int) transform.yy);
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 	public DUIContext getContext() {
 		return surface.getContext();
 	}
-	
+
 	@Override
 	public DIRectangle getBounds() {
 		return clip == null ? surface.calculateBounds().offset(surface.offsetX, surface.offsetY) : clip;
@@ -108,7 +108,7 @@ public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 	public DDrawnShape strokePath(int z, DPath path, DTransform2D transform, int color, float lineWidth) {
 		return surface.strokePath(z, path, transform, color, lineWidth);
 	}
-	
+
 	@Override
 	public DDrawnRectangle fillRect(int z, DIRectangle rectangle, int color) {
 		return surface.fillRect(z, rectangle, color);
@@ -128,12 +128,12 @@ public class SwingSubSurface extends SwingDrawnElement implements DSubSurface {
 	public DSubSurface createSubSurface(int z) {
 		return surface.createSubSurface(z);
 	}
-	
+
 	public void repaint() {
 		DIRectangle bounds = surface.calculateBounds().offset(surface.offsetX, surface.offsetY);
 		if (clip != null)
 			bounds = bounds.intersect(clip);
-		
+
 		target.repaint(bounds);
 	}
 }

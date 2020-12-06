@@ -2,11 +2,12 @@ package org.openzen.zenscript.lexer;
 
 import java.util.HashMap;
 import java.util.Map;
-import static org.openzen.zenscript.lexer.ZSTokenType.*;
+
+import static org.openzen.zenscript.lexer.ZSTokenType.T_IDENTIFIER;
 
 public class ZSTokenFactory implements TokenFactory<ZSToken, ZSTokenType> {
 	private static final Map<String, ZSToken> KEYWORDS = new HashMap<>();
-	
+
 	static {
 		for (ZSTokenType type : ZSTokenType.values())
 			if (type.isKeyword)
@@ -19,7 +20,7 @@ public class ZSTokenFactory implements TokenFactory<ZSToken, ZSTokenType> {
 			return KEYWORDS.get(content);
 		else if (type.flyweight != null)
 			return type.flyweight;
-		
+
 		return new ZSToken(type, content);
 	}
 }

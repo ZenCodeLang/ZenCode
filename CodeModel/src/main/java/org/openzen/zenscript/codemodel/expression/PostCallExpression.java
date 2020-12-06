@@ -13,13 +13,13 @@ public class PostCallExpression extends Expression {
 	public final Expression target;
 	public final FunctionalMemberRef member;
 	public final FunctionHeader instancedHeader;
-	
+
 	public PostCallExpression(CodePosition position, Expression target, FunctionalMemberRef member, FunctionHeader instancedHeader) {
 		super(position, instancedHeader.getReturnType(), binaryThrow(position, instancedHeader.thrownType, target.thrownType));
-		
+
 		if (member.getOperator() != OperatorType.DECREMENT && member.getOperator() != OperatorType.INCREMENT)
 			throw new IllegalArgumentException("Operator must be increment or decrement");
-		
+
 		this.target = target;
 		this.member = member;
 		this.instancedHeader = instancedHeader;

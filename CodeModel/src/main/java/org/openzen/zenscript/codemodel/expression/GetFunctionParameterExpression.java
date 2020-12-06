@@ -6,18 +6,18 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class GetFunctionParameterExpression extends Expression {
 	public final FunctionParameter parameter;
-	
+
 	public GetFunctionParameterExpression(CodePosition position, FunctionParameter parameter) {
 		super(position, parameter.type, null);
-		
+
 		this.parameter = parameter;
 	}
-	
+
 	@Override
 	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
 		return new SetFunctionParameterExpression(position, parameter, value.castImplicit(position, scope, type));
 	}
-	
+
 	@Override
 	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
 		CapturedExpression result = new CapturedParameterExpression(position, parameter, closure);
