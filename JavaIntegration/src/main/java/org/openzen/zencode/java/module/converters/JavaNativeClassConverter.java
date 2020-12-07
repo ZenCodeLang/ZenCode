@@ -303,7 +303,7 @@ public class JavaNativeClassConverter {
 			//Put up here for nested parameters?
 			TypeVariable<?> typeVariable = javaTypeParameters[i];
 			TypeParameter parameter;
-			if (definition.typeParameters.length == cls.getTypeParameters().length) {
+			if (foundRegistry && definition.typeParameters.length == cls.getTypeParameters().length) {
 				parameter = definition.typeParameters[i];
 			} else {
 				parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
