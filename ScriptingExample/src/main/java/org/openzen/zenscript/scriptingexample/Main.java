@@ -1,6 +1,6 @@
 package org.openzen.zenscript.scriptingexample;
 
-import org.openzen.zencode.java.JavaNativeModule;
+import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.java.ScriptingEngine;
 import org.openzen.zencode.java.logger.ScriptingEngineStreamLogger;
 import org.openzen.zencode.shared.CompileException;

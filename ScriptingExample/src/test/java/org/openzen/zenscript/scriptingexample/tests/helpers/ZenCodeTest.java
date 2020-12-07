@@ -2,7 +2,7 @@ package org.openzen.zenscript.scriptingexample.tests.helpers;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.openzen.zencode.java.JavaNativeModule;
+import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.java.ScriptingEngine;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.LiteralSourceFile;

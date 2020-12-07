@@ -7,6 +7,7 @@ package org.openzen.zencode.java;
 
 import org.openzen.zencode.java.logger.ScriptingEngineLogger;
 import org.openzen.zencode.java.logger.ScriptingEngineStreamLogger;
+import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;

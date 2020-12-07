@@ -3,8 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openzen.zencode.java;
+package org.openzen.zencode.java.module;
 
+import org.openzen.zencode.java.ZenCodeGlobals;
+import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.LiteralSourceFile;
@@ -80,7 +82,7 @@ public class JavaNativeModule {
 
 		for (JavaNativeModule dependency : dependencies) {
 			definitionByClass.putAll(dependency.definitionByClass);
-			context.typeVariables.putAll(dependency.context.typeVariables);
+			context.putAllFrom(dependency.context);
 			compiled.addAllFrom(dependency.compiled);
 		}
 
@@ -1160,21 +1162,4 @@ public class JavaNativeModule {
 		this.bep = bep;
 	}
 
-	private static class TypeVariableContext {
-		@SuppressWarnings("rawtypes")
-		private final Map<TypeVariable, TypeParameter> typeVariables = new HashMap<>();
-
-		@SuppressWarnings("rawtypes")
-		public void put(TypeVariable variable, TypeParameter parameter) {
-			typeVariables.put(variable, parameter);
-		}
-
-		@SuppressWarnings("rawtypes")
-		public TypeParameter get(TypeVariable variable) {
-			if (!typeVariables.containsKey(variable))
-				throw new IllegalStateException("Could not find type variable " + variable.getName());
-
-			return typeVariables.get(variable);
-		}
-	}
 }
