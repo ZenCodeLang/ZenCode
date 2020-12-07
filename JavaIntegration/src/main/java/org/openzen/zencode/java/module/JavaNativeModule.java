@@ -9,8 +9,8 @@ import org.openzen.zencode.java.ZenCodeGlobals;
 import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.module.converters.JavaNativeExpansionConverter;
 import org.openzen.zencode.java.module.converters.JavaNativeMemberConverter;
-import org.openzen.zencode.java.module.converters.JavaNativeTypeConverter;
 import org.openzen.zencode.java.module.converters.JavaNativePackageInfo;
+import org.openzen.zencode.java.module.converters.JavaNativeTypeConverter;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
@@ -33,7 +33,6 @@ import org.openzen.zenscript.parser.BracketExpressionParser;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -42,20 +41,18 @@ import java.util.Optional;
  * @author Stan Hebben
  */
 public class JavaNativeModule {
-	public final Map<String, ISymbol> globals = new HashMap<>();
 
-	//TODO Fix visibility
-	public final Map<Class<?>, HighLevelDefinition> definitionByClass = new HashMap<>();
+
 	//TODO Fix visibility
 	public final JavaNativeMemberConverter memberConverter;
 	private final GlobalTypeRegistry registry;
 	private final PackageDefinitions definitions = new PackageDefinitions();
-	private final JavaCompiledModule compiled;
-	private final TypeVariableContext context = new TypeVariableContext();
+
 	private final IZSLogger logger;
 	private final JavaNativeTypeConverter typeConverter;
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeExpansionConverter expansionConverter;
+	private final JavaNativeTypeConversionContext typeConversionContext;
 
 	public JavaNativeModule(
 			IZSLogger logger,
@@ -67,18 +64,11 @@ public class JavaNativeModule {
 		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new Module(name));
 		this.registry = registry;
 		this.logger = logger;
+		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies);
 
-		this.compiled = new JavaCompiledModule(packageInfo.getModule(), FunctionParameter.NONE);
-
-		for (JavaNativeModule dependency : dependencies) {
-			definitionByClass.putAll(dependency.definitionByClass);
-			context.putAllFrom(dependency.context);
-			compiled.addAllFrom(dependency.compiled);
-		}
-
-		this.typeConverter = new JavaNativeTypeConverter(context, registry, packageInfo, globals, this);
-		this.memberConverter = new JavaNativeMemberConverter(typeConverter, packageInfo, globals, registry);
-		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, context, compiled, definitions, definitionByClass);
+		this.typeConverter = new JavaNativeTypeConverter(typeConversionContext, registry, packageInfo, this);
+		this.memberConverter = new JavaNativeMemberConverter(typeConverter, packageInfo, typeConversionContext, registry);
+		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, typeConversionContext, definitions);
 	}
 
 	public SemanticModule toSemantic(ModuleSpace space) {
@@ -98,12 +88,16 @@ public class JavaNativeModule {
 	}
 
 	public JavaCompiledModule getCompiled() {
-		return compiled;
+		return typeConversionContext.compiled;
+	}
+
+	public Map<String, ISymbol> getGlobals() {
+		return typeConversionContext.globals;
 	}
 
 	public HighLevelDefinition addClass(Class<?> cls) {
-		if (definitionByClass.containsKey(cls)) {
-			return definitionByClass.get(cls);
+		if (typeConversionContext.definitionByClass.containsKey(cls)) {
+			return typeConversionContext.definitionByClass.get(cls);
 		}
 		return convertClass(cls);
 	}
@@ -113,15 +107,15 @@ public class JavaNativeModule {
 		final HighLevelDefinition definition = addClass(cls);
 		final JavaClass jcls;
 
-		if (compiled.hasClassInfo(definition)) {
-			jcls = compiled.getClassInfo(definition);
+		if (typeConversionContext.compiled.hasClassInfo(definition)) {
+			jcls = typeConversionContext.compiled.getClassInfo(definition);
 		} else {
 			jcls = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(cls), JavaClass.Kind.CLASS);
-			compiled.setClassInfo(definition, jcls);
+			typeConversionContext.compiled.setClassInfo(definition, jcls);
 		}
 
 		TypeID thisType = registry.getForMyDefinition(definition);
-		//TypeVariableContext context = new TypeVariableContext();
+		//TypeVariableContext typeConversionContext.context = new TypeVariableContext();
 
 		for (Field field : cls.getDeclaredFields()) {
 			if (!field.isAnnotationPresent(ZenCodeGlobals.Global.class))
@@ -130,14 +124,14 @@ public class JavaNativeModule {
 				continue;
 
 			ZenCodeGlobals.Global global = field.getAnnotation(ZenCodeGlobals.Global.class);
-			TypeID type = typeConverter.loadStoredType(context, field.getAnnotatedType());
+			TypeID type = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
 			String name = global.value().isEmpty() ? field.getName() : global.value();
 			FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, thisType, type, registry, Modifiers.PUBLIC, 0, null);
 			definition.addMember(fieldMember);
 			JavaField javaField = new JavaField(jcls, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType()));
-			compiled.setFieldInfo(fieldMember, javaField);
-			compiled.setFieldInfo(fieldMember.autoGetter, javaField);
-			globals.put(name, new ExpressionSymbol((position, scope) -> new StaticGetterExpression(CodePosition.BUILTIN, fieldMember.autoGetter.ref(thisType, GenericMapper.EMPTY))));
+			typeConversionContext.compiled.setFieldInfo(fieldMember, javaField);
+			typeConversionContext.compiled.setFieldInfo(fieldMember.autoGetter, javaField);
+			typeConversionContext.globals.put(name, new ExpressionSymbol((position, scope) -> new StaticGetterExpression(CodePosition.BUILTIN, fieldMember.autoGetter.ref(thisType, GenericMapper.EMPTY))));
 		}
 
 		for (Method method : cls.getDeclaredMethods()) {
@@ -148,9 +142,9 @@ public class JavaNativeModule {
 
 			ZenCodeGlobals.Global global = method.getAnnotation(ZenCodeGlobals.Global.class);
 			String name = global.value().isEmpty() ? method.getName() : global.value();
-			//MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, getHeader(context, method), null);
+			//MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, getHeader(typeConversionContext.context, method), null);
 			//definition.addMember(methodMember);
-			MethodMember methodMember = memberConverter.asMethod(context, definition, method, new ZenCodeType.Method() {
+			MethodMember methodMember = memberConverter.asMethod(typeConversionContext.context, definition, method, new ZenCodeType.Method() {
 				@Override
 				public String value() {
 					return name;
@@ -164,9 +158,9 @@ public class JavaNativeModule {
 			definition.addMember(methodMember);
 
 			//boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
-			//compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, memberConverter.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
-			compiled.setMethodInfo(methodMember, memberConverter.getMethod(jcls, method, typeConverter.loadType(context, method.getAnnotatedReturnType())));
-			globals.put(name, new ExpressionSymbol((position, scope) -> {
+			//typeConversionContext.compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, memberConverter.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+			typeConversionContext.compiled.setMethodInfo(methodMember, memberConverter.getMethod(jcls, method, typeConverter.loadType(typeConversionContext.context, method.getAnnotatedReturnType())));
+			typeConversionContext.globals.put(name, new ExpressionSymbol((position, scope) -> {
 				TypeMembers members = scope.getTypeMembers(thisType);
 				return new PartialStaticMemberGroupExpression(position, scope, thisType, members.getGroup(name), TypeID.NONE);
 			}));
@@ -187,7 +181,7 @@ public class JavaNativeModule {
 					.filter(m -> m instanceof MethodMember)
 					.map(m -> ((MethodMember) m))
 					.filter(m -> {
-						final JavaMethod methodInfo = compiled.optMethodInfo(m);
+						final JavaMethod methodInfo = typeConversionContext.compiled.optMethodInfo(m);
 						return methodInfo != null && methodDescriptor.equals(methodInfo.descriptor);
 					})
 					.findAny();
@@ -196,10 +190,10 @@ public class JavaNativeModule {
 				return matchingMember.get().ref(registry.getForDefinition(definition));
 			}
 		}
-		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), memberConverter.getHeader(context, method), null);
+		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), memberConverter.getHeader(typeConversionContext.context, method), null);
 		definition.addMember(methodMember);
 		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
-		compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, org.objectweb.asm.Type.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+		typeConversionContext.compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, org.objectweb.asm.Type.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
 		return methodMember.ref(registry.getForDefinition(definition));
 	}
 
@@ -285,12 +279,12 @@ public class JavaNativeModule {
 		}
 
 		//Moved up here so that circular dependencies are caught (hopefully)
-		definitionByClass.put(cls, definition);
+		typeConversionContext.definitionByClass.put(cls, definition);
 		if (!shouldLoadClass(cls)) {
 			return definition;
 		}
 
-		//TypeVariableContext context = new TypeVariableContext();
+		//TypeVariableContext typeConversionContext.context = new TypeVariableContext();
 		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
 		if (!foundRegistry || definition.typeParameters == null || definition.typeParameters.length != cls.getTypeParameters().length) {
 			definition.typeParameters = new TypeParameter[cls.getTypeParameters().length];
@@ -306,7 +300,7 @@ public class JavaNativeModule {
 				parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
 			}
 			definition.typeParameters[i] = parameter;
-			context.put(typeVariable, parameter);
+			typeConversionContext.context.put(typeVariable, parameter);
 		}
 
 		for (int i = 0; i < javaTypeParameters.length; i++) {
@@ -316,29 +310,29 @@ public class JavaNativeModule {
 				if (bound.getType() == Object.class) {
 					continue; //Makes the stdlibs types work as they have "no" bounds for T
 				}
-				TypeID type = typeConverter.loadType(context, bound);
+				TypeID type = typeConverter.loadType(typeConversionContext.context, bound);
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
 		}
 
 		if (!foundRegistry && definition instanceof ClassDefinition && cls.getAnnotatedSuperclass() != null && shouldLoadType(cls.getAnnotatedSuperclass().getType())) {
-			definition.setSuperType(typeConverter.loadType(context, cls.getAnnotatedSuperclass()));
+			definition.setSuperType(typeConverter.loadType(typeConversionContext.context, cls.getAnnotatedSuperclass()));
 		}
 
 		if (!foundRegistry && definition.getSuperType() == null && cls != Object.class && !(definition instanceof EnumDefinition)) {
-			definition.setSuperType(typeConverter.loadType(context, Object.class, false, false));
+			definition.setSuperType(typeConverter.loadType(typeConversionContext.context, Object.class, false, false));
 		}
 
 		for (AnnotatedType iface : cls.getAnnotatedInterfaces()) {
 			if (shouldLoadType(iface.getType())) {
-				TypeID type = typeConverter.loadType(context, iface);
+				TypeID type = typeConverter.loadType(typeConversionContext.context, iface);
 				ImplementationMember member = new ImplementationMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC, type);
 				definition.members.add(member);
-				compiled.setImplementationInfo(member, new JavaImplementation(true, javaClass));
+				typeConversionContext.compiled.setImplementationInfo(member, new JavaImplementation(true, javaClass));
 			}
 		}
 
-		compiled.setClassInfo(definition, javaClass);
+		typeConversionContext.compiled.setClassInfo(definition, javaClass);
 
 		TypeID thisType = registry.getForMyDefinition(definition);
 		for (Field field : cls.getDeclaredFields()) {
@@ -350,19 +344,19 @@ public class JavaNativeModule {
 
 			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
 
-			TypeID fieldType = typeConverter.loadStoredType(context, field.getAnnotatedType());
+			TypeID fieldType = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
 			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, memberConverter.getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
 			definition.addMember(member);
-			compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
+			typeConversionContext.compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
 		}
 
 		boolean hasConstructor = false;
 		for (java.lang.reflect.Constructor<?> constructor : cls.getConstructors()) {
 			ZenCodeType.Constructor constructorAnnotation = constructor.getAnnotation(ZenCodeType.Constructor.class);
 			if (constructorAnnotation != null) {
-				ConstructorMember member = memberConverter.asConstructor(context, definition, constructor);
+				ConstructorMember member = memberConverter.asConstructor(typeConversionContext.context, definition, constructor);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, constructor));
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, constructor));
 				hasConstructor = true;
 			}
 		}
@@ -387,43 +381,43 @@ public class JavaNativeModule {
 					continue;
 				}
 
-				MethodMember member = memberConverter.asMethod(context, definition, method, methodAnnotation);
+				MethodMember member = memberConverter.asMethod(typeConversionContext.context, definition, method, methodAnnotation);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
 			ZenCodeType.Getter getter = method.getAnnotation(ZenCodeType.Getter.class);
 			if (getter != null) {
-				GetterMember member = memberConverter.asGetter(context, definition, method, getter);
+				GetterMember member = memberConverter.asGetter(typeConversionContext.context, definition, method, getter);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.getType()));
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.getType()));
 			}
 
 			ZenCodeType.Setter setter = method.getAnnotation(ZenCodeType.Setter.class);
 			if (setter != null) {
-				SetterMember member = memberConverter.asSetter(context, definition, method, setter);
+				SetterMember member = memberConverter.asSetter(typeConversionContext.context, definition, method, setter);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, BasicTypeID.VOID));
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, BasicTypeID.VOID));
 			}
 
 			ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
 			if (operator != null) {
-				OperatorMember member = memberConverter.asOperator(context, definition, method, operator);
+				OperatorMember member = memberConverter.asOperator(typeConversionContext.context, definition, method, operator);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
 			ZenCodeType.Caster caster = method.getAnnotation(ZenCodeType.Caster.class);
 			if (caster != null) {
-				CasterMember member = memberConverter.asCaster(context, definition, method, caster);
+				CasterMember member = memberConverter.asCaster(typeConversionContext.context, definition, method, caster);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
 			}
 
 			/*if (!annotated) {
 				MethodMember member = asMethod(definition, method, null);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}*/
 		}
 
@@ -432,7 +426,7 @@ public class JavaNativeModule {
 
 	private boolean shouldLoadType(Type type) {
 		if (type instanceof Class)
-			return definitionByClass.containsKey(type) || shouldLoadClass((Class<?>) type);
+			return typeConversionContext.definitionByClass.containsKey(type) || shouldLoadClass((Class<?>) type);
 		if (type instanceof ParameterizedType)
 			return shouldLoadType(((ParameterizedType) type).getRawType());
 
@@ -455,5 +449,9 @@ public class JavaNativeModule {
 
 	public Module getModule() {
 		return packageInfo.getModule();
+	}
+
+	public JavaNativeTypeConversionContext getTypeConversionContext() {
+		return typeConversionContext;
 	}
 }

@@ -2,20 +2,23 @@ package org.openzen.zencode.java.module.converters;
 
 import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.module.JavaNativeModule;
+import org.openzen.zencode.java.module.JavaNativeTypeConversionContext;
 import org.openzen.zencode.java.module.TypeVariableContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaModifiers;
@@ -36,21 +39,18 @@ import static org.objectweb.asm.Type.getMethodDescriptor;
 public class JavaNativeTypeConverter {
 	private final Map<Class<?>, TypeID> typeByClass = new HashMap<>();
 	private final Map<Class<?>, TypeID> unsignedByClass = new HashMap<>();
-	private final TypeVariableContext context;
 	private final GlobalTypeRegistry registry;
 	private final JavaNativePackageInfo packageInfo;
-	private final Map<String, ISymbol> globals;
 	private final JavaNativeModule javaNativeModule;
+	private final JavaNativeTypeConversionContext typeConversionContext;
 
 	private BracketExpressionParser bep;
 
-	public JavaNativeTypeConverter(TypeVariableContext context, GlobalTypeRegistry registry, JavaNativePackageInfo packageInfo, Map<String, ISymbol> globals, JavaNativeModule javaNativeModule) {
-		this.context = context;
+	public JavaNativeTypeConverter(JavaNativeTypeConversionContext typeConversionContext, GlobalTypeRegistry registry, JavaNativePackageInfo packageInfo, JavaNativeModule javaNativeModule) {
+		this.typeConversionContext = typeConversionContext;
 		this.registry = registry;
 		this.packageInfo = packageInfo;
-		this.globals = globals;
 		this.javaNativeModule = javaNativeModule;
-
 		fillClasses();
 	}
 
@@ -182,7 +182,7 @@ public class JavaNativeTypeConverter {
 		if (type instanceof DefinitionTypeID) {
 			DefinitionTypeID definitionType = ((DefinitionTypeID) type);
 
-			for (Map.Entry<Class<?>, HighLevelDefinition> ent : javaNativeModule.definitionByClass.entrySet()) {
+			for (Map.Entry<Class<?>, HighLevelDefinition> ent : typeConversionContext.definitionByClass.entrySet()) {
 				if (ent.getValue().equals(definitionType.definition))
 					return ent.getKey();
 			}
@@ -219,7 +219,7 @@ public class JavaNativeTypeConverter {
 			final String[] split = className.split("\\.");
 			final String actualName = split[split.length - 1];
 
-			for (HighLevelDefinition value : javaNativeModule.definitionByClass.values()) {
+			for (HighLevelDefinition value : typeConversionContext.definitionByClass.values()) {
 				if (actualName.equals(value.name) && value.pkg.equals(zsPackage))
 					return registry.getForMyDefinition(value);
 			}
@@ -229,7 +229,7 @@ public class JavaNativeTypeConverter {
 
 		//TODO: Can we get by with only this?
 		final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg().parent, packageInfo.getModule());
-		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], packageInfo.getPkg().parent, rootCompiling, globals);
+		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], packageInfo.getPkg().parent, rootCompiling, typeConversionContext.globals);
 
 		try {
 			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep);
@@ -306,22 +306,22 @@ public class JavaNativeTypeConverter {
 			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
 			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
 			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
-				TypeID type = loadType(context, bound);
+				TypeID type = loadType(typeConversionContext.context, bound);
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
 			typeParameters[i] = parameter;
 
 			//Put up here so that Nested Type parameters may work..?
-			context.put(typeVariable, parameter);
+			typeConversionContext.context.put(typeVariable, parameter);
 		}
 
 		for (int i = 0; i < javaTypeParameters.length; i++) {
 			for (AnnotatedType bound : javaTypeParameters[i].getAnnotatedBounds()) {
-				TypeID type = loadType(context, bound);
+				TypeID type = loadType(typeConversionContext.context, bound);
 				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
 		}
-		return context;
+		return typeConversionContext.context;
 	}
 
 	private Method getFunctionalInterfaceMethod(Class<?> functionalInterface) {

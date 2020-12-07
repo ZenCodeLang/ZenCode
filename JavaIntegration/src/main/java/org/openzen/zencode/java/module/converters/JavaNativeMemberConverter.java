@@ -1,6 +1,7 @@
 package org.openzen.zencode.java.module.converters;
 
 import org.openzen.zencode.java.ZenCodeType;
+import org.openzen.zencode.java.module.JavaNativeTypeConversionContext;
 import org.openzen.zencode.java.module.TypeVariableContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
@@ -39,14 +40,14 @@ public class JavaNativeMemberConverter {
 
 	private final JavaNativeTypeConverter typeConverter;
 	private final JavaNativePackageInfo packageInfo;
-	private final Map<String, ISymbol> globals;
+	private final JavaNativeTypeConversionContext typeConversionContext;
 	private final GlobalTypeRegistry registry;
 	private BracketExpressionParser bep;
 
-	public JavaNativeMemberConverter(JavaNativeTypeConverter typeConverter, JavaNativePackageInfo packageInfo, Map<String, ISymbol> globals, GlobalTypeRegistry registry) {
+	public JavaNativeMemberConverter(JavaNativeTypeConverter typeConverter, JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, GlobalTypeRegistry registry) {
 		this.typeConverter = typeConverter;
 		this.packageInfo = packageInfo;
-		this.globals = globals;
+		this.typeConversionContext = typeConversionContext;
 		this.registry = registry;
 	}
 
@@ -234,9 +235,9 @@ public class JavaNativeMemberConverter {
 				final String filename = "internal: " + parameter.getDeclaringExecutable().getName();
 
 				final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg(), packageInfo.getModule());
-				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], packageInfo.getPkg(), rootCompiling, globals);
+				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], packageInfo.getPkg(), rootCompiling, typeConversionContext.globals);
 				final FileResolutionContext fContext = new FileResolutionContext(context, packageInfo.getPkg(), rootCompiling);
-				final FileScope fileScope = new FileScope(fContext, Collections.emptyList(), globals, member -> {
+				final FileScope fileScope = new FileScope(fContext, Collections.emptyList(), typeConversionContext.globals, member -> {
 				});
 				final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep);
 

@@ -80,7 +80,7 @@ public class ScriptingEngine {
 		space.addModule(module.getModule().name, semantic);
 		nativeModules.add(module);
 
-		for (Map.Entry<String, ISymbol> globalEntry : module.globals.entrySet())
+		for (Map.Entry<String, ISymbol> globalEntry : module.getGlobals().entrySet())
 			space.addGlobal(globalEntry.getKey(), globalEntry.getValue());
 	}
 

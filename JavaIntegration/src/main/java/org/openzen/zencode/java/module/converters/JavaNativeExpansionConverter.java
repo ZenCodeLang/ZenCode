@@ -1,11 +1,10 @@
 package org.openzen.zencode.java.module.converters;
 
 import org.openzen.zencode.java.ZenCodeType;
-import org.openzen.zencode.java.module.TypeVariableContext;
+import org.openzen.zencode.java.module.JavaNativeTypeConversionContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
@@ -14,35 +13,29 @@ import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.javashared.JavaMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.util.Map;
 
 public class JavaNativeExpansionConverter {
 	private final JavaNativeTypeConverter typeConverter;
 	private final IZSLogger logger;
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeMemberConverter memberConverter;
-	private final TypeVariableContext context;
-	private final JavaCompiledModule compiled;
+	private final JavaNativeTypeConversionContext typeConversionContext;
 	private final PackageDefinitions definitions;
-	private final Map<Class<?>, HighLevelDefinition> definitionByClass;
 
 
-	public JavaNativeExpansionConverter(JavaNativeTypeConverter typeConverter, IZSLogger logger, JavaNativePackageInfo packageInfo, JavaNativeMemberConverter memberConverter, TypeVariableContext context, JavaCompiledModule compiled, PackageDefinitions definitions, Map<Class<?>, HighLevelDefinition> definitionByClass) {
+	public JavaNativeExpansionConverter(JavaNativeTypeConverter typeConverter, IZSLogger logger, JavaNativePackageInfo packageInfo, JavaNativeMemberConverter memberConverter, JavaNativeTypeConversionContext typeConversionContext, PackageDefinitions definitions) {
 
 		this.typeConverter = typeConverter;
 		this.logger = logger;
 		this.packageInfo = packageInfo;
 		this.memberConverter = memberConverter;
-		this.context = context;
-		this.compiled = compiled;
+		this.typeConversionContext = typeConversionContext;
 		this.definitions = definitions;
-		this.definitionByClass = definitionByClass;
 	}
 
 	public <T> ExpansionDefinition convertExpansion(Class<T> cls) {
@@ -58,7 +51,7 @@ public class JavaNativeExpansionConverter {
 		final ExpansionDefinition expansion = new ExpansionDefinition(CodePosition.NATIVE, packageInfo.getModule(), packageInfo.getPkg(), Modifiers.PUBLIC, null);
 		final JavaClass javaClass = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(cls), JavaClass.Kind.CLASS);
 		expansion.target = expandedType;
-		definitionByClass.put(cls, expansion);
+		typeConversionContext.definitionByClass.put(cls, expansion);
 
 		boolean addExpansion = false;
 		for (Method method : cls.getDeclaredMethods()) {
@@ -83,24 +76,24 @@ public class JavaNativeExpansionConverter {
 
 				final Parameter[] parameters = getExpansionParameters(method);
 
-				FunctionHeader header = memberConverter.getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+				FunctionHeader header = memberConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
 				final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
 
 				expansion.addMember(member);
-				compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, org.objectweb.asm.Type.getMethodDescriptor(method), memberConverter.getMethodModifiers(method)));
+				typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, org.objectweb.asm.Type.getMethodDescriptor(method), memberConverter.getMethodModifiers(method)));
 				addExpansion = true;
 			}
 
 			final ZenCodeType.Getter getterAnnotation = method.getAnnotation(ZenCodeType.Getter.class);
 			if (getterAnnotation != null) {
 				checkExpandedType(classFromType, method);
-				TypeID type = typeConverter.loadStoredType(context, method.getAnnotatedReturnType());
+				TypeID type = typeConverter.loadStoredType(typeConversionContext.context, method.getAnnotatedReturnType());
 				int modifiers = memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
 				final String name = getterAnnotation.value().isEmpty() ? memberConverter.translateGetterName(method.getName()) : getterAnnotation.value();
 				final GetterMember member = new GetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
 
 				expansion.addMember(member);
-				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, type));
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, type));
 				addExpansion = true;
 			}
 
@@ -112,12 +105,12 @@ public class JavaNativeExpansionConverter {
 				if (implicit) {
 					modifiers |= Modifiers.IMPLICIT;
 				}
-				//TypeVariableContext context = new TypeVariableContext();
-				TypeID toType = typeConverter.loadStoredType(context, method.getAnnotatedReturnType());
+				//TypeVariableContext typeConversionContext.context = new TypeVariableContext();
+				TypeID toType = typeConverter.loadStoredType(typeConversionContext.context, method.getAnnotatedReturnType());
 				final CasterMember member = new CasterMember(CodePosition.NATIVE, expansion, modifiers, toType, null);
 
 				expansion.addMember(member);
-				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
 				addExpansion = true;
 			}
 
@@ -125,21 +118,21 @@ public class JavaNativeExpansionConverter {
 //            final ZenCodeType.Operator operatorAnnotation = method.getAnnotation(ZenCodeType.Operator.class);
 //            if(operatorAnnotation != null) {
 //
-//                TypeVariableContext context = new TypeVariableContext();
+//                TypeVariableContext typeConversionContext.context = new TypeVariableContext();
 //
 //                final Parameter[] parameters = getExpansionParameters(method);
 //
-//                FunctionHeader header = getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+//                FunctionHeader header = getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
 //                final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC, OperatorType.valueOf(operatorAnnotation.value().toString()), header, null);
 //
 //                expansion.addMember(member);
-//                compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
+//                typeConversionContext.compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
 //                addExpansion = true;
 //            }
 		}
 
 		if (addExpansion) {
-			compiled.setExpansionClassInfo(expansion, javaClass);
+			typeConversionContext.compiled.setExpansionClassInfo(expansion, javaClass);
 			definitions.add(expansion);
 		}
 
