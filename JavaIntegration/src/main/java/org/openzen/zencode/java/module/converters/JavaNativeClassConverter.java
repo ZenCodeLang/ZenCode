@@ -28,13 +28,15 @@ public class JavaNativeClassConverter {
 	private final JavaNativeMemberConverter memberConverter;
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeTypeConversionContext typeConversionContext;
+	private final JavaNativeHeaderConverter headerConverter;
 	private final GlobalTypeRegistry registry;
 
-	public JavaNativeClassConverter(JavaNativeTypeConverter typeConverter, JavaNativeMemberConverter memberConverter, JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, GlobalTypeRegistry registry) {
+	public JavaNativeClassConverter(JavaNativeTypeConverter typeConverter, JavaNativeMemberConverter memberConverter, JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, JavaNativeHeaderConverter headerConverter, GlobalTypeRegistry registry) {
 		this.typeConverter = typeConverter;
 		this.memberConverter = memberConverter;
 		this.packageInfo = packageInfo;
 		this.typeConversionContext = typeConversionContext;
+		this.headerConverter = headerConverter;
 		this.registry = registry;
 	}
 
@@ -160,7 +162,7 @@ public class JavaNativeClassConverter {
 			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
 
 			TypeID fieldType = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
-			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, memberConverter.getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
+			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
 			definition.addMember(member);
 			typeConversionContext.compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
 		}

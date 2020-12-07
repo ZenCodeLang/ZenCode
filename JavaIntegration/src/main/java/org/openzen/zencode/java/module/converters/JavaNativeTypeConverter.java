@@ -45,13 +45,14 @@ public class JavaNativeTypeConverter {
 	private final JavaNativeTypeConversionContext typeConversionContext;
 
 	private BracketExpressionParser bep;
+	private JavaNativeHeaderConverter headerConverter;
 
 	public JavaNativeTypeConverter(JavaNativeTypeConversionContext typeConversionContext, GlobalTypeRegistry registry, JavaNativePackageInfo packageInfo, JavaNativeModule javaNativeModule) {
 		this.typeConversionContext = typeConversionContext;
 		this.registry = registry;
 		this.packageInfo = packageInfo;
 		this.javaNativeModule = javaNativeModule;
-		fillClasses();
+		fillByClassMaps();
 	}
 
 	public TypeID loadStoredType(TypeVariableContext context, AnnotatedType annotatedType) {
@@ -245,7 +246,7 @@ public class JavaNativeTypeConverter {
 		Method functionalInterfaceMethod = getFunctionalInterfaceMethod(cls);
 		TypeVariableContext context = convertTypeParameters(cls);
 		//TODO: This breaks if the functional interface type appears in the method's signature
-		FunctionHeader header = javaNativeModule.memberConverter.getHeader(context, functionalInterfaceMethod);
+		FunctionHeader header = headerConverter.getHeader(context, functionalInterfaceMethod);
 
 		Map<TypeParameter, TypeID> mapping = new HashMap<>();
 		TypeVariable[] javaParameters = cls.getTypeParameters();
@@ -263,7 +264,7 @@ public class JavaNativeTypeConverter {
 		return new JavaFunctionalInterfaceTypeID(registry, header, functionalInterfaceMethod, method);
 	}
 
-	private void fillClasses() {
+	private void fillByClassMaps() {
 		typeByClass.put(void.class, BasicTypeID.VOID);
 		typeByClass.put(boolean.class, BasicTypeID.BOOL);
 		typeByClass.put(byte.class, BasicTypeID.SBYTE);
@@ -331,5 +332,9 @@ public class JavaNativeTypeConverter {
 		}
 
 		return null;
+	}
+
+	public void setHeaderConverter(JavaNativeHeaderConverter headerConverter) {
+		this.headerConverter = headerConverter;
 	}
 }

@@ -28,18 +28,19 @@ import java.util.Map;
 public class JavaNativeModule {
 
 
-	//TODO Fix visibility
-	public final JavaNativeMemberConverter memberConverter;
-	private final GlobalTypeRegistry registry;
 	private final PackageDefinitions definitions = new PackageDefinitions();
-
 	private final IZSLogger logger;
-	private final JavaNativeTypeConverter typeConverter;
+
 	private final JavaNativePackageInfo packageInfo;
-	private final JavaNativeExpansionConverter expansionConverter;
 	private final JavaNativeTypeConversionContext typeConversionContext;
+
+	private final JavaNativeTypeConverter typeConverter;
+	private final JavaNativeHeaderConverter headerConverter;
+	private final JavaNativeMemberConverter memberConverter;
+
 	private final JavaNativeClassConverter classConverter;
 	private final JavaNativeGlobalConverter globalConverter;
+	private final JavaNativeExpansionConverter expansionConverter;
 
 	public JavaNativeModule(
 			IZSLogger logger,
@@ -49,15 +50,15 @@ public class JavaNativeModule {
 			GlobalTypeRegistry registry,
 			JavaNativeModule[] dependencies) {
 		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new Module(name));
-		this.registry = registry;
 		this.logger = logger;
 		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies);
 
 		this.typeConverter = new JavaNativeTypeConverter(typeConversionContext, registry, packageInfo, this);
-		this.memberConverter = new JavaNativeMemberConverter(typeConverter, packageInfo, typeConversionContext, registry);
-		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, typeConversionContext, definitions);
-		this.classConverter = new JavaNativeClassConverter(typeConverter, memberConverter, packageInfo, typeConversionContext, registry);
+		this.headerConverter = new JavaNativeHeaderConverter(typeConverter, packageInfo, registry, typeConversionContext);
+		this.memberConverter = new JavaNativeMemberConverter(typeConverter, packageInfo, typeConversionContext, registry, headerConverter);
+		this.classConverter = new JavaNativeClassConverter(typeConverter, memberConverter, packageInfo, typeConversionContext, headerConverter, registry);
 		this.globalConverter = new JavaNativeGlobalConverter(typeConversionContext, registry, typeConverter, memberConverter);
+		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, typeConversionContext, definitions, headerConverter);
 	}
 
 	public SemanticModule toSemantic(ModuleSpace space) {
@@ -112,7 +113,7 @@ public class JavaNativeModule {
 
 
 	public void registerBEP(BracketExpressionParser bep) {
-		memberConverter.setBEP(bep);
+		headerConverter.setBEP(bep);
 		typeConverter.setBEP(bep);
 	}
 

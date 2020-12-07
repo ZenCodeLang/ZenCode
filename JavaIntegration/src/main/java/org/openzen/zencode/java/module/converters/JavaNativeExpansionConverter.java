@@ -26,9 +26,10 @@ public class JavaNativeExpansionConverter {
 	private final JavaNativeMemberConverter memberConverter;
 	private final JavaNativeTypeConversionContext typeConversionContext;
 	private final PackageDefinitions definitions;
+	private final JavaNativeHeaderConverter headerConverter;
 
 
-	public JavaNativeExpansionConverter(JavaNativeTypeConverter typeConverter, IZSLogger logger, JavaNativePackageInfo packageInfo, JavaNativeMemberConverter memberConverter, JavaNativeTypeConversionContext typeConversionContext, PackageDefinitions definitions) {
+	public JavaNativeExpansionConverter(JavaNativeTypeConverter typeConverter, IZSLogger logger, JavaNativePackageInfo packageInfo, JavaNativeMemberConverter memberConverter, JavaNativeTypeConversionContext typeConversionContext, PackageDefinitions definitions, JavaNativeHeaderConverter headerConverter) {
 
 		this.typeConverter = typeConverter;
 		this.logger = logger;
@@ -36,6 +37,7 @@ public class JavaNativeExpansionConverter {
 		this.memberConverter = memberConverter;
 		this.typeConversionContext = typeConversionContext;
 		this.definitions = definitions;
+		this.headerConverter = headerConverter;
 	}
 
 	public <T> ExpansionDefinition convertExpansion(Class<T> cls) {
@@ -76,11 +78,11 @@ public class JavaNativeExpansionConverter {
 
 				final Parameter[] parameters = getExpansionParameters(method);
 
-				FunctionHeader header = memberConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-				final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
+				FunctionHeader header = headerConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+				final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
 
 				expansion.addMember(member);
-				typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, org.objectweb.asm.Type.getMethodDescriptor(method), memberConverter.getMethodModifiers(method)));
+				typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
 				addExpansion = true;
 			}
 
@@ -88,7 +90,7 @@ public class JavaNativeExpansionConverter {
 			if (getterAnnotation != null) {
 				checkExpandedType(classFromType, method);
 				TypeID type = typeConverter.loadStoredType(typeConversionContext.context, method.getAnnotatedReturnType());
-				int modifiers = memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
+				int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
 				final String name = getterAnnotation.value().isEmpty() ? memberConverter.translateGetterName(method.getName()) : getterAnnotation.value();
 				final GetterMember member = new GetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
 
@@ -101,7 +103,7 @@ public class JavaNativeExpansionConverter {
 			if (casterAnnotation != null) {
 				checkExpandedType(classFromType, method);
 				boolean implicit = casterAnnotation.implicit();
-				int modifiers = memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
+				int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
 				if (implicit) {
 					modifiers |= Modifiers.IMPLICIT;
 				}
@@ -123,7 +125,7 @@ public class JavaNativeExpansionConverter {
 //                final Parameter[] parameters = getExpansionParameters(method);
 //
 //                FunctionHeader header = getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-//                final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC, OperatorType.valueOf(operatorAnnotation.value().toString()), header, null);
+//                final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, OperatorType.valueOf(operatorAnnotation.value().toString()), header, null);
 //
 //                expansion.addMember(member);
 //                typeConversionContext.compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
