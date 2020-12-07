@@ -54,6 +54,7 @@ public class JavaNativeModule {
 	private final JavaNativeExpansionConverter expansionConverter;
 	private final JavaNativeTypeConversionContext typeConversionContext;
 	private final JavaNativeClassConverter classConverter;
+	private final JavaNativeGlobalConverter globalConverter;
 
 	public JavaNativeModule(
 			IZSLogger logger,
@@ -71,6 +72,7 @@ public class JavaNativeModule {
 		this.memberConverter = new JavaNativeMemberConverter(typeConverter, packageInfo, typeConversionContext, registry);
 		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, typeConversionContext, definitions);
 		this.classConverter = new JavaNativeClassConverter(typeConverter, memberConverter, packageInfo, typeConversionContext, registry);
+		this.globalConverter = new JavaNativeGlobalConverter(typeConversionContext, registry, typeConverter, memberConverter);
 	}
 
 	public SemanticModule toSemantic(ModuleSpace space) {
@@ -115,67 +117,7 @@ public class JavaNativeModule {
 	public void addGlobals(Class<?> cls) {
 
 		final HighLevelDefinition definition = addClass(cls);
-		final JavaClass jcls;
-
-		if (typeConversionContext.compiled.hasClassInfo(definition)) {
-			jcls = typeConversionContext.compiled.getClassInfo(definition);
-		} else {
-			jcls = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(cls), JavaClass.Kind.CLASS);
-			typeConversionContext.compiled.setClassInfo(definition, jcls);
-		}
-
-		TypeID thisType = registry.getForMyDefinition(definition);
-		//TypeVariableContext typeConversionContext.context = new TypeVariableContext();
-
-		for (Field field : cls.getDeclaredFields()) {
-			if (!field.isAnnotationPresent(ZenCodeGlobals.Global.class))
-				continue;
-			if (!Modifier.isStatic(field.getModifiers()))
-				continue;
-
-			ZenCodeGlobals.Global global = field.getAnnotation(ZenCodeGlobals.Global.class);
-			TypeID type = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
-			String name = global.value().isEmpty() ? field.getName() : global.value();
-			FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, thisType, type, registry, Modifiers.PUBLIC, 0, null);
-			definition.addMember(fieldMember);
-			JavaField javaField = new JavaField(jcls, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType()));
-			typeConversionContext.compiled.setFieldInfo(fieldMember, javaField);
-			typeConversionContext.compiled.setFieldInfo(fieldMember.autoGetter, javaField);
-
-			typeConversionContext.globals.put(name, new ExpressionSymbol((position, scope) -> {
-				//autoGetter cannot be null, since we pass an autoGetter value to the constructor
-				//noinspection ConstantConditions
-				return new StaticGetterExpression(CodePosition.BUILTIN, fieldMember.autoGetter.ref(thisType, GenericMapper.EMPTY));
-			}));
-		}
-
-		for (Method method : cls.getDeclaredMethods()) {
-			if (!method.isAnnotationPresent(ZenCodeGlobals.Global.class))
-				continue;
-			if (!Modifier.isStatic(method.getModifiers()))
-				continue;
-
-			ZenCodeGlobals.Global global = method.getAnnotation(ZenCodeGlobals.Global.class);
-			String name = global.value().isEmpty() ? method.getName() : global.value();
-			MethodMember methodMember = memberConverter.asMethod(typeConversionContext.context, definition, method, new ZenCodeType.Method() {
-				@Override
-				public String value() {
-					return name;
-				}
-
-				@Override
-				public Class<? extends Annotation> annotationType() {
-					return ZenCodeType.Method.class;
-				}
-			});
-			definition.addMember(methodMember);
-
-			typeConversionContext.compiled.setMethodInfo(methodMember, memberConverter.getMethod(jcls, method, typeConverter.loadType(typeConversionContext.context, method.getAnnotatedReturnType())));
-			typeConversionContext.globals.put(name, new ExpressionSymbol((position, scope) -> {
-				TypeMembers members = scope.getTypeMembers(thisType);
-				return new PartialStaticMemberGroupExpression(position, scope, thisType, members.getGroup(name), TypeID.NONE);
-			}));
-		}
+		globalConverter.addGlobal(cls, definition);
 	}
 
 	public FunctionalMemberRef loadStaticMethod(Method method) {
