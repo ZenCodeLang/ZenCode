@@ -7,6 +7,7 @@ package org.openzen.zencode.java.module;
 
 import org.openzen.zencode.java.ZenCodeGlobals;
 import org.openzen.zencode.java.ZenCodeType;
+import org.openzen.zencode.java.module.converters.JavaNativeExpansionConverter;
 import org.openzen.zencode.java.module.converters.JavaNativeMemberConverter;
 import org.openzen.zencode.java.module.converters.JavaNativeTypeConverter;
 import org.openzen.zencode.java.module.converters.PackageProvider;
@@ -31,9 +32,10 @@ import org.openzen.zenscript.parser.BracketExpressionParser;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.*;
-
-import static org.objectweb.asm.Type.getConstructorDescriptor;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 
 /**
@@ -56,6 +58,7 @@ public class JavaNativeModule {
 	private final IZSLogger logger;
 	private final JavaNativeTypeConverter typeConverter;
 	private final PackageProvider packageProvider;
+	private final JavaNativeExpansionConverter expansionConverter;
 
 	public JavaNativeModule(
 			IZSLogger logger,
@@ -81,38 +84,7 @@ public class JavaNativeModule {
 		this.packageProvider = new PackageProvider(pkg, basePackage, module);
 		this.typeConverter = new JavaNativeTypeConverter(context, registry, packageProvider, pkg, module, globals, this);
 		this.memberConverter = new JavaNativeMemberConverter(typeConverter, pkg, module, globals, registry);
-	}
-
-	@SuppressWarnings("rawtypes")
-	private static JavaMethod getMethod(JavaClass cls, java.lang.reflect.Constructor constructor) {
-		return new JavaMethod(
-				cls,
-				JavaMethod.Kind.CONSTRUCTOR,
-				"<init>",
-				false,
-				getConstructorDescriptor(constructor),
-				constructor.getModifiers(),
-				false);
-	}
-
-	private static JavaMethod getMethod(JavaClass cls, Method method, TypeID result) {
-		JavaMethod.Kind kind;
-		if (method.getName().equals("<init>"))
-			kind = JavaMethod.Kind.CONSTRUCTOR;
-		else if (method.getName().equals("<clinit>"))
-			kind = JavaMethod.Kind.STATICINIT;
-		else if (Modifier.isStatic(method.getModifiers()))
-			kind = JavaMethod.Kind.STATIC;
-		else
-			kind = JavaMethod.Kind.INSTANCE;
-
-		final int length = method.getTypeParameters().length;
-		boolean compile = length > 0 && length == Arrays.stream(method.getParameterTypes())
-				.filter(s -> s.getCanonicalName().contentEquals("java.lang.Class"))
-				.count();
-
-		return new JavaMethod(cls, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
-				.getModifiers(), result.isGeneric());
+		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, module, pkg, memberConverter, context, compiled, definitions, definitionByClass);
 	}
 
 	public SemanticModule toSemantic(ModuleSpace space) {
@@ -198,8 +170,8 @@ public class JavaNativeModule {
 			definition.addMember(methodMember);
 
 			//boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
-			//compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), isGenericResult));
-			compiled.setMethodInfo(methodMember, getMethod(jcls, method, typeConverter.loadType(context, method.getAnnotatedReturnType())));
+			//compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, memberConverter.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+			compiled.setMethodInfo(methodMember, memberConverter.getMethod(jcls, method, typeConverter.loadType(context, method.getAnnotatedReturnType())));
 			globals.put(name, new ExpressionSymbol((position, scope) -> {
 				TypeMembers members = scope.getTypeMembers(thisType);
 				return new PartialStaticMemberGroupExpression(position, scope, thisType, members.getGroup(name), TypeID.NONE);
@@ -264,7 +236,7 @@ public class JavaNativeModule {
 			throw new IllegalArgumentException("Class \" " + cls.getName() + "\" must be public");
 
 		if (cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
-			return convertExpansion(cls);
+			return expansionConverter.convertExpansion(cls);
 		}
 
 		String className = cls.getName();
@@ -396,7 +368,7 @@ public class JavaNativeModule {
 			if (constructorAnnotation != null) {
 				ConstructorMember member = memberConverter.asConstructor(context, definition, constructor);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, constructor));
+				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, constructor));
 				hasConstructor = true;
 			}
 		}
@@ -423,162 +395,45 @@ public class JavaNativeModule {
 
 				MethodMember member = memberConverter.asMethod(context, definition, method, methodAnnotation);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
+				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
 			ZenCodeType.Getter getter = method.getAnnotation(ZenCodeType.Getter.class);
 			if (getter != null) {
 				GetterMember member = memberConverter.asGetter(context, definition, method, getter);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, method, member.getType()));
+				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.getType()));
 			}
 
 			ZenCodeType.Setter setter = method.getAnnotation(ZenCodeType.Setter.class);
 			if (setter != null) {
 				SetterMember member = memberConverter.asSetter(context, definition, method, setter);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, method, BasicTypeID.VOID));
+				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, BasicTypeID.VOID));
 			}
 
 			ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
 			if (operator != null) {
 				OperatorMember member = memberConverter.asOperator(context, definition, method, operator);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
+				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
 			ZenCodeType.Caster caster = method.getAnnotation(ZenCodeType.Caster.class);
 			if (caster != null) {
 				CasterMember member = memberConverter.asCaster(context, definition, method, caster);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, method, member.toType));
+				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
 			}
 
 			/*if (!annotated) {
 				MethodMember member = asMethod(definition, method, null);
 				definition.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
+				compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}*/
 		}
 
 		return definition;
-	}
-
-	private <T> ExpansionDefinition convertExpansion(Class<T> cls) {
-		if (!cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
-			throw new IllegalArgumentException("Cannot convert class " + cls + " as it does not have an Expansion annotation");
-		}
-
-		final String expandedName = cls.getAnnotation(ZenCodeType.Expansion.class).value();
-		final TypeID expandedType = typeConverter.getTypeFromName(expandedName);
-		if (expandedType == null)
-			throw new IllegalArgumentException("Could not find definition for name " + expandedName);
-
-		final ExpansionDefinition expansion = new ExpansionDefinition(CodePosition.NATIVE, module, pkg, Modifiers.PUBLIC, null);
-		final JavaClass javaClass = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(cls), JavaClass.Kind.CLASS);
-		expansion.target = expandedType;
-		definitionByClass.put(cls, expansion);
-
-		boolean addExpansion = false;
-		for (Method method : cls.getDeclaredMethods()) {
-			if (!Modifier.isStatic(method.getModifiers()) || method.getParameterCount() < 1) {
-				//Log?
-				continue;
-			}
-
-
-			final Class<?> classFromType = typeConverter.getClassFromType(expandedType);
-			if (classFromType == null) {
-				//TODO REMOVE
-				logger.debug("Could not get class for type " + expandedType + " attempting to do stuff anyways");
-			}
-
-
-			final ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
-			if (methodAnnotation != null) {
-				checkExpandedType(classFromType, method);
-				String name = !methodAnnotation.value().isEmpty() ? methodAnnotation.value() : method.getName();
-				//TypeVariableContext context = new TypeVariableContext();
-
-				final Parameter[] parameters = getExpansionParameters(method);
-
-				FunctionHeader header = memberConverter.getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-				final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
-
-				expansion.addMember(member);
-				compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, org.objectweb.asm.Type.getMethodDescriptor(method), memberConverter.getMethodModifiers(method)));
-				addExpansion = true;
-			}
-
-			final ZenCodeType.Getter getterAnnotation = method.getAnnotation(ZenCodeType.Getter.class);
-			if (getterAnnotation != null) {
-				checkExpandedType(classFromType, method);
-				TypeID type = typeConverter.loadStoredType(context, method.getAnnotatedReturnType());
-				int modifiers = memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
-				final String name = getterAnnotation.value().isEmpty() ? memberConverter.translateGetterName(method.getName()) : getterAnnotation.value();
-				final GetterMember member = new GetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
-
-				expansion.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, method, type));
-				addExpansion = true;
-			}
-
-			final ZenCodeType.Caster casterAnnotation = method.getAnnotation(ZenCodeType.Caster.class);
-			if (casterAnnotation != null) {
-				checkExpandedType(classFromType, method);
-				boolean implicit = casterAnnotation.implicit();
-				int modifiers = memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
-				if (implicit) {
-					modifiers |= Modifiers.IMPLICIT;
-				}
-				//TypeVariableContext context = new TypeVariableContext();
-				TypeID toType = typeConverter.loadStoredType(context, method.getAnnotatedReturnType());
-				final CasterMember member = new CasterMember(CodePosition.NATIVE, expansion, modifiers, toType, null);
-
-				expansion.addMember(member);
-				compiled.setMethodInfo(member, getMethod(javaClass, method, member.toType));
-				addExpansion = true;
-			}
-
-			//TODO not working, not sure if it *should* work
-//            final ZenCodeType.Operator operatorAnnotation = method.getAnnotation(ZenCodeType.Operator.class);
-//            if(operatorAnnotation != null) {
-//
-//                TypeVariableContext context = new TypeVariableContext();
-//
-//                final Parameter[] parameters = getExpansionParameters(method);
-//
-//                FunctionHeader header = getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-//                final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC, OperatorType.valueOf(operatorAnnotation.value().toString()), header, null);
-//
-//                expansion.addMember(member);
-//                compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
-//                addExpansion = true;
-//            }
-		}
-
-		if (addExpansion) {
-			compiled.setExpansionClassInfo(expansion, javaClass);
-			definitions.add(expansion);
-		}
-
-		return expansion;
-	}
-
-	private void checkExpandedType(Class<?> clsType, Method method) {
-		if (clsType == null) {
-			return;
-		}
-		if (!method.getParameterTypes()[0].isAssignableFrom(clsType)) {
-			throw new IllegalArgumentException("Cannot add extension method " + method + " as its first parameter does not match the extended type.");
-		}
-	}
-
-
-	private Parameter[] getExpansionParameters(Method method) {
-		final Parameter[] parameters = new Parameter[method.getParameterCount() - 1];
-		System.arraycopy(method.getParameters(), 1, parameters, 0, method.getParameterCount() - 1);
-		return parameters;
 	}
 
 	private boolean shouldLoadType(Type type) {

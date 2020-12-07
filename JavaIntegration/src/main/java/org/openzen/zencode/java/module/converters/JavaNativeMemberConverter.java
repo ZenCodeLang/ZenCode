@@ -21,6 +21,8 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.javashared.JavaClass;
+import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.BracketExpressionParser;
@@ -31,6 +33,8 @@ import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+
+import static org.objectweb.asm.Type.getConstructorDescriptor;
 
 public class JavaNativeMemberConverter {
 
@@ -292,6 +296,38 @@ public class JavaNativeMemberConverter {
 		} else {
 			return null;
 		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	public JavaMethod getMethod(JavaClass cls, java.lang.reflect.Constructor constructor) {
+		return new JavaMethod(
+				cls,
+				JavaMethod.Kind.CONSTRUCTOR,
+				"<init>",
+				false,
+				getConstructorDescriptor(constructor),
+				constructor.getModifiers(),
+				false);
+	}
+
+	public JavaMethod getMethod(JavaClass cls, Method method, TypeID result) {
+		JavaMethod.Kind kind;
+		if (method.getName().equals("<init>"))
+			kind = JavaMethod.Kind.CONSTRUCTOR;
+		else if (method.getName().equals("<clinit>"))
+			kind = JavaMethod.Kind.STATICINIT;
+		else if (Modifier.isStatic(method.getModifiers()))
+			kind = JavaMethod.Kind.STATIC;
+		else
+			kind = JavaMethod.Kind.INSTANCE;
+
+		final int length = method.getTypeParameters().length;
+		boolean compile = length > 0 && length == Arrays.stream(method.getParameterTypes())
+				.filter(s -> s.getCanonicalName().contentEquals("java.lang.Class"))
+				.count();
+
+		return new JavaMethod(cls, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
+				.getModifiers(), result.isGeneric());
 	}
 
 	public void setBEP(BracketExpressionParser bep) {
