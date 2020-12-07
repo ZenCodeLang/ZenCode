@@ -4,9 +4,11 @@ import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.module.TypeVariableContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.logging.IZSLogger;
-import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
@@ -23,8 +25,7 @@ import java.util.Map;
 public class JavaNativeExpansionConverter {
 	private final JavaNativeTypeConverter typeConverter;
 	private final IZSLogger logger;
-	public final Module module;
-	private final ZSPackage pkg;
+	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeMemberConverter memberConverter;
 	private final TypeVariableContext context;
 	private final JavaCompiledModule compiled;
@@ -32,11 +33,11 @@ public class JavaNativeExpansionConverter {
 	private final Map<Class<?>, HighLevelDefinition> definitionByClass;
 
 
-	public JavaNativeExpansionConverter(JavaNativeTypeConverter typeConverter, IZSLogger logger, Module module, ZSPackage pkg, JavaNativeMemberConverter memberConverter, TypeVariableContext context, JavaCompiledModule compiled, PackageDefinitions definitions, Map<Class<?>, HighLevelDefinition> definitionByClass) {
+	public JavaNativeExpansionConverter(JavaNativeTypeConverter typeConverter, IZSLogger logger, JavaNativePackageInfo packageInfo, JavaNativeMemberConverter memberConverter, TypeVariableContext context, JavaCompiledModule compiled, PackageDefinitions definitions, Map<Class<?>, HighLevelDefinition> definitionByClass) {
+
 		this.typeConverter = typeConverter;
 		this.logger = logger;
-		this.module = module;
-		this.pkg = pkg;
+		this.packageInfo = packageInfo;
 		this.memberConverter = memberConverter;
 		this.context = context;
 		this.compiled = compiled;
@@ -54,7 +55,7 @@ public class JavaNativeExpansionConverter {
 		if (expandedType == null)
 			throw new IllegalArgumentException("Could not find definition for name " + expandedName);
 
-		final ExpansionDefinition expansion = new ExpansionDefinition(CodePosition.NATIVE, module, pkg, Modifiers.PUBLIC, null);
+		final ExpansionDefinition expansion = new ExpansionDefinition(CodePosition.NATIVE, packageInfo.getModule(), packageInfo.getPkg(), Modifiers.PUBLIC, null);
 		final JavaClass javaClass = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(cls), JavaClass.Kind.CLASS);
 		expansion.target = expandedType;
 		definitionByClass.put(cls, expansion);

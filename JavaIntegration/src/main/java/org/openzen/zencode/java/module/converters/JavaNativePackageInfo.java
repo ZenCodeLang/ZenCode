@@ -4,14 +4,14 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import stdlib.Strings;
 
-public class PackageProvider {
+public class JavaNativePackageInfo {
 
 
 	private final ZSPackage pkg;
 	private final String basePackage;
 	private final Module module;
 
-	public PackageProvider(ZSPackage pkg, String basePackage, Module module) {
+	public JavaNativePackageInfo(ZSPackage pkg, String basePackage, Module module) {
 
 		this.pkg = pkg;
 		this.basePackage = basePackage;
@@ -42,5 +42,17 @@ public class PackageProvider {
 			classPkg = classPkg.getOrCreatePackage(classNameParts[i]);
 
 		return classPkg;
+	}
+
+	public Module getModule() {
+		return module;
+	}
+
+	public String getBasePackage() {
+		return basePackage;
+	}
+
+	public ZSPackage getPkg() {
+		return pkg;
 	}
 }

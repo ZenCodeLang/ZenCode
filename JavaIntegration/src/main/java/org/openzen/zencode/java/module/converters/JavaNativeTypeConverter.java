@@ -38,20 +38,16 @@ public class JavaNativeTypeConverter {
 	private final Map<Class<?>, TypeID> unsignedByClass = new HashMap<>();
 	private final TypeVariableContext context;
 	private final GlobalTypeRegistry registry;
-	private final PackageProvider packageProvider;
-	private final ZSPackage pkg;
-	private final Module module;
+	private final JavaNativePackageInfo packageInfo;
 	private final Map<String, ISymbol> globals;
 	private final JavaNativeModule javaNativeModule;
 
 	private BracketExpressionParser bep;
 
-	public JavaNativeTypeConverter(TypeVariableContext context, GlobalTypeRegistry registry, PackageProvider packageProvider, ZSPackage pkg, Module module, Map<String, ISymbol> globals, JavaNativeModule javaNativeModule) {
+	public JavaNativeTypeConverter(TypeVariableContext context, GlobalTypeRegistry registry, JavaNativePackageInfo packageInfo, Map<String, ISymbol> globals, JavaNativeModule javaNativeModule) {
 		this.context = context;
 		this.registry = registry;
-		this.packageProvider = packageProvider;
-		this.pkg = pkg;
-		this.module = module;
+		this.packageInfo = packageInfo;
 		this.globals = globals;
 		this.javaNativeModule = javaNativeModule;
 
@@ -219,7 +215,7 @@ public class JavaNativeTypeConverter {
 
 
 		try {
-			final ZSPackage zsPackage = packageProvider.getPackage(className);
+			final ZSPackage zsPackage = packageInfo.getPackage(className);
 			final String[] split = className.split("\\.");
 			final String actualName = split[split.length - 1];
 
@@ -232,8 +228,8 @@ public class JavaNativeTypeConverter {
 
 
 		//TODO: Can we get by with only this?
-		final CompilingPackage rootCompiling = new CompilingPackage(pkg.parent, module);
-		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], pkg.parent, rootCompiling, globals);
+		final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg().parent, packageInfo.getModule());
+		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], packageInfo.getPkg().parent, rootCompiling, globals);
 
 		try {
 			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep);

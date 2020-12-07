@@ -77,7 +77,7 @@ public class ScriptingEngine {
 		if (!semantic.isValid())
 			return;
 
-		space.addModule(module.module.name, semantic);
+		space.addModule(module.getModule().name, semantic);
 		nativeModules.add(module);
 
 		for (Map.Entry<String, ISymbol> globalEntry : module.globals.entrySet())

@@ -10,7 +10,7 @@ import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.module.converters.JavaNativeExpansionConverter;
 import org.openzen.zencode.java.module.converters.JavaNativeMemberConverter;
 import org.openzen.zencode.java.module.converters.JavaNativeTypeConverter;
-import org.openzen.zencode.java.module.converters.PackageProvider;
+import org.openzen.zencode.java.module.converters.JavaNativePackageInfo;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
@@ -42,22 +42,19 @@ import java.util.Optional;
  * @author Stan Hebben
  */
 public class JavaNativeModule {
-	public final Module module;
 	public final Map<String, ISymbol> globals = new HashMap<>();
 
 	//TODO Fix visibility
 	public final Map<Class<?>, HighLevelDefinition> definitionByClass = new HashMap<>();
 	//TODO Fix visibility
 	public final JavaNativeMemberConverter memberConverter;
-	private final ZSPackage pkg;
-	private final String basePackage;
 	private final GlobalTypeRegistry registry;
 	private final PackageDefinitions definitions = new PackageDefinitions();
 	private final JavaCompiledModule compiled;
 	private final TypeVariableContext context = new TypeVariableContext();
 	private final IZSLogger logger;
 	private final JavaNativeTypeConverter typeConverter;
-	private final PackageProvider packageProvider;
+	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeExpansionConverter expansionConverter;
 
 	public JavaNativeModule(
@@ -67,13 +64,11 @@ public class JavaNativeModule {
 			String basePackage,
 			GlobalTypeRegistry registry,
 			JavaNativeModule[] dependencies) {
-		this.pkg = pkg;
-		this.basePackage = basePackage;
-		this.module = new Module(name);
+		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new Module(name));
 		this.registry = registry;
 		this.logger = logger;
 
-		this.compiled = new JavaCompiledModule(module, FunctionParameter.NONE);
+		this.compiled = new JavaCompiledModule(packageInfo.getModule(), FunctionParameter.NONE);
 
 		for (JavaNativeModule dependency : dependencies) {
 			definitionByClass.putAll(dependency.definitionByClass);
@@ -81,20 +76,19 @@ public class JavaNativeModule {
 			compiled.addAllFrom(dependency.compiled);
 		}
 
-		this.packageProvider = new PackageProvider(pkg, basePackage, module);
-		this.typeConverter = new JavaNativeTypeConverter(context, registry, packageProvider, pkg, module, globals, this);
-		this.memberConverter = new JavaNativeMemberConverter(typeConverter, pkg, module, globals, registry);
-		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, module, pkg, memberConverter, context, compiled, definitions, definitionByClass);
+		this.typeConverter = new JavaNativeTypeConverter(context, registry, packageInfo, globals, this);
+		this.memberConverter = new JavaNativeMemberConverter(typeConverter, packageInfo, globals, registry);
+		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, context, compiled, definitions, definitionByClass);
 	}
 
 	public SemanticModule toSemantic(ModuleSpace space) {
 		return new SemanticModule(
-				module,
+				packageInfo.getModule(),
 				SemanticModule.NONE,
 				FunctionParameter.NONE,
 				SemanticModule.State.NORMALIZED,
 				space.rootPackage,
-				pkg,
+				packageInfo.getPkg(),
 				definitions,
 				Collections.emptyList(),
 				space.registry,
@@ -254,37 +248,37 @@ public class JavaNativeModule {
 			ZenCodeType.Name nameAnnotation = cls.getDeclaredAnnotation(ZenCodeType.Name.class);
 			className = className.contains(".") ? className.substring(className.lastIndexOf('.') + 1) : className;
 			if (nameAnnotation == null) {
-				classPkg = packageProvider.getPackage(className);
+				classPkg = packageInfo.getPackage(className);
 			} else {
 				String specifiedName = nameAnnotation.value();
 				if (specifiedName.startsWith(".")) {
-					classPkg = packageProvider.getPackage(specifiedName);
+					classPkg = packageInfo.getPackage(specifiedName);
 					className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
 				} else if (specifiedName.indexOf('.') >= 0) {
-					if (!specifiedName.startsWith(pkg.fullName))
+					if (!specifiedName.startsWith(packageInfo.getPkg().fullName))
 						throw new IllegalArgumentException("Specified @Name as \"" + specifiedName + "\" for class: \"" + cls
-								.toString() + "\" but it's not in the module root package: \"" + pkg.fullName + "\"");
+								.toString() + "\" but it's not in the module root package: \"" + packageInfo.getPkg().fullName + "\"");
 
-					classPkg = packageProvider.getPackage(basePackage + specifiedName.substring(pkg.fullName.length()));
+					classPkg = packageInfo.getPackage(packageInfo.getBasePackage() + specifiedName.substring(packageInfo.getPkg().fullName.length()));
 					className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
 				} else {
-					classPkg = packageProvider.getPackage(specifiedName);
+					classPkg = packageInfo.getPackage(specifiedName);
 					className = nameAnnotation.value();
 				}
 			}
 
 
 			if (cls.isInterface()) {
-				definition = new InterfaceDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC, null);
+				definition = new InterfaceDefinition(CodePosition.NATIVE, packageInfo.getModule(), classPkg, className, Modifiers.PUBLIC, null);
 				javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.INTERFACE);
 			} else if (cls.isEnum()) {
-				definition = new EnumDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC, null);
+				definition = new EnumDefinition(CodePosition.NATIVE, packageInfo.getModule(), classPkg, className, Modifiers.PUBLIC, null);
 				javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.ENUM);
 			} else if (isStruct) {
-				definition = new StructDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC, null);
+				definition = new StructDefinition(CodePosition.NATIVE, packageInfo.getModule(), classPkg, className, Modifiers.PUBLIC, null);
 				javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.CLASS);
 			} else {
-				definition = new ClassDefinition(CodePosition.NATIVE, module, classPkg, className, Modifiers.PUBLIC);
+				definition = new ClassDefinition(CodePosition.NATIVE, packageInfo.getModule(), classPkg, className, Modifiers.PUBLIC);
 				javaClass = JavaClass.fromInternalName(internalName, JavaClass.Kind.CLASS);
 
 			}
@@ -450,7 +444,7 @@ public class JavaNativeModule {
 	}
 
 	private boolean shouldLoadClass(Class<?> cls) {
-		return packageProvider.isInBasePackage(getClassName(cls));
+		return packageInfo.isInBasePackage(getClassName(cls));
 	}
 
 
@@ -459,4 +453,7 @@ public class JavaNativeModule {
 		typeConverter.setBEP(bep);
 	}
 
+	public Module getModule() {
+		return packageInfo.getModule();
+	}
 }

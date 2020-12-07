@@ -10,7 +10,6 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.FileResolutionContext;
 import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -39,16 +38,14 @@ import static org.objectweb.asm.Type.getConstructorDescriptor;
 public class JavaNativeMemberConverter {
 
 	private final JavaNativeTypeConverter typeConverter;
-	private final ZSPackage pkg;
-	private final Module module;
+	private final JavaNativePackageInfo packageInfo;
 	private final Map<String, ISymbol> globals;
 	private final GlobalTypeRegistry registry;
 	private BracketExpressionParser bep;
 
-	public JavaNativeMemberConverter(JavaNativeTypeConverter typeConverter, ZSPackage pkg, Module module, Map<String, ISymbol> globals, GlobalTypeRegistry registry) {
+	public JavaNativeMemberConverter(JavaNativeTypeConverter typeConverter, JavaNativePackageInfo packageInfo, Map<String, ISymbol> globals, GlobalTypeRegistry registry) {
 		this.typeConverter = typeConverter;
-		this.pkg = pkg;
-		this.module = module;
+		this.packageInfo = packageInfo;
 		this.globals = globals;
 		this.registry = registry;
 	}
@@ -236,9 +233,9 @@ public class JavaNativeMemberConverter {
 			try {
 				final String filename = "internal: " + parameter.getDeclaringExecutable().getName();
 
-				final CompilingPackage rootCompiling = new CompilingPackage(pkg, module);
-				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], pkg, rootCompiling, globals);
-				final FileResolutionContext fContext = new FileResolutionContext(context, pkg, rootCompiling);
+				final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg(), packageInfo.getModule());
+				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], packageInfo.getPkg(), rootCompiling, globals);
+				final FileResolutionContext fContext = new FileResolutionContext(context, packageInfo.getPkg(), rootCompiling);
 				final FileScope fileScope = new FileScope(fContext, Collections.emptyList(), globals, member -> {
 				});
 				final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep);
