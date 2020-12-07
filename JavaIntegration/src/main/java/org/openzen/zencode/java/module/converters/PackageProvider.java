@@ -1,4 +1,4 @@
-package org.openzen.zencode.java.module;
+package org.openzen.zencode.java.module.converters;
 
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;

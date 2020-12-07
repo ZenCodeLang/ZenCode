@@ -7,6 +7,9 @@ package org.openzen.zencode.java.module;
 
 import org.openzen.zencode.java.ZenCodeGlobals;
 import org.openzen.zencode.java.ZenCodeType;
+import org.openzen.zencode.java.module.converters.JavaNativeMemberConverter;
+import org.openzen.zencode.java.module.converters.JavaNativeTypeConverter;
+import org.openzen.zencode.java.module.converters.PackageProvider;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
@@ -39,17 +42,19 @@ import static org.objectweb.asm.Type.getConstructorDescriptor;
 public class JavaNativeModule {
 	public final Module module;
 	public final Map<String, ISymbol> globals = new HashMap<>();
+
+	//TODO Fix visibility
+	public final Map<Class<?>, HighLevelDefinition> definitionByClass = new HashMap<>();
+	//TODO Fix visibility
+	public final JavaNativeMemberConverter memberConverter;
 	private final ZSPackage pkg;
 	private final String basePackage;
 	private final GlobalTypeRegistry registry;
 	private final PackageDefinitions definitions = new PackageDefinitions();
 	private final JavaCompiledModule compiled;
-	final Map<Class<?>, HighLevelDefinition> definitionByClass = new HashMap<>();
 	private final TypeVariableContext context = new TypeVariableContext();
 	private final IZSLogger logger;
 	private final JavaNativeTypeConverter typeConverter;
-	final JavaNativeMemberConverter memberConverter;
-
 	private final PackageProvider packageProvider;
 
 	public JavaNativeModule(
@@ -61,11 +66,11 @@ public class JavaNativeModule {
 			JavaNativeModule[] dependencies) {
 		this.pkg = pkg;
 		this.basePackage = basePackage;
-		module = new Module(name);
+		this.module = new Module(name);
 		this.registry = registry;
 		this.logger = logger;
 
-		compiled = new JavaCompiledModule(module, FunctionParameter.NONE);
+		this.compiled = new JavaCompiledModule(module, FunctionParameter.NONE);
 
 		for (JavaNativeModule dependency : dependencies) {
 			definitionByClass.putAll(dependency.definitionByClass);
@@ -76,18 +81,6 @@ public class JavaNativeModule {
 		this.packageProvider = new PackageProvider(pkg, basePackage, module);
 		this.typeConverter = new JavaNativeTypeConverter(context, registry, packageProvider, pkg, module, globals, this);
 		this.memberConverter = new JavaNativeMemberConverter(typeConverter, pkg, module, globals, registry);
-	}
-
-	private static String getInternalName(Class<?> cls) {
-		return org.objectweb.asm.Type.getInternalName(cls);
-	}
-
-	private static String getDescriptor(Class<?> cls) {
-		return org.objectweb.asm.Type.getDescriptor(cls);
-	}
-
-	private static String getMethodDescriptor(Method method) {
-		return org.objectweb.asm.Type.getMethodDescriptor(method);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -118,7 +111,7 @@ public class JavaNativeModule {
 				.filter(s -> s.getCanonicalName().contentEquals("java.lang.Class"))
 				.count();
 
-		return new JavaMethod(cls, kind, method.getName(), compile, getMethodDescriptor(method), method
+		return new JavaMethod(cls, kind, method.getName(), compile, org.objectweb.asm.Type.getMethodDescriptor(method), method
 				.getModifiers(), result.isGeneric());
 	}
 
@@ -157,7 +150,7 @@ public class JavaNativeModule {
 		if (compiled.hasClassInfo(definition)) {
 			jcls = compiled.getClassInfo(definition);
 		} else {
-			jcls = JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.CLASS);
+			jcls = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(cls), JavaClass.Kind.CLASS);
 			compiled.setClassInfo(definition, jcls);
 		}
 
@@ -175,7 +168,7 @@ public class JavaNativeModule {
 			String name = global.value().isEmpty() ? field.getName() : global.value();
 			FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, thisType, type, registry, Modifiers.PUBLIC, 0, null);
 			definition.addMember(fieldMember);
-			JavaField javaField = new JavaField(jcls, field.getName(), getDescriptor(field.getType()));
+			JavaField javaField = new JavaField(jcls, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType()));
 			compiled.setFieldInfo(fieldMember, javaField);
 			compiled.setFieldInfo(fieldMember.autoGetter, javaField);
 			globals.put(name, new ExpressionSymbol((position, scope) -> new StaticGetterExpression(CodePosition.BUILTIN, fieldMember.autoGetter.ref(thisType, GenericMapper.EMPTY))));
@@ -219,7 +212,7 @@ public class JavaNativeModule {
 			throw new IllegalArgumentException("Method \"" + method.toString() + "\" is not static");
 
 		HighLevelDefinition definition = addClass(method.getDeclaringClass());
-		JavaClass jcls = JavaClass.fromInternalName(getInternalName(method.getDeclaringClass()), JavaClass.Kind.CLASS);
+		JavaClass jcls = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(method.getDeclaringClass()), JavaClass.Kind.CLASS);
 
 		if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
 			//The method should already have been loaded let's use that one.
@@ -240,7 +233,7 @@ public class JavaNativeModule {
 		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), memberConverter.getHeader(context, method), null);
 		definition.addMember(methodMember);
 		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
-		compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+		compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, org.objectweb.asm.Type.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
 		return methodMember.ref(registry.getForDefinition(definition));
 	}
 
@@ -279,7 +272,7 @@ public class JavaNativeModule {
 
 		HighLevelDefinition definition = checkRegistry(cls);
 		final boolean foundRegistry = definition != null;
-		String internalName = getInternalName(cls);
+		String internalName = org.objectweb.asm.Type.getInternalName(cls);
 		JavaClass javaClass;
 
 		if (foundRegistry) {
@@ -394,7 +387,7 @@ public class JavaNativeModule {
 			TypeID fieldType = typeConverter.loadStoredType(context, field.getAnnotatedType());
 			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, memberConverter.getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
 			definition.addMember(member);
-			compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), getDescriptor(field.getType())));
+			compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
 		}
 
 		boolean hasConstructor = false;
@@ -482,7 +475,7 @@ public class JavaNativeModule {
 			throw new IllegalArgumentException("Could not find definition for name " + expandedName);
 
 		final ExpansionDefinition expansion = new ExpansionDefinition(CodePosition.NATIVE, module, pkg, Modifiers.PUBLIC, null);
-		final JavaClass javaClass = JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.CLASS);
+		final JavaClass javaClass = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(cls), JavaClass.Kind.CLASS);
 		expansion.target = expandedType;
 		definitionByClass.put(cls, expansion);
 
@@ -513,7 +506,7 @@ public class JavaNativeModule {
 				final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
 
 				expansion.addMember(member);
-				compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, getMethodDescriptor(method), memberConverter.getMethodModifiers(method)));
+				compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, org.objectweb.asm.Type.getMethodDescriptor(method), memberConverter.getMethodModifiers(method)));
 				addExpansion = true;
 			}
 

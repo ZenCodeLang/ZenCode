@@ -1,6 +1,8 @@
-package org.openzen.zencode.java.module;
+package org.openzen.zencode.java.module.converters;
 
 import org.openzen.zencode.java.ZenCodeType;
+import org.openzen.zencode.java.module.JavaNativeModule;
+import org.openzen.zencode.java.module.TypeVariableContext;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
