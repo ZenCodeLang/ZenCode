@@ -21,6 +21,7 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaImplementation;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 
 import static org.objectweb.asm.Type.getInternalName;
@@ -172,52 +173,64 @@ public class JavaNativeClassConverter {
 
 	private void fillAnnotatedMethods(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
 		for (Method method : cls.getDeclaredMethods()) {
-			ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
+			if (isOverridden(cls, method))
+				continue;
+
+			ZenCodeType.Method methodAnnotation = getAnnotation(method, ZenCodeType.Method.class);
 			if (methodAnnotation != null) {
-
-				//Simple check if the method was overwritten
-				try {
-					if (!cls.getDeclaredMethod(method.getName(), method.getParameterTypes()).equals(method)) {
-						continue;
-					}
-				} catch (NoSuchMethodException e) {
-					e.printStackTrace();
-					continue;
-				}
-
 				MethodMember member = memberConverter.asMethod(typeConversionContext.context, definition, method, methodAnnotation);
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
-			ZenCodeType.Getter getter = method.getAnnotation(ZenCodeType.Getter.class);
+			ZenCodeType.Getter getter = getAnnotation(method, ZenCodeType.Getter.class);
 			if (getter != null) {
 				GetterMember member = memberConverter.asGetter(typeConversionContext.context, definition, method, getter);
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.getType()));
 			}
 
-			ZenCodeType.Setter setter = method.getAnnotation(ZenCodeType.Setter.class);
+			ZenCodeType.Setter setter = getAnnotation(method, ZenCodeType.Setter.class);
 			if (setter != null) {
 				SetterMember member = memberConverter.asSetter(typeConversionContext.context, definition, method, setter);
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, BasicTypeID.VOID));
 			}
 
-			ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
+			ZenCodeType.Operator operator = getAnnotation(method, ZenCodeType.Operator.class);
 			if (operator != null) {
 				OperatorMember member = memberConverter.asOperator(typeConversionContext.context, definition, method, operator);
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
-			ZenCodeType.Caster caster = method.getAnnotation(ZenCodeType.Caster.class);
+			ZenCodeType.Caster caster = getAnnotation(method, ZenCodeType.Caster.class);
 			if (caster != null) {
 				CasterMember member = memberConverter.asCaster(typeConversionContext.context, definition, method, caster);
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
 			}
 		}
+	}
+
+	/**
+	 * Public so that other implementations can inject "virtual" Annotations here
+	 */
+	public <T extends Annotation> T getAnnotation(Method method, Class<T> cls) {
+		return method.getAnnotation(cls);
+	}
+
+	private boolean isOverridden(Class<?> cls, Method method) {
+		//Simple check if the method was overwritten
+		try {
+			if (!cls.getDeclaredMethod(method.getName(), method.getParameterTypes()).equals(method)) {
+				return true;
+			}
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+			return true;
+		}
+		return false;
 	}
 
 	private void fillConstructor(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass, boolean foundRegistry) {
@@ -304,7 +317,7 @@ public class JavaNativeClassConverter {
 			TypeParameter parameter = definition.typeParameters[i];
 			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
 				if (bound.getType() == Object.class) {
-					continue; //Makes the stdlibs types work as they have "no" bounds for T
+					continue; //Makes the stdlib types work as they have "no" bounds for T
 				}
 				TypeID type = typeConverter.loadType(typeConversionContext.context, bound);
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
