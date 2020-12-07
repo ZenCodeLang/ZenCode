@@ -8,43 +8,29 @@ package org.openzen.zencode.java.module;
 import org.openzen.zencode.java.ZenCodeGlobals;
 import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.annotations.NativeDefinitionAnnotation;
-import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.FileResolutionContext;
-import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.*;
-import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.ExpressionSymbol;
+import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.javashared.*;
-import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
-import org.openzen.zenscript.lexer.ParseException;
-import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.BracketExpressionParser;
-import org.openzen.zenscript.parser.expression.ParsedExpression;
-import org.openzen.zenscript.parser.type.IParsedType;
-import stdlib.Strings;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 
-import static org.objectweb.asm.Type.*;
+import static org.objectweb.asm.Type.getConstructorDescriptor;
 
 
 /**
@@ -58,12 +44,13 @@ public class JavaNativeModule {
 	private final GlobalTypeRegistry registry;
 	private final PackageDefinitions definitions = new PackageDefinitions();
 	private final JavaCompiledModule compiled;
-	private final Map<Class<?>, HighLevelDefinition> definitionByClass = new HashMap<>();
-	private final Map<Class<?>, TypeID> typeByClass = new HashMap<>();
-	private final Map<Class<?>, TypeID> unsignedByClass = new HashMap<>();
+	final Map<Class<?>, HighLevelDefinition> definitionByClass = new HashMap<>();
 	private final TypeVariableContext context = new TypeVariableContext();
 	private final IZSLogger logger;
-	private BracketExpressionParser bep;
+	private final JavaNativeTypeConverter typeConverter;
+	final JavaNativeMemberConverter memberConverter;
+
+	private final PackageProvider packageProvider;
 
 	public JavaNativeModule(
 			IZSLogger logger,
@@ -86,33 +73,9 @@ public class JavaNativeModule {
 			compiled.addAllFrom(dependency.compiled);
 		}
 
-		typeByClass.put(void.class, BasicTypeID.VOID);
-		typeByClass.put(boolean.class, BasicTypeID.BOOL);
-		typeByClass.put(byte.class, BasicTypeID.SBYTE);
-		typeByClass.put(char.class, BasicTypeID.CHAR);
-		typeByClass.put(short.class, BasicTypeID.SHORT);
-		typeByClass.put(int.class, BasicTypeID.INT);
-		typeByClass.put(long.class, BasicTypeID.LONG);
-		typeByClass.put(float.class, BasicTypeID.FLOAT);
-		typeByClass.put(double.class, BasicTypeID.DOUBLE);
-		typeByClass.put(String.class, BasicTypeID.STRING);
-		typeByClass.put(Boolean.class, registry.getOptional(BasicTypeID.BOOL));
-		typeByClass.put(Byte.class, registry.getOptional(BasicTypeID.BYTE));
-		typeByClass.put(Short.class, registry.getOptional(BasicTypeID.SHORT));
-		typeByClass.put(Integer.class, registry.getOptional(BasicTypeID.INT));
-		typeByClass.put(Long.class, registry.getOptional(BasicTypeID.LONG));
-		typeByClass.put(Float.class, registry.getOptional(BasicTypeID.FLOAT));
-		typeByClass.put(Double.class, registry.getOptional(BasicTypeID.DOUBLE));
-
-		unsignedByClass.put(byte.class, BasicTypeID.BYTE);
-		unsignedByClass.put(char.class, BasicTypeID.CHAR);
-		unsignedByClass.put(short.class, BasicTypeID.USHORT);
-		unsignedByClass.put(int.class, BasicTypeID.UINT);
-		unsignedByClass.put(long.class, BasicTypeID.ULONG);
-		unsignedByClass.put(Byte.class, registry.getOptional(BasicTypeID.BYTE));
-		unsignedByClass.put(Short.class, registry.getOptional(BasicTypeID.SHORT));
-		unsignedByClass.put(Integer.class, registry.getOptional(BasicTypeID.INT));
-		unsignedByClass.put(Long.class, registry.getOptional(BasicTypeID.LONG));
+		this.packageProvider = new PackageProvider(pkg, basePackage, module);
+		this.typeConverter = new JavaNativeTypeConverter(context, registry, packageProvider, pkg, module, globals, this);
+		this.memberConverter = new JavaNativeMemberConverter(typeConverter, pkg, module, globals, registry);
 	}
 
 	private static String getInternalName(Class<?> cls) {
@@ -208,7 +171,7 @@ public class JavaNativeModule {
 				continue;
 
 			ZenCodeGlobals.Global global = field.getAnnotation(ZenCodeGlobals.Global.class);
-			TypeID type = loadStoredType(context, field.getAnnotatedType());
+			TypeID type = typeConverter.loadStoredType(context, field.getAnnotatedType());
 			String name = global.value().isEmpty() ? field.getName() : global.value();
 			FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, thisType, type, registry, Modifiers.PUBLIC, 0, null);
 			definition.addMember(fieldMember);
@@ -228,7 +191,7 @@ public class JavaNativeModule {
 			String name = global.value().isEmpty() ? method.getName() : global.value();
 			//MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, getHeader(context, method), null);
 			//definition.addMember(methodMember);
-			MethodMember methodMember = asMethod(context, definition, method, new ZenCodeType.Method() {
+			MethodMember methodMember = memberConverter.asMethod(context, definition, method, new ZenCodeType.Method() {
 				@Override
 				public String value() {
 					return name;
@@ -243,7 +206,7 @@ public class JavaNativeModule {
 
 			//boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
 			//compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), isGenericResult));
-			compiled.setMethodInfo(methodMember, getMethod(jcls, method, loadType(context, method.getAnnotatedReturnType())));
+			compiled.setMethodInfo(methodMember, getMethod(jcls, method, typeConverter.loadType(context, method.getAnnotatedReturnType())));
 			globals.put(name, new ExpressionSymbol((position, scope) -> {
 				TypeMembers members = scope.getTypeMembers(thisType);
 				return new PartialStaticMemberGroupExpression(position, scope, thisType, members.getGroup(name), TypeID.NONE);
@@ -274,38 +237,11 @@ public class JavaNativeModule {
 				return matchingMember.get().ref(registry.getForDefinition(definition));
 			}
 		}
-		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), getHeader(context, method), null);
+		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), memberConverter.getHeader(context, method), null);
 		definition.addMember(methodMember);
 		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
 		compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, getMethodDescriptor(method), method.getModifiers(), isGenericResult));
 		return methodMember.ref(registry.getForDefinition(definition));
-	}
-
-	private boolean isInBasePackage(String className) {
-		return className.startsWith(module.name) || className.startsWith(basePackage + ".") || className.startsWith("java.lang.") || className.startsWith("java.util.");
-	}
-
-	private ZSPackage getPackage(String className) {
-		//TODO validate
-		if (this.basePackage == null || this.basePackage.isEmpty())
-			return pkg;
-		//TODO make a lang package?
-		if (!className.contains(".") || className.startsWith("java.lang"))
-			return pkg;
-
-		if (className.startsWith("."))
-			className = className.substring(1);
-		else if (className.startsWith(basePackage + "."))
-			className = className.substring(basePackage.length() + 1);
-		else
-			throw new IllegalArgumentException("Invalid class name: \"" + className + "\" not in the given base package: \"" + basePackage + "\"");
-
-		String[] classNameParts = Strings.split(className, '.');
-		ZSPackage classPkg = pkg;
-		for (int i = 0; i < classNameParts.length - 1; i++)
-			classPkg = classPkg.getOrCreatePackage(classNameParts[i]);
-
-		return classPkg;
 	}
 
 	private <T> HighLevelDefinition checkRegistry(Class<T> cls) {
@@ -353,21 +289,21 @@ public class JavaNativeModule {
 			ZenCodeType.Name nameAnnotation = cls.getDeclaredAnnotation(ZenCodeType.Name.class);
 			className = className.contains(".") ? className.substring(className.lastIndexOf('.') + 1) : className;
 			if (nameAnnotation == null) {
-				classPkg = getPackage(className);
+				classPkg = packageProvider.getPackage(className);
 			} else {
 				String specifiedName = nameAnnotation.value();
 				if (specifiedName.startsWith(".")) {
-					classPkg = getPackage(specifiedName);
+					classPkg = packageProvider.getPackage(specifiedName);
 					className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
 				} else if (specifiedName.indexOf('.') >= 0) {
 					if (!specifiedName.startsWith(pkg.fullName))
 						throw new IllegalArgumentException("Specified @Name as \"" + specifiedName + "\" for class: \"" + cls
 								.toString() + "\" but it's not in the module root package: \"" + pkg.fullName + "\"");
 
-					classPkg = getPackage(basePackage + specifiedName.substring(pkg.fullName.length()));
+					classPkg = packageProvider.getPackage(basePackage + specifiedName.substring(pkg.fullName.length()));
 					className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
 				} else {
-					classPkg = getPackage(specifiedName);
+					classPkg = packageProvider.getPackage(specifiedName);
 					className = nameAnnotation.value();
 				}
 			}
@@ -421,22 +357,22 @@ public class JavaNativeModule {
 				if (bound.getType() == Object.class) {
 					continue; //Makes the stdlibs types work as they have "no" bounds for T
 				}
-				TypeID type = loadType(context, bound);
+				TypeID type = typeConverter.loadType(context, bound);
 				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
 			}
 		}
 
 		if (!foundRegistry && definition instanceof ClassDefinition && cls.getAnnotatedSuperclass() != null && shouldLoadType(cls.getAnnotatedSuperclass().getType())) {
-			definition.setSuperType(loadType(context, cls.getAnnotatedSuperclass()));
+			definition.setSuperType(typeConverter.loadType(context, cls.getAnnotatedSuperclass()));
 		}
 
 		if (!foundRegistry && definition.getSuperType() == null && cls != Object.class && !(definition instanceof EnumDefinition)) {
-			definition.setSuperType(loadType(context, Object.class, false, false));
+			definition.setSuperType(typeConverter.loadType(context, Object.class, false, false));
 		}
 
 		for (AnnotatedType iface : cls.getAnnotatedInterfaces()) {
 			if (shouldLoadType(iface.getType())) {
-				TypeID type = loadType(context, iface);
+				TypeID type = typeConverter.loadType(context, iface);
 				ImplementationMember member = new ImplementationMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC, type);
 				definition.members.add(member);
 				compiled.setImplementationInfo(member, new JavaImplementation(true, javaClass));
@@ -455,8 +391,8 @@ public class JavaNativeModule {
 
 			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
 
-			TypeID fieldType = loadStoredType(context, field.getAnnotatedType());
-			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
+			TypeID fieldType = typeConverter.loadStoredType(context, field.getAnnotatedType());
+			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, memberConverter.getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
 			definition.addMember(member);
 			compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), getDescriptor(field.getType())));
 		}
@@ -465,7 +401,7 @@ public class JavaNativeModule {
 		for (java.lang.reflect.Constructor<?> constructor : cls.getConstructors()) {
 			ZenCodeType.Constructor constructorAnnotation = constructor.getAnnotation(ZenCodeType.Constructor.class);
 			if (constructorAnnotation != null) {
-				ConstructorMember member = asConstructor(context, definition, constructor);
+				ConstructorMember member = memberConverter.asConstructor(context, definition, constructor);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, constructor));
 				hasConstructor = true;
@@ -492,35 +428,35 @@ public class JavaNativeModule {
 					continue;
 				}
 
-				MethodMember member = asMethod(context, definition, method, methodAnnotation);
+				MethodMember member = memberConverter.asMethod(context, definition, method, methodAnnotation);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
 			ZenCodeType.Getter getter = method.getAnnotation(ZenCodeType.Getter.class);
 			if (getter != null) {
-				GetterMember member = asGetter(context, definition, method, getter);
+				GetterMember member = memberConverter.asGetter(context, definition, method, getter);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.getType()));
 			}
 
 			ZenCodeType.Setter setter = method.getAnnotation(ZenCodeType.Setter.class);
 			if (setter != null) {
-				SetterMember member = asSetter(context, definition, method, setter);
+				SetterMember member = memberConverter.asSetter(context, definition, method, setter);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, BasicTypeID.VOID));
 			}
 
 			ZenCodeType.Operator operator = method.getAnnotation(ZenCodeType.Operator.class);
 			if (operator != null) {
-				OperatorMember member = asOperator(context, definition, method, operator);
+				OperatorMember member = memberConverter.asOperator(context, definition, method, operator);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
 			ZenCodeType.Caster caster = method.getAnnotation(ZenCodeType.Caster.class);
 			if (caster != null) {
-				CasterMember member = asCaster(context, definition, method, caster);
+				CasterMember member = memberConverter.asCaster(context, definition, method, caster);
 				definition.addMember(member);
 				compiled.setMethodInfo(member, getMethod(javaClass, method, member.toType));
 			}
@@ -541,7 +477,7 @@ public class JavaNativeModule {
 		}
 
 		final String expandedName = cls.getAnnotation(ZenCodeType.Expansion.class).value();
-		final TypeID expandedType = getTypeFromName(expandedName);
+		final TypeID expandedType = typeConverter.getTypeFromName(expandedName);
 		if (expandedType == null)
 			throw new IllegalArgumentException("Could not find definition for name " + expandedName);
 
@@ -558,7 +494,7 @@ public class JavaNativeModule {
 			}
 
 
-			final Class<?> classFromType = getClassFromType(expandedType);
+			final Class<?> classFromType = typeConverter.getClassFromType(expandedType);
 			if (classFromType == null) {
 				//TODO REMOVE
 				logger.debug("Could not get class for type " + expandedType + " attempting to do stuff anyways");
@@ -573,20 +509,20 @@ public class JavaNativeModule {
 
 				final Parameter[] parameters = getExpansionParameters(method);
 
-				FunctionHeader header = getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-				final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
+				FunctionHeader header = memberConverter.getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+				final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
 
 				expansion.addMember(member);
-				compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, getMethodDescriptor(method), getMethodModifiers(method)));
+				compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, getMethodDescriptor(method), memberConverter.getMethodModifiers(method)));
 				addExpansion = true;
 			}
 
 			final ZenCodeType.Getter getterAnnotation = method.getAnnotation(ZenCodeType.Getter.class);
 			if (getterAnnotation != null) {
 				checkExpandedType(classFromType, method);
-				TypeID type = loadStoredType(context, method.getAnnotatedReturnType());
-				int modifiers = getMethodModifiers(method) ^ Modifiers.STATIC;
-				final String name = getterAnnotation.value().isEmpty() ? translateGetterName(method.getName()) : getterAnnotation.value();
+				TypeID type = typeConverter.loadStoredType(context, method.getAnnotatedReturnType());
+				int modifiers = memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
+				final String name = getterAnnotation.value().isEmpty() ? memberConverter.translateGetterName(method.getName()) : getterAnnotation.value();
 				final GetterMember member = new GetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
 
 				expansion.addMember(member);
@@ -598,12 +534,12 @@ public class JavaNativeModule {
 			if (casterAnnotation != null) {
 				checkExpandedType(classFromType, method);
 				boolean implicit = casterAnnotation.implicit();
-				int modifiers = getMethodModifiers(method) ^ Modifiers.STATIC;
+				int modifiers = memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
 				if (implicit) {
 					modifiers |= Modifiers.IMPLICIT;
 				}
 				//TypeVariableContext context = new TypeVariableContext();
-				TypeID toType = loadStoredType(context, method.getAnnotatedReturnType());
+				TypeID toType = typeConverter.loadStoredType(context, method.getAnnotatedReturnType());
 				final CasterMember member = new CasterMember(CodePosition.NATIVE, expansion, modifiers, toType, null);
 
 				expansion.addMember(member);
@@ -620,7 +556,7 @@ public class JavaNativeModule {
 //                final Parameter[] parameters = getExpansionParameters(method);
 //
 //                FunctionHeader header = getHeader(context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-//                final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, getMethodModifiers(method) ^ Modifiers.STATIC, OperatorType.valueOf(operatorAnnotation.value().toString()), header, null);
+//                final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, memberConverter.getMethodModifiers(method) ^ Modifiers.STATIC, OperatorType.valueOf(operatorAnnotation.value().toString()), header, null);
 //
 //                expansion.addMember(member);
 //                compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
@@ -645,73 +581,11 @@ public class JavaNativeModule {
 		}
 	}
 
-	private Class<?> getClassFromType(TypeID type) {
-		if (type instanceof DefinitionTypeID) {
-			DefinitionTypeID definitionType = ((DefinitionTypeID) type);
-
-			for (Map.Entry<Class<?>, HighLevelDefinition> ent : definitionByClass.entrySet()) {
-				if (ent.getValue().equals(definitionType.definition))
-					return ent.getKey();
-			}
-		}
-
-		for (Map.Entry<Class<?>, TypeID> ent : typeByClass.entrySet()) {
-			if (ent.getValue().equals(type))
-				return ent.getKey();
-		}
-
-		for (Map.Entry<Class<?>, TypeID> ent : unsignedByClass.entrySet()) {
-			if (ent.getValue().equals(type))
-				return ent.getKey();
-		}
-
-		return null;
-		//throw new IllegalArgumentException("Could not find class for type " + type);
-	}
 
 	private Parameter[] getExpansionParameters(Method method) {
 		final Parameter[] parameters = new Parameter[method.getParameterCount() - 1];
 		System.arraycopy(method.getParameters(), 1, parameters, 0, method.getParameterCount() - 1);
 		return parameters;
-	}
-
-	private TypeID getTypeFromName(String className) {
-		for (TypeID value : this.typeByClass.values()) {
-			if (value.toString().equals(className))
-				return value;
-		}
-
-		for (TypeID value : this.unsignedByClass.values()) {
-			if (value.toString().equals(className))
-				return value;
-		}
-
-
-		try {
-			final ZSPackage zsPackage = getPackage(className);
-			final String[] split = className.split("\\.");
-			final String actualName = split[split.length - 1];
-
-			for (HighLevelDefinition value : this.definitionByClass.values()) {
-				if (actualName.equals(value.name) && value.pkg.equals(zsPackage))
-					return registry.getForMyDefinition(value);
-			}
-		} catch (IllegalArgumentException ignored) {
-		}
-
-
-		//TODO: Can we get by with only this?
-		final CompilingPackage rootCompiling = new CompilingPackage(pkg.parent, module);
-		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], pkg.parent, rootCompiling, globals);
-
-		try {
-			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep);
-			return IParsedType.parse(tokens).compile(context);
-		} catch (Exception ignored) {
-		}
-
-
-		return null;
 	}
 
 	private boolean shouldLoadType(Type type) {
@@ -728,438 +602,13 @@ public class JavaNativeModule {
 	}
 
 	private boolean shouldLoadClass(Class<?> cls) {
-		return isInBasePackage(getClassName(cls));
+		return packageProvider.isInBasePackage(getClassName(cls));
 	}
 
-	private boolean isGetterName(String name) {
-		return name.startsWith("get") || name.startsWith("is") || name.startsWith("has");
-	}
-
-	private String translateGetterName(String name) {
-		if (name.startsWith("get"))
-			return name.substring(3, 4).toLowerCase() + name.substring(4);
-
-		return name;
-	}
-
-	private String translateSetterName(String name) {
-		if (name.startsWith("set"))
-			return name.substring(3, 4).toLowerCase() + name.substring(4);
-
-		return name;
-	}
-
-	@SuppressWarnings("rawtypes")
-	private ConstructorMember asConstructor(TypeVariableContext context, HighLevelDefinition definition, java.lang.reflect.Constructor method) {
-		FunctionHeader header = getHeader(context, method);
-		return new ConstructorMember(
-				CodePosition.NATIVE,
-				definition,
-				Modifiers.PUBLIC,
-				header,
-				null);
-	}
-
-	private MethodMember asMethod(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Method annotation) {
-		String name = annotation != null && !annotation.value().isEmpty() ? annotation.value() : method.getName();
-		FunctionHeader header = getHeader(context, method);
-		return new MethodMember(
-				CodePosition.NATIVE,
-				definition,
-				getMethodModifiers(method),
-				name,
-				header,
-				null);
-	}
-
-	private OperatorMember asOperator(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Operator annotation) {
-		FunctionHeader header = getHeader(context, method);
-		if (Modifier.isStatic(method.getModifiers()))
-			throw new IllegalArgumentException("operator method \"" + method.toString() + "\"cannot be static");
-
-		// TODO: check number of parameters
-		//if (header.parameters.length != annotation.value().parameters)
-
-		return new OperatorMember(
-				CodePosition.NATIVE,
-				definition,
-				getMethodModifiers(method),
-				OperatorType.valueOf(annotation.value().toString()),
-				header,
-				null);
-	}
-
-	private GetterMember asGetter(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Getter annotation) {
-		TypeID type = loadStoredType(context, method.getAnnotatedReturnType());
-		String name = null;
-		if (annotation != null && !annotation.value().isEmpty())
-			name = annotation.value();
-		if (name == null)
-			name = translateGetterName(method.getName());
-
-		return new GetterMember(CodePosition.NATIVE, definition, getMethodModifiers(method), name, type, null);
-	}
-
-	private SetterMember asSetter(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Setter annotation) {
-		if (method.getParameterCount() != 1)
-			throw new IllegalArgumentException("Illegal setter: \"" + method.toString() + "\"must have exactly 1 parameter");
-
-		TypeID type = loadStoredType(context, method.getAnnotatedParameterTypes()[0]);
-		String name = null;
-		if (annotation != null && !annotation.value().isEmpty())
-			name = annotation.value();
-		if (name == null)
-			name = translateSetterName(method.getName());
-
-		return new SetterMember(CodePosition.NATIVE, definition, getMethodModifiers(method), name, type, null);
-	}
-
-	private CasterMember asCaster(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Caster annotation) {
-		boolean implicit = annotation != null && annotation.implicit();
-		int modifiers = Modifiers.PUBLIC;
-		if (implicit)
-			modifiers |= Modifiers.IMPLICIT;
-
-		TypeID toType = loadStoredType(context, method.getAnnotatedReturnType());
-		return new CasterMember(CodePosition.NATIVE, definition, modifiers, toType, null);
-	}
-
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	private FunctionHeader getHeader(TypeVariableContext context, java.lang.reflect.Constructor constructor) {
-		return getHeader(
-				context,
-				null,
-				constructor.getParameters(),
-				constructor.getTypeParameters(),
-				constructor.getAnnotatedExceptionTypes());
-	}
-
-	private FunctionHeader getHeader(TypeVariableContext context, Method method) {
-		return getHeader(
-				context,
-				method.getAnnotatedReturnType(),
-				method.getParameters(),
-				method.getTypeParameters(),
-				method.getAnnotatedExceptionTypes());
-	}
-
-	protected Expression getDefaultValue(Parameter parameter, TypeID type) {
-		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class)) {
-			final String s = parameter.getAnnotation(ZenCodeType.Optional.class).value();
-			if (s.isEmpty()) {
-				Expression defaultValue = type.getDefaultValue();
-				if (defaultValue == null)
-					throw new IllegalArgumentException(type.toString() + " doesn't have a default value");
-				return defaultValue;
-			}
-			try {
-				final String filename = "internal: " + parameter.getDeclaringExecutable().getName();
-
-				final CompilingPackage rootCompiling = new CompilingPackage(pkg, module);
-				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], pkg, rootCompiling, globals);
-				final FileResolutionContext fContext = new FileResolutionContext(context, pkg, rootCompiling);
-				final FileScope fileScope = new FileScope(fContext, Collections.emptyList(), globals, member -> {
-				});
-				final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep);
-
-				return ParsedExpression.parse(tokens).compile(new ExpressionScope(fileScope)).eval().castExplicit(CodePosition.GENERATED, fileScope, type, type.isOptional());
-			} catch (IOException | ParseException | CompileException ex) {
-				//TODO REMOVE
-				ex.printStackTrace();
-				return null;
-			}
-			//}
-		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalInt.class)) {
-			ZenCodeType.OptionalInt annotation = parameter.getAnnotation(ZenCodeType.OptionalInt.class);
-			if (type == BasicTypeID.BYTE)
-				return new ConstantByteExpression(CodePosition.NATIVE, annotation.value());
-			else if (type == BasicTypeID.SBYTE)
-				return new ConstantSByteExpression(CodePosition.NATIVE, (byte) annotation.value());
-			else if (type == BasicTypeID.SHORT)
-				return new ConstantShortExpression(CodePosition.NATIVE, (short) annotation.value());
-			else if (type == BasicTypeID.USHORT)
-				return new ConstantUShortExpression(CodePosition.NATIVE, annotation.value());
-			else if (type == BasicTypeID.INT)
-				return new ConstantIntExpression(CodePosition.NATIVE, annotation.value());
-			else if (type == BasicTypeID.UINT)
-				return new ConstantUIntExpression(CodePosition.NATIVE, annotation.value());
-			else
-				throw new IllegalArgumentException("Cannot use int default values for " + type.toString());
-		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalLong.class)) {
-			ZenCodeType.OptionalLong annotation = parameter.getAnnotation(ZenCodeType.OptionalLong.class);
-			if (type == BasicTypeID.LONG)
-				return new ConstantLongExpression(CodePosition.NATIVE, annotation.value());
-			else if (type == BasicTypeID.ULONG)
-				return new ConstantULongExpression(CodePosition.NATIVE, annotation.value());
-			else
-				throw new IllegalArgumentException("Cannot use long default values for " + type.toString());
-		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalFloat.class)) {
-			ZenCodeType.OptionalFloat annotation = parameter.getAnnotation(ZenCodeType.OptionalFloat.class);
-			if (type == BasicTypeID.FLOAT)
-				return new ConstantFloatExpression(CodePosition.NATIVE, annotation.value());
-			else
-				throw new IllegalArgumentException("Cannot use float default values for " + type.toString());
-		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalDouble.class)) {
-			ZenCodeType.OptionalDouble annotation = parameter.getAnnotation(ZenCodeType.OptionalDouble.class);
-			if (type == BasicTypeID.DOUBLE)
-				return new ConstantDoubleExpression(CodePosition.NATIVE, annotation.value());
-			else
-				throw new IllegalArgumentException("Cannot use double default values for " + type.toString());
-		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalString.class)) {
-			ZenCodeType.OptionalString annotation = parameter.getAnnotation(ZenCodeType.OptionalString.class);
-			if (type == BasicTypeID.STRING) {
-				return new ConstantStringExpression(CodePosition.NATIVE, annotation.value());
-			} else {
-				throw new IllegalArgumentException("Cannot use string default values for " + type.toString());
-			}
-		} else {
-			return null;
-		}
-	}
-
-	private FunctionHeader getHeader(
-			TypeVariableContext context,
-			AnnotatedType javaReturnType,
-			Parameter[] javaParameters,
-			TypeVariable<Method>[] javaTypeParameters,
-			AnnotatedType[] exceptionTypes) {
-
-
-		TypeParameter[] typeParameters = new TypeParameter[javaTypeParameters.length];
-		for (int i = 0; i < javaTypeParameters.length; i++) {
-			//Put up here for nested parameters?
-			TypeVariable<Method> typeVariable = javaTypeParameters[i];
-			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
-			typeParameters[i] = parameter;
-			context.put(typeVariable, parameter);
-		}
-
-		for (int i = 0; i < javaTypeParameters.length; i++) {
-			TypeVariable<Method> javaTypeParameter = javaTypeParameters[i];
-
-			for (AnnotatedType bound : javaTypeParameter.getAnnotatedBounds())
-				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, loadType(context, bound)));
-		}
-
-		FunctionParameter[] parameters = new FunctionParameter[javaParameters.length];
-		int classParameters = 0;
-		for (int i = 0; i < parameters.length; i++) {
-			Parameter parameter = javaParameters[i];
-			if (parameter.getType().getCanonicalName().contentEquals("java.lang.Class")) {
-				classParameters++;
-			}
-
-			//AnnotatedType parameterType = parameter.getAnnotatedType();
-			TypeID type = loadStoredType(context, parameter);
-			Expression defaultValue = getDefaultValue(parameter, type);
-			parameters[i] = new FunctionParameter(type, parameter.getName(), defaultValue, parameter.isVarArgs());
-		}
-		if (classParameters > 0 && classParameters == typeParameters.length) {
-			parameters = Arrays.copyOfRange(parameters, classParameters, parameters.length);
-		}
-
-		if (exceptionTypes.length > 1)
-			throw new IllegalArgumentException("A method can only throw a single exception type!");
-
-		TypeID returnType = javaReturnType == null ? BasicTypeID.VOID : loadStoredType(context, javaReturnType);
-		TypeID thrownType = exceptionTypes.length == 0 ? null : loadStoredType(context, exceptionTypes[0]);
-		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
-	}
-
-	private TypeID loadStoredType(TypeVariableContext context, AnnotatedType annotatedType) {
-		return loadType(context, annotatedType);
-	}
-
-	private TypeID loadStoredType(TypeVariableContext context, Parameter parameter) {
-		final TypeID type = loadStoredType(context, parameter.getAnnotatedType());
-		//Optional is a parameter annotation so passing the parameter's type does not pass the optional
-		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class) && !type.isOptional())
-			return registry.getOptional(type);
-		return type;
-	}
-
-	private TypeID loadType(TypeVariableContext context, AnnotatedType annotatedType) {
-		if (annotatedType.isAnnotationPresent(ZenCodeType.USize.class))
-			return BasicTypeID.USIZE;
-		else if (annotatedType.isAnnotationPresent(ZenCodeType.NullableUSize.class))
-			return registry.getOptional(BasicTypeID.USIZE);
-
-		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class) || annotatedType.isAnnotationPresent(ZenCodeType.Optional.class);
-		boolean unsigned = annotatedType.isAnnotationPresent(ZenCodeType.Unsigned.class);
-
-		return loadType(context, annotatedType, nullable, unsigned);
-	}
-
-	private TypeID loadType(TypeVariableContext context, AnnotatedElement type, boolean nullable, boolean unsigned) {
-		TypeID result = loadType(context, type, unsigned);
-		if (nullable)
-			result = registry.getOptional(result);
-
-		return result;
-	}
-
-	@SuppressWarnings("ChainOfInstanceofChecks")
-	private TypeID loadType(TypeVariableContext context, AnnotatedElement type, boolean unsigned) {
-		if (type instanceof Class) {
-			Class<?> classType = (Class<?>) type;
-			if (unsigned) {
-				if (unsignedByClass.containsKey(classType)) {
-					return unsignedByClass.get(classType);
-				} else {
-					throw new IllegalArgumentException("This class cannot be used as unsigned: " + classType);
-				}
-			} else if (classType.isArray()) {
-				return registry.getArray(loadType(context, classType.getComponentType(), false, false), 1);
-			} else if (classType.isAnnotationPresent(FunctionalInterface.class)) {
-				return loadFunctionalInterface(context, classType, new AnnotatedElement[0]);
-			}
-
-			if (typeByClass.containsKey(classType))
-				return typeByClass.get(classType);
-
-			HighLevelDefinition definition = addClass(classType);
-			final List<TypeID> s = new ArrayList<>();
-			for (TypeVariable<? extends Class<?>> typeParameter : classType.getTypeParameters()) {
-				s.add(registry.getGeneric(context.get(typeParameter)));
-			}
-
-			return registry.getForDefinition(definition, s.toArray(TypeID.NONE));
-		} else if (type instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType) type;
-			Class<?> rawType = (Class<?>) parameterizedType.getRawType();
-			if (rawType.isAnnotationPresent(FunctionalInterface.class))
-				return loadFunctionalInterface(context, rawType, (AnnotatedElement[]) parameterizedType.getActualTypeArguments());
-
-			Type[] parameters = parameterizedType.getActualTypeArguments();
-			TypeID[] codeParameters = new TypeID[parameters.length];
-			for (int i = 0; i < parameters.length; i++)
-				codeParameters[i] = loadType(context, (AnnotatedElement) parameters[i], false, false);
-
-			if (rawType == Map.class) {
-				return registry.getAssociative(codeParameters[0], codeParameters[1]);
-			}
-
-			HighLevelDefinition definition = addClass(rawType);
-			return registry.getForDefinition(definition, codeParameters);
-		} else if (type instanceof TypeVariable<?>) {
-			TypeVariable<?> variable = (TypeVariable<?>) type;
-			return registry.getGeneric(context.get(variable));
-		} else if (type instanceof AnnotatedType) {
-			TypeID storedType;
-			if (type instanceof AnnotatedParameterizedType) {
-				AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
-
-				final Type rawType = ((ParameterizedType) parameterizedType.getType()).getRawType();
-				final AnnotatedType[] actualTypeArguments = parameterizedType.getAnnotatedActualTypeArguments();
-				final TypeID[] codeParameters = new TypeID[actualTypeArguments.length];
-				for (int i = 0; i < actualTypeArguments.length; i++) {
-					codeParameters[i] = loadType(context, actualTypeArguments[i], false, false);
-				}
-
-				if (rawType == Map.class) {
-					storedType = registry.getAssociative(codeParameters[0], codeParameters[1]);
-				} else if (rawType instanceof Class<?>) {
-					final Map<TypeParameter, TypeID> map = new HashMap<>();
-					final TypeVariable<? extends Class<?>>[] typeParameters = ((Class<?>) rawType).getTypeParameters();
-					final TypeID loadType = loadType(context, (AnnotatedElement) rawType, unsigned);
-					for (int i = 0; i < typeParameters.length; i++) {
-						final TypeParameter typeParameter = context.get(typeParameters[i]);
-						map.put(typeParameter, codeParameters[i]);
-					}
-					storedType = loadType.instance(new GenericMapper(CodePosition.NATIVE, registry, map));
-				} else {
-					storedType = loadType(context, (AnnotatedElement) rawType, unsigned);
-				}
-			} else {
-				final Type annotatedTypeType = ((AnnotatedType) type).getType();
-				if (annotatedTypeType instanceof WildcardType) {
-					storedType = BasicTypeID.UNDETERMINED;
-				} else if (annotatedTypeType instanceof GenericArrayType) {
-					final Type genericComponentType = ((GenericArrayType) annotatedTypeType).getGenericComponentType();
-					final TypeID baseType = loadType(context, (AnnotatedElement) genericComponentType, unsigned);
-					storedType = registry.getArray(baseType, 1);
-				} else {
-					storedType = loadType(context, (AnnotatedElement) annotatedTypeType, unsigned);
-				}
-			}
-
-			return storedType;
-
-		} else {
-			throw new IllegalArgumentException("Could not analyze type: " + type);
-		}
-	}
-
-	private TypeID loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, AnnotatedElement[] parameters) {
-		Method functionalInterfaceMethod = getFunctionalInterfaceMethod(cls);
-		TypeVariableContext context = convertTypeParameters(cls);
-		//TODO: This breaks if the functional interface type appears in the method's signature
-		FunctionHeader header = getHeader(context, functionalInterfaceMethod);
-
-		Map<TypeParameter, TypeID> mapping = new HashMap<>();
-		TypeVariable[] javaParameters = cls.getTypeParameters();
-		for (int i = 0; i < parameters.length; i++)
-			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false, false));
-
-		JavaMethod method = new JavaMethod(
-				JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.INTERFACE),
-				JavaMethod.Kind.INTERFACE,
-				functionalInterfaceMethod.getName(),
-				false,
-				getMethodDescriptor(functionalInterfaceMethod),
-				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
-				header.getReturnType().isGeneric());
-		return new JavaFunctionalInterfaceTypeID(registry, header, functionalInterfaceMethod, method);
-	}
-
-	private <T> TypeVariableContext convertTypeParameters(Class<T> cls) {
-		//TypeVariableContext context = new TypeVariableContext();
-		TypeVariable<Class<T>>[] javaTypeParameters = cls.getTypeParameters();
-		TypeParameter[] typeParameters = new TypeParameter[cls.getTypeParameters().length];
-
-		for (int i = 0; i < javaTypeParameters.length; i++) {
-			TypeVariable<Class<T>> typeVariable = javaTypeParameters[i];
-			TypeParameter parameter = new TypeParameter(CodePosition.NATIVE, typeVariable.getName());
-			for (AnnotatedType bound : typeVariable.getAnnotatedBounds()) {
-				TypeID type = loadType(context, bound);
-				parameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
-			}
-			typeParameters[i] = parameter;
-
-			//Put up here so that Nested Type parameters may work..?
-			context.put(typeVariable, parameter);
-		}
-
-		for (int i = 0; i < javaTypeParameters.length; i++) {
-			for (AnnotatedType bound : javaTypeParameters[i].getAnnotatedBounds()) {
-				TypeID type = loadType(context, bound);
-				typeParameters[i].addBound(new ParameterTypeBound(CodePosition.NATIVE, type));
-			}
-		}
-		return context;
-	}
-
-	private Method getFunctionalInterfaceMethod(Class<?> functionalInterface) {
-		for (Method method : functionalInterface.getDeclaredMethods()) {
-			if (Modifier.isPublic(method.getModifiers()) && Modifier.isAbstract(method.getModifiers()) && !method.isDefault())
-				return method;
-		}
-
-		return null;
-	}
-
-	private int getMethodModifiers(Member method) {
-		int result = Modifiers.PUBLIC;
-		if (Modifier.isStatic(method.getModifiers()))
-			result |= Modifiers.STATIC;
-		if (Modifier.isFinal(method.getModifiers()))
-			result |= Modifiers.FINAL;
-
-		return result;
-	}
 
 	public void registerBEP(BracketExpressionParser bep) {
-		this.bep = bep;
+		memberConverter.setBEP(bep);
+		typeConverter.setBEP(bep);
 	}
 
 }
