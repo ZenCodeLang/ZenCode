@@ -25,7 +25,7 @@ public class JavaNativeMemberConverter {
 	private final GlobalTypeRegistry registry;
 	private final JavaNativeHeaderConverter headerConverter;
 
-	public JavaNativeMemberConverter(JavaNativeTypeConverter typeConverter, JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, GlobalTypeRegistry registry, JavaNativeHeaderConverter headerConverter) {
+	public JavaNativeMemberConverter(JavaNativeTypeConverter typeConverter, JavaNativeTypeConversionContext typeConversionContext, GlobalTypeRegistry registry, JavaNativeHeaderConverter headerConverter) {
 		this.typeConverter = typeConverter;
 		this.typeConversionContext = typeConversionContext;
 		this.registry = registry;
@@ -105,10 +105,6 @@ public class JavaNativeMemberConverter {
 
 		TypeID toType = typeConverter.loadStoredType(context, method.getAnnotatedReturnType());
 		return new CasterMember(CodePosition.NATIVE, definition, modifiers, toType, null);
-	}
-
-	public boolean isGetterName(String name) {
-		return name.startsWith("get") || name.startsWith("is") || name.startsWith("has");
 	}
 
 	public String translateGetterName(String name) {

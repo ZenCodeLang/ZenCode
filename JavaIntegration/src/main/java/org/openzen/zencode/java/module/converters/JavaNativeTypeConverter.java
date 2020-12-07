@@ -200,7 +200,6 @@ public class JavaNativeTypeConverter {
 		}
 
 		return null;
-		//throw new IllegalArgumentException("Could not find class for type " + type);
 	}
 
 	public TypeID getTypeFromName(String className) {
@@ -245,14 +244,17 @@ public class JavaNativeTypeConverter {
 	private TypeID loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, AnnotatedElement[] parameters) {
 		Method functionalInterfaceMethod = getFunctionalInterfaceMethod(cls);
 		TypeVariableContext context = convertTypeParameters(cls);
+
 		//TODO: This breaks if the functional interface type appears in the method's signature
 		FunctionHeader header = headerConverter.getHeader(context, functionalInterfaceMethod);
 
 		Map<TypeParameter, TypeID> mapping = new HashMap<>();
-		TypeVariable[] javaParameters = cls.getTypeParameters();
-		for (int i = 0; i < parameters.length; i++)
+		TypeVariable<?>[] javaParameters = cls.getTypeParameters();
+		for (int i = 0; i < parameters.length; i++) {
 			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false, false));
+		}
 
+		header = header.withGenericArguments(new GenericMapper(CodePosition.NATIVE, registry, mapping));
 		JavaMethod method = new JavaMethod(
 				JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.INTERFACE),
 				JavaMethod.Kind.INTERFACE,
@@ -331,7 +333,7 @@ public class JavaNativeTypeConverter {
 				return method;
 		}
 
-		return null;
+		throw new IllegalArgumentException("Could not find functionalInterface method for class " + functionalInterface.getCanonicalName());
 	}
 
 	public void setHeaderConverter(JavaNativeHeaderConverter headerConverter) {

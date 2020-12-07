@@ -55,7 +55,7 @@ public class JavaNativeModule {
 
 		this.typeConverter = new JavaNativeTypeConverter(typeConversionContext, registry, packageInfo, this);
 		this.headerConverter = new JavaNativeHeaderConverter(typeConverter, packageInfo, registry, typeConversionContext);
-		this.memberConverter = new JavaNativeMemberConverter(typeConverter, packageInfo, typeConversionContext, registry, headerConverter);
+		this.memberConverter = new JavaNativeMemberConverter(typeConverter, typeConversionContext, registry, headerConverter);
 		this.classConverter = new JavaNativeClassConverter(typeConverter, memberConverter, packageInfo, typeConversionContext, headerConverter, registry);
 		this.globalConverter = new JavaNativeGlobalConverter(typeConversionContext, registry, typeConverter, memberConverter);
 		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, typeConversionContext, definitions, headerConverter);
@@ -77,14 +77,6 @@ public class JavaNativeModule {
 				logger);
 	}
 
-	public JavaCompiledModule getCompiled() {
-		return typeConversionContext.compiled;
-	}
-
-	public Map<String, ISymbol> getGlobals() {
-		return typeConversionContext.globals;
-	}
-
 	public HighLevelDefinition addClass(Class<?> cls) {
 		if (typeConversionContext.definitionByClass.containsKey(cls)) {
 			return typeConversionContext.definitionByClass.get(cls);
@@ -101,7 +93,6 @@ public class JavaNativeModule {
 	}
 
 	public void addGlobals(Class<?> cls) {
-
 		final HighLevelDefinition definition = addClass(cls);
 		globalConverter.addGlobal(cls, definition);
 	}
@@ -117,11 +108,19 @@ public class JavaNativeModule {
 		typeConverter.setBEP(bep);
 	}
 
+	public JavaCompiledModule getCompiled() {
+		return typeConversionContext.compiled;
+	}
+
+	public Map<String, ISymbol> getGlobals() {
+		return typeConversionContext.globals;
+	}
+
 	public Module getModule() {
 		return packageInfo.getModule();
 	}
 
-	public JavaNativeTypeConversionContext getTypeConversionContext() {
+	JavaNativeTypeConversionContext getTypeConversionContext() {
 		return typeConversionContext;
 	}
 }
