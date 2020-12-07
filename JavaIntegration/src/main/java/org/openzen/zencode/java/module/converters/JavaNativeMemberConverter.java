@@ -15,11 +15,11 @@ import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
+import java.util.Optional;
 
 import static org.objectweb.asm.Type.getConstructorDescriptor;
 
@@ -330,5 +330,34 @@ public class JavaNativeMemberConverter {
 
 	public void setBEP(BracketExpressionParser bep) {
 		this.bep = bep;
+	}
+
+	public FunctionalMemberRef loadStaticMethod(Method method, HighLevelDefinition definition) {
+		if (!Modifier.isStatic(method.getModifiers()))
+			throw new IllegalArgumentException("Method \"" + method.toString() + "\" is not static");
+
+		JavaClass jcls = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(method.getDeclaringClass()), JavaClass.Kind.CLASS);
+
+		if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
+			//The method should already have been loaded let's use that one.
+			final String methodDescriptor = org.objectweb.asm.Type.getMethodDescriptor(method);
+			final Optional<MethodMember> matchingMember = definition.members.stream()
+					.filter(m -> m instanceof MethodMember)
+					.map(m -> ((MethodMember) m))
+					.filter(m -> {
+						final JavaMethod methodInfo = typeConversionContext.compiled.optMethodInfo(m);
+						return methodInfo != null && methodDescriptor.equals(methodInfo.descriptor);
+					})
+					.findAny();
+
+			if (matchingMember.isPresent()) {
+				return matchingMember.get().ref(registry.getForDefinition(definition));
+			}
+		}
+		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), getHeader(typeConversionContext.context, method), null);
+		definition.addMember(methodMember);
+		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
+		typeConversionContext.compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, org.objectweb.asm.Type.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
+		return methodMember.ref(registry.getForDefinition(definition));
 	}
 }

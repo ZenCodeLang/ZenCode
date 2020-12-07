@@ -5,36 +5,21 @@
  */
 package org.openzen.zencode.java.module;
 
-import org.openzen.zencode.java.ZenCodeGlobals;
 import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.module.converters.*;
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.expression.ExpressionSymbol;
-import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
-import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
-import org.openzen.zenscript.javashared.JavaField;
-import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 
 /**
@@ -121,33 +106,8 @@ public class JavaNativeModule {
 	}
 
 	public FunctionalMemberRef loadStaticMethod(Method method) {
-		if (!Modifier.isStatic(method.getModifiers()))
-			throw new IllegalArgumentException("Method \"" + method.toString() + "\" is not static");
-
-		HighLevelDefinition definition = addClass(method.getDeclaringClass());
-		JavaClass jcls = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(method.getDeclaringClass()), JavaClass.Kind.CLASS);
-
-		if (method.isAnnotationPresent(ZenCodeType.Method.class)) {
-			//The method should already have been loaded let's use that one.
-			final String methodDescriptor = org.objectweb.asm.Type.getMethodDescriptor(method);
-			final Optional<MethodMember> matchingMember = definition.members.stream()
-					.filter(m -> m instanceof MethodMember)
-					.map(m -> ((MethodMember) m))
-					.filter(m -> {
-						final JavaMethod methodInfo = typeConversionContext.compiled.optMethodInfo(m);
-						return methodInfo != null && methodDescriptor.equals(methodInfo.descriptor);
-					})
-					.findAny();
-
-			if (matchingMember.isPresent()) {
-				return matchingMember.get().ref(registry.getForDefinition(definition));
-			}
-		}
-		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), memberConverter.getHeader(typeConversionContext.context, method), null);
-		definition.addMember(methodMember);
-		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
-		typeConversionContext.compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, org.objectweb.asm.Type.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
-		return methodMember.ref(registry.getForDefinition(definition));
+		final HighLevelDefinition definition = addClass(method.getDeclaringClass());
+		return memberConverter.loadStaticMethod(method, definition);
 	}
 
 
