@@ -42,6 +42,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 
+import static org.objectweb.asm.Type.*;
+
 
 /**
  * @author Stan Hebben
@@ -111,29 +113,12 @@ public class JavaNativeModule {
 		unsignedByClass.put(Long.class, registry.getOptional(BasicTypeID.LONG));
 	}
 
-	private static boolean isPublic(int modifiers) {
-		return (modifiers & Modifier.PUBLIC) > 0;
-	}
-
-	private static boolean isStatic(int modifiers) {
-		return (modifiers & Modifier.STATIC) > 0;
-	}
-
-	private static boolean isFinal(int modifiers) {
-		return (modifiers & Modifier.FINAL) > 0;
-	}
-
 	private static String getInternalName(Class<?> cls) {
 		return org.objectweb.asm.Type.getInternalName(cls);
 	}
 
 	private static String getDescriptor(Class<?> cls) {
 		return org.objectweb.asm.Type.getDescriptor(cls);
-	}
-
-	@SuppressWarnings("rawtypes")
-	private static String getMethodDescriptor(java.lang.reflect.Constructor constructor) {
-		return org.objectweb.asm.Type.getConstructorDescriptor(constructor);
 	}
 
 	private static String getMethodDescriptor(Method method) {
@@ -147,7 +132,7 @@ public class JavaNativeModule {
 				JavaMethod.Kind.CONSTRUCTOR,
 				"<init>",
 				false,
-				getMethodDescriptor(constructor),
+				getConstructorDescriptor(constructor),
 				constructor.getModifiers(),
 				false);
 	}
@@ -158,7 +143,7 @@ public class JavaNativeModule {
 			kind = JavaMethod.Kind.CONSTRUCTOR;
 		else if (method.getName().equals("<clinit>"))
 			kind = JavaMethod.Kind.STATICINIT;
-		else if (isStatic(method.getModifiers()))
+		else if (Modifier.isStatic(method.getModifiers()))
 			kind = JavaMethod.Kind.STATIC;
 		else
 			kind = JavaMethod.Kind.INSTANCE;
@@ -217,7 +202,7 @@ public class JavaNativeModule {
 		for (Field field : cls.getDeclaredFields()) {
 			if (!field.isAnnotationPresent(ZenCodeGlobals.Global.class))
 				continue;
-			if (!isStatic(field.getModifiers()))
+			if (!Modifier.isStatic(field.getModifiers()))
 				continue;
 
 			ZenCodeGlobals.Global global = field.getAnnotation(ZenCodeGlobals.Global.class);
@@ -234,7 +219,7 @@ public class JavaNativeModule {
 		for (Method method : cls.getDeclaredMethods()) {
 			if (!method.isAnnotationPresent(ZenCodeGlobals.Global.class))
 				continue;
-			if (!isStatic(method.getModifiers()))
+			if (!Modifier.isStatic(method.getModifiers()))
 				continue;
 
 			ZenCodeGlobals.Global global = method.getAnnotation(ZenCodeGlobals.Global.class);
@@ -265,7 +250,7 @@ public class JavaNativeModule {
 	}
 
 	public FunctionalMemberRef loadStaticMethod(Method method) {
-		if (!isStatic(method.getModifiers()))
+		if (!Modifier.isStatic(method.getModifiers()))
 			throw new IllegalArgumentException("Method \"" + method.toString() + "\" is not static");
 
 		HighLevelDefinition definition = addClass(method.getDeclaringClass());
@@ -463,7 +448,7 @@ public class JavaNativeModule {
 			ZenCodeType.Field annotation = field.getAnnotation(ZenCodeType.Field.class);
 			if (annotation == null)
 				continue;
-			if (!isPublic(field.getModifiers()))
+			if (!Modifier.isPublic(field.getModifiers()))
 				continue;
 
 			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
@@ -787,7 +772,7 @@ public class JavaNativeModule {
 
 	private OperatorMember asOperator(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Operator annotation) {
 		FunctionHeader header = getHeader(context, method);
-		if (isStatic(method.getModifiers()))
+		if (Modifier.isStatic(method.getModifiers()))
 			throw new IllegalArgumentException("operator method \"" + method.toString() + "\"cannot be static");
 
 		// TODO: check number of parameters
@@ -1163,9 +1148,9 @@ public class JavaNativeModule {
 
 	private int getMethodModifiers(Member method) {
 		int result = Modifiers.PUBLIC;
-		if (isStatic(method.getModifiers()))
+		if (Modifier.isStatic(method.getModifiers()))
 			result |= Modifiers.STATIC;
-		if (isFinal(method.getModifiers()))
+		if (Modifier.isFinal(method.getModifiers()))
 			result |= Modifiers.FINAL;
 
 		return result;
