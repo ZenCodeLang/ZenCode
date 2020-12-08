@@ -6,7 +6,9 @@
 package org.openzen.zencode.java.module;
 
 import org.openzen.zencode.java.ZenCodeType;
-import org.openzen.zencode.java.module.converters.*;
+import org.openzen.zencode.java.module.converters.JavaNativeConverter;
+import org.openzen.zencode.java.module.converters.JavaNativeConverterBuilder;
+import org.openzen.zencode.java.module.converters.JavaNativePackageInfo;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -32,7 +34,6 @@ public class JavaNativeModule {
 
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeTypeConversionContext typeConversionContext;
-
 	private final JavaNativeConverter nativeConverter;
 
 	public JavaNativeModule(
@@ -42,25 +43,29 @@ public class JavaNativeModule {
 			String basePackage,
 			GlobalTypeRegistry registry,
 			JavaNativeModule[] dependencies) {
+		this(logger,
+				pkg,
+				name,
+				basePackage,
+				registry,
+				dependencies,
+				new JavaNativeConverterBuilder()
+		);
+	}
+
+	public JavaNativeModule(
+			IZSLogger logger,
+			ZSPackage pkg,
+			String name,
+			String basePackage,
+			GlobalTypeRegistry registry,
+			JavaNativeModule[] dependencies,
+			JavaNativeConverterBuilder nativeConverterBuilder) {
 		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new Module(name));
 		this.logger = logger;
 		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies, registry);
 
-		final JavaNativeTypeConverter typeConverter = new JavaNativeTypeConverter(typeConversionContext, packageInfo, this);
-		final JavaNativeHeaderConverter headerConverter = new JavaNativeHeaderConverter(typeConverter, packageInfo, typeConversionContext);
-		final JavaNativeMemberConverter memberConverter = new JavaNativeMemberConverter(typeConverter, typeConversionContext, headerConverter);
-		final JavaNativeClassConverter classConverter = new JavaNativeClassConverter(typeConverter, memberConverter, packageInfo, typeConversionContext, headerConverter, registry);
-		final JavaNativeGlobalConverter globalConverter = new JavaNativeGlobalConverter(typeConversionContext, typeConverter, memberConverter);
-		final JavaNativeExpansionConverter expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, typeConversionContext, headerConverter);
-
-		this.nativeConverter = new JavaNativeConverter(
-				typeConverter,
-				headerConverter,
-				memberConverter,
-				classConverter,
-				globalConverter,
-				expansionConverter
-		);
+		this.nativeConverter = nativeConverterBuilder.build(packageInfo, logger, typeConversionContext, this);
 	}
 
 	public SemanticModule toSemantic(ModuleSpace space) {
@@ -106,8 +111,7 @@ public class JavaNativeModule {
 
 
 	public void registerBEP(BracketExpressionParser bep) {
-		nativeConverter.headerConverter.setBEP(bep);
-		nativeConverter.typeConverter.setBEP(bep);
+		nativeConverter.registerBEP(bep);
 	}
 
 	public JavaCompiledModule getCompiled() {

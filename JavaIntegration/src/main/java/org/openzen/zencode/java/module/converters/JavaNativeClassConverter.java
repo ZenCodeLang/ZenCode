@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -32,15 +31,13 @@ public class JavaNativeClassConverter {
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeTypeConversionContext typeConversionContext;
 	private final JavaNativeHeaderConverter headerConverter;
-	private final GlobalTypeRegistry registry;
 
-	public JavaNativeClassConverter(JavaNativeTypeConverter typeConverter, JavaNativeMemberConverter memberConverter, JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, JavaNativeHeaderConverter headerConverter, GlobalTypeRegistry registry) {
+	public JavaNativeClassConverter(JavaNativeTypeConverter typeConverter, JavaNativeMemberConverter memberConverter, JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, JavaNativeHeaderConverter headerConverter) {
 		this.typeConverter = typeConverter;
 		this.memberConverter = memberConverter;
 		this.packageInfo = packageInfo;
 		this.typeConversionContext = typeConversionContext;
 		this.headerConverter = headerConverter;
-		this.registry = registry;
 	}
 
 
@@ -123,7 +120,7 @@ public class JavaNativeClassConverter {
 		}
 
 		name = name.substring("java.lang.".length());
-		for (DefinitionTypeID definition : registry.getDefinitions()) {
+		for (DefinitionTypeID definition : typeConversionContext.registry.getDefinitions()) {
 			final HighLevelDefinition highLevelDefinition = definition.definition;
 			for (DefinitionAnnotation annotation : highLevelDefinition.annotations) {
 				if (annotation instanceof NativeDefinitionAnnotation) {
@@ -139,7 +136,7 @@ public class JavaNativeClassConverter {
 	}
 
 
-	private boolean shouldLoadType(Type type) {
+	public boolean shouldLoadType(Type type) {
 		if (type instanceof Class)
 			return typeConversionContext.definitionByClass.containsKey(type) || shouldLoadClass((Class<?>) type);
 		if (type instanceof ParameterizedType)
@@ -148,11 +145,11 @@ public class JavaNativeClassConverter {
 		return false;
 	}
 
-	private boolean shouldLoadClass(Class<?> cls) {
+	public boolean shouldLoadClass(Class<?> cls) {
 		return packageInfo.isInBasePackage(getClassName(cls));
 	}
 
-	private String getClassName(Class<?> cls) {
+	public String getClassName(Class<?> cls) {
 		return cls.isAnnotationPresent(ZenCodeType.Name.class) ? cls.getAnnotation(ZenCodeType.Name.class).value() : cls.getName();
 	}
 
@@ -254,7 +251,7 @@ public class JavaNativeClassConverter {
 	}
 
 	private void fillFields(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
-		TypeID thisType = registry.getForMyDefinition(definition);
+		TypeID thisType = typeConversionContext.registry.getForMyDefinition(definition);
 		for (Field field : cls.getDeclaredFields()) {
 			ZenCodeType.Field annotation = field.getAnnotation(ZenCodeType.Field.class);
 			if (annotation == null)
@@ -265,7 +262,7 @@ public class JavaNativeClassConverter {
 			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
 
 			TypeID fieldType = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
-			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(field), fieldName, thisType, fieldType, registry, 0, 0, null);
+			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(field), fieldName, thisType, fieldType, typeConversionContext.registry, 0, 0, null);
 			definition.addMember(member);
 			typeConversionContext.compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
 		}

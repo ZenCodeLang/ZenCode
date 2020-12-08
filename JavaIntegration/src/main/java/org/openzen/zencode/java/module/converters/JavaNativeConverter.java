@@ -1,5 +1,7 @@
 package org.openzen.zencode.java.module.converters;
 
+import org.openzen.zenscript.parser.BracketExpressionParser;
+
 public class JavaNativeConverter {
 	public final JavaNativeTypeConverter typeConverter;
 	public final JavaNativeHeaderConverter headerConverter;
@@ -16,5 +18,10 @@ public class JavaNativeConverter {
 		this.classConverter = classConverter;
 		this.globalConverter = globalConverter;
 		this.expansionConverter = expansionConverter;
+	}
+
+	public void registerBEP(BracketExpressionParser bep) {
+		headerConverter.setBEP(bep);
+		typeConverter.setBEP(bep);
 	}
 }
