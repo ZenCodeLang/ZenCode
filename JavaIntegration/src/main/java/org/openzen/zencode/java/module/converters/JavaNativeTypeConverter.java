@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -39,7 +38,6 @@ import static org.objectweb.asm.Type.getMethodDescriptor;
 public class JavaNativeTypeConverter {
 	private final Map<Class<?>, TypeID> typeByClass = new HashMap<>();
 	private final Map<Class<?>, TypeID> unsignedByClass = new HashMap<>();
-	private final GlobalTypeRegistry registry;
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeModule javaNativeModule;
 	private final JavaNativeTypeConversionContext typeConversionContext;
@@ -47,9 +45,8 @@ public class JavaNativeTypeConverter {
 	private BracketExpressionParser bep;
 	private JavaNativeHeaderConverter headerConverter;
 
-	public JavaNativeTypeConverter(JavaNativeTypeConversionContext typeConversionContext, GlobalTypeRegistry registry, JavaNativePackageInfo packageInfo, JavaNativeModule javaNativeModule) {
+	public JavaNativeTypeConverter(JavaNativeTypeConversionContext typeConversionContext, JavaNativePackageInfo packageInfo, JavaNativeModule javaNativeModule) {
 		this.typeConversionContext = typeConversionContext;
-		this.registry = registry;
 		this.packageInfo = packageInfo;
 		this.javaNativeModule = javaNativeModule;
 		fillByClassMaps();
@@ -63,7 +60,7 @@ public class JavaNativeTypeConverter {
 		final TypeID type = loadStoredType(context, parameter.getAnnotatedType());
 		//Optional is a parameter annotation so passing the parameter's type does not pass the optional
 		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class) && !type.isOptional())
-			return registry.getOptional(type);
+			return typeConversionContext.registry.getOptional(type);
 		return type;
 	}
 
@@ -71,7 +68,7 @@ public class JavaNativeTypeConverter {
 		if (annotatedType.isAnnotationPresent(ZenCodeType.USize.class))
 			return BasicTypeID.USIZE;
 		else if (annotatedType.isAnnotationPresent(ZenCodeType.NullableUSize.class))
-			return registry.getOptional(BasicTypeID.USIZE);
+			return typeConversionContext.registry.getOptional(BasicTypeID.USIZE);
 
 		boolean nullable = annotatedType.isAnnotationPresent(ZenCodeType.Nullable.class) || annotatedType.isAnnotationPresent(ZenCodeType.Optional.class);
 		boolean unsigned = annotatedType.isAnnotationPresent(ZenCodeType.Unsigned.class);
@@ -82,7 +79,7 @@ public class JavaNativeTypeConverter {
 	public TypeID loadType(TypeVariableContext context, AnnotatedElement type, boolean nullable, boolean unsigned) {
 		TypeID result = loadType(context, type, unsigned);
 		if (nullable)
-			result = registry.getOptional(result);
+			result = typeConversionContext.registry.getOptional(result);
 
 		return result;
 	}
@@ -98,7 +95,7 @@ public class JavaNativeTypeConverter {
 					throw new IllegalArgumentException("This class cannot be used as unsigned: " + classType);
 				}
 			} else if (classType.isArray()) {
-				return registry.getArray(loadType(context, classType.getComponentType(), false, false), 1);
+				return typeConversionContext.registry.getArray(loadType(context, classType.getComponentType(), false, false), 1);
 			} else if (classType.isAnnotationPresent(FunctionalInterface.class)) {
 				return loadFunctionalInterface(context, classType, new AnnotatedElement[0]);
 			}
@@ -109,10 +106,10 @@ public class JavaNativeTypeConverter {
 			HighLevelDefinition definition = javaNativeModule.addClass(classType);
 			final List<TypeID> s = new ArrayList<>();
 			for (TypeVariable<? extends Class<?>> typeParameter : classType.getTypeParameters()) {
-				s.add(registry.getGeneric(context.get(typeParameter)));
+				s.add(typeConversionContext.registry.getGeneric(context.get(typeParameter)));
 			}
 
-			return registry.getForDefinition(definition, s.toArray(TypeID.NONE));
+			return typeConversionContext.registry.getForDefinition(definition, s.toArray(TypeID.NONE));
 		} else if (type instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) type;
 			Class<?> rawType = (Class<?>) parameterizedType.getRawType();
@@ -125,14 +122,14 @@ public class JavaNativeTypeConverter {
 				codeParameters[i] = loadType(context, (AnnotatedElement) parameters[i], false, false);
 
 			if (rawType == Map.class) {
-				return registry.getAssociative(codeParameters[0], codeParameters[1]);
+				return typeConversionContext.registry.getAssociative(codeParameters[0], codeParameters[1]);
 			}
 
 			HighLevelDefinition definition = javaNativeModule.addClass(rawType);
-			return registry.getForDefinition(definition, codeParameters);
+			return typeConversionContext.registry.getForDefinition(definition, codeParameters);
 		} else if (type instanceof TypeVariable<?>) {
 			TypeVariable<?> variable = (TypeVariable<?>) type;
-			return registry.getGeneric(context.get(variable));
+			return typeConversionContext.registry.getGeneric(context.get(variable));
 		} else if (type instanceof AnnotatedType) {
 			TypeID storedType;
 			if (type instanceof AnnotatedParameterizedType) {
@@ -146,7 +143,7 @@ public class JavaNativeTypeConverter {
 				}
 
 				if (rawType == Map.class) {
-					storedType = registry.getAssociative(codeParameters[0], codeParameters[1]);
+					storedType = typeConversionContext.registry.getAssociative(codeParameters[0], codeParameters[1]);
 				} else if (rawType instanceof Class<?>) {
 					final Map<TypeParameter, TypeID> map = new HashMap<>();
 					final TypeVariable<? extends Class<?>>[] typeParameters = ((Class<?>) rawType).getTypeParameters();
@@ -155,7 +152,7 @@ public class JavaNativeTypeConverter {
 						final TypeParameter typeParameter = context.get(typeParameters[i]);
 						map.put(typeParameter, codeParameters[i]);
 					}
-					storedType = loadType.instance(new GenericMapper(CodePosition.NATIVE, registry, map));
+					storedType = loadType.instance(new GenericMapper(CodePosition.NATIVE, typeConversionContext.registry, map));
 				} else {
 					storedType = loadType(context, (AnnotatedElement) rawType, unsigned);
 				}
@@ -166,7 +163,7 @@ public class JavaNativeTypeConverter {
 				} else if (annotatedTypeType instanceof GenericArrayType) {
 					final Type genericComponentType = ((GenericArrayType) annotatedTypeType).getGenericComponentType();
 					final TypeID baseType = loadType(context, (AnnotatedElement) genericComponentType, unsigned);
-					storedType = registry.getArray(baseType, 1);
+					storedType = typeConversionContext.registry.getArray(baseType, 1);
 				} else {
 					storedType = loadType(context, (AnnotatedElement) annotatedTypeType, unsigned);
 				}
@@ -221,7 +218,7 @@ public class JavaNativeTypeConverter {
 
 			for (HighLevelDefinition value : typeConversionContext.definitionByClass.values()) {
 				if (actualName.equals(value.name) && value.pkg.equals(zsPackage))
-					return registry.getForMyDefinition(value);
+					return typeConversionContext.registry.getForMyDefinition(value);
 			}
 		} catch (IllegalArgumentException ignored) {
 		}
@@ -229,7 +226,7 @@ public class JavaNativeTypeConverter {
 
 		//TODO: Can we get by with only this?
 		final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg().parent, packageInfo.getModule());
-		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], packageInfo.getPkg().parent, rootCompiling, typeConversionContext.globals);
+		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(typeConversionContext.registry, new AnnotationDefinition[0], packageInfo.getPkg().parent, rootCompiling, typeConversionContext.globals);
 
 		try {
 			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep);
@@ -254,7 +251,7 @@ public class JavaNativeTypeConverter {
 			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false, false));
 		}
 
-		header = header.withGenericArguments(new GenericMapper(CodePosition.NATIVE, registry, mapping));
+		header = header.withGenericArguments(new GenericMapper(CodePosition.NATIVE, typeConversionContext.registry, mapping));
 		JavaMethod method = new JavaMethod(
 				JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.INTERFACE),
 				JavaMethod.Kind.INTERFACE,
@@ -263,9 +260,10 @@ public class JavaNativeTypeConverter {
 				getMethodDescriptor(functionalInterfaceMethod),
 				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
 				header.getReturnType().isGeneric());
-		return new JavaFunctionalInterfaceTypeID(registry, header, functionalInterfaceMethod, method);
+		return new JavaFunctionalInterfaceTypeID(typeConversionContext.registry, header, functionalInterfaceMethod, method);
 	}
 
+	@SuppressWarnings("DuplicatedCode")
 	private void fillByClassMaps() {
 		typeByClass.put(void.class, BasicTypeID.VOID);
 		typeByClass.put(boolean.class, BasicTypeID.BOOL);
@@ -277,23 +275,23 @@ public class JavaNativeTypeConverter {
 		typeByClass.put(float.class, BasicTypeID.FLOAT);
 		typeByClass.put(double.class, BasicTypeID.DOUBLE);
 		typeByClass.put(String.class, BasicTypeID.STRING);
-		typeByClass.put(Boolean.class, registry.getOptional(BasicTypeID.BOOL));
-		typeByClass.put(Byte.class, registry.getOptional(BasicTypeID.BYTE));
-		typeByClass.put(Short.class, registry.getOptional(BasicTypeID.SHORT));
-		typeByClass.put(Integer.class, registry.getOptional(BasicTypeID.INT));
-		typeByClass.put(Long.class, registry.getOptional(BasicTypeID.LONG));
-		typeByClass.put(Float.class, registry.getOptional(BasicTypeID.FLOAT));
-		typeByClass.put(Double.class, registry.getOptional(BasicTypeID.DOUBLE));
+		typeByClass.put(Boolean.class, typeConversionContext.registry.getOptional(BasicTypeID.BOOL));
+		typeByClass.put(Byte.class, typeConversionContext.registry.getOptional(BasicTypeID.BYTE));
+		typeByClass.put(Short.class, typeConversionContext.registry.getOptional(BasicTypeID.SHORT));
+		typeByClass.put(Integer.class, typeConversionContext.registry.getOptional(BasicTypeID.INT));
+		typeByClass.put(Long.class, typeConversionContext.registry.getOptional(BasicTypeID.LONG));
+		typeByClass.put(Float.class, typeConversionContext.registry.getOptional(BasicTypeID.FLOAT));
+		typeByClass.put(Double.class, typeConversionContext.registry.getOptional(BasicTypeID.DOUBLE));
 
 		unsignedByClass.put(byte.class, BasicTypeID.BYTE);
 		unsignedByClass.put(char.class, BasicTypeID.CHAR);
 		unsignedByClass.put(short.class, BasicTypeID.USHORT);
 		unsignedByClass.put(int.class, BasicTypeID.UINT);
 		unsignedByClass.put(long.class, BasicTypeID.ULONG);
-		unsignedByClass.put(Byte.class, registry.getOptional(BasicTypeID.BYTE));
-		unsignedByClass.put(Short.class, registry.getOptional(BasicTypeID.SHORT));
-		unsignedByClass.put(Integer.class, registry.getOptional(BasicTypeID.INT));
-		unsignedByClass.put(Long.class, registry.getOptional(BasicTypeID.LONG));
+		unsignedByClass.put(Byte.class, typeConversionContext.registry.getOptional(BasicTypeID.BYTE));
+		unsignedByClass.put(Short.class, typeConversionContext.registry.getOptional(BasicTypeID.SHORT));
+		unsignedByClass.put(Integer.class, typeConversionContext.registry.getOptional(BasicTypeID.INT));
+		unsignedByClass.put(Long.class, typeConversionContext.registry.getOptional(BasicTypeID.LONG));
 	}
 
 	public void setBEP(BracketExpressionParser bep) {

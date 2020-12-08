@@ -28,19 +28,12 @@ import java.util.Map;
 public class JavaNativeModule {
 
 
-	private final PackageDefinitions definitions = new PackageDefinitions();
 	private final IZSLogger logger;
 
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeTypeConversionContext typeConversionContext;
 
-	private final JavaNativeTypeConverter typeConverter;
-	private final JavaNativeHeaderConverter headerConverter;
-	private final JavaNativeMemberConverter memberConverter;
-
-	private final JavaNativeClassConverter classConverter;
-	private final JavaNativeGlobalConverter globalConverter;
-	private final JavaNativeExpansionConverter expansionConverter;
+	private final JavaNativeConverter nativeConverter;
 
 	public JavaNativeModule(
 			IZSLogger logger,
@@ -51,14 +44,23 @@ public class JavaNativeModule {
 			JavaNativeModule[] dependencies) {
 		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new Module(name));
 		this.logger = logger;
-		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies);
+		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies, registry);
 
-		this.typeConverter = new JavaNativeTypeConverter(typeConversionContext, registry, packageInfo, this);
-		this.headerConverter = new JavaNativeHeaderConverter(typeConverter, packageInfo, registry, typeConversionContext);
-		this.memberConverter = new JavaNativeMemberConverter(typeConverter, typeConversionContext, registry, headerConverter);
-		this.classConverter = new JavaNativeClassConverter(typeConverter, memberConverter, packageInfo, typeConversionContext, headerConverter, registry);
-		this.globalConverter = new JavaNativeGlobalConverter(typeConversionContext, registry, typeConverter, memberConverter);
-		this.expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, typeConversionContext, definitions, headerConverter);
+		final JavaNativeTypeConverter typeConverter = new JavaNativeTypeConverter(typeConversionContext, packageInfo, this);
+		final JavaNativeHeaderConverter headerConverter = new JavaNativeHeaderConverter(typeConverter, packageInfo, typeConversionContext);
+		final JavaNativeMemberConverter memberConverter = new JavaNativeMemberConverter(typeConverter, typeConversionContext, headerConverter);
+		final JavaNativeClassConverter classConverter = new JavaNativeClassConverter(typeConverter, memberConverter, packageInfo, typeConversionContext, headerConverter, registry);
+		final JavaNativeGlobalConverter globalConverter = new JavaNativeGlobalConverter(typeConversionContext, typeConverter, memberConverter);
+		final JavaNativeExpansionConverter expansionConverter = new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, typeConversionContext, headerConverter);
+
+		this.nativeConverter = new JavaNativeConverter(
+				typeConverter,
+				headerConverter,
+				memberConverter,
+				classConverter,
+				globalConverter,
+				expansionConverter
+		);
 	}
 
 	public SemanticModule toSemantic(ModuleSpace space) {
@@ -69,7 +71,7 @@ public class JavaNativeModule {
 				SemanticModule.State.NORMALIZED,
 				space.rootPackage,
 				packageInfo.getPkg(),
-				definitions,
+				typeConversionContext.packageDefinitions,
 				Collections.emptyList(),
 				space.registry,
 				space.collectExpansions(),
@@ -86,26 +88,26 @@ public class JavaNativeModule {
 			throw new IllegalArgumentException("Class \" " + cls.getName() + "\" must be public");
 
 		if (cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
-			return expansionConverter.convertExpansion(cls);
+			return nativeConverter.expansionConverter.convertExpansion(cls);
 		}
 
-		return classConverter.convertClass(cls);
+		return nativeConverter.classConverter.convertClass(cls);
 	}
 
 	public void addGlobals(Class<?> cls) {
 		final HighLevelDefinition definition = addClass(cls);
-		globalConverter.addGlobal(cls, definition);
+		nativeConverter.globalConverter.addGlobal(cls, definition);
 	}
 
 	public FunctionalMemberRef loadStaticMethod(Method method) {
 		final HighLevelDefinition definition = addClass(method.getDeclaringClass());
-		return memberConverter.loadStaticMethod(method, definition);
+		return nativeConverter.memberConverter.loadStaticMethod(method, definition);
 	}
 
 
 	public void registerBEP(BracketExpressionParser bep) {
-		headerConverter.setBEP(bep);
-		typeConverter.setBEP(bep);
+		nativeConverter.headerConverter.setBEP(bep);
+		nativeConverter.typeConverter.setBEP(bep);
 	}
 
 	public JavaCompiledModule getCompiled() {

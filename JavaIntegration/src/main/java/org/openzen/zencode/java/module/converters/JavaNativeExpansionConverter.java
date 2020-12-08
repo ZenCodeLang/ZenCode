@@ -6,7 +6,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.PackageDefinitions;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
@@ -25,18 +24,15 @@ public class JavaNativeExpansionConverter {
 	private final JavaNativePackageInfo packageInfo;
 	private final JavaNativeMemberConverter memberConverter;
 	private final JavaNativeTypeConversionContext typeConversionContext;
-	private final PackageDefinitions definitions;
 	private final JavaNativeHeaderConverter headerConverter;
 
 
-	public JavaNativeExpansionConverter(JavaNativeTypeConverter typeConverter, IZSLogger logger, JavaNativePackageInfo packageInfo, JavaNativeMemberConverter memberConverter, JavaNativeTypeConversionContext typeConversionContext, PackageDefinitions definitions, JavaNativeHeaderConverter headerConverter) {
-
+	public JavaNativeExpansionConverter(JavaNativeTypeConverter typeConverter, IZSLogger logger, JavaNativePackageInfo packageInfo, JavaNativeMemberConverter memberConverter, JavaNativeTypeConversionContext typeConversionContext, JavaNativeHeaderConverter headerConverter) {
 		this.typeConverter = typeConverter;
 		this.logger = logger;
 		this.packageInfo = packageInfo;
 		this.memberConverter = memberConverter;
 		this.typeConversionContext = typeConversionContext;
-		this.definitions = definitions;
 		this.headerConverter = headerConverter;
 	}
 
@@ -135,7 +131,7 @@ public class JavaNativeExpansionConverter {
 
 		if (addExpansion) {
 			typeConversionContext.compiled.setExpansionClassInfo(expansion, javaClass);
-			definitions.add(expansion);
+			typeConversionContext.packageDefinitions.add(expansion);
 		}
 
 		return expansion;

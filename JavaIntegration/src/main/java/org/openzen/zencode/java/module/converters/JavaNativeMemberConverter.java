@@ -4,15 +4,18 @@ import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.module.JavaNativeTypeConversionContext;
 import org.openzen.zencode.java.module.TypeVariableContext;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -22,13 +25,11 @@ public class JavaNativeMemberConverter {
 
 	private final JavaNativeTypeConverter typeConverter;
 	private final JavaNativeTypeConversionContext typeConversionContext;
-	private final GlobalTypeRegistry registry;
 	private final JavaNativeHeaderConverter headerConverter;
 
-	public JavaNativeMemberConverter(JavaNativeTypeConverter typeConverter, JavaNativeTypeConversionContext typeConversionContext, GlobalTypeRegistry registry, JavaNativeHeaderConverter headerConverter) {
+	public JavaNativeMemberConverter(JavaNativeTypeConverter typeConverter, JavaNativeTypeConversionContext typeConversionContext, JavaNativeHeaderConverter headerConverter) {
 		this.typeConverter = typeConverter;
 		this.typeConversionContext = typeConversionContext;
-		this.registry = registry;
 		this.headerConverter = headerConverter;
 	}
 
@@ -172,13 +173,13 @@ public class JavaNativeMemberConverter {
 					.findAny();
 
 			if (matchingMember.isPresent()) {
-				return matchingMember.get().ref(registry.getForDefinition(definition));
+				return matchingMember.get().ref(typeConversionContext.registry.getForDefinition(definition));
 			}
 		}
 		MethodMember methodMember = new MethodMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, method.getName(), headerConverter.getHeader(typeConversionContext.context, method), null);
 		definition.addMember(methodMember);
 		boolean isGenericResult = methodMember.header.getReturnType().isGeneric();
 		typeConversionContext.compiled.setMethodInfo(methodMember, new JavaMethod(jcls, JavaMethod.Kind.STATIC, method.getName(), false, org.objectweb.asm.Type.getMethodDescriptor(method), method.getModifiers(), isGenericResult));
-		return methodMember.ref(registry.getForDefinition(definition));
+		return methodMember.ref(typeConversionContext.registry.getForDefinition(definition));
 	}
 }

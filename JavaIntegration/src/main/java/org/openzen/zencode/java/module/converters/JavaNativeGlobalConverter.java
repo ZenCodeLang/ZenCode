@@ -12,7 +12,6 @@ import org.openzen.zenscript.codemodel.expression.StaticGetterExpression;
 import org.openzen.zenscript.codemodel.member.FieldMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.partial.PartialStaticMemberGroupExpression;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -25,13 +24,11 @@ import java.lang.reflect.Modifier;
 
 public class JavaNativeGlobalConverter {
 	private final JavaNativeTypeConversionContext typeConversionContext;
-	private final GlobalTypeRegistry registry;
 	private final JavaNativeTypeConverter typeConverter;
 	private final JavaNativeMemberConverter memberConverter;
 
-	public JavaNativeGlobalConverter(JavaNativeTypeConversionContext typeConversionContext, GlobalTypeRegistry registry, JavaNativeTypeConverter typeConverter, JavaNativeMemberConverter memberConverter) {
+	public JavaNativeGlobalConverter(JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeMemberConverter memberConverter) {
 		this.typeConversionContext = typeConversionContext;
-		this.registry = registry;
 		this.typeConverter = typeConverter;
 		this.memberConverter = memberConverter;
 	}
@@ -47,7 +44,7 @@ public class JavaNativeGlobalConverter {
 			typeConversionContext.compiled.setClassInfo(definition, jcls);
 		}
 
-		TypeID thisType = registry.getForMyDefinition(definition);
+		TypeID thisType = typeConversionContext.registry.getForMyDefinition(definition);
 		//TypeVariableContext typeConversionContext.context = new TypeVariableContext();
 
 		for (Field field : cls.getDeclaredFields()) {
@@ -59,7 +56,7 @@ public class JavaNativeGlobalConverter {
 			ZenCodeGlobals.Global global = field.getAnnotation(ZenCodeGlobals.Global.class);
 			TypeID type = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
 			String name = global.value().isEmpty() ? field.getName() : global.value();
-			FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, thisType, type, registry, Modifiers.PUBLIC, 0, null);
+			FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, Modifiers.PUBLIC | Modifiers.STATIC, name, thisType, type, typeConversionContext.registry, Modifiers.PUBLIC, 0, null);
 			definition.addMember(fieldMember);
 			JavaField javaField = new JavaField(jcls, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType()));
 			typeConversionContext.compiled.setFieldInfo(fieldMember, javaField);

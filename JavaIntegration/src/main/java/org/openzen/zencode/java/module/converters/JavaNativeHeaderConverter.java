@@ -19,7 +19,6 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -32,16 +31,14 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class JavaNativeHeaderConverter {
-	private BracketExpressionParser bep;
 	private final JavaNativeTypeConverter typeConverter;
 	private final JavaNativePackageInfo packageInfo;
-	private final GlobalTypeRegistry registry;
 	private final JavaNativeTypeConversionContext typeConversionContext;
+	private BracketExpressionParser bep;
 
-	public JavaNativeHeaderConverter(JavaNativeTypeConverter typeConverter, JavaNativePackageInfo packageInfo, GlobalTypeRegistry registry, JavaNativeTypeConversionContext typeConversionContext) {
+	public JavaNativeHeaderConverter(JavaNativeTypeConverter typeConverter, JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext) {
 		this.typeConverter = typeConverter;
 		this.packageInfo = packageInfo;
-		this.registry = registry;
 		this.typeConversionContext = typeConversionContext;
 		typeConverter.setHeaderConverter(this);
 	}
@@ -137,7 +134,7 @@ public class JavaNativeHeaderConverter {
 				final String filename = "internal: " + parameter.getDeclaringExecutable().getName();
 
 				final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg(), packageInfo.getModule());
-				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, new AnnotationDefinition[0], packageInfo.getPkg(), rootCompiling, typeConversionContext.globals);
+				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(typeConversionContext.registry, new AnnotationDefinition[0], packageInfo.getPkg(), rootCompiling, typeConversionContext.globals);
 				final FileResolutionContext fContext = new FileResolutionContext(context, packageInfo.getPkg(), rootCompiling);
 				final FileScope fileScope = new FileScope(fContext, Collections.emptyList(), typeConversionContext.globals, member -> {
 				});
