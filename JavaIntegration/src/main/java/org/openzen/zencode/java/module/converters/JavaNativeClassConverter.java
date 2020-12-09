@@ -76,15 +76,14 @@ public class JavaNativeClassConverter {
 
 	private HighLevelDefinition getDefinitionForClass(Class<?> cls) {
 		boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
-		String className = cls.getName();
+		final String specifiedName = getNameForScripts(cls);
 
 		ZSPackage classPkg;
-		ZenCodeType.Name nameAnnotation = cls.getDeclaredAnnotation(ZenCodeType.Name.class);
-		className = className.contains(".") ? className.substring(className.lastIndexOf('.') + 1) : className;
-		if (nameAnnotation == null) {
+		boolean hasAnnotation = cls.isAnnotationPresent(ZenCodeType.Name.class);
+		String className = specifiedName.contains(".") ? specifiedName.substring(specifiedName.lastIndexOf('.') + 1) : specifiedName;
+		if (!hasAnnotation) {
 			classPkg = packageInfo.getPackage(className);
 		} else {
-			String specifiedName = nameAnnotation.value();
 			if (specifiedName.startsWith(".")) {
 				classPkg = packageInfo.getPackage(specifiedName);
 				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
@@ -97,7 +96,7 @@ public class JavaNativeClassConverter {
 				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
 			} else {
 				classPkg = packageInfo.getPackage(specifiedName);
-				className = nameAnnotation.value();
+				className = specifiedName;
 			}
 		}
 
@@ -146,11 +145,14 @@ public class JavaNativeClassConverter {
 	}
 
 	public boolean shouldLoadClass(Class<?> cls) {
-		return packageInfo.isInBasePackage(getClassName(cls));
+		return packageInfo.isInBasePackage(getNameForScripts(cls));
 	}
 
-	public String getClassName(Class<?> cls) {
-		return cls.isAnnotationPresent(ZenCodeType.Name.class) ? cls.getAnnotation(ZenCodeType.Name.class).value() : cls.getName();
+	public String getNameForScripts(Class<?> cls) {
+		if (cls.isAnnotationPresent(ZenCodeType.Name.class)) {
+			return cls.getAnnotation(ZenCodeType.Name.class).value();
+		}
+		return cls.getName();
 	}
 
 	private HighLevelDefinition fillDefinition(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass, boolean foundRegistry) {
