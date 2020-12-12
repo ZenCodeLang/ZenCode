@@ -213,9 +213,9 @@ public class JavaNativeClassConverter {
 	}
 
 	/**
-	 * Public so that other implementations can inject "virtual" Annotations here
+	 * Protected so that other implementations can inject "virtual" Annotations here
 	 */
-	public <T extends Annotation> T getAnnotation(Method method, Class<T> cls) {
+	protected  <T extends Annotation> T getAnnotation(Method method, Class<T> cls) {
 		return method.getAnnotation(cls);
 	}
 

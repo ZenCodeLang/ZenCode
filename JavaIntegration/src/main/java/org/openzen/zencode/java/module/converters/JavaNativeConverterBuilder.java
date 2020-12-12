@@ -13,37 +13,42 @@ public class JavaNativeConverterBuilder {
 		final JavaNativeGlobalConverter globalConverter = getGlobalConverter(typeConversionContext, typeConverter, memberConverter);
 		final JavaNativeExpansionConverter expansionConverter = getExpansionConverter(packageInfo, logger, typeConversionContext, typeConverter, headerConverter, memberConverter);
 
+		return getNativeConverter(typeConversionContext, typeConverter, headerConverter, memberConverter, classConverter, globalConverter, expansionConverter);
+	}
+
+	protected JavaNativeConverter getNativeConverter(JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeHeaderConverter headerConverter, JavaNativeMemberConverter memberConverter, JavaNativeClassConverter classConverter, JavaNativeGlobalConverter globalConverter, JavaNativeExpansionConverter expansionConverter) {
 		return new JavaNativeConverter(
 				typeConverter,
 				headerConverter,
 				memberConverter,
 				classConverter,
 				globalConverter,
-				expansionConverter
+				expansionConverter,
+				typeConversionContext
 		);
 	}
 
-	public JavaNativeExpansionConverter getExpansionConverter(JavaNativePackageInfo packageInfo, IZSLogger logger, JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeHeaderConverter headerConverter, JavaNativeMemberConverter memberConverter) {
+	protected JavaNativeExpansionConverter getExpansionConverter(JavaNativePackageInfo packageInfo, IZSLogger logger, JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeHeaderConverter headerConverter, JavaNativeMemberConverter memberConverter) {
 		return new JavaNativeExpansionConverter(typeConverter, logger, packageInfo, memberConverter, typeConversionContext, headerConverter);
 	}
 
-	public JavaNativeGlobalConverter getGlobalConverter(JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeMemberConverter memberConverter) {
+	protected JavaNativeGlobalConverter getGlobalConverter(JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeMemberConverter memberConverter) {
 		return new JavaNativeGlobalConverter(typeConversionContext, typeConverter, memberConverter);
 	}
 
-	public JavaNativeClassConverter getClassConverter(JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeHeaderConverter headerConverter, JavaNativeMemberConverter memberConverter) {
+	protected JavaNativeClassConverter getClassConverter(JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeHeaderConverter headerConverter, JavaNativeMemberConverter memberConverter) {
 		return new JavaNativeClassConverter(typeConverter, memberConverter, packageInfo, typeConversionContext, headerConverter);
 	}
 
-	public JavaNativeMemberConverter getMemberConverter(JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeHeaderConverter headerConverter) {
+	protected JavaNativeMemberConverter getMemberConverter(JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter, JavaNativeHeaderConverter headerConverter) {
 		return new JavaNativeMemberConverter(typeConverter, typeConversionContext, headerConverter);
 	}
 
-	public JavaNativeHeaderConverter getHeaderConverter(JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter) {
+	protected JavaNativeHeaderConverter getHeaderConverter(JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, JavaNativeTypeConverter typeConverter) {
 		return new JavaNativeHeaderConverter(typeConverter, packageInfo, typeConversionContext);
 	}
 
-	public JavaNativeTypeConverter getTypeConverter(JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, JavaNativeModule module) {
+	protected JavaNativeTypeConverter getTypeConverter(JavaNativePackageInfo packageInfo, JavaNativeTypeConversionContext typeConversionContext, JavaNativeModule module) {
 		return new JavaNativeTypeConverter(typeConversionContext, packageInfo, module);
 	}
 }
