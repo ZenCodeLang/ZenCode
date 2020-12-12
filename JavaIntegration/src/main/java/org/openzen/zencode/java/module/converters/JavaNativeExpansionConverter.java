@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -36,12 +37,13 @@ public class JavaNativeExpansionConverter {
 		this.headerConverter = headerConverter;
 	}
 
-	public <T> ExpansionDefinition convertExpansion(Class<T> cls) {
-		if (!cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
+	public ExpansionDefinition convertExpansion(Class<?> cls) {
+
+		if(doesClassNotHaveAnnotation(cls)) {
 			throw new IllegalArgumentException("Cannot convert class " + cls + " as it does not have an Expansion annotation");
 		}
 
-		final String expandedName = cls.getAnnotation(ZenCodeType.Expansion.class).value();
+		final String expandedName = getExpandedName(cls);
 		final TypeID expandedType = typeConverter.getTypeFromName(expandedName);
 		if (expandedType == null)
 			throw new IllegalArgumentException("Could not find definition for name " + expandedName);
@@ -51,7 +53,17 @@ public class JavaNativeExpansionConverter {
 		expansion.target = expandedType;
 		typeConversionContext.definitionByClass.put(cls, expansion);
 
-		boolean addExpansion = false;
+		fillAnnotatedMethods(cls, expandedType, expansion, javaClass);
+
+		if (!expansion.members.isEmpty()) {
+			typeConversionContext.compiled.setExpansionClassInfo(expansion, javaClass);
+			typeConversionContext.packageDefinitions.add(expansion);
+		}
+
+		return expansion;
+	}
+
+	private void fillAnnotatedMethods(Class<?> cls, TypeID expandedType, ExpansionDefinition expansion, JavaClass javaClass) {
 		for (Method method : cls.getDeclaredMethods()) {
 			if (!Modifier.isStatic(method.getModifiers()) || method.getParameterCount() < 1) {
 				//Log?
@@ -66,50 +78,19 @@ public class JavaNativeExpansionConverter {
 			}
 
 
-			final ZenCodeType.Method methodAnnotation = method.getAnnotation(ZenCodeType.Method.class);
+			final ZenCodeType.Method methodAnnotation = getMethodAnnotation(method, ZenCodeType.Method.class);
 			if (methodAnnotation != null) {
-				checkExpandedType(classFromType, method);
-				String name = !methodAnnotation.value().isEmpty() ? methodAnnotation.value() : method.getName();
-				//TypeVariableContext context = new TypeVariableContext();
-
-				final Parameter[] parameters = getExpansionParameters(method);
-
-				FunctionHeader header = headerConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-				final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
-
-				expansion.addMember(member);
-				typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
-				addExpansion = true;
+				fillMethod(expansion, javaClass, method, classFromType, methodAnnotation);
 			}
 
-			final ZenCodeType.Getter getterAnnotation = method.getAnnotation(ZenCodeType.Getter.class);
+			final ZenCodeType.Getter getterAnnotation = getMethodAnnotation(method, ZenCodeType.Getter.class);
 			if (getterAnnotation != null) {
-				checkExpandedType(classFromType, method);
-				TypeID type = typeConverter.loadStoredType(typeConversionContext.context, method.getAnnotatedReturnType());
-				int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
-				final String name = getterAnnotation.value().isEmpty() ? memberConverter.translateGetterName(method.getName()) : getterAnnotation.value();
-				final GetterMember member = new GetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
-
-				expansion.addMember(member);
-				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, type));
-				addExpansion = true;
+				fillGetter(expansion, javaClass, method, classFromType, getterAnnotation);
 			}
 
-			final ZenCodeType.Caster casterAnnotation = method.getAnnotation(ZenCodeType.Caster.class);
+			final ZenCodeType.Caster casterAnnotation = getMethodAnnotation(method, ZenCodeType.Caster.class);
 			if (casterAnnotation != null) {
-				checkExpandedType(classFromType, method);
-				boolean implicit = casterAnnotation.implicit();
-				int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
-				if (implicit) {
-					modifiers |= Modifiers.IMPLICIT;
-				}
-				//TypeVariableContext typeConversionContext.context = new TypeVariableContext();
-				TypeID toType = typeConverter.loadStoredType(typeConversionContext.context, method.getAnnotatedReturnType());
-				final CasterMember member = new CasterMember(CodePosition.NATIVE, expansion, modifiers, toType, null);
-
-				expansion.addMember(member);
-				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
-				addExpansion = true;
+				fillCaster(expansion, javaClass, method, classFromType, casterAnnotation);
 			}
 
 			//TODO not working, not sure if it *should* work
@@ -128,13 +109,54 @@ public class JavaNativeExpansionConverter {
 //                addExpansion = true;
 //            }
 		}
+	}
 
-		if (addExpansion) {
-			typeConversionContext.compiled.setExpansionClassInfo(expansion, javaClass);
-			typeConversionContext.packageDefinitions.add(expansion);
+	private void fillCaster(ExpansionDefinition expansion, JavaClass javaClass, Method method, Class<?> classFromType, ZenCodeType.Caster casterAnnotation) {
+		checkExpandedType(classFromType, method);
+		boolean implicit = casterAnnotation.implicit();
+		int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
+		if (implicit) {
+			modifiers |= Modifiers.IMPLICIT;
 		}
+		//TypeVariableContext typeConversionContext.context = new TypeVariableContext();
+		TypeID toType = typeConverter.loadStoredType(typeConversionContext.context, method.getAnnotatedReturnType());
+		final CasterMember member = new CasterMember(CodePosition.NATIVE, expansion, modifiers, toType, null);
 
-		return expansion;
+		expansion.addMember(member);
+		typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
+	}
+
+	private void fillGetter(ExpansionDefinition expansion, JavaClass javaClass, Method method, Class<?> classFromType, ZenCodeType.Getter getterAnnotation) {
+		checkExpandedType(classFromType, method);
+		TypeID type = typeConverter.loadStoredType(typeConversionContext.context, method.getAnnotatedReturnType());
+		int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
+		final String name = getterAnnotation.value().isEmpty() ? memberConverter.translateGetterName(method.getName()) : getterAnnotation.value();
+		final GetterMember member = new GetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
+
+		expansion.addMember(member);
+		typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, type));
+	}
+
+	private void fillMethod(ExpansionDefinition expansion, JavaClass javaClass, Method method, Class<?> classFromType, ZenCodeType.Method methodAnnotation) {
+		checkExpandedType(classFromType, method);
+		String name = !methodAnnotation.value().isEmpty() ? methodAnnotation.value() : method.getName();
+		//TypeVariableContext context = new TypeVariableContext();
+
+		final Parameter[] parameters = getExpansionParameters(method);
+
+		FunctionHeader header = headerConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
+
+		expansion.addMember(member);
+		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
+	}
+
+	protected String getExpandedName(Class<?> cls) {
+		return cls.getAnnotation(ZenCodeType.Expansion.class).value();
+	}
+
+	protected boolean doesClassNotHaveAnnotation(Class<?> cls) {
+		return !cls.isAnnotationPresent(ZenCodeType.Expansion.class);
 	}
 
 	private void checkExpandedType(Class<?> clsType, Method method) {
@@ -151,6 +173,13 @@ public class JavaNativeExpansionConverter {
 		final Parameter[] parameters = new Parameter[method.getParameterCount() - 1];
 		System.arraycopy(method.getParameters(), 1, parameters, 0, method.getParameterCount() - 1);
 		return parameters;
+	}
+
+	/**
+	 * Protected so that other implementations can inject "virtual" Annotations here
+	 */
+	protected  <T extends Annotation> T getMethodAnnotation(Method method, Class<T> annotationClass) {
+		return method.getAnnotation(annotationClass);
 	}
 
 }
