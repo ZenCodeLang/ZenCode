@@ -5,7 +5,6 @@
  */
 package org.openzen.zencode.java.module;
 
-import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.module.converters.JavaNativeConverter;
 import org.openzen.zencode.java.module.converters.JavaNativeConverterBuilder;
 import org.openzen.zencode.java.module.converters.JavaNativePackageInfo;
@@ -19,7 +18,6 @@ import org.openzen.zenscript.javashared.JavaCompiledModule;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Map;
 
@@ -85,18 +83,7 @@ public class JavaNativeModule {
 	}
 
 	public HighLevelDefinition addClass(Class<?> cls) {
-		if (typeConversionContext.definitionByClass.containsKey(cls)) {
-			return typeConversionContext.definitionByClass.get(cls);
-		}
-
-		if ((cls.getModifiers() & Modifier.PUBLIC) == 0)
-			throw new IllegalArgumentException("Class \" " + cls.getName() + "\" must be public");
-
-		if (cls.isAnnotationPresent(ZenCodeType.Expansion.class)) {
-			return nativeConverter.expansionConverter.convertExpansion(cls);
-		}
-
-		return nativeConverter.classConverter.convertClass(cls);
+		return nativeConverter.addClass(cls);
 	}
 
 	public void addGlobals(Class<?> cls) {
