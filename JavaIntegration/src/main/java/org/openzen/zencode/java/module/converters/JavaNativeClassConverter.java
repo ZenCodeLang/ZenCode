@@ -82,7 +82,12 @@ public class JavaNativeClassConverter {
 		boolean hasAnnotation = cls.isAnnotationPresent(ZenCodeType.Name.class);
 		String className = specifiedName.contains(".") ? specifiedName.substring(specifiedName.lastIndexOf('.') + 1) : specifiedName;
 		if (!hasAnnotation) {
-			classPkg = packageInfo.getPackage(className);
+			if (!specifiedName.startsWith(packageInfo.getPkg().fullName)) {
+				classPkg = packageInfo.getPackage(className);
+			} else {
+				classPkg = packageInfo.getPackage(packageInfo.getBasePackage() + specifiedName.substring(packageInfo.getPkg().fullName.length()));
+				className = specifiedName.substring(specifiedName.lastIndexOf('.') + 1);
+			}
 		} else {
 			if (specifiedName.startsWith(".")) {
 				classPkg = packageInfo.getPackage(specifiedName);
