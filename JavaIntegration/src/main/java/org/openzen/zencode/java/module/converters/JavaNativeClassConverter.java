@@ -52,10 +52,11 @@ public class JavaNativeClassConverter {
 
 		//Moved up here so that circular dependencies are caught (hopefully)
 		typeConversionContext.definitionByClass.put(cls, definition);
+		typeConversionContext.compiled.setClassInfo(definition, javaClass);
+
 		if (!shouldLoadClass(cls)) {
 			return definition;
 		}
-
 		return fillDefinition(cls, definition, javaClass, foundRegistry);
 	}
 
