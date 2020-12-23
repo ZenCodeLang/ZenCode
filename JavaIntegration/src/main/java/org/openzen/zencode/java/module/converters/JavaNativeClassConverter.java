@@ -221,8 +221,22 @@ public class JavaNativeClassConverter {
 	/**
 	 * Protected so that other implementations can inject "virtual" Annotations here
 	 */
-	protected  <T extends Annotation> T getAnnotation(Method method, Class<T> cls) {
+	protected <T extends Annotation> T getAnnotation(Method method, Class<T> cls) {
 		return method.getAnnotation(cls);
+	}
+
+	/**
+	 * Protected so that other implementations can inject "virtual" Annotations here
+	 */
+	protected ZenCodeType.Constructor getConstructorAnnotation(Constructor<?> constructor) {
+		return constructor.getAnnotation(ZenCodeType.Constructor.class);
+	}
+
+	/**
+	 * Protected so that other implementations can inject "virtual" Annotations here
+	 */
+	protected ZenCodeType.Field getFieldAnnotation(Field field) {
+		return field.getAnnotation(ZenCodeType.Field.class);
 	}
 
 	private boolean isOverridden(Class<?> cls, Method method) {
@@ -241,7 +255,7 @@ public class JavaNativeClassConverter {
 	private void fillConstructor(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass, boolean foundRegistry) {
 		boolean hasConstructor = false;
 		for (java.lang.reflect.Constructor<?> constructor : cls.getConstructors()) {
-			ZenCodeType.Constructor constructorAnnotation = constructor.getAnnotation(ZenCodeType.Constructor.class);
+			ZenCodeType.Constructor constructorAnnotation = getConstructorAnnotation(constructor);
 			if (constructorAnnotation != null) {
 				ConstructorMember member = memberConverter.asConstructor(typeConversionContext.context, definition, constructor);
 				definition.addMember(member);
@@ -261,7 +275,7 @@ public class JavaNativeClassConverter {
 	private void fillFields(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
 		TypeID thisType = typeConversionContext.registry.getForMyDefinition(definition);
 		for (Field field : cls.getDeclaredFields()) {
-			ZenCodeType.Field annotation = field.getAnnotation(ZenCodeType.Field.class);
+			ZenCodeType.Field annotation = getFieldAnnotation(field);
 			if (annotation == null)
 				continue;
 			if (!Modifier.isPublic(field.getModifiers()))
