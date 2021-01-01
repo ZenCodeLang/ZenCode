@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitc
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
+import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -413,39 +414,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		if (builtin == null) {
 			expression.target.accept(this);
 
-			final List<TypeParameter> typeParameters;
-			{
-
-				final List<TypeParameter> parameters = new ArrayList<>();
-				if (expression.member.getTarget().definition.isExpansion()) {
-					parameters.addAll(Arrays.asList(expression.member.getTarget().definition.typeParameters));
-				}
-
-				//expression.member.getOwnerType().type.extractTypeParameters(parameters);
-				//expression.instancedHeader.typeParameters
-				for (TypeParameter typeParameter : expression.member.getTarget().getHeader().typeParameters) {
-					if (!parameters.contains(typeParameter)) {
-						parameters.add(typeParameter);
-					}
-				}
-				typeParameters = parameters.stream().distinct().collect(Collectors.toList());
-			}
-
-			JavaMethod methodInfo = context.getJavaMethod(expression.member);
-
-			if (methodInfo.compile) {
-				if (typeParameters.size() == expression.arguments.typeArguments.length) {
-					final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
-					for (TypeID typeArgument : expression.arguments.typeArguments) {
-						typeArgument.accept(javaWriter, javaTypeExpressionVisitor);
-					}
-				} else {
-					for (TypeParameter typeParameter : typeParameters) {
-						javaWriter.aConstNull(); // TODO: Replace with actual class
-						javaWriter.checkCast("java/lang/Class");
-					}
-				}
-			}
+			handleTypeArguments(expression.member, expression.arguments);
 
 			final Expression[] arguments = expression.arguments.arguments;
 			final FunctionParameter[] parameters = expression.instancedHeader.parameters;
@@ -1234,12 +1203,50 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		return null;
 	}
 
+	private void handleTypeArguments(FunctionalMemberRef member, CallArguments arguments) {
+		final List<TypeParameter> typeParameters;
+		{
+
+			final List<TypeParameter> parameters = new ArrayList<>();
+			if (member.getTarget().definition.isExpansion()) {
+				parameters.addAll(Arrays.asList(member.getTarget().definition.typeParameters));
+			}
+
+			//expression.member.getOwnerType().type.extractTypeParameters(parameters);
+			//expression.instancedHeader.typeParameters
+			for (TypeParameter typeParameter : member.getTarget().getHeader().typeParameters) {
+				if (!parameters.contains(typeParameter)) {
+					parameters.add(typeParameter);
+				}
+			}
+			typeParameters = parameters.stream().distinct().collect(Collectors.toList());
+		}
+
+		JavaMethod methodInfo = context.getJavaMethod(member);
+
+		if (methodInfo.compile) {
+			if (typeParameters.size() == arguments.typeArguments.length) {
+				final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+				for (TypeID typeArgument : arguments.typeArguments) {
+					typeArgument.accept(javaWriter, javaTypeExpressionVisitor);
+				}
+			} else {
+				for (TypeParameter typeParameter : typeParameters) {
+					javaWriter.aConstNull(); // TODO: Replace with actual class
+					javaWriter.checkCast("java/lang/Class");
+				}
+			}
+		}
+	}
+
 	@Override
 	public Void visitCallStatic(CallStaticExpression expression) {
 		final Expression[] arguments = expression.arguments.arguments;
 		final FunctionParameter[] parameters = expression.instancedHeader.parameters;
 		final boolean variadic = expression.instancedHeader.isVariadicCall(expression.arguments) && ((arguments.length != parameters.length) || !parameters[parameters.length - 1].type
 				.equals(arguments[arguments.length - 1].type));
+
+		handleTypeArguments(expression.member, expression.arguments);
 
 		if (variadic) {
 			for (int i = 0; i < parameters.length - 1; i++) {

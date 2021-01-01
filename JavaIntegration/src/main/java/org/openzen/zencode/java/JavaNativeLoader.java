@@ -5,6 +5,7 @@
  */
 package org.openzen.zencode.java;
 
+import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;

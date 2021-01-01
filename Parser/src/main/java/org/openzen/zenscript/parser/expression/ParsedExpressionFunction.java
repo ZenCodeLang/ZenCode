@@ -63,8 +63,13 @@ public class ParsedExpressionFunction extends ParsedExpression {
 
 		if (header.getReturnType() == BasicTypeID.UNDETERMINED) {
 			TypeID returnType = statements.getReturnType();
-			if (returnType == null)
-				returnType = new InvalidTypeID(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Could not infer return type");
+			if (returnType == null) {
+				if(genericHeader.getReturnType() != BasicTypeID.UNDETERMINED) {
+					returnType = genericHeader.getReturnType();
+				} else {
+					returnType = new InvalidTypeID(position, CompileExceptionCode.CANNOT_INFER_RETURN_TYPE, "Could not infer return type");
+				}
+			}
 
 			header.setReturnType(returnType);
 		}

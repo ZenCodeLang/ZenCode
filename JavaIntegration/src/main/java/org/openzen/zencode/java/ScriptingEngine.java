@@ -7,6 +7,8 @@ package org.openzen.zencode.java;
 
 import org.openzen.zencode.java.logger.ScriptingEngineLogger;
 import org.openzen.zencode.java.logger.ScriptingEngineStreamLogger;
+import org.openzen.zencode.java.module.JavaNativeModule;
+import org.openzen.zencode.java.module.converters.JavaNativeConverterBuilder;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zenscript.codemodel.FunctionParameter;
@@ -70,16 +72,21 @@ public class ScriptingEngine {
 		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies);
 	}
 
+	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule[] dependencies, JavaNativeConverterBuilder nativeConverterBuilder) {
+		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
+		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies, nativeConverterBuilder);
+	}
+
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {
 		SemanticModule semantic = Validator.validate(
 				module.toSemantic(space), logger);
 		if (!semantic.isValid())
 			return;
 
-		space.addModule(module.module.name, semantic);
+		space.addModule(module.getModule().name, semantic);
 		nativeModules.add(module);
 
-		for (Map.Entry<String, ISymbol> globalEntry : module.globals.entrySet())
+		for (Map.Entry<String, ISymbol> globalEntry : module.getGlobals().entrySet())
 			space.addGlobal(globalEntry.getKey(), globalEntry.getValue());
 	}
 
