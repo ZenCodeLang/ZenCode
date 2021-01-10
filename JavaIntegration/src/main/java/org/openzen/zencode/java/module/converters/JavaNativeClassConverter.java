@@ -177,8 +177,8 @@ public class JavaNativeClassConverter {
 	}
 
 	private void fillAnnotatedMethods(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
-		for (Method method : cls.getDeclaredMethods()) {
-			if (isOverridden(cls, method))
+		for (Method method : getMethodsIn(cls)) {
+			if (isNotAccessible(method) || isOverridden(cls, method))
 				continue;
 
 			ZenCodeType.Method methodAnnotation = getAnnotation(method, ZenCodeType.Method.class);
@@ -218,6 +218,14 @@ public class JavaNativeClassConverter {
 		}
 	}
 
+	private boolean isNotAccessible(Method method) {
+		return !Modifier.isPublic(method.getModifiers());
+	}
+
+	protected Method[] getMethodsIn(Class<?> cls) {
+		return cls.getMethods();
+	}
+
 	/**
 	 * Protected so that other implementations can inject "virtual" Annotations here
 	 */
@@ -240,16 +248,7 @@ public class JavaNativeClassConverter {
 	}
 
 	private boolean isOverridden(Class<?> cls, Method method) {
-		//Simple check if the method was overwritten
-		try {
-			if (!cls.getDeclaredMethod(method.getName(), method.getParameterTypes()).equals(method)) {
-				return true;
-			}
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-			return true;
-		}
-		return false;
+		return !method.getDeclaringClass().equals(cls);
 	}
 
 	private void fillConstructor(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass, boolean foundRegistry) {
