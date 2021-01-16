@@ -584,7 +584,7 @@ public final class TypeMembers {
 
 		for (TypeMember<CasterMemberRef> caster : casters)
 			if (caster.member.toType == toType)
-				return value;
+				return caster.member.cast(position, value, false);
 
 		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Cannot cast " + toString() + " to " + toType + ", even explicitly");
 	}
