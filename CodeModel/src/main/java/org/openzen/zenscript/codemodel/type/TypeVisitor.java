@@ -22,6 +22,6 @@ public interface TypeVisitor<T> {
 	T visitOptional(OptionalTypeID type);
 
 	default T visitInvalid(InvalidTypeID type) {
-		throw new UnsupportedOperationException("Invalid type: " + type.message);
+		throw new UnsupportedOperationException("Invalid type @ " + type.position +  ": " + type.message);
 	}
 }
