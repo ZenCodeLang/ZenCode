@@ -422,27 +422,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			final boolean variadic = expression.instancedHeader.isVariadicCall(expression.arguments) && ((arguments.length != parameters.length) || !parameters[parameters.length - 1].type
 					.equals(arguments[arguments.length - 1].type));
 
-			if (variadic) {
-				for (int i = 0; i < parameters.length - 1; i++) {
-					arguments[i].accept(this);
-				}
-
-				final int arrayCount = (arguments.length - parameters.length) + 1;
-				javaWriter.constant(arrayCount);
-				javaWriter.newArray(context.getType(parameters[parameters.length - 1].type).getElementType());
-				for (int i = 0; i < arrayCount; i++) {
-					javaWriter.dup();
-					javaWriter.constant(i);
-					arguments[i + parameters.length - 1].accept(this);
-					javaWriter.arrayStore(context.getType(arguments[i].type));
-				}
-
-
-			} else {
-				for (Expression argument : arguments) {
-					argument.accept(this);
-				}
-			}
+			handleCallArguments(arguments, parameters, variadic);
 
 
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
@@ -1248,27 +1228,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		handleTypeArguments(expression.member, expression.arguments);
 
-		if (variadic) {
-			for (int i = 0; i < parameters.length - 1; i++) {
-				arguments[i].accept(this);
-			}
-
-			final int arrayCount = (arguments.length - parameters.length) + 1;
-			javaWriter.constant(arrayCount);
-			javaWriter.newArray(context.getType(parameters[parameters.length - 1].type).getElementType());
-			for (int i = 0; i < arrayCount; i++) {
-				javaWriter.dup();
-				javaWriter.constant(i);
-				arguments[i + parameters.length - 1].accept(this);
-				javaWriter.arrayStore(context.getType(arguments[i].type));
-			}
-
-
-		} else {
-			for (Expression argument : arguments) {
-				argument.accept(this);
-			}
-		}
+		handleCallArguments(arguments, parameters, variadic);
 
 		BuiltinID builtin = expression.member.getBuiltin();
 		if (builtin == null) {
@@ -1348,6 +1308,31 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				throw new UnsupportedOperationException("Unknown builtin: " + builtin);
 		}
 		return null;
+	}
+
+	private void handleCallArguments(Expression[] arguments, FunctionParameter[] parameters, boolean variadic) {
+		if (variadic) {
+			for (int i = 0; i < parameters.length - 1; i++) {
+				arguments[i].accept(this);
+			}
+
+			final int arrayCount = (arguments.length - parameters.length) + 1;
+			javaWriter.constant(arrayCount);
+			javaWriter.newArray(context.getType(parameters[parameters.length - 1].type).getElementType());
+			for (int i = 0; i < arrayCount; i++) {
+				javaWriter.dup();
+				javaWriter.constant(i);
+				final Expression argument = arguments[i + parameters.length - 1];
+				argument.accept(this);
+				javaWriter.arrayStore(context.getType(argument.type));
+			}
+
+
+		} else {
+			for (Expression argument : arguments) {
+				argument.accept(this);
+			}
+		}
 	}
 
 	@Override
