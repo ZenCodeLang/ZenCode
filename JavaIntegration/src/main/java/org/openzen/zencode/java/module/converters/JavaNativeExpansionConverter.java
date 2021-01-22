@@ -6,10 +6,12 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
+import org.openzen.zenscript.codemodel.member.OperatorMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -39,7 +41,7 @@ public class JavaNativeExpansionConverter {
 
 	public ExpansionDefinition convertExpansion(Class<?> cls) {
 
-		if(doesClassNotHaveAnnotation(cls)) {
+		if (doesClassNotHaveAnnotation(cls)) {
 			throw new IllegalArgumentException("Cannot convert class " + cls + " as it does not have an Expansion annotation");
 		}
 
@@ -93,21 +95,10 @@ public class JavaNativeExpansionConverter {
 				fillCaster(expansion, javaClass, method, classFromType, casterAnnotation);
 			}
 
-			//TODO not working, not sure if it *should* work
-//            final ZenCodeType.Operator operatorAnnotation = method.getAnnotation(ZenCodeType.Operator.class);
-//            if(operatorAnnotation != null) {
-//
-//                TypeVariableContext typeConversionContext.context = new TypeVariableContext();
-//
-//                final Parameter[] parameters = getExpansionParameters(method);
-//
-//                FunctionHeader header = getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
-//                final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, OperatorType.valueOf(operatorAnnotation.value().toString()), header, null);
-//
-//                expansion.addMember(member);
-//                typeConversionContext.compiled.setMethodInfo(member, getMethod(javaClass, method, member.header.getReturnType()));
-//                addExpansion = true;
-//            }
+			final ZenCodeType.Operator operatorAnnotation = method.getAnnotation(ZenCodeType.Operator.class);
+			if (operatorAnnotation != null) {
+				fillOperator(expansion, javaClass, method, classFromType, operatorAnnotation);
+			}
 		}
 	}
 
@@ -148,7 +139,92 @@ public class JavaNativeExpansionConverter {
 		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
 
 		expansion.addMember(member);
-		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, name, org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
+		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
+	}
+
+	private void fillOperator(ExpansionDefinition expansion, JavaClass javaClass, Method method, Class<?> classFromType, ZenCodeType.Operator operator) {
+		checkExpandedType(classFromType, method);
+
+		final Parameter[] parameters = getExpansionParameters(method);
+
+		final OperatorType operatorType = getOperatorTypeFrom(operator);
+		FunctionHeader header = headerConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+		final OperatorMember member = new OperatorMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, operatorType, header, null);
+
+		expansion.addMember(member);
+		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
+	}
+
+	private OperatorType getOperatorTypeFrom(ZenCodeType.Operator operator) {
+		switch (operator.value()) {
+			case ADD:
+				return OperatorType.ADD;
+			case SUB:
+				return OperatorType.SUB;
+			case MUL:
+				return OperatorType.MUL;
+			case DIV:
+				return OperatorType.DIV;
+			case MOD:
+				return OperatorType.MOD;
+			case CAT:
+				return OperatorType.CAT;
+			case OR:
+				return OperatorType.OR;
+			case AND:
+				return OperatorType.AND;
+			case XOR:
+				return OperatorType.XOR;
+			case NEG:
+				return OperatorType.NEG;
+			case INVERT:
+				return OperatorType.INVERT;
+			case NOT:
+				return OperatorType.NOT;
+			case INDEXSET:
+				return OperatorType.INDEXSET;
+			case INDEXGET:
+				return OperatorType.INDEXGET;
+			case CONTAINS:
+				return OperatorType.CONTAINS;
+			case COMPARE:
+				return OperatorType.COMPARE;
+			case MEMBERGETTER:
+				return OperatorType.MEMBERGETTER;
+			case MEMBERSETTER:
+				return OperatorType.MEMBERSETTER;
+			case EQUALS:
+				return OperatorType.EQUALS;
+			case NOTEQUALS:
+				return OperatorType.NOTEQUALS;
+			case SHL:
+				return OperatorType.SHL;
+			case SHR:
+				return OperatorType.SHR;
+			case ADDASSIGN:
+				return OperatorType.ADDASSIGN;
+			case SUBASSIGN:
+				return OperatorType.SUBASSIGN;
+			case MULASSIGN:
+				return OperatorType.MULASSIGN;
+			case DIVASSIGN:
+				return OperatorType.DIVASSIGN;
+			case MODASSIGN:
+				return OperatorType.MODASSIGN;
+			case CATASSIGN:
+				return OperatorType.CATASSIGN;
+			case ORASSIGN:
+				return OperatorType.ORASSIGN;
+			case ANDASSIGN:
+				return OperatorType.ANDASSIGN;
+			case XORASSIGN:
+				return OperatorType.XORASSIGN;
+			case SHLASSIGN:
+				return OperatorType.SHLASSIGN;
+			case SHRASSIGN:
+				return OperatorType.SHRASSIGN;
+		}
+		throw new IllegalArgumentException("Unknown OperatorType: " + operator.value());
 	}
 
 	protected String getExpandedName(Class<?> cls) {
@@ -178,7 +254,7 @@ public class JavaNativeExpansionConverter {
 	/**
 	 * Protected so that other implementations can inject "virtual" Annotations here
 	 */
-	protected  <T extends Annotation> T getMethodAnnotation(Method method, Class<T> annotationClass) {
+	protected <T extends Annotation> T getMethodAnnotation(Method method, Class<T> annotationClass) {
 		return method.getAnnotation(annotationClass);
 	}
 
