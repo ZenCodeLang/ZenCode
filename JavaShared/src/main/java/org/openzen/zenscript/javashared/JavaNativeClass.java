@@ -30,11 +30,19 @@ public class JavaNativeClass {
 	}
 
 	public void addConstructor(String key, String descriptor) {
-		methods.put(key, new JavaMethod(cls, JavaMethod.Kind.CONSTRUCTOR, "<init>", false, descriptor, JavaModifiers.PUBLIC, false));
+		methods.put(key, createMethod("<init>", descriptor, JavaMethod.Kind.CONSTRUCTOR));
 	}
 
 	public void addInstanceMethod(String key, String name, String descriptor) {
-		methods.put(key, new JavaMethod(cls, JavaMethod.Kind.INSTANCE, name, false, descriptor, JavaModifiers.PUBLIC, false));
+		methods.put(key, createMethod(name, descriptor, JavaMethod.Kind.INSTANCE));
+	}
+
+	public JavaMethod createMethod(String name, String descriptor, JavaMethod.Kind instance) {
+		return new JavaMethod(cls, instance, name, false, descriptor, JavaModifiers.PUBLIC, false);
+	}
+
+	public JavaMethod createInstanceMethod(String name, String descriptor) {
+		return createMethod(name, descriptor, JavaMethod.Kind.INSTANCE);
 	}
 
 	public JavaMethod getMethod(String name) {

@@ -118,10 +118,47 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 				Expression character = call.arguments.arguments[0];
 				return translator.containsAsIndexOf(str, character);
 			}));
-			cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
-			cls.addInstanceMethod("indexOfFrom", "indexOf", "(II)I");
-			cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
-			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
+			cls.addMethod("indexOfFrom", new JavaMethod((expression, translator) -> {
+				final JavaMethod indexOf = cls.createInstanceMethod("indexOf", "(II)I");
+				return translator.wrapNegativeIndexAsNullUSize(indexOf, expression);
+			}));
+
+			cls.addMethod("lastIndexOf", new JavaMethod((expression, translator) -> {
+				final JavaMethod indexOf = cls.createInstanceMethod("lastIndexOf", "(I)I");
+				return translator.wrapNegativeIndexAsNullUSize(indexOf, expression);
+			}));
+
+			cls.addMethod("lastIndexOfFrom", new JavaMethod((expression, translator) -> {
+				final JavaMethod indexOf = cls.createInstanceMethod("lastIndexOf", "(II)I");
+				return translator.wrapNegativeIndexAsNullUSize(indexOf, expression);
+			}));
+
+			cls.addMethod("indexOf", new JavaMethod(((expression, translator) -> {
+				final JavaMethod indexOf = cls.createMethod("indexOf", "(I)I", JavaMethod.Kind.INSTANCE);
+				return translator.wrapNegativeIndexAsNullUSize(indexOf, expression);
+			})));
+
+			cls.addMethod("indexOfString", new JavaMethod((expression, translator) -> {
+				final JavaMethod indexOf = cls.createMethod("indexOf", "(Ljava/lang/String;)I", JavaMethod.Kind.INSTANCE);
+				return translator.wrapNegativeIndexAsNullUSize(indexOf, expression);
+			}));
+
+			cls.addMethod("indexOfStringFrom", new JavaMethod((expression, translator) -> {
+				final JavaMethod indexOf = cls.createMethod("indexOf", "(Ljava/lang/String;I)I", JavaMethod.Kind.INSTANCE);
+				return translator.wrapNegativeIndexAsNullUSize(indexOf, expression);
+			}));
+
+			cls.addMethod("lastIndexOfString", new JavaMethod((expression, translator) -> {
+				final JavaMethod indexOf = cls.createInstanceMethod("lastIndexOf", "(Ljava/lang/String;)I");
+				return translator.wrapNegativeIndexAsNullUSize(indexOf, expression);
+			}));
+
+			cls.addMethod("lastIndexOfStringFrom", new JavaMethod((expression, translator) -> {
+				final JavaMethod indexOf = cls.createInstanceMethod("lastIndexOf", "(Ljava/lang/String;I)I");
+				return translator.wrapNegativeIndexAsNullUSize(indexOf, expression);
+			}));
+
+
 			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
 			cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
 			cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");

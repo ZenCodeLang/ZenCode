@@ -3382,12 +3382,18 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	//Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
-	@SuppressWarnings({"Raw", "unchecked"})
+	@SuppressWarnings({"Raw"})
 	boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, TypeID resultType, Expression expression) {
 		JavaMethod methodInfo = context.getJavaMethod(member);
 		if (methodInfo == null)
 			return false;
 
+		executeMethodInfo(resultType, expression, methodInfo);
+		return true;
+	}
+
+	@SuppressWarnings({"Raw", "unchecked"})
+	private void executeMethodInfo(TypeID resultType, Expression expression, JavaMethod methodInfo) {
 		if (methodInfo.kind == JavaMethod.Kind.STATIC) {
 			getJavaWriter().invokeStatic(methodInfo);
 		} else if (methodInfo.kind == JavaMethod.Kind.INTERFACE) {
@@ -3411,8 +3417,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			final boolean isLarge = methodInfo.descriptor.endsWith(")D") && methodInfo.descriptor.endsWith(")J");
 			getJavaWriter().pop(isLarge);
 		}
-
-		return true;
 	}
 
 	//Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
@@ -3453,6 +3457,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void containsAsIndexOf(Expression target, Expression value) {
+		executeMethodInfo(BasicTypeID.STRING, value, CHARACTER_TO_STRING);
+		executeMethodInfo(BasicTypeID.BOOL, null, JavaMethod.getNativeVirtual(JavaClass.STRING, "contains", "(Ljava/lang/CharSequence;)Z"));
 		return null;
 	}
 
@@ -3526,6 +3532,27 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void bytesUTF8ToString(Expression value) {
+		return null;
+	}
+
+	@Override
+	public Void wrapNegativeIndexAsNullUSize(JavaMethod method, Expression expression) {
+		executeMethodInfo(BasicTypeID.INT, expression, method);
+		javaWriter.dup();
+		javaWriter.iConst0();
+
+		final Label positiveIndexOrZero = new Label();
+		final Label end = new Label();
+
+		javaWriter.ifICmpGE(positiveIndexOrZero);
+		javaWriter.pop();
+		javaWriter.aConstNull();
+		javaWriter.goTo(end);
+		javaWriter.label(positiveIndexOrZero);
+		BasicTypeID.USIZE.accept(BasicTypeID.USIZE, boxingTypeVisitor);
+		javaWriter.label(end);
+
+
 		return null;
 	}
 

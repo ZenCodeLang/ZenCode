@@ -36,4 +36,6 @@ public interface JavaNativeTranslator<T> {
 	T bytesAsciiToString(Expression value);
 
 	T bytesUTF8ToString(Expression value);
+
+	T wrapNegativeIndexAsNullUSize(JavaMethod method, Expression expression);
 }
