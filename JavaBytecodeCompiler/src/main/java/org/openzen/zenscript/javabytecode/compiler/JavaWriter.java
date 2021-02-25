@@ -876,7 +876,7 @@ public class JavaWriter {
 				method.cls.internalName,
 				method.name,
 				method.descriptor,
-				false);
+				method.cls.isInterface());
 	}
 
 	public void invokeSpecial(String ownerInternalName, String name, String descriptor) {
