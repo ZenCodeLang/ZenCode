@@ -38,7 +38,7 @@ public class FunctionHeader {
 
 	public FunctionHeader(TypeID returnType, TypeID... parameterTypes) {
 		if (returnType == null)
-			throw new NullPointerException();
+			throw new NullPointerException("The function needs a return type");
 
 		this.typeParameters = TypeParameter.NONE;
 		this.returnType = returnType;
@@ -55,7 +55,7 @@ public class FunctionHeader {
 
 	public FunctionHeader(TypeID returnType, FunctionParameter... parameters) {
 		if (returnType == null)
-			throw new NullPointerException();
+			throw new NullPointerException("The function needs a return type");
 
 		this.typeParameters = TypeParameter.NONE;
 		this.returnType = returnType;
@@ -152,8 +152,7 @@ public class FunctionHeader {
 
 	public boolean[] useTypeParameters() {
 		boolean[] useTypeParameters = new boolean[typeParameters.length];
-		for (int i = 0; i < useTypeParameters.length; i++)
-			useTypeParameters[i] = true;
+		Arrays.fill(useTypeParameters, true);
 
 		return useTypeParameters;
 	}
@@ -164,7 +163,7 @@ public class FunctionHeader {
 
 	public void setReturnType(TypeID returnType) {
 		if (returnType == null)
-			throw new NullPointerException();
+			throw new NullPointerException("The function needs a return type");
 
 		this.returnType = returnType;
 	}
