@@ -85,9 +85,9 @@ public class JavaNativeExpansionConverter {
 				fillMethod(expansion, javaClass, method, classFromType, methodAnnotation);
 			}
 
-			final ZenCodeType.ExpandedStaticMethod expandedStaticMethod = getMethodAnnotation(method, ZenCodeType.ExpandedStaticMethod.class);
-			if(expandedStaticMethod != null) {
-				fillStaticMethod(expansion, javaClass, method, expandedStaticMethod);
+			final ZenCodeType.StaticExpansionMethod staticExpansionMethod = getMethodAnnotation(method, ZenCodeType.StaticExpansionMethod.class);
+			if(staticExpansionMethod != null) {
+				fillStaticMethod(expansion, javaClass, method, staticExpansionMethod);
 			}
 
 			final ZenCodeType.Getter getterAnnotation = getMethodAnnotation(method, ZenCodeType.Getter.class);
@@ -147,7 +147,7 @@ public class JavaNativeExpansionConverter {
 		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
 	}
 
-	private void fillStaticMethod(ExpansionDefinition expansion, JavaClass javaClass, Method method, ZenCodeType.ExpandedStaticMethod annotation) {
+	private void fillStaticMethod(ExpansionDefinition expansion, JavaClass javaClass, Method method, ZenCodeType.StaticExpansionMethod annotation) {
 		String name = !annotation.value().isEmpty() ? annotation.value() : method.getName();
 
 		final Parameter[] parameters = method.getParameters();

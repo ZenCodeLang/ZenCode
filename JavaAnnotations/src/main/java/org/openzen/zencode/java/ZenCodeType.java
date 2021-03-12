@@ -87,7 +87,7 @@ public interface ZenCodeType {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
-	@interface ExpandedStaticMethod {
+	@interface StaticExpansionMethod {
 		String value() default "";
 	}
 
