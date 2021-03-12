@@ -67,7 +67,7 @@ public class JavaNativeExpansionConverter {
 
 	private void fillAnnotatedMethods(Class<?> cls, TypeID expandedType, ExpansionDefinition expansion, JavaClass javaClass) {
 		for (Method method : cls.getDeclaredMethods()) {
-			if (!Modifier.isStatic(method.getModifiers()) || method.getParameterCount() < 1) {
+			if (!Modifier.isStatic(method.getModifiers())) {
 				//Log?
 				continue;
 			}
@@ -83,6 +83,11 @@ public class JavaNativeExpansionConverter {
 			final ZenCodeType.Method methodAnnotation = getMethodAnnotation(method, ZenCodeType.Method.class);
 			if (methodAnnotation != null) {
 				fillMethod(expansion, javaClass, method, classFromType, methodAnnotation);
+			}
+
+			final ZenCodeType.ExpandedStaticMethod expandedStaticMethod = getMethodAnnotation(method, ZenCodeType.ExpandedStaticMethod.class);
+			if(expandedStaticMethod != null) {
+				fillStaticMethod(expansion, javaClass, method, expandedStaticMethod);
 			}
 
 			final ZenCodeType.Getter getterAnnotation = getMethodAnnotation(method, ZenCodeType.Getter.class);
@@ -137,6 +142,17 @@ public class JavaNativeExpansionConverter {
 
 		FunctionHeader header = headerConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
 		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC, name, header, null);
+
+		expansion.addMember(member);
+		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
+	}
+
+	private void fillStaticMethod(ExpansionDefinition expansion, JavaClass javaClass, Method method, ZenCodeType.ExpandedStaticMethod annotation) {
+		String name = !annotation.value().isEmpty() ? annotation.value() : method.getName();
+
+		final Parameter[] parameters = method.getParameters();
+		FunctionHeader header = headerConverter.getHeader(typeConversionContext.context, method.getAnnotatedReturnType(), parameters, method.getTypeParameters(), method.getAnnotatedExceptionTypes());
+		final MethodMember member = new MethodMember(CodePosition.NATIVE, expansion, headerConverter.getMethodModifiers(method), name, header, null);
 
 		expansion.addMember(member);
 		typeConversionContext.compiled.setMethodInfo(member, JavaMethod.getStatic(javaClass, method.getName(), org.objectweb.asm.Type.getMethodDescriptor(method), headerConverter.getMethodModifiers(method)));
@@ -239,6 +255,10 @@ public class JavaNativeExpansionConverter {
 		if (clsType == null) {
 			return;
 		}
+		if(method.getParameterTypes().length < 1) {
+			throw new IllegalArgumentException("Cannot add extension method " + method + " as it does not have any parameters and is a normal expansion.");
+		}
+
 		if (!method.getParameterTypes()[0].isAssignableFrom(clsType)) {
 			throw new IllegalArgumentException("Cannot add extension method " + method + " as its first parameter does not match the extended type.");
 		}
