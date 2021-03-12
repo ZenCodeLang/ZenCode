@@ -252,11 +252,12 @@ public class JavaNativeExpansionConverter {
 	}
 
 	private void checkExpandedType(Class<?> clsType, Method method) {
-		if (clsType == null) {
-			return;
-		}
 		if(method.getParameterTypes().length < 1) {
 			throw new IllegalArgumentException("Cannot add extension method " + method + " as it does not have any parameters and is a normal expansion.");
+		}
+
+		if (clsType == null) {
+			return;
 		}
 
 		if (!method.getParameterTypes()[0].isAssignableFrom(clsType)) {
