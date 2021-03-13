@@ -16,6 +16,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ZSPackage {
 	public final String name;
@@ -102,6 +103,18 @@ public class ZSPackage {
 		}
 
 		return null;
+	}
+
+	public Optional<ZSPackage> getOptionalRecursive(String name) {
+		int dot = name.indexOf('.');
+		if (dot < 0)
+			return getOptional(name);
+		else
+			return getOptionalRecursive(name.substring(0, dot)).flatMap(pkg -> pkg.getOptionalRecursive(name.substring(dot + 1)));
+	}
+
+	public Optional<ZSPackage> getOptional(String name) {
+		return Optional.ofNullable(subPackages.get(name));
 	}
 
 	public ZSPackage getRecursive(String name) {
