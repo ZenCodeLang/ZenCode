@@ -62,6 +62,8 @@ public class FileResolutionContext implements TypeResolutionContext {
 					1);
 		} else if (root.contains(name.get(0).name)) {
 			return root.getType(position, this, name);
+		} else if(root.name.equals(name.get(0).name)) {
+			return root.getType(position, this, name.subList(1, name.size()));
 		}
 
 		TypeID moduleType = modulePackage.getType(this, name);
