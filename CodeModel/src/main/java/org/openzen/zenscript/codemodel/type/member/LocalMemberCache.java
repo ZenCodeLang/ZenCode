@@ -31,8 +31,8 @@ public class LocalMemberCache {
 			return types.get(type);
 		} else {
 			TypeMembers members = new TypeMembers(this, type);
-			registerMembers(members);
 			types.put(type, members);
+			registerMembers(members);
 			return members;
 		}
 	}
