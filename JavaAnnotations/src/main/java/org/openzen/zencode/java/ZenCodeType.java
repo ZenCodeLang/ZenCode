@@ -180,4 +180,10 @@ public interface ZenCodeType {
 	@interface OptionalString {
 		String value() default "";
 	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.PARAMETER)
+	@interface OptionalBoolean {
+		boolean value() default false;
+	}
 }
