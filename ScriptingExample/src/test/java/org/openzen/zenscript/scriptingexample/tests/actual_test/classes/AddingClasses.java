@@ -101,4 +101,20 @@ public class AddingClasses extends ZenCodeTest {
 		logger.assertPrintOutputSize(1);
 		logger.assertPrintOutput(0, "Hello World");
 	}
+
+	@Test
+	public void staticFieldCallable() {
+		ScriptBuilder.create()
+				.add("public class TestClass {")
+				.add("public static val test as string = 'Hello World';")
+				.add("}")
+				.add("")
+				.startNewScript()
+				.add("println(TestClass.test);")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertPrintOutputSize(1);
+		logger.assertPrintOutput(0, "Hello World");
+	}
 }

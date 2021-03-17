@@ -137,7 +137,7 @@ public class CompilerUtils {
 					constructorWriter.loadObject(0);
 				field.initializer.accept(expressionVisitor);
 				if (staticFields)
-					constructorWriter.putStaticField(definition.name, field.name, context.getDescriptor(field.getType()));
+					constructorWriter.putStaticField(context.getJavaClass(definition).internalName , field.name, context.getDescriptor(field.getType()));
 				else
 					constructorWriter.putField(definition.name, field.name, context.getDescriptor(field.getType()));
 			}
