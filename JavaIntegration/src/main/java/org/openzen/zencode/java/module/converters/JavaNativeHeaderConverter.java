@@ -20,6 +20,7 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.javashared.JavaTypeInfo;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.BracketExpressionParser;
@@ -123,6 +124,9 @@ public class JavaNativeHeaderConverter {
 
 	public Expression getDefaultValue(Parameter parameter, TypeID type) {
 		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class)) {
+			if(JavaTypeInfo.get(type).primitive){
+				throw new IllegalArgumentException("Cannot use generic Optional annotation for type (" + type.withoutOptional().toString() + ") as it is primitive! Use the @Optional");
+			}
 			final String s = parameter.getAnnotation(ZenCodeType.Optional.class).value();
 			if (s.isEmpty()) {
 				Expression defaultValue = type.getDefaultValue();
