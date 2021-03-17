@@ -70,7 +70,7 @@ public class CompilerUtils {
 			FunctionParameter parameter = header.parameters[i];
 			String parameterType = context.getDescriptor(parameter.type);
 			module.setParameterInfo(parameter, new JavaParameterInfo(index, parameterType));
-			index++;
+			index += isLarge(parameter.type) ? 2 : 1;
 		}
 	}
 
@@ -104,7 +104,7 @@ public class CompilerUtils {
 			FunctionParameter parameter = header.parameters[i];
 			String parameterType = context.getDescriptor(parameter.type);
 			module.setParameterInfo(parameter, new JavaParameterInfo(index, parameterType));
-			index++;
+			index += isLarge(parameter.type) ? 2 : 1;
 		}
 		/*
 		int index = header.getNumberOfTypeParameters();
