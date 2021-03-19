@@ -125,7 +125,7 @@ public class JavaNativeHeaderConverter {
 	public Expression getDefaultValue(Parameter parameter, TypeID type) {
 		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class)) {
 			if(JavaTypeInfo.get(type).primitive){
-				throw new IllegalArgumentException("Cannot use generic Optional annotation for type (" + type.withoutOptional().toString() + ") as it is primitive! Use the @Optional");
+				throw new IllegalArgumentException("Cannot use generic Optional annotation for type (" + type.withoutOptional().toString() + ") as it is primitive! Use the corresponding primitive @Optional annotation instead (E.G. @OptionalInt, @OptionalBoolean).");
 			}
 			final String s = parameter.getAnnotation(ZenCodeType.Optional.class).value();
 			if (s.isEmpty()) {
