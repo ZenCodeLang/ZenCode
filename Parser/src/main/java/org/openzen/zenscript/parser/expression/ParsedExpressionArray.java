@@ -40,13 +40,18 @@ public class ParsedExpressionArray extends ParsedExpression {
 
 		for (TypeID hint : scope.hints) {
 			// TODO: what if multiple hints fit?
+			ArrayTypeID arrayHint = null;
 			if (hint instanceof ArrayTypeID) {
-				ArrayTypeID arrayHint = (ArrayTypeID) hint;
-				if (arrayHint.dimension == 1) {
-					asBaseType = arrayHint.elementType;
-					asType = hint;
-					couldHintType = true;
-				}
+				arrayHint = (ArrayTypeID) hint;
+				asType = hint;
+			}
+			if (hint.isOptional() && hint.withoutOptional() instanceof ArrayTypeID) {
+				arrayHint = (ArrayTypeID) hint.withoutOptional();
+				asType = hint.withoutOptional();
+			}
+			if (arrayHint != null && arrayHint.dimension == 1) {
+				asBaseType = arrayHint.elementType;
+				couldHintType = true;
 			}
 		}
 
