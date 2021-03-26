@@ -580,6 +580,11 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 	}
 
 	@Override
+	public ExpressionString visitPlatformSpecific(Expression expression) {
+		throw new UnsupportedOperationException("Cannot use Platform specific yet!");
+	}
+
+	@Override
 	public ExpressionString visitPostCall(PostCallExpression expression) {
 		return unaryPostfix(expression.target, expression.member.getOperator() == OperatorType.INCREMENT ? JavaOperator.INCREMENT : JavaOperator.DECREMENT);
 	}
@@ -1419,8 +1424,6 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				return call.target.type.withoutOptional() == BasicTypeID.USIZE
 						? call.target.accept(this).unaryPostfix(JavaOperator.NOTEQUALS, " >= 0")
 						: call.target.accept(this).unaryPostfix(JavaOperator.NOTEQUALS, " != null");
-			case AUTOOP_NOTEQUALS:
-				throw new UnsupportedOperationException("Not yet supported!");
 		}
 
 		throw new UnsupportedOperationException("Unknown builtin call: " + builtin);
@@ -2119,7 +2122,7 @@ public class JavaSourceExpressionFormatter implements ExpressionVisitor<Expressi
 				}
 			}
 			case ARRAY_CONSTRUCTOR_PROJECTED: {
-				ArrayTypeID type = (ArrayTypeID) expression.type.type;
+				ArrayTypeID type = (ArrayTypeID) expression.type;
 
 				if (type.dimension == 1) {
 					Expression original = duplicable(expression.arguments.arguments[0]);

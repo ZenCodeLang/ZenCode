@@ -18,12 +18,23 @@ public class TypeContext {
 	protected final TypeParameter[] typeParameters;
 	private final LocalMemberCache memberCache;
 
+	@Deprecated
+	public TypeContext(ModuleContext context, TypeParameter[] parameters, TypeID thisType) {
+		//FIXME: What position?
+		this(CodePosition.UNKNOWN, context, parameters, thisType);
+	}
+
 	public TypeContext(CodePosition position, ModuleContext context, TypeParameter[] parameters, TypeID thisType) {
 		this.position = position;
 		this.typeParameters = parameters;
 		this.thisType = thisType;
 		memberCache = new LocalMemberCache(context.registry, context.expansions);
 		moduleContext = context;
+	}
+
+	@Deprecated
+	public TypeContext(TypeContext outer, TypeID thisType, TypeParameter... inner) {
+		this(outer.getPosition(), outer, thisType, inner);
 	}
 
 	public TypeContext(CodePosition position, TypeContext outer, TypeID thisType, TypeParameter... inner) {
@@ -63,5 +74,9 @@ public class TypeContext {
 	public GenericMapper getMapper() {
 		Map<TypeParameter, TypeID> mapper = TypeID.getSelfMapping(moduleContext.registry, typeParameters);
 		return new GenericMapper(position, moduleContext.registry, mapper);
+	}
+
+	public CodePosition getPosition() {
+		return position;
 	}
 }

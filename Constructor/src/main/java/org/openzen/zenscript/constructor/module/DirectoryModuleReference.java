@@ -78,7 +78,7 @@ public class DirectoryModuleReference implements ModuleReference {
 			}
 
 			// TODO: annotation type registration
-			ModuleSpace space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
+			ModuleSpace space = new ModuleSpace(registry, new ArrayList<>());
 			SemanticModule[] dependencies = new SemanticModule[dependencyNames.size()];
 			for (int i = 0; i < dependencies.length; i++) {
 				String dependencyName = dependencyNames.get(i);

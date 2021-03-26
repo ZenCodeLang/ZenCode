@@ -109,8 +109,7 @@ public class SourceEditor implements DComponent {
 			Reader reader = sourceFile.getFile().open();
 			TokenParser<ZSToken, ZSTokenType> parser = ZSTokenParser.createRaw(
 					sourceFile.getFile(),
-					new ReaderCharReader(reader),
-					tab.length());
+					new ReaderCharReader(reader));
 			tokens.set(parser);
 			reader.close();
 		} catch (IOException ex) {
@@ -753,7 +752,6 @@ public class SourceEditor implements DComponent {
 			token.setPosition(x, y);
 			x += token.getBounds().width;
 		}
-		;
 	}
 
 	private List<DDrawnText> lineToTokens(TokenLine line) {

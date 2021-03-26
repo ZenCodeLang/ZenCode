@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.moduledeserializer;
 
+import org.openzen.zenscript.codemodel.member.ref.*;
 import org.openzen.zenscript.codemodel.serialization.DecodingOperation;
 import compactio.CompactDataInput;
 
@@ -34,15 +35,6 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.IteratorMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.BreakStatement;
@@ -767,7 +759,10 @@ public class CodeReader implements CodeSerializationInput {
 			case ExpressionEncoding.TYPE_INTERFACE_CAST: {
 				Expression value = deserializeExpression(context);
 				TypeID toType = deserializeType(context);
-				return new InterfaceCastExpression(position, value, toType);
+
+				//FIXME: I have no idea if this works?
+				final ImplementationMemberRef definitionMemberRef = (ImplementationMemberRef) readMember(context, toType);
+				return new InterfaceCastExpression(position, value, definitionMemberRef);
 			}
 			case ExpressionEncoding.TYPE_IS: {
 				Expression value = deserializeExpression(context);

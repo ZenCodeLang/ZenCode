@@ -8,17 +8,13 @@ package org.openzen.zenscript.moduledeserializer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Module;
-import org.openzen.zenscript.codemodel.PackageDefinitions;
-import org.openzen.zenscript.codemodel.ScriptBlock;
+import org.openzen.zencode.shared.logging.IZSLogger;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.compiler.CompilationUnit;
-import org.openzen.zenscript.compiler.SemanticModule;
 
 /**
  * @author Hoofdgebruiker
@@ -26,6 +22,7 @@ import org.openzen.zenscript.compiler.SemanticModule;
 public class DeserializingModule {
 	public final String name;
 	public final Module module;
+	private final IZSLogger logger;
 	public final ModuleContext context;
 	private final SemanticModule loaded;
 	private final DeserializingModule[] dependencies;
@@ -34,7 +31,6 @@ public class DeserializingModule {
 	private final PackageDefinitions definitions = new PackageDefinitions();
 	private final List<ScriptBlock> scripts = new ArrayList<>();
 	private final AnnotationDefinition[] annotations;
-	private final StorageType[] storageTypes;
 	private final List<ExpansionDefinition> expansions;
 
 	public DeserializingModule(
@@ -44,15 +40,17 @@ public class DeserializingModule {
 			ZSPackage rootPackage,
 			ZSPackage modulePackage,
 			AnnotationDefinition[] annotations,
-			StorageType[] storageTypes) {
+			IZSLogger logger
+	) {
 		this.name = name;
 		this.module = new Module(name);
+		this.logger = logger;
 		this.loaded = null;
 		this.dependencies = dependencies;
 		this.rootPackage = rootPackage;
 		this.modulePackage = modulePackage;
 		this.annotations = annotations;
-		this.storageTypes = storageTypes;
+
 
 		expansions = new ArrayList<>();
 		context = new ModuleContext(registry, module, expansions, rootPackage);
@@ -66,7 +64,7 @@ public class DeserializingModule {
 		this.rootPackage = module.rootPackage;
 		this.modulePackage = module.modulePackage;
 		this.annotations = module.annotations;
-		this.storageTypes = module.storageTypes;
+		this.logger = module.logger;
 
 		expansions = module.expansions;
 		context = module.getContext();
@@ -76,26 +74,30 @@ public class DeserializingModule {
 		return module == null;
 	}
 
-	public SemanticModule load(CompilationUnit compilationUnit) {
+	public SemanticModule load(GlobalTypeRegistry globalTypeRegistry) {
 		if (loaded != null)
 			return loaded;
 
 		SemanticModule[] dependencies = new SemanticModule[this.dependencies.length];
 		List<ExpansionDefinition> expansions = new ArrayList<>();
 
+		//FIXME: Which parameters?
+		final FunctionParameter[] functionParameters = FunctionParameter.NONE;
+
 		return new SemanticModule(
-				name,
 				module,
 				dependencies,
+				functionParameters,
 				SemanticModule.State.ASSEMBLED,
 				rootPackage,
 				modulePackage,
 				definitions,
 				scripts,
-				compilationUnit,
+				globalTypeRegistry,
 				expansions,
 				annotations,
-				storageTypes);
+				logger
+		);
 	}
 
 	public void add(HighLevelDefinition definition) {

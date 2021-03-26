@@ -215,7 +215,7 @@ public class TokenModel {
 
 	private void relex(int fromLine, int fromToken, int toLine, int toToken) {
 		try {
-			TokenRelexer reparser = new TokenRelexer(file, lines, fromLine, fromToken, toLine, toToken, spacesPerTab);
+			TokenRelexer reparser = new TokenRelexer(file, lines, fromLine, fromToken, toLine, toToken);
 			List<ZSToken> tokens = reparser.relex();
 			replaceTokens(fromLine, fromToken, reparser.getLine(), reparser.getToken(), tokens);
 		} catch (ParseException ex) {

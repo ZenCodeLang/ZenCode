@@ -43,6 +43,11 @@ public class LocalModuleLogger implements ModuleLogger, ValidatorLogger {
 	}
 
 	@Override
+	public void trace(String message) {
+		output.accept(new OutputLine(new BasicOutputSpan(message)));
+	}
+
+	@Override
 	public void warning(String message) {
 		output.accept(new OutputLine(new BasicOutputSpan(message)));
 	}

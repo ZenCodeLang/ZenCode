@@ -51,7 +51,8 @@ import org.openzen.zenscript.moduleserializer.encoder.TypeSerializer;
  * @author Hoofdgebruiker
  */
 public class TableBuilder implements CodeSerializationOutput {
-	public final List<EncodingModule> modules = new ArrayList<>();
+	//public final List<EncodingModule> modules = new ArrayList<>();
+	public final Map<Module, EncodingModule> modules = new HashMap<>();
 	private final Map<String, Integer> strings = new HashMap<>();
 	private final Set<HighLevelDefinition> definitions = new HashSet<>();
 	private final Set<Module> moduleSet = new HashSet<>();
@@ -86,11 +87,12 @@ public class TableBuilder implements CodeSerializationOutput {
 	public EncodingModule register(Module module, ModuleContext context) {
 		if (moduleSet.add(module)) {
 			EncodingModule encodedModule = new EncodingModule(module, context, true);
-			module.setTag(EncodingModule.class, encodedModule);
-			modules.add(encodedModule);
+			//module.setTag(EncodingModule.class, encodedModule);
+			modules.put(module, encodedModule);
 			return encodedModule;
 		} else {
-			return module.getTag(EncodingModule.class);
+			//return module.getTag(EncodingModule.class);
+			return modules.get(module);
 		}
 	}
 
@@ -134,7 +136,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	public void serialize(ModuleContext context, HighLevelDefinition definition) {
 		definition.accept(context, definitionSerializer);
 		DefinitionTypeID thisType = context.registry.getForMyDefinition(definition);
-		definition.accept(new TypeContext(context, definition.typeParameters, thisType.stored(BorrowStorageTag.THIS)), definitionMemberSerializer);
+		definition.accept(new TypeContext(context, definition.typeParameters, thisType), definitionMemberSerializer);
 	}
 
 	@Override
