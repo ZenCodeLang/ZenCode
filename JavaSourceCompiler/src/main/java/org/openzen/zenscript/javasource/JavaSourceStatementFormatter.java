@@ -43,7 +43,6 @@ import org.openzen.zenscript.formattershared.StatementFormatter;
 import org.openzen.zenscript.formattershared.StatementFormattingSubBlock;
 import org.openzen.zenscript.formattershared.StatementFormattingTarget;
 import org.openzen.zenscript.javasource.scope.JavaSourceStatementScope;
-import org.openzen.zenscript.javashared.JavaClass;
 
 /**
  * @author Hoofdgebruiker
@@ -157,7 +156,7 @@ public class JavaSourceStatementFormatter implements StatementFormatter.Formatte
 			ExpressionString valueString = scope.expression(target, value);
 			List<StatementFormattingSubBlock> blocks = new ArrayList<>();
 
-			DefinitionTypeID variantType = statement.value.type.asDefinition();
+			DefinitionTypeID variantType = (DefinitionTypeID) statement.value.type;
 			HighLevelDefinition variant = variantType.definition;
 			String variantTypeName = scope.type(variant);
 			for (SwitchCase switchCase : statement.cases) {

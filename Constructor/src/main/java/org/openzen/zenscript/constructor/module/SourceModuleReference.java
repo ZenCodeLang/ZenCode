@@ -66,7 +66,7 @@ public class SourceModuleReference implements ModuleReference {
 	public SemanticModule load(ModuleLoader loader, GlobalTypeRegistry registry, ModuleLogger logger) {
 		SemanticModule[] dependencies = module.loadDependencies(loader, registry, logger);
 
-		ModuleSpace space = new ModuleSpace(registry, new ArrayList<>(), StorageType.getStandard());
+		ModuleSpace space = new ModuleSpace(registry, new ArrayList<>());
 		for (SemanticModule module : dependencies) {
 			try {
 				space.addModule(module.name, module);

@@ -16,6 +16,8 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.constructor.ModuleLoader;
 import org.openzen.zenscript.constructor.module.SourceModuleReference;
 import org.openzen.zenscript.constructor.module.directory.DirectorySourceModule;
+import org.openzen.zenscript.constructor.module.logging.EmptyModuleLogger;
+import org.openzen.zenscript.constructor.module.logging.ModuleLogger;
 
 /**
  * @author Hoofdgebruiker
@@ -25,7 +27,8 @@ public class Main {
 		ZSPackage root = ZSPackage.createRoot();
 		ZSPackage stdlib = new ZSPackage(root, "stdlib");
 		GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
-		ModuleLoader loader = new ModuleLoader(registry, exception -> exception.printStackTrace());
+		ModuleLogger exceptionLogger = new EmptyModuleLogger();
+		ModuleLoader loader = new ModuleLoader(registry, exceptionLogger);
 		loader.register("stdlib", new SourceModuleReference(new DirectorySourceModule("stdlib", new File("../../StdLibs/stdlib"), true), true));
 
 		SemanticModule module = loader.getModule("stdlib");

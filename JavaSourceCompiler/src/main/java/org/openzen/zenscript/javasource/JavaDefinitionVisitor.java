@@ -114,7 +114,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		}
 
 		List<ImplementationMember> mergedImplementations = getMergedImplementations(definition);
-		if (mergedImplementations.size() > 0 || cls.destructible) {
+		if (mergedImplementations.size() > 0 /*|| cls.destructible*/) {
 			output.append(" implements ");
 			boolean first = true;
 			for (int i = 0; i < mergedImplementations.size(); i++) {
@@ -127,6 +127,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 				output.append(scope.type(implementation.type));
 			}
 
+			/*
 			if (cls.destructible) {
 				if (first)
 					first = false;
@@ -135,6 +136,7 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 
 				output.append(scope.importer.importType(JavaClass.CLOSEABLE));
 			}
+			 */
 		}
 
 		output.append(" {\n");
@@ -155,11 +157,13 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 		JavaSourceUtils.formatTypeParameters(scope.typeVisitor, output, definition.typeParameters, false);
 
 		boolean firstExtends = true;
+		/*
 		if (definition.isDestructible()) {
 			output.append(" extends ");
 			output.append(scope.importer.importType(JavaClass.CLOSEABLE));
 			firstExtends = false;
 		}
+		 */
 
 		for (TypeID base : definition.baseInterfaces) {
 			if (firstExtends) {
@@ -404,11 +408,13 @@ public class JavaDefinitionVisitor implements DefinitionVisitor<Void> {
 			for (IDefinitionMember member : definition.members)
 				member.accept(memberCompiler);
 
+			/*
 			if (definition.isDestructible() && !memberCompiler.hasDestructor) {
 				DestructorMember emptyDestructor = new DestructorMember(CodePosition.BUILTIN, definition, 0);
 				emptyDestructor.body = new BlockStatement(CodePosition.BUILTIN, new Statement[0]);
 				memberCompiler.visitDestructor(emptyDestructor);
 			}
+			 */
 
 			memberCompiler.finish();
 		}

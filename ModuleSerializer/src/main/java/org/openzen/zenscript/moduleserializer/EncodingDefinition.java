@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.MemberCollector;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
@@ -19,7 +20,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 /**
  * @author Hoofdgebruiker
  */
-public class EncodingDefinition {
+public class EncodingDefinition implements Tag {
 	public static final EncodingDefinition BUILTIN = new EncodingDefinition(null);
 	public final HighLevelDefinition definition;
 	public final List<IDefinitionMember> members = new ArrayList<>();

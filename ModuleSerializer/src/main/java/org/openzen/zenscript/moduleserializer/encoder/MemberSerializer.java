@@ -90,7 +90,7 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		if ((flags & MemberEncoding.FLAG_NAME) > 0)
 			output.writeString(member.name);
 
-		output.serialize(context, member.type);
+		output.serialize(context, member.getType());
 		output.enqueueCode(encoder -> encoder.serialize(new StatementContext(context), member.value));
 		return null;
 	}
@@ -114,7 +114,7 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		if ((flags & MemberEncoding.FLAG_AUTO_SETTER) > 0)
 			output.writeUInt(member.autoSetterAccess);
 
-		output.serialize(context, member.type);
+		output.serialize(context, member.getType());
 		output.enqueueCode(encoder -> encoder.serialize(new StatementContext(context), member.initializer));
 		return null;
 	}
@@ -174,12 +174,12 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		if (member.name != null)
 			flags |= MemberEncoding.FLAG_NAME;
 		serialize(flags, context, member);
-		output.serialize(context, member.type);
+		output.serialize(context, member.getType());
 		writeName(flags, member.name);
 
 		output.enqueueCode(encoder -> {
 			encoder.write(context, member.getOverrides());
-			encoder.serialize(new StatementContext(context, new FunctionHeader(member.type)), member.body);
+			encoder.serialize(new StatementContext(context, new FunctionHeader(member.getType())), member.body);
 		});
 		return null;
 	}
@@ -189,7 +189,7 @@ public class MemberSerializer implements MemberVisitorWithContext<TypeContext, V
 		output.writeUInt(MemberEncoding.TYPE_SETTER);
 		int flags = getFlags(member);
 		serialize(flags, context, member);
-		output.serialize(context, member.type);
+		output.serialize(context, member.getType());
 		writeName(flags, member.name);
 
 		output.enqueueCode(encoder -> {

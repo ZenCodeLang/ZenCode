@@ -5,6 +5,8 @@
  */
 package org.openzen.zenscript.moduleserializer;
 
+import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.serialization.EncodingOperation;
 import compactio.CompactBytesDataOutput;
 
@@ -17,7 +19,6 @@ import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.moduleserialization.ModuleEncoding;
 import org.openzen.zenscript.moduleserializer.encoder.DefinitionSerializer;
 import org.openzen.zenscript.codemodel.context.StatementContext;
@@ -69,7 +70,9 @@ public class ModuleSerializer {
 			}
 
 			for (ScriptBlock script : module.scripts) {
-				StatementContext context = new StatementContext(moduleContext, null);
+				//FIXME: Which position?
+				final CodePosition position = script.statements.isEmpty() ? CodePosition.UNKNOWN : script.statements.get(0).position;
+				StatementContext context = new StatementContext(position, moduleContext, null);
 				for (Statement statement : script.statements) {
 					tableBuilder.serialize(context, statement);
 				}
@@ -77,7 +80,7 @@ public class ModuleSerializer {
 		}
 
 		List<HighLevelDefinition> definitions = new ArrayList<>();
-		for (EncodingModule module : tableBuilder.modules) {
+		for (EncodingModule module : tableBuilder.modules.values()) {
 			for (EncodingDefinition definition : module.definitions)
 				definitions.add(definition.definition);
 		}
@@ -196,7 +199,9 @@ public class ModuleSerializer {
 			output.writeUInt(scripts.size());
 			for (ScriptBlock script : scripts) {
 				output.writeUInt(script.statements.size());
-				StatementContext context = new StatementContext(module, null);
+				//FIXME: Which position?
+				final CodePosition position = script.statements.isEmpty() ? CodePosition.UNKNOWN : script.statements.get(0).position;
+				StatementContext context = new StatementContext(position, module, null);
 				for (Statement statement : script.statements) {
 					output.serialize(context, statement);
 				}

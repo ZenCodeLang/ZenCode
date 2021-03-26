@@ -20,6 +20,11 @@ public class EmptyModuleLogger implements ModuleLogger {
 	}
 
 	@Override
+	public void trace(String message) {
+		System.out.println(message);
+	}
+
+	@Override
 	public void warning(String message) {
 		System.out.println(message);
 	}

@@ -367,7 +367,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 
 		int baseInterfaces = reader.readUInt();
 		for (int i = 0; i < baseInterfaces; i++)
-			definition.baseInterfaces.add(reader.deserializeTypeID(context));
+			definition.baseInterfaces.add(reader.deserializeType(context));
 
 		return null;
 	}
@@ -386,9 +386,9 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 
 			EnumConstantMember constant = new EnumConstantMember(position, definition, name, i);
 			reader.enqueueCode(input -> {
-				FunctionalMemberRef constructor = (FunctionalMemberRef) reader.readMember(context, type.stored(StaticStorageTag.INSTANCE));
+				FunctionalMemberRef constructor = (FunctionalMemberRef) reader.readMember(context, type);
 				CallArguments arguments = reader.deserializeArguments(initContext);
-				constant.constructor = new NewExpression(position, type.stored(StaticStorageTag.INSTANCE), constructor, arguments);
+				constant.constructor = new NewExpression(position, type, constructor, arguments);
 			});
 			definition.enumConstants.add(constant);
 		}
@@ -411,13 +411,13 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 	@Override
 	public Void visitExpansion(TypeContext context, ExpansionDefinition definition) {
 		visit(context, definition);
-		definition.target = reader.deserializeTypeID(context);
+		definition.target = reader.deserializeType(context);
 		return null;
 	}
 
 	@Override
 	public Void visitAlias(TypeContext context, AliasDefinition definition) {
-		definition.type = reader.deserializeTypeID(context);
+		definition.type = reader.deserializeType(context);
 		return null;
 	}
 
@@ -432,7 +432,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 			for (int j = 0; j < types.length; j++)
 				types[i] = reader.deserializeType(context);
 
-			variant.options.add(new VariantDefinition.Option(variant, name, i, types));
+			variant.options.add(new VariantDefinition.Option(context.getPosition(), variant, name, i, types));
 		}
 
 		return null;

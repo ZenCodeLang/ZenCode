@@ -50,6 +50,16 @@ public class StatementContext extends TypeContext {
 		lambdaOuter = null;
 	}
 
+	@Deprecated
+	public StatementContext(TypeContext outer) {
+		this(outer.getPosition(), outer);
+	}
+
+	@Deprecated
+	public StatementContext(TypeContext outer, FunctionHeader header) {
+		this(outer.getPosition(), outer, header);
+	}
+
 	public StatementContext(CodePosition position, TypeContext outer, FunctionHeader header) {
 		super(position, outer, outer.thisType, header == null ? TypeParameter.NONE : header.typeParameters);
 

@@ -5,6 +5,11 @@
  */
 package org.openzen.zenscript.moduledeserializer;
 
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.logging.IZSLogger;
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.expression.ArrayExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.serialization.DeserializationException;
 import compactio.CompactBytesDataInput;
 import compactio.CompactDataInput;
@@ -16,8 +21,6 @@ import java.util.List;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.SourceFile;
 import org.openzen.zencode.shared.VirtualSourceFile;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.context.StatementContext;
@@ -36,9 +39,10 @@ import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
 import org.openzen.zenscript.codemodel.serialization.DecodingOperation;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.compiler.CompilationUnit;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.compiler.ModuleRegistry;
-import org.openzen.zenscript.compiler.SemanticModule;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 
 /**
@@ -46,22 +50,22 @@ import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
  */
 public class ModuleDeserializer {
 	private final ModuleRegistry modules;
-	private final CompilationUnit compilationUnit;
+	private final GlobalTypeRegistry globalTypeRegistry;
 	private final AnnotationDefinition[] annotations;
-	private final StorageType[] storageTypes;
 	private final ZSPackage rootPackage;
+	private final IZSLogger logger;
 
 	public ModuleDeserializer(
 			ModuleRegistry modules,
-			CompilationUnit compilationUnit,
+			GlobalTypeRegistry globalTypeRegistry,
 			AnnotationDefinition[] annotations,
-			StorageType[] storageTypes,
-			ZSPackage rootPackage) {
+			ZSPackage rootPackage,
+			IZSLogger logger) {
 		this.modules = modules;
-		this.compilationUnit = compilationUnit;
+		this.globalTypeRegistry = globalTypeRegistry;
 		this.annotations = annotations;
-		this.storageTypes = storageTypes;
 		this.rootPackage = rootPackage;
+		this.logger = logger;
 	}
 
 	public SemanticModule[] deserialize(byte[] data) throws DeserializationException {
@@ -94,7 +98,7 @@ public class ModuleDeserializer {
 				stringTable,
 				sourceFiles,
 				annotations,
-				compilationUnit.globalTypeRegistry);
+				globalTypeRegistry);
 
 		DeserializingModule[] packagedModules = new DeserializingModule[decoder.readUInt()];
 		String[][] dependencyNames = new String[packagedModules.length][];
@@ -115,22 +119,26 @@ public class ModuleDeserializer {
 
 			packagedModules[i] = new DeserializingModule(
 					name,
-					compilationUnit.globalTypeRegistry,
+					globalTypeRegistry,
 					dependencies,
 					rootPackage,
 					modulePackage,
 					annotations,
-					storageTypes);
+					logger);
 			decoder.code.enqueue(new ModuleDecodeScriptsOperation(packagedModules[i]));
 			decoder.classes.enqueue(new ModuleDecodeClassesOperation(packagedModules[i], decoder));
 		}
 
 		DeserializingModule[] allModules = Arrays.copyOf(packagedModules, packagedModules.length + input.readVarUInt());
-		for (int i = packagedModules.length; i < allModules.length; i++) {
-			int flags = input.readVarUInt();
-			String name = input.readString();
-			allModules[i] = new DeserializingModule(modules.load(name));
-			decoder.classes.enqueue(new ModuleDecodeClassesOperation(allModules[i], decoder));
+		try {
+			for (int i = packagedModules.length; i < allModules.length; i++) {
+				int flags = input.readVarUInt();
+				String name = input.readString();
+				allModules[i] = new DeserializingModule(modules.load(name));
+				decoder.classes.enqueue(new ModuleDecodeClassesOperation(allModules[i], decoder));
+			}
+		} catch (CompileException exception) {
+			throw new DeserializationException("Caught Compilation Exception: ", exception);
 		}
 
 		System.out.println("Decoding classes");
@@ -146,7 +154,7 @@ public class ModuleDeserializer {
 		SemanticModule[] results = new SemanticModule[packagedModules.length];
 		for (int i = 0; i < results.length; i++) {
 			DeserializingModule module = packagedModules[i];
-			results[i] = module.load(compilationUnit);
+			results[i] = module.load(globalTypeRegistry);
 		}
 		return results;
 	}
@@ -164,7 +172,7 @@ public class ModuleDeserializer {
 		if ((flags & DefinitionEncoding.FLAG_NAME) > 0)
 			name = reader.readString();
 		if ((flags & DefinitionEncoding.FLAG_TYPE_PARAMETERS) > 0)
-			typeParameters = reader.deserializeTypeParameters(new TypeContext(context, TypeParameter.NONE, null));
+			typeParameters = reader.deserializeTypeParameters(new TypeContext(position, context, TypeParameter.NONE, null));
 
 		HighLevelDefinition result;
 		switch (type) {
@@ -253,12 +261,22 @@ public class ModuleDeserializer {
 			int numberOfScripts = input.readUInt();
 			for (int i = 0; i < numberOfScripts; i++) {
 				List<Statement> statements = new ArrayList<>();
-				StatementContext context = new StatementContext(module.context, null);
+				//FIXME: Can we deserializePosition here?
+				final CodePosition position = CodePosition.UNKNOWN;
+				StatementContext context = new StatementContext(position, module.context, null);
 				int numStatements = input.readUInt();
 				for (int j = 0; j < numStatements; j++)
 					statements.add(input.deserializeStatement(context));
 
-				module.add(new ScriptBlock(rootPackage, statements));
+
+				//FIXME: Where can we get that header from?
+				final ArrayTypeID stringArray = globalTypeRegistry.getArray(BasicTypeID.STRING, 1);
+				final FunctionParameter args = new FunctionParameter(stringArray, "args", new ArrayExpression(position, Expression.NONE, stringArray), true);
+				final FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, args);
+
+
+				final SourceFile file = position.getFile();
+				module.add(new ScriptBlock(file, module.module, rootPackage, scriptHeader, statements));
 			}
 		}
 	}

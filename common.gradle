@@ -8,6 +8,15 @@ apply plugin: 'maven'
 String mavenGroupId = 'org.openzen.zencode'
 String mavenVersion = '0.3.8'
 
+String branchName = (System.getenv('BRANCH_NAME') ?: 'master').replaceAll('[^A-Za-z-_0-9]', '_')
+if(!branchName.equalsIgnoreCase('master')) {
+	mavenVersion = branchName + '-' + mavenVersion
+}
+
+if (System.getenv('BUILD_NUMBER') != null) {
+	mavenVersion += '.' + System.getenv('BUILD_NUMBER')
+}
+
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 

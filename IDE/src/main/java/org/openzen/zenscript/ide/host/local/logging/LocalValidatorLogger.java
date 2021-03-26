@@ -25,6 +25,11 @@ public class LocalValidatorLogger implements ValidatorLogger {
 	}
 
 	@Override
+	public void trace(String message) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public void warning(String message) {
 		throw new UnsupportedOperationException();
 	}

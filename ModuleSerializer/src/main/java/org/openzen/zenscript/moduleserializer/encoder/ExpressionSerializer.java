@@ -505,6 +505,16 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
+	public Void visitInvalid(StatementContext context, InvalidExpression expression) {
+		throw new UnsupportedOperationException("Invalid expression!");
+	}
+
+	@Override
+	public Void visitInvalidAssign(StatementContext context, InvalidAssignExpression expression) {
+		throw new UnsupportedOperationException("Invalid Assign Expression");
+	}
+
+	@Override
 	public Void visitIs(StatementContext context, IsExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_IS);
 		int flags = getFlags(expression);
@@ -599,6 +609,11 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 		output.serialize(context, expression.value);
 		output.serialize(context, expression.type);
 		return null;
+	}
+
+	@Override
+	public Void visitPlatformSpecific(StatementContext context, Expression expression) {
+		throw new UnsupportedOperationException("PlatformSpecific Expression");
 	}
 
 	@Override

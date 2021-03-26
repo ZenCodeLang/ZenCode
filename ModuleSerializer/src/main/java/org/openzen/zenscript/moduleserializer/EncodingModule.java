@@ -8,13 +8,14 @@ package org.openzen.zenscript.moduleserializer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
 
 /**
  * @author Hoofdgebruiker
  */
-public class EncodingModule {
+public class EncodingModule implements Tag {
 	public final ModuleContext context;
 	public final List<EncodingDefinition> definitions = new ArrayList<>();
 	public final boolean withCode;

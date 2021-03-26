@@ -8,7 +8,6 @@ package org.openzen.zenscript.moduleserializer;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import compactio.CompactDataOutput;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -359,7 +358,7 @@ public class CodeWriter implements CodeSerializationOutput {
 		int flags = 0;
 		if (header.typeParameters.length > 0)
 			flags |= FunctionHeaderEncoding.FLAG_TYPE_PARAMETERS;
-		if (!header.getReturnType().isBasic(BasicTypeID.VOID))
+		if (header.getReturnType() != BasicTypeID.VOID)
 			flags |= FunctionHeaderEncoding.FLAG_RETURN_TYPE;
 		if (header.thrownType != null)
 			flags |= FunctionHeaderEncoding.FLAG_THROWS;

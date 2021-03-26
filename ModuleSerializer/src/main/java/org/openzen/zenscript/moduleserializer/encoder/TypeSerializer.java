@@ -168,13 +168,13 @@ public class TypeSerializer implements TypeVisitorWithContext<TypeContext, Void,
 		if (type.isOptional()) {
 			output.writeUInt(TypeEncoding.TYPE_OPTIONAL);
 			type.withoutOptional().accept(context, this);
-		} else if (type.isConst()) {
+		} /* else if (type.isConst()) {
 			output.writeUInt(TypeEncoding.TYPE_CONST);
 			type.withoutConst().accept(context, this);
 		} else if (type.isImmutable()) {
 			output.writeUInt(TypeEncoding.TYPE_IMMUTABLE);
 			type.withoutImmutable().accept(context, this);
-		} else {
+		} */else {
 			throw new IllegalArgumentException("modified type is not modified");
 		}
 
