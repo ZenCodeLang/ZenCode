@@ -3,6 +3,7 @@ package org.openzen.zenscript.javashared;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
 import org.openzen.zenscript.codemodel.type.*;
+import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
 import java.util.Arrays;
 
@@ -123,7 +124,11 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 
 	@Override
 	public String visitFunction(FunctionTypeID function) {
-		return "L" + this.context.getFunction(function).getCls().internalName + ";";
+		if (function instanceof JavaFunctionalInterfaceTypeID) {
+			return "L" + ((JavaFunctionalInterfaceTypeID) function).method.cls.internalName + ";";
+		} else {
+			return "L" + this.context.getFunction(function).getCls().internalName + ";";
+		}
 	}
 
 	@Override

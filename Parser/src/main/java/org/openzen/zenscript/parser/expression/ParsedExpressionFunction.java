@@ -39,6 +39,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
 		FunctionHeader definedHeader = header.compile(scope);
 		FunctionHeader header = definedHeader;
+		FunctionTypeID type = null;
 		for (TypeID hint : scope.hints) {
 			if (hint.getNormalized() instanceof FunctionTypeID) {
 				FunctionTypeID functionHint = (FunctionTypeID) hint.getNormalized();
@@ -47,6 +48,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 						return new InvalidExpression(position, hint, CompileExceptionCode.MULTIPLE_MATCHING_HINTS, "Ambiguity trying to resolve function types, can't decide for the type");
 
 					header = functionHint.header.forLambda(definedHeader);
+					type = functionHint;
 				}
 			}
 		}
@@ -94,8 +96,9 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		if (thatOtherHeader.getReturnType() == BasicTypeID.UNDETERMINED) {
 			thatOtherHeader.setReturnType(header.getReturnType());
 		}
-		TypeID functionType = scope.getTypeRegistry().getFunction(thatOtherHeader);
-		return new FunctionExpression(position, functionType, closure, header, statements);
+		if (type == null)
+			type = scope.getTypeRegistry().getFunction(thatOtherHeader);
+		return new FunctionExpression(position, type, closure, header, statements);
 	}
 
 	@Override
