@@ -84,10 +84,10 @@ public class TokenParser<T extends Token<TT>, TT extends TokenType> implements T
 
 			int state = 0;
 			StringBuilder value = new StringBuilder();
-			while (dfa.transitions[state].containsKey(reader.peek())) {
-				char c = (char) reader.next();
-				value.append(c);
-				state = dfa.transitions[state].get((int) c);
+			while (dfa.transitions[state].containsKey(Math.min(reader.peek(), NFA.UNICODE_PLACEHOLDER))) {
+				int c = reader.next();
+				value.append((char) c);
+				state = dfa.transitions[state].get(Math.min(c, NFA.UNICODE_PLACEHOLDER));
 			}
 
 			if (dfa.finals[state] != null) {
