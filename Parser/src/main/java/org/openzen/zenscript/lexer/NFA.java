@@ -9,6 +9,7 @@ import java.util.*;
  */
 public class NFA<T extends Comparable<T>> {
 	public static final int EPSILON = Integer.MIN_VALUE + 1;
+	public static final int UNICODE_PLACEHOLDER = 128;
 
 	private final NFAState<T> initial;
 	private final Class<T> tokenClass;
@@ -253,7 +254,7 @@ public class NFA<T extends Comparable<T>> {
 		} while (!stream.peek(']'));
 		if (invert) {
 			Set<Integer> result = new HashSet();
-			for (int i = 0; i <= 256; i++) {
+			for (int i = 0; i <= UNICODE_PLACEHOLDER; i++) {
 				if (!base.contains(i)) result.add(i);
 			}
 			return result;
@@ -266,7 +267,7 @@ public class NFA<T extends Comparable<T>> {
 	 * of characters. */
 	private void processCharPartial(Set<Integer> out, CharStream stream) {
 		if (stream.optional('.')) {
-			for (int i = 0; i <= 256; i++) {
+			for (int i = 0; i <= UNICODE_PLACEHOLDER; i++) {
 				out.add(i);
 			}
 		} else {
