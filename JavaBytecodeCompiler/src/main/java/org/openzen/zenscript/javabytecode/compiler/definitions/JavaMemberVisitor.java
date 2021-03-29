@@ -124,6 +124,9 @@ public class JavaMemberVisitor implements MemberVisitor<Void> {
 		for (IDefinitionMember membersOfSameType : member.definition.members) {
 			if (membersOfSameType instanceof FieldMember) {
 				final FieldMember fieldMember = ((FieldMember) membersOfSameType);
+				if(fieldMember.isStatic()){
+					continue;
+				}
 				final Expression initializer = fieldMember.initializer;
 				if (initializer != null) {
 					constructorWriter.loadObject(0);
