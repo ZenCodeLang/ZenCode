@@ -582,6 +582,19 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.iConst0();
 				javaWriter.label(end);
 				return null;
+			case ASSOC_INDEXSET: {
+				expression.target.accept(this);
+				final AssocTypeID typeId = (AssocTypeID) expression.target.type;
+				final Expression[] arguments = expression.arguments.arguments;
+				assert arguments.length == 2;
+				arguments[0].accept(this);
+				typeId.keyType.accept(typeId.keyType, this.boxingTypeVisitor);
+				arguments[1].accept(this);
+				typeId.valueType.accept(typeId.valueType, this.boxingTypeVisitor);
+				javaWriter.invokeVirtual(MAP_PUT);
+				javaWriter.pop();
+				return null;
+			}
 			default:
 				expression.target.accept(this);
 				for (Expression argument : expression.arguments.arguments) {
@@ -922,10 +935,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				}
 				break;
 			}
-			case ASSOC_INDEXSET:
-				javaWriter.invokeVirtual(MAP_PUT);
-				javaWriter.pop();
-				break;
 			case ASSOC_CONTAINS:
 				javaWriter.invokeVirtual(MAP_CONTAINS_KEY);
 				break;
