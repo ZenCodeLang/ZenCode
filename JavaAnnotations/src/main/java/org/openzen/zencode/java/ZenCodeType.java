@@ -186,4 +186,10 @@ public interface ZenCodeType {
 	@interface OptionalBoolean {
 		boolean value() default false;
 	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.PARAMETER)
+	@interface OptionalChar {
+		char value() default ' ';
+	}
 }

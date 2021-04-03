@@ -201,6 +201,13 @@ public class JavaNativeHeaderConverter {
 			} else {
 				throw new IllegalArgumentException("Cannot use boolean default values for " + type.toString());
 			}
+		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalChar.class)) {
+			ZenCodeType.OptionalChar annotation = parameter.getAnnotation(ZenCodeType.OptionalChar.class);
+			if (type == BasicTypeID.CHAR) {
+				return new ConstantCharExpression(CodePosition.NATIVE, annotation.value());
+			} else {
+				throw new IllegalArgumentException("Cannot use char default values for " + type.toString());
+			}
 		} else {
 			return null;
 		}
