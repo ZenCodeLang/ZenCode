@@ -25,6 +25,8 @@ import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ParsedExpressionVariable extends ParsedExpression {
 	public final String name;
@@ -53,7 +55,17 @@ public class ParsedExpressionVariable extends ParsedExpression {
 					return new VariantValueExpression(position, hint, option);
 			}
 
-			throw new CompileException(position, CompileExceptionCode.UNDEFINED_VARIABLE, "No such symbol: " + name);
+			StringBuilder builder = new StringBuilder("No such symbol: " + name);
+
+			Set<String> possibleImports = scope.getTypeRegistry().getDefinitions().stream().filter(definitionTypeID -> name.equals(definitionTypeID.definition.name)).map(definitionTypeID -> definitionTypeID.definition.getFullName()).collect(Collectors.toSet());
+			if(!possibleImports.isEmpty()){
+				builder.append("\nPossible imports:");
+				possibleImports.forEach(name -> {
+					builder.append("\n").append(name);
+				});
+			}
+
+			throw new CompileException(position, CompileExceptionCode.UNDEFINED_VARIABLE, builder.toString());
 		} else {
 			return result;
 		}
