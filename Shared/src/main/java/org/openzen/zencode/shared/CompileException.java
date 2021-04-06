@@ -9,7 +9,7 @@ public final class CompileException extends Exception {
 		super(position.toString() + ": [" + code.toString() + "] " + message);
 		this.position = position;
 		this.code = code;
-		this.message = message;
+		this.message = position.toString() + ": " + message;
 	}
 
 	public static CompileException internalError(String message) {
