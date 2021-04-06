@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.member.CasterMember;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
 import org.openzen.zenscript.codemodel.member.OperatorMember;
+import org.openzen.zenscript.codemodel.member.SetterMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -86,13 +87,18 @@ public class JavaNativeExpansionConverter {
 			}
 
 			final ZenCodeType.StaticExpansionMethod staticExpansionMethod = getMethodAnnotation(method, ZenCodeType.StaticExpansionMethod.class);
-			if(staticExpansionMethod != null) {
+			if (staticExpansionMethod != null) {
 				fillStaticMethod(expansion, javaClass, method, staticExpansionMethod);
 			}
 
 			final ZenCodeType.Getter getterAnnotation = getMethodAnnotation(method, ZenCodeType.Getter.class);
 			if (getterAnnotation != null) {
 				fillGetter(expansion, javaClass, method, classFromType, getterAnnotation);
+			}
+
+			final ZenCodeType.Setter setterAnnotation = getMethodAnnotation(method, ZenCodeType.Setter.class);
+			if (setterAnnotation != null) {
+				fillSetter(expansion, javaClass, method, classFromType, setterAnnotation);
 			}
 
 			final ZenCodeType.Caster casterAnnotation = getMethodAnnotation(method, ZenCodeType.Caster.class);
@@ -128,6 +134,21 @@ public class JavaNativeExpansionConverter {
 		int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
 		final String name = getterAnnotation.value().isEmpty() ? memberConverter.translateGetterName(method.getName()) : getterAnnotation.value();
 		final GetterMember member = new GetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
+
+		expansion.addMember(member);
+		typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, type));
+	}
+
+	private void fillSetter(ExpansionDefinition expansion, JavaClass javaClass, Method method, Class<?> classFromType, ZenCodeType.Setter setterAnnotation) {
+		checkExpandedType(classFromType, method);
+		Parameter[] expansionParameters = getExpansionParameters(method);
+		if (expansionParameters.length != 1) {
+			throw new IllegalArgumentException("Cannot add extension setter " + method + " as it does not have a single parameter for the set value!");
+		}
+		TypeID type = typeConverter.loadStoredType(typeConversionContext.context, expansionParameters[0]);
+		int modifiers = headerConverter.getMethodModifiers(method) ^ Modifiers.STATIC;
+		final String name = setterAnnotation.value().isEmpty() ? memberConverter.translateSetterName(method.getName()) : setterAnnotation.value();
+		final SetterMember member = new SetterMember(CodePosition.NATIVE, expansion, modifiers, name, type, null);
 
 		expansion.addMember(member);
 		typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, type));
@@ -252,7 +273,7 @@ public class JavaNativeExpansionConverter {
 	}
 
 	private void checkExpandedType(Class<?> clsType, Method method) {
-		if(method.getParameterTypes().length < 1) {
+		if (method.getParameterTypes().length < 1) {
 			throw new IllegalArgumentException("Cannot add extension method " + method + " as it does not have any parameters and is a normal expansion.");
 		}
 
