@@ -105,11 +105,16 @@ public class ParsedCallArguments {
 		}
 
 		if (candidates.isEmpty()) {
-			StringBuilder explanation = new StringBuilder();
+			StringBuilder explanation = new StringBuilder("No compatible methods found");
 			CallArguments arguments = compileCallNaive(position, scope);
-			for (FunctionHeader candidate : candidateFunctions)
-				explanation.append(candidate.explainWhyIncompatible(scope, arguments)).append("\n");
-			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, "No compatible methods found: \n" + explanation.toString());
+			if(!candidateFunctions.isEmpty()) {
+				explanation.append(":\n");
+				for (FunctionHeader candidate : candidateFunctions)
+					explanation.append(candidate.explainWhyIncompatible(scope, arguments)).append("\n");
+			}else{
+				explanation.append("!");
+			}
+			throw new CompileException(position, CompileExceptionCode.CALL_NO_VALID_METHOD, explanation.toString());
 		}
 
 		ExpressionScope innerScope = scope;
