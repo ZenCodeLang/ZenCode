@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -17,29 +18,55 @@ import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author Hoofdgebruiker
  */
 public class StatementValidator implements StatementVisitor<Void> {
+	private static final class StreamableStack<T> {
+		private final List<T> backend = new ArrayList<>();
+
+		void push(final T thing) {
+			this.backend.add(thing);
+		}
+
+		T peek() {
+			return this.backend.get(this.backend.size() - 1);
+		}
+
+		void pop() {
+			this.backend.remove(this.backend.size() - 1);
+		}
+
+		Stream<T> stream() {
+			return this.backend.stream();
+		}
+	}
+
 	private final Validator validator;
 	private final StatementScope scope;
-	private final Set<String> variables = new HashSet<>();
+	private final StreamableStack<Set<String>> variables = new StreamableStack<>();
 	public boolean constructorForwarded = false;
 	private boolean firstStatement = true;
 
 	public StatementValidator(Validator validator, StatementScope scope) {
 		this.validator = validator;
 		this.scope = scope;
+		this.variables.push(new HashSet<>()); // global scope
 	}
 
 	@Override
 	public Void visitBlock(BlockStatement block) {
+		this.variables.push(new HashSet<>());
 		for (Statement statement : block.statements) {
 			statement.accept(this);
 		}
+		this.variables.pop();
 
 		firstStatement = false;
 		return null;
@@ -92,9 +119,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 		statement.content.accept(this);
 
 		for (VarStatement var : statement.loopVariables) {
-			if (variables.contains(var.name)) {
-				validator.logError(ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME, var.position, "Duplicate variable name: " + var.name);
-			}
+			validateUniqueVariableName(var.position, var.name);
 		}
 
 		firstStatement = false;
@@ -143,7 +168,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 			if (scope.getFunctionHeader().getReturnType() == BasicTypeID.VOID) {
 				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Function return type is void; cannot return a value");
 			} else if (!statement.value.type.equals(scope.getFunctionHeader().getReturnType())) {
-				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type.toString());
+				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type);
 			}
 		} else if (scope.getFunctionHeader().getReturnType() != BasicTypeID.VOID) {
 			validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Missing return value");
@@ -179,12 +204,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	@Override
 	public Void visitTryCatch(TryCatchStatement statement) {
 		if (statement.resource != null) {
-			if (variables.contains(statement.resource.name)) {
-				validator.logError(
-						ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
-						statement.position,
-						"Duplicate variable name: " + statement.resource.name);
-			}
+			validateUniqueVariableName(statement.position, statement.resource.name);
 			if (statement.resource.initializer == null) {
 				validator.logError(
 						ValidationLogEntry.Code.TRY_CATCH_RESOURCE_REQUIRES_INITIALIZER,
@@ -204,13 +224,8 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitVar(VarStatement statement) {
-		if (variables.contains(statement.name)) {
-			validator.logError(
-					ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
-					statement.position,
-					"Duplicate variable name: " + statement.name);
-		}
-		variables.add(statement.name);
+		validateUniqueVariableName(statement.position, statement.name);
+		variables.peek().add(statement.name);
 		if (statement.initializer != null) {
 			statement.initializer.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		}
@@ -236,6 +251,15 @@ public class StatementValidator implements StatementVisitor<Void> {
 					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					condition.position,
 					"condition must be a boolean expression");
+		}
+	}
+
+	private void validateUniqueVariableName(final CodePosition pos, final String varName) {
+		if (this.variables.stream().anyMatch(it -> it.contains(varName))) {
+			validator.logError(
+					ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
+					pos,
+					"Duplicate variable name: " + varName);
 		}
 	}
 
