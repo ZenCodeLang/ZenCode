@@ -211,6 +211,9 @@ public class JavaNativeClassConverter {
 
 				createMethod.accept(cls.getMethod("values"), "values");
 				createGetter.accept(cls.getMethod("values"), "values");
+
+				createMethod.accept(cls.getMethod("valueOf"), "valueOf");
+				createMethod.accept(cls.getMethod("compareTo"), "compareTo");
 			}
 			if (Object.class.equals(cls)) {
 				createMethod.accept(cls.getMethod("toString"), "toString");
