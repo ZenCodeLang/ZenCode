@@ -77,17 +77,7 @@ public class JavaNativeGlobalConverter {
 
 			ZenCodeGlobals.Global global = method.getAnnotation(ZenCodeGlobals.Global.class);
 			String name = global.value().isEmpty() ? method.getName() : global.value();
-			MethodMember methodMember = memberConverter.asMethod(typeConversionContext.context, definition, method, new ZenCodeType.Method() {
-				@Override
-				public String value() {
-					return name;
-				}
-
-				@Override
-				public Class<? extends Annotation> annotationType() {
-					return ZenCodeType.Method.class;
-				}
-			});
+			MethodMember methodMember = memberConverter.asMethod(typeConversionContext.context, definition, method, name);
 			definition.addMember(methodMember);
 
 			typeConversionContext.compiled.setMethodInfo(methodMember, memberConverter.getMethod(jcls, method, typeConverter.loadType(typeConversionContext.context, method.getAnnotatedReturnType())));
