@@ -6,6 +6,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.annotations.NativeDefinitionAnnotation;
 import org.openzen.zenscript.codemodel.definition.*;
@@ -22,6 +23,7 @@ import org.openzen.zenscript.javashared.JavaImplementation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.util.function.BiConsumer;
 
 import static org.objectweb.asm.Type.getInternalName;
 
@@ -171,9 +173,58 @@ public class JavaNativeClassConverter {
 		fillFields(cls, definition, javaClass);
 		fillConstructor(cls, definition, javaClass, foundRegistry);
 
+		fillDefaultMethods(cls, definition, javaClass);
 		fillAnnotatedMethods(cls, definition, javaClass);
 
 		return definition;
+	}
+
+	private void fillDefaultMethods(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
+		try {
+			BiConsumer<Method, String> createGetter = (method, name) -> {
+				GetterMember member = memberConverter.asGetter(typeConversionContext.context, definition, method, name);
+				definition.addMember(member);
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.getType()));
+			};
+			BiConsumer<Method, String> createMethod = (method, name) -> {
+				MethodMember member = memberConverter.asMethod(typeConversionContext.context, definition, method, name);
+				definition.addMember(member);
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
+			};
+			BiConsumer<Method, OperatorType> createOperator = (method, operator) -> {
+				OperatorMember member = memberConverter.asOperator(typeConversionContext.context, definition, method, operator);
+				definition.addMember(member);
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
+			};
+			BiConsumer<Method, Boolean> createCaster = (method, implicit) -> {
+				CasterMember member = memberConverter.asCaster(typeConversionContext.context, definition, method, implicit);
+				definition.addMember(member);
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
+			};
+
+			if (cls.isEnum()) {
+				createMethod.accept(cls.getMethod("name"), "name");
+				createGetter.accept(cls.getMethod("name"), "name");
+
+				createMethod.accept(cls.getMethod("ordinal"), "ordinal");
+				createGetter.accept(cls.getMethod("ordinal"), "ordinal");
+
+				createMethod.accept(cls.getMethod("values"), "values");
+				createGetter.accept(cls.getMethod("values"), "values");
+			}
+			if (Object.class.equals(cls)) {
+				createMethod.accept(cls.getMethod("toString"), "toString");
+				createCaster.accept(cls.getMethod("toString"), false);
+
+				createMethod.accept(cls.getMethod("hashcode"), "hashcode");
+				createGetter.accept(cls.getMethod("hashcode"), "hashcode");
+
+				createMethod.accept(cls.getMethod("equals"), "equals");
+				createOperator.accept(cls.getMethod("equals"), OperatorType.EQUALS);
+			}
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void fillAnnotatedMethods(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
