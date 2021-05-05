@@ -18,6 +18,7 @@ import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,12 +44,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitBlock(BlockStatement block) {
-		final StatementValidator blockValidator = new StatementValidator(validator, scope, this.variables);
-		for (Statement statement : block.statements) {
-			statement.accept(blockValidator);
-		}
-		this.constructorForwarded |= blockValidator.constructorForwarded;
-
+		validateInnerBlock(block.statements);
 		firstStatement = false;
 		return null;
 	}
@@ -97,11 +93,14 @@ public class StatementValidator implements StatementVisitor<Void> {
 	@Override
 	public Void visitForeach(ForeachStatement statement) {
 		statement.list.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
-		statement.content.accept(this);
 
-		for (VarStatement var : statement.loopVariables) {
-			validateUniqueVariableName(var.position, var.name);
-		}
+		validateInnerBlock(
+				statement.content,
+				Arrays.stream(statement.loopVariables)
+						.peek(it -> validateUniqueVariableName(it.position, it.name))
+						.map(it -> it.name)
+						.toArray(String[]::new)
+		);
 
 		firstStatement = false;
 		return null;
@@ -196,7 +195,8 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 		statement.content.accept(this);
 		for (CatchClause catchClause : statement.catchClauses) {
-			catchClause.content.accept(this);
+			validateUniqueVariableName(catchClause.exceptionVariable.position, catchClause.exceptionVariable.name);
+			validateInnerBlock(catchClause.content, catchClause.exceptionVariable.name);
 		}
 
 		firstStatement = false;
@@ -233,6 +233,17 @@ public class StatementValidator implements StatementVisitor<Void> {
 					condition.position,
 					"condition must be a boolean expression");
 		}
+	}
+
+	private void validateInnerBlock(final Statement statement, final String... variablesToTrack) {
+		validateInnerBlock(new Statement[] { statement }, variablesToTrack);
+	}
+
+	private void validateInnerBlock(final Statement[] statements, final String... variablesToTrack) {
+		final StatementValidator innerValidator = new StatementValidator(this.validator, this.scope, this.variables);
+		Arrays.stream(variablesToTrack).forEach(innerValidator.variables::trackVariable);
+		Arrays.stream(statements).forEach(it -> it.accept(this));
+		this.constructorForwarded |= innerValidator.constructorForwarded;
 	}
 
 	private void validateUniqueVariableName(final CodePosition pos, final String varName) {
