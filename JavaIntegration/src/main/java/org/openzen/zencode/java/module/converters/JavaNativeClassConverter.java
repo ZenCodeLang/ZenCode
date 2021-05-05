@@ -219,11 +219,11 @@ public class JavaNativeClassConverter {
 				createMethod.accept(cls.getMethod("toString"), "toString");
 				createCaster.accept(cls.getMethod("toString"), false);
 
-				createMethod.accept(cls.getMethod("hashcode"), "hashcode");
-				createGetter.accept(cls.getMethod("hashcode"), "hashcode");
+				createMethod.accept(cls.getMethod("hashCode"), "hashCode");
+				createGetter.accept(cls.getMethod("hashCode"), "hashCode");
 
-				createMethod.accept(cls.getMethod("equals"), "equals");
-				createOperator.accept(cls.getMethod("equals"), OperatorType.EQUALS);
+				createMethod.accept(cls.getMethod("equals", Object.class), "equals");
+				createOperator.accept(cls.getMethod("equals", Object.class), OperatorType.EQUALS);
 			}
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
