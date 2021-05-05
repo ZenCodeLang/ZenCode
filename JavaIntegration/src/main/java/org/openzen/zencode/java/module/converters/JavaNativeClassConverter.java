@@ -202,6 +202,10 @@ public class JavaNativeClassConverter {
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
 			};
 
+
+			if (Enum.class.equals(cls)) {
+				createMethod.accept(cls.getMethod("compareTo", Enum.class), "compareTo");
+			}
 			if (cls.isEnum()) {
 				createMethod.accept(cls.getMethod("name"), "name");
 				createGetter.accept(cls.getMethod("name"), "name");
@@ -212,8 +216,7 @@ public class JavaNativeClassConverter {
 				createMethod.accept(cls.getMethod("values"), "values");
 				createGetter.accept(cls.getMethod("values"), "values");
 
-				createMethod.accept(cls.getMethod("valueOf"), "valueOf");
-				createMethod.accept(cls.getMethod("compareTo"), "compareTo");
+				createMethod.accept(cls.getMethod("valueOf", String.class), "valueOf");
 			}
 			if (Object.class.equals(cls)) {
 				createMethod.accept(cls.getMethod("toString"), "toString");
@@ -364,8 +367,19 @@ public class JavaNativeClassConverter {
 			definition.setSuperType(typeConverter.loadType(typeConversionContext.context, cls.getAnnotatedSuperclass()));
 		}
 
-		if (!foundRegistry && definition.getSuperType() == null && cls != Object.class && !(definition instanceof EnumDefinition)) {
-			definition.setSuperType(typeConverter.loadType(typeConversionContext.context, Object.class, false, false));
+		if (!foundRegistry && definition.getSuperType() == null && cls != Object.class) {
+			if (!(definition instanceof EnumDefinition)) {
+
+				definition.setSuperType(typeConverter.loadType(typeConversionContext.context, Object.class, false, false));
+			} else if (cls != Enum.class) {
+				TypeID typeID = typeConverter.loadType(typeConversionContext.context, cls.getSuperclass(), false, false);
+				if(!(typeID instanceof DefinitionTypeID)){
+					return;
+				}
+				DefinitionTypeID superDefTypeId = (DefinitionTypeID) typeID;
+				DefinitionTypeID definitionTypeID = typeConversionContext.registry.getForMyDefinition(definition);
+				definition.setSuperType(typeConversionContext.registry.getForDefinition(superDefTypeId.definition, definitionTypeID));
+			}
 		}
 	}
 
