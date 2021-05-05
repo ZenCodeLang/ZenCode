@@ -18,55 +18,36 @@ import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * @author Hoofdgebruiker
  */
 public class StatementValidator implements StatementVisitor<Void> {
-	private static final class StreamableStack<T> {
-		private final List<T> backend = new ArrayList<>();
-
-		void push(final T thing) {
-			this.backend.add(thing);
-		}
-
-		T peek() {
-			return this.backend.get(this.backend.size() - 1);
-		}
-
-		void pop() {
-			this.backend.remove(this.backend.size() - 1);
-		}
-
-		Stream<T> stream() {
-			return this.backend.stream();
-		}
-	}
-
 	private final Validator validator;
 	private final StatementScope scope;
-	private final StreamableStack<Set<String>> variables = new StreamableStack<>();
+	private final VariableSet variables;
 	public boolean constructorForwarded = false;
 	private boolean firstStatement = true;
 
 	public StatementValidator(Validator validator, StatementScope scope) {
+		this(validator, scope, null);
+	}
+
+	public StatementValidator(Validator validator, StatementScope scope, VariableSet variableSet) {
 		this.validator = validator;
 		this.scope = scope;
-		this.variables.push(new HashSet<>()); // global scope
+		this.variables = new VariableSet(variableSet);
 	}
 
 	@Override
 	public Void visitBlock(BlockStatement block) {
-		this.variables.push(new HashSet<>());
+		final StatementValidator blockValidator = new StatementValidator(validator, scope, this.variables);
 		for (Statement statement : block.statements) {
-			statement.accept(this);
+			statement.accept(blockValidator);
 		}
-		this.variables.pop();
+		this.constructorForwarded |= blockValidator.constructorForwarded;
 
 		firstStatement = false;
 		return null;
@@ -225,7 +206,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	@Override
 	public Void visitVar(VarStatement statement) {
 		validateUniqueVariableName(statement.position, statement.name);
-		variables.peek().add(statement.name);
+		this.variables.trackVariable(statement.name);
 		if (statement.initializer != null) {
 			statement.initializer.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		}
@@ -255,7 +236,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	}
 
 	private void validateUniqueVariableName(final CodePosition pos, final String varName) {
-		if (this.variables.stream().anyMatch(it -> it.contains(varName))) {
+		if (this.variables.hasVariable(varName)) {
 			validator.logError(
 					ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
 					pos,
@@ -312,6 +293,24 @@ public class StatementValidator implements StatementVisitor<Void> {
 		@Override
 		public AccessScope getAccessScope() {
 			return scope.getAccessScope();
+		}
+	}
+
+	private static final class VariableSet {
+		private final VariableSet parent;
+		private final Set<String> currentScope;
+
+		private VariableSet(final VariableSet parent) {
+			this.parent = parent;
+			this.currentScope = new HashSet<>();
+		}
+
+		public void trackVariable(final String variable) {
+			this.currentScope.add(variable);
+		}
+
+		public boolean hasVariable(final String variable) {
+			return this.currentScope.contains(variable) || (this.parent != null && this.parent.hasVariable(variable));
 		}
 	}
 }
