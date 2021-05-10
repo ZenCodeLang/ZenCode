@@ -18,7 +18,7 @@ public class TypeVariableContext {
 	@SuppressWarnings("rawtypes")
 	public TypeParameter get(TypeVariable variable) {
 		if (!typeVariables.containsKey(variable))
-			throw new IllegalStateException("Could not find type variable " + variable.getName());
+			throw new IllegalStateException("Could not find type variable " + variable.getName() + " on declaration: " + variable.getGenericDeclaration().toString());
 
 		return typeVariables.get(variable);
 	}
