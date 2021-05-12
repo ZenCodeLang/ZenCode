@@ -565,7 +565,7 @@ public final class TypeMembers {
 		if (extendsOrImplements(toType))
 			return new SupertypeCastExpression(position, value, toType);
 
-		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Could not cast " + toString() + " to " + toType);
+		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Could not cast " + this + " to " + toType);
 	}
 
 	public Expression castExplicit(CodePosition position, Expression value, TypeID toType, boolean optional) {
@@ -586,7 +586,7 @@ public final class TypeMembers {
 			if (caster.member.toType == toType)
 				return caster.member.cast(position, value, false);
 
-		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Cannot cast " + toString() + " to " + toType + ", even explicitly");
+		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Cannot cast " + this + " to " + toType + ", even explicitly");
 	}
 
 	public boolean hasMember(String name) {
@@ -603,6 +603,10 @@ public final class TypeMembers {
 				return new PartialMemberGroupExpression(position, scope, target, group, name.arguments, allowStatic);
 		}
 
+		if (this.type.isOptional()) {
+			return scope.getTypeMembers(this.type.withoutOptional()).getMemberExpression(position, scope, target, name, allowStatic);
+		}
+
 		return null;
 	}
 
@@ -615,6 +619,10 @@ public final class TypeMembers {
 			return new PartialVariantOptionExpression(position, scope, variantOptions.get(name.name));
 		if (enumMembers.containsKey(name.name)) {
 			return new EnumConstantExpression(position, type, enumMembers.get(name.name));
+		}
+
+		if (this.type.isOptional()) {
+			return scope.getTypeMembers(this.type.withoutOptional()).getStaticMemberExpression(position, scope, name);
 		}
 
 		return null;
