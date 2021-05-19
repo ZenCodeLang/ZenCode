@@ -60,10 +60,11 @@ public class FileResolutionContext implements TypeResolutionContext {
 					getTypeRegistry().getForDefinition(definition, name.get(0).arguments),
 					name,
 					1);
-		} else if (root.contains(name.get(0).name)) {
-			return root.getType(position, this, name);
-		} else if(root.name.equals(name.get(0).name)) {
-			return root.getType(position, this, name.subList(1, name.size()));
+		}
+
+		final TypeID typeFromRootAndParents = getTypeFromRootAndParents(root, position, name);
+		if (typeFromRootAndParents != null) {
+			return typeFromRootAndParents;
 		}
 
 		TypeID moduleType = modulePackage.getType(this, name);
@@ -71,6 +72,19 @@ public class FileResolutionContext implements TypeResolutionContext {
 			return moduleType;
 
 		return module.getType(position, name);
+	}
+
+	private TypeID getTypeFromRootAndParents(ZSPackage root, CodePosition position, List<GenericName> name) {
+		if (root.contains(name.get(0).name)) {
+			return root.getType(position, this, name);
+		} else if(root.name.equals(name.get(0).name)) {
+			return root.getType(position, this, name.subList(1, name.size()));
+		}
+
+		if(root.parent != null) {
+			return getTypeFromRootAndParents(root.parent, position, name);
+		}
+		return null;
 	}
 
 	@Override

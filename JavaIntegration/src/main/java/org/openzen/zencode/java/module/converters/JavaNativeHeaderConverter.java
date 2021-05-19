@@ -97,8 +97,8 @@ public class JavaNativeHeaderConverter {
 
 			//AnnotatedType parameterType = parameter.getAnnotatedType();
 			TypeID type = typeConverter.loadStoredType(context, parameter);
-			Expression defaultValue = getDefaultValue(parameter, type);
-			parameters[i] = new FunctionParameter(type, parameter.getName(), defaultValue, parameter.isVarArgs());
+			parameters[i] = new FunctionParameter(type, parameter.getName(), null, parameter.isVarArgs());
+			parameters[i].defaultValue = getDefaultValue(parameter, type, parameters[i]);
 		}
 		if (classParameters > 0 && classParameters == typeParameters.length) {
 			parameters = Arrays.copyOfRange(parameters, classParameters, parameters.length);
@@ -122,7 +122,7 @@ public class JavaNativeHeaderConverter {
 		return result;
 	}
 
-	public Expression getDefaultValue(Parameter parameter, TypeID type) {
+	public Expression getDefaultValue(Parameter parameter, TypeID type, FunctionParameter functionParameter) {
 		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class)) {
 			if(JavaTypeInfo.get(type).primitive){
 				throw new IllegalArgumentException("Cannot use generic Optional annotation for type (" + type.withoutOptional().toString() + ") as it is primitive! Use the corresponding primitive @Optional annotation instead (E.G. @OptionalInt, @OptionalBoolean).");
@@ -131,7 +131,7 @@ public class JavaNativeHeaderConverter {
 			if (s.isEmpty()) {
 				Expression defaultValue = type.getDefaultValue();
 				if (defaultValue == null)
-					throw new IllegalArgumentException(type.toString() + " doesn't have a default value");
+					throw new IllegalArgumentException(type + " doesn't have a default value");
 				return defaultValue;
 			}
 			try {
