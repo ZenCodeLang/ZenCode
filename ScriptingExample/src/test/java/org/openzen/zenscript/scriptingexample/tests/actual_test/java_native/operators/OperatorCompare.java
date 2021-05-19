@@ -1,6 +1,7 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.java_native.operators;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -50,6 +51,7 @@ public class OperatorCompare extends ZenCodeTest {
 
 	@ParameterizedTest(name = "{1} {0} {2} == {3}")
 	@MethodSource("getTestCases")
+	@Disabled("Test is invalid due to Object == already being an operator.")
 	public void testOperatorWorks(String type, int a, int b, boolean compareResult) {
 		ScriptBuilder.create()
 				.add("var a = createWithCompare(" + a + ");")

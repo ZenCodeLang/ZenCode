@@ -29,7 +29,6 @@ import org.openzen.zenscript.parser.expression.ParsedExpression;
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class JavaNativeHeaderConverter {
 	private final JavaNativeTypeConverter typeConverter;
@@ -140,7 +139,7 @@ public class JavaNativeHeaderConverter {
 				final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg(), packageInfo.getModule());
 				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(typeConversionContext.registry, new AnnotationDefinition[0], packageInfo.getPkg(), rootCompiling, typeConversionContext.globals);
 				final FileResolutionContext fContext = new FileResolutionContext(context, packageInfo.getPkg(), rootCompiling);
-				final FileScope fileScope = new FileScope(fContext, Collections.emptyList(), typeConversionContext.globals, member -> {
+				final FileScope fileScope = new FileScope(fContext, typeConversionContext.compiled.getExpansions(), typeConversionContext.globals, member -> {
 				});
 				final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep);
 

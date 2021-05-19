@@ -6,6 +6,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
 import org.openzen.zenscript.codemodel.annotations.NativeDefinitionAnnotation;
 import org.openzen.zenscript.codemodel.definition.*;
@@ -22,6 +23,7 @@ import org.openzen.zenscript.javashared.JavaImplementation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.util.function.BiConsumer;
 
 import static org.objectweb.asm.Type.getInternalName;
 
@@ -171,9 +173,64 @@ public class JavaNativeClassConverter {
 		fillFields(cls, definition, javaClass);
 		fillConstructor(cls, definition, javaClass, foundRegistry);
 
+		fillDefaultMethods(cls, definition, javaClass);
 		fillAnnotatedMethods(cls, definition, javaClass);
 
 		return definition;
+	}
+
+	private void fillDefaultMethods(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
+		try {
+			BiConsumer<Method, String> createGetter = (method, name) -> {
+				GetterMember member = memberConverter.asGetter(typeConversionContext.context, definition, method, name);
+				definition.addMember(member);
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.getType()));
+			};
+			BiConsumer<Method, String> createMethod = (method, name) -> {
+				MethodMember member = memberConverter.asMethod(typeConversionContext.context, definition, method, name);
+				definition.addMember(member);
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
+			};
+			BiConsumer<Method, OperatorType> createOperator = (method, operator) -> {
+				OperatorMember member = memberConverter.asOperator(typeConversionContext.context, definition, method, operator);
+				definition.addMember(member);
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
+			};
+			BiConsumer<Method, Boolean> createCaster = (method, implicit) -> {
+				CasterMember member = memberConverter.asCaster(typeConversionContext.context, definition, method, implicit);
+				definition.addMember(member);
+				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
+			};
+
+
+			if (Enum.class.equals(cls)) {
+				createMethod.accept(cls.getMethod("compareTo", Enum.class), "compareTo");
+			}
+			if (cls.isEnum()) {
+				createMethod.accept(cls.getMethod("name"), "name");
+				createGetter.accept(cls.getMethod("name"), "name");
+
+				createMethod.accept(cls.getMethod("ordinal"), "ordinal");
+				createGetter.accept(cls.getMethod("ordinal"), "ordinal");
+
+				createMethod.accept(cls.getMethod("values"), "values");
+				createGetter.accept(cls.getMethod("values"), "values");
+
+				createMethod.accept(cls.getMethod("valueOf", String.class), "valueOf");
+			}
+			if (Object.class.equals(cls)) {
+				createMethod.accept(cls.getMethod("toString"), "toString");
+				createCaster.accept(cls.getMethod("toString"), false);
+
+				createMethod.accept(cls.getMethod("hashCode"), "hashCode");
+				createGetter.accept(cls.getMethod("hashCode"), "hashCode");
+
+				createMethod.accept(cls.getMethod("equals", Object.class), "equals");
+				createOperator.accept(cls.getMethod("equals", Object.class), OperatorType.EQUALS);
+			}
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void fillAnnotatedMethods(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
@@ -183,35 +240,35 @@ public class JavaNativeClassConverter {
 
 			ZenCodeType.Method methodAnnotation = getAnnotation(method, ZenCodeType.Method.class);
 			if (methodAnnotation != null) {
-				MethodMember member = memberConverter.asMethod(typeConversionContext.context, definition, method, methodAnnotation);
+				MethodMember member = memberConverter.asMethod(typeConversionContext.context, definition, method, methodAnnotation.value());
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
 			ZenCodeType.Getter getter = getAnnotation(method, ZenCodeType.Getter.class);
 			if (getter != null) {
-				GetterMember member = memberConverter.asGetter(typeConversionContext.context, definition, method, getter);
+				GetterMember member = memberConverter.asGetter(typeConversionContext.context, definition, method, getter.value());
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.getType()));
 			}
 
 			ZenCodeType.Setter setter = getAnnotation(method, ZenCodeType.Setter.class);
 			if (setter != null) {
-				SetterMember member = memberConverter.asSetter(typeConversionContext.context, definition, method, setter);
+				SetterMember member = memberConverter.asSetter(typeConversionContext.context, definition, method, setter.value());
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, BasicTypeID.VOID));
 			}
 
 			ZenCodeType.Operator operator = getAnnotation(method, ZenCodeType.Operator.class);
 			if (operator != null) {
-				OperatorMember member = memberConverter.asOperator(typeConversionContext.context, definition, method, operator);
+				OperatorMember member = memberConverter.asOperator(typeConversionContext.context, definition, method, OperatorType.valueOf(operator.value().toString()));
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.header.getReturnType()));
 			}
 
 			ZenCodeType.Caster caster = getAnnotation(method, ZenCodeType.Caster.class);
 			if (caster != null) {
-				CasterMember member = memberConverter.asCaster(typeConversionContext.context, definition, method, caster);
+				CasterMember member = memberConverter.asCaster(typeConversionContext.context, definition, method, caster.implicit());
 				definition.addMember(member);
 				typeConversionContext.compiled.setMethodInfo(member, memberConverter.getMethod(javaClass, method, member.toType));
 			}
@@ -274,13 +331,18 @@ public class JavaNativeClassConverter {
 	private void fillFields(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
 		TypeID thisType = typeConversionContext.registry.getForMyDefinition(definition);
 		for (Field field : cls.getDeclaredFields()) {
+			String fieldName = field.getName();
 			ZenCodeType.Field annotation = getFieldAnnotation(field);
-			if (annotation == null)
+			if (annotation != null) {
+				if (!annotation.value().isEmpty()) {
+					fieldName = annotation.value();
+				}
+			} else if (!field.isEnumConstant()) {
 				continue;
+			}
 			if (!Modifier.isPublic(field.getModifiers()))
 				continue;
 
-			final String fieldName = annotation.value().isEmpty() ? field.getName() : annotation.value();
 
 			TypeID fieldType = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
 			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(field), fieldName, thisType, fieldType, typeConversionContext.registry, 0, 0, null);
@@ -305,8 +367,19 @@ public class JavaNativeClassConverter {
 			definition.setSuperType(typeConverter.loadType(typeConversionContext.context, cls.getAnnotatedSuperclass()));
 		}
 
-		if (!foundRegistry && definition.getSuperType() == null && cls != Object.class && !(definition instanceof EnumDefinition)) {
-			definition.setSuperType(typeConverter.loadType(typeConversionContext.context, Object.class, false, false));
+		if (!foundRegistry && definition.getSuperType() == null && cls != Object.class) {
+			if (!(definition instanceof EnumDefinition)) {
+
+				definition.setSuperType(typeConverter.loadType(typeConversionContext.context, Object.class, false, false));
+			} else if (cls != Enum.class) {
+				TypeID typeID = typeConverter.loadType(typeConversionContext.context, cls.getSuperclass(), false, false);
+				if(!(typeID instanceof DefinitionTypeID)){
+					return;
+				}
+				DefinitionTypeID superDefTypeId = (DefinitionTypeID) typeID;
+				DefinitionTypeID definitionTypeID = typeConversionContext.registry.getForMyDefinition(definition);
+				definition.setSuperType(typeConversionContext.registry.getForDefinition(superDefTypeId.definition, definitionTypeID));
+			}
 		}
 	}
 

@@ -19,7 +19,9 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Hoofdgebruiker
@@ -196,5 +198,13 @@ public class JavaCompiledModule {
 		this.typeParameters.putAll(compiled.typeParameters);
 		this.parameters.putAll(compiled.parameters);
 		this.variantOptions.putAll(compiled.variantOptions);
+	}
+
+	public List<ExpansionDefinition> getExpansions() {
+		return expansionClasses.keySet()
+				.stream()
+				.filter(definition -> definition instanceof ExpansionDefinition)
+				.map(definition -> (ExpansionDefinition) definition)
+				.collect(Collectors.toList());
 	}
 }

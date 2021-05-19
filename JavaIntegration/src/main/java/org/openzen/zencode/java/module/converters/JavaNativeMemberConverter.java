@@ -44,8 +44,8 @@ public class JavaNativeMemberConverter {
 				null);
 	}
 
-	public MethodMember asMethod(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Method annotation) {
-		String name = annotation != null && !annotation.value().isEmpty() ? annotation.value() : method.getName();
+	public MethodMember asMethod(TypeVariableContext context, HighLevelDefinition definition, Method method, String methodName) {
+		String name = methodName != null && !methodName.isEmpty() ? methodName : method.getName();
 		FunctionHeader header = headerConverter.getHeader(context, method);
 		return new MethodMember(
 				CodePosition.NATIVE,
@@ -56,7 +56,7 @@ public class JavaNativeMemberConverter {
 				null);
 	}
 
-	public OperatorMember asOperator(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Operator annotation) {
+	public OperatorMember asOperator(TypeVariableContext context, HighLevelDefinition definition, Method method, OperatorType operatorType) {
 		FunctionHeader header = headerConverter.getHeader(context, method);
 		if (Modifier.isStatic(method.getModifiers()))
 			throw new IllegalArgumentException("operator method \"" + method.toString() + "\"cannot be static");
@@ -68,38 +68,37 @@ public class JavaNativeMemberConverter {
 				CodePosition.NATIVE,
 				definition,
 				headerConverter.getMethodModifiers(method),
-				OperatorType.valueOf(annotation.value().toString()),
+				operatorType,
 				header,
 				null);
 	}
 
-	public GetterMember asGetter(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Getter annotation) {
+	public GetterMember asGetter(TypeVariableContext context, HighLevelDefinition definition, Method method, String getterName) {
 		TypeID type = typeConverter.loadStoredType(context, method.getAnnotatedReturnType());
 		String name = null;
-		if (annotation != null && !annotation.value().isEmpty())
-			name = annotation.value();
+		if (getterName != null && !getterName.isEmpty())
+			name = getterName;
 		if (name == null)
 			name = translateGetterName(method.getName());
 
 		return new GetterMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(method), name, type, null);
 	}
 
-	public SetterMember asSetter(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Setter annotation) {
+	public SetterMember asSetter(TypeVariableContext context, HighLevelDefinition definition, Method method, String setterName) {
 		if (method.getParameterCount() != 1)
 			throw new IllegalArgumentException("Illegal setter: \"" + method.toString() + "\"must have exactly 1 parameter");
 
 		TypeID type = typeConverter.loadStoredType(context, method.getAnnotatedParameterTypes()[0]);
 		String name = null;
-		if (annotation != null && !annotation.value().isEmpty())
-			name = annotation.value();
+		if (setterName != null && !setterName.isEmpty())
+			name = setterName;
 		if (name == null)
 			name = translateSetterName(method.getName());
 
 		return new SetterMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(method), name, type, null);
 	}
 
-	public CasterMember asCaster(TypeVariableContext context, HighLevelDefinition definition, Method method, ZenCodeType.Caster annotation) {
-		boolean implicit = annotation != null && annotation.implicit();
+	public CasterMember asCaster(TypeVariableContext context, HighLevelDefinition definition, Method method, boolean implicit) {
 		int modifiers = Modifiers.PUBLIC;
 		if (implicit)
 			modifiers |= Modifiers.IMPLICIT;
