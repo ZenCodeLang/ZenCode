@@ -40,6 +40,10 @@ public class FunctionParameter extends Taggable {
 		this.variadic = variadic;
 	}
 
+	public FunctionParameter(TypeID type, String name, boolean variadic) {
+		this(type, name, null, variadic);
+	}
+
 	public FunctionParameter normalize(GlobalTypeRegistry registry) {
 		FunctionParameter result = new FunctionParameter(type.getNormalized(), name, defaultValue, variadic);
 		result.annotations = this.annotations;

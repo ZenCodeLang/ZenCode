@@ -96,7 +96,7 @@ public class JavaNativeHeaderConverter {
 
 			//AnnotatedType parameterType = parameter.getAnnotatedType();
 			TypeID type = typeConverter.loadStoredType(context, parameter);
-			parameters[i] = new FunctionParameter(type, parameter.getName(), null, parameter.isVarArgs());
+			parameters[i] = new FunctionParameter(type, parameter.getName(), parameter.isVarArgs());
 			parameters[i].defaultValue = getDefaultValue(parameter, type, parameters[i]);
 		}
 		if (classParameters > 0 && classParameters == typeParameters.length) {
