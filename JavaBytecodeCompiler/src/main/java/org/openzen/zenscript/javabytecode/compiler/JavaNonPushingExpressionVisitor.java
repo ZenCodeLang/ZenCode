@@ -573,7 +573,7 @@ public class JavaNonPushingExpressionVisitor implements ExpressionVisitor<Void> 
 		}
 
 		expression.value.accept(original);
-		original.checkAndExecuteMethodInfo(expression.setter, expression.type, expression);
+		original.checkAndExecuteMethodInfo(expression.setter, BasicTypeID.VOID, expression);
 		return null;
 	}
 
