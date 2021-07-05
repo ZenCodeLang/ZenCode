@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.validator.visitors;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
@@ -17,6 +18,7 @@ import org.openzen.zenscript.validator.Validator;
 import org.openzen.zenscript.validator.analysis.ExpressionScope;
 import org.openzen.zenscript.validator.analysis.StatementScope;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,21 +28,23 @@ import java.util.Set;
 public class StatementValidator implements StatementVisitor<Void> {
 	private final Validator validator;
 	private final StatementScope scope;
-	private final Set<String> variables = new HashSet<>();
+	private final VariableSet variables;
 	public boolean constructorForwarded = false;
 	private boolean firstStatement = true;
 
 	public StatementValidator(Validator validator, StatementScope scope) {
+		this(validator, scope, null);
+	}
+
+	public StatementValidator(Validator validator, StatementScope scope, VariableSet variableSet) {
 		this.validator = validator;
 		this.scope = scope;
+		this.variables = new VariableSet(variableSet);
 	}
 
 	@Override
 	public Void visitBlock(BlockStatement block) {
-		for (Statement statement : block.statements) {
-			statement.accept(this);
-		}
-
+		validateInnerBlock(block.statements);
 		firstStatement = false;
 		return null;
 	}
@@ -89,13 +93,14 @@ public class StatementValidator implements StatementVisitor<Void> {
 	@Override
 	public Void visitForeach(ForeachStatement statement) {
 		statement.list.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
-		statement.content.accept(this);
 
-		for (VarStatement var : statement.loopVariables) {
-			if (variables.contains(var.name)) {
-				validator.logError(ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME, var.position, "Duplicate variable name: " + var.name);
-			}
-		}
+		validateInnerBlock(
+				statement.content,
+				Arrays.stream(statement.loopVariables)
+						.peek(it -> validateUniqueVariableName(it.position, it.name))
+						.map(it -> it.name)
+						.toArray(String[]::new)
+		);
 
 		firstStatement = false;
 		return null;
@@ -143,7 +148,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 			if (scope.getFunctionHeader().getReturnType() == BasicTypeID.VOID) {
 				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Function return type is void; cannot return a value");
 			} else if (!statement.value.type.equals(scope.getFunctionHeader().getReturnType())) {
-				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type.toString());
+				validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Invalid return type: " + statement.value.type);
 			}
 		} else if (scope.getFunctionHeader().getReturnType() != BasicTypeID.VOID) {
 			validator.logError(ValidationLogEntry.Code.INVALID_RETURN_TYPE, statement.position, "Missing return value");
@@ -179,12 +184,7 @@ public class StatementValidator implements StatementVisitor<Void> {
 	@Override
 	public Void visitTryCatch(TryCatchStatement statement) {
 		if (statement.resource != null) {
-			if (variables.contains(statement.resource.name)) {
-				validator.logError(
-						ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
-						statement.position,
-						"Duplicate variable name: " + statement.resource.name);
-			}
+			validateUniqueVariableName(statement.position, statement.resource.name);
 			if (statement.resource.initializer == null) {
 				validator.logError(
 						ValidationLogEntry.Code.TRY_CATCH_RESOURCE_REQUIRES_INITIALIZER,
@@ -195,7 +195,8 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 		statement.content.accept(this);
 		for (CatchClause catchClause : statement.catchClauses) {
-			catchClause.content.accept(this);
+			validateUniqueVariableName(catchClause.exceptionVariable.position, catchClause.exceptionVariable.name);
+			validateInnerBlock(catchClause.content, catchClause.exceptionVariable.name);
 		}
 
 		firstStatement = false;
@@ -204,13 +205,8 @@ public class StatementValidator implements StatementVisitor<Void> {
 
 	@Override
 	public Void visitVar(VarStatement statement) {
-		if (variables.contains(statement.name)) {
-			validator.logError(
-					ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
-					statement.position,
-					"Duplicate variable name: " + statement.name);
-		}
-		variables.add(statement.name);
+		validateUniqueVariableName(statement.position, statement.name);
+		this.variables.trackVariable(statement.name);
 		if (statement.initializer != null) {
 			statement.initializer.accept(new ExpressionValidator(validator, new StatementExpressionScope()));
 		}
@@ -236,6 +232,26 @@ public class StatementValidator implements StatementVisitor<Void> {
 					ValidationLogEntry.Code.INVALID_CONDITION_TYPE,
 					condition.position,
 					"condition must be a boolean expression");
+		}
+	}
+
+	private void validateInnerBlock(final Statement statement, final String... variablesToTrack) {
+		validateInnerBlock(new Statement[] { statement }, variablesToTrack);
+	}
+
+	private void validateInnerBlock(final Statement[] statements, final String... variablesToTrack) {
+		final StatementValidator innerValidator = new StatementValidator(this.validator, this.scope, this.variables);
+		Arrays.stream(variablesToTrack).forEach(innerValidator.variables::trackVariable);
+		Arrays.stream(statements).forEach(it -> it.accept(this));
+		this.constructorForwarded |= innerValidator.constructorForwarded;
+	}
+
+	private void validateUniqueVariableName(final CodePosition pos, final String varName) {
+		if (this.variables.hasVariable(varName)) {
+			validator.logError(
+					ValidationLogEntry.Code.DUPLICATE_VARIABLE_NAME,
+					pos,
+					"Duplicate variable name: " + varName);
 		}
 	}
 
@@ -288,6 +304,24 @@ public class StatementValidator implements StatementVisitor<Void> {
 		@Override
 		public AccessScope getAccessScope() {
 			return scope.getAccessScope();
+		}
+	}
+
+	private static final class VariableSet {
+		private final VariableSet parent;
+		private final Set<String> currentScope;
+
+		private VariableSet(final VariableSet parent) {
+			this.parent = parent;
+			this.currentScope = new HashSet<>();
+		}
+
+		public void trackVariable(final String variable) {
+			this.currentScope.add(variable);
+		}
+
+		public boolean hasVariable(final String variable) {
+			return this.currentScope.contains(variable) || (this.parent != null && this.parent.hasVariable(variable));
 		}
 	}
 }
