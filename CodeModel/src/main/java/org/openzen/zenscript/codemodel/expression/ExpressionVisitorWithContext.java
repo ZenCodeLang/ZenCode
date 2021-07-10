@@ -129,6 +129,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitSupertypeCast(C context, SupertypeCastExpression expression);
 
+	R visitSubtypeCast(C context, SubtypeCastExpression expression);
+
 	R visitThis(C context, ThisExpression expression);
 
 	R visitThrow(C context, ThrowExpression expression);

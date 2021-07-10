@@ -667,6 +667,12 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	@Override
+	public Void visitSubtypeCast(SubtypeCastExpression expression) {
+		expression.value.accept(this);
+		return null;
+	}
+
+	@Override
 	public Void visitThis(ThisExpression expression) {
 		if (!scope.hasThis()) {
 			validator.logError(ValidationLogEntry.Code.THIS_IN_STATIC_SCOPE, expression.position, "Cannot use this in a static scope");

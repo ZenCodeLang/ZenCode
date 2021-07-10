@@ -133,6 +133,8 @@ public interface ExpressionVisitor<T> {
 
 	T visitSupertypeCast(SupertypeCastExpression expression);
 
+	T visitSubtypeCast(SubtypeCastExpression expression);
+
 	T visitThis(ThisExpression expression);
 
 	T visitThrow(ThrowExpression expression);

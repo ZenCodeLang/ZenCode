@@ -574,8 +574,6 @@ public final class TypeMembers {
 			return castImplicit(position, value, toType, false);
 		if (type.canCastExplicitTo(toType))
 			return type.castExplicitTo(position, value, toType);
-		if (toType.canCastExplicitFrom(type))
-			return toType.castImplicitFrom(position, value);
 
 		final TypeMembers typeMembers = cache.get(type);
 		if (this.type != typeMembers.type && typeMembers.canCast(toType)) {
@@ -585,6 +583,13 @@ public final class TypeMembers {
 		for (TypeMember<CasterMemberRef> caster : casters)
 			if (caster.member.toType == toType)
 				return caster.member.cast(position, value, false);
+
+
+		if (toType.canCastImplicitFrom(type))
+			return toType.castImplicitFrom(position, value);
+
+
+
 
 		return new InvalidExpression(position, toType, CompileExceptionCode.INVALID_CAST, "Cannot cast " + this + " to " + toType + ", even explicitly");
 	}

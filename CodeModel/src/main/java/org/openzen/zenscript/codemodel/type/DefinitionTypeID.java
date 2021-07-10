@@ -1,5 +1,6 @@
 package org.openzen.zenscript.codemodel.type;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -7,9 +8,16 @@ import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.expression.CastExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.SubtypeCastExpression;
+import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class DefinitionTypeID implements TypeID {
 	public final HighLevelDefinition definition;
@@ -161,6 +169,12 @@ public class DefinitionTypeID implements TypeID {
 	}
 
 	@Override
+	public boolean isDefinition(HighLevelDefinition definition) {
+
+		return this.definition.equals(definition);
+	}
+
+	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		if (hasTypeParameters()) {
 			for (TypeID typeArgument : typeArguments)
@@ -233,4 +247,50 @@ public class DefinitionTypeID implements TypeID {
 		HighLevelDefinition type = definition.getInnerType(name.name);
 		return registry.getForDefinition(type, name.arguments, this);
 	}
+
+	@Override
+	public boolean canCastImplicitFrom(TypeID other) {
+		if (!(other instanceof DefinitionTypeID)) {
+			return false;
+		}
+
+		if(this.definition.isSubclassOf(((DefinitionTypeID) other).definition)){
+			return true;
+		}
+
+		HashSet<DefinitionTypeID> superTypes = new HashSet<>();
+		collectSuperTypes(superTypes, this);
+
+		Set<ImplementationMember> members = new HashSet<>();
+		Stream.concat(superTypes.stream()
+				.flatMap(type -> type.definition.members.stream()), this.definition.members.stream())
+				.forEach(member -> collectImplementationMembers(members, member));
+
+		return members.stream().anyMatch(member -> member.type == other);
+	}
+
+	private void collectSuperTypes(Set<DefinitionTypeID> superTypes, DefinitionTypeID type){
+		TypeID superType = type.definition.getSuperType();
+		if(superType instanceof DefinitionTypeID) {
+			DefinitionTypeID definitionSuperType = (DefinitionTypeID) superType;
+			superTypes.add(definitionSuperType);
+			collectSuperTypes(superTypes, definitionSuperType);
+		}
+	}
+
+	private void collectImplementationMembers(Set<ImplementationMember> members, IDefinitionMember member) {
+		if (member instanceof ImplementationMember) {
+			ImplementationMember implMember = (ImplementationMember) member;
+			members.add(implMember);
+			if(implMember.type instanceof DefinitionTypeID){
+				((DefinitionTypeID) implMember.type).definition.members.forEach(innerMember -> collectImplementationMembers(members,innerMember));
+			}
+		}
+	}
+
+	@Override
+	public Expression castImplicitFrom(CodePosition position, Expression value) {
+		return new SubtypeCastExpression(position, value, this);
+	}
+
 }
