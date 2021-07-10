@@ -29,6 +29,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("ALL")
 public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativeTranslator<Void> {
 	public static final JavaMethod OBJECT_HASHCODE = JavaMethod.getNativeVirtual(JavaClass.OBJECT, "hashCode", "()I");
 	public static final JavaMethod OBJECT_EQUALS = JavaMethod.getNativeVirtual(JavaClass.OBJECT, "equals", "(Ljava/lang/Object)Z");
@@ -3286,6 +3287,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	@Override
 	public Void visitSupertypeCast(SupertypeCastExpression expression) {
 		expression.value.accept(this);
+		return null; // nothing to do
+	}
+
+	@Override
+	public Void visitSubtypeCast(SubtypeCastExpression expression) {
+		expression.value.accept(this);
+		javaWriter.checkCast(context.getType(expression.type));
 		return null; // nothing to do
 	}
 

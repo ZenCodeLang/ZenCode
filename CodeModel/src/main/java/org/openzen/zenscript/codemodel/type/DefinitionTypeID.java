@@ -1,5 +1,6 @@
 package org.openzen.zenscript.codemodel.type;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -7,6 +8,10 @@ import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.expression.CastExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.SubtypeCastExpression;
+import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 import java.util.*;
@@ -239,4 +244,18 @@ public class DefinitionTypeID implements TypeID {
 		HighLevelDefinition type = definition.getInnerType(name.name);
 		return registry.getForDefinition(type, name.arguments, this);
 	}
+
+	@Override
+	public boolean canCastImplicitFrom(TypeID other) {
+		if (!(other instanceof DefinitionTypeID)) {
+			return false;
+		}
+		return this.definition.isSubclassOf(((DefinitionTypeID) other).definition);
+	}
+
+	@Override
+	public Expression castImplicitFrom(CodePosition position, Expression value) {
+		return new SubtypeCastExpression(position, value, this);
+	}
+
 }
