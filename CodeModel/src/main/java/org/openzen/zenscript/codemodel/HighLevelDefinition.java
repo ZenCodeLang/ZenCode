@@ -57,9 +57,12 @@ public abstract class HighLevelDefinition extends Taggable {
 	}
 
 	public boolean isSubclassOf(HighLevelDefinition other) {
+		if(superType == null){
+			return false;
+		}
 		if (superType.isDefinition(other))
 			return true;
-		if (superType == null || !(superType instanceof DefinitionTypeID))
+		if (!(superType instanceof DefinitionTypeID))
 			return false;
 
 		DefinitionTypeID superDefinition = (DefinitionTypeID) superType;
