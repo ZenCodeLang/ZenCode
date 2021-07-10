@@ -161,6 +161,12 @@ public class DefinitionTypeID implements TypeID {
 	}
 
 	@Override
+	public boolean isDefinition(HighLevelDefinition definition) {
+
+		return this.definition.equals(definition);
+	}
+
+	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		if (hasTypeParameters()) {
 			for (TypeID typeArgument : typeArguments)
