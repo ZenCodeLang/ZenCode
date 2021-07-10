@@ -602,7 +602,10 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	@Override
 	public ExpressionString visitSubtypeCast(SubtypeCastExpression expression) {
 
-		return expression.value.accept(this);
+		StringBuilder result = new StringBuilder(expression.value.accept(this).value);
+		result.append(" as ");
+		result.append(typeFormatter.format(expression.type));
+		return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
 	}
 
 	@Override
