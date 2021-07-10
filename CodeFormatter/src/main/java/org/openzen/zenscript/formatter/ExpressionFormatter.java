@@ -467,7 +467,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(expression.value.accept(this).value);
 		result.append(" is ");
-		result.append(typeFormatter.format(expression.type));
+		result.append(typeFormatter.format(expression.isType));
 		return new ExpressionString(result.toString(), ZenScriptOperator.IS);
 	}
 
