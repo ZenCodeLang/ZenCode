@@ -144,9 +144,17 @@ public abstract class Expression implements IPartialExpression {
 	public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) throws CompileException {
 		TypeMembers members = scope.getTypeMembers(type);
 		IPartialExpression result = members.getMemberExpression(position, scope, this, name, false);
-		if (result == null)
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "No such member: " + name.name);
-		return result;
+
+		if(result != null){
+			return result;
+		}
+
+		if(members.hasOperator(OperatorType.MEMBERGETTER)){
+			TypeMemberGroup memberGetter = members.getOrCreateGroup(OperatorType.MEMBERGETTER);
+			return memberGetter.call(position, scope, this, new CallArguments(new ConstantStringExpression(position, name.name)), false);
+		}
+
+		throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "No such member: " + name.name);
 	}
 
 	@Override

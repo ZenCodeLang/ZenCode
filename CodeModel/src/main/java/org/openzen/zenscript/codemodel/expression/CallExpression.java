@@ -1,9 +1,13 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public class CallExpression extends Expression {
 	public final Expression target;
@@ -64,5 +68,16 @@ public class CallExpression extends Expression {
 				member,
 				instancedHeader.normalize(scope.getTypeRegistry()),
 				arguments.normalize(position, scope, instancedHeader));
+	}
+
+	@Override
+	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
+		TypeMembers typeMembers = scope.getTypeMembers(target.type);
+		if(typeMembers.hasOperator(OperatorType.MEMBERSETTER)){
+			TypeMemberGroup setter = typeMembers.getOrCreateGroup(OperatorType.MEMBERSETTER);
+			return setter.call(position, scope, target, new CallArguments(this.arguments.arguments[0], value), false);
+
+		}
+		return super.assign(position, scope, value);
 	}
 }
