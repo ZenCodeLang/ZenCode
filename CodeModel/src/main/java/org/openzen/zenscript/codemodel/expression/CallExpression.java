@@ -69,15 +69,4 @@ public class CallExpression extends Expression {
 				instancedHeader.normalize(scope.getTypeRegistry()),
 				arguments.normalize(position, scope, instancedHeader));
 	}
-
-	@Override
-	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
-		TypeMembers typeMembers = scope.getTypeMembers(target.type);
-		if(typeMembers.hasOperator(OperatorType.MEMBERSETTER)){
-			TypeMemberGroup setter = typeMembers.getOrCreateGroup(OperatorType.MEMBERSETTER);
-			return setter.call(position, scope, target, new CallArguments(this.arguments.arguments[0], value), false);
-
-		}
-		return super.assign(position, scope, value);
-	}
 }
