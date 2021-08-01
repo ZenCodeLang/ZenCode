@@ -383,6 +383,11 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	}
 
 	@Override
+	public Void visitSubtypeCast(SubtypeCastExpression expression) {
+		throw new UnsupportedOperationException("Invalid lvalue: cast");
+	}
+
+	@Override
 	public Void visitThis(ThisExpression expression) {
 		throw new UnsupportedOperationException("Invalid lvalue: this");
 	}

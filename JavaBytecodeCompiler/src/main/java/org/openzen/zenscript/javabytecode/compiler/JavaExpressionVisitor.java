@@ -3290,6 +3290,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	@Override
+	public Void visitSubtypeCast(SubtypeCastExpression expression) {
+		expression.value.accept(this);
+		javaWriter.checkCast(context.getType(expression.type));
+		return null; // nothing to do
+	}
+
+	@Override
 	public Void visitThis(ThisExpression expression) {
 		javaWriter.load(context.getType(expression.type), 0);
 		return null;

@@ -600,6 +600,15 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 	}
 
 	@Override
+	public ExpressionString visitSubtypeCast(SubtypeCastExpression expression) {
+
+		StringBuilder result = new StringBuilder(expression.value.accept(this).value);
+		result.append(" as ");
+		result.append(typeFormatter.format(expression.type));
+		return new ExpressionString(result.toString(), ZenScriptOperator.CAST);
+	}
+
+	@Override
 	public ExpressionString visitThis(ThisExpression expression) {
 		return new ExpressionString("this", ZenScriptOperator.PRIMARY);
 	}

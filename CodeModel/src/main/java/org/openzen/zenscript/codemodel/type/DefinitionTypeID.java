@@ -1,5 +1,6 @@
 package org.openzen.zenscript.codemodel.type;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
@@ -7,9 +8,14 @@ import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.SubtypeCastExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class DefinitionTypeID implements TypeID {
 	public final HighLevelDefinition definition;
@@ -161,6 +167,12 @@ public class DefinitionTypeID implements TypeID {
 	}
 
 	@Override
+	public boolean isDefinition(HighLevelDefinition definition) {
+
+		return this.definition.equals(definition);
+	}
+
+	@Override
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
 		if (hasTypeParameters()) {
 			for (TypeID typeArgument : typeArguments)
@@ -233,4 +245,53 @@ public class DefinitionTypeID implements TypeID {
 		HighLevelDefinition type = definition.getInnerType(name.name);
 		return registry.getForDefinition(type, name.arguments, this);
 	}
+
+	@Override
+	public boolean canCastImplicitFrom(TypeID other) {
+		if (!(other instanceof DefinitionTypeID)) {
+			return false;
+		}
+
+		if(this.definition.isSubclassOf(((DefinitionTypeID) other).definition)){
+			return true;
+		}
+
+		Predicate<IDefinitionMember> search = member -> member instanceof ImplementationMember && ((ImplementationMember) member).type == other;
+		return searchSuperTypes(this, search) || searchImplementationMembers(this, search);
+	}
+
+	private boolean searchSuperTypes(DefinitionTypeID type, Predicate<IDefinitionMember> predicate) {
+		TypeID superType = type.definition.getSuperType();
+		if (superType instanceof DefinitionTypeID) {
+			DefinitionTypeID definitionSuperType = (DefinitionTypeID) superType;
+			boolean found = definitionSuperType.definition.members.stream().anyMatch(predicate);
+
+			return found || searchSuperTypes(definitionSuperType, predicate);
+		}
+		return false;
+	}
+
+	private boolean searchImplementationMembers(DefinitionTypeID type, Predicate<IDefinitionMember> predicate) {
+		for (IDefinitionMember member : type.definition.members) {
+			if (member instanceof ImplementationMember) {
+				ImplementationMember implMember = (ImplementationMember) member;
+				if (predicate.test(implMember)) {
+					return true;
+				}
+				if (implMember.type instanceof DefinitionTypeID) {
+					if (searchImplementationMembers((DefinitionTypeID) implMember.type, predicate)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public Expression castImplicitFrom(CodePosition position, Expression value) {
+		return new SubtypeCastExpression(position, value, this);
+	}
+
 }
