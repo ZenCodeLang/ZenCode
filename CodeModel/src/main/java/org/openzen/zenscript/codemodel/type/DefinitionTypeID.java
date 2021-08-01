@@ -8,16 +8,14 @@ import org.openzen.zenscript.codemodel.definition.AliasDefinition;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
-import org.openzen.zenscript.codemodel.expression.CastExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.SubtypeCastExpression;
-import org.openzen.zenscript.codemodel.expression.SupertypeCastExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 
 import java.util.*;
-import java.util.stream.Stream;
+import java.util.function.Predicate;
 
 public class DefinitionTypeID implements TypeID {
 	public final HighLevelDefinition definition;
@@ -258,34 +256,37 @@ public class DefinitionTypeID implements TypeID {
 			return true;
 		}
 
-		HashSet<DefinitionTypeID> superTypes = new HashSet<>();
-		collectSuperTypes(superTypes, this);
-
-		Set<ImplementationMember> members = new HashSet<>();
-		Stream.concat(superTypes.stream()
-				.flatMap(type -> type.definition.members.stream()), this.definition.members.stream())
-				.forEach(member -> collectImplementationMembers(members, member));
-
-		return members.stream().anyMatch(member -> member.type == other);
+		Predicate<IDefinitionMember> search = member -> member instanceof ImplementationMember && ((ImplementationMember) member).type == other;
+		return searchSuperTypes(this, search) || searchImplementationMembers(this, search);
 	}
 
-	private void collectSuperTypes(Set<DefinitionTypeID> superTypes, DefinitionTypeID type){
+	private boolean searchSuperTypes(DefinitionTypeID type, Predicate<IDefinitionMember> predicate) {
 		TypeID superType = type.definition.getSuperType();
-		if(superType instanceof DefinitionTypeID) {
+		if (superType instanceof DefinitionTypeID) {
 			DefinitionTypeID definitionSuperType = (DefinitionTypeID) superType;
-			superTypes.add(definitionSuperType);
-			collectSuperTypes(superTypes, definitionSuperType);
+			boolean found = definitionSuperType.definition.members.stream().anyMatch(predicate);
+
+			return found || searchSuperTypes(definitionSuperType, predicate);
 		}
+		return false;
 	}
 
-	private void collectImplementationMembers(Set<ImplementationMember> members, IDefinitionMember member) {
-		if (member instanceof ImplementationMember) {
-			ImplementationMember implMember = (ImplementationMember) member;
-			members.add(implMember);
-			if(implMember.type instanceof DefinitionTypeID){
-				((DefinitionTypeID) implMember.type).definition.members.forEach(innerMember -> collectImplementationMembers(members,innerMember));
+	private boolean searchImplementationMembers(DefinitionTypeID type, Predicate<IDefinitionMember> predicate) {
+		for (IDefinitionMember member : type.definition.members) {
+			if (member instanceof ImplementationMember) {
+				ImplementationMember implMember = (ImplementationMember) member;
+				if (predicate.test(implMember)) {
+					return true;
+				}
+				if (implMember.type instanceof DefinitionTypeID) {
+					if (searchImplementationMembers((DefinitionTypeID) implMember.type, predicate)) {
+						return true;
+					}
+				}
 			}
 		}
+
+		return false;
 	}
 
 	@Override
