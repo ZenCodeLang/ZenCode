@@ -4,9 +4,13 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
+import org.openzen.zenscript.codemodel.partial.PartialDynamicMemberExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 import java.util.List;
@@ -34,8 +38,13 @@ public class ParsedExpressionMember extends ParsedExpression {
 				scope.hints,
 				new GenericName(this.member, typeArguments));
 		if (member == null) {
-			//TypeMembers members = scope.getTypeMembers(cValue.eval().type);
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Member not found: " + this.member);
+			Expression cValueExpression = cValue.eval();
+			TypeMembers members = scope.getTypeMembers(cValueExpression.type);
+			if (members.hasOperator(OperatorType.MEMBERGETTER) || members.hasOperator(OperatorType.MEMBERSETTER)) {
+				return new PartialDynamicMemberExpression(position, cValueExpression, members, this.member, scope);
+			} else {
+				throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Member not found: " + this.member);
+			}
 		}
 
 		return member;
