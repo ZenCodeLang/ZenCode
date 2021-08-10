@@ -84,6 +84,13 @@ public abstract class JavaContext {
 					new TypeParameter[]{t},
 					new FunctionHeader(BasicTypeID.BOOL, registry.getGeneric(t)),
 					"test"));
+
+			functions.put("TIntToVoid", new JavaSynthesizedFunction(
+					new JavaClass("java.util.function", "ObjIntConsumer", JavaClass.Kind.INTERFACE),
+					new TypeParameter[]{t},
+					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t), BasicTypeID.INT),
+					"accept"));
+
 		}
 	}
 
