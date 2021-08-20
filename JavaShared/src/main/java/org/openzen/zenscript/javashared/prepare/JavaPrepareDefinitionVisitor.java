@@ -64,7 +64,8 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			list.addMethod("constructor", JavaMethod.getNativeConstructor(arrayList, "()V"));
 			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("insert", "add", "(ILjava/lang/Object;)V");
-			list.addInstanceMethod("remove", "remove", "(Ljava/lang/Object;)Z");
+			list.addInstanceMethod("remove", "remove", "(I)Ljava/lang/Object;");
+			list.addInstanceMethod("removeValue", "remove", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("indexOf", "indexOf", "(Ljava/lang/Object;)I");
 			list.addInstanceMethod("lastIndexOf", "lastIndexOf", "(Ljava/lang/Object;)I");
 			list.addInstanceMethod("getAtIndex", "get", "(I)Ljava/lang/Object;");
