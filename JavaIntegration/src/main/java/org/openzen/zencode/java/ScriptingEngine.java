@@ -42,7 +42,7 @@ import java.util.Map;
 public class ScriptingEngine {
 	public final ScriptingEngineLogger logger;
 	private final ZSPackage root = ZSPackage.createRoot();
-	private final ZSPackage stdlib = new ZSPackage(root, "stdlib");
+	private final ZSPackage stdlib = root.getOrCreatePackage("stdlib");
 	public final GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
 	private final ModuleSpace space;
 	private final List<JavaNativeModule> nativeModules = new ArrayList<>();
@@ -50,21 +50,26 @@ public class ScriptingEngine {
 	public boolean debug = false;
 
 	public ScriptingEngine() {
-		this(new ScriptingEngineStreamLogger());
-	}
-
-	public ScriptingEngine(ScriptingEngineLogger logger) {
-		this.space = new ModuleSpace(registry, new ArrayList<>());
-		this.logger = logger;
-		try {
-			ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.jar"));
-			SemanticModule stdlibModule = stdlibs.loadModule(space, "stdlib", null, SemanticModule.NONE, FunctionParameter.NONE, stdlib, logger);
-			stdlibModule = Validator.validate(stdlibModule, logger);
-			space.addModule("stdlib", stdlibModule);
-			registerCompiled(stdlibModule);
+        this(new ScriptingEngineStreamLogger());
+    }
+    
+    public ScriptingEngine(ScriptingEngineLogger logger) {
+        this.space = new ModuleSpace(registry, new ArrayList<>());
+        this.logger = logger;
+        try {
+            ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.jar"));
+			registerLibFromStdLibs(logger, stdlibs, "stdlib", stdlib);
+			registerLibFromStdLibs(logger, stdlibs, "math", root.getOrCreatePackage("math"));
 		} catch (CompileException | ParseException | IOException ex) {
-			throw new RuntimeException(ex);
-		}
+            throw new RuntimeException(ex);
+        }
+    }
+
+	private void registerLibFromStdLibs(ScriptingEngineLogger logger, ZippedPackage stdlibs, String name, ZSPackage zsPackage) throws ParseException, CompileException {
+		SemanticModule stdlibModule = stdlibs.loadModule(space, name, null, SemanticModule.NONE, FunctionParameter.NONE, zsPackage, logger);
+		stdlibModule = Validator.validate(stdlibModule, logger);
+		space.addModule(name, stdlibModule);
+		registerCompiled(stdlibModule);
 	}
 
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {

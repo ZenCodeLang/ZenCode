@@ -221,6 +221,26 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("writeSlice", "write", "([BII)V");
 			nativeClasses.put("io::OutputStream", cls);
 		}
+
+		 {
+			 final JavaClass math = new JavaClass("java.lang", "Math", JavaClass.Kind.CLASS);
+			 final JavaNativeClass mathFunctions = new JavaNativeClass(math, true);
+
+			 for (String doubleToDoubleMethodName : new String[]{"sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "toRadians", "toDegrees", "exp", "log", "log10", "sqrt", "cbrt", "ceil", "floor", "abs", "signum"}) {
+				 mathFunctions.addMethod(doubleToDoubleMethodName, JavaMethod.getNativeStatic(math, doubleToDoubleMethodName, "(D)D"));
+			 }
+
+			 mathFunctions.addMethod("minInteger", JavaMethod.getNativeStatic(math, "min", "(II)I"));
+			 mathFunctions.addMethod("maxInteger", JavaMethod.getNativeStatic(math, "max", "(II)I"));
+			 mathFunctions.addMethod("minLong", JavaMethod.getNativeStatic(math, "min", "(JJ)J"));
+			 mathFunctions.addMethod("maxLong", JavaMethod.getNativeStatic(math, "max", "(JJ)J"));
+			 mathFunctions.addMethod("minFloat", JavaMethod.getNativeStatic(math, "min", "(FF)F"));
+			 mathFunctions.addMethod("maxFloat", JavaMethod.getNativeStatic(math, "max", "(FF)F"));
+			 mathFunctions.addMethod("minDouble", JavaMethod.getNativeStatic(math, "min", "(DD)D"));
+			 mathFunctions.addMethod("maxDouble", JavaMethod.getNativeStatic(math, "max", "(DD)D"));
+
+			 nativeClasses.put("math::Functions", mathFunctions);
+		 }
 	}
 
 	public JavaPrepareDefinitionVisitor(JavaContext context, JavaCompiledModule module, String filename, JavaClass outerClass) {
