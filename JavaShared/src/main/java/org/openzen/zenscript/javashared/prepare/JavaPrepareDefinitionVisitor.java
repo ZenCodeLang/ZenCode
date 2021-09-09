@@ -239,6 +239,11 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			 mathFunctions.addMethod("minDouble", JavaMethod.getNativeStatic(math, "min", "(DD)D"));
 			 mathFunctions.addMethod("maxDouble", JavaMethod.getNativeStatic(math, "max", "(DD)D"));
 
+			 mathFunctions.addMethod("roundDouble", JavaMethod.getNativeStatic(math, "round", "(D)J"));
+			 mathFunctions.addMethod("roundFloat", JavaMethod.getNativeStatic(math, "round", "(F)J"));
+			 mathFunctions.addMethod("absInteger", JavaMethod.getNativeStatic(math, "abs", "(I)I"));
+			 mathFunctions.addMethod("pow", JavaMethod.getNativeStatic(math, "pow", "(DD)D"));
+
 			 nativeClasses.put("math::Functions", mathFunctions);
 		 }
 	}
