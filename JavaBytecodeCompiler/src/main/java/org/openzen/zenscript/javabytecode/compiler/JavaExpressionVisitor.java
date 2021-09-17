@@ -3467,12 +3467,34 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	@Override
-	public Void copy(Expression value) {
+	public Void arrayCopy(Expression value) {
+		final JavaMethod clone = JavaMethod.getNativeVirtual(JavaClass.OBJECT, "clone", "()Ljava/lang/Object;");
+		javaWriter.invokeVirtual(clone);
+		javaWriter.checkCast(context.getDescriptor(value.type));
 		return null;
 	}
 
 	@Override
-	public Void copyTo(CallExpression call) {
+	public Void arrayCopyResize(Expression value) {
+		final TypeID elementType = ((ArrayTypeID) value.type).elementType;
+		final boolean primitive = CompilerUtils.isPrimitive(elementType);
+		final String elementDescriptor = primitive
+				? context.getDescriptor(elementType)
+				: "Ljava/lang/Object;";
+
+
+		final String methodDescriptor = String.format("([%1$sI)[%1$s", elementDescriptor);
+
+		final JavaMethod copyOf = JavaMethod.getNativeStatic(JavaClass.ARRAYS, "copyOf", methodDescriptor);
+		javaWriter.invokeStatic(copyOf);
+		if(!primitive) {
+			javaWriter.checkCast(context.getDescriptor(value.type));
+		}
+		return null;
+	}
+
+	@Override
+	public Void arrayCopyTo(CallExpression call) {
 		//Copy this (source) to dest
 		//              source.copyTo(dest, sourceOffset, destOffset, length)
 		//=> System.arraycopy(source, sourceOffset, dest, destOffset, length);

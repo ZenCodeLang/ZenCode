@@ -156,13 +156,9 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 						((CallExpression) expression).target,
 						((CallExpression) expression).arguments.arguments[0]);
 			}));
-			cls.addMethod("copy", new JavaMethod((expression, translator) -> {
-				return translator.copy(((CallExpression) expression).target);
-			}));
-			cls.addMethod("copyResize", JavaMethod.getNativeExpansion(arrays, "copyOf", "([Ljava/lang/Object;I)[Ljava/lang/Object;"));
-			cls.addMethod("copyTo", new JavaMethod((expression, translator) -> {
-				return translator.copyTo((CallExpression) expression);
-			}));
+			cls.addMethod("copy", new JavaMethod((expression, translator) -> translator.arrayCopy(((CallExpression) expression).target)));
+			cls.addMethod("copyResize", new JavaMethod((expression, translator) -> translator.arrayCopyResize(expression)));
+			cls.addMethod("copyTo", new JavaMethod((expression, translator) -> translator.arrayCopyTo((CallExpression) expression)));
 			nativeClasses.put("stdlib::Arrays", cls);
 		}
 
