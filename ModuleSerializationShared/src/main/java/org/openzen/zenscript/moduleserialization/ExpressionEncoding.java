@@ -83,12 +83,14 @@ public class ExpressionEncoding {
 	public static final int TYPE_TRY_RETHROW_AS_RESULT = 66;
 	public static final int TYPE_VARIANT_VALUE = 67;
 	public static final int TYPE_WRAP_OPTIONAL = 68;
+	public static final int TYPE_SUBTYPE_CAST = 69;
 	public static final int COMPARATOR_LT = 1;
 	public static final int COMPARATOR_GT = 2;
 	public static final int COMPARATOR_EQ = 3;
 	public static final int COMPARATOR_NE = 4;
 	public static final int COMPARATOR_LE = 5;
 	public static final int COMPARATOR_GE = 6;
+
 
 	private ExpressionEncoding() {
 	}

@@ -741,6 +741,17 @@ public class ExpressionSerializer implements ExpressionVisitorWithContext<Statem
 	}
 
 	@Override
+	public Void visitSubtypeCast(StatementContext context, SubtypeCastExpression expression) {
+		output.writeUInt(ExpressionEncoding.TYPE_SUBTYPE_CAST);
+		int flags = getFlags(expression);
+		serialize(flags, expression);
+
+		output.serialize(context, expression.type);
+		output.serialize(context, expression.value);
+		return null;
+	}
+
+	@Override
 	public Void visitThis(StatementContext context, ThisExpression expression) {
 		output.writeUInt(ExpressionEncoding.TYPE_THIS);
 		int flags = getFlags(expression);

@@ -25,7 +25,7 @@ public interface JavaNativeTranslator<T> {
 
 	T arrayCopy(Expression value);
 
-	T arrayCopyResize(Expression value);
+	T arrayCopyResize(CallExpression value);
 
 	T arrayCopyTo(CallExpression call);
 

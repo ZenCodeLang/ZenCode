@@ -3475,7 +3475,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	@Override
-	public Void arrayCopyResize(Expression value) {
+	public Void arrayCopyResize(CallExpression value) {
 		final TypeID elementType = ((ArrayTypeID) value.type).elementType;
 		final boolean primitive = CompilerUtils.isPrimitive(elementType);
 		final String elementDescriptor = primitive
