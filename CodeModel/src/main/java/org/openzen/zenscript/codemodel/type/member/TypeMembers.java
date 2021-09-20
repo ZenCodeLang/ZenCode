@@ -73,6 +73,12 @@ public final class TypeMembers {
 				break checkBoundaries;
 			}
 			return true;
+		} else if (this.type instanceof ArrayTypeID && other instanceof ArrayTypeID) {
+			TypeID thisElementType = ((ArrayTypeID) this.type).elementType;
+			TypeID otherElementType = ((ArrayTypeID) other).elementType;
+			if (cache.get(thisElementType).extendsOrImplements(otherElementType)) {
+				return true;
+			}
 		}
 
 
