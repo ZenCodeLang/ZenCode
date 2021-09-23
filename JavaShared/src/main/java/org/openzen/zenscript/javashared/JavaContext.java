@@ -97,6 +97,12 @@ public abstract class JavaContext {
 					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t), BasicTypeID.INT),
 					"accept"));
 
+			functions.put("ToT", new JavaSynthesizedFunction(
+					new JavaClass("java.util.function", "Supplier", JavaClass.Kind.INTERFACE),
+					new TypeParameter[]{t},
+					new FunctionHeader(registry.getGeneric(t)),
+					"get"));
+
 		}
 	}
 
