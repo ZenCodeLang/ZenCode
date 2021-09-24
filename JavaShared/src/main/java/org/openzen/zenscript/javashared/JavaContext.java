@@ -24,6 +24,7 @@ import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.*;
@@ -65,47 +66,47 @@ public abstract class JavaContext {
 		typeParamMap.put("V", v);
 
 		final Function<String, TypeParameter> paramConverter = key -> typeParamMap.computeIfAbsent(key, newKey -> new TypeParameter(CodePosition.BUILTIN, newKey));
-		registerFunction(paramConverter, BiConsumer.class, "accept");
-		registerFunction(paramConverter, BiFunction.class, "apply");
-		registerFunction(paramConverter, BiPredicate.class, "test");
-		registerFunction(paramConverter, BooleanSupplier.class, "getAsBoolean");
-		registerFunction(paramConverter, Consumer.class, "accept");
-		registerFunction(paramConverter, DoubleBinaryOperator.class, "applyAsDouble");
-		registerFunction(paramConverter, DoubleConsumer.class, "accept");
-		registerFunction(paramConverter, DoubleFunction.class, "apply");
-		registerFunction(paramConverter, DoublePredicate.class, "test");
-		registerFunction(paramConverter, DoubleSupplier.class, "getAsDouble");
-		registerFunction(paramConverter, DoubleToIntFunction.class, "applyAsInt");
-		registerFunction(paramConverter, DoubleToLongFunction.class, "applyAsLong");
-		registerFunction(paramConverter, DoubleUnaryOperator.class, "applyAsDouble");
-		registerFunction(paramConverter, Function.class, "apply");
-		registerFunction(paramConverter, IntBinaryOperator.class, "applyAsInt");
-		registerFunction(paramConverter, IntConsumer.class, "accept");
-		registerFunction(paramConverter, IntFunction.class, "apply");
-		registerFunction(paramConverter, IntPredicate.class, "test");
-		registerFunction(paramConverter, IntSupplier.class, "getAsInt");
-		registerFunction(paramConverter, IntToDoubleFunction.class, "applyAsDouble");
-		registerFunction(paramConverter, IntToLongFunction.class, "applyAsLong");
-		registerFunction(paramConverter, IntUnaryOperator.class, "applyAsInt");
-		registerFunction(paramConverter, LongBinaryOperator.class, "applyAsLong");
-		registerFunction(paramConverter, LongConsumer.class, "accept");
-		registerFunction(paramConverter, LongFunction.class, "apply");
-		registerFunction(paramConverter, LongPredicate.class, "test");
-		registerFunction(paramConverter, LongSupplier.class, "getAsLong");
-		registerFunction(paramConverter, LongToDoubleFunction.class, "applyAsDouble");
-		registerFunction(paramConverter, LongToIntFunction.class, "applyAsInt");
-		registerFunction(paramConverter, LongUnaryOperator.class, "applyAsLong");
-		registerFunction(paramConverter, ObjDoubleConsumer.class, "accept");
-		registerFunction(paramConverter, ObjIntConsumer.class, "accept");
-		registerFunction(paramConverter, ObjLongConsumer.class, "accept");
-		registerFunction(paramConverter, Predicate.class, "test");
-		registerFunction(paramConverter, Supplier.class, "get");
-		registerFunction(paramConverter, ToDoubleBiFunction.class, "applyAsDouble");
-		registerFunction(paramConverter, ToDoubleFunction.class, "applyAsDouble");
-		registerFunction(paramConverter, ToIntBiFunction.class, "applyAsInt");
-		registerFunction(paramConverter, ToIntFunction.class, "applyAsInt");
-		registerFunction(paramConverter, ToLongBiFunction.class, "applyAsLong");
-		registerFunction(paramConverter, ToLongFunction.class, "applyAsLong");
+		registerFunction(paramConverter, BiConsumer.class);
+		registerFunction(paramConverter, BiFunction.class);
+		registerFunction(paramConverter, BiPredicate.class);
+		registerFunction(paramConverter, BooleanSupplier.class);
+		registerFunction(paramConverter, Consumer.class);
+		registerFunction(paramConverter, DoubleBinaryOperator.class);
+		registerFunction(paramConverter, DoubleConsumer.class);
+		registerFunction(paramConverter, DoubleFunction.class);
+		registerFunction(paramConverter, DoublePredicate.class);
+		registerFunction(paramConverter, DoubleSupplier.class);
+		registerFunction(paramConverter, DoubleToIntFunction.class);
+		registerFunction(paramConverter, DoubleToLongFunction.class);
+		registerFunction(paramConverter, DoubleUnaryOperator.class);
+		registerFunction(paramConverter, Function.class);
+		registerFunction(paramConverter, IntBinaryOperator.class);
+		registerFunction(paramConverter, IntConsumer.class);
+		registerFunction(paramConverter, IntFunction.class);
+		registerFunction(paramConverter, IntPredicate.class);
+		registerFunction(paramConverter, IntSupplier.class);
+		registerFunction(paramConverter, IntToDoubleFunction.class);
+		registerFunction(paramConverter, IntToLongFunction.class);
+		registerFunction(paramConverter, IntUnaryOperator.class);
+		registerFunction(paramConverter, LongBinaryOperator.class);
+		registerFunction(paramConverter, LongConsumer.class);
+		registerFunction(paramConverter, LongFunction.class);
+		registerFunction(paramConverter, LongPredicate.class);
+		registerFunction(paramConverter, LongSupplier.class);
+		registerFunction(paramConverter, LongToDoubleFunction.class);
+		registerFunction(paramConverter, LongToIntFunction.class);
+		registerFunction(paramConverter, LongUnaryOperator.class);
+		registerFunction(paramConverter, ObjDoubleConsumer.class);
+		registerFunction(paramConverter, ObjIntConsumer.class);
+		registerFunction(paramConverter, ObjLongConsumer.class);
+		registerFunction(paramConverter, Predicate.class);
+		registerFunction(paramConverter, Supplier.class);
+		registerFunction(paramConverter, ToDoubleBiFunction.class);
+		registerFunction(paramConverter, ToDoubleFunction.class);
+		registerFunction(paramConverter, ToIntBiFunction.class);
+		registerFunction(paramConverter, ToIntFunction.class);
+		registerFunction(paramConverter, ToLongBiFunction.class);
+		registerFunction(paramConverter, ToLongFunction.class);
 		// Needs special handling due to it just implementing BiFunction/Function.
 		registerFunction("TTToT", BinaryOperator.class, "apply", new TypeParameter[]{t, t}, registry.getGeneric(t));
 		registerFunction("TToT", UnaryOperator.class, "apply", new TypeParameter[]{t}, registry.getGeneric(t));
@@ -120,7 +121,7 @@ public abstract class JavaContext {
 				methodName));
 	}
 
-	private void registerFunction(Function<String, TypeParameter> paramConverter, Class<?> clazz, String methodName) {
+	private void registerFunction(Function<String, TypeParameter> paramConverter, Class<?> clazz) {
 		final TypeParameter[] parameters = new TypeParameter[clazz.getTypeParameters().length];
 		final Map<String, GenericTypeID> parameterMapping = new HashMap<>();
 		for (int i = 0; i < clazz.getTypeParameters().length; i++) {
@@ -128,7 +129,7 @@ public abstract class JavaContext {
 			parameters[i] = typeParameter;
 			parameterMapping.put(clazz.getTypeParameters()[i].getName(), registry.getGeneric(typeParameter));
 		}
-		final Optional<Method> foundMethod = Arrays.stream(clazz.getMethods()).filter(method -> method.getName().equals(methodName)).findFirst();
+		final Optional<Method> foundMethod = Arrays.stream(clazz.getMethods()).filter(method -> !Modifier.isStatic(method.getModifiers()) && !method.isDefault()).findFirst();
 		if (foundMethod.isPresent()) {
 			final Method method = foundMethod.get();
 			final StringBuilder idBuilder = new StringBuilder();
@@ -152,7 +153,7 @@ public abstract class JavaContext {
 					new FunctionHeader(convertTypeToTypeID(parameterMapping, genericReturnType), parameterTypes),
 					method.getName()));
 		} else {
-			throw new IllegalArgumentException(String.format("Unable to find method: '%s' in class: '%s'", methodName, clazz.getName()));
+			throw new IllegalArgumentException(String.format("Unable to find any applicable methods in class: '%s'", clazz.getName()));
 		}
 
 	}
