@@ -23,10 +23,10 @@ import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.type.*;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.function.*;
 
 /**
  * @author Hoofdgebruiker
@@ -50,61 +50,173 @@ public abstract class JavaContext {
 		this.modulePackage = modulePackage;
 		this.basePackage = basePackage;
 
-		{
-			TypeParameter t = new TypeParameter(CodePosition.BUILTIN, "T");
-			TypeParameter u = new TypeParameter(CodePosition.BUILTIN, "U");
-			TypeParameter v = new TypeParameter(CodePosition.BUILTIN, "V");
 
-			functions.put("TToU", new JavaSynthesizedFunction(
-					new JavaClass("java.util.function", "Function", JavaClass.Kind.INTERFACE),
-					new TypeParameter[]{t, u},
-					new FunctionHeader(registry.getGeneric(u), registry.getGeneric(t)),
-					"apply"));
-
-			functions.put("TUToV", new JavaSynthesizedFunction(
-					new JavaClass("java.util.function", "BiFunction", JavaClass.Kind.INTERFACE),
-					new TypeParameter[]{t, u, v},
-					new FunctionHeader(registry.getGeneric(v), registry.getGeneric(t), registry.getGeneric(u)),
-					"apply"));
-
-			functions.put("TToVoid", new JavaSynthesizedFunction(
-					new JavaClass("java.util.function", "Consumer", JavaClass.Kind.INTERFACE),
-					new TypeParameter[]{t},
-					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t)),
-					"accept"));
-
-			functions.put("TUToVoid", new JavaSynthesizedFunction(
-					new JavaClass("java.util.function", "BiConsumer", JavaClass.Kind.INTERFACE),
-					new TypeParameter[]{t, u},
-					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t), registry.getGeneric(u)),
-					"accept"));
-
-			functions.put("TToBool", new JavaSynthesizedFunction(
-					new JavaClass("java.util.function", "Predicate", JavaClass.Kind.INTERFACE),
-					new TypeParameter[]{t},
-					new FunctionHeader(BasicTypeID.BOOL, registry.getGeneric(t)),
-					"test"));
-
-			functions.put("TUToBool", new JavaSynthesizedFunction(
-					new JavaClass("java.util.function", "BiPredicate", JavaClass.Kind.INTERFACE),
-					new TypeParameter[]{t, u},
-					new FunctionHeader(BasicTypeID.BOOL, registry.getGeneric(t), registry.getGeneric(u)),
-					"test"));
-
-			functions.put("TIntToVoid", new JavaSynthesizedFunction(
-					new JavaClass("java.util.function", "ObjIntConsumer", JavaClass.Kind.INTERFACE),
-					new TypeParameter[]{t},
-					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t), BasicTypeID.INT),
-					"accept"));
-
-			functions.put("ToT", new JavaSynthesizedFunction(
-					new JavaClass("java.util.function", "Supplier", JavaClass.Kind.INTERFACE),
-					new TypeParameter[]{t},
-					new FunctionHeader(registry.getGeneric(t)),
-					"get"));
-
-		}
+		addDefaultFunctions();
 	}
+
+	private void addDefaultFunctions() {
+
+		final TypeParameter t = new TypeParameter(CodePosition.BUILTIN, "T");
+		final TypeParameter u = new TypeParameter(CodePosition.BUILTIN, "U");
+		final TypeParameter v = new TypeParameter(CodePosition.BUILTIN, "V");
+		final Map<String, TypeParameter> typeParamMap = new HashMap<>();
+		typeParamMap.put("T", t);
+		typeParamMap.put("U", u);
+		typeParamMap.put("V", v);
+
+		final Function<String, TypeParameter> paramConverter = key -> typeParamMap.computeIfAbsent(key, newKey -> new TypeParameter(CodePosition.BUILTIN, newKey));
+		registerFunction(paramConverter, BiConsumer.class, "accept");
+		registerFunction(paramConverter, BiFunction.class, "apply");
+		registerFunction(paramConverter, BiPredicate.class, "test");
+		registerFunction(paramConverter, BooleanSupplier.class, "getAsBoolean");
+		registerFunction(paramConverter, Consumer.class, "accept");
+		registerFunction(paramConverter, DoubleBinaryOperator.class, "applyAsDouble");
+		registerFunction(paramConverter, DoubleConsumer.class, "accept");
+		registerFunction(paramConverter, DoubleFunction.class, "apply");
+		registerFunction(paramConverter, DoublePredicate.class, "test");
+		registerFunction(paramConverter, DoubleSupplier.class, "getAsDouble");
+		registerFunction(paramConverter, DoubleToIntFunction.class, "applyAsInt");
+		registerFunction(paramConverter, DoubleToLongFunction.class, "applyAsLong");
+		registerFunction(paramConverter, DoubleUnaryOperator.class, "applyAsDouble");
+		registerFunction(paramConverter, Function.class, "apply");
+		registerFunction(paramConverter, IntBinaryOperator.class, "applyAsInt");
+		registerFunction(paramConverter, IntConsumer.class, "accept");
+		registerFunction(paramConverter, IntFunction.class, "apply");
+		registerFunction(paramConverter, IntPredicate.class, "test");
+		registerFunction(paramConverter, IntSupplier.class, "getAsInt");
+		registerFunction(paramConverter, IntToDoubleFunction.class, "applyAsDouble");
+		registerFunction(paramConverter, IntToLongFunction.class, "applyAsLong");
+		registerFunction(paramConverter, IntUnaryOperator.class, "applyAsInt");
+		registerFunction(paramConverter, LongBinaryOperator.class, "applyAsLong");
+		registerFunction(paramConverter, LongConsumer.class, "accept");
+		registerFunction(paramConverter, LongFunction.class, "apply");
+		registerFunction(paramConverter, LongPredicate.class, "test");
+		registerFunction(paramConverter, LongSupplier.class, "getAsLong");
+		registerFunction(paramConverter, LongToDoubleFunction.class, "applyAsDouble");
+		registerFunction(paramConverter, LongToIntFunction.class, "applyAsInt");
+		registerFunction(paramConverter, LongUnaryOperator.class, "applyAsLong");
+		registerFunction(paramConverter, ObjDoubleConsumer.class, "accept");
+		registerFunction(paramConverter, ObjIntConsumer.class, "accept");
+		registerFunction(paramConverter, ObjLongConsumer.class, "accept");
+		registerFunction(paramConverter, Predicate.class, "test");
+		registerFunction(paramConverter, Supplier.class, "get");
+		registerFunction(paramConverter, ToDoubleBiFunction.class, "applyAsDouble");
+		registerFunction(paramConverter, ToDoubleFunction.class, "applyAsDouble");
+		registerFunction(paramConverter, ToIntBiFunction.class, "applyAsInt");
+		registerFunction(paramConverter, ToIntFunction.class, "applyAsInt");
+		registerFunction(paramConverter, ToLongBiFunction.class, "applyAsLong");
+		registerFunction(paramConverter, ToLongFunction.class, "applyAsLong");
+		// Needs special handling due to it just implementing BiFunction/Function.
+		registerFunction("TTToT", BinaryOperator.class, "apply", new TypeParameter[]{t, t}, registry.getGeneric(t));
+		registerFunction("TToT", UnaryOperator.class, "apply", new TypeParameter[]{t}, registry.getGeneric(t));
+	}
+
+	private void registerFunction(String id, Class<?> clazz, String methodName, TypeParameter[] typeParameters, TypeID returnType, TypeID... parameterTypes) {
+
+		functions.put(id, new JavaSynthesizedFunction(
+				new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE),
+				typeParameters,
+				new FunctionHeader(returnType, parameterTypes),
+				methodName));
+	}
+
+	private void registerFunction(Function<String, TypeParameter> paramConverter, Class<?> clazz, String methodName) {
+		final TypeParameter[] parameters = new TypeParameter[clazz.getTypeParameters().length];
+		final Map<String, GenericTypeID> parameterMapping = new HashMap<>();
+		for (int i = 0; i < clazz.getTypeParameters().length; i++) {
+			final TypeParameter typeParameter = paramConverter.apply(getTypeParameter(i));
+			parameters[i] = typeParameter;
+			parameterMapping.put(clazz.getTypeParameters()[i].getName(), registry.getGeneric(typeParameter));
+		}
+		final Optional<Method> foundMethod = Arrays.stream(clazz.getMethods()).filter(method -> method.getName().equals(methodName)).findFirst();
+		if (foundMethod.isPresent()) {
+			final Method method = foundMethod.get();
+			final StringBuilder idBuilder = new StringBuilder();
+			final TypeID[] parameterTypes = new TypeID[method.getParameterCount()];
+			for (int i = 0; i < parameterTypes.length; i++) {
+				final Type type = method.getGenericParameterTypes()[i];
+				parameterTypes[i] = convertTypeToTypeID(parameterMapping, type);
+				idBuilder.append(getNameFromType(parameterMapping, type));
+			}
+			final Type genericReturnType = method.getGenericReturnType();
+
+			idBuilder.append("To").append(getNameFromType(parameterMapping, genericReturnType));
+
+			if (functions.containsKey(idBuilder.toString())) {
+				throw new IllegalArgumentException(String.format("Function '%s' already registered!", idBuilder));
+			}
+
+			functions.put(idBuilder.toString(), new JavaSynthesizedFunction(
+					new JavaClass(clazz.getPackage().getName(), clazz.getSimpleName(), JavaClass.Kind.INTERFACE),
+					parameters,
+					new FunctionHeader(convertTypeToTypeID(parameterMapping, genericReturnType), parameterTypes),
+					method.getName()));
+		} else {
+			throw new IllegalArgumentException(String.format("Unable to find method: '%s' in class: '%s'", methodName, clazz.getName()));
+		}
+
+	}
+
+	private String getNameFromType(Map<String, GenericTypeID> paramMap, Type type) {
+		if (paramMap.containsKey(type.getTypeName())) {
+			return paramMap.get(type.getTypeName()).parameter.name;
+		}
+		// Could potentially replace this with JavaTypeNameVisitor.visitBasic()
+		switch (type.getTypeName()) {
+			case "int":
+				return "Int";
+			case "void":
+				return "Void";
+			case "boolean":
+				return "Bool";
+			case "byte":
+				return "Byte";
+			case "short":
+				return "Short";
+			case "long":
+				return "Long";
+			case "float":
+				return "Float";
+			case "double":
+				return "Double";
+			case "char":
+				return "Char";
+			default:
+				throw new IllegalArgumentException(String.format("Unknown Type: '%s'", type));
+		}
+
+
+	}
+
+	private TypeID convertTypeToTypeID(Map<String, GenericTypeID> paramMap, Type type) {
+		if (paramMap.containsKey(type.getTypeName())) {
+			return paramMap.get(type.getTypeName());
+		}
+
+		switch (type.getTypeName()) {
+			case "int":
+				return BasicTypeID.INT;
+			case "void":
+				return BasicTypeID.VOID;
+			case "boolean":
+				return BasicTypeID.BOOL;
+			case "byte":
+				return BasicTypeID.BYTE;
+			case "short":
+				return BasicTypeID.SHORT;
+			case "long":
+				return BasicTypeID.LONG;
+			case "float":
+				return BasicTypeID.FLOAT;
+			case "double":
+				return BasicTypeID.DOUBLE;
+			case "char":
+				return BasicTypeID.CHAR;
+		}
+
+		throw new IllegalArgumentException(String.format("Unknown Type: '%s'", type));
+	}
+
 
 	public String getPackageName(ZSPackage pkg) {
 		if (pkg == null)
