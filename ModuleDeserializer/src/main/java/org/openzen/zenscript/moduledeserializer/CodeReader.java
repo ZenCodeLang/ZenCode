@@ -877,6 +877,11 @@ public class CodeReader implements CodeSerializationInput {
 				Expression value = deserializeExpression(context);
 				return new SupertypeCastExpression(position, value, type);
 			}
+			case ExpressionEncoding.TYPE_SUBTYPE_CAST: {
+				TypeID type = deserializeType(context);
+				Expression value = deserializeExpression(context);
+				return new SubtypeCastExpression(position, value, type);
+			}
 			case ExpressionEncoding.TYPE_THIS:
 				return new ThisExpression(position, context.thisType);
 			case ExpressionEncoding.TYPE_THROW: {

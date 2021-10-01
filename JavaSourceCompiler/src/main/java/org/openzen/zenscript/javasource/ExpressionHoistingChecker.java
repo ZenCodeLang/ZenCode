@@ -327,6 +327,11 @@ public class ExpressionHoistingChecker implements ExpressionVisitor<Boolean> {
 	}
 
 	@Override
+	public Boolean visitSubtypeCast(SubtypeCastExpression expression) {
+		return true;
+	}
+
+	@Override
 	public Boolean visitThis(ThisExpression expression) {
 		return false;
 	}
