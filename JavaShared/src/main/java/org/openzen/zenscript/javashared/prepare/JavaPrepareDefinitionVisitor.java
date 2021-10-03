@@ -111,17 +111,23 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		}
 
 		{
-			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.lang", "String", JavaClass.Kind.CLASS));
+			JavaClass string = new JavaClass("java.lang", "String", JavaClass.Kind.CLASS);
+			JavaNativeClass cls = new JavaNativeClass(string);
 			cls.addMethod("contains", new JavaMethod((expression, translator) -> {
 				CallExpression call = (CallExpression) expression;
 				Expression str = call.target;
 				Expression character = call.arguments.arguments[0];
 				return translator.containsAsIndexOf(str, character);
 			}));
-			cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
-			cls.addInstanceMethod("indexOfFrom", "indexOf", "(II)I");
+			cls.addInstanceMethod("indexOfFrom","indexOf", "(II)I");
 			cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
 			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
+			cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
+			cls.addInstanceMethod("indexOfString", "indexOf", "(Ljava/lang/String;)I");
+			cls.addInstanceMethod("indexOfStringFrom", "indexOf", "(Ljava/lang/String;I)I");
+			cls.addInstanceMethod("lastIndexOfString", "lastIndexOf", "(Ljava/lang/String;)I");
+			cls.addInstanceMethod("lastIndexOfStringFrom", "lastIndexOf", "(Ljava/lang/String;I)I");
+
 			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
 			cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
 			cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");
