@@ -1,16 +1,24 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.arrays;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 public class ArrayOperatorTests extends ZenCodeTest {
+	private static String createString(int length) {
+		final StringBuilder stringBuilder = new StringBuilder(length);
+		for (int i = 0; i < length; i++) {
+			stringBuilder.append('A');
+		}
+		return stringBuilder.toString();
+	}
+
 	@Test
 	public void containsReturnsTrueForMatch() {
 		ScriptBuilder.create()
@@ -83,5 +91,33 @@ public class ArrayOperatorTests extends ZenCodeTest {
 		logger.assertPrintOutput(2, "C: C");
 	}
 
+	@Test
+	public void mapWorks() {
+		ScriptBuilder.create()
+				.add("var array = ['A', 'B', 'C'] as string[];")
+				.add("var mapper as function(element as string) as string = (element as string) as string => element + element;")
+				.add("var mapped = array.map<string>(mapper);")
+				.add("for element in mapped println(element);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(3);
+		logger.assertPrintOutput(0, "AA");
+		logger.assertPrintOutput(1, "BB");
+		logger.assertPrintOutput(2, "CC");
+	}
+
+	@Test
+	public void mapWithIndexWorks() {
+		ScriptBuilder.create()
+				.add("var array = ['A', 'B', 'C'] as string[];")
+				.add("var mapper as function(index as usize, element as string) as string = (index as usize, element as string) as string => element + index + element;")
+				.add("var mapped = array.map<string>(mapper);")
+				.add("for element in mapped println(element);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(3);
+		logger.assertPrintOutput(0, "A0A");
+		logger.assertPrintOutput(1, "B1B");
+		logger.assertPrintOutput(2, "C2C");
 	}
 }

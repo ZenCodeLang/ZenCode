@@ -405,4 +405,8 @@ public abstract class JavaContext {
 		}
 		return getMethodDescriptor(header, member.definition instanceof EnumDefinition, startBuilder.toString());
 	}
+
+	public boolean isGenericOrContainsGenericParameters(TypeID typeID) {
+		return typeID.accept(new JavaTypeCheckIfGenericVisitor());
+	}
 }

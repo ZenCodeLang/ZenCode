@@ -429,7 +429,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				throw new IllegalStateException("Call target has no method info!");
 
 			if (expression.member.getTarget().header.getReturnType().isGeneric())
-				javaWriter.checkCast(context.getInternalName(expression.type));
+				javaWriter.checkCast(context.getDescriptor(expression.type));
 
 			return null;
 		}
@@ -1214,8 +1214,13 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		JavaMethod methodInfo = context.getJavaMethod(member);
 
 		if (methodInfo.compile) {
-			if (typeParameters.size() == arguments.typeArguments.length) {
+			if (typeParameters.size() == (member.getTarget().definition.getNumberOfGenericParameters() + arguments.typeArguments.length)) {
 				final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
+				for (int i = 0; i < member.getTarget().definition.getNumberOfGenericParameters(); i++) {
+					javaWriter.aConstNull(); // TODO: Replace with actual class
+					javaWriter.checkCast("java/lang/Class");
+				}
+
 				for (TypeID typeArgument : arguments.typeArguments) {
 					typeArgument.accept(javaWriter, javaTypeExpressionVisitor);
 				}
@@ -2625,7 +2630,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case ARRAY_CONSTRUCTOR_INITIAL_VALUE: {
 				ArrayTypeID type = (ArrayTypeID) expression.type;
 
-				final Type ASMType = context.getType(expression.type);
+				final ArrayHelperType ASMType = new ArrayHelperType(type, context);
 				final Type ASMElementType = context.getType(type.elementType);
 
 				final Label begin = new Label();
@@ -2657,7 +2662,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final Label end = new Label();
 				javaWriter.label(begin);
 
-				final Type ASMElementType = context.getType(expression.type);
+				final ArrayHelperType ASMElementType = new ArrayHelperType(expression.type, context);
 				final int dimension = ((ArrayTypeID) expression.type).dimension;
 				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(dimension, expression.arguments.arguments, this);
 				ArrayInitializerHelper.visitMultiDimArray(javaWriter, arraySizes, new int[dimension], dimension, ASMElementType, (elementType, counterLocations) -> {
@@ -2684,7 +2689,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final Type originArrayType = context.getType(expression.arguments.arguments[0].type);
 				final int originArrayLocation = javaWriter.local(originArrayType);
 				javaWriter.storeObject(originArrayLocation);
-				Type destinationArrayType = context.getType(expression.type);
+				ArrayHelperType destinationArrayType = new ArrayHelperType(type, context);
 
 				final boolean indexed = builtin == BuiltinID.ARRAY_CONSTRUCTOR_PROJECTED_INDEXED;
 				final boolean canBeInLined = ArrayInitializerHelper.canBeInLined(expression.arguments.arguments[1]);
@@ -3402,7 +3407,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			getJavaWriter().invokeVirtual(methodInfo);
 		}
 		if (methodInfo.genericResult) {
-			getJavaWriter().checkCast(context.getInternalName(resultType));
+			getJavaWriter().checkCast(context.getType(resultType));
 		}
 
 		//Make sure that method results are popped if ZC thinks its a void but it actually is not.
