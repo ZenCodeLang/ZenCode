@@ -4,7 +4,13 @@ import org.junit.jupiter.api.Test;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ScriptBuilder;
 import org.openzen.zenscript.scriptingexample.tests.helpers.ZenCodeTest;
 
-public class ArrayOperators extends ZenCodeTest {
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+import java.util.stream.Collectors;
+
+public class ArrayOperatorTests extends ZenCodeTest {
 	@Test
 	public void containsReturnsTrueForMatch() {
 		ScriptBuilder.create()
@@ -60,5 +66,22 @@ public class ArrayOperators extends ZenCodeTest {
 		logger.assertPrintOutputSize(2);
 		logger.assertPrintOutput(0, "3");
 		logger.assertPrintOutput(1, "3");
+	}
+
+	@Test
+	public void indexMethodWorks() {
+		ScriptBuilder.create()
+				.add("var array = ['A', 'B', 'C'] as string[];")
+				.add("var indexer as function(element as string) as string = (element as string) as string => element;")
+				.add("var map = array.index<string>(indexer);")
+				.add("for key, value in map println (key + ': ' + value);")
+				.execute(this);
+
+		logger.assertPrintOutputSize(3);
+		logger.assertPrintOutput(0, "A: A");
+		logger.assertPrintOutput(1, "B: B");
+		logger.assertPrintOutput(2, "C: C");
+	}
+
 	}
 }
