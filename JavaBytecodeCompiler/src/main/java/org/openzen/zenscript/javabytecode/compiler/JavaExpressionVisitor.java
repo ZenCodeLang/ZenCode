@@ -8,6 +8,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -429,7 +430,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				throw new IllegalStateException("Call target has no method info!");
 
 			if (expression.member.getTarget().header.getReturnType().isGeneric())
-				javaWriter.checkCast(context.getDescriptor(expression.type));
+				javaWriter.checkCast(context.getType(expression.type));
 
 			return null;
 		}
@@ -1216,9 +1217,22 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		if (methodInfo.compile) {
 			if (typeParameters.size() == (member.getTarget().definition.getNumberOfGenericParameters() + arguments.typeArguments.length)) {
 				final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
-				for (int i = 0; i < member.getTarget().definition.getNumberOfGenericParameters(); i++) {
-					javaWriter.aConstNull(); // TODO: Replace with actual class
-					javaWriter.checkCast("java/lang/Class");
+
+				// Try to load all type parameters of "this" to the stack, if an expansion
+				if (member.getTarget().definition instanceof ExpansionDefinition) {
+					if (((ExpansionDefinition) member.getTarget().definition).target instanceof ArrayTypeID
+							&& member.getOwnerType() instanceof ArrayTypeID) {
+						//FIXME: Dirty hack until we get this to work better
+						// Problem: How can we get the TypeParameters of e.g. T[] when all info we have uses the filled in type info?
+						final TypeID elementType = ((ArrayTypeID) member.getOwnerType()).elementType;
+						elementType.accept(javaWriter, javaTypeExpressionVisitor);
+					} else {
+						for (int i = 0; i < member.getTarget().definition.getNumberOfGenericParameters(); i++) {
+
+							javaWriter.aConstNull(); // TODO: Replace with actual class
+							javaWriter.checkCast("java/lang/Class");
+						}
+					}
 				}
 
 				for (TypeID typeArgument : arguments.typeArguments) {
@@ -3448,8 +3462,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void listToArray(CastExpression value) {
 		//value.target.accept(this);
 		javaWriter.iConst0();
-		final Type type = context.getType(((ArrayTypeID) value.type).elementType);
-		javaWriter.newArray(type);
+		final ArrayHelperType arrayHelperType = new ArrayHelperType(((ArrayTypeID)value.type).elementType, context);
+		arrayHelperType.newArray(javaWriter);
 		final JavaMethod toArray = new JavaMethod(JavaClass.COLLECTION, JavaMethod.Kind.INSTANCE, "toArray", true, "([Ljava/lang/Object;)[Ljava/lang/Object;", 0, true);
 		javaWriter.invokeInterface(toArray);
 		javaWriter.checkCast(context.getType(value.type));

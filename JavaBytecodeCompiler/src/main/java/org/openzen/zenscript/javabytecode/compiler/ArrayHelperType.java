@@ -21,7 +21,8 @@ public class ArrayHelperType {
 
 
 	public ArrayHelperType getWithOneDimensionLess() {
-		return new ArrayHelperType(((ArrayTypeID) elementType).elementType, context);
+		ArrayTypeID arrayTypeID = ((ArrayTypeID) elementType);
+		return new ArrayHelperType(arrayTypeID.removeOneDimension(), context);
 	}
 
 	public void newArray(JavaWriter javaWriter) {
