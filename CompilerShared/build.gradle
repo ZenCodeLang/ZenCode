@@ -14,7 +14,7 @@ if (!hasProperty('mainClass')) {
 }
 
 dependencies {
-	compile 'org.json:json:20180130'
-	compile project(':CodeModel')
-	compile project(':Validator')
+	api 'org.json:json:20180130'
+	api project(':CodeModel')
+	api project(':Validator')
 }

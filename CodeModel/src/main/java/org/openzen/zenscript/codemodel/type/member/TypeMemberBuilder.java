@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.type.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;

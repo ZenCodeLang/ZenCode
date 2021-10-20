@@ -14,8 +14,8 @@ if (!hasProperty('mainClass')) {
 }
 
 dependencies {
-	compile project(':CodeModel')
-	compile project(':CompilerShared')
-	compile project(':CodeFormatterShared')
-	compile project(':JavaShared')
+	api project(':CodeModel')
+	api project(':CompilerShared')
+	api project(':CodeFormatterShared')
+	api project(':JavaShared')
 }

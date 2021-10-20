@@ -14,7 +14,7 @@ if (!hasProperty('mainClass')) {
 }
 
 dependencies {
-	compile project(':CompilerShared')
-	compile project(':Constructor')
-	compile project(':ModuleSerializationShared')
+	api project(':CompilerShared')
+	api project(':Constructor')
+	api project(':ModuleSerializationShared')
 }

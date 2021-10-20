@@ -14,6 +14,6 @@ if (!hasProperty('mainClass')) {
 }
 
 dependencies {
-	compile project(':CodeModel')
-	compile project(':CodeFormatterShared')
+	api project(':CodeModel')
+	api project(':CodeFormatterShared')
 }

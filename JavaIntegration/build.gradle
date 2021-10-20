@@ -14,9 +14,9 @@ if (!hasProperty('mainClass')) {
 }
 
 dependencies {
-	compile project(':CodeModel')
-	compile project(':Parser')
-	compile project(':JavaBytecodeCompiler')
-	compile project(':JavaAnnotations')
-	compile project(':Validator')
+	api project(':CodeModel')
+	api project(':Parser')
+	api project(':JavaBytecodeCompiler')
+	api project(':JavaAnnotations')
+	api project(':Validator')
 }

@@ -14,11 +14,11 @@ if (!hasProperty('mainClass')) {
 }
 
 dependencies {
-	compile 'org.json:json:20180130'
-	compile project(':CodeModel')
-	compile project(':Parser')
-	compile project(':Validator')
-	compile project(':CompilerShared')
-	compile project(':JavaBytecodeCompiler')
-	compile project(':JavaSourceCompiler')
+	api 'org.json:json:20180130'
+	api project(':CodeModel')
+	api project(':Parser')
+	api project(':Validator')
+	api project(':CompilerShared')
+	api project(':JavaBytecodeCompiler')
+	api project(':JavaSourceCompiler')
 }
