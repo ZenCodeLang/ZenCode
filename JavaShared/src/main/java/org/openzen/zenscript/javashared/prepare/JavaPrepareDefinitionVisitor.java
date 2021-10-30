@@ -64,7 +64,8 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			list.addMethod("constructor", JavaMethod.getNativeConstructor(arrayList, "()V"));
 			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("insert", "add", "(ILjava/lang/Object;)V");
-			list.addInstanceMethod("remove", "remove", "(Ljava/lang/Object;)Z");
+			list.addInstanceMethod("remove", "remove", "(I)Ljava/lang/Object;");
+			list.addInstanceMethod("removeValue", "remove", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("indexOf", "indexOf", "(Ljava/lang/Object;)I");
 			list.addInstanceMethod("lastIndexOf", "lastIndexOf", "(Ljava/lang/Object;)I");
 			list.addInstanceMethod("getAtIndex", "get", "(I)Ljava/lang/Object;");
@@ -110,17 +111,23 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		}
 
 		{
-			JavaNativeClass cls = new JavaNativeClass(new JavaClass("java.lang", "String", JavaClass.Kind.CLASS));
+			JavaClass string = new JavaClass("java.lang", "String", JavaClass.Kind.CLASS);
+			JavaNativeClass cls = new JavaNativeClass(string);
 			cls.addMethod("contains", new JavaMethod((expression, translator) -> {
 				CallExpression call = (CallExpression) expression;
 				Expression str = call.target;
 				Expression character = call.arguments.arguments[0];
 				return translator.containsAsIndexOf(str, character);
 			}));
-			cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
-			cls.addInstanceMethod("indexOfFrom", "indexOf", "(II)I");
+			cls.addInstanceMethod("indexOfFrom","indexOf", "(II)I");
 			cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
 			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
+			cls.addInstanceMethod("indexOf", "indexOf", "(I)I");
+			cls.addInstanceMethod("indexOfString", "indexOf", "(Ljava/lang/String;)I");
+			cls.addInstanceMethod("indexOfStringFrom", "indexOf", "(Ljava/lang/String;I)I");
+			cls.addInstanceMethod("lastIndexOfString", "lastIndexOf", "(Ljava/lang/String;)I");
+			cls.addInstanceMethod("lastIndexOfStringFrom", "lastIndexOf", "(Ljava/lang/String;I)I");
+
 			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
 			cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
 			cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");
@@ -156,13 +163,9 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 						((CallExpression) expression).target,
 						((CallExpression) expression).arguments.arguments[0]);
 			}));
-			cls.addMethod("copy", new JavaMethod((expression, translator) -> {
-				return translator.copy(((CallExpression) expression).target);
-			}));
-			cls.addMethod("copyResize", JavaMethod.getNativeExpansion(arrays, "copyOf", "([Ljava/lang/Object;I)[Ljava/lang/Object;"));
-			cls.addMethod("copyTo", new JavaMethod((expression, translator) -> {
-				return translator.copyTo((CallExpression) expression);
-			}));
+			cls.addMethod("copy", new JavaMethod((expression, translator) -> translator.arrayCopy(((CallExpression) expression).target)));
+			cls.addMethod("copyResize", new JavaMethod((expression, translator) -> translator.arrayCopyResize((CallExpression)expression)));
+			cls.addMethod("copyTo", new JavaMethod((expression, translator) -> translator.arrayCopyTo((CallExpression) expression)));
 			nativeClasses.put("stdlib::Arrays", cls);
 		}
 

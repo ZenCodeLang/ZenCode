@@ -573,10 +573,18 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final Label isFalse = new Label();
 				final Label end = new Label();
 
-				if (builtin == BuiltinID.OPTIONAL_IS_NULL)
-					javaWriter.ifNonNull(isFalse);
-				else
-					javaWriter.ifNull(isFalse);
+				if (expression.target.type.withoutOptional() == BasicTypeID.USIZE) {
+					javaWriter.constant(-1);
+					if (builtin == BuiltinID.OPTIONAL_IS_NULL)
+						javaWriter.ifICmpNE(isFalse);
+					else
+						javaWriter.ifICmpEQ(isFalse);
+				} else {
+					if (builtin == BuiltinID.OPTIONAL_IS_NULL)
+						javaWriter.ifNonNull(isFalse);
+					else
+						javaWriter.ifNull(isFalse);
+				}
 				javaWriter.iConst1();
 				javaWriter.goTo(end);
 				javaWriter.label(isFalse);
@@ -1580,9 +1588,25 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				javaWriter.i2s();
 				break;
 			case INT_TO_STRING:
-			case USIZE_TO_STRING:
 				if (expression.target.type.isOptional()) {
 					javaWriter.invokeStatic(OBJECTS_TOSTRING);
+				} else {
+					javaWriter.invokeStatic(INTEGER_TO_STRING);
+				}
+				break;
+			case USIZE_TO_STRING:
+				if (expression.target.type.isOptional()) {
+					Label ifNull = new Label();
+					Label exit = new Label();
+					javaWriter.dup();
+					javaWriter.constant(-1);
+					javaWriter.ifICmpEQ(ifNull);
+					javaWriter.invokeStatic(INTEGER_TO_STRING);
+					javaWriter.goTo(exit);
+					javaWriter.label(ifNull);
+					javaWriter.pop();
+					javaWriter.constant("null");
+					javaWriter.label(exit);
 				} else {
 					javaWriter.invokeStatic(INTEGER_TO_STRING);
 				}
@@ -3383,12 +3407,18 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	//Will return true if a JavaMethodInfo.class tag exists, and will compile that tag
-	@SuppressWarnings({"Raw", "unchecked"})
+	@SuppressWarnings({"Raw"})
 	boolean checkAndExecuteMethodInfo(DefinitionMemberRef member, TypeID resultType, Expression expression) {
 		JavaMethod methodInfo = context.getJavaMethod(member);
 		if (methodInfo == null)
 			return false;
 
+		executeMethodInfo(resultType, expression, methodInfo);
+		return true;
+	}
+
+	@SuppressWarnings({"Raw", "unchecked"})
+	private void executeMethodInfo(TypeID resultType, Expression expression, JavaMethod methodInfo) {
 		if (methodInfo.kind == JavaMethod.Kind.STATIC) {
 			getJavaWriter().invokeStatic(methodInfo);
 		} else if (methodInfo.kind == JavaMethod.Kind.INTERFACE) {
@@ -3412,8 +3442,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			final boolean isLarge = methodInfo.descriptor.endsWith(")D") && methodInfo.descriptor.endsWith(")J");
 			getJavaWriter().pop(isLarge);
 		}
-
-		return true;
 	}
 
 	//Will return true if a JavaFieldInfo.class tag exists, and will compile that tag
@@ -3454,6 +3482,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void containsAsIndexOf(Expression target, Expression value) {
+		executeMethodInfo(BasicTypeID.STRING, value, CHARACTER_TO_STRING);
+		executeMethodInfo(BasicTypeID.BOOL, null, JavaMethod.getNativeVirtual(JavaClass.STRING, "contains", "(Ljava/lang/CharSequence;)Z"));
 		return null;
 	}
 
@@ -3489,12 +3519,34 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	@Override
-	public Void copy(Expression value) {
+	public Void arrayCopy(Expression value) {
+		final JavaMethod clone = JavaMethod.getNativeVirtual(JavaClass.OBJECT, "clone", "()Ljava/lang/Object;");
+		javaWriter.invokeVirtual(clone);
+		javaWriter.checkCast(context.getDescriptor(value.type));
 		return null;
 	}
 
 	@Override
-	public Void copyTo(CallExpression call) {
+	public Void arrayCopyResize(CallExpression value) {
+		final TypeID elementType = ((ArrayTypeID) value.type).elementType;
+		final boolean primitive = CompilerUtils.isPrimitive(elementType);
+		final String elementDescriptor = primitive
+				? context.getDescriptor(elementType)
+				: "Ljava/lang/Object;";
+
+
+		final String methodDescriptor = String.format("([%1$sI)[%1$s", elementDescriptor);
+
+		final JavaMethod copyOf = JavaMethod.getNativeStatic(JavaClass.ARRAYS, "copyOf", methodDescriptor);
+		javaWriter.invokeStatic(copyOf);
+		if(!primitive) {
+			javaWriter.checkCast(context.getDescriptor(value.type));
+		}
+		return null;
+	}
+
+	@Override
+	public Void arrayCopyTo(CallExpression call) {
 		//Copy this (source) to dest
 		//              source.copyTo(dest, sourceOffset, destOffset, length)
 		//=> System.arraycopy(source, sourceOffset, dest, destOffset, length);

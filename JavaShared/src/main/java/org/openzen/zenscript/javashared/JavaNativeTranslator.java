@@ -23,9 +23,11 @@ public interface JavaNativeTranslator<T> {
 
 	T sortedWithComparator(Expression value, Expression comparator);
 
-	T copy(Expression value);
+	T arrayCopy(Expression value);
 
-	T copyTo(CallExpression call);
+	T arrayCopyResize(CallExpression value);
+
+	T arrayCopyTo(CallExpression call);
 
 	T stringToAscii(Expression value);
 
