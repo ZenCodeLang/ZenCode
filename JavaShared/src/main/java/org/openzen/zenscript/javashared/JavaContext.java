@@ -73,6 +73,13 @@ public abstract class JavaContext {
 					new FunctionHeader(BasicTypeID.VOID, registry.getGeneric(t)),
 					"accept"));
 
+			functions.put("TTToInt", new JavaSynthesizedFunction(
+					new JavaClass("java.util", "Comparator", JavaClass.Kind.INTERFACE),
+					new TypeParameter[]{t},
+					new FunctionHeader(BasicTypeID.INT, registry.getGeneric(t), registry.getGeneric(t)),
+					"compare")
+			);
+
 			functions.put("TUToVoid", new JavaSynthesizedFunction(
 					new JavaClass("java.util.function", "BiConsumer", JavaClass.Kind.INTERFACE),
 					new TypeParameter[]{t, u},
@@ -261,13 +268,25 @@ public abstract class JavaContext {
 			JavaClass cls = new JavaClass("zsynthetic", "Function" + id, JavaClass.Kind.INTERFACE);
 			List<TypeParameter> typeParameters = new ArrayList<>();
 			List<FunctionParameter> parameters = new ArrayList<>();
+
+			// Ensures that parameters filled with the same generic arg are considered one generic parameter
+			// function(string, string) -> function(T,T) instead of function(T, U)
+			Map<TypeID, TypeParameter> alreadyKnownTypeParameters = new HashMap<>();
+
 			for (FunctionParameter parameter : type.header.parameters) {
 				JavaTypeInfo typeInfo = JavaTypeInfo.get(parameter.type);
 				if (typeInfo.primitive) {
 					parameters.add(new FunctionParameter(parameter.type, Character.toString((char) ('a' + parameters.size()))));
 				} else {
-					TypeParameter typeParameter = new TypeParameter(CodePosition.BUILTIN, getTypeParameter(typeParameters.size()));
-					typeParameters.add(typeParameter);
+					final TypeParameter typeParameter;
+					if(alreadyKnownTypeParameters.containsKey(parameter.type)) {
+						typeParameter = alreadyKnownTypeParameters.get(parameter.type);
+					} else {
+						typeParameter = new TypeParameter(CodePosition.BUILTIN, getTypeParameter(typeParameters.size()));
+						typeParameters.add(typeParameter);
+						alreadyKnownTypeParameters.put(parameter.type, typeParameter);
+					}
+
 					parameters.add(new FunctionParameter(registry.getGeneric(typeParameter), Character.toString((char) ('a' + parameters.size()))));
 				}
 			}
@@ -310,9 +329,21 @@ public abstract class JavaContext {
 	private String getFunctionId(FunctionHeader header) {
 		StringBuilder signature = new StringBuilder();
 		int typeParameterIndex = 0;
+
+		//Check if we already know the type, so that function(String,String) becomes function(TT) instead of TU
+		final Map<TypeID, String> alreadyKnownParameters = new HashMap<>();
+
 		for (FunctionParameter parameter : header.parameters) {
-			JavaTypeInfo typeInfo = JavaTypeInfo.get(parameter.type);
-			String id = typeInfo.primitive ? parameter.type.accept(new JavaSyntheticTypeSignatureConverter()) : getTypeParameter(typeParameterIndex++);
+			final String id;
+			final TypeID parameterType = parameter.type;
+
+			if(alreadyKnownParameters.containsKey(parameterType)) {
+				id = alreadyKnownParameters.get(parameterType);
+			} else {
+				JavaTypeInfo typeInfo = JavaTypeInfo.get(parameterType);
+				id = typeInfo.primitive ? parameterType.accept(new JavaSyntheticTypeSignatureConverter()) : getTypeParameter(typeParameterIndex++);
+				alreadyKnownParameters.put(parameterType, id);
+			}
 			signature.append(id);
 		}
 		signature.append("To");
@@ -403,5 +434,9 @@ public abstract class JavaContext {
 			startBuilder.append("Ljava/lang/Class;");
 		}
 		return getMethodDescriptor(header, member.definition instanceof EnumDefinition, startBuilder.toString());
+	}
+
+	public GlobalTypeRegistry getRegistry() {
+		return registry;
 	}
 }

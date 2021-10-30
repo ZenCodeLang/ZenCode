@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativeTranslator<Void> {
 	public static final JavaMethod OBJECT_HASHCODE = JavaMethod.getNativeVirtual(JavaClass.OBJECT, "hashCode", "()I");
 	public static final JavaMethod OBJECT_EQUALS = JavaMethod.getNativeVirtual(JavaClass.OBJECT, "equals", "(Ljava/lang/Object)Z");
+	public static final JavaMethod OBJECT_CLONE = JavaMethod.getNativeVirtual(JavaClass.OBJECT, "clone", "()Ljava/lang/Object;");
 	private static final JavaMethod OBJECTS_TOSTRING = JavaMethod.getNativeStatic(new JavaClass("java.util", "Objects", JavaClass.Kind.CLASS), "toString", "(Ljava/lang/Object;)Ljava/lang/String;");
 	private static final JavaMethod BOOLEAN_PARSE = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "parseBoolean", "(Ljava/lang/String;)Z");
 	private static final JavaMethod BOOLEAN_TO_STRING = JavaMethod.getNativeStatic(JavaClass.BOOLEAN, "toString", "(Z)Ljava/lang/String;");
@@ -3458,11 +3459,32 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void sorted(Expression value) {
+		// Stack when starting [UnsortedArray, ...]
+		// Stack after -> [SortedArray, ...]
+		value.accept(this);
+		javaWriter.invokeVirtual(OBJECT_CLONE);
+		javaWriter.checkCast(context.getDescriptor(value.type));
+		javaWriter.dup();
+
+		// Todo: Primitive method overloads if primitive Array!
+		final JavaMethod sort = JavaMethod.getNativeExpansion(JavaClass.ARRAYS, "sort", "([Ljava/lang/Object;)[Ljava/lang/Object;");
+		javaWriter.invokeStatic(sort);
 		return null;
 	}
 
 	@Override
 	public Void sortedWithComparator(Expression value, Expression comparator) {
+		// Stack When starting [Comparator, UnsortedArray, ...]
+		// Stack After -> [SortedArray, ...]
+		javaWriter.swap();
+		javaWriter.invokeVirtual(OBJECT_CLONE);
+		javaWriter.checkCast(context.getDescriptor(value.type));
+		javaWriter.dupX1();
+		javaWriter.swap();
+
+		// ToDo: Primitive Arrays?
+		final JavaMethod sortWithComparator = JavaMethod.getNativeExpansion(JavaClass.ARRAYS, "sort", "([Ljava/lang/Object;Ljava/util/Comparator;)V");
+		javaWriter.invokeStatic(sortWithComparator);
 		return null;
 	}
 
