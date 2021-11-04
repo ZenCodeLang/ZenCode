@@ -44,28 +44,32 @@ public class ParsedExpressionFloat extends ParsedExpression {
 
 	@Override
 	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		if (scope.hints.isEmpty())
-			return new ConstantDoubleExpression(position, value);
-
+		// Inbuilt suffix -> Float/Double
 		if (suffix.equals("f") || suffix.equals("F"))
 			return new ConstantFloatExpression(position, (float) value);
 		if (suffix.equals("d") || suffix.equals("D"))
 			return new ConstantDoubleExpression(position, value);
 
+
+		// Check if the typeHints can give us additional information?
 		for (TypeID hint : scope.hints) {
 			if (suffix.isEmpty()) {
+				// No suffix but expression to be known as Float or Double -> That type
 				if (hint == BasicTypeID.DOUBLE)
 					return new ConstantDoubleExpression(position, value);
 				else if (hint == BasicTypeID.FLOAT)
 					return new ConstantFloatExpression(position, (float) value);
 			} else {
+				// Suffix and TypeHint given
+				// Check <TypeHint>.<Suffix>(<value>)
+				// E.g. 10.0s as TimeSpan -> TimeSpan.s(10.0)
 				TypeMembers members = scope.getTypeMembers(hint);
 				FunctionalMemberRef method = members.getOrCreateGroup(suffix, true).getStaticMethod(1, hint);
 				if (method != null) {
 					try {
 						ParsedCallArguments parsedArguments = new ParsedCallArguments(Collections.emptyList(), Collections.singletonList(new ParsedExpressionFloat(position, value)));
 						CallArguments arguments = parsedArguments.compileCall(position, scope, TypeID.NONE, method.getHeader());
-						method.callStatic(position, hint, method.getHeader(), arguments, scope);
+						return method.callStatic(position, hint, method.getHeader(), arguments, scope);
 					} catch (CompileException ex) {
 						return new InvalidExpression(hint, ex);
 					}
@@ -74,16 +78,10 @@ public class ParsedExpressionFloat extends ParsedExpression {
 		}
 
 		if (suffix.isEmpty()) {
-			StringBuilder types = new StringBuilder();
-			for (int i = 0; i < scope.hints.size(); i++) {
-				if (i > 0)
-					types.append(", ");
-
-				types.append(scope.hints.get(i).toString());
-			}
-
-			throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Cannot cast a floating-point value to any of these types: " + types);
+			// No suffix and no TypeHint matched -> Double, so that implicit casters will be checked
+			return new ConstantDoubleExpression(position, value);
 		} else {
+			// Suffix but no TypeHint matched -> Error
 			throw new CompileException(position, CompileExceptionCode.INVALID_SUFFIX, "Invalid suffix: " + suffix);
 		}
 	}
