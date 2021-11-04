@@ -1048,7 +1048,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 					javaWriter.getField(owner, "to", "I");
 				}
 
-				if (type.elementType instanceof BasicTypeID) {
+				if (type.elementType instanceof BasicTypeID && type.elementType != BasicTypeID.STRING) {
 					switch ((BasicTypeID) type.elementType) {
 						case BOOL:
 							javaWriter.invokeStatic(ARRAYS_COPY_OF_RANGE_BOOLS);
@@ -1083,7 +1083,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 					}
 				} else {
 					javaWriter.invokeStatic(ARRAYS_COPY_OF_RANGE_OBJECTS);
-					javaWriter.checkCast(context.getInternalName(expression.target.type));
+					javaWriter.checkCast(context.getType(expression.target.type));
 				}
 				break;
 			}
