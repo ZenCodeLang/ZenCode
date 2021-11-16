@@ -2,8 +2,8 @@
 // This file is to be applied to every subproject.
 //
 
-apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 
 String mavenGroupId = 'org.openzen.zencode'
 String mavenVersion = '0.3.8'
@@ -39,12 +39,22 @@ artifacts {
     archives sourcesJar
 }
 
-configure(install.repositories.mavenInstaller) {
-    pom.project {
-        groupId = mavenGroupId
-        artifactId = mavenArtifactId
-        version = mavenVersion
-    }
+publishing {
+	publications {
+		maven(MavenPublication) {
+			groupId = mavenGroupId
+			artifactId = mavenArtifactId
+			version = mavenVersion
+
+			from components.java
+		}
+	}
+	repositories {
+
+		maven {
+			url "file://" + System.getenv("local_maven")
+		}
+	}
 }
 
 task createFolders(description: 'Creates the source folders if they do not exist.') doLast {
