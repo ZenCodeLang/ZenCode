@@ -14,5 +14,5 @@ if (!hasProperty('mainClass')) {
 }
 
 dependencies {
-	compile project(':Shared')
+	api project(':Shared')
 }

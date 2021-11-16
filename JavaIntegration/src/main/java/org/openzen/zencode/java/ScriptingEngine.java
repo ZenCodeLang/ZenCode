@@ -30,11 +30,13 @@ import org.openzen.zenscript.validator.Validator;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Hoofdgebruiker
@@ -52,18 +54,23 @@ public class ScriptingEngine {
 	public ScriptingEngine() {
         this(new ScriptingEngineStreamLogger());
     }
+
+	public ScriptingEngine(ScriptingEngineLogger logger) {
+		this(logger, ScriptingEngine.class::getResourceAsStream);
+	}
     
-    public ScriptingEngine(ScriptingEngineLogger logger) {
+    public ScriptingEngine(ScriptingEngineLogger logger, Function<String, InputStream> resourceGetter) {
         this.space = new ModuleSpace(registry, new ArrayList<>());
         this.logger = logger;
         try {
-            ZippedPackage stdlibs = new ZippedPackage(ScriptingEngine.class.getResourceAsStream("/StdLibs.jar"));
+            ZippedPackage stdlibs = new ZippedPackage(resourceGetter.apply("/StdLibs.jar"));
 			registerLibFromStdLibs(logger, stdlibs, "stdlib", stdlib);
 			registerLibFromStdLibs(logger, stdlibs, "math", root.getOrCreatePackage("math"));
 		} catch (CompileException | ParseException | IOException ex) {
             throw new RuntimeException(ex);
         }
     }
+
 
 	private void registerLibFromStdLibs(ScriptingEngineLogger logger, ZippedPackage stdlibs, String name, ZSPackage zsPackage) throws ParseException, CompileException {
 		SemanticModule stdlibModule = stdlibs.loadModule(space, name, null, SemanticModule.NONE, FunctionParameter.NONE, zsPackage, logger);

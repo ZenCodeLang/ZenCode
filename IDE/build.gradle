@@ -14,8 +14,8 @@ if (!hasProperty('mainClass')) {
 }
 
 dependencies {
-	compile project(':DrawableGui')
-	compile project(':Constructor')
+	api project(':DrawableGui')
+	api project(':Constructor')
 }
 
 task fatJar(type: Jar) {
