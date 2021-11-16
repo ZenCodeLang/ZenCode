@@ -326,7 +326,7 @@ public class JavaNativeTypeConverter {
 	}
 
 	private Method getFunctionalInterfaceMethod(Class<?> functionalInterface) {
-		for (Method method : functionalInterface.getDeclaredMethods()) {
+		for (Method method : functionalInterface.getMethods()) {
 			if (Modifier.isPublic(method.getModifiers()) && Modifier.isAbstract(method.getModifiers()) && !method.isDefault())
 				return method;
 		}
