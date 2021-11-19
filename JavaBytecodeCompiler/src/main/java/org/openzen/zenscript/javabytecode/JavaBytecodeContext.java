@@ -102,8 +102,8 @@ public class JavaBytecodeContext extends JavaContext {
 		// TODO
 	}
 
-	public String getLambdaCounter() {
-		return "lambda" + ++lambdaCounter;
+	public int getLambdaCounter() {
+		return ++lambdaCounter;
 	}
 
 	private class TypeGenerator implements JavaSyntheticClassGenerator {
