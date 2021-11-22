@@ -17,6 +17,7 @@ import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -159,7 +160,17 @@ public class JavaNativeTypeConverter {
 			} else {
 				final Type annotatedTypeType = ((AnnotatedType) type).getType();
 				if (annotatedTypeType instanceof WildcardType) {
-					storedType = BasicTypeID.UNDETERMINED;
+					final Type[] upperBounds = ((WildcardType) annotatedTypeType).getUpperBounds();
+					if(upperBounds.length == 0) {
+						// MyClass<?> -> MyClass<UNDETERMINED>
+						storedType = BasicTypeID.UNDETERMINED;
+					} else if (upperBounds.length == 1 && upperBounds[0] instanceof AnnotatedElement) {
+						// MyClass<? extends T> -> MyClass<T>
+						storedType = loadType(context, ((AnnotatedElement) upperBounds[0]), false);
+					} else {
+						// MyClass <? extends T & U> -> Not working properly yet
+						storedType = BasicTypeID.UNDETERMINED;
+					}
 				} else if (annotatedTypeType instanceof GenericArrayType) {
 					final Type genericComponentType = ((GenericArrayType) annotatedTypeType).getGenericComponentType();
 					final TypeID baseType = loadType(context, (AnnotatedElement) genericComponentType, unsigned);
