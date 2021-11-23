@@ -2073,7 +2073,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		final String signature;
 		final String[] interfaces;
-		final String className = context.getLambdaCounter();
 		final String descriptor;
 
 		{//Fill the info above
@@ -2095,6 +2094,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		}
 
 		final JavaMethod methodInfo;
+		final String className = interfaces[0].replace('/', '_') + "_" + context.getLambdaCounter();
 		{
 			final JavaMethod m = context.getFunctionalInterface(expression.type);
 			methodInfo = new JavaMethod(m.cls, m.kind, m.name, m.compile, m.descriptor, m.modifiers & ~JavaModifiers.ABSTRACT, m.genericResult, m.typeParameterArguments);
@@ -3194,7 +3194,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	private FunctionCastWrapperClass generateFunctionCastWrapperClass(CodePosition position, FunctionTypeID fromType, FunctionTypeID toType) {
-		final String lambdaName = context.getLambdaCounter();
+		final String lambdaName = "lambda" + context.getLambdaCounter();
 		final JavaClass classInfo = new JavaClass("zsynthetic", lambdaName, JavaClass.Kind.CLASS);
 		final String className = "zsynthetic/" + lambdaName;
 

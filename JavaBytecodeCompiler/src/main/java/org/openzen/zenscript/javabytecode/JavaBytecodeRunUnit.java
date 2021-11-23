@@ -121,7 +121,7 @@ public class JavaBytecodeRunUnit {
 
 			argumentsArray[i] = arguments.get(parameter);
 		}
-		Class[] classes = new Class[scriptParameters.size()];
+		Class<?>[] classes = new Class[scriptParameters.size()];
 		for (int i = 0; i < classes.length; i++)
 			classes[i] = loadClass(classLoader, scriptParameterInfo.get(i).typeDescriptor);
 		classLoader.loadClass("Scripts").getMethod("run", classes).invoke(null, argumentsArray);
@@ -184,7 +184,7 @@ public class JavaBytecodeRunUnit {
 	}
 
 	public class ScriptClassLoader extends ClassLoader {
-		private final Map<String, Class> customClasses = new HashMap<>();
+		private final Map<String, Class<?>> customClasses = new HashMap<>();
 
 		public ScriptClassLoader(ClassLoader parent) {
 			super(parent);
