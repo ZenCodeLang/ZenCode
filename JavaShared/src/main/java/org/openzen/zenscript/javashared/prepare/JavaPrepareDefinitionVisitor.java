@@ -157,7 +157,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addMethod("sorted", new JavaMethod((expression, translator) -> {
 				return translator.sorted(((CallExpression) expression).target);
 			}));
-			cls.addMethod("sortWithComparator", JavaMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;Ljava/lang/Comparator;)[Ljava/lang/Object;"));
+			cls.addMethod("sortWithComparator", JavaMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;Ljava/util/Comparator;)V"));
 			cls.addMethod("sortedWithComparator", new JavaMethod((expression, translator) -> {
 				return translator.sortedWithComparator(
 						((CallExpression) expression).target,
