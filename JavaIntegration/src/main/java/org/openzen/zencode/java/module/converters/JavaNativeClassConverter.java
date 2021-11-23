@@ -331,23 +331,45 @@ public class JavaNativeClassConverter {
 	private void fillFields(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass) {
 		TypeID thisType = typeConversionContext.registry.getForMyDefinition(definition);
 		for (Field field : cls.getDeclaredFields()) {
-			String fieldName = field.getName();
-			ZenCodeType.Field annotation = getFieldAnnotation(field);
-			if (annotation != null) {
-				if (!annotation.value().isEmpty()) {
-					fieldName = annotation.value();
-				}
-			} else if (!field.isEnumConstant()) {
-				continue;
-			}
 			if (!Modifier.isPublic(field.getModifiers()))
 				continue;
 
+			if (!tryAddAsFieldMember(field, definition, thisType, javaClass)) {
+				tryAddAsEnumConstantMember(field, definition);
+			}
+		}
+	}
 
-			TypeID fieldType = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
-			FieldMember member = new FieldMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(field), fieldName, thisType, fieldType, typeConversionContext.registry, 0, 0, null);
-			definition.addMember(member);
-			typeConversionContext.compiled.setFieldInfo(member, new JavaField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
+	private boolean tryAddAsFieldMember(Field field, HighLevelDefinition definition, TypeID thisType, JavaClass javaClass) {
+		ZenCodeType.Field annotation = getFieldAnnotation(field);
+		if (annotation == null) {
+			return false;
+		}
+
+		String fieldName = field.getName();
+		if (!annotation.value().isEmpty()) {
+			fieldName = annotation.value();
+		}
+
+		TypeID fieldType = typeConverter.loadStoredType(typeConversionContext.context, field.getAnnotatedType());
+		final FieldMember fieldMember = new FieldMember(CodePosition.NATIVE, definition, headerConverter.getMethodModifiers(field), fieldName, thisType, fieldType, typeConversionContext.registry, 0, 0, null);
+		definition.addMember(fieldMember);
+		typeConversionContext.compiled.setFieldInfo(fieldMember, new JavaField(javaClass, field.getName(), org.objectweb.asm.Type.getDescriptor(field.getType())));
+		return true;
+	}
+
+	private void tryAddAsEnumConstantMember(Field field, HighLevelDefinition definition) {
+		//Try to add enum members separately. Let's not use their @Field Name for now, but the Java name to make mappings easier.
+		if (!field.isEnumConstant() || !(definition instanceof EnumDefinition)) {
+			return;
+		}
+
+		try {
+			final int ordinal = ((Enum<?>) field.get(null)).ordinal();
+			final EnumConstantMember enumConstantMember = new EnumConstantMember(CodePosition.NATIVE, definition, field.getName(), ordinal);
+			((EnumDefinition) definition).addEnumConstant(enumConstantMember);
+		} catch (IllegalAccessException ex) {
+			throw new IllegalArgumentException("Could not add enum member: " + ex);
 		}
 	}
 
