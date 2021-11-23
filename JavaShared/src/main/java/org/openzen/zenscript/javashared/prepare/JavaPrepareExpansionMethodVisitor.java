@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.javashared.*;
 
 /**
@@ -169,7 +170,7 @@ public class JavaPrepareExpansionMethodVisitor implements MemberVisitor<Void> {
 						true,
 						descriptor,
 						JavaModifiers.getJavaModifiers(member.getEffectiveModifiers()),
-						context.isGenericOrContainsGenericParameters(header.getReturnType()),
+						header.getReturnType() instanceof GenericTypeID,
 						header.useTypeParameters());
 			}
 		}

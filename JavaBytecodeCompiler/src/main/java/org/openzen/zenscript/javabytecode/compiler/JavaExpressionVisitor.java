@@ -8,7 +8,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -431,7 +430,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				throw new IllegalStateException("Call target has no method info!");
 
 			if (expression.member.getTarget().header.getReturnType().isGeneric())
-				javaWriter.checkCast(context.getType(expression.type));
+				javaWriter.checkCast(context.getInternalName(expression.type));
 
 			return null;
 		}
@@ -1224,26 +1223,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		JavaMethod methodInfo = context.getJavaMethod(member);
 
 		if (methodInfo.compile) {
-			if (typeParameters.size() == (member.getTarget().definition.getNumberOfGenericParameters() + arguments.typeArguments.length)) {
+			if (typeParameters.size() == arguments.typeArguments.length) {
 				final JavaTypeExpressionVisitor javaTypeExpressionVisitor = new JavaTypeExpressionVisitor(context);
-
-				// Try to load all type parameters of "this" to the stack, if an expansion
-				if (member.getTarget().definition instanceof ExpansionDefinition) {
-					if (((ExpansionDefinition) member.getTarget().definition).target instanceof ArrayTypeID
-							&& member.getOwnerType() instanceof ArrayTypeID) {
-						//FIXME: Dirty hack until we get this to work better
-						// Problem: How can we get the TypeParameters of e.g. T[] when all info we have uses the filled in type info?
-						final TypeID elementType = ((ArrayTypeID) member.getOwnerType()).elementType;
-						elementType.accept(javaWriter, javaTypeExpressionVisitor);
-					} else {
-						for (int i = 0; i < member.getTarget().definition.getNumberOfGenericParameters(); i++) {
-
-							javaWriter.aConstNull(); // TODO: Replace with actual class
-							javaWriter.checkCast("java/lang/Class");
-						}
-					}
-				}
-
 				for (TypeID typeArgument : arguments.typeArguments) {
 					typeArgument.accept(javaWriter, javaTypeExpressionVisitor);
 				}
@@ -2670,7 +2651,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case ARRAY_CONSTRUCTOR_INITIAL_VALUE: {
 				ArrayTypeID type = (ArrayTypeID) expression.type;
 
-				final ArrayHelperType ASMType = new ArrayHelperType(type, context);
+				final Type ASMType = context.getType(expression.type);
 				final Type ASMElementType = context.getType(type.elementType);
 
 				final Label begin = new Label();
@@ -2702,7 +2683,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final Label end = new Label();
 				javaWriter.label(begin);
 
-				final ArrayHelperType ASMElementType = new ArrayHelperType(expression.type, context);
+				final Type ASMElementType = context.getType(expression.type);
 				final int dimension = ((ArrayTypeID) expression.type).dimension;
 				final int[] arraySizes = ArrayInitializerHelper.getArraySizeLocationsFromConstructor(dimension, expression.arguments.arguments, this);
 				ArrayInitializerHelper.visitMultiDimArray(javaWriter, arraySizes, new int[dimension], dimension, ASMElementType, (elementType, counterLocations) -> {
@@ -2729,7 +2710,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				final Type originArrayType = context.getType(expression.arguments.arguments[0].type);
 				final int originArrayLocation = javaWriter.local(originArrayType);
 				javaWriter.storeObject(originArrayLocation);
-				ArrayHelperType destinationArrayType = new ArrayHelperType(type, context);
+				Type destinationArrayType = context.getType(expression.type);
 
 				final boolean indexed = builtin == BuiltinID.ARRAY_CONSTRUCTOR_PROJECTED_INDEXED;
 				final boolean canBeInLined = ArrayInitializerHelper.canBeInLined(expression.arguments.arguments[1]);
@@ -3453,7 +3434,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			getJavaWriter().invokeVirtual(methodInfo);
 		}
 		if (methodInfo.genericResult) {
-			getJavaWriter().checkCast(context.getType(resultType));
+			getJavaWriter().checkCast(context.getInternalName(resultType));
 		}
 
 		//Make sure that method results are popped if ZC thinks its a void but it actually is not.
@@ -3492,8 +3473,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void listToArray(CastExpression value) {
 		//value.target.accept(this);
 		javaWriter.iConst0();
-		final ArrayHelperType arrayHelperType = new ArrayHelperType(((ArrayTypeID)value.type).elementType, context);
-		arrayHelperType.newArray(javaWriter);
+		final Type type = context.getType(((ArrayTypeID) value.type).elementType);
+		javaWriter.newArray(type);
 		final JavaMethod toArray = new JavaMethod(JavaClass.COLLECTION, JavaMethod.Kind.INSTANCE, "toArray", true, "([Ljava/lang/Object;)[Ljava/lang/Object;", 0, true);
 		javaWriter.invokeInterface(toArray);
 		javaWriter.checkCast(context.getType(value.type));

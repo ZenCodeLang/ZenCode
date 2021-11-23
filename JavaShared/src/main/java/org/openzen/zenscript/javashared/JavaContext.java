@@ -523,16 +523,15 @@ public abstract class JavaContext {
 	 */
 	public String getMethodDescriptor(FunctionHeader header, boolean isEnumConstructor, String expandedType) {
 		StringBuilder descBuilder = new StringBuilder("(");
-
-		//TODO: Put this earlier? We'd need to agree on one...
-		if (expandedType != null)
-			descBuilder.append(expandedType);
-
 		for (int i = 0; i < header.getNumberOfTypeParameters(); i++)
 			descBuilder.append("Ljava/lang/Class;");
 
 		if (isEnumConstructor)
 			descBuilder.append("Ljava/lang/String;I");
+
+		//TODO: Put this earlier? We'd need to agree on one...
+		if (expandedType != null)
+			descBuilder.append(expandedType);
 
 		for (FunctionParameter parameter : header.parameters) {
 			descBuilder.append(getDescriptor(parameter.type));
@@ -552,9 +551,5 @@ public abstract class JavaContext {
 
 	public GlobalTypeRegistry getRegistry() {
 		return registry;
-	}
-
-	public boolean isGenericOrContainsGenericParameters(TypeID typeID) {
-		return typeID.accept(new JavaTypeCheckIfGenericVisitor());
 	}
 }
