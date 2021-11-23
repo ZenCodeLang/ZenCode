@@ -28,6 +28,10 @@ public class ArrayTypeID implements TypeID {
 		this.normalized = elementType.getNormalized() == elementType ? this : registry.getArray(elementType.getNormalized(), dimension);
 	}
 
+	public TypeID removeOneDimension() {
+		return dimension > 1 ? new ArrayTypeID(elementType, dimension - 1) : elementType;
+	}
+
 	@Override
 	public Expression getDefaultValue() {
 		return new ArrayExpression(CodePosition.UNKNOWN, Expression.NONE, this);
