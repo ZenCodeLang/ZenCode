@@ -2114,7 +2114,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		}
 
 		final JavaMethod methodInfo;
-		final String className = interfaces[0].replace('/', '_') + "_" + context.getLambdaCounter();
+		// We don't allow registering classes starting with "java"
+		final String className = interfaces[0].replace("java", "j").replace("/", "_") + "_" + context.getLambdaCounter();
 		{
 			final JavaMethod m = context.getFunctionalInterface(expression.type);
 			methodInfo = new JavaMethod(m.cls, m.kind, m.name, m.compile, m.descriptor, m.modifiers & ~JavaModifiers.ABSTRACT, m.genericResult, m.typeParameterArguments);
