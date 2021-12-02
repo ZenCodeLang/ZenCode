@@ -253,29 +253,46 @@ public class FunctionHeader {
 	}
 
 	public boolean matchesImplicitly(CodePosition position, CallArguments arguments, TypeScope scope) {
+		return implicitMatchScore(position, arguments, scope) != -1;
+	}
+
+	/**
+	 * Counts the number of arguments that match but only if implicitly cast. {@code -1} when the method does not match
+	 * implicitly. Numbers closer to zero represent a "better" match.
+	 */
+	public int implicitMatchScore(CodePosition position, CallArguments arguments, TypeScope scope) {
 		if (!accepts(arguments.arguments.length))
-			return false;
+			return -1;
 
 		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
 		if (isVariadic()) {
-			boolean matches = true;
+			int score = 0;
 			for (int i = 0; i < arguments.arguments.length; i++) {
-				if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.getParameterType(true, i))) {
-					matches = false;
+				TypeID argumentType = arguments.arguments[i].type;
+				TypeID parameterType = header.getParameterType(true, i);
+				if (!scope.getTypeMembers(argumentType).canCastImplicit(parameterType)) {
+					score = -1;
 					break;
 				}
+				if (!argumentType.equals(parameterType))//The cast is implicit
+					score++;
 			}
-			if (matches) {
-				return true;
+			if (score != -1) {
+				return score;
 			}
 		}
 
+		int score = 0;
 		for (int i = 0; i < arguments.arguments.length; i++) {
-			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(header.parameters[i].type))
-				return false;
+			TypeID argumentType = arguments.arguments[i].type;
+			TypeID parameterType = header.parameters[i].type;
+			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(parameterType))
+				return -1;
+			if (!argumentType.equals(parameterType))//The cast is implicit
+				score++;
 		}
 
-		return true;
+		return score;
 	}
 
 	public String getCanonicalWithoutReturnType() {

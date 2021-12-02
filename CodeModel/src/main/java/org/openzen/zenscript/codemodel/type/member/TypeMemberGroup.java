@@ -332,6 +332,7 @@ public class TypeMemberGroup {
 		}
 		// try to match with approximate types
 		TypeMember<FunctionalMemberRef> selected = null;
+		int selectedScore = -1;
 		for (TypeMember<FunctionalMemberRef> method : methods) {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
@@ -341,23 +342,36 @@ public class TypeMemberGroup {
 			scope.getPreparer().prepare(method.member.getTarget());
 
 			FunctionHeader header = method.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
-			if (!header.matchesImplicitly(position, arguments, scope))
+			int implicitScore = header.implicitMatchScore(position, arguments, scope);
+			//If it doesn't match implicitly or if it requires more implicit casts than another method we have
+			// found, skip as the one we have already found matches better
+			if (implicitScore == -1 || selectedScore != -1 && implicitScore > selectedScore)
 				continue;
 
 			if (selected == null) {
 				selected = method;
+				selectedScore = implicitScore;
 			} else if (selected.member.equals(method.member)) {
 				selected = selected.resolve(method);
+				if (selected == method)//If method switched, then we also want to update which score we have selected
+					selectedScore = implicitScore;
 			} else if (selected.priority == method.priority) {
-				StringBuilder explanation = new StringBuilder();
-				FunctionHeader selectedHeader = selected.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
-				explanation.append("Function A: ").append(selectedHeader.toString()).append("\n");
-				explanation.append("Function B: ").append(header.toString());
-				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, "Ambiguous call; multiple methods match:\n" + explanation.toString());
+				if (implicitScore == selectedScore) {
+					StringBuilder explanation = new StringBuilder();
+					FunctionHeader selectedHeader = selected.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
+					explanation.append("Function A: ").append(selectedHeader.toString()).append("\n");
+					explanation.append("Function B: ").append(header);
+					throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, "Ambiguous call; multiple methods match:\n" + explanation);
+				} else {//implicitScore < selectedScore
+					selected = method;
+					selectedScore = implicitScore;
+				}
 			} else {
 				//For example:
 				//Child overrides parent: Priority.Specified vs. Priority.Inherited
 				selected = selected.resolve(method);
+				if (selected == method)//If method switched, then we also want to update which score we have selected
+					selectedScore = implicitScore;
 			}
 		}
 
