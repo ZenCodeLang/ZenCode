@@ -109,7 +109,9 @@ public final class TypeMembers {
 	}
 
 	public void copyMembersTo(TypeMembers other, TypeMemberPriority priority) {
-		other.casters.addAll(casters);
+		for (TypeMember<CasterMemberRef> caster : casters) {
+			other.casters.add(new TypeMember<>(priority, caster.member));
+		}
 		for (TypeMember<IteratorMemberRef> iterator : iterators) {
 			other.addIterator(iterator.member, priority);
 		}
@@ -429,23 +431,26 @@ public final class TypeMembers {
 	}
 
 	public CasterMemberRef getImplicitCaster(TypeID toType) {
-		toType = toType.getNormalized();
-		for (TypeMember<CasterMemberRef> caster : casters) {
-			if (caster.member.isImplicit() && caster.member.toType == toType)
-				return caster.member;
-		}
-
-		return null;
+		return getCaster(toType, false);
 	}
 
 	public CasterMemberRef getCaster(TypeID toType) {
-		toType = toType.getNormalized();
-		for (TypeMember<CasterMemberRef> caster : casters) {
-			if (caster.member.toType == toType)
-				return caster.member;
-		}
+		return getCaster(toType, true);
+	}
 
-		return null;
+	private CasterMemberRef getCaster(TypeID toType, boolean whenExplicit) {
+		toType = toType.getNormalized();
+		CasterMemberRef foundCaster = null;
+		TypeMemberPriority priority = null;
+		for (TypeMember<CasterMemberRef> caster : casters) {
+			if ((whenExplicit || caster.member.isImplicit()) && caster.member.toType == toType) {
+				if (foundCaster == null || priority.compareTo(caster.priority) < 0) {
+					foundCaster = caster.member;
+					priority = caster.priority;
+				}
+			}
+		}
+		return foundCaster;
 	}
 
 	public boolean canCast(TypeID toType) {
