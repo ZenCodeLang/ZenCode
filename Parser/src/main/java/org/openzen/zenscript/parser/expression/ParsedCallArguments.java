@@ -136,8 +136,6 @@ public class ParsedCallArguments {
 			predictedTypes[i] = new ArrayList<>();
 
 		for (FunctionHeader header : candidates) {
-			//TODO: this is wrong!
-			boolean variadic = header.isVariadic();
 
 			type_parameter_replacement:
 			if (typeArguments != null && typeArguments.length > 0 && header.typeParameters.length == typeArguments.length) {
@@ -151,11 +149,24 @@ public class ParsedCallArguments {
 				header = header.withGenericArguments(new GenericMapper(position, scope.getTypeRegistry(), types));
 			}
 
+			// Use Parameters.length instead of maxParameters to get number of declared parameters
+			// We could be variadic if we have 0 vararg parameters (=#parameters-1 arguments), 1 (=#parameters arguments) or more
+			// We could be "normal" if we have as many args as parameters, or less (for optionals)
+			boolean couldBeVariadic = header.isVariadic() && arguments.size() >= header.parameters.length - 1;
+			boolean couldBeNormalCall = arguments.size() <= header.parameters.length;
+
 			for (int i = 0; i < arguments.size(); i++) {
 
-				final TypeID parameterType = header.getParameterType(variadic, i);
-				if (!predictedTypes[i].contains(parameterType))
-					predictedTypes[i].add(parameterType);
+				if(couldBeVariadic) {
+					final TypeID parameterType = header.getParameterType(true, i);
+					if (!predictedTypes[i].contains(parameterType))
+						predictedTypes[i].add(parameterType);
+				}
+				if(couldBeNormalCall) {
+					final TypeID parameterType = header.getParameterType(false, i);
+					if (!predictedTypes[i].contains(parameterType))
+						predictedTypes[i].add(parameterType);
+				}
 			}
 		}
 
