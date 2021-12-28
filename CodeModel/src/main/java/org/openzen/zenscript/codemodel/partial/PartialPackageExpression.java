@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -51,5 +52,11 @@ public class PartialPackageExpression implements IPartialExpression {
 	@Override
 	public TypeID[] getTypeArguments() {
 		return null;
+	}
+
+	@Override
+	public IPartialExpression capture(CodePosition position, LambdaClosure closure) throws CompileException {
+
+		return this;
 	}
 }
