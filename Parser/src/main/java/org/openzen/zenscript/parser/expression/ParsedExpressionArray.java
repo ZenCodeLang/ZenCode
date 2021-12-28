@@ -66,7 +66,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 			ExpressionScope contentScope = scope.withoutHints();
 			TypeID resultType = null;
 			for (int i = 0; i < contents.size(); i++) {
-				cContents[i] = contents.get(i).compileKey(contentScope).eval();
+				cContents[i] = contents.get(i).compile(contentScope).eval();
 				TypeID joinedType = resultType == null ? cContents[i].type : scope.getTypeMembers(resultType).union(cContents[i].type);
 				if (joinedType == null)
 					throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "Could not combine " + resultType + " with " + cContents[i].type);
