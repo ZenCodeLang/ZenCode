@@ -438,12 +438,12 @@ public final class TypeMembers {
 		return getCaster(toType, true);
 	}
 
-	private CasterMemberRef getCaster(TypeID toType, boolean whenExplicit) {
+	private CasterMemberRef getCaster(TypeID toType, boolean explicit) {
 		toType = toType.getNormalized();
 		CasterMemberRef foundCaster = null;
 		TypeMemberPriority priority = null;
 		for (TypeMember<CasterMemberRef> caster : casters) {
-			if ((whenExplicit || caster.member.isImplicit()) && caster.member.toType == toType) {
+			if ((explicit || caster.member.isImplicit()) && caster.member.toType == toType) {
 				if (foundCaster == null || priority.compareTo(caster.priority) < 0) {
 					foundCaster = caster.member;
 					priority = caster.priority;
