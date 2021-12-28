@@ -44,7 +44,7 @@ public class EnumDefinition extends HighLevelDefinition {
 	@Override
 	public void normalize(TypeScope scope) {
 		if (members.stream().noneMatch(m -> m instanceof ConstructorMember)) {
-			ConstructorMember constructor = new ConstructorMember(position, this, Modifiers.PUBLIC | Modifiers.EXTERN, new FunctionHeader(BasicTypeID.VOID), BuiltinID.ENUM_EMPTY_CONSTRUCTOR);
+			ConstructorMember constructor = new ConstructorMember(position, this, Modifiers.PRIVATE | Modifiers.EXTERN, new FunctionHeader(BasicTypeID.VOID), BuiltinID.ENUM_EMPTY_CONSTRUCTOR);
 			addMember(constructor);
 		}
 		super.normalize(scope);

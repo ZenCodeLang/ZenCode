@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.AccessScope;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -93,6 +94,15 @@ public class DefinitionMemberValidator implements MemberVisitor<Void> {
 
 	@Override
 	public Void visitConstructor(ConstructorMember member) {
+		if (member.getDefinition() instanceof EnumDefinition) {
+			ValidationUtils.validateModifiers(
+					validator,
+					member.getEffectiveModifiers(),
+					Modifiers.PRIVATE,
+					member.position,
+					"Invalid modifier");
+		}
+
 		for (FunctionHeader existing : constructors) {
 			if (existing.isSimilarTo(member.header)) {
 				validator.logError(ValidationLogEntry.Code.DUPLICATE_CONSTRUCTOR, member.position, "Duplicate constructor, conflicts with this" + existing.toString());
