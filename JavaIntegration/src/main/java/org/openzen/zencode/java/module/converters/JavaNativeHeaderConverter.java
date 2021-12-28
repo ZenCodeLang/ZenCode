@@ -122,8 +122,10 @@ public class JavaNativeHeaderConverter {
 	}
 
 	public Expression getDefaultValue(Parameter parameter, TypeID type, FunctionParameter functionParameter) {
+
+		final TypeID baseType = type.isOptional() ? type.withoutOptional() : type;
 		if (parameter.isAnnotationPresent(ZenCodeType.Optional.class)) {
-			if(JavaTypeInfo.get(type).primitive){
+			if (JavaTypeInfo.get(type).primitive) {
 				throw new IllegalArgumentException("Cannot use generic Optional annotation for type (" + type.withoutOptional().toString() + ") as it is primitive! Use the corresponding primitive @Optional annotation instead (E.G. @OptionalInt, @OptionalBoolean).");
 			}
 			final String s = parameter.getAnnotation(ZenCodeType.Optional.class).value();
@@ -152,60 +154,60 @@ public class JavaNativeHeaderConverter {
 			//}
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalInt.class)) {
 			ZenCodeType.OptionalInt annotation = parameter.getAnnotation(ZenCodeType.OptionalInt.class);
-			if (type == BasicTypeID.BYTE)
+			if (baseType == BasicTypeID.BYTE)
 				return new ConstantByteExpression(CodePosition.NATIVE, annotation.value());
-			else if (type == BasicTypeID.SBYTE)
+			else if (baseType == BasicTypeID.SBYTE)
 				return new ConstantSByteExpression(CodePosition.NATIVE, (byte) annotation.value());
-			else if (type == BasicTypeID.SHORT)
+			else if (baseType == BasicTypeID.SHORT)
 				return new ConstantShortExpression(CodePosition.NATIVE, (short) annotation.value());
-			else if (type == BasicTypeID.USHORT)
+			else if (baseType == BasicTypeID.USHORT)
 				return new ConstantUShortExpression(CodePosition.NATIVE, annotation.value());
-			else if (type == BasicTypeID.INT)
+			else if (baseType == BasicTypeID.INT)
 				return new ConstantIntExpression(CodePosition.NATIVE, annotation.value());
-			else if (type == BasicTypeID.UINT)
+			else if (baseType == BasicTypeID.UINT)
 				return new ConstantUIntExpression(CodePosition.NATIVE, annotation.value());
 			else
-				throw new IllegalArgumentException("Cannot use int default values for " + type.toString());
+				throw new IllegalArgumentException("Cannot use int default values for " + baseType.toString());
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalLong.class)) {
 			ZenCodeType.OptionalLong annotation = parameter.getAnnotation(ZenCodeType.OptionalLong.class);
-			if (type == BasicTypeID.LONG)
+			if (baseType == BasicTypeID.LONG)
 				return new ConstantLongExpression(CodePosition.NATIVE, annotation.value());
-			else if (type == BasicTypeID.ULONG)
+			else if (baseType == BasicTypeID.ULONG)
 				return new ConstantULongExpression(CodePosition.NATIVE, annotation.value());
 			else
-				throw new IllegalArgumentException("Cannot use long default values for " + type.toString());
+				throw new IllegalArgumentException("Cannot use long default values for " + baseType.toString());
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalFloat.class)) {
 			ZenCodeType.OptionalFloat annotation = parameter.getAnnotation(ZenCodeType.OptionalFloat.class);
-			if (type == BasicTypeID.FLOAT)
+			if (baseType == BasicTypeID.FLOAT)
 				return new ConstantFloatExpression(CodePosition.NATIVE, annotation.value());
 			else
-				throw new IllegalArgumentException("Cannot use float default values for " + type.toString());
+				throw new IllegalArgumentException("Cannot use float default values for " + baseType.toString());
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalDouble.class)) {
 			ZenCodeType.OptionalDouble annotation = parameter.getAnnotation(ZenCodeType.OptionalDouble.class);
-			if (type == BasicTypeID.DOUBLE)
+			if (baseType == BasicTypeID.DOUBLE)
 				return new ConstantDoubleExpression(CodePosition.NATIVE, annotation.value());
 			else
-				throw new IllegalArgumentException("Cannot use double default values for " + type.toString());
+				throw new IllegalArgumentException("Cannot use double default values for " + baseType.toString());
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalString.class)) {
 			ZenCodeType.OptionalString annotation = parameter.getAnnotation(ZenCodeType.OptionalString.class);
-			if (type == BasicTypeID.STRING) {
+			if (baseType == BasicTypeID.STRING) {
 				return new ConstantStringExpression(CodePosition.NATIVE, annotation.value());
 			} else {
-				throw new IllegalArgumentException("Cannot use string default values for " + type.toString());
+				throw new IllegalArgumentException("Cannot use string default values for " + baseType.toString());
 			}
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalBoolean.class)) {
 			ZenCodeType.OptionalBoolean annotation = parameter.getAnnotation(ZenCodeType.OptionalBoolean.class);
-			if (type == BasicTypeID.BOOL) {
+			if (baseType == BasicTypeID.BOOL) {
 				return new ConstantBoolExpression(CodePosition.NATIVE, annotation.value());
 			} else {
-				throw new IllegalArgumentException("Cannot use boolean default values for " + type.toString());
+				throw new IllegalArgumentException("Cannot use boolean default values for " + baseType.toString());
 			}
 		} else if (parameter.isAnnotationPresent(ZenCodeType.OptionalChar.class)) {
 			ZenCodeType.OptionalChar annotation = parameter.getAnnotation(ZenCodeType.OptionalChar.class);
-			if (type == BasicTypeID.CHAR) {
+			if (baseType == BasicTypeID.CHAR) {
 				return new ConstantCharExpression(CodePosition.NATIVE, annotation.value());
 			} else {
-				throw new IllegalArgumentException("Cannot use char default values for " + type.toString());
+				throw new IllegalArgumentException("Cannot use char default values for " + baseType.toString());
 			}
 		} else {
 			return null;
