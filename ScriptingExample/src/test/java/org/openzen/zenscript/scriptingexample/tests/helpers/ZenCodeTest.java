@@ -2,8 +2,8 @@ package org.openzen.zenscript.scriptingexample.tests.helpers;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.java.ScriptingEngine;
+import org.openzen.zencode.java.module.JavaNativeModule;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zencode.shared.SourceFile;
@@ -21,7 +21,7 @@ import java.util.List;
 
 public abstract class ZenCodeTest {
 
-	private final List<SourceFile> sourceFiles;
+	protected final List<SourceFile> sourceFiles;
 	protected ScriptingEngine engine;
 	protected JavaNativeModule testModule;
 	protected ZenCodeTestLogger logger;
@@ -29,7 +29,6 @@ public abstract class ZenCodeTest {
 	protected ZenCodeTest() {
 		sourceFiles = new ArrayList<>();
 	}
-
 
 	@BeforeEach
 	public void beforeEach() throws CompileException {

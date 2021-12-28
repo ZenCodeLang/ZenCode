@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ZenCodeTestLoggerOutput {
 
-	private final List<String> lines = new ArrayList<>();
+	protected final List<String> lines = new ArrayList<>();
 
 	void add(String line) {
 		lines.addAll(Arrays.asList(String.valueOf(line).split(System.lineSeparator())));

@@ -17,6 +17,12 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
 		this.warnings = new ZenCodeTestLoggerOutput();
 	}
 
+	public ZenCodeTestLogger(ZenCodeTestLoggerOutput printlnOutputs, ZenCodeTestLoggerOutput errors, ZenCodeTestLoggerOutput warnings) {
+		this.printlnOutputs = printlnOutputs;
+		this.errors = errors;
+		this.warnings = warnings;
+	}
+
 	@Override
 	public void debug(String message) {
 		if (logDebug) {
@@ -26,34 +32,34 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
 
 	@Override
 	public void warning(String message) {
-		warnings.add(message);
+		warnings().add(message);
 		super.warning(message);
 	}
 
 	@Override
 	public void throwingWarn(String message, Throwable throwable) {
-		warnings.add(message);
+		warnings().add(message);
 		super.throwingWarn(message, throwable);
 	}
 
 	public void logPrintln(String line) {
 		info(line);
-		this.printlnOutputs.add(line);
+		this.printlnOutputs().add(line);
 	}
 
 	@Override
 	public void error(String message) {
-		errors.add(message);
+		errors().add(message);
 		super.error(message);
 	}
 
 	@Override
 	public void throwingErr(String message, Throwable throwable) {
-		errors.add(message);
+		errors().add(message);
 		super.throwingErr(message, throwable);
 	}
 
-	void setEngineComplete() {
+	public void setEngineComplete() {
 		isEngineComplete = true;
 	}
 
@@ -61,22 +67,22 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
 		if (!isEngineComplete) {
 			Assertions.fail("Trying to call an assertion before the engine ran, probably a fault in the test!");
 		}
-		printlnOutputs.assertLine(line, content);
+		printlnOutputs().assertLine(line, content);
 	}
 
 	public void assertPrintOutputSize(int size) {
 		if (!isEngineComplete) {
 			Assertions.fail("Trying to call an assertion before the engine ran, probably a fault in the test!");
 		}
-		printlnOutputs.assertSize(size);
+		printlnOutputs().assertSize(size);
 	}
 
 	public void assertNoErrors() {
-		errors.assertEmpty();
+		errors().assertEmpty();
 	}
 
 	public void assertNoWarnings() {
-		warnings.assertEmpty();
+		warnings().assertEmpty();
 	}
 
 	public ZenCodeTestLoggerOutput printlnOutputs() {
@@ -89,5 +95,9 @@ public class ZenCodeTestLogger extends ScriptingEngineStreamLogger {
 
 	public ZenCodeTestLoggerOutput warnings() {
 		return warnings;
+	}
+
+	public boolean isEngineComplete() {
+		return isEngineComplete;
 	}
 }
