@@ -64,7 +64,16 @@ public class JavaNativeTypeConverter {
 		return type;
 	}
 
-	public TypeID loadType(TypeVariableContext context, AnnotatedType annotatedType) {
+	@Deprecated
+	public TypeID loadType(TypeVariableContext context, AnnotatedElement element) {
+		try {
+			return loadType(context, JavaAnnotatedType.of(element));
+		} catch (final IllegalArgumentException e) {
+			throw new IllegalArgumentException("Unable to analyze type: " + element, e);
+		}
+	}
+
+	public TypeID loadType(TypeVariableContext context, JavaAnnotatedType annotatedType) {
 		if (annotatedType.isAnnotationPresent(ZenCodeType.USize.class))
 			return BasicTypeID.USIZE;
 		else if (annotatedType.isAnnotationPresent(ZenCodeType.NullableUSize.class))
@@ -76,104 +85,152 @@ public class JavaNativeTypeConverter {
 		return loadType(context, annotatedType, nullable, unsigned);
 	}
 
-	public TypeID loadType(TypeVariableContext context, AnnotatedElement type, boolean nullable, boolean unsigned) {
-		TypeID result = loadType(context, type, unsigned);
-		if (nullable)
-			result = typeConversionContext.registry.getOptional(result);
-
-		return result;
+	@Deprecated
+	public TypeID loadType(TypeVariableContext context, AnnotatedElement element, boolean n, boolean u) {
+		try {
+			return loadType(context, JavaAnnotatedType.of(element), n, u);
+		} catch (final IllegalArgumentException e) {
+			throw new IllegalArgumentException("Unable to analyze type: " + element, e);
+		}
 	}
 
-	@SuppressWarnings("ChainOfInstanceofChecks")
-	public TypeID loadType(TypeVariableContext context, AnnotatedElement type, boolean unsigned) {
-		if (type instanceof Class) {
-			Class<?> classType = (Class<?>) type;
-			if (unsigned) {
-				if (unsignedByClass.containsKey(classType)) {
-					return unsignedByClass.get(classType);
-				} else {
-					throw new IllegalArgumentException("This class cannot be used as unsigned: " + classType);
-				}
-			} else if (classType.isArray()) {
-				return typeConversionContext.registry.getArray(loadType(context, classType.getComponentType(), false, false), 1);
-			} else if (classType.isAnnotationPresent(FunctionalInterface.class)) {
-				return loadFunctionalInterface(context, classType, new AnnotatedElement[0]);
+	public TypeID loadType(TypeVariableContext context, JavaAnnotatedType type, boolean nullable, boolean unsigned) {
+		TypeID result = loadType(context, type, unsigned);
+		return nullable ? typeConversionContext.registry.getOptional(result) : result;
+	}
+
+	private TypeID loadType(TypeVariableContext context, JavaAnnotatedType type, boolean unsigned) {
+
+		final JavaAnnotatedType.ElementType elementType = type.getElementType();
+
+		try {
+			switch (elementType) {
+				case ANNOTATED_PARAMETERIZED_TYPE:
+					return loadAnnotatedParameterizedType(context, (AnnotatedParameterizedType) type.getAnnotatedElement(), unsigned);
+				case ANNOTATED_TYPE:
+					return loadAnnotatedType(context, (AnnotatedType) type.getAnnotatedElement(), unsigned);
+				case CLASS:
+					return loadClass(context, (Class<?>) type.getType(), unsigned);
+				case GENERIC_ARRAY:
+					return loadGenericArray(context, (GenericArrayType) type.getType(), unsigned);
+				case PARAMETERIZED_TYPE:
+					return loadParameterizedType(context, (ParameterizedType) type.getType());
+				case TYPE_VARIABLE:
+					return loadTypeVariable(context, (TypeVariable<?>) type.getType());
+				case WILDCARD:
+					return loadWildcard();
 			}
 
-			if (typeByClass.containsKey(classType))
-				return typeByClass.get(classType);
+			throw new IllegalArgumentException("Invalid type " + elementType + ": not yet implemented or foolery");
+		} catch (final IllegalArgumentException e) {
+			throw new IllegalArgumentException("Unable to analyze type: " + type, e);
+		}
+	}
 
-			HighLevelDefinition definition = javaNativeModule.addClass(classType);
-			final List<TypeID> s = new ArrayList<>();
-			for (TypeVariable<? extends Class<?>> typeParameter : classType.getTypeParameters()) {
-				s.add(typeConversionContext.registry.getGeneric(context.get(typeParameter)));
-			}
+	private TypeID loadAnnotatedParameterizedType(TypeVariableContext context, AnnotatedParameterizedType type, boolean unsigned) {
+		final ParameterizedType parameterizedType = this.getTypeIfValid(JavaAnnotatedType.of(type.getType()), JavaAnnotatedType.ElementType.PARAMETERIZED_TYPE);
+		final JavaAnnotatedType rawType = JavaAnnotatedType.of(parameterizedType.getRawType());
 
-			return typeConversionContext.registry.getForDefinition(definition, s.toArray(TypeID.NONE));
-		} else if (type instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType) type;
-			Class<?> rawType = (Class<?>) parameterizedType.getRawType();
-			if (rawType.isAnnotationPresent(FunctionalInterface.class))
-				return loadFunctionalInterface(context, rawType, (AnnotatedElement[]) parameterizedType.getActualTypeArguments());
+		final JavaAnnotatedType[] actualTypeArguments = JavaAnnotatedType.of(type.getAnnotatedActualTypeArguments());
+		final TypeID[] codeParameters = new TypeID[actualTypeArguments.length];
 
-			Type[] parameters = parameterizedType.getActualTypeArguments();
-			TypeID[] codeParameters = new TypeID[parameters.length];
-			for (int i = 0; i < parameters.length; i++)
-				codeParameters[i] = loadType(context, (AnnotatedElement) parameters[i], false, false);
+		for (int i = 0; i < actualTypeArguments.length; i++) {
+			codeParameters[i] = this.loadType(context, actualTypeArguments[i], false, false);
+		}
 
-			if (rawType == Map.class) {
+		if (rawType.getElementType() == JavaAnnotatedType.ElementType.CLASS) {
+			if (rawType.getType() == Map.class) {
 				return typeConversionContext.registry.getAssociative(codeParameters[0], codeParameters[1]);
 			}
 
-			HighLevelDefinition definition = javaNativeModule.addClass(rawType);
-			return typeConversionContext.registry.getForDefinition(definition, codeParameters);
-		} else if (type instanceof TypeVariable<?>) {
-			TypeVariable<?> variable = (TypeVariable<?>) type;
-			return typeConversionContext.registry.getGeneric(context.get(variable));
-		} else if (type instanceof AnnotatedType) {
-			TypeID storedType;
-			if (type instanceof AnnotatedParameterizedType) {
-				AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
+			final Map<TypeParameter, TypeID> map = new HashMap<>();
+			final JavaAnnotatedType[] typeParameters = JavaAnnotatedType.of(((Class<?>) rawType.getType()).getTypeParameters());
+			final TypeID rawTypeId = this.loadType(context, rawType, unsigned);
 
-				final Type rawType = ((ParameterizedType) parameterizedType.getType()).getRawType();
-				final AnnotatedType[] actualTypeArguments = parameterizedType.getAnnotatedActualTypeArguments();
-				final TypeID[] codeParameters = new TypeID[actualTypeArguments.length];
-				for (int i = 0; i < actualTypeArguments.length; i++) {
-					codeParameters[i] = loadType(context, actualTypeArguments[i], false, false);
-				}
-
-				if (rawType == Map.class) {
-					storedType = typeConversionContext.registry.getAssociative(codeParameters[0], codeParameters[1]);
-				} else if (rawType instanceof Class<?>) {
-					final Map<TypeParameter, TypeID> map = new HashMap<>();
-					final TypeVariable<? extends Class<?>>[] typeParameters = ((Class<?>) rawType).getTypeParameters();
-					final TypeID loadType = loadType(context, (AnnotatedElement) rawType, unsigned);
-					for (int i = 0; i < typeParameters.length; i++) {
-						final TypeParameter typeParameter = context.get(typeParameters[i]);
-						map.put(typeParameter, codeParameters[i]);
-					}
-					storedType = loadType.instance(new GenericMapper(CodePosition.NATIVE, typeConversionContext.registry, map));
-				} else {
-					storedType = loadType(context, (AnnotatedElement) rawType, unsigned);
-				}
-			} else {
-				final Type annotatedTypeType = ((AnnotatedType) type).getType();
-				if (annotatedTypeType instanceof WildcardType) {
-					storedType = BasicTypeID.UNDETERMINED;
-				} else if (annotatedTypeType instanceof GenericArrayType) {
-					final Type genericComponentType = ((GenericArrayType) annotatedTypeType).getGenericComponentType();
-					final TypeID baseType = loadType(context, (AnnotatedElement) genericComponentType, unsigned);
-					storedType = typeConversionContext.registry.getArray(baseType, 1);
-				} else {
-					storedType = loadType(context, (AnnotatedElement) annotatedTypeType, unsigned);
-				}
+			for (int i = 0; i < typeParameters.length; i++) {
+				final TypeVariable<?> typeVariable = this.getTypeIfValid(typeParameters[i], JavaAnnotatedType.ElementType.TYPE_VARIABLE);
+				final TypeParameter typeParameter = context.get(typeVariable);
+				map.put(typeParameter, codeParameters[i]);
 			}
 
-			return storedType;
-
-		} else {
-			throw new IllegalArgumentException("Could not analyze type: " + type);
+			return rawTypeId.instance(new GenericMapper(CodePosition.NATIVE, typeConversionContext.registry, map));
 		}
+		return this.loadType(context, JavaAnnotatedType.of(type), unsigned);
+	}
+
+	private TypeID loadAnnotatedType(TypeVariableContext context, AnnotatedType type, boolean unsigned) {
+		final JavaAnnotatedType annotatedType = JavaAnnotatedType.of(type.getType());
+		return this.loadType(context, annotatedType, unsigned);
+	}
+
+	private TypeID loadClass(TypeVariableContext context, Class<?> type, boolean unsigned) {
+		if (unsigned) {
+			return unsignedByClass.computeIfAbsent(type, it -> {
+				throw new IllegalArgumentException("This class cannot be used as unsigned: " + it);
+			});
+		}
+		if (type.isArray()) {
+			return typeConversionContext.registry.getArray(loadType(context, JavaAnnotatedType.of(type.getComponentType()), false, false), 1);
+		}
+		if (type.isAnnotationPresent(FunctionalInterface.class)) {
+			return loadFunctionalInterface(context, type);
+		}
+		if (typeByClass.containsKey(type)) {
+			return typeByClass.get(type);
+		}
+
+		final HighLevelDefinition definition = javaNativeModule.addClass(type);
+
+		final List<TypeID> s = new ArrayList<>();
+		for (TypeVariable<? extends Class<?>> typeParameter : type.getTypeParameters()) {
+			s.add(typeConversionContext.registry.getGeneric(context.get(typeParameter)));
+		}
+
+		return typeConversionContext.registry.getForDefinition(definition, s.toArray(TypeID.NONE));
+	}
+
+	private TypeID loadGenericArray(TypeVariableContext context, GenericArrayType type, boolean unsigned) {
+		final JavaAnnotatedType componentType = JavaAnnotatedType.of(type.getGenericComponentType());
+		final TypeID baseType = this.loadType(context, componentType, unsigned);
+		return typeConversionContext.registry.getArray(baseType, 1);
+	}
+
+	private TypeID loadParameterizedType(TypeVariableContext context, ParameterizedType type) {
+		final Class<?> rawType = this.getTypeIfValid(JavaAnnotatedType.of(type.getRawType()), JavaAnnotatedType.ElementType.CLASS);
+		final JavaAnnotatedType[] typeArguments = JavaAnnotatedType.of(type.getActualTypeArguments());
+
+		if (rawType.isAnnotationPresent(FunctionalInterface.class)) {
+
+			return loadFunctionalInterface(context, rawType, typeArguments);
+		}
+
+		TypeID[] codeParameters = new TypeID[typeArguments.length];
+		for (int i = 0; i < typeArguments.length; i++) {
+			codeParameters[i] = this.loadType(context, typeArguments[i], false, false);
+		}
+
+		if (rawType == Map.class) {
+			return typeConversionContext.registry.getAssociative(codeParameters[0], codeParameters[1]);
+		}
+
+		final HighLevelDefinition definition = javaNativeModule.addClass(rawType);
+		return typeConversionContext.registry.getForDefinition(definition, codeParameters);
+	}
+
+	private TypeID loadTypeVariable(TypeVariableContext context, TypeVariable<?> variable) {
+		return typeConversionContext.registry.getGeneric(context.get(variable));
+	}
+
+	private TypeID loadWildcard() {
+		return BasicTypeID.UNDETERMINED;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T getTypeIfValid(final JavaAnnotatedType type, final JavaAnnotatedType.ElementType expected) {
+		if (type.getElementType() != expected) {
+			throw new IllegalArgumentException(expected + " was expected as a type, but " + type + " was found");
+		}
+		return (T) type.getType();
 	}
 
 	public Class<?> getClassFromType(TypeID type) {
@@ -238,7 +295,7 @@ public class JavaNativeTypeConverter {
 		return null;
 	}
 
-	private TypeID loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, AnnotatedElement[] parameters) {
+	private TypeID loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, JavaAnnotatedType... parameters) {
 		Method functionalInterfaceMethod = getFunctionalInterfaceMethod(cls);
 		TypeVariableContext context = convertTypeParameters(cls);
 
