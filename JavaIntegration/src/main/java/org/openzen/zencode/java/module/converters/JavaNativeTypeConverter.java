@@ -86,9 +86,9 @@ public class JavaNativeTypeConverter {
 	}
 
 	@Deprecated
-	public TypeID loadType(TypeVariableContext context, AnnotatedElement element, boolean n, boolean u) {
+	public TypeID loadType(TypeVariableContext context, AnnotatedElement element, boolean nullable, boolean unsigned) {
 		try {
-			return loadType(context, JavaAnnotatedType.of(element), n, u);
+			return loadType(context, JavaAnnotatedType.of(element), nullable, unsigned);
 		} catch (final IllegalArgumentException e) {
 			throw new IllegalArgumentException("Unable to analyze type: " + element, e);
 		}
@@ -120,18 +120,18 @@ public class JavaNativeTypeConverter {
 				case WILDCARD:
 					return loadWildcard();
 			}
-
-			throw new IllegalArgumentException("Invalid type " + elementType + ": not yet implemented or foolery");
 		} catch (final IllegalArgumentException e) {
 			throw new IllegalArgumentException("Unable to analyze type: " + type, e);
 		}
+
+		throw new IllegalArgumentException("Invalid type " + elementType + ": not yet implemented or foolery");
 	}
 
 	private TypeID loadAnnotatedParameterizedType(TypeVariableContext context, AnnotatedParameterizedType type, boolean unsigned) {
 		final ParameterizedType parameterizedType = this.getTypeIfValid(JavaAnnotatedType.of(type.getType()), JavaAnnotatedType.ElementType.PARAMETERIZED_TYPE);
 		final JavaAnnotatedType rawType = JavaAnnotatedType.of(parameterizedType.getRawType());
 
-		final JavaAnnotatedType[] actualTypeArguments = JavaAnnotatedType.of(type.getAnnotatedActualTypeArguments());
+		final JavaAnnotatedType[] actualTypeArguments = JavaAnnotatedType.arrayOf(type.getAnnotatedActualTypeArguments());
 		final TypeID[] codeParameters = new TypeID[actualTypeArguments.length];
 
 		for (int i = 0; i < actualTypeArguments.length; i++) {
@@ -144,7 +144,7 @@ public class JavaNativeTypeConverter {
 			}
 
 			final Map<TypeParameter, TypeID> map = new HashMap<>();
-			final JavaAnnotatedType[] typeParameters = JavaAnnotatedType.of(((Class<?>) rawType.getType()).getTypeParameters());
+			final JavaAnnotatedType[] typeParameters = JavaAnnotatedType.arrayOf(((Class<?>) rawType.getType()).getTypeParameters());
 			final TypeID rawTypeId = this.loadType(context, rawType, unsigned);
 
 			for (int i = 0; i < typeParameters.length; i++) {
@@ -170,7 +170,8 @@ public class JavaNativeTypeConverter {
 			});
 		}
 		if (type.isArray()) {
-			return typeConversionContext.registry.getArray(loadType(context, JavaAnnotatedType.of(type.getComponentType()), false, false), 1);
+			final TypeID baseType = this.loadType(context, JavaAnnotatedType.of(type.getComponentType()), false, false);
+			return typeConversionContext.registry.getArray(baseType, 1);
 		}
 		if (type.isAnnotationPresent(FunctionalInterface.class)) {
 			return loadFunctionalInterface(context, type);
@@ -181,12 +182,12 @@ public class JavaNativeTypeConverter {
 
 		final HighLevelDefinition definition = javaNativeModule.addClass(type);
 
-		final List<TypeID> s = new ArrayList<>();
+		final List<TypeID> typeParameters = new ArrayList<>();
 		for (TypeVariable<? extends Class<?>> typeParameter : type.getTypeParameters()) {
-			s.add(typeConversionContext.registry.getGeneric(context.get(typeParameter)));
+			typeParameters.add(typeConversionContext.registry.getGeneric(context.get(typeParameter)));
 		}
 
-		return typeConversionContext.registry.getForDefinition(definition, s.toArray(TypeID.NONE));
+		return typeConversionContext.registry.getForDefinition(definition, typeParameters.toArray(TypeID.NONE));
 	}
 
 	private TypeID loadGenericArray(TypeVariableContext context, GenericArrayType type, boolean unsigned) {
@@ -197,7 +198,7 @@ public class JavaNativeTypeConverter {
 
 	private TypeID loadParameterizedType(TypeVariableContext context, ParameterizedType type) {
 		final Class<?> rawType = this.getTypeIfValid(JavaAnnotatedType.of(type.getRawType()), JavaAnnotatedType.ElementType.CLASS);
-		final JavaAnnotatedType[] typeArguments = JavaAnnotatedType.of(type.getActualTypeArguments());
+		final JavaAnnotatedType[] typeArguments = JavaAnnotatedType.arrayOf(type.getActualTypeArguments());
 
 		if (rawType.isAnnotationPresent(FunctionalInterface.class)) {
 

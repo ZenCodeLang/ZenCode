@@ -29,39 +29,38 @@ public final class JavaAnnotatedType implements AnnotatedElement, Type {
 
 	public static JavaAnnotatedType of(final Object element) {
 		if (element instanceof Type && element instanceof AnnotatedElement) {
-			return or(ofBoth(element), invalid(element));
+			return checkNotNull(JavaAnnotatedType::ofBoth, (Type & AnnotatedElement) element);
 		}
 		if (element instanceof Type) {
-			return or(of((Type) element), invalid(element));
+			return checkNotNull(JavaAnnotatedType::of, (Type) element);
 		}
 		if (element instanceof AnnotatedElement) {
-			return or(of((AnnotatedElement) element), invalid(element));
+			return checkNotNull(JavaAnnotatedType::of, (AnnotatedElement) element);
 		}
 		throw invalid(element);
 	}
 
-	public static JavaAnnotatedType[] of(final Object[] element) {
+	public static JavaAnnotatedType[] arrayOf(final Object[] element) {
 		return Arrays.stream(element).map(JavaAnnotatedType::of).toArray(JavaAnnotatedType[]::new);
 	}
 
-	private static JavaAnnotatedType or(final JavaAnnotatedType result, final RuntimeException ifNull) {
-		if (result == null) throw ifNull;
+	private static <T> JavaAnnotatedType checkNotNull(final Function<T, JavaAnnotatedType> creator, final T element) {
+		final JavaAnnotatedType result = creator.apply(element);
+		if (result == null) throw invalid(element);
 		return result;
 	}
 
-	private static JavaAnnotatedType ofBoth(final Object element) {
-		final AnnotatedElement annotatedElement = (AnnotatedElement) element;
-		final Type type = (Type) element;
+	private static <T extends Type & AnnotatedElement> JavaAnnotatedType ofBoth(final T element) {
 
 		if (element instanceof Class<?>) {
-			return of(ElementType.CLASS, annotatedElement, type);
+			return of(ElementType.CLASS, element, element);
 		}
 		if (element instanceof TypeVariable<?>) {
-			return of(ElementType.TYPE_VARIABLE, annotatedElement, type);
+			return of(ElementType.TYPE_VARIABLE, element, element);
 		}
 
-		final JavaAnnotatedType result = of(type);
-		return result == null ? of(annotatedElement) : result;
+		final JavaAnnotatedType result = of((Type) element);
+		return result == null ? of((AnnotatedElement) element) : result;
 	}
 
 	private static JavaAnnotatedType of(final Type element) {
@@ -112,52 +111,52 @@ public final class JavaAnnotatedType implements AnnotatedElement, Type {
 
 	@Override
 	public boolean isAnnotationPresent(final Class<? extends Annotation> annotationClass) {
-		return this.ifAnnotatedElement(() -> false, it -> it.isAnnotationPresent(annotationClass));
+		return this.ifAnnotatedElement(it -> it.isAnnotationPresent(annotationClass), () -> false);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T extends Annotation> T[] getAnnotationsByType(Class<T> annotationClass) {
-		return this.ifAnnotatedElement(() -> (T[]) Array.newInstance(annotationClass, 0), it -> it.getAnnotationsByType(annotationClass));
+		return this.ifAnnotatedElement(it -> it.getAnnotationsByType(annotationClass), () -> (T[]) Array.newInstance(annotationClass, 0));
 	}
 
 	@Override
 	public <T extends Annotation> T getDeclaredAnnotation(Class<T> annotationClass) {
-		return this.ifAnnotatedElement(() -> null, it -> it.getDeclaredAnnotation(annotationClass));
+		return this.ifAnnotatedElement(it -> it.getDeclaredAnnotation(annotationClass), () -> null);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T extends Annotation> T[] getDeclaredAnnotationsByType(Class<T> annotationClass) {
-		return this.ifAnnotatedElement(() -> (T[]) Array.newInstance(annotationClass, 0), it -> it.getDeclaredAnnotationsByType(annotationClass));
+		return this.ifAnnotatedElement(it -> it.getDeclaredAnnotationsByType(annotationClass), () -> (T[]) Array.newInstance(annotationClass, 0));
 	}
 
 	@Override
 	public String getTypeName() {
-		return this.ifType(() -> "invalid type", Type::getTypeName);
+		return this.ifType(Type::getTypeName, () -> "invalid type");
 	}
 
 	@Override
 	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-		return this.ifAnnotatedElement(() -> null, it -> it.getAnnotation(annotationClass));
+		return this.ifAnnotatedElement(it -> it.getAnnotation(annotationClass), () -> null);
 	}
 
 	@Override
 	public Annotation[] getAnnotations() {
-		return this.ifAnnotatedElement(() -> new Annotation[0], AnnotatedElement::getAnnotations);
+		return this.ifAnnotatedElement(AnnotatedElement::getAnnotations, () -> new Annotation[0]);
 	}
 
 	@Override
 	public Annotation[] getDeclaredAnnotations() {
-		return this.ifAnnotatedElement(() -> new Annotation[0], AnnotatedElement::getDeclaredAnnotations);
+		return this.ifAnnotatedElement(AnnotatedElement::getDeclaredAnnotations, () -> new Annotation[0]);
 	}
 
-	private <T> T ifAnnotatedElement(final Supplier<T> def, final Function<AnnotatedElement, T> block) {
-		return this.annotatedElement == null ? def.get() : block.apply(this.annotatedElement);
+	private <T> T ifAnnotatedElement(final Function<AnnotatedElement, T> block, final Supplier<T> orElse) {
+		return this.annotatedElement == null ? orElse.get() : block.apply(this.annotatedElement);
 	}
 
-	private <T> T ifType(final Supplier<T> def, final Function<Type, T> block) {
-		return this.type == null ? def.get() : block.apply(this.type);
+	private <T> T ifType(final Function<Type, T> block, final Supplier<T> orElse) {
+		return this.type == null ? orElse.get() : block.apply(this.type);
 	}
 
 	@Override
