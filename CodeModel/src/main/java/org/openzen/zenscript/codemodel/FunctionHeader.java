@@ -5,10 +5,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -304,8 +301,9 @@ public class FunctionHeader {
 	}
 
 	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
+		InferenceBlockingTypeParameterVisitor inferenceBlockingVisitor = new InferenceBlockingTypeParameterVisitor(parameters);
 		for (int i = 0; i < this.parameters.length; i++)
-			if (this.parameters[i].type.hasInferenceBlockingTypeParameters(parameters))
+			if (this.parameters[i].type.accept(inferenceBlockingVisitor))
 				return true;
 
 		return false;

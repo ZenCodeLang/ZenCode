@@ -50,11 +50,6 @@ public class FunctionTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		return header.hasInferenceBlockingTypeParameters(parameters);
-	}
-
-	@Override
 	public boolean hasDefaultValue() {
 		return false;
 	}

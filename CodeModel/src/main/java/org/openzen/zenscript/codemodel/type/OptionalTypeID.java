@@ -61,11 +61,6 @@ public class OptionalTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		return baseType.hasInferenceBlockingTypeParameters(parameters);
-	}
-
-	@Override
 	public boolean hasDefaultValue() {
 		return isOptional() || baseType.hasDefaultValue();
 	}

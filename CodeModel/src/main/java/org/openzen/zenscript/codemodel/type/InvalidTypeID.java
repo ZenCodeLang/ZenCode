@@ -29,11 +29,6 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		return false;
-	}
-
-	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
 
 	}
