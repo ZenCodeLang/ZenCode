@@ -2850,7 +2850,12 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	@Override
 	public Void visitPlatformSpecific(Expression expression) {
 		if (expression instanceof JavaFunctionInterfaceCastExpression) {
-			visitFunctionalInterfaceWrapping((JavaFunctionInterfaceCastExpression) expression);
+			JavaFunctionInterfaceCastExpression jficExpression = (JavaFunctionInterfaceCastExpression) expression;
+			if(jficExpression.value.type instanceof JavaFunctionalInterfaceTypeID){
+				jficExpression.value.accept(this);
+			}else{
+				visitFunctionalInterfaceWrapping(jficExpression);
+			}
 		} else {
 			throw new AssertionError("Unrecognized platform expression: " + expression);
 		}
@@ -3201,7 +3206,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		final String className = "zsynthetic/" + lambdaName;
 
 		String[] interfaces;
-		String wrappedSignature;
+		String wrappedFromSignature = context.getDescriptor(fromType);
 		String methodDescriptor;
 		Type[] methodParameterTypes;
 		JavaMethod implementationMethod;
@@ -3220,7 +3225,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			final Method functionalInterfaceMethod = ((JavaFunctionalInterfaceTypeID) toType).functionalInterfaceMethod;
 
 			methodDescriptor = Type.getMethodDescriptor(functionalInterfaceMethod);
-			wrappedSignature = context.getDescriptor(toType);
 			interfaces = new String[]{Type.getInternalName(functionalInterfaceMethod.getDeclaringClass())};
 
 			final Class<?>[] methodParameterClasses = functionalInterfaceMethod.getParameterTypes();
@@ -3230,7 +3234,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				methodParameterTypes[i] = Type.getType(methodParameterType);
 			}
 		} else {
-			wrappedSignature = context.getMethodSignature(toType.header, true);
+			wrappedFromSignature = context.getMethodSignature(toType.header, true);
 			methodDescriptor = context.getMethodDescriptor(toType.header);
 			interfaces = new String[]{context.getInternalName(toType)};
 
@@ -3253,14 +3257,14 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		}
 
 		final JavaMethod wrappedMethod = context.getFunctionalInterface(fromType);
-		final String constructorDesc = "(" + wrappedSignature + ")V";
+		final String constructorDesc = "(" + wrappedFromSignature + ")V";
 
 		final ClassWriter lambdaCW = new JavaClassWriter(ClassWriter.COMPUTE_FRAMES);
 		lambdaCW.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", interfaces);
 
 		//The field storing the wrapped object
 		{
-			lambdaCW.visitField(Modifier.PRIVATE | Modifier.FINAL, "wrapped", wrappedSignature, null, null).visitEnd();
+			lambdaCW.visitField(Modifier.PRIVATE | Modifier.FINAL, "wrapped", wrappedFromSignature, null, null).visitEnd();
 		}
 
 		//Constructor
@@ -3272,7 +3276,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			constructorWriter.invokeSpecial(Object.class, "<init>", "()V");
 
 			constructorWriter.loadObject(1);
-			constructorWriter.putField(className, "wrapped", wrappedSignature);
+			constructorWriter.putField(className, "wrapped", wrappedFromSignature);
 
 			constructorWriter.ret();
 			constructorWriter.end();
@@ -3285,7 +3289,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 			//this.wrapped
 			functionWriter.loadObject(0);
-			functionWriter.getField(className, "wrapped", wrappedSignature);
+			functionWriter.getField(className, "wrapped", wrappedFromSignature);
 
 			//Load all function parameters
 			for (int i = 0; i < methodParameterTypes.length; i++) {
