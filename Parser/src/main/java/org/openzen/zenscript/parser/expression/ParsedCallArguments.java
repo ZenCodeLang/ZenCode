@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.InferenceBlockingTypeParameterVisitor;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
@@ -243,9 +244,10 @@ public class ParsedCallArguments {
 
 		//TODO: This is wrong
 		boolean variadic = header.isVariadic();
+		InferenceBlockingTypeParameterVisitor inferenceBlockingVisitor = new InferenceBlockingTypeParameterVisitor(header.typeParameters);
 		for (int i = 0; i < arguments.size(); i++) {
 			FunctionParameter parameter = header.getParameter(variadic, i);
-			if (typeArguments == null && parameter.type.hasInferenceBlockingTypeParameters(header.typeParameters))
+			if (typeArguments == null && parameter.type.accept(inferenceBlockingVisitor))
 				return false;
 
 			if (!arguments.get(i).isCompatibleWith(scope, header.getParameterType(variadic, i).getNormalized()))

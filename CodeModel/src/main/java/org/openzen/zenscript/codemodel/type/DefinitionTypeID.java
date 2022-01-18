@@ -173,18 +173,6 @@ public class DefinitionTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		if (hasTypeParameters()) {
-			for (TypeID typeArgument : typeArguments)
-				if (typeArgument.hasInferenceBlockingTypeParameters(parameters))
-					return true;
-		}
-
-		TypeID superType = definition.getSuperType();
-		return superType != null && superType.hasInferenceBlockingTypeParameters(parameters);
-	}
-
-	@Override
 	public int hashCode() {
 		int hash = 7;
 		hash = 97 * hash + definition.hashCode();

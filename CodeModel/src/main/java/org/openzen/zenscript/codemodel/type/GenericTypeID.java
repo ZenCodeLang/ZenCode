@@ -53,15 +53,6 @@ public class GenericTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		for (TypeParameter parameter : parameters)
-			if (parameter == this.parameter)
-				return true;
-
-		return false;
-	}
-
-	@Override
 	public boolean hasDefaultValue() {
 		return false;
 	}

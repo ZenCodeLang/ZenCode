@@ -53,11 +53,6 @@ public class RangeTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		return baseType.hasInferenceBlockingTypeParameters(parameters);
-	}
-
-	@Override
 	public boolean hasDefaultValue() {
 		return false;
 	}

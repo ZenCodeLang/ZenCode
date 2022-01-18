@@ -63,15 +63,6 @@ public class IteratorTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		for (TypeID type : iteratorTypes)
-			if (type.hasInferenceBlockingTypeParameters(parameters))
-				return true;
-
-		return false;
-	}
-
-	@Override
 	public boolean hasDefaultValue() {
 		return false;
 	}

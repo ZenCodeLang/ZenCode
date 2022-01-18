@@ -53,11 +53,6 @@ public class AssocTypeID implements TypeID {
 	}
 
 	@Override
-	public boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters) {
-		return keyType.hasInferenceBlockingTypeParameters(parameters) || valueType.hasInferenceBlockingTypeParameters(parameters);
-	}
-
-	@Override
 	public boolean hasDefaultValue() {
 		return true;
 	}

@@ -38,8 +38,6 @@ public interface TypeID {
 
 	boolean hasDefaultValue();
 
-	boolean hasInferenceBlockingTypeParameters(TypeParameter[] parameters);
-
 	default Expression getDefaultValue() {
 		return null;
 	}
