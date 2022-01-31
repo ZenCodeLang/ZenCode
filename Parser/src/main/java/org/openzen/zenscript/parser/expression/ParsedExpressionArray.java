@@ -5,7 +5,6 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
@@ -14,6 +13,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 public class ParsedExpressionArray extends ParsedExpression {
 
@@ -39,6 +39,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 		TypeID asType = null;
 		Expression[] compiledContents = new Expression[contents.size()];
 
+		List<ArrayTypeID> validHints = new ArrayList<>();
 		outer:
 		for (TypeID hint : scope.hints) {
 			ArrayTypeID arrayHint = null;
@@ -54,15 +55,30 @@ public class ParsedExpressionArray extends ParsedExpression {
 				asBaseType = arrayHint.elementType;
 
 				ExpressionScope contentScope = scope.withHint(asBaseType);
-				for (int i = 0; i < contents.size(); i++) {
-					Expression expression = contents.get(i).compile(contentScope).eval().castImplicit(position, scope, asBaseType);
-					if (expression instanceof InvalidExpression) {
-						continue outer;
-					}
-					compiledContents[i] = expression;
+				boolean casted = true;
+				for (ParsedExpression content : contents) {
+					casted &= contentScope.getTypeMembers(content.compile(contentScope).eval().type).canCastImplicit(asBaseType);
 				}
-				return new ArrayExpression(position, compiledContents, asType);
+				if (casted) {
+					validHints.add(arrayHint);
+				}
+
 			}
+
+		}
+
+		if (validHints.isEmpty()) {
+			throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Unable to cast array!");
+		} else if (validHints.size() > 1) {
+			throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, String.format("Ambiguous call; multiple types match: %n%s", scope.hints.stream().map(Object::toString).collect(Collectors.joining("\n"))));
+		}
+
+		ArrayTypeID foundHint = validHints.get(0);
+		asBaseType = foundHint.elementType;
+		ExpressionScope compilingScope = scope.withHint(asBaseType);
+		for (int i = 0; i < contents.size(); i++) {
+			Expression expression = contents.get(i).compile(compilingScope).eval().castImplicit(position, scope, asBaseType);
+			compiledContents[i] = expression;
 		}
 
 		if (contents.isEmpty()) {
