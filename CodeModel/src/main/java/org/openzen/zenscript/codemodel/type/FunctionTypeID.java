@@ -10,7 +10,7 @@ import java.util.List;
 
 public class FunctionTypeID implements TypeID {
 	public final FunctionHeader header;
-	private final FunctionTypeID normalized;
+	protected final FunctionTypeID normalized;
 
 	public FunctionTypeID(GlobalTypeRegistry registry, FunctionHeader header) {
 		this.header = header;
