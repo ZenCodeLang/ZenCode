@@ -35,12 +35,12 @@ public class ParsedExpressionArray extends ParsedExpression {
 				return apply;
 		}
 
-		TypeID asBaseType;
+		boolean couldHintType = false;
+		TypeID asBaseType = null;
 		TypeID asType = null;
 		Expression[] compiledContents = new Expression[contents.size()];
 
 		List<ArrayTypeID> validHints = new ArrayList<>();
-		outer:
 		for (TypeID hint : scope.hints) {
 			ArrayTypeID arrayHint = null;
 			if (hint instanceof ArrayTypeID) {
@@ -55,33 +55,39 @@ public class ParsedExpressionArray extends ParsedExpression {
 				asBaseType = arrayHint.elementType;
 
 				ExpressionScope contentScope = scope.withHint(asBaseType);
-				boolean casted = true;
+				boolean isBaseType = true;
+				boolean canCastToBase = true;
 				for (ParsedExpression content : contents) {
-					casted &= contentScope.getTypeMembers(content.compile(contentScope).eval().type).canCastImplicit(asBaseType);
+					isBaseType &= content.compile(contentScope).eval().type == asBaseType;
+					canCastToBase &= contentScope.getTypeMembers(content.compile(contentScope).eval().type).canCastImplicit(asBaseType);
 				}
-				if (casted) {
+				if (canCastToBase || isBaseType) {
+					couldHintType = true;
 					validHints.add(arrayHint);
 				}
 
+				if (isBaseType) {
+					break;
+				}
 			}
 
 		}
+		if (couldHintType) {
+			if (validHints.isEmpty()) {
+				throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Unable to cast array!");
+			} else if (validHints.size() > 1) {
+				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, String.format("Ambiguous call; multiple types match: %n%s", scope.hints.stream().map(Object::toString).collect(Collectors.joining("\n"))));
+			}
 
-		if (validHints.isEmpty()) {
-			throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Unable to cast array!");
-		} else if (validHints.size() > 1) {
-			throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, String.format("Ambiguous call; multiple types match: %n%s", scope.hints.stream().map(Object::toString).collect(Collectors.joining("\n"))));
-		}
+			ArrayTypeID foundHint = validHints.get(0);
+			asBaseType = foundHint.elementType;
+			ExpressionScope compilingScope = scope.withHint(asBaseType);
+			for (int i = 0; i < contents.size(); i++) {
+				Expression expression = contents.get(i).compile(compilingScope).eval().castImplicit(position, scope, asBaseType);
+				compiledContents[i] = expression;
+			}
 
-		ArrayTypeID foundHint = validHints.get(0);
-		asBaseType = foundHint.elementType;
-		ExpressionScope compilingScope = scope.withHint(asBaseType);
-		for (int i = 0; i < contents.size(); i++) {
-			Expression expression = contents.get(i).compile(compilingScope).eval().castImplicit(position, scope, asBaseType);
-			compiledContents[i] = expression;
-		}
-
-		if (contents.isEmpty()) {
+		} else if (contents.isEmpty()) {
 			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_ARRAY, "Empty array with unknown type");
 		} else {
 			ExpressionScope contentScope = scope.withoutHints();
