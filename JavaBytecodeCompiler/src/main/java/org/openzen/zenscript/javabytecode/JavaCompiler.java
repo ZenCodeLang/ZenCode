@@ -100,7 +100,7 @@ public class JavaCompiler {
 			javaScriptParameters[i] = javaParameter;
 		}
 
-		module.scripts.sort(Comparator.comparingInt(a -> a.file.getOrder()));
+		module.scripts.sort((a, b) -> a.file.getOrder() - b.file.getOrder());
 		for (ScriptBlock script : module.scripts) {
 			final SourceFile sourceFile = script.file;
 			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
