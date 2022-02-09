@@ -36,20 +36,20 @@ public class ParsedExpressionArray extends ParsedExpression {
 		}
 
 		boolean couldHintType = false;
-		TypeID asBaseType = null;
-		TypeID asType = null;
+		TypeID asBaseType;
+		TypeID arrayType;
 		Expression[] compiledContents = new Expression[contents.size()];
 
-		List<ArrayTypeID> validHints = new ArrayList<>();
+		List<ArrayTypeID> exactHints = new ArrayList<>();
+		List<ArrayTypeID> castedHints = new ArrayList<>();
+
 		for (TypeID hint : scope.hints) {
 			ArrayTypeID arrayHint = null;
 			if (hint instanceof ArrayTypeID) {
 				arrayHint = (ArrayTypeID) hint;
-				asType = hint;
 			}
 			if (hint.isOptional() && hint.withoutOptional() instanceof ArrayTypeID) {
 				arrayHint = (ArrayTypeID) hint.withoutOptional();
-				asType = hint.withoutOptional();
 			}
 			if (arrayHint != null && arrayHint.dimension == 1) {
 				asBaseType = arrayHint.elementType;
@@ -58,28 +58,33 @@ public class ParsedExpressionArray extends ParsedExpression {
 				boolean isBaseType = true;
 				boolean canCastToBase = true;
 				for (ParsedExpression content : contents) {
-					isBaseType &= content.compile(contentScope).eval().type == asBaseType;
-					canCastToBase &= contentScope.getTypeMembers(content.compile(contentScope).eval().type).canCastImplicit(asBaseType);
+					TypeID type = content.compile(contentScope).eval().type;
+					isBaseType &= type == asBaseType;
+					canCastToBase &= contentScope.getTypeMembers(type).canCastImplicit(asBaseType);
 				}
 				if (canCastToBase || isBaseType) {
 					couldHintType = true;
-					validHints.add(arrayHint);
-				}
-
-				if (isBaseType) {
-					break;
+					if (isBaseType) {
+						exactHints.add(arrayHint);
+					}
+					castedHints.add(arrayHint);
 				}
 			}
 
 		}
 		if (couldHintType) {
-			if (validHints.isEmpty()) {
+			if (exactHints.isEmpty() && castedHints.isEmpty()) {
 				throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Unable to cast array!");
-			} else if (validHints.size() > 1) {
-				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, String.format("Ambiguous call; multiple types match: %n%s", scope.hints.stream().map(Object::toString).collect(Collectors.joining("\n"))));
+			}
+			if (exactHints.size() > 1) {
+				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, String.format("Ambiguous call; multiple types can match exactly: %n%s", scope.hints.stream().map(Object::toString).collect(Collectors.joining("\n"))));
+			}
+			if (castedHints.size() > 1 && exactHints.isEmpty()) {
+				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, String.format("Ambiguous call; multiple types can cast: %n%s", scope.hints.stream().map(Object::toString).collect(Collectors.joining("\n"))));
 			}
 
-			ArrayTypeID foundHint = validHints.get(0);
+			ArrayTypeID foundHint = exactHints.isEmpty() ? castedHints.get(0) : exactHints.get(0);
+			arrayType = foundHint;
 			asBaseType = foundHint.elementType;
 			ExpressionScope compilingScope = scope.withHint(asBaseType);
 			for (int i = 0; i < contents.size(); i++) {
@@ -105,9 +110,9 @@ public class ParsedExpressionArray extends ParsedExpression {
 			for (int i = 0; i < contents.size(); i++) {
 				compiledContents[i] = compiledContents[i].castImplicit(position, scope, resultType);
 			}
-			asType = scope.getTypeRegistry().getArray(resultType, 1);
+			arrayType = scope.getTypeRegistry().getArray(resultType, 1);
 		}
-		return new ArrayExpression(position, compiledContents, asType);
+		return new ArrayExpression(position, compiledContents, arrayType);
 	}
 
 	@Override
