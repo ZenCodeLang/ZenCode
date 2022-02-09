@@ -28,10 +28,7 @@ import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisit
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,6 +47,13 @@ public class JavaCompiler {
 
 	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space) {
 		Map<String, JavaScriptFile> scriptBlocks = new LinkedHashMap<>();
+		// Add all the scripts to scriptBlocks before we run through the definitions
+		// Scripts with a higher priority load before scripts with a lower priority.
+		module.scripts.sort(Comparator.<ScriptBlock>comparingInt(a -> a.file.getOrder()).reversed());
+		module.scripts.forEach(script -> {
+			final String className = getClassName(script.file == null ? null : script.file.getFilename());
+			getScriptFile(scriptBlocks, script.pkg.fullName + "/" + className);
+		});
 		Set<JavaScriptFile> scriptFilesThatAreActuallyUsedInScripts = new HashSet<>();
 
 		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters, logger);
@@ -100,7 +104,6 @@ public class JavaCompiler {
 			javaScriptParameters[i] = javaParameter;
 		}
 
-		module.scripts.sort((a, b) -> a.file.getOrder() - b.file.getOrder());
 		for (ScriptBlock script : module.scripts) {
 			final SourceFile sourceFile = script.file;
 			final String className = getClassName(sourceFile == null ? null : sourceFile.getFilename());
