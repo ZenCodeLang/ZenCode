@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 public class ParsedExpressionArray extends ParsedExpression {
 
@@ -34,50 +35,84 @@ public class ParsedExpressionArray extends ParsedExpression {
 				return apply;
 		}
 
-		TypeID asBaseType = null;
-		TypeID asType = null;
 		boolean couldHintType = false;
+		TypeID asBaseType;
+		TypeID arrayType;
+		Expression[] compiledContents = new Expression[contents.size()];
+
+		List<ArrayTypeID> exactHints = new ArrayList<>();
+		List<ArrayTypeID> castedHints = new ArrayList<>();
 
 		for (TypeID hint : scope.hints) {
-			// TODO: what if multiple hints fit?
 			ArrayTypeID arrayHint = null;
 			if (hint instanceof ArrayTypeID) {
 				arrayHint = (ArrayTypeID) hint;
-				asType = hint;
 			}
 			if (hint.isOptional() && hint.withoutOptional() instanceof ArrayTypeID) {
 				arrayHint = (ArrayTypeID) hint.withoutOptional();
-				asType = hint.withoutOptional();
 			}
 			if (arrayHint != null && arrayHint.dimension == 1) {
 				asBaseType = arrayHint.elementType;
-				couldHintType = true;
-			}
-		}
 
-		Expression[] cContents = new Expression[contents.size()];
+				ExpressionScope contentScope = scope.withHint(asBaseType);
+				boolean isBaseType = true;
+				boolean canCastToBase = true;
+				for (ParsedExpression content : contents) {
+					TypeID type = content.compile(contentScope).eval().type;
+					isBaseType &= type == asBaseType;
+					canCastToBase &= contentScope.getTypeMembers(type).canCastImplicit(asBaseType);
+				}
+				if (canCastToBase || isBaseType) {
+					couldHintType = true;
+					if (isBaseType) {
+						exactHints.add(arrayHint);
+					}
+					castedHints.add(arrayHint);
+				}
+			}
+
+		}
 		if (couldHintType) {
-			ExpressionScope contentScope = scope.withHint(asBaseType);
-			for (int i = 0; i < contents.size(); i++)
-				cContents[i] = contents.get(i).compile(contentScope).eval().castImplicit(position, scope, asBaseType);
+			if (exactHints.isEmpty() && castedHints.isEmpty()) {
+				throw new CompileException(position, CompileExceptionCode.INVALID_CAST, "Unable to cast array!");
+			}
+			if (exactHints.size() > 1) {
+				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, String.format("Ambiguous call; multiple types can match exactly: %n%s", scope.hints.stream().map(Object::toString).collect(Collectors.joining("\n"))));
+			}
+			if (castedHints.size() > 1 && exactHints.isEmpty()) {
+				throw new CompileException(position, CompileExceptionCode.CALL_AMBIGUOUS, String.format("Ambiguous call; multiple types can cast: %n%s", scope.hints.stream().map(Object::toString).collect(Collectors.joining("\n"))));
+			}
+
+			ArrayTypeID foundHint = exactHints.isEmpty() ? castedHints.get(0) : exactHints.get(0);
+			arrayType = foundHint;
+			asBaseType = foundHint.elementType;
+			ExpressionScope compilingScope = scope.withHint(asBaseType);
+			for (int i = 0; i < contents.size(); i++) {
+				Expression expression = contents.get(i).compile(compilingScope).eval().castImplicit(position, scope, asBaseType);
+				compiledContents[i] = expression;
+			}
+
 		} else if (contents.isEmpty()) {
 			throw new CompileException(position, CompileExceptionCode.UNTYPED_EMPTY_ARRAY, "Empty array with unknown type");
 		} else {
 			ExpressionScope contentScope = scope.withoutHints();
 			TypeID resultType = null;
 			for (int i = 0; i < contents.size(); i++) {
-				cContents[i] = contents.get(i).compile(contentScope).eval();
-				TypeID joinedType = resultType == null ? cContents[i].type : scope.getTypeMembers(resultType).union(cContents[i].type);
-				if (joinedType == null)
-					throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "Could not combine " + resultType + " with " + cContents[i].type);
+				compiledContents[i] = contents.get(i).compile(contentScope).eval();
+				TypeID joinedType = resultType == null ? compiledContents[i].type : scope.getTypeMembers(resultType)
+						.union(compiledContents[i].type);
+				if (joinedType == null) {
+					throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "Could not combine " + resultType + " with " + compiledContents[i].type);
+				}
 
 				resultType = joinedType;
 			}
-			for (int i = 0; i < contents.size(); i++)
-				cContents[i] = cContents[i].castImplicit(position, scope, resultType);
-			asType = scope.getTypeRegistry().getArray(resultType, 1);
+			for (int i = 0; i < contents.size(); i++) {
+				compiledContents[i] = compiledContents[i].castImplicit(position, scope, resultType);
+			}
+			arrayType = scope.getTypeRegistry().getArray(resultType, 1);
 		}
-		return new ArrayExpression(position, cContents, asType);
+		return new ArrayExpression(position, compiledContents, arrayType);
 	}
 
 	@Override
