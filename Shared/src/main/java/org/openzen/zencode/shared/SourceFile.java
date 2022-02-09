@@ -9,4 +9,8 @@ public interface SourceFile {
 	Reader open() throws IOException;
 
 	void update(String content) throws IOException;
+
+	default int getOrder() {
+		return 0;
+	}
 }
