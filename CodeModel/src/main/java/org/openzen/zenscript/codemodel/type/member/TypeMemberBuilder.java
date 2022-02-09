@@ -1,8 +1,8 @@
 package org.openzen.zenscript.codemodel.type.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -114,7 +114,10 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 
 		getter(builtin, STRING_LENGTH, "length", USIZE);
 		getter(builtin, STRING_CHARACTERS, "characters", registry.getArray(CHAR, 1));
+		// TODO remove in favour of empty
 		getter(builtin, STRING_ISEMPTY, "isEmpty", BOOL);
+		getter(builtin, STRING_ISEMPTY, "empty", BOOL);
+
 
 		method(builtin, STRING_REMOVE_DIACRITICS, "removeDiacritics", STRING);
 		method(builtin, STRING_TRIM, "trim", STRING, STRING);
