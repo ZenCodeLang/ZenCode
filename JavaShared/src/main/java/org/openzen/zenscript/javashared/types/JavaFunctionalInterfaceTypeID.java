@@ -28,6 +28,11 @@ public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
 	}
 
 	@Override
+	public FunctionTypeID getNormalized() {
+		return normalized;
+	}
+
+	@Override
 	public TypeID instance(GenericMapper mapper) {
 		return internalizeHeaderChange(mapper.registry,mapper.map(header));
 	}
