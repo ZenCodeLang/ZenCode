@@ -11,6 +11,9 @@ import java.util.Map;
 
 public class GlobalTypeRegistry {
 	public final ZSPackage stdlib;
+	// Allows for internalizing any TypeID not defined here.
+	private final Map<Class<? extends TypeID>, Map<? extends TypeID, ? extends TypeID>> identityMaps = new HashMap<>();
+
 	private final Map<ArrayTypeID, ArrayTypeID> arrayTypes = new HashMap<>();
 	private final Map<AssocTypeID, AssocTypeID> assocTypes = new HashMap<>();
 	private final Map<GenericMapTypeID, GenericMapTypeID> genericMapTypes = new HashMap<>();
@@ -29,6 +32,15 @@ public class GlobalTypeRegistry {
 
 		rangeTypes.put(RangeTypeID.INT, RangeTypeID.INT);
 		rangeTypes.put(RangeTypeID.USIZE, RangeTypeID.USIZE);
+		identityMaps.put(ArrayTypeID.class, arrayTypes);
+		identityMaps.put(AssocTypeID.class, assocTypes);
+		identityMaps.put(GenericMapTypeID.class, genericMapTypes);
+		identityMaps.put(IteratorTypeID.class, iteratorTypes);
+		identityMaps.put(FunctionTypeID.class, functionTypes);
+		identityMaps.put(RangeTypeID.class, rangeTypes);
+		identityMaps.put(DefinitionTypeID.class, definitionTypes);
+		identityMaps.put(GenericTypeID.class, genericTypes);
+		identityMaps.put(OptionalTypeID.class, optionalTypes);
 	}
 
 	public ArrayTypeID getArray(TypeID baseType, int dimension) {
@@ -94,6 +106,16 @@ public class GlobalTypeRegistry {
 	}
 
 	private <T> T internalize(Map<T, T> identityMap, T id) {
+		if (identityMap.containsKey(id)) {
+			return identityMap.get(id);
+		} else {
+			identityMap.put(id, id);
+			return id;
+		}
+	}
+
+	public <T extends TypeID> T internalize(Class<T> clazz, T id) {
+		Map<T, T> identityMap = (Map<T, T>) identityMaps.computeIfAbsent(clazz, aClass -> new HashMap<>());
 		if (identityMap.containsKey(id)) {
 			return identityMap.get(id);
 		} else {
