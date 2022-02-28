@@ -136,7 +136,7 @@ public class JavaNativeHeaderConverter {
 				return defaultValue;
 			}
 			try {
-				final String filename = "internal: " + parameter.getDeclaringExecutable().getName();
+				final String filename = "internal: " + parameter.getDeclaringExecutable().getDeclaringClass() + "#" + parameter.getDeclaringExecutable().getName();
 
 				final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg(), packageInfo.getModule());
 				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(typeConversionContext.registry, new AnnotationDefinition[0], packageInfo.getPkg(), rootCompiling, typeConversionContext.globals);
