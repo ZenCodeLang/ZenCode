@@ -54,7 +54,7 @@ public class JavaSourceCompiler {
 		}
 
 		for (ScriptBlock scriptBlock : module.scripts) {
-			// TODO
+			throw new UnsupportedOperationException("Script blocks not yet supported");
 		}
 
 		for (JavaSourceFile sourceFile : sourceFiles.values()) {
