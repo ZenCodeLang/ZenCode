@@ -9,15 +9,17 @@ public class EnumConstantMember {
 	public final CodePosition position;
 	public final HighLevelDefinition definition;
 	public final String name;
+	public final String fieldName;
 	public final int ordinal;
 
 	public Expression value = null;
 	public NewExpression constructor = null;
 
-	public EnumConstantMember(CodePosition position, HighLevelDefinition definition, String name, int ordinal) {
+	public EnumConstantMember(CodePosition position, HighLevelDefinition definition, String name, String fieldName, int ordinal) {
 		this.position = position;
 		this.definition = definition;
 		this.name = name;
+		this.fieldName = fieldName;
 		this.ordinal = ordinal;
 	}
 }

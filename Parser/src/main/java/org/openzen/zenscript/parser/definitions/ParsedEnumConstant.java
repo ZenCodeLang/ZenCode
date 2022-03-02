@@ -32,7 +32,7 @@ public class ParsedEnumConstant {
 		this.arguments = arguments;
 		this.value = expressionValue;
 
-		compiled = new EnumConstantMember(position, definition, name, value);
+		compiled = new EnumConstantMember(position, definition, name, name, value);
 	}
 
 	public static ParsedEnumConstant parse(ZSTokenParser tokens, EnumDefinition definition, int value) throws ParseException {

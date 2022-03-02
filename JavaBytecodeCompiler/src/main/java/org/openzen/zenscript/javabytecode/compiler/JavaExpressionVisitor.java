@@ -2059,7 +2059,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void visitEnumConstant(EnumConstantExpression expression) {
-		javaWriter.getStaticField(context.getInternalName(expression.type), expression.value.name, context.getDescriptor(expression.type));
+		javaWriter.getStaticField(context.getInternalName(expression.type), expression.value.fieldName, context.getDescriptor(expression.type));
 		return null;
 	}
 

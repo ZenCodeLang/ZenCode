@@ -365,8 +365,10 @@ public class JavaNativeClassConverter {
 		}
 
 		try {
-			final int ordinal = ((Enum<?>) field.get(null)).ordinal();
-			final EnumConstantMember enumConstantMember = new EnumConstantMember(CodePosition.NATIVE, definition, field.getName(), ordinal);
+			final Enum<?> constant = (Enum<?>) field.get(null);
+			final String name = constant.name();
+			final int ordinal = constant.ordinal();
+			final EnumConstantMember enumConstantMember = new EnumConstantMember(CodePosition.NATIVE, definition, name, field.getName(), ordinal);
 			((EnumDefinition) definition).addEnumConstant(enumConstantMember);
 		} catch (IllegalAccessException ex) {
 			throw new IllegalArgumentException("Could not add enum member: " + ex);
