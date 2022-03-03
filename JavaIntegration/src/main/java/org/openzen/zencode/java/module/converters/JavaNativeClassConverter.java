@@ -17,7 +17,6 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.javashared.EnumConstantMapping;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaField;
 import org.openzen.zenscript.javashared.JavaImplementation;
@@ -370,7 +369,7 @@ public class JavaNativeClassConverter {
 			final int ordinal = enumConstant.ordinal();
 			final EnumConstantMember enumConstantMember = new EnumConstantMember(CodePosition.NATIVE, definition, enumConstant.name(), ordinal);
 			((EnumDefinition) definition).addEnumConstant(enumConstantMember);
-			typeConversionContext.compiled.getEnumMapper().registerMapping((EnumDefinition) definition, new EnumConstantMapping(enumConstantMember, field.getName()));
+			typeConversionContext.compiled.getEnumMapper().registerMapping((EnumDefinition) definition, enumConstantMember, field.getName());
 		} catch (IllegalAccessException ex) {
 			throw new IllegalArgumentException("Could not add enum member: " + ex);
 		}
