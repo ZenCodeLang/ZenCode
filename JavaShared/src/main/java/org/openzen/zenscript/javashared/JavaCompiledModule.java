@@ -39,6 +39,7 @@ public class JavaCompiledModule {
 	private final Map<TypeParameter, JavaTypeParameterInfo> typeParameters = new HashMap<>();
 	private final Map<FunctionParameter, JavaParameterInfo> parameters = new IdentityHashMap<>();
 	private final Map<VariantDefinition.Option, JavaVariantOption> variantOptions = new HashMap<>();
+	private final JavaEnumMapper enumMapper = new JavaEnumMapper();
 
 	public JavaCompiledModule(Module module, FunctionParameter[] scriptParameters) {
 		this.module = module;
@@ -112,6 +113,10 @@ public class JavaCompiledModule {
 			throw new IllegalStateException("Variant option unknown: " + option.name);
 
 		return result;
+	}
+
+	public JavaEnumMapper getEnumMapper() {
+		return enumMapper;
 	}
 
 	public void setImplementationInfo(ImplementationMember member, JavaImplementation implementation) {
@@ -198,6 +203,7 @@ public class JavaCompiledModule {
 		this.typeParameters.putAll(compiled.typeParameters);
 		this.parameters.putAll(compiled.parameters);
 		this.variantOptions.putAll(compiled.variantOptions);
+		this.enumMapper.merge(compiled.enumMapper);
 	}
 
 	public List<ExpansionDefinition> getExpansions() {

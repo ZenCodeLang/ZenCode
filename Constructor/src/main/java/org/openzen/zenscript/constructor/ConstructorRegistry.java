@@ -6,7 +6,7 @@
 package org.openzen.zenscript.constructor;
 
 import org.json.JSONObject;
-import org.openzen.zencode.shared.logging.*;
+import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.SemanticModule;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -17,6 +17,7 @@ import org.openzen.zenscript.javabytecode.JavaBytecodeModule;
 import org.openzen.zenscript.javabytecode.JavaBytecodeRunUnit;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaEnumMapper;
 import org.openzen.zenscript.javashared.SimpleJavaCompileSpace;
 import org.openzen.zenscript.javasource.JavaDirectoryOutput;
 import org.openzen.zenscript.javasource.JavaSourceCompiler;
@@ -213,7 +214,7 @@ public class ConstructorRegistry {
 
 		@Override
 		public void addModule(SemanticModule module) {
-			JavaBytecodeModule result = compiler.compile(module.modulePackage.fullName, module, space);
+			JavaBytecodeModule result = compiler.compile(module.modulePackage.fullName, module, space, new JavaEnumMapper());
 			modules.add(result);
 			space.register(result);
 		}

@@ -21,6 +21,8 @@ import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.javabytecode.JavaBytecodeRunUnit;
 import org.openzen.zenscript.javabytecode.JavaCompiler;
+import org.openzen.zenscript.javashared.JavaCompiledModule;
+import org.openzen.zenscript.javashared.JavaEnumMapper;
 import org.openzen.zenscript.javashared.SimpleJavaCompileSpace;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.BracketExpressionParser;
@@ -156,14 +158,17 @@ public class ScriptingEngine {
 
 	public JavaBytecodeRunUnit createRunUnit() {
 		SimpleJavaCompileSpace javaSpace = new SimpleJavaCompileSpace(registry);
-		for (JavaNativeModule nativeModule : nativeModules)
-			javaSpace.register(nativeModule.getCompiled());
+		JavaEnumMapper enumMapper = new JavaEnumMapper();
+		for (JavaNativeModule nativeModule : nativeModules) {
+			JavaCompiledModule compiled = nativeModule.getCompiled();
+			javaSpace.register(compiled);
+			enumMapper.merge(compiled.getEnumMapper());
+		}
 
 		JavaCompiler compiler = new JavaCompiler(logger);
-
 		JavaBytecodeRunUnit runUnit = new JavaBytecodeRunUnit(logger);
 		for (SemanticModule compiled : compiledModules)
-			runUnit.add(compiler.compile(compiled.name, compiled, javaSpace));
+			runUnit.add(compiler.compile(compiled.name, compiled, javaSpace, enumMapper));
 		if (debug)
 			runUnit.dump(new File("classes"));
 

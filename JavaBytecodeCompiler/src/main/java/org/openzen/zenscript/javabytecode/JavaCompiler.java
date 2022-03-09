@@ -20,10 +20,7 @@ import org.openzen.zenscript.javabytecode.compiler.JavaScriptFile;
 import org.openzen.zenscript.javabytecode.compiler.JavaStatementVisitor;
 import org.openzen.zenscript.javabytecode.compiler.JavaWriter;
 import org.openzen.zenscript.javabytecode.compiler.definitions.JavaDefinitionVisitor;
-import org.openzen.zenscript.javashared.JavaClass;
-import org.openzen.zenscript.javashared.JavaCompileSpace;
-import org.openzen.zenscript.javashared.JavaMethod;
-import org.openzen.zenscript.javashared.JavaParameterInfo;
+import org.openzen.zenscript.javashared.*;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionMemberVisitor;
 import org.openzen.zenscript.javashared.prepare.JavaPrepareDefinitionVisitor;
 
@@ -45,7 +42,7 @@ public class JavaCompiler {
 		this.logger = logger;
 	}
 
-	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space) {
+	public JavaBytecodeModule compile(String packageName, SemanticModule module, JavaCompileSpace space, JavaEnumMapper enumMapper) {
 		Map<String, JavaScriptFile> scriptBlocks = new LinkedHashMap<>();
 		// Add all the scripts to scriptBlocks before we run through the definitions
 		// Scripts with a higher priority load before scripts with a lower priority.
@@ -57,6 +54,7 @@ public class JavaCompiler {
 		Set<JavaScriptFile> scriptFilesThatAreActuallyUsedInScripts = new HashSet<>();
 
 		JavaBytecodeModule target = new JavaBytecodeModule(module.module, module.parameters, logger);
+		target.getEnumMapper().merge(enumMapper);
 		JavaBytecodeContext context = new JavaBytecodeContext(target, space, module.modulePackage, packageName, logger);
 		context.addModule(module.module, target);
 
