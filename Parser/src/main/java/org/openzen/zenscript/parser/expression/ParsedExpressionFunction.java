@@ -41,6 +41,9 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		FunctionHeader header = definedHeader;
 		FunctionTypeID type = null;
 		for (TypeID hint : scope.hints) {
+			if(hint.isOptional()) {
+				hint = hint.withoutOptional();
+			}
 			if (hint.getNormalized() instanceof FunctionTypeID) {
 				FunctionTypeID functionHint = (FunctionTypeID) hint.getNormalized();
 				if (header.canOverride(scope, functionHint.header)) {
