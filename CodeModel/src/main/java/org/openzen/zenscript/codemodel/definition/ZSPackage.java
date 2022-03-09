@@ -137,4 +137,12 @@ public class ZSPackage {
 	public void register(HighLevelDefinition definition) {
 		types.put(definition.name, definition);
 	}
+
+	public ZSPackage getRoot() {
+		if (this.parent == null) {
+			return this;
+		}
+		return this.parent.getRoot();
+	}
+
 }

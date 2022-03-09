@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.FileResolutionContext;
 import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -138,9 +139,10 @@ public class JavaNativeHeaderConverter {
 			try {
 				final String filename = "internal: " + parameter.getDeclaringExecutable().getDeclaringClass() + "#" + parameter.getDeclaringExecutable().getName();
 
+				ZSPackage rootPkg = packageInfo.getPkg().getRoot();
 				final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg(), packageInfo.getModule());
-				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(typeConversionContext.registry, new AnnotationDefinition[0], packageInfo.getPkg(), rootCompiling, typeConversionContext.globals);
-				final FileResolutionContext fContext = new FileResolutionContext(context, packageInfo.getPkg(), rootCompiling);
+				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(typeConversionContext.registry, new AnnotationDefinition[0], rootPkg, rootCompiling, typeConversionContext.globals);
+				final FileResolutionContext fContext = new FileResolutionContext(context, rootPkg, rootCompiling);
 				final FileScope fileScope = new FileScope(fContext, typeConversionContext.compiled.getExpansions(), typeConversionContext.globals, member -> {
 				});
 				final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep);
