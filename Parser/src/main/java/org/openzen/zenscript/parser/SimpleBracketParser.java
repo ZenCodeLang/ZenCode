@@ -32,6 +32,13 @@ public class SimpleBracketParser implements BracketExpressionParser {
 	public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
 		StringBuilder string = new StringBuilder();
 		while (tokens.optional(ZSTokenType.T_GREATER) == null) {
+			ZSTokenType peekType = tokens.peek().getType();
+			if(peekType == ZSTokenType.EOF) {
+				throw new ParseException(position, "Reached EOF, BEP is missing a closing >");
+			}
+			if(tokens.getLastWhitespace().contains("\n")) {
+				throw new ParseException(position, "BEPs cannot contain new lines!");
+			}
 			string.append(tokens.next().content);
 			string.append(tokens.getLastWhitespace());
 		}
