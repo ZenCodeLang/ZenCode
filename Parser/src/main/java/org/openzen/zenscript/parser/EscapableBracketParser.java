@@ -46,6 +46,13 @@ public class EscapableBracketParser implements BracketExpressionParser {
 		final List<ParsedExpression> expressionList = new ArrayList<>();
 
 		while (tokens.optional(ZSTokenType.T_GREATER) == null) {
+			ZSTokenType peekType = tokens.peek().getType();
+			if(peekType == ZSTokenType.EOF) {
+				throw new ParseException(position, "Reached EOF, BEP is missing a closing >");
+			}
+			if(tokens.getLastWhitespace().contains("\n")) {
+				throw new ParseException(position, "BEPs cannot contain new lines!");
+			}
 			ZSToken next = tokens.next();
 
 			if (next.type != ZSTokenType.T_DOLLAR) {
