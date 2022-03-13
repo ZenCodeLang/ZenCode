@@ -8,11 +8,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.member.CasterMember;
-import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.MethodMember;
-import org.openzen.zenscript.codemodel.member.OperatorMember;
-import org.openzen.zenscript.codemodel.member.SetterMember;
+import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
@@ -21,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
 
 public class JavaNativeExpansionConverter {
 	private final JavaNativeTypeConverter typeConverter;
@@ -54,6 +52,11 @@ public class JavaNativeExpansionConverter {
 		final ExpansionDefinition expansion = new ExpansionDefinition(CodePosition.NATIVE, packageInfo.getModule(), packageInfo.getPkg(), Modifiers.PUBLIC, null);
 		final JavaClass javaClass = JavaClass.fromInternalName(org.objectweb.asm.Type.getInternalName(cls), JavaClass.Kind.CLASS);
 		expansion.target = expandedType;
+
+		expansion.setTypeParameters(Arrays.stream(getGenericParameters(cls))
+				.map(s -> new TypeParameter(CodePosition.NATIVE, s))
+				.toArray(TypeParameter[]::new));
+
 		typeConversionContext.definitionByClass.put(cls, expansion);
 
 		fillAnnotatedMethods(cls, expandedType, expansion, javaClass);
@@ -266,6 +269,10 @@ public class JavaNativeExpansionConverter {
 
 	protected String getExpandedName(Class<?> cls) {
 		return cls.getAnnotation(ZenCodeType.Expansion.class).value();
+	}
+
+	protected String[] getGenericParameters(Class<?> cls) {
+		return cls.getAnnotation(ZenCodeType.Expansion.class).genericParameters();
 	}
 
 	protected boolean doesClassNotHaveAnnotation(Class<?> cls) {
