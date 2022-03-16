@@ -13,20 +13,30 @@ import org.openzen.zencode.java.ZenCodeType;
  */
 public class Globals implements ZenCodeGlobals {
 
-	private Globals() {
-	}
+    private Globals() {
+    }
 
-	@Global
-	public static void println(String message) {
-		System.out.println(message);
-	}
+    @Global
+    public static void println(String message) {
+        System.out.println(message);
+    }
 
-	@Global
-	public static void doSomething(@ZenCodeType.Optional MyFunctionalInterfaceClass functionalInterfaceClass) {
-		if (functionalInterfaceClass == null) {
-			println("Doing something with a null function!");
-		} else {
-			println("Doing something: " + functionalInterfaceClass.doSomething("Hello World"));
-		}
-	}
+    @Global
+    public static void doSomething(@ZenCodeType.Optional MyFunctionalInterfaceClass functionalInterfaceClass) {
+        if (functionalInterfaceClass == null) {
+            println("Doing something with a null function!");
+        } else {
+            println("Doing something: " + functionalInterfaceClass.doSomething("Hello World"));
+        }
+    }
+
+    @Global
+    public static EntityType<Entity> getEntityType() {
+        return new EntityType<>();
+    }
+
+    @Global
+    public static EntityType<SubEntity> getSubEntityType() {
+        return new EntityType<>();
+    }
 }

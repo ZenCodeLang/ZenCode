@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -27,10 +28,7 @@ import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.objectweb.asm.Type.getInternalName;
 import static org.objectweb.asm.Type.getMethodDescriptor;
@@ -182,9 +180,19 @@ public class JavaNativeTypeConverter {
 
 		final HighLevelDefinition definition = javaNativeModule.addClass(type);
 
+		definition.typeParameters = Arrays.stream(type.getTypeParameters()).map(param -> {
+			TypeParameter typeParameter = new TypeParameter(CodePosition.NATIVE, param.getName());
+			if (param.getBounds() != null && param.getBounds().length > 0) {
+				for (AnnotatedType bound : param.getAnnotatedBounds()) {
+					typeParameter.addBound(new ParameterSuperBound(loadType(context, JavaAnnotatedType.of(bound.getType()))));
+				}
+
+			}
+			return typeParameter;
+		}).toArray(TypeParameter[]::new);
 		final List<TypeID> typeParameters = new ArrayList<>();
-		for (TypeVariable<? extends Class<?>> typeParameter : type.getTypeParameters()) {
-			typeParameters.add(typeConversionContext.registry.getGeneric(context.get(typeParameter)));
+		for (TypeParameter typeParameter : definition.typeParameters) {
+			typeParameters.add(typeConversionContext.registry.getGeneric(typeParameter));
 		}
 
 		return typeConversionContext.registry.getForDefinition(definition, typeParameters.toArray(TypeID.NONE));

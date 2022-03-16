@@ -8,6 +8,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
+import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -54,7 +56,21 @@ public class JavaNativeExpansionConverter {
 		expansion.target = expandedType;
 
 		expansion.setTypeParameters(Arrays.stream(getGenericParameters(cls))
-				.map(s -> new TypeParameter(CodePosition.NATIVE, s))
+				.map(param -> {
+					TypeParameter typeParameter = new TypeParameter(CodePosition.NATIVE, param.name());
+					if (param.bound() != null) {
+						switch (param.bound()) {
+							case TYPE:
+								typeParameter.addBound(new ParameterTypeBound(CodePosition.NATIVE, typeConverter.getTypeFromName(param.type())));
+								break;
+							case SUPER:
+								typeParameter.addBound(new ParameterSuperBound(typeConverter.getTypeFromName(param.type())));
+								break;
+						}
+
+					}
+					return typeParameter;
+				})
 				.toArray(TypeParameter[]::new));
 
 		typeConversionContext.definitionByClass.put(cls, expansion);
@@ -271,7 +287,7 @@ public class JavaNativeExpansionConverter {
 		return cls.getAnnotation(ZenCodeType.Expansion.class).value();
 	}
 
-	protected String[] getGenericParameters(Class<?> cls) {
+	protected ZenCodeType.GenericParameter[] getGenericParameters(Class<?> cls) {
 		return cls.getAnnotation(ZenCodeType.Expansion.class).genericParameters();
 	}
 

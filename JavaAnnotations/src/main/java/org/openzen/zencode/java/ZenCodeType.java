@@ -51,12 +51,23 @@ public interface ZenCodeType {
 		SHRASSIGN    // <<= (by default, x <<= y will be translated to x = x << y unless this operator is implemented)
 	}
 
+	enum TypeParameterBoundType {
+		TYPE,
+		SUPER;
+	}
+	@Retention(RetentionPolicy.RUNTIME)
+	@interface GenericParameter {
+		String name();
+		String type();
+		TypeParameterBoundType bound();
+	}
+
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.TYPE)
 	@interface Expansion {
 		String value();
 
-		String[] genericParameters() default {};
+		GenericParameter[] genericParameters() default {};
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
