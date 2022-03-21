@@ -305,7 +305,7 @@ public class JavaNativeClassConverter {
 	}
 
 	private boolean isOverridden(Class<?> cls, Method method) {
-		return !method.getDeclaringClass().equals(cls);
+		return !method.getDeclaringClass().equals(cls) || method.isBridge();
 	}
 
 	private void fillConstructor(Class<?> cls, HighLevelDefinition definition, JavaClass javaClass, boolean foundRegistry) {
