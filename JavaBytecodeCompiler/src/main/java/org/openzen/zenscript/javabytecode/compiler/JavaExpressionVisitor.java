@@ -429,9 +429,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
 
-			if (expression.member.getTarget().header.getReturnType().isGeneric())
-				javaWriter.checkCast(context.getInternalName(expression.type));
-
 			return null;
 		}
 
