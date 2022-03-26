@@ -271,7 +271,7 @@ public abstract class ParsedExpression {
 				// Check if x-1 was scanned as T_INT instead of [T_SUB, T_INT]
 				// If so, replace the Token with the number and treat it as binary call
 				final ZSToken peek = parser.peek();
-				if (peek.content.startsWith("-") && peek.content.length() >= 2) {
+				if (peek.content.startsWith("-") && !peek.content.equals("-=") && peek.content.length() >= 2) {
 					parser.replace(new ZSToken(peek.type, peek.content.substring(1)));
 					ParsedExpression right = readMulExpression(parser.getPosition(), parser, options);
 					left = new ParsedExpressionBinary(position, left, right, OperatorType.SUB);
