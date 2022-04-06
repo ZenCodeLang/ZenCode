@@ -21,7 +21,7 @@ public interface IPartialExpression {
 		return Collections.emptyList();
 	}
 
-	Expression eval() throws CompileException;
+	Expression eval();
 
 	List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) throws CompileException;
 

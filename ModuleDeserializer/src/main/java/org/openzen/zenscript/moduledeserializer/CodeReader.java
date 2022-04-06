@@ -208,9 +208,8 @@ public class CodeReader implements CodeSerializationInput {
 		} else if (memberId == 1) {
 			BuiltinID builtin = BuiltinID.get(input.readVarUInt());
 			TypeMembers members = context.getTypeMembers(type);
-			DefinitionMemberRef result = members.getBuiltin(builtin);
-			if (result == null)
-				throw new IllegalArgumentException("Could not find builtin member for " + builtin);
+			DefinitionMemberRef result = members.getBuiltin(builtin)
+					.orElseThrow(() -> new IllegalArgumentException("Could not find builtin member for " + builtin));
 
 			return result;
 		} else {

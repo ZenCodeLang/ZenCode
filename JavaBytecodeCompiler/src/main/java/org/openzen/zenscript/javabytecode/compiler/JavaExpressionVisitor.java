@@ -242,6 +242,410 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	}
 
 	@Override
+	public Void visitBinary(BinaryExpression expression) {
+		switch (expression.operator) {
+			case AND_AND: {
+				Label end = new Label();
+				Label onFalse = new Label();
+
+				expression.left.accept(this);
+
+				javaWriter.ifEQ(onFalse);
+				expression.right.accept(this);
+
+				// //these two calls are redundant but make decompiled code look better. Keep?
+				// javaWriter.ifEQ(onFalse);
+				// javaWriter.iConst1();
+
+				javaWriter.goTo(end);
+
+				javaWriter.label(onFalse);
+				javaWriter.iConst0();
+				javaWriter.label(end);
+			}
+			case OR_OR: {
+				Label end = new Label();
+				Label onTrue = new Label();
+
+				expression.left.accept(this);
+
+				javaWriter.ifNE(onTrue);
+				expression.right.accept(this);
+
+				// //these two calls are redundant but make decompiled code look better. Keep?
+				// javaWriter.ifNE(onTrue);
+				// javaWriter.iConst0();
+
+				javaWriter.goTo(end);
+
+				javaWriter.label(onTrue);
+				javaWriter.iConst1();
+				javaWriter.label(end);
+				break;
+			}
+			case BOOL_AND:
+				javaWriter.iAnd();
+				break;
+			case BOOL_OR:
+				javaWriter.iOr();
+				break;
+			case BOOL_XOR:
+				javaWriter.iXor();
+				break;
+			case BOOL_EQUALS:
+				javaWriter.iXor();
+				javaWriter.iConst1();
+				javaWriter.iXor();
+				break;
+			case BOOL_NOTEQUALS:
+				javaWriter.iXor();
+				break;
+			case BYTE_ADD_BYTE:
+			case SBYTE_ADD_SBYTE:
+			case SHORT_ADD_SHORT:
+			case USHORT_ADD_USHORT:
+			case INT_ADD_INT:
+			case UINT_ADD_UINT:
+			case USIZE_ADD_USIZE:
+				javaWriter.iAdd();
+				break;
+			case BYTE_SUB_BYTE:
+			case SBYTE_SUB_SBYTE:
+			case SHORT_SUB_SHORT:
+			case USHORT_SUB_USHORT:
+			case INT_SUB_INT:
+			case UINT_SUB_UINT:
+			case USIZE_SUB_USIZE:
+				javaWriter.iSub();
+				break;
+			case BYTE_MUL_BYTE:
+			case SBYTE_MUL_SBYTE:
+			case SHORT_MUL_SHORT:
+			case USHORT_MUL_USHORT:
+			case INT_MUL_INT:
+			case UINT_MUL_UINT:
+			case USIZE_MUL_USIZE:
+				javaWriter.iMul();
+				break;
+			case SBYTE_DIV_SBYTE:
+			case SHORT_DIV_SHORT:
+			case INT_DIV_INT:
+			case USIZE_DIV_USIZE:
+				javaWriter.iDiv();
+				break;
+			case SBYTE_MOD_SBYTE:
+			case SHORT_MOD_SHORT:
+			case INT_MOD_INT:
+			case USIZE_MOD_USIZE:
+				javaWriter.iRem();
+				break;
+			case BYTE_DIV_BYTE:
+			case USHORT_DIV_USHORT:
+			case UINT_DIV_UINT:
+				javaWriter.invokeStatic(INTEGER_DIVIDE_UNSIGNED);
+				break;
+			case BYTE_MOD_BYTE:
+			case USHORT_MOD_USHORT:
+			case UINT_MOD_UINT:
+				javaWriter.invokeStatic(INTEGER_REMAINDER_UNSIGNED);
+				break;
+			case BYTE_AND_BYTE:
+			case SBYTE_AND_SBYTE:
+			case SHORT_AND_SHORT:
+			case USHORT_AND_USHORT:
+			case INT_AND_INT:
+			case UINT_AND_UINT:
+			case USIZE_AND_USIZE:
+				javaWriter.iAnd();
+				break;
+			case BYTE_OR_BYTE:
+			case SBYTE_OR_SBYTE:
+			case SHORT_OR_SHORT:
+			case USHORT_OR_USHORT:
+			case INT_OR_INT:
+			case UINT_OR_UINT:
+			case USIZE_OR_USIZE:
+				javaWriter.iOr();
+				break;
+			case BYTE_XOR_BYTE:
+			case SBYTE_XOR_SBYTE:
+			case SHORT_XOR_SHORT:
+			case USHORT_XOR_USHORT:
+			case INT_XOR_INT:
+			case UINT_XOR_UINT:
+			case USIZE_XOR_USIZE:
+				javaWriter.iXor();
+				break;
+			case BYTE_SHL:
+			case SBYTE_SHL:
+			case SHORT_SHL:
+			case USHORT_SHL:
+			case INT_SHL:
+			case UINT_SHL:
+			case USIZE_SHL:
+				javaWriter.iShl();
+				break;
+			case SBYTE_SHR:
+			case SHORT_SHR:
+			case INT_SHR:
+				javaWriter.iShr();
+				break;
+			case BYTE_SHR:
+			case USHORT_SHR:
+			case UINT_SHR:
+			case USIZE_SHR:
+				javaWriter.iUShr();
+				break;
+			case LONG_ADD_LONG:
+			case ULONG_ADD_ULONG:
+				javaWriter.lAdd();
+				break;
+			case LONG_SUB_LONG:
+			case ULONG_SUB_ULONG:
+				javaWriter.lSub();
+				break;
+			case LONG_MUL_LONG:
+			case ULONG_MUL_ULONG:
+				javaWriter.lMul();
+				break;
+			case LONG_DIV_LONG:
+				javaWriter.lDiv();
+				break;
+			case LONG_MOD_LONG:
+				javaWriter.lRem();
+				break;
+			case LONG_AND_LONG:
+			case ULONG_AND_ULONG:
+				javaWriter.lAnd();
+				break;
+			case LONG_OR_LONG:
+			case ULONG_OR_ULONG:
+				javaWriter.lOr();
+				break;
+			case LONG_XOR_LONG:
+			case ULONG_XOR_ULONG:
+				javaWriter.lXor();
+				break;
+			case LONG_SHL:
+			case ULONG_SHL:
+				javaWriter.lShl();
+				break;
+			case LONG_SHR:
+				javaWriter.lShr();
+				break;
+			case ULONG_SHR:
+				javaWriter.lUShr();
+				break;
+			case ULONG_DIV_ULONG:
+				javaWriter.invokeStatic(LONG_DIVIDE_UNSIGNED);
+				break;
+			case ULONG_MOD_ULONG:
+				javaWriter.invokeStatic(LONG_REMAINDER_UNSIGNED);
+				break;
+			case FLOAT_ADD_FLOAT:
+				javaWriter.fAdd();
+				break;
+			case FLOAT_SUB_FLOAT:
+				javaWriter.fSub();
+				break;
+			case FLOAT_MUL_FLOAT:
+				javaWriter.fMul();
+				break;
+			case FLOAT_DIV_FLOAT:
+				javaWriter.fDiv();
+				break;
+			case FLOAT_MOD_FLOAT:
+				javaWriter.fRem();
+				break;
+			case DOUBLE_ADD_DOUBLE:
+				javaWriter.dAdd();
+				break;
+			case DOUBLE_SUB_DOUBLE:
+				javaWriter.dSub();
+				break;
+			case DOUBLE_MUL_DOUBLE:
+				javaWriter.dMul();
+				break;
+			case DOUBLE_DIV_DOUBLE:
+				javaWriter.dDiv();
+				break;
+			case DOUBLE_MOD_DOUBLE:
+				javaWriter.dRem();
+				break;
+			case STRING_ADD_STRING:
+				javaWriter.invokeVirtual(STRING_CONCAT);
+				break;
+			case STRING_INDEXGET:
+				javaWriter.invokeVirtual(STRING_CHAR_AT);
+				break;
+			case STRING_RANGEGET: {
+				expression.left.accept(this);
+				Expression argument = expression.right;
+				if (argument instanceof RangeExpression) {
+					RangeExpression rangeArgument = (RangeExpression) argument;
+					rangeArgument.from.accept(this);
+					rangeArgument.to.accept(this); // TODO: is this string.length ? if so, use the other substring method
+				} else {
+					argument.accept(this);
+					javaWriter.dup();
+					final String owner;
+					if (argument.type instanceof RangeTypeID) {
+						owner = context.getInternalName(argument.type);
+					} else {
+						owner = "zsynthetic/IntRange";
+					}
+					int tmp = javaWriter.local(Type.getType(owner));
+					javaWriter.storeInt(tmp);
+					javaWriter.getField(owner, "from", "I");
+					javaWriter.loadInt(tmp);
+					javaWriter.getField(owner, "to", "I");
+				}
+				javaWriter.invokeVirtual(STRING_SUBSTRING);
+				break;
+			}
+			case ASSOC_INDEXGET: {
+				AssocTypeID type = (AssocTypeID) expression.left.type;
+				type.keyType.accept(type.keyType, boxingTypeVisitor);
+				javaWriter.invokeInterface(MAP_GET);
+
+				type.valueType.accept(type.valueType, unboxingTypeVisitor);
+				if (!CompilerUtils.isPrimitive(type.valueType)) {
+					javaWriter.checkCast(context.getType(type.valueType));
+				}
+				break;
+			}
+			case ASSOC_CONTAINS:
+				javaWriter.invokeVirtual(MAP_CONTAINS_KEY);
+				break;
+			case SAME: {
+				Label exit = new Label();
+				javaWriter.iConst0();
+				javaWriter.ifACmpNe(exit);
+				javaWriter.iConst1();
+				javaWriter.label(exit);
+				break;
+			}
+			case NOTSAME: {
+				Label exit = new Label();
+				javaWriter.iConst0();
+				javaWriter.ifACmpEq(exit);
+				javaWriter.iConst1();
+				javaWriter.label(exit);
+				break;
+			}
+			case ARRAY_CONTAINS:
+				expression.left.accept(this);
+				final Label loopStart = new Label();
+				final Label loopEnd = new Label();
+				final Label isTrue = new Label();
+				final Label expressionEnd = new Label();
+
+				final int counterLocation = javaWriter.local(int.class);
+				javaWriter.iConst0();
+				javaWriter.storeInt(counterLocation);
+
+				javaWriter.label(loopStart);
+				javaWriter.dup();
+				javaWriter.arrayLength();
+
+				javaWriter.loadInt(counterLocation);
+
+				javaWriter.ifICmpLE(loopEnd);
+				javaWriter.dup();
+				javaWriter.loadInt(counterLocation);
+				final TypeID itemType = expression.right.type;
+				javaWriter.arrayLoad(context.getType(itemType));
+				javaWriter.iinc(counterLocation);
+				expression.right.accept(this);
+
+				if (CompilerUtils.isPrimitive(itemType)) {
+					//Compare non-int types beforehand
+					if (itemType == BasicTypeID.LONG || itemType == BasicTypeID.ULONG) {
+						javaWriter.lCmp();
+						javaWriter.ifEQ(loopStart);
+					} else if (itemType == BasicTypeID.FLOAT) {
+						javaWriter.fCmp();
+						javaWriter.ifEQ(loopStart);
+					} else if (itemType == BasicTypeID.DOUBLE) {
+						javaWriter.dCmp();
+						javaWriter.ifEQ(loopStart);
+					} else
+						javaWriter.ifICmpNE(loopStart);
+				} else {
+					//If equals, use Object.equals in case of null
+					javaWriter.invokeStatic(new JavaMethod(JavaClass.fromInternalName("java/util/Objects", JavaClass.Kind.CLASS), JavaMethod.Kind.STATIC, "equals", false, "(Ljava/lang/Object;Ljava/lang/Object;)Z", 0, false));
+					javaWriter.ifEQ(loopStart);
+					// If ==
+					// javaWriter.ifACmpNe(loopStart);
+				}
+
+				javaWriter.label(isTrue);
+
+				javaWriter.pop();
+				javaWriter.iConst1();
+				javaWriter.goTo(expressionEnd);
+
+				javaWriter.label(loopEnd);
+				javaWriter.pop();
+				javaWriter.iConst0();
+				javaWriter.label(expressionEnd);
+
+				break;
+			case ARRAY_EQUALS:
+			case ARRAY_NOTEQUALS: {
+				ArrayTypeID type = expression.left.type.asArray()
+						.orElseThrow(() -> new IllegalStateException("Illegal target type: " + expression.left.type));
+
+				if (type.elementType instanceof BasicTypeID) {
+					switch ((BasicTypeID) type.elementType) {
+						case BOOL:
+							javaWriter.invokeStatic(ARRAYS_EQUALS_BOOLS);
+							break;
+						case BYTE:
+						case SBYTE:
+							javaWriter.invokeStatic(ARRAYS_EQUALS_BYTES);
+							break;
+						case SHORT:
+						case USHORT:
+							javaWriter.invokeStatic(ARRAYS_EQUALS_SHORTS);
+							break;
+						case INT:
+						case UINT:
+							javaWriter.invokeStatic(ARRAYS_EQUALS_INTS);
+							break;
+						case LONG:
+						case ULONG:
+							javaWriter.invokeStatic(ARRAYS_EQUALS_LONGS);
+							break;
+						case FLOAT:
+							javaWriter.invokeStatic(ARRAYS_EQUALS_FLOATS);
+							break;
+						case DOUBLE:
+							javaWriter.invokeStatic(ARRAYS_EQUALS_DOUBLES);
+							break;
+						case CHAR:
+							javaWriter.invokeStatic(ARRAYS_EQUALS_CHARS);
+							break;
+						default:
+							throw new IllegalArgumentException("Unknown basic type: " + type.elementType);
+					}
+				} else {
+					javaWriter.invokeStatic(ARRAYS_EQUALS_OBJECTS);
+				}
+
+				if (expression.operator == BinaryExpression.Operator.ARRAY_NOTEQUALS) {
+					javaWriter.invertBoolean();
+				}
+				break;
+			}
+			default:
+				throw new UnsupportedOperationException("Unknown operator: " + expression.operator);
+		}
+
+		return null;
+	}
+
+	@Override
 	public Void visitCompare(CompareExpression expression) {
 		if (expression.operator.getBuiltin() != null) {
 			switch (expression.operator.getBuiltin()) {
@@ -993,10 +1397,6 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case GENERICMAP_CONTAINS:
 				javaWriter.invokeVirtual(MAP_CONTAINS_KEY);
 				break;
-			case GENERICMAP_EQUALS:
-				throw new UnsupportedOperationException("Not yet supported!");
-			case GENERICMAP_NOTEQUALS:
-				throw new UnsupportedOperationException("Not yet supported!");
 			case GENERICMAP_ADDALL:
 				javaWriter.invokeInterface(MAP_PUT_ALL);
 				break;
@@ -3402,6 +3802,179 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		javaWriter.swap();
 		javaWriter.invokeSpecial(internalName, "<init>", "(Ljava/lang/Object;)V");
 		javaWriter.label(end);
+		return null;
+	}
+
+	@Override
+	public Void visitUnary(UnaryExpression expression) {
+		switch (expression.operator) {
+			case INT_HIGHEST_ONE_BIT:
+			case UINT_HIGHEST_ONE_BIT:
+			case USIZE_HIGHEST_ONE_BIT:
+				javaWriter.invokeStatic(INTEGER_HIGHEST_ONE_BIT);
+				break;
+			case INT_LOWEST_ONE_BIT:
+			case UINT_LOWEST_ONE_BIT:
+			case USIZE_LOWEST_ONE_BIT:
+				javaWriter.invokeStatic(INTEGER_LOWEST_ONE_BIT);
+				break;
+			case INT_HIGHEST_ZERO_BIT:
+			case UINT_HIGHEST_ZERO_BIT:
+			case USIZE_HIGHEST_ZERO_BIT:
+				javaWriter.iNeg();
+				javaWriter.invokeStatic(INTEGER_HIGHEST_ONE_BIT);
+				break;
+			case INT_LOWEST_ZERO_BIT:
+			case UINT_LOWEST_ZERO_BIT:
+			case USIZE_LOWEST_ZERO_BIT:
+				javaWriter.iNeg();
+				javaWriter.invokeStatic(INTEGER_LOWEST_ONE_BIT);
+				break;
+			case INT_BIT_COUNT:
+			case UINT_BIT_COUNT:
+			case USIZE_BIT_COUNT:
+				javaWriter.invokeStatic(INTEGER_BIT_COUNT);
+				break;
+			case LONG_HIGHEST_ONE_BIT:
+			case ULONG_HIGHEST_ONE_BIT:
+				javaWriter.invokeStatic(LONG_HIGHEST_ONE_BIT);
+				break;
+			case LONG_LOWEST_ONE_BIT:
+			case ULONG_LOWEST_ONE_BIT:
+				javaWriter.invokeStatic(LONG_LOWEST_ONE_BIT);
+				break;
+			case LONG_HIGHEST_ZERO_BIT:
+			case ULONG_HIGHEST_ZERO_BIT:
+				javaWriter.lNeg();
+				javaWriter.invokeStatic(LONG_HIGHEST_ONE_BIT);
+				break;
+			case LONG_LOWEST_ZERO_BIT:
+			case ULONG_LOWEST_ZERO_BIT:
+				javaWriter.lNeg();
+				javaWriter.invokeStatic(LONG_LOWEST_ONE_BIT);
+				break;
+			case LONG_BIT_COUNT:
+			case ULONG_BIT_COUNT:
+				javaWriter.invokeStatic(LONG_BIT_COUNT);
+				break;
+			case FLOAT_BITS:
+				javaWriter.invokeStatic(FLOAT_BITS);
+				break;
+			case DOUBLE_BITS:
+				javaWriter.invokeStatic(DOUBLE_BITS);
+				break;
+			case STRING_LENGTH:
+				javaWriter.invokeVirtual(STRING_LENGTH);
+				break;
+			case STRING_CHARACTERS:
+				javaWriter.invokeVirtual(STRING_CHARACTERS);
+				break;
+			case STRING_ISEMPTY:
+				javaWriter.invokeVirtual(STRING_ISEMPTY);
+				break;
+			case ASSOC_SIZE:
+				javaWriter.invokeVirtual(MAP_SIZE);
+				break;
+			case ASSOC_ISEMPTY:
+				javaWriter.invokeVirtual(MAP_ISEMPTY);
+				break;
+			case ASSOC_KEYS: {
+				Type resultType = context.getType(expression.type);
+
+				javaWriter.invokeVirtual(MAP_KEYS);
+				javaWriter.dup();
+				javaWriter.invokeVirtual(COLLECTION_SIZE);
+				javaWriter.newArray(resultType);
+				javaWriter.invokeVirtual(COLLECTION_TOARRAY);
+				javaWriter.checkCast(resultType);
+				break;
+			}
+			case ASSOC_VALUES: {
+				Type resultType = context.getType(expression.type);
+
+				javaWriter.invokeVirtual(MAP_VALUES);
+				javaWriter.dup();
+				javaWriter.invokeVirtual(COLLECTION_SIZE);
+				javaWriter.newArray(resultType);
+				javaWriter.invokeVirtual(COLLECTION_TOARRAY);
+				javaWriter.checkCast(resultType);
+				break;
+			}
+			case ARRAY_LENGTH:
+				javaWriter.arrayLength();
+				break;
+			case ARRAY_HASHCODE: {
+				ArrayTypeID type = (ArrayTypeID) expression.target.type;
+				if (type.elementType instanceof BasicTypeID) {
+					switch ((BasicTypeID) type.elementType) {
+						case BOOL:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_BOOLS);
+							break;
+						case BYTE:
+						case SBYTE:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_BYTES);
+							break;
+						case SHORT:
+						case USHORT:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_SHORTS);
+							break;
+						case INT:
+						case UINT:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_INTS);
+							break;
+						case LONG:
+						case ULONG:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_LONGS);
+							break;
+						case FLOAT:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_FLOATS);
+							break;
+						case DOUBLE:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_DOUBLES);
+							break;
+						case CHAR:
+							javaWriter.invokeStatic(ARRAYS_HASHCODE_CHARS);
+							break;
+						default:
+							throw new IllegalArgumentException("Unknown basic type: " + type.elementType);
+					}
+				} else {
+					javaWriter.invokeStatic(ARRAYS_DEEPHASHCODE);
+				}
+				break;
+			}
+			case ARRAY_ISEMPTY:
+				Label isTrue = new Label();
+				Label exit = new Label();
+
+				javaWriter.arrayLength();
+				javaWriter.ifEQ(isTrue);
+				javaWriter.iConst0();
+				javaWriter.goTo(exit);
+				javaWriter.label(isTrue);
+				javaWriter.iConst1();
+				javaWriter.label(exit);
+				break;
+			case ENUM_NAME:
+				javaWriter.invokeVirtual(ENUM_NAME);
+				break;
+			case ENUM_ORDINAL:
+				javaWriter.invokeVirtual(ENUM_ORDINAL);
+				break;
+			case RANGE_FROM: {
+				RangeTypeID type = (RangeTypeID) expression.target.type;
+				Type jType = context.getType(expression.target.type);
+				javaWriter.getField(jType.getInternalName(), "from", context.getDescriptor(type.baseType));
+				break;
+			}
+			case RANGE_TO:
+				RangeTypeID type = (RangeTypeID) expression.target.type;
+				Type jType = context.getType(expression.target.type);
+				javaWriter.getField(jType.getInternalName(), "to", context.getDescriptor(type.baseType));
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown unary operator: " + expression.operator);
+		}
 		return null;
 	}
 

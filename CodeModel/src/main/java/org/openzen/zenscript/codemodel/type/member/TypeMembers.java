@@ -75,7 +75,6 @@ public final class TypeMembers {
 			return true;
 		}
 
-
 		TypeID superType = type.getSuperType(cache.getRegistry());
 		if (superType != null) {
 			if (superType == other)
@@ -128,32 +127,32 @@ public final class TypeMembers {
 			other.getOrCreateGroup(entry.getKey()).merge(entry.getValue(), priority);
 	}
 
-	public DefinitionMemberRef getBuiltin(BuiltinID builtin) {
+	public Optional<DefinitionMemberRef> getBuiltin(BuiltinID builtin) {
 		for (TypeMemberGroup group : members.values()) {
 			if (group.getConstant() != null && group.getConstant().member.builtin == builtin)
-				return group.getConstant();
-			if (group.getField() != null && group.getField().member.builtin == builtin)
-				return group.getField();
+				return Optional.of(group.getConstant());
+			if (group.getField().isPresent() && group.getField().get().member.builtin == builtin)
+				return Optional.of(group.getField().get());
 
 			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers()) {
 				if (member.member.getBuiltin() == builtin)
-					return member.member;
+					return Optional.of(member.member);
 			}
 		}
 
 		for (TypeMemberGroup group : operators.values()) {
 			if (group.getConstant() != null && group.getConstant().member.builtin == builtin)
-				return group.getConstant();
-			if (group.getField() != null && group.getField().member.builtin == builtin)
-				return group.getField();
+				return Optional.of(group.getConstant());
+			if (group.getField().isPresent() && group.getField().get().member.builtin == builtin)
+				return Optional.of(group.getField().get());
 
 			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers()) {
 				if (member.member.getBuiltin() == builtin)
-					return member.member;
+					return Optional.of(member.member);
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	public TypeID union(TypeID other) {
@@ -200,27 +199,13 @@ public final class TypeMembers {
 				result.add(iterator.member.target);
 		}
 		for (Map.Entry<String, TypeMemberGroup> entry : members.entrySet()) {
-			TypeMemberGroup group = entry.getValue();
-			if (group.getGetter() != null && group.getGetter().member.isAbstract() && !implemented.contains(group.getGetter().member))
-				result.add(group.getGetter().member);
-			if (group.getSetter() != null && group.getSetter().member.isAbstract() && !implemented.contains(group.getSetter().member))
-				result.add(group.getSetter().member);
-			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers())
-				if (member.member.getTarget().isAbstract() && !implemented.contains(member.member.getTarget()))
-					result.add(member.member.getTarget());
+			entry.getValue().collectUnimplementedMembers(implemented, result);
 		}
 		for (Map.Entry<OperatorType, TypeMemberGroup> entry : operators.entrySet()) {
 			if (entry.getKey() == OperatorType.DESTRUCTOR)
 				continue; // destructor doesn't have to be implemented; the compiler can do so automatically
 
-			TypeMemberGroup group = entry.getValue();
-			if (group.getGetter() != null && group.getGetter().member.isAbstract() && !implemented.contains(group.getGetter().member))
-				result.add(group.getGetter().member);
-			if (group.getSetter() != null && group.getSetter().member.isAbstract() && !implemented.contains(group.getSetter().member))
-				result.add(group.getSetter().member);
-			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers())
-				if (member.member.getTarget().isAbstract() && !implemented.contains(member.member.getTarget()))
-					result.add(member.member.getTarget());
+			entry.getValue().collectUnimplementedMembers(implemented, result);
 		}
 		return result;
 	}
@@ -325,11 +310,8 @@ public final class TypeMembers {
 		return members.get(name);
 	}
 
-	public TypeMemberGroup getGroup(String name) {
-		if (!members.containsKey(name))
-			return new TypeMemberGroup(false, name);
-
-		return members.get(name);
+	public Optional<TypeMemberGroup> getGroup(String name) {
+		return Optional.ofNullable(members.get(name));
 	}
 
 	public TypeMemberGroup getOrCreateGroup(OperatorType operator) {
@@ -491,31 +473,25 @@ public final class TypeMembers {
 		}
 		for (Map.Entry<String, TypeMemberGroup> entry : members.entrySet()) {
 			TypeMemberGroup group = entry.getValue();
-			TypeMemberGroup definitionGroup = definitionMembers.getGroup(entry.getKey());
-			if (definitionGroup == null)
-				continue;
-
-			if (group.getGetter() != null) {
-				if (!implemented.contains(group.getGetter().member)) {
-					GetterMemberRef implementation = definitionGroup.getGetter();
-					if (implementation != null)
-						result.put(group.getGetter(), implementation.getTarget());
+			definitionMembers.getGroup(entry.getKey()).ifPresent(definitionGroup -> {
+				group.getGetter().ifPresent(getter -> {
+					if (!implemented.contains(getter.member)) {
+						definitionGroup.getGetter().ifPresent(implementation -> result.put(getter, implementation.getTarget()));
+					}
+				});
+				group.getSetter().ifPresent(setter -> {
+					if (!implemented.contains(setter.member)) {
+						definitionGroup.getSetter().ifPresent(implementation -> result.put(setter, implementation.getTarget()));
+					}
+				});
+				for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers()) {
+					if (!implemented.contains(member.member.getTarget())) {
+						FunctionalMemberRef functional = definitionGroup.getMethod(member.member.getHeader());
+						if (functional != null)
+							result.put(member.member, functional.getTarget());
+					}
 				}
-			}
-			if (group.getSetter() != null) {
-				if (!implemented.contains(group.getSetter().member)) {
-					SetterMemberRef implementation = definitionGroup.getSetter();
-					if (implementation != null)
-						result.put(group.getSetter(), implementation.getTarget());
-				}
-			}
-			for (TypeMember<FunctionalMemberRef> member : group.getMethodMembers()) {
-				if (!implemented.contains(member.member.getTarget())) {
-					FunctionalMemberRef functional = definitionGroup.getMethod(member.member.getHeader());
-					if (functional != null)
-						result.put(member.member, functional.getTarget());
-				}
-			}
+			});
 		}
 		for (Map.Entry<OperatorType, TypeMemberGroup> entry : operators.entrySet()) {
 			if (entry.getKey() == OperatorType.DESTRUCTOR)
@@ -626,7 +602,7 @@ public final class TypeMembers {
 		if (innerTypes.containsKey(name.name))
 			return new PartialTypeExpression(position, innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID) type), name.arguments);
 		if (variantOptions.containsKey(name.name))
-			return new PartialVariantOptionExpression(position, scope, variantOptions.get(name.name));
+			return new PartialVariantOptionExpression(position, variantOptions.get(name.name));
 		if (enumMembers.containsKey(name.name)) {
 			return new EnumConstantExpression(position, type, enumMembers.get(name.name));
 		}
@@ -642,9 +618,9 @@ public final class TypeMembers {
 		return innerTypes.containsKey(name);
 	}
 
-	public DefinitionTypeID getInnerType(CodePosition position, GenericName name) {
+	public DefinitionTypeID getInnerType(CodePosition position, GenericName name) throws CompileException {
 		if (!innerTypes.containsKey(name.name))
-			throw new RuntimeException("No such inner type in " + type + ": " + name.name);
+			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "No such inner type in " + type + ": " + name.name);
 
 		return innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID) type);
 	}

@@ -184,6 +184,7 @@ public class JavaNativeTypeConverter {
 
 		final List<TypeID> typeParameters = new ArrayList<>();
 		for (TypeVariable<? extends Class<?>> typeParameter : type.getTypeParameters()) {
+			typeParameter.getAnnotatedBounds()[0].
 			typeParameters.add(typeConversionContext.registry.getGeneric(context.get(typeParameter)));
 		}
 

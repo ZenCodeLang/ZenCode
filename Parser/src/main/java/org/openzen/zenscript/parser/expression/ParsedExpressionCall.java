@@ -3,23 +3,20 @@ package org.openzen.zenscript.parser.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.compiler.InferredType;
+import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.compiler.expression.CompilingExpression;
+import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
+import org.openzen.zenscript.compiler.expression.TypeMatch;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
-
-import java.util.List;
 
 public class ParsedExpressionCall extends ParsedExpression {
 	private final ParsedExpression receiver;
@@ -33,54 +30,40 @@ public class ParsedExpressionCall extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		if (receiver instanceof ParsedExpressionVariable) {
-			ParsedExpressionVariable variable = (ParsedExpressionVariable) receiver;
-			for (TypeID hint : scope.hints) {
-				TypeMembers members = scope.getTypeMembers(hint);
-				if (members.getVariantOption(variable.name) != null) {
-					try {
-						VariantOptionRef variantOption = members.getVariantOption(variable.name);
-						FunctionHeader header = new FunctionHeader(BasicTypeID.VOID, variantOption.types);
-						CallArguments cArguments = arguments.compileCall(position, scope, null, header);
-						return new VariantValueExpression(position, hint, variantOption, cArguments.arguments);
-					} catch (CompileException ex) {
-						return new InvalidExpression(hint, ex);
-					}
-				}
-			}
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, receiver.compile(compiler), arguments.compile(compiler));
+	}
+
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression receiver;
+		private final CompilingExpression[] arguments;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression receiver, CompilingExpression[] arguments) {
+			super(compiler, position);
+			this.receiver = receiver;
+			this.arguments = arguments;
 		}
 
-		if (receiver instanceof ParsedExpressionSuper) {
-			// super call (intended as first call in constructor)
-			TypeID targetType = scope.getThisType().getSuperType(scope.getTypeRegistry());
-			if (targetType == null)
-				throw new CompileException(position, CompileExceptionCode.SUPER_CALL_NO_SUPERCLASS, "Class has no superclass");
-
-			TypeMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
-			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
-			FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
-			if (!member.isConstructor())
-				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
-
-			return new ConstructorSuperCallExpression(position, targetType, member, callArguments);
-		} else if (receiver instanceof ParsedExpressionThis) {
-			// this call (intended as first call in constructor)
-			TypeID targetType = scope.getThisType();
-
-			TypeMemberGroup memberGroup = scope.getTypeMembers(targetType).getOrCreateGroup(OperatorType.CONSTRUCTOR);
-			CallArguments callArguments = arguments.compileCall(position, scope, null, memberGroup);
-			FunctionalMemberRef member = memberGroup.selectMethod(position, scope, callArguments, true, true);
-			if (!member.isConstructor())
-				throw new CompileException(position, CompileExceptionCode.INTERNAL_ERROR, "Constructor is not a constructor!");
-
-			return new ConstructorThisCallExpression(position, scope.getThisType(), member, callArguments);
+		@Override
+		public Expression as(TypeID type) {
+			return receiver.call()
+					.map(call -> call.call(type, arguments))
+					.orElseGet(() -> compiler.at(position, type).invalid(CompileExceptionCode.CALL_NO_VALID_METHOD, "Cannot call this expression"));
 		}
 
-		IPartialExpression cReceiver = receiver.compile(scope.withoutHints());
-		List<FunctionHeader> headers = cReceiver.getPossibleFunctionHeaders(scope, scope.hints, arguments.arguments.size());
-		CallArguments callArguments = arguments.compileCall(position, scope, cReceiver.getTypeArguments(), headers);
-		return cReceiver.call(position, scope, scope.hints, callArguments);
+		@Override
+		public TypeMatch matches(TypeID returnType) {
+			return receiver.call()
+					.map(call -> call.matches(returnType, arguments))
+					.orElse(TypeMatch.NONE);
+		}
+
+		@Override
+		public InferredType inferType() {
+			return receiver.call()
+					.map(call -> call.inferReturnType(arguments))
+					.orElseGet(() -> InferredType.failure(CompileExceptionCode.CALL_NO_VALID_METHOD, "Cannot call this expression"));
+		}
 	}
 
 	@Override
@@ -110,10 +93,5 @@ public class ParsedExpressionCall extends ParsedExpression {
 		} else {
 			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
 		}
-	}
-
-	@Override
-	public boolean hasStrongType() {
-		return true;
 	}
 }

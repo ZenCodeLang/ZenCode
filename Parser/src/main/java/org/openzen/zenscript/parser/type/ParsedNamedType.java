@@ -4,10 +4,10 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.TypeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,19 +22,13 @@ public class ParsedNamedType implements IParsedType {
 	}
 
 	@Override
-	public TypeID compile(TypeResolutionContext context) {
-		if (name.size() == 1 && name.get(0).name.equals("Iterator"))
-			return toIterator(context);
-
+	public TypeID compile(TypeBuilder typeBuilder) {
 		List<GenericName> genericNames = new ArrayList<>();
 		for (ParsedNamePart namePart : name)
-			genericNames.add(namePart.compile(context));
+			genericNames.add(namePart.compile(typeBuilder));
 
-		TypeID result = context.getType(position, genericNames);
-		if (result == null)
-			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString());
-
-		return result;
+		return typeBuilder.resolve(position, genericNames)
+				.orElseGet(() -> new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()));
 	}
 
 	@Override
@@ -57,18 +51,9 @@ public class ParsedNamedType implements IParsedType {
 	}
 
 	@Override
-	public TypeID[] compileTypeArguments(BaseScope scope) {
+	public TypeID[] compileTypeArguments(TypeBuilder typeBuilder) {
 		ParsedNamePart last = name.get(name.size() - 1);
-		return IParsedType.compileTypes(last.typeArguments, scope);
-	}
-
-	private TypeID toIterator(TypeResolutionContext context) {
-		List<IParsedType> genericTypes = name.get(0).typeArguments;
-		TypeID[] iteratorTypes = new TypeID[genericTypes.size()];
-		for (int i = 0; i < genericTypes.size(); i++)
-			iteratorTypes[i] = genericTypes.get(i).compile(context);
-
-		return context.getTypeRegistry().getIterator(iteratorTypes);
+		return IParsedType.compileTypes(last.typeArguments, typeBuilder);
 	}
 
 	public static class ParsedNamePart {
@@ -80,8 +65,8 @@ public class ParsedNamedType implements IParsedType {
 			this.typeArguments = genericArguments;
 		}
 
-		private GenericName compile(TypeResolutionContext context) {
-			return new GenericName(name, IParsedType.compileTypes(typeArguments, context));
+		private GenericName compile(TypeBuilder typeBuilder) {
+			return new GenericName(name, IParsedType.compileTypes(typeArguments, typeBuilder));
 		}
 
 		@Override

@@ -1,19 +1,11 @@
 package org.openzen.zenscript.parser.definitions;
 
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.TypeBuilder;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
 import org.openzen.zenscript.parser.type.IParsedType;
-
-import java.util.Collections;
 
 public class ParsedFunctionParameter {
 	public final ParsedAnnotation[] annotations;
@@ -32,24 +24,15 @@ public class ParsedFunctionParameter {
 		this.variadic = variadic;
 	}
 
-	public FunctionParameter compile(TypeResolutionContext context) {
+	public FunctionParameter compile(TypeBuilder typeBuilder) {
 		if (compiled != null)
 			return compiled;
 
-		TypeID cType = type.compile(context);
+		TypeID cType = type.compile(typeBuilder);
 		this.compiled = new FunctionParameter(cType, name, null, variadic);
-		compileDefaultValue(new FileScope(context, Collections.emptyList(), Collections.emptyMap()), new PrecompilationState());
-		return compiled;
-	}
-
-	public void compileDefaultValue(BaseScope scope, PrecompilationState state) {
-		if (defaultValue == null)
-			return;
-
-		try {
-			compiled.defaultValue = defaultValue.compile(new ExpressionScope(scope, compiled.type)).eval();
-		} catch (CompileException ex) {
-			compiled.defaultValue = new InvalidExpression(compiled.type, ex);
+		if (defaultValue != null) {
+			this.compiled.defaultValue = defaultValue.compile(typeBuilder.getDefaultValueCompiler()).as(cType);
 		}
+		return compiled;
 	}
 }

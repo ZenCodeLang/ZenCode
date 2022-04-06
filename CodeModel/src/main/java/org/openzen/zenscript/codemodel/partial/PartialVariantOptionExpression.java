@@ -19,12 +19,10 @@ import java.util.List;
 
 public class PartialVariantOptionExpression implements IPartialExpression {
 	private final CodePosition position;
-	private final TypeScope scope;
 	private final VariantOptionRef option;
 
-	public PartialVariantOptionExpression(CodePosition position, TypeScope scope, VariantOptionRef option) {
+	public PartialVariantOptionExpression(CodePosition position, VariantOptionRef option) {
 		this.position = position;
-		this.scope = scope;
 		this.option = option;
 	}
 

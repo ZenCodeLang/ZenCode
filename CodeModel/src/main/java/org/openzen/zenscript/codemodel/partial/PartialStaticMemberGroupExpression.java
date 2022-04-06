@@ -10,7 +10,6 @@ import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,11 +68,6 @@ public class PartialStaticMemberGroupExpression implements IPartialExpression {
 
 	@Override
 	public List<TypeID> getAssignHints() {
-		if (group.getSetter() != null)
-			return Collections.singletonList(group.getSetter().getType());
-		if (group.getField() != null)
-			return Collections.singletonList(group.getField().getType());
-
-		return Collections.emptyList();
+		return group.getAssignHints();
 	}
 }

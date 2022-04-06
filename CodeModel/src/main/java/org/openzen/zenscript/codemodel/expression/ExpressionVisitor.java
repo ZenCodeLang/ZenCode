@@ -5,6 +5,8 @@ public interface ExpressionVisitor<T> {
 
 	T visitArray(ArrayExpression expression);
 
+	T visitBinary(BinaryExpression expression);
+
 	T visitCompare(CompareExpression expression);
 
 	T visitCall(CallExpression expression);
@@ -144,6 +146,8 @@ public interface ExpressionVisitor<T> {
 	T visitTryRethrowAsException(TryRethrowAsExceptionExpression expression);
 
 	T visitTryRethrowAsResult(TryRethrowAsResultExpression expression);
+
+	T visitUnary(UnaryExpression expression);
 
 	T visitVariantValue(VariantValueExpression expression);
 

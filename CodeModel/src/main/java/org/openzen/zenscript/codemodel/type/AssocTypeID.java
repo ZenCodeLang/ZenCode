@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 import java.util.List;
+import java.util.Optional;
 
 public class AssocTypeID implements TypeID {
 	public final TypeID keyType;
@@ -55,6 +56,11 @@ public class AssocTypeID implements TypeID {
 	@Override
 	public boolean hasDefaultValue() {
 		return true;
+	}
+
+	@Override
+	public Optional<AssocTypeID> asAssoc() {
+		return Optional.of(this);
 	}
 
 	@Override

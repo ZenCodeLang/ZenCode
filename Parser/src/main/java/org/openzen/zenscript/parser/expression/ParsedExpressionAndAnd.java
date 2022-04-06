@@ -1,13 +1,15 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.expression.AndAndExpression;
+import org.openzen.zenscript.codemodel.expression.BinaryExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.compiler.expression.CompilingExpression;
+import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
+import org.openzen.zenscript.compiler.InferredType;
+import org.openzen.zenscript.compiler.expression.TypeMatch;
 
 public class ParsedExpressionAndAnd extends ParsedExpression {
 	private final ParsedExpression left;
@@ -24,22 +26,36 @@ public class ParsedExpressionAndAnd extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		Expression left = this.left.compile(scope).eval();
-		Expression right = this.right.compile(scope).eval();
-
-		TypeID resultType = scope.getTypeMembers(left.type).union(right.type);
-		if (resultType == null)
-			throw new CompileException(position, CompileExceptionCode.TYPE_CANNOT_UNITE, "These types could not be unified: " + left.type + " and " + right.type);
-
-		left = left.castImplicit(position, scope, resultType);
-		right = right.castImplicit(position, scope, resultType);
-
-		return new AndAndExpression(position, left, right);
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, left.compile(compiler), right.compile(compiler));
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return left.hasStrongType() && right.hasStrongType();
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression left;
+		private final CompilingExpression right;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression left, CompilingExpression right) {
+			super(compiler, position);
+			this.left = left;
+			this.right = right;
+		}
+
+		@Override
+		public Expression as(TypeID type) {
+			return compiler.at(position, type).binary(
+					BinaryExpression.Operator.AND_AND,
+					left.as(BasicTypeID.BOOL),
+					right.as(BasicTypeID.BOOL));
+		}
+
+		@Override
+		public TypeMatch matches(TypeID returnType) {
+			return compiler.matchType(BasicTypeID.BOOL, returnType);
+		}
+
+		@Override
+		public InferredType inferType() {
+			return InferredType.success(BasicTypeID.BOOL);
+		}
 	}
 }

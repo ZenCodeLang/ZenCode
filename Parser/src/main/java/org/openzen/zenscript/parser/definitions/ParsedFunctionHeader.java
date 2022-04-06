@@ -3,10 +3,9 @@ package org.openzen.zenscript.parser.definitions;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.context.LocalTypeResolutionContext;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.TypeBuilder;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -82,16 +81,16 @@ public class ParsedFunctionHeader {
 		return new ParsedFunctionHeader(position, genericParameters, parameters, returnType, thrownType);
 	}
 
-	public FunctionHeader compile(TypeResolutionContext context) {
+	public FunctionHeader compile(TypeBuilder typeBuilder) {
 		TypeParameter[] genericParameters = ParsedTypeParameter.getCompiled(this.genericParameters);
-		LocalTypeResolutionContext localContext = new LocalTypeResolutionContext(context, null, genericParameters);
-		ParsedTypeParameter.compile(localContext, genericParameters, this.genericParameters);
+		TypeBuilder local = typeBuilder.withGeneric(genericParameters);
+		ParsedTypeParameter.compile(local, genericParameters, this.genericParameters);
 
-		TypeID returnType = this.returnType.compile(localContext);
+		TypeID returnType = this.returnType.compile(local);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.size()];
 		for (int i = 0; i < parameters.length; i++)
-			parameters[i] = this.parameters.get(i).compile(localContext);
+			parameters[i] = this.parameters.get(i).compile(local);
 
-		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(context), parameters);
+		return new FunctionHeader(genericParameters, returnType, thrownType == null ? null : thrownType.compile(local), parameters);
 	}
 }

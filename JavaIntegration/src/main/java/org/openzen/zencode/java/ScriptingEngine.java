@@ -45,7 +45,7 @@ import java.util.function.Function;
  */
 public class ScriptingEngine {
 	public final ScriptingEngineLogger logger;
-	private final ZSPackage root = ZSPackage.createRoot();
+	public final ZSPackage root = ZSPackage.createRoot();
 	private final ZSPackage stdlib = root.getOrCreatePackage("stdlib");
 	public final GlobalTypeRegistry registry = new GlobalTypeRegistry(stdlib);
 	private final ModuleSpace space;
@@ -83,12 +83,12 @@ public class ScriptingEngine {
 
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule... dependencies) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies);
+		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies, space.rootPackage);
 	}
 
 	public JavaNativeModule createNativeModule(String name, String basePackage, JavaNativeModule[] dependencies, JavaNativeConverterBuilder nativeConverterBuilder) {
 		ZSPackage testPackage = new ZSPackage(space.rootPackage, name);
-		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies, nativeConverterBuilder);
+		return new JavaNativeModule(logger, testPackage, name, basePackage, registry, dependencies, nativeConverterBuilder, space.rootPackage);
 	}
 
 	public void registerNativeProvided(JavaNativeModule module) throws CompileException {

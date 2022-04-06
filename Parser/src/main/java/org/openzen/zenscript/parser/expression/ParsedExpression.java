@@ -6,12 +6,11 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.expression.CompilableExpression;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -29,7 +28,7 @@ import java.util.List;
 import static org.openzen.zencode.shared.StringExpansion.unescape;
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 
-public abstract class ParsedExpression {
+public abstract class ParsedExpression implements CompilableExpression {
 	public final CodePosition position;
 
 	public ParsedExpression(CodePosition position) {
@@ -572,23 +571,6 @@ public abstract class ParsedExpression {
 		}
 	}
 
-	/**
-	 * Compiles the given parsed expression to a high-level expression or
-	 * partial expression.
-	 * <p>
-	 * If the asType parameter is provided, the given type determines the output
-	 * type of the expression. The output type of the expression MUST in that
-	 * case be equal to the given type.
-	 *
-	 * @param scope
-	 * @return
-	 */
-	public abstract IPartialExpression compile(ExpressionScope scope) throws CompileException;
-
-	public Expression compileKey(ExpressionScope scope) throws CompileException {
-		return compile(scope).eval();
-	}
-
 	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
 		throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
 	}
@@ -604,8 +586,6 @@ public abstract class ParsedExpression {
 	public boolean isCompatibleWith(BaseScope scope, TypeID type) {
 		return true;
 	}
-
-	public abstract boolean hasStrongType();
 
 	public static class ParsingOptions {
 		public static final ParsingOptions DEFAULT = new ParsingOptions(true);

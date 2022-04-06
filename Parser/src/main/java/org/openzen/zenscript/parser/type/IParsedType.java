@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.TypeBuilder;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -205,35 +206,24 @@ public interface IParsedType {
 		return result;
 	}
 
-	static TypeID[] compileList(List<IParsedType> typeParameters, TypeResolutionContext context) {
+	static TypeID[] compileTypes(List<IParsedType> typeArguments, TypeBuilder typeBuilder) {
 		TypeID[] result = TypeID.NONE;
-		if (typeParameters != null) {
-			result = new TypeID[typeParameters.size()];
-			for (int i = 0; i < typeParameters.size(); i++) {
-				result[i] = typeParameters.get(i).compile(context);
+		if (typeArguments != null && typeArguments.size() > 0) {
+			result = new TypeID[typeArguments.size()];
+			for (int i = 0; i < typeArguments.size(); i++) {
+				result[i] = typeArguments.get(i).compile(typeBuilder);
 			}
 		}
 		return result;
 	}
 
-	static TypeID[] compileTypes(List<IParsedType> typeParameters, TypeResolutionContext context) {
-		TypeID[] result = TypeID.NONE;
-		if (typeParameters != null && typeParameters.size() > 0) {
-			result = new TypeID[typeParameters.size()];
-			for (int i = 0; i < typeParameters.size(); i++) {
-				result[i] = typeParameters.get(i).compile(context);
-			}
-		}
-		return result;
-	}
-
-	TypeID compile(TypeResolutionContext context);
+	TypeID compile(TypeBuilder typeBuilder);
 
 	default AnnotationDefinition compileAnnotation(BaseScope scope) {
 		return null;
 	}
 
-	default TypeID[] compileTypeArguments(BaseScope scope) {
+	default TypeID[] compileTypeArguments(TypeBuilder typeBuilder) {
 		return TypeID.NONE;
 	}
 }

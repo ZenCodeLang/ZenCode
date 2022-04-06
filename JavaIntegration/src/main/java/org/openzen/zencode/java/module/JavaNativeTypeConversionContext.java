@@ -4,6 +4,7 @@ import org.openzen.zencode.java.module.converters.JavaNativePackageInfo;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.PackageDefinitions;
+import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.javashared.JavaCompiledModule;
@@ -18,13 +19,15 @@ public class JavaNativeTypeConversionContext {
 	public final TypeVariableContext context;
 	public final GlobalTypeRegistry registry;
 	public final PackageDefinitions packageDefinitions;
+	public final ZSPackage root;
 
-	public JavaNativeTypeConversionContext(JavaNativePackageInfo packageInfo, JavaNativeModule[] dependencies, GlobalTypeRegistry registry) {
+	public JavaNativeTypeConversionContext(JavaNativePackageInfo packageInfo, JavaNativeModule[] dependencies, GlobalTypeRegistry registry, ZSPackage root) {
 		this.registry = registry;
 		this.definitionByClass = new HashMap<>();
 		this.globals = new HashMap<>();
 		this.context = new TypeVariableContext();
 		this.packageDefinitions = new PackageDefinitions();
+		this.root = root;
 
 		this.compiled = new JavaCompiledModule(packageInfo.getModule(), FunctionParameter.NONE);
 

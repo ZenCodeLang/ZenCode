@@ -26,7 +26,8 @@ public enum BasicTypeID implements TypeID {
 	CHAR("char"),
 	STRING("string"),
 
-	UNDETERMINED("undetermined");
+	UNDETERMINED("undetermined"),
+	INVALID("invalid");
 
 	public static final List<TypeID> HINT_BOOL = Collections.singletonList(BOOL);
 

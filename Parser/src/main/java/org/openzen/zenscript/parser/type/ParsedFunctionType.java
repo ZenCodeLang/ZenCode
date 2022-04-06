@@ -1,7 +1,7 @@
 package org.openzen.zenscript.parser.type;
 
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.TypeBuilder;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 
 public class ParsedFunctionType implements IParsedType {
@@ -12,7 +12,7 @@ public class ParsedFunctionType implements IParsedType {
 	}
 
 	@Override
-	public TypeID compile(TypeResolutionContext context) {
-		return context.getTypeRegistry().getFunction(header.compile(context));
+	public TypeID compile(TypeBuilder typeBuilder) {
+		return typeBuilder.functionOf(header.compile(typeBuilder));
 	}
 }

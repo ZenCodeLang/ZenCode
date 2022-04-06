@@ -1,6 +1,7 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.GetterExpression;
@@ -21,8 +22,14 @@ public class GetterMemberRef extends PropertyRef {
 		return new GetterExpression(position, target, this);
 	}
 
+	@Override
 	public Expression getStatic(CodePosition position) {
 		return new StaticGetterExpression(position, this);
+	}
+
+	@Override
+	public Expression getVirtual(CodePosition position, Expression target) throws CompileException {
+		return new GetterExpression(position, target, this);
 	}
 
 	@Override

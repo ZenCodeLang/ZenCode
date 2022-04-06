@@ -1,7 +1,7 @@
 package org.openzen.zenscript.parser.type;
 
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.TypeBuilder;
 
 public class ParsedOptionalType implements IParsedType {
 	private final IParsedType type;
@@ -11,8 +11,8 @@ public class ParsedOptionalType implements IParsedType {
 	}
 
 	@Override
-	public TypeID compile(TypeResolutionContext context) {
-		TypeID base = type.compile(context);
-		return context.getTypeRegistry().getOptional(base);
+	public TypeID compile(TypeBuilder typeBuilder) {
+		TypeID base = type.compile(typeBuilder);
+		return typeBuilder.optionalOf(base);
 	}
 }

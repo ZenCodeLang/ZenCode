@@ -14,6 +14,7 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class EnumDefinition extends HighLevelDefinition {
 	public TypeID asType;
@@ -31,6 +32,11 @@ public class EnumDefinition extends HighLevelDefinition {
 	@Override
 	public <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor) {
 		return visitor.visitEnum(context, this);
+	}
+
+	@Override
+	public Optional<EnumDefinition> asEnum() {
+		return Optional.of(this);
 	}
 
 	@Override

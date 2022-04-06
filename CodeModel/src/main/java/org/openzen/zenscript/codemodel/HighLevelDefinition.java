@@ -15,6 +15,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class HighLevelDefinition extends Taggable {
 	public final CodePosition position;
@@ -91,6 +92,12 @@ public abstract class HighLevelDefinition extends Taggable {
 
 	public boolean isAlias() {
 		return this instanceof AliasDefinition;
+	}
+
+	public boolean isEnum() { return this instanceof EnumDefinition; }
+
+	public Optional<EnumDefinition> asEnum() {
+		return Optional.empty();
 	}
 
 	public void addMember(IDefinitionMember member) {

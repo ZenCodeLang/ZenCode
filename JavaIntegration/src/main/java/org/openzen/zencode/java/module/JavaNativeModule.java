@@ -41,14 +41,16 @@ public class JavaNativeModule {
 			String name,
 			String basePackage,
 			GlobalTypeRegistry registry,
-			JavaNativeModule[] dependencies) {
+			JavaNativeModule[] dependencies,
+			ZSPackage root) {
 		this(logger,
 				pkg,
 				name,
 				basePackage,
 				registry,
 				dependencies,
-				new JavaNativeConverterBuilder()
+				new JavaNativeConverterBuilder(),
+				root
 		);
 	}
 
@@ -59,10 +61,11 @@ public class JavaNativeModule {
 			String basePackage,
 			GlobalTypeRegistry registry,
 			JavaNativeModule[] dependencies,
-			JavaNativeConverterBuilder nativeConverterBuilder) {
+			JavaNativeConverterBuilder nativeConverterBuilder,
+			ZSPackage rootPackage) {
 		this.packageInfo = new JavaNativePackageInfo(pkg, basePackage, new Module(name));
 		this.logger = logger;
-		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies, registry);
+		this.typeConversionContext = new JavaNativeTypeConversionContext(packageInfo, dependencies, registry, rootPackage);
 
 		this.nativeConverter = nativeConverterBuilder.build(packageInfo, logger, typeConversionContext, this);
 	}

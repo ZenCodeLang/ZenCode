@@ -8,13 +8,12 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.*;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TypeMemberGroup {
 	public static final TypeMemberGroup EMPTY = new TypeMemberGroup(false, "");
@@ -51,16 +50,16 @@ public class TypeMemberGroup {
 			addMethod(method.member, priority);
 	}
 
-	public FieldMemberRef getField() {
-		return this.field == null ? null : this.field.member;
+	public Optional<FieldMemberRef> getField() {
+		return this.field == null ? Optional.empty() : Optional.of(this.field.member);
 	}
 
-	public GetterMemberRef getGetter() {
-		return this.getter == null ? null : this.getter.member;
+	public Optional<GetterMemberRef> getGetter() {
+		return this.getter == null ? Optional.empty() : Optional.of(this.getter.member);
 	}
 
-	public SetterMemberRef getSetter() {
-		return this.setter == null ? null : this.setter.member;
+	public Optional<SetterMemberRef> getSetter() {
+		return this.setter == null ? Optional.empty() : Optional.of(this.setter.member);
 	}
 
 	public FunctionalMemberRef getMethod(FunctionHeader header) {
@@ -155,7 +154,7 @@ public class TypeMemberGroup {
 			}
 
 			scope.getPreparer().prepare(getter.member.member);
-			return getter.member.get(position, target);
+			return getter.member.getVirtual(position, target);
 		} else if (field != null) {
 			if (field.member.isStatic()) {
 				if (!allowStaticUsage)
@@ -397,5 +396,28 @@ public class TypeMemberGroup {
 			return candidates.get(0);
 
 		throw new CompileException(position, CompileExceptionCode.OVERRIDE_AMBIGUOUS, "Ambiguous override: has " + candidates.size() + " base candidates");
+	}
+
+	public List<TypeID> getAssignHints() {
+		if (setter != null)
+			return Collections.singletonList(setter.member.getType());
+		if (field != null)
+			return Collections.singletonList(field.member.getType());
+
+		return Collections.emptyList();
+	}
+
+	public void collectUnimplementedMembers(Set<IDefinitionMember> implemented, List<IDefinitionMember> result) {
+		getGetter().ifPresent(getter -> {
+			if (getter.member.isAbstract() && !implemented.contains(getter.member))
+				result.add(getter.member);
+		});
+		getSetter().ifPresent(setter -> {
+			if (setter.member.isAbstract() && !implemented.contains(setter.member))
+				result.add(setter.member);
+		});
+		for (TypeMember<FunctionalMemberRef> member : getMethodMembers())
+			if (member.member.getTarget().isAbstract() && !implemented.contains(member.member.getTarget()))
+				result.add(member.member.getTarget());
 	}
 }

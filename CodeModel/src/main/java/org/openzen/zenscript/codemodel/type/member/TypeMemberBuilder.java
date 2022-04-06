@@ -341,8 +341,6 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		getter(builtin, GENERICMAP_ISEMPTY, "isEmpty", BOOL);
 		getter(builtin, GENERICMAP_HASHCODE, "objectHashCode", INT);
 
-		equals(builtin, GENERICMAP_EQUALS, type);
-		notequals(builtin, GENERICMAP_NOTEQUALS, type);
 		same(builtin, GENERICMAP_SAME, type);
 		notsame(builtin, GENERICMAP_NOTSAME, type);
 

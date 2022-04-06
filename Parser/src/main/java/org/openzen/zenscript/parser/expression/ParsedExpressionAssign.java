@@ -1,16 +1,15 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.InvalidAssignExpression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.compiler.expression.CompilingExpression;
+import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
+import org.openzen.zenscript.compiler.InferredType;
+import org.openzen.zenscript.compiler.expression.TypeMatch;
 
-import java.util.List;
+import java.util.Optional;
 
 public class ParsedExpressionAssign extends ParsedExpression {
 	private final ParsedExpression left;
@@ -24,26 +23,51 @@ public class ParsedExpressionAssign extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		try {
-			IPartialExpression cLeft = left.compile(scope);
-			List<TypeID> resultHints = cLeft.getAssignHints();
-			Expression cRight = right.compile(scope.withHints(resultHints)).eval();
-			return cLeft.assign(position, scope, cRight);
-		} catch (CompileException ex) {
-			InvalidExpression invalid = new InvalidExpression(BasicTypeID.VOID, ex);
-			Expression cRight;
-			try {
-				cRight = right.compile(scope).eval();
-			} catch (CompileException ex2) {
-				cRight = new InvalidExpression(BasicTypeID.VOID, ex2);
-			}
-			return new InvalidAssignExpression(position, invalid, cRight);
-		}
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, left.compile(compiler), right.compile(compiler));
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return right.hasStrongType();
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression left;
+		private final CompilingExpression right;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression left, CompilingExpression right) {
+			super(compiler, position);
+			this.left = left;
+			this.right = right;
+		}
+
+		@Override
+		public Expression as(TypeID type) {
+			return left.assign(right.as(type));
+		}
+
+		@Override
+		public Expression assign(Expression value) {
+			return left.assign(right.assign(value));
+		}
+
+		@Override
+		public TypeMatch matches(TypeID returnType) {
+			TypeMatch leftMatch = left.matches(returnType);
+			TypeMatch rightMatch = right.matches(returnType);
+			return TypeMatch.min(leftMatch, rightMatch);
+		}
+
+		@Override
+		public InferredType inferType() {
+			Optional<TypeID> fromLeft = left.inferAssignType();
+			if (fromLeft.isPresent()) {
+				if (right.matches(fromLeft.get()) != TypeMatch.NONE)
+					return InferredType.success(fromLeft.get());
+			}
+
+			return right.inferType();
+		}
+
+		@Override
+		public Optional<TypeID> inferAssignType() {
+			return left.inferAssignType();
+		}
 	}
 }

@@ -1,8 +1,8 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.compiler.TypeBuilder;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -52,13 +52,10 @@ public class ParsedTypeParameter {
 		return genericParameters;
 	}
 
-	public static void compile(TypeResolutionContext context, TypeParameter[] compiled, List<ParsedTypeParameter> parameters) {
-		if (compiled == null)
-			return;
-
+	public static void compile(TypeBuilder typeBuilder, TypeParameter[] compiled, List<ParsedTypeParameter> parameters) {
 		for (int i = 0; i < compiled.length; i++) {
 			for (ParsedGenericBound bound : parameters.get(i).bounds)
-				compiled[i].addBound(bound.compile(context));
+				compiled[i].addBound(bound.compile(typeBuilder));
 		}
 	}
 

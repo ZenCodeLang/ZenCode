@@ -1,10 +1,15 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.InferredType;
+import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.compiler.expression.TypeMatch;
+import org.openzen.zenscript.compiler.types.ResolvedType;
+import org.openzen.zenscript.compiler.expression.CompilingExpression;
+import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -26,11 +31,8 @@ public class ParsedExpressionCast extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		TypeID type = this.type.compile(scope);
-		return value.compile(scope.withHint(type))
-				.eval()
-				.castExplicit(position, scope, type, optional);
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, value.compile(compiler), type.compile(compiler.types()), optional);
 	}
 
 	@Override
@@ -57,8 +59,35 @@ public class ParsedExpressionCast extends ParsedExpression {
 		return new ParsedFunctionParameter(ParsedAnnotation.NONE, parameter.name, type, null, false);
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return true;
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression value;
+		private final TypeID type;
+		private final boolean optional;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value, TypeID type, boolean optional) {
+			super(compiler, position);
+			this.value = value;
+			this.type = type;
+			this.optional = optional;
+		}
+
+		@Override
+		public Expression as(TypeID type) {
+			Expression value = this.value.as(type);
+			ResolvedType resolvedType = compiler.resolve(this.type);
+			return resolvedType.findExplicitCast(type)
+					.map(cast -> cast.apply(value, optional))
+					.orElseGet(() -> compiler.at(position, type).invalid(CompileExceptionCode.INVALID_CAST, "Cannot cast " + value.type + " to " + type));
+		}
+
+		@Override
+		public TypeMatch matches(TypeID returnType) {
+			return compiler.matchType(type, returnType);
+		}
+
+		@Override
+		public InferredType inferType() {
+			return InferredType.success(type);
+		}
 	}
 }

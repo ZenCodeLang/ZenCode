@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class GenericMapTypeID implements TypeID {
 	public final TypeID value;
@@ -41,6 +42,11 @@ public class GenericMapTypeID implements TypeID {
 	@Override
 	public boolean isValueType() {
 		return false;
+	}
+
+	@Override
+	public Optional<GenericMapTypeID> asGenericMap() {
+		return Optional.of(this);
 	}
 
 	@Override

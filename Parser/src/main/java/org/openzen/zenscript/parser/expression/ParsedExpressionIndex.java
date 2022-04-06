@@ -12,8 +12,15 @@ import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
+import org.openzen.zenscript.compiler.InferredType;
+import org.openzen.zenscript.compiler.ResolvedCallable;
+import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.compiler.expression.CompilingExpression;
+import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class ParsedExpressionIndex extends ParsedExpression {
 	private final ParsedExpression value;
@@ -27,13 +34,53 @@ public class ParsedExpressionIndex extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		return new PartialIndexedExpression(scope);
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(
+				compiler,
+				position,
+				value.compile(compiler),
+				indexes.stream().map(ix -> ix.compile(compiler)).toArray(CompilingExpression[]::new));
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return true;
+	private class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression value;
+		private final CompilingExpression[] indexes;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value, CompilingExpression[] indexes) {
+			super(compiler, position);
+			this.value = value;
+			this.indexes = indexes;
+		}
+
+		@Override
+		public Expression as(TypeID type) {
+			InferredType valueType = value.inferType();
+		}
+
+		@Override
+		public Optional<ResolvedCallable> call() {
+			return Optional.empty();
+		}
+
+		@Override
+		public Optional<CompilingExpression> getMember(CodePosition position, GenericName name) {
+			return Optional.empty();
+		}
+
+		@Override
+		public Expression assign(Expression value) {
+			return null;
+		}
+
+		@Override
+		public InferredType inferType() {
+			return null;
+		}
+
+		@Override
+		public Optional<TypeID> inferAssignType() {
+			return Optional.empty();
+		}
 	}
 
 	private class PartialIndexedExpression implements IPartialExpression {

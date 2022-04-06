@@ -66,4 +66,8 @@ public abstract class DefinitionMember extends Taggable implements IDefinitionMe
 	public boolean isProtected() {
 		return Modifiers.isProtected(getEffectiveModifiers());
 	}
+
+	public boolean isImplicit() {
+		return Modifiers.isImplicit(getEffectiveModifiers());
+	}
 }

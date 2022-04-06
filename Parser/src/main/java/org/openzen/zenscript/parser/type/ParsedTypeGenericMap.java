@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.TypeBuilder;
 import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 
 import java.util.List;
@@ -22,12 +23,12 @@ public class ParsedTypeGenericMap implements IParsedType {
 	}
 
 	@Override
-	public TypeID compile(TypeResolutionContext context) {
+	public TypeID compile(TypeBuilder typeBuilder) {
 		TypeParameter cKey = key.compiled;
-		TypeID valueType = this.value.compile(new GenericMapScope(context, cKey));
 
-		GlobalTypeRegistry registry = context.getTypeRegistry();
-		return registry.getGenericMap(valueType, cKey);
+		TypeBuilder.GenericMapTypeBuilder builder = typeBuilder.withGeneric(cKey);
+		TypeID valueType = this.value.compile(builder);
+		return builder.ofValue(valueType);
 	}
 
 	private class GenericMapScope implements TypeResolutionContext {

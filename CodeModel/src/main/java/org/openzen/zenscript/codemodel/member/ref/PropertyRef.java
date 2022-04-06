@@ -1,10 +1,12 @@
 package org.openzen.zenscript.codemodel.member.ref;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.PropertyMember;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
@@ -84,4 +86,8 @@ public abstract class PropertyRef implements DefinitionMemberRef {
 	public final IDefinitionMember getTarget() {
 		return member;
 	}
+
+	public abstract Expression getStatic(CodePosition position) throws CompileException;
+
+	public abstract Expression getVirtual(CodePosition position, Expression target) throws CompileException;
 }

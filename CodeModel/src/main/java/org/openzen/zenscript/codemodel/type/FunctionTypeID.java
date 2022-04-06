@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class FunctionTypeID implements TypeID {
 	public final FunctionHeader header;
@@ -52,6 +53,11 @@ public class FunctionTypeID implements TypeID {
 	@Override
 	public boolean hasDefaultValue() {
 		return false;
+	}
+
+	@Override
+	public Optional<FunctionTypeID> asFunction() {
+		return Optional.of(this);
 	}
 
 	@Override

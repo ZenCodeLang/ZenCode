@@ -147,6 +147,11 @@ public class DefinitionTypeID implements TypeID {
 	}
 
 	@Override
+	public Optional<DefinitionTypeID> asDefinition() {
+		return Optional.of(this);
+	}
+
+	@Override
 	public boolean isOptional() {
 		return false;
 	}

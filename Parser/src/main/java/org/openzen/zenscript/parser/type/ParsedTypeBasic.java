@@ -1,8 +1,8 @@
 package org.openzen.zenscript.parser.type;
 
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.TypeBuilder;
 
 public enum ParsedTypeBasic implements IParsedType {
 	VOID(BasicTypeID.VOID),
@@ -30,7 +30,7 @@ public enum ParsedTypeBasic implements IParsedType {
 	}
 
 	@Override
-	public TypeID compile(TypeResolutionContext context) {
+	public TypeID compile(TypeBuilder typeBuilder) {
 		return type;
 	}
 }

@@ -10,6 +10,7 @@ import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface TypeID {
 	TypeID[] NONE = new TypeID[0];
@@ -65,7 +66,7 @@ public interface TypeID {
 	boolean isValueType();
 
 	default TypeID withoutOptional() {
-		throw new UnsupportedOperationException("Not an optional type");
+		return this;
 	}
 
 	default boolean isVariant() {
@@ -111,4 +112,18 @@ public interface TypeID {
 	default Expression castExplicitFrom(CodePosition position, Expression value) {
 		return null;
 	}
+
+	default Optional<OptionalTypeID> asOptional() { return Optional.empty(); }
+
+	default Optional<AssocTypeID> asAssoc() { return Optional.empty(); }
+
+	default Optional<ArrayTypeID> asArray() { return Optional.empty(); }
+
+	default Optional<GenericMapTypeID> asGenericMap() { return Optional.empty(); }
+
+	default Optional<DefinitionTypeID> asDefinition() { return Optional.empty(); }
+
+	default Optional<FunctionTypeID> asFunction() { return Optional.empty(); }
+
+	default Optional<RangeTypeID> asRange() { return Optional.empty(); }
 }

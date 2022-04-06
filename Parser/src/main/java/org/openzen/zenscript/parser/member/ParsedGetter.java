@@ -8,11 +8,11 @@ import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -73,9 +73,9 @@ public class ParsedGetter extends ParsedDefinitionMember {
 	}
 
 	private void fillOverride(TypeScope scope, TypeID baseType) {
-		GetterMemberRef getter = scope.getTypeMembers(baseType).getOrCreateGroup(name, false).getGetter();
-		if (getter != null)
-			compiled.setOverrides(getter);
+		scope.getTypeMembers(baseType).getGroup(name)
+				.flatMap(TypeMemberGroup::getGetter)
+				.ifPresent(getter -> compiled.setOverrides(getter));
 	}
 
 	@Override

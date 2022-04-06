@@ -83,7 +83,7 @@ public class JavaNativeGlobalConverter {
 			typeConversionContext.compiled.setMethodInfo(methodMember, memberConverter.getMethod(jcls, method, typeConverter.loadType(typeConversionContext.context, method.getAnnotatedReturnType())));
 			typeConversionContext.globals.put(name, new ExpressionSymbol((position, scope) -> {
 				TypeMembers members = scope.getTypeMembers(thisType);
-				return new PartialStaticMemberGroupExpression(position, scope, thisType, members.getGroup(name), TypeID.NONE);
+				return new PartialStaticMemberGroupExpression(position, scope, thisType, members.getGroup(name).get(), TypeID.NONE);
 			}));
 		}
 	}

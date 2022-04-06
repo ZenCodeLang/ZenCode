@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 import java.util.List;
+import java.util.Optional;
 
 public class RangeTypeID implements TypeID {
 	public static final RangeTypeID INT = new RangeTypeID(null, BasicTypeID.INT);
@@ -41,6 +42,9 @@ public class RangeTypeID implements TypeID {
 	public <C, R, E extends Exception> R accept(C context, TypeVisitorWithContext<C, R, E> visitor) throws E {
 		return visitor.visitRange(context, this);
 	}
+
+	@Override
+	public Optional<RangeTypeID> asRange() { return Optional.of(this); }
 
 	@Override
 	public boolean isOptional() {

@@ -1,9 +1,9 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
+import org.openzen.zenscript.compiler.TypeBuilder;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 public class ParsedTypeBound extends ParsedGenericBound {
@@ -16,7 +16,7 @@ public class ParsedTypeBound extends ParsedGenericBound {
 	}
 
 	@Override
-	public TypeParameterBound compile(TypeResolutionContext context) {
-		return new ParameterTypeBound(position, type.compile(context));
+	public TypeParameterBound compile(TypeBuilder typeBuilder) {
+		return new ParameterTypeBound(position, type.compile(typeBuilder));
 	}
 }

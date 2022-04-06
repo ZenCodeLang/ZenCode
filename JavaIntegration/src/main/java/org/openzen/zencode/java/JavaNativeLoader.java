@@ -122,7 +122,8 @@ public class JavaNativeLoader {
 				module.name,
 				module.basePackage,
 				engine.registry,
-				dependencies);
+				dependencies,
+				engine.root);
 		for (Class<?> cls : module.classes)
 			module.resolved.addClass(cls);
 		for (Class<?> cls : module.globals)

@@ -27,7 +27,14 @@ public class GlobalTypeRegistry {
 	public GlobalTypeRegistry(ZSPackage stdlib) {
 		this.stdlib = stdlib;
 
+		arrayTypes.put(ArrayTypeID.BYTE, ArrayTypeID.BYTE);
+		arrayTypes.put(ArrayTypeID.SBYTE, ArrayTypeID.SBYTE);
+		arrayTypes.put(ArrayTypeID.SHORT, ArrayTypeID.SHORT);
+		arrayTypes.put(ArrayTypeID.USHORT, ArrayTypeID.USHORT);
 		arrayTypes.put(ArrayTypeID.INT, ArrayTypeID.INT);
+		arrayTypes.put(ArrayTypeID.UINT, ArrayTypeID.UINT);
+		arrayTypes.put(ArrayTypeID.LONG, ArrayTypeID.LONG);
+		arrayTypes.put(ArrayTypeID.ULONG, ArrayTypeID.ULONG);
 		arrayTypes.put(ArrayTypeID.CHAR, ArrayTypeID.CHAR);
 
 		rangeTypes.put(RangeTypeID.INT, RangeTypeID.INT);
@@ -41,6 +48,10 @@ public class GlobalTypeRegistry {
 		identityMaps.put(DefinitionTypeID.class, definitionTypes);
 		identityMaps.put(GenericTypeID.class, genericTypes);
 		identityMaps.put(OptionalTypeID.class, optionalTypes);
+	}
+
+	public ArrayTypeID getArray(TypeID baseType) {
+		return getArray(baseType, 1);
 	}
 
 	public ArrayTypeID getArray(TypeID baseType, int dimension) {

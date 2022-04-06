@@ -7,9 +7,17 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ArrayTypeID implements TypeID {
+	public static final ArrayTypeID SBYTE = new ArrayTypeID(BasicTypeID.SBYTE, 1);
+	public static final ArrayTypeID BYTE = new ArrayTypeID(BasicTypeID.BYTE, 1);
+	public static final ArrayTypeID SHORT = new ArrayTypeID(BasicTypeID.SHORT, 1);
+	public static final ArrayTypeID USHORT = new ArrayTypeID(BasicTypeID.USHORT, 1);
 	public static final ArrayTypeID INT = new ArrayTypeID(BasicTypeID.INT, 1);
+	public static final ArrayTypeID UINT = new ArrayTypeID(BasicTypeID.UINT, 1);
+	public static final ArrayTypeID LONG = new ArrayTypeID(BasicTypeID.LONG, 1);
+	public static final ArrayTypeID ULONG = new ArrayTypeID(BasicTypeID.ULONG, 1);
 	public static final ArrayTypeID CHAR = new ArrayTypeID(BasicTypeID.CHAR, 1);
 
 	public final TypeID elementType;
@@ -56,6 +64,11 @@ public class ArrayTypeID implements TypeID {
 	@Override
 	public boolean isValueType() {
 		return false;
+	}
+
+	@Override
+	public Optional<ArrayTypeID> asArray() {
+		return Optional.of(this);
 	}
 
 	@Override

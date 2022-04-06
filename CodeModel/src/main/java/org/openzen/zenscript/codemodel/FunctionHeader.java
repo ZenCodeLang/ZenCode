@@ -9,6 +9,7 @@ import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 
 public class FunctionHeader {
 	public final TypeParameter[] typeParameters;
@@ -445,13 +446,13 @@ public class FunctionHeader {
 		return new FunctionHeader(typeParameters, returnType, thrownType, parameters);
 	}
 
-	public FunctionParameter getVariadicParameter() {
+	public Optional<FunctionParameter> getVariadicParameter() {
 		if (parameters.length == 0)
-			return null;
-		if (parameters[parameters.length - 1].variadic)
-			return parameters[parameters.length - 1];
-
-		return null;
+			return Optional.empty();
+		else if (parameters[parameters.length - 1].variadic)
+			return Optional.of(parameters[parameters.length - 1]);
+		else
+			return Optional.empty();
 	}
 
 	public String explainWhyIncompatible(TypeScope scope, CallArguments arguments) {

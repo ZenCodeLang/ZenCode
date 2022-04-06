@@ -1,10 +1,14 @@
 package org.openzen.zenscript.parser.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.InferredType;
+import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.compiler.expression.CompilingExpression;
+import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
+import org.openzen.zenscript.compiler.expression.TypeMatch;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
@@ -23,12 +27,11 @@ public class ParsedExpressionBracket extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		if (expressions.size() != 1) {
-			throw new CompileException(position, CompileExceptionCode.BRACKET_MULTIPLE_EXPRESSIONS, "Bracket expression may have only one expression");
-		} else {
-			return expressions.get(0).compile(scope);
-		}
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(
+				compiler,
+				position,
+				expressions.stream().map(e -> e.compile(compiler)).toArray(CompilingExpression[]::new));
 	}
 
 	@Override
@@ -40,8 +43,31 @@ public class ParsedExpressionBracket extends ParsedExpression {
 		return new ParsedFunctionHeader(position, parameters, ParsedTypeBasic.UNDETERMINED);
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return expressions.get(0).hasStrongType();
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression[] compiling;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression[] compiling) {
+			super(compiler, position);
+			this.compiling = compiling;
+		}
+
+		@Override
+		public Expression as(TypeID type) {
+			if (compiling.length != 1) {
+				return compiler.at(position, type).invalid(CompileExceptionCode.BRACKET_MULTIPLE_EXPRESSIONS, "Bracket expression may have only one expression");
+			} else {
+				return compiling[0].as(type);
+			}
+		}
+
+		@Override
+		public TypeMatch matches(TypeID returnType) {
+			return compiling[0].matches(returnType);
+		}
+
+		@Override
+		public InferredType inferType() {
+			return compiling[0].inferType();
+		}
 	}
 }

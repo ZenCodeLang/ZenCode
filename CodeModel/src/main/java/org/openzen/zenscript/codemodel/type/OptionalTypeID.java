@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.generic.TypeParameter;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class OptionalTypeID implements TypeID {
 	public final TypeID baseType;
@@ -33,6 +34,11 @@ public class OptionalTypeID implements TypeID {
 	public TypeID instance(GenericMapper mapper) {
 		TypeID base = baseType.instance(mapper);
 		return mapper.registry.getOptional(base);
+	}
+
+	@Override
+	public Optional<OptionalTypeID> asOptional() {
+		return Optional.of(this);
 	}
 
 	@Override

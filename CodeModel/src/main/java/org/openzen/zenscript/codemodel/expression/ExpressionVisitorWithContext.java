@@ -5,6 +5,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 
 	R visitArray(C context, ArrayExpression expression);
 
+	R visitBinary(C context, BinaryExpression expression);
+
 	R visitCompare(C context, CompareExpression expression);
 
 	R visitCall(C context, CallExpression expression);
@@ -140,6 +142,8 @@ public interface ExpressionVisitorWithContext<C, R> {
 	R visitTryRethrowAsException(C context, TryRethrowAsExceptionExpression expression);
 
 	R visitTryRethrowAsResult(C context, TryRethrowAsResultExpression expression);
+
+	R visitUnary(C context, UnaryExpression expression);
 
 	R visitVariantValue(C context, VariantValueExpression expression);
 

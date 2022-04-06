@@ -16,6 +16,8 @@ import org.openzen.zenscript.codemodel.type.InferenceBlockingTypeParameterVisito
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
+import org.openzen.zenscript.compiler.expression.CompilingExpression;
+import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -25,18 +27,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ParsedCallArguments {
-	public static final ParsedCallArguments NONE = new ParsedCallArguments(null, Collections.emptyList());
+	public static final ParsedCallArguments NONE = new ParsedCallArguments(Collections.emptyList());
 	public final List<ParsedExpression> arguments;
-	private final List<IParsedType> typeArguments;
 
-	public ParsedCallArguments(List<IParsedType> typeArguments, List<ParsedExpression> arguments) {
-		this.typeArguments = typeArguments;
+	public ParsedCallArguments(List<ParsedExpression> arguments) {
 		this.arguments = arguments;
 	}
 
 	public static ParsedCallArguments parse(ZSTokenParser tokens) throws ParseException {
-		List<IParsedType> typeArguments = IParsedType.parseTypeArgumentsForCall(tokens);
-
 		tokens.required(ZSTokenType.T_BROPEN, "( expected");
 
 		List<ParsedExpression> arguments = new ArrayList<>();
@@ -52,12 +50,10 @@ public class ParsedCallArguments {
 			tokens.recoverUntilOnToken(ZSTokenType.T_BRCLOSE);
 		}
 
-		return new ParsedCallArguments(typeArguments, arguments);
+		return new ParsedCallArguments(arguments);
 	}
 
 	public static ParsedCallArguments parseForAnnotation(ZSTokenParser tokens) throws ParseException {
-		List<IParsedType> typeArguments = IParsedType.parseTypeArgumentsForCall(tokens);
-
 		List<ParsedExpression> arguments = new ArrayList<>();
 		if (tokens.isNext(ZSTokenType.T_BROPEN)) {
 			tokens.required(ZSTokenType.T_BROPEN, "( expected");
@@ -74,7 +70,11 @@ public class ParsedCallArguments {
 			}
 		}
 
-		return new ParsedCallArguments(typeArguments, arguments);
+		return new ParsedCallArguments(arguments);
+	}
+
+	public CompilingExpression[] compile(ExpressionCompiler compiler) {
+		return arguments.stream().map(arg -> arg.compile(compiler)).toArray(CompilingExpression[]::new);
 	}
 
 	public CallArguments compileCall(
@@ -93,12 +93,6 @@ public class ParsedCallArguments {
 			ExpressionScope scope,
 			TypeID[] typeArguments,
 			List<FunctionHeader> candidateFunctions) throws CompileException {
-		if (this.typeArguments != null) {
-			typeArguments = new TypeID[this.typeArguments.size()];
-			for (int i = 0; i < this.typeArguments.size(); i++)
-				typeArguments[i] = this.typeArguments.get(i).compile(scope);
-		}
-
 		List<FunctionHeader> candidates = new ArrayList<>();
 		for (FunctionHeader header : candidateFunctions) {
 			if (isCompatibleWith(scope, header, typeArguments))

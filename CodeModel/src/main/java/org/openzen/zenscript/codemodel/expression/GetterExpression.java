@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 
@@ -41,6 +42,7 @@ public class GetterExpression extends Expression {
 	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
 		return scope.getTypeMembers(getter.getOwnerType())
 				.getGroup(getter.member.name)
+				.orElseThrow(() -> new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "No such member: " + getter.member.name))
 				.setter(position, scope, target, value, false);
 	}
 }

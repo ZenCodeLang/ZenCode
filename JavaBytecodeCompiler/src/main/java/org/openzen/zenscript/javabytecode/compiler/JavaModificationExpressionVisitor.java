@@ -64,6 +64,11 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	}
 
 	@Override
+	public Void visitBinary(BinaryExpression expression) {
+		throw new UnsupportedOperationException("Invalid lvalue: binary expression");
+	}
+
+	@Override
 	public Void visitCompare(CompareExpression expression) {
 		throw new UnsupportedOperationException("Invalid lvalue: comparison");
 	}
@@ -410,6 +415,11 @@ public class JavaModificationExpressionVisitor implements ExpressionVisitor<Void
 	@Override
 	public Void visitTryRethrowAsResult(TryRethrowAsResultExpression expression) {
 		throw new UnsupportedOperationException("Invalid lvalue: try rethrow");
+	}
+
+	@Override
+	public Void visitUnary(UnaryExpression expression) {
+		throw new UnsupportedOperationException("Invalid lvalue: unary expression");
 	}
 
 	@Override

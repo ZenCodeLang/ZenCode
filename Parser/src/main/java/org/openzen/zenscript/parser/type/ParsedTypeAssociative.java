@@ -1,7 +1,7 @@
 package org.openzen.zenscript.parser.type;
 
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.compiler.TypeBuilder;
 
 public class ParsedTypeAssociative implements IParsedType {
 	public final IParsedType key;
@@ -13,9 +13,9 @@ public class ParsedTypeAssociative implements IParsedType {
 	}
 
 	@Override
-	public TypeID compile(TypeResolutionContext context) {
-		TypeID key = this.key.compile(context);
-		TypeID value = this.value.compile(context);
-		return context.getTypeRegistry().getAssociative(key, value);
+	public TypeID compile(TypeBuilder typeBuilder) {
+		TypeID key = this.key.compile(typeBuilder);
+		TypeID value = this.value.compile(typeBuilder);
+		return typeBuilder.associativeOf(key, value);
 	}
 }
