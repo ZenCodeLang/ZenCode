@@ -297,10 +297,9 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 			final Label catchStart = new Label();
 			javaWriter.label(catchStart);
 
-			//final Type exceptionType = Type.getType(RuntimeException.class);
-			final Type exceptionType = context.getType(catchClause.exceptionVariable.type);
-			final int local = javaWriter.local(exceptionType);
-			javaWriter.store(exceptionType, local);
+			catchClause.exceptionVariable.accept(this);
+			final JavaLocalVariableInfo localVariable = javaWriter.getLocalVariable(catchClause.exceptionVariable.variable);
+			javaWriter.store(localVariable.type, localVariable.local);
 
 			catchClause.content.accept(this);
 			final Label catchFinish = new Label();
@@ -311,7 +310,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 				javaWriter.tryCatch(catchStart, catchFinish, finallyStart, null);
 			}
 
-			javaWriter.tryCatch(tryCatchStart, tryFinish, catchStart, exceptionType.getInternalName());
+			javaWriter.tryCatch(tryCatchStart, tryFinish, catchStart, localVariable.type.getInternalName());
 			javaWriter.goTo(tryCatchFinish);
 		}
 
