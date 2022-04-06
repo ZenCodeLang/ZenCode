@@ -28,40 +28,32 @@ public class JavaUnboxingTypeVisitor implements TypeVisitorWithContext<TypeID, V
 
 		switch (basic) {
 			case BOOL:
-				writer.checkCast(JavaClass.BOOLEAN.internalName);
 				method = UNBOX_BOOLEAN;
 				break;
 			case BYTE:
 			case SBYTE:
-				writer.checkCast(JavaClass.BYTE.internalName);
 				method = UNBOX_BYTE;
 				break;
 			case SHORT:
 			case USHORT:
-				writer.checkCast(JavaClass.SHORT.internalName);
 				method = UNBOX_SHORT;
 				break;
 			case INT:
 			case UINT:
-				writer.checkCast(JavaClass.INTEGER.internalName);
 				method = UNBOX_INTEGER;
 				break;
 			case LONG:
 			case ULONG:
 			case USIZE:
-				writer.checkCast(JavaClass.LONG.internalName);
 				method = UNBOX_LONG;
 				break;
 			case FLOAT:
-				writer.checkCast(JavaClass.FLOAT.internalName);
 				method = UNBOX_FLOAT;
 				break;
 			case DOUBLE:
-				writer.checkCast(JavaClass.DOUBLE.internalName);
 				method = UNBOX_DOUBLE;
 				break;
 			case CHAR:
-				writer.checkCast(JavaClass.CHARACTER.internalName);
 				method = UNBOX_CHARACTER;
 				break;
 			case VOID:

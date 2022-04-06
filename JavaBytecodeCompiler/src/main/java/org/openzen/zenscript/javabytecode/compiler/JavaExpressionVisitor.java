@@ -423,8 +423,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			final boolean variadic = expression.instancedHeader.isVariadicCall(expression.arguments) && ((arguments.length != parameters.length) || !parameters[parameters.length - 1].type
 					.equals(arguments[arguments.length - 1].type));
 
-			handleCallArguments(arguments, parameters, variadic);
-
+			FunctionParameter[] originalParameters = expression.member.getTarget().getHeader().parameters;
+			handleCallArguments(arguments, parameters, variadic, originalParameters);
 
 			if (!checkAndExecuteMethodInfo(expression.member, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
@@ -935,10 +935,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 				type.keyType.accept(type.keyType, boxingTypeVisitor);
 				javaWriter.invokeInterface(MAP_GET);
 
-				type.valueType.accept(type.valueType, unboxingTypeVisitor);
-				if (!CompilerUtils.isPrimitive(type.valueType)) {
-					javaWriter.checkCast(context.getType(type.valueType));
-				}
+				handleGenericReturnValue(type.valueType);
 				break;
 			}
 			case ASSOC_CONTAINS:
@@ -1243,7 +1240,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		handleTypeArguments(expression.member, expression.arguments);
 
-		handleCallArguments(arguments, parameters, variadic);
+		FunctionParameter[] originalParameters = expression.member.getTarget().getHeader().parameters;
+		handleCallArguments(arguments, parameters, variadic, originalParameters);
 
 		BuiltinID builtin = expression.member.getBuiltin();
 		if (builtin == null) {
@@ -1325,10 +1323,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		return null;
 	}
 
-	private void handleCallArguments(Expression[] arguments, FunctionParameter[] parameters, boolean variadic) {
+	private void handleCallArguments(Expression[] arguments, FunctionParameter[] parameters, boolean variadic, FunctionParameter[] originalParameters) {
 		if (variadic) {
 			for (int i = 0; i < parameters.length - 1; i++) {
 				arguments[i].accept(this);
+				if (originalParameters[i].type.isGeneric()) {
+					if (CompilerUtils.isPrimitive(parameters[i].type)) {
+						parameters[i].type.accept(parameters[i].type, boxingTypeVisitor);
+					}
+				}
 			}
 
 			final int arrayCount = (arguments.length - parameters.length) + 1;
@@ -1344,9 +1347,29 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 
 		} else {
-			for (Expression argument : arguments) {
-				argument.accept(this);
+			for (int i = 0; i < arguments.length; i++) {
+				arguments[i].accept(this);
+				if (originalParameters[i].type.isGeneric()) {
+					if (CompilerUtils.isPrimitive(parameters[i].type)) {
+						parameters[i].type.accept(parameters[i].type, boxingTypeVisitor);
+					}
+				}
 			}
+		}
+	}
+
+	private void handleReturnValue(TypeID original, TypeID actual) {
+		if (original.isGeneric()) {
+			handleGenericReturnValue(actual);
+		}
+	}
+
+	private void handleGenericReturnValue(TypeID actual) {
+		if (CompilerUtils.isPrimitive(actual)) {
+			getJavaWriter().checkCast(context.getInternalName(new OptionalTypeID(null, actual)));
+			actual.accept(actual, unboxingTypeVisitor);
+		} else {
+			getJavaWriter().checkCast(context.getInternalName(actual));
 		}
 	}
 
@@ -2228,9 +2251,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitGetField(GetFieldExpression expression) {
 		expression.target.accept(this);
 		getField(expression.field);
-		if (!CompilerUtils.isPrimitive(expression.field.member.getType())) {
-			javaWriter.checkCast(context.getType(expression.field.getType()));
-		}
+		handleReturnValue(expression.field.member.getType(), expression.field.getType());
 		return null;
 	}
 
@@ -2280,9 +2301,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		if (builtin == null) {
 			if (context.hasJavaField(expression.getter)) {
 				javaWriter.getField(context.getJavaField(expression.getter));
-				if (!CompilerUtils.isPrimitive(expression.getter.member.getType())) {
-					javaWriter.checkCast(context.getType(expression.getter.getType()));
-				}
+				handleReturnValue(expression.getter.member.getType(), expression.getter.getType());
 				return null;
 			}
 
@@ -2299,9 +2318,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 			if (!checkAndExecuteMethodInfo(expression.getter, expression.type, expression))
 				throw new IllegalStateException("Call target has no method info!");
-			if (!CompilerUtils.isPrimitive(expression.getter.member.getType())) {
-				javaWriter.checkCast(context.getType(expression.getter.getType()));
-			}
+
+			handleReturnValue(expression.getter.member.getType(), expression.getter.getType());
 			return null;
 		}
 
@@ -2594,6 +2612,8 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		}
 
 		javaWriter.label(end);
+
+		// TODO: what's this one exactly for?
 		if (!CompilerUtils.isPrimitive(expression.type)) {
 			javaWriter.checkCast(context.getType(expression.type));
 		}
@@ -2614,15 +2634,16 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		if (!expression.constructor.getTarget().hasTag(NativeTag.class)) {
 			for (TypeID typeArgument : ((DefinitionTypeID) expression.type).typeArguments) {
-				javaWriter.aConstNull();
+				javaWriter.aConstNull(); // TODO: get the correct type
 				javaWriter.checkCast("java/lang/Class");
 			}
 		}
 
-
-		for (Expression argument : expression.arguments.arguments) {
-			argument.accept(this);
-		}
+		handleCallArguments(
+				expression.arguments.arguments,
+				expression.instancedHeader.parameters,
+				expression.instancedHeader.isVariadic(),
+				expression.constructor.getTarget().getHeader().parameters);
 
 		javaWriter.invokeSpecial(method);
 		return null;
@@ -3435,7 +3456,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			getJavaWriter().invokeVirtual(methodInfo);
 		}
 		if (methodInfo.genericResult) {
-			getJavaWriter().checkCast(context.getInternalName(resultType));
+			handleGenericReturnValue(resultType);
 		}
 
 		//Make sure that method results are popped if ZC thinks its a void but it actually is not.
