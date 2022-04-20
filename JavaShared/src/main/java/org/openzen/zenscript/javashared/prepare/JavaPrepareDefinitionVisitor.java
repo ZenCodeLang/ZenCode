@@ -64,12 +64,12 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			list.addMethod("constructor", JavaMethod.getNativeConstructor(arrayList, "()V"));
 			list.addInstanceMethod("add", "add", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("insert", "add", "(ILjava/lang/Object;)V");
-			list.addInstanceMethod("remove", "remove", "(I)Ljava/lang/Object;");
+			list.addInstanceMethod("remove", "remove", "(I)Ljava/lang/Object;", true);
 			list.addInstanceMethod("removeValue", "remove", "(Ljava/lang/Object;)Z");
 			list.addInstanceMethod("indexOf", "indexOf", "(Ljava/lang/Object;)I");
 			list.addInstanceMethod("lastIndexOf", "lastIndexOf", "(Ljava/lang/Object;)I");
-			list.addInstanceMethod("getAtIndex", "get", "(I)Ljava/lang/Object;");
-			list.addInstanceMethod("setAtIndex", "set", "(ILjava/lang/Object;)Ljava/lang/Object;");
+			list.addInstanceMethod("getAtIndex", "get", "(I)Ljava/lang/Object;", true);
+			list.addInstanceMethod("setAtIndex", "set", "(ILjava/lang/Object;)Ljava/lang/Object;", true);
 			list.addInstanceMethod("contains", "contains", "(Ljava/lang/Object;)Z");
 			list.addMethod("toArray", new JavaMethod((expression, translator) -> translator.listToArray((CastExpression) expression)));
 			list.addInstanceMethod("length", "size", "()I");
@@ -88,7 +88,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			JavaNativeClass iterator = new JavaNativeClass(new JavaClass("java.util", "Iterator", JavaClass.Kind.INTERFACE));
 			iterator.addMethod("empty", new JavaMethod(JavaClass.COLLECTIONS, JavaMethod.Kind.STATIC, "emptyIterator", false, "()Ljava/lang/Iterator;", JavaModifiers.STATIC | JavaModifiers.PUBLIC, false));
 			iterator.addInstanceMethod("hasNext", "hasNext", "()Z");
-			iterator.addInstanceMethod("next", "next", "()Ljava/lang/Object;");
+			iterator.addInstanceMethod("next", "next", "()Ljava/lang/Object;", true);
 			nativeClasses.put("stdlib::Iterator", iterator);
 		}
 
@@ -153,7 +153,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 		{
 			JavaClass arrays = JavaClass.ARRAYS;
 			JavaNativeClass cls = new JavaNativeClass(arrays);
-			cls.addMethod("sort", JavaMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;)[Ljava/lang/Object;"));
+			cls.addMethod("sort", JavaMethod.getNativeExpansion(arrays, "sort", "([Ljava/lang/Object;)V"));
 			cls.addMethod("sorted", new JavaMethod((expression, translator) -> {
 				return translator.sorted(((CallExpression) expression).target);
 			}));

@@ -34,11 +34,19 @@ public class JavaNativeClass {
 	}
 
 	public void addInstanceMethod(String key, String name, String descriptor) {
-		methods.put(key, createMethod(name, descriptor, JavaMethod.Kind.INSTANCE));
+		addInstanceMethod(key, name, descriptor, false);
+	}
+
+	public void addInstanceMethod(String key, String name, String descriptor, boolean genericReturnType) {
+		methods.put(key, createMethod(name, descriptor, JavaMethod.Kind.INSTANCE, genericReturnType));
 	}
 
 	public JavaMethod createMethod(String name, String descriptor, JavaMethod.Kind instance) {
-		return new JavaMethod(cls, instance, name, false, descriptor, JavaModifiers.PUBLIC, false);
+		return createMethod(name, descriptor, instance, false);
+	}
+
+	public JavaMethod createMethod(String name, String descriptor, JavaMethod.Kind instance, boolean genericReturnType) {
+		return new JavaMethod(cls, instance, name, false, descriptor, JavaModifiers.PUBLIC, genericReturnType);
 	}
 
 	public JavaMethod createInstanceMethod(String name, String descriptor) {
