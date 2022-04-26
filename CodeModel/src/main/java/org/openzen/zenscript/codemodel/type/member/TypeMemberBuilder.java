@@ -113,7 +113,10 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 		compare(builtin, STRING_COMPARE, STRING);
 
 		getter(builtin, STRING_LENGTH, "length", USIZE);
+		// TODO remove in favour of chars
 		getter(builtin, STRING_CHARACTERS, "characters", registry.getArray(CHAR, 1));
+		getter(builtin, STRING_CHARACTERS, "chars", registry.getArray(CHAR, 1));
+
 		// TODO remove in favour of empty
 		getter(builtin, STRING_ISEMPTY, "isEmpty", BOOL);
 		getter(builtin, STRING_ISEMPTY, "empty", BOOL);
