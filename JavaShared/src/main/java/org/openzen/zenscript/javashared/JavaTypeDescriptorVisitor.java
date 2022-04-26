@@ -35,7 +35,7 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 				case CHAR:
 					return "Ljava/lang/Character;";
 				case BYTE:
-					return "Ljava/lang/Integer;";
+					return "Ljava/lang/Byte;";
 				case SBYTE:
 					return "Ljava/lang/Byte;";
 				case SHORT:
@@ -70,7 +70,7 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 				case CHAR:
 					return "C";
 				case BYTE:
-					return "I";
+					return "B";
 				case SBYTE:
 					return "B";
 				case SHORT:
