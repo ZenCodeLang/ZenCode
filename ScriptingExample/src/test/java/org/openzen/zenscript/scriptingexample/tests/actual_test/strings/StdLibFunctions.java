@@ -1,5 +1,6 @@
 package org.openzen.zenscript.scriptingexample.tests.actual_test.strings;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -225,6 +226,61 @@ public class StdLibFunctions extends ZenCodeTest {
 
 		logger.assertPrintOutputSize(1);
 		logger.assertPrintOutput(0, paddedString);
+	}
+
+	@Test
+	public void isBlank(){
+		ScriptBuilder.create()
+				.add("println(\"    \".blank);")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutput(0, "true");
+	}
+
+	@Test
+	public void compareToIgnoreCase(){
+		ScriptBuilder.create()
+				.add("println(\"B\".compareToIgnoreCase(\"a\") > 0);")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutput(0, "true");
+	}
+
+	@Test
+	public void endsWith(){
+		ScriptBuilder.create()
+				.add("println(\"Hello World!\".endsWith(\"World!\"));")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutput(0, "true");
+	}
+
+	@Test
+	public void equalsIgnoreCase(){
+		ScriptBuilder.create()
+				.add("println(\"Hello World!\".equalsIgnoreCase(\"Hello World!\"));")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutput(0, "true");
+	}
+
+	@Test
+	public void replace(){
+		ScriptBuilder.create()
+				.add("println(\"Hello World!\".replace(\"l\", \"w\"));")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutput(0, "Hewwo Worwd!");
 	}
 
 	private String makeString(int size, char filler) {

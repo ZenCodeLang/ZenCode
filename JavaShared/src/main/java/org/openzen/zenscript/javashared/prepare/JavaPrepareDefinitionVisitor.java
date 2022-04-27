@@ -119,6 +119,10 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 				Expression character = call.arguments.arguments[0];
 				return translator.containsAsIndexOf(str, character);
 			}));
+			cls.addInstanceMethod("compareToIgnoreCase","compareToIgnoreCase", "(Ljava/lang/String;)I");
+			cls.addInstanceMethod("endsWith","endsWith", "(Ljava/lang/String;)Z");
+			cls.addInstanceMethod("equalsIgnoreCase","equalsIgnoreCase", "(Ljava/lang/String;)Z");
+
 			cls.addInstanceMethod("indexOfFrom","indexOf", "(II)I");
 			cls.addInstanceMethod("lastIndexOf", "lastIndexOf", "(I)I");
 			cls.addInstanceMethod("lastIndexOfFrom", "lastIndexOf", "(II)I");
@@ -128,6 +132,7 @@ public class JavaPrepareDefinitionVisitor implements DefinitionVisitor<JavaClass
 			cls.addInstanceMethod("lastIndexOfString", "lastIndexOf", "(Ljava/lang/String;)I");
 			cls.addInstanceMethod("lastIndexOfStringFrom", "lastIndexOf", "(Ljava/lang/String;I)I");
 
+			cls.addInstanceMethod("replace", "replace", "(CC)Ljava/lang/String;");
 			cls.addInstanceMethod("trim", "trim", "()Ljava/lang/String;");
 			cls.addInstanceMethod("startsWith", "startsWith", "(Ljava/lang/String;)Z");
 			cls.addInstanceMethod("endsWith", "endsWith", "(Ljava/lang/String;)Z");
