@@ -14,7 +14,7 @@ import static org.openzen.zencode.shared.StringExpansion.unescape;
 public class StdLibFunctions extends ZenCodeTest {
 
 	@Test
-	public void fromAsciiBytes(){
+	public void fromAsciiBytes() {
 		ScriptBuilder.create()
 				.add("var x = string.fromAsciiBytes([65]);")
 				.add("println(x);")
@@ -26,7 +26,7 @@ public class StdLibFunctions extends ZenCodeTest {
 	}
 
 	@Test
-	public void fromUTF8Bytes(){
+	public void fromUTF8Bytes() {
 		ScriptBuilder.create()
 				.add("var x = string.fromUTF8Bytes([65]);")
 				.add("println(x);")
@@ -253,7 +253,7 @@ public class StdLibFunctions extends ZenCodeTest {
 	}
 
 	@Test
-	public void toAsciiiBytes(){
+	public void toAsciiiBytes() {
 		ScriptBuilder.create()
 				.add("var x = \"A\".toAsciiBytes();")
 				.add("println(x[0]);")
@@ -265,7 +265,7 @@ public class StdLibFunctions extends ZenCodeTest {
 	}
 
 	@Test
-	public void toUTF8Bytes(){
+	public void toUTF8Bytes() {
 		ScriptBuilder.create()
 				.add("var x = \"A\".toUTF8Bytes();")
 				.add("println(x[0]);")
