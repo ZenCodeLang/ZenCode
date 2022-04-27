@@ -2,8 +2,9 @@ package org.openzen.zenscript.javabytecode.compiler;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
-import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.statement.VarStatement;
+import org.openzen.zenscript.codemodel.statement.ForeachStatement;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.javabytecode.JavaLocalVariableInfo;
 import org.openzen.zenscript.javashared.JavaClass;
@@ -16,18 +17,16 @@ import java.util.Map;
 public class JavaForeachWriter {
 
 	private final JavaWriter javaWriter;
-	private final VarStatement[] variables;
-	private final Statement content;
+	private final ForeachStatement statement;
 	private final Label startLabel;
 	private final Label endLabel;
 	private final JavaStatementVisitor statementVisitor;
 	private final JavaUnboxingTypeVisitor unboxingTypeVisitor;
 
-	public JavaForeachWriter(JavaStatementVisitor statementVisitor, VarStatement[] variables, Statement content, Label start, Label end) {
+	public JavaForeachWriter(JavaStatementVisitor statementVisitor, ForeachStatement statement, Label start, Label end) {
 		this.statementVisitor = statementVisitor;
 		this.javaWriter = statementVisitor.getJavaWriter();
-		this.variables = variables;
-		this.content = content;
+		this.statement = statement;
 		this.startLabel = start;
 		this.endLabel = end;
 		this.unboxingTypeVisitor = new JavaUnboxingTypeVisitor(this.javaWriter);
@@ -40,28 +39,28 @@ public class JavaForeachWriter {
 		javaWriter.swap();
 		javaWriter.getField(owner, "from", "I");
 
-		final int z = javaWriter.getLocalVariable(variables[0].variable).local;
+		final int z = javaWriter.getLocalVariable(statement.loopVariables[0].variable).local;
 		javaWriter.storeInt(z);
 		javaWriter.label(startLabel);
 		javaWriter.dup();
 		javaWriter.loadInt(z);
 		javaWriter.ifICmpLE(endLabel);
 
-		content.accept(statementVisitor);
+		statement.content.accept(statementVisitor);
 		javaWriter.iinc(z);
 	}
 
 	public void visitArrayValueIterator() {
-		handleArray(javaWriter.local(int.class), javaWriter.getLocalVariable(variables[0].variable));
+		handleArray(javaWriter.local(int.class), javaWriter.getLocalVariable(statement.loopVariables[0].variable));
 	}
 
 	public void visitArrayKeyValueIterator() {
-		handleArray(javaWriter.getLocalVariable(variables[0].variable).local, javaWriter.getLocalVariable(variables[1].variable));
+		handleArray(javaWriter.getLocalVariable(statement.loopVariables[0].variable).local, javaWriter.getLocalVariable(statement.loopVariables[1].variable));
 	}
 
 	public void visitStringCharacterIterator() {
 		javaWriter.invokeVirtual(JavaMethod.getVirtual(JavaClass.STRING, "toCharArray", "()[C", JavaModifiers.PUBLIC));
-		handleArray(javaWriter.local(int.class), javaWriter.getLocalVariable(variables[0].variable));
+		handleArray(javaWriter.local(int.class), javaWriter.getLocalVariable(statement.loopVariables[0].variable));
 	}
 
 	public void visitIteratorIterator(Type targetType) {
@@ -72,10 +71,10 @@ public class JavaForeachWriter {
 		javaWriter.ifEQ(endLabel);
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
 		javaWriter.checkCast(targetType);
-		final JavaLocalVariableInfo variable = javaWriter.getLocalVariable(variables[0].variable);
+		final JavaLocalVariableInfo variable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		javaWriter.store(variable.type, variable.local);
 
-		content.accept(statementVisitor);
+		statement.content.accept(statementVisitor);
 	}
 
 	private void handleArray(final int z, final JavaLocalVariableInfo arrayTypeInfo) {
@@ -91,9 +90,20 @@ public class JavaForeachWriter {
 		javaWriter.dup();
 		javaWriter.loadInt(z);
 
-		javaWriter.arrayLoad(arrayTypeInfo.type);
+		ArrayTypeID listType = (ArrayTypeID) statement.list.type;
+		if (listType.elementType == BasicTypeID.BYTE) {
+			javaWriter.arrayLoad(Type.BYTE_TYPE);
+			javaWriter.siPush((short) 255);
+			javaWriter.iAnd();
+		} else if (listType.elementType == BasicTypeID.USHORT) {
+			javaWriter.arrayLoad(Type.SHORT_TYPE);
+			javaWriter.constant(0xFFFF);
+			javaWriter.iAnd();
+		} else {
+			javaWriter.arrayLoad(arrayTypeInfo.type);
+		}
 		javaWriter.store(arrayTypeInfo.type, arrayTypeInfo.local);
-		content.accept(statementVisitor);
+		statement.content.accept(statementVisitor);
 		javaWriter.iinc(z);
 	}
 
@@ -107,11 +117,11 @@ public class JavaForeachWriter {
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
 
-		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
+		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		this.downCast(0, keyVariable.type);
 		javaWriter.store(keyVariable.type, keyVariable.local);
 
-		content.accept(statementVisitor);
+		statement.content.accept(statementVisitor);
 	}
 
 	public void visitAssocKeyIterator() {
@@ -125,11 +135,11 @@ public class JavaForeachWriter {
 		javaWriter.dup();
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.ITERATOR, "next", "()Ljava/lang/Object;", 0));
 
-		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
+		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
 		this.downCast(0, keyVariable.type);
 		javaWriter.store(keyVariable.type, keyVariable.local);
 
-		content.accept(statementVisitor);
+		statement.content.accept(statementVisitor);
 	}
 
 	public void visitAssocKeyValueIterator() {
@@ -146,8 +156,8 @@ public class JavaForeachWriter {
 		javaWriter.dup(false);
 
 
-		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(variables[0].variable);
-		final JavaLocalVariableInfo valueVariable = javaWriter.getLocalVariable(variables[1].variable);
+		final JavaLocalVariableInfo keyVariable = javaWriter.getLocalVariable(statement.loopVariables[0].variable);
+		final JavaLocalVariableInfo valueVariable = javaWriter.getLocalVariable(statement.loopVariables[1].variable);
 
 		javaWriter.invokeInterface(JavaMethod.getVirtual(JavaClass.fromInternalName("java/util/Map$Entry", JavaClass.Kind.INTERFACE), "getKey", "()Ljava/lang/Object;", 0));
 		this.downCast(0, keyVariable.type);
@@ -157,12 +167,12 @@ public class JavaForeachWriter {
 		this.downCast(1, valueVariable.type);
 		javaWriter.store(valueVariable.type, valueVariable.local);
 
-		content.accept(statementVisitor);
+		statement.content.accept(statementVisitor);
 	}
 
 	private void downCast(int typeNumber, Type t) {
-		if (CompilerUtils.isPrimitive(variables[typeNumber].type)) {
-			variables[typeNumber].type.accept(variables[typeNumber].type, unboxingTypeVisitor);
+		if (CompilerUtils.isPrimitive(statement.loopVariables[typeNumber].type)) {
+			statement.loopVariables[typeNumber].type.accept(statement.loopVariables[typeNumber].type, unboxingTypeVisitor);
 		} else {
 			javaWriter.checkCast(t);
 		}

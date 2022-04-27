@@ -1016,7 +1016,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case ARRAY_INDEXSET: {
 				//TODO multi-dim arrays?
 				ArrayTypeID type = (ArrayTypeID) expression.target.type;
-				javaWriter.arrayStore(context.getType(type.elementType));
+				if (type.elementType == BasicTypeID.BYTE) {
+					javaWriter.i2b();
+					javaWriter.arrayStore(Type.BYTE_TYPE);
+				} else if (type.elementType == BasicTypeID.USHORT) {
+					javaWriter.i2s();
+					javaWriter.arrayStore(Type.SHORT_TYPE);
+				} else {
+					javaWriter.arrayStore(context.getType(type.elementType));
+				}
 				break;
 			}
 			case ARRAY_INDEXGETRANGE: {
@@ -2871,9 +2879,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitPlatformSpecific(Expression expression) {
 		if (expression instanceof JavaFunctionInterfaceCastExpression) {
 			JavaFunctionInterfaceCastExpression jficExpression = (JavaFunctionInterfaceCastExpression) expression;
-			if(jficExpression.value.type instanceof JavaFunctionalInterfaceTypeID){
+			if (jficExpression.value.type instanceof JavaFunctionalInterfaceTypeID) {
 				jficExpression.value.accept(this);
-			}else{
+			} else {
 				visitFunctionalInterfaceWrapping(jficExpression);
 			}
 		} else {
@@ -3564,7 +3572,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		final JavaMethod copyOf = JavaMethod.getNativeStatic(JavaClass.ARRAYS, "copyOf", methodDescriptor);
 		javaWriter.invokeStatic(copyOf);
-		if(!primitive) {
+		if (!primitive) {
 			javaWriter.checkCast(context.getDescriptor(value.type));
 		}
 		return null;
