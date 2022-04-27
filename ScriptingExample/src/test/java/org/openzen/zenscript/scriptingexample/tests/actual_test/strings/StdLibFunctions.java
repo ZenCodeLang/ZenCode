@@ -13,6 +13,30 @@ import static org.openzen.zencode.shared.StringExpansion.unescape;
 
 public class StdLibFunctions extends ZenCodeTest {
 
+	@Test
+	public void fromAsciiBytes() {
+		ScriptBuilder.create()
+				.add("var x = string.fromAsciiBytes([65]);")
+				.add("println(x);")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutput(0, "A");
+	}
+
+	@Test
+	public void fromUTF8Bytes() {
+		ScriptBuilder.create()
+				.add("var x = string.fromUTF8Bytes([65]);")
+				.add("println(x);")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutput(0, "A");
+	}
+
 	@ParameterizedTest
 	@CsvSource({
 			"hello,h",
@@ -281,6 +305,30 @@ public class StdLibFunctions extends ZenCodeTest {
 		logger.assertNoErrors();
 		logger.assertNoWarnings();
 		logger.assertPrintOutput(0, "Hewwo Worwd!");
+	}
+
+	@Test
+	public void toAsciiiBytes() {
+		ScriptBuilder.create()
+				.add("var x = \"A\".toAsciiBytes();")
+				.add("println(x[0]);")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutput(0, "65");
+	}
+
+	@Test
+	public void toUTF8Bytes() {
+		ScriptBuilder.create()
+				.add("var x = \"A\".toUTF8Bytes();")
+				.add("println(x[0]);")
+				.execute(this);
+
+		logger.assertNoErrors();
+		logger.assertNoWarnings();
+		logger.assertPrintOutput(0, "65");
 	}
 
 	private String makeString(int size, char filler) {

@@ -120,7 +120,7 @@ public class JavaStatementVisitor implements StatementVisitor<Boolean> {
 		}
 
 		//javaWriter.label(min);
-		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement.loopVariables, statement.content, start, end);
+		JavaForeachWriter iteratorWriter = new JavaForeachWriter(this, statement, start, end);
 		if (statement.iterator.target.getBuiltin() == null) {
 			iteratorWriter.visitCustomIterator();
 		} else {

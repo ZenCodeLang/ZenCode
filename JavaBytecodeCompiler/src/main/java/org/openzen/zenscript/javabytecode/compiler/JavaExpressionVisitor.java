@@ -99,6 +99,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	private static final JavaField CHARACTER_MAX_VALUE = new JavaField(JavaClass.CHARACTER, "MAX_VALUE", "C");
 	private static final JavaMethod CHARACTER_TO_STRING = JavaMethod.getNativeStatic(JavaClass.CHARACTER, "toString", "(C)Ljava/lang/String;");
 	private static final JavaMethod STRING_INIT_CHARACTERS = JavaMethod.getNativeConstructor(JavaClass.STRING, "([C)V");
+	private static final JavaMethod STRING_INIT_BYTES_CHARSET = JavaMethod.getNativeConstructor(JavaClass.STRING, "([BLjava/nio/charset/Charset;)V");
 	private static final JavaMethod STRING_COMPARETO = JavaMethod.getNativeVirtual(JavaClass.STRING, "compareTo", "(Ljava/lang/String;)I");
 	private static final JavaMethod STRING_CONCAT = JavaMethod.getNativeVirtual(JavaClass.STRING, "concat", "(Ljava/lang/String;)Ljava/lang/String;");
 	private static final JavaMethod STRING_CHAR_AT = JavaMethod.getNativeVirtual(JavaClass.STRING, "charAt", "(I)C");
@@ -109,6 +110,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	private static final JavaMethod STRING_LENGTH = JavaMethod.getNativeVirtual(JavaClass.STRING, "length", "()I");
 	private static final JavaMethod STRING_CHARACTERS = JavaMethod.getNativeVirtual(JavaClass.STRING, "toCharArray", "()[C");
 	private static final JavaMethod STRING_ISEMPTY = JavaMethod.getNativeVirtual(JavaClass.STRING, "isEmpty", "()Z");
+	private static final JavaMethod STRING_GET_BYTES = JavaMethod.getNativeVirtual(JavaClass.STRING, "getBytes", "(Ljava/nio/charset/Charset;)[B");
 	private static final JavaMethod ENUM_COMPARETO = JavaMethod.getNativeVirtual(JavaClass.ENUM, "compareTo", "(Ljava/lang/Enum;)I");
 	private static final JavaMethod ENUM_NAME = JavaMethod.getNativeVirtual(JavaClass.ENUM, "name", "()Ljava/lang/String;");
 	private static final JavaMethod ENUM_ORDINAL = JavaMethod.getNativeVirtual(JavaClass.ENUM, "ordinal", "()I");
@@ -1014,7 +1016,15 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			case ARRAY_INDEXSET: {
 				//TODO multi-dim arrays?
 				ArrayTypeID type = (ArrayTypeID) expression.target.type;
-				javaWriter.arrayStore(context.getType(type.elementType));
+				if (type.elementType == BasicTypeID.BYTE) {
+					javaWriter.i2b();
+					javaWriter.arrayStore(Type.BYTE_TYPE);
+				} else if (type.elementType == BasicTypeID.USHORT) {
+					javaWriter.i2s();
+					javaWriter.arrayStore(Type.SHORT_TYPE);
+				} else {
+					javaWriter.arrayStore(context.getType(type.elementType));
+				}
 				break;
 			}
 			case ARRAY_INDEXGETRANGE: {
@@ -2869,9 +2879,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 	public Void visitPlatformSpecific(Expression expression) {
 		if (expression instanceof JavaFunctionInterfaceCastExpression) {
 			JavaFunctionInterfaceCastExpression jficExpression = (JavaFunctionInterfaceCastExpression) expression;
-			if(jficExpression.value.type instanceof JavaFunctionalInterfaceTypeID){
+			if (jficExpression.value.type instanceof JavaFunctionalInterfaceTypeID) {
 				jficExpression.value.accept(this);
-			}else{
+			} else {
 				visitFunctionalInterfaceWrapping(jficExpression);
 			}
 		} else {
@@ -3562,7 +3572,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		final JavaMethod copyOf = JavaMethod.getNativeStatic(JavaClass.ARRAYS, "copyOf", methodDescriptor);
 		javaWriter.invokeStatic(copyOf);
-		if(!primitive) {
+		if (!primitive) {
 			javaWriter.checkCast(context.getDescriptor(value.type));
 		}
 		return null;
@@ -3586,21 +3596,45 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 	@Override
 	public Void stringToAscii(Expression value) {
+		final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
+		final JavaField charset = new JavaField(standardCharsets, "US_ASCII", "Ljava/nio/charset/Charset;");
+		javaWriter.getStaticField(charset);
+		javaWriter.invokeVirtual(STRING_GET_BYTES);
 		return null;
 	}
 
 	@Override
 	public Void stringToUTF8(Expression value) {
+		final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
+		final JavaField charset = new JavaField(standardCharsets, "UTF_8", "Ljava/nio/charset/Charset;");
+		javaWriter.getStaticField(charset);
+		javaWriter.invokeVirtual(STRING_GET_BYTES);
 		return null;
 	}
 
 	@Override
 	public Void bytesAsciiToString(Expression value) {
+		final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
+		final JavaField charset = new JavaField(standardCharsets, "US_ASCII", "Ljava/nio/charset/Charset;");
+
+		javaWriter.newObject(JavaClass.STRING);
+		javaWriter.dupX1();
+		javaWriter.swap();
+		javaWriter.getStaticField(charset);
+		javaWriter.invokeSpecial(STRING_INIT_BYTES_CHARSET);
 		return null;
 	}
 
 	@Override
 	public Void bytesUTF8ToString(Expression value) {
+		final JavaClass standardCharsets = JavaClass.fromInternalName("java/nio/charset/StandardCharsets", JavaClass.Kind.CLASS);
+		final JavaField charset = new JavaField(standardCharsets, "UTF_8", "Ljava/nio/charset/Charset;");
+
+		javaWriter.newObject(JavaClass.STRING);
+		javaWriter.dupX1();
+		javaWriter.swap();
+		javaWriter.getStaticField(charset);
+		javaWriter.invokeSpecial(STRING_INIT_BYTES_CHARSET);
 		return null;
 	}
 
