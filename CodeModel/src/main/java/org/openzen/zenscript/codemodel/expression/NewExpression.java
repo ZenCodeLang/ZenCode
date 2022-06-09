@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class NewExpression extends Expression {
@@ -46,10 +45,5 @@ public class NewExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
 		return tArguments == arguments ? this : new NewExpression(position, type, constructor, tArguments, instancedHeader);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new NewExpression(position, type.getNormalized(), constructor, arguments.normalize(position, scope, instancedHeader), instancedHeader);
 	}
 }

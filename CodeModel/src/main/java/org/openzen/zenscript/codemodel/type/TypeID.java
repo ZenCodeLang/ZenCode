@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
@@ -22,20 +23,18 @@ public interface TypeID {
 		return typeArguments;
 	}
 
-	static Map<TypeParameter, TypeID> getSelfMapping(GlobalTypeRegistry registry, TypeParameter[] parameters) {
+	static Map<TypeParameter, TypeID> getSelfMapping(TypeParameter[] parameters) {
 		Map<TypeParameter, TypeID> typeArguments = new HashMap<>();
 		for (TypeParameter parameter : parameters)
-			typeArguments.put(parameter, registry.getGeneric(parameter));
+			typeArguments.put(parameter, new GenericTypeID(parameter));
 		return typeArguments;
 	}
 
-	default TypeID getSuperType(GlobalTypeRegistry registry) {
+	default TypeID getSuperType() {
 		return null;
 	}
 
 	TypeID instance(GenericMapper mapper);
-
-	TypeID getNormalized();
 
 	boolean hasDefaultValue();
 
@@ -45,8 +44,8 @@ public interface TypeID {
 
 	// Infers type parameters for this type so it matches with targetType
 	// returns false if that isn't possible
-	default Map<TypeParameter, TypeID> inferTypeParameters(LocalMemberCache cache, TypeID targetType) {
-		return TypeMatcher.match(cache, this, targetType);
+	default Map<TypeParameter, TypeID> inferTypeParameters(TypeID targetType) {
+		return TypeMatcher.match(this, targetType);
 	}
 
 	void extractTypeParameters(List<TypeParameter> typeParameters);
@@ -69,15 +68,20 @@ public interface TypeID {
 		return this;
 	}
 
+	/**
+	 * Strips non-essential information from a type. (such as it being const or optional)
+	 *
+	 * @return simplified type
+	 */
+	default TypeID simplified() {
+		return withoutOptional();
+	}
+
 	default boolean isVariant() {
 		return false;
 	}
 
 	default boolean isEnum() {
-		return false;
-	}
-
-	default boolean isDefinition(HighLevelDefinition definition) {
 		return false;
 	}
 
@@ -113,17 +117,37 @@ public interface TypeID {
 		return null;
 	}
 
-	default Optional<OptionalTypeID> asOptional() { return Optional.empty(); }
+	default Optional<OptionalTypeID> asOptional() {
+		return Optional.empty();
+	}
 
-	default Optional<AssocTypeID> asAssoc() { return Optional.empty(); }
+	default Optional<AssocTypeID> asAssoc() {
+		return Optional.empty();
+	}
 
-	default Optional<ArrayTypeID> asArray() { return Optional.empty(); }
+	default Optional<ArrayTypeID> asArray() {
+		return Optional.empty();
+	}
 
-	default Optional<GenericMapTypeID> asGenericMap() { return Optional.empty(); }
+	default Optional<GenericMapTypeID> asGenericMap() {
+		return Optional.empty();
+	}
 
-	default Optional<DefinitionTypeID> asDefinition() { return Optional.empty(); }
+	default Optional<DefinitionTypeID> asDefinition() {
+		return Optional.empty();
+	}
 
-	default Optional<FunctionTypeID> asFunction() { return Optional.empty(); }
+	default Optional<FunctionTypeID> asFunction() {
+		return Optional.empty();
+	}
 
-	default Optional<RangeTypeID> asRange() { return Optional.empty(); }
+	default Optional<RangeTypeID> asRange() {
+		return Optional.empty();
+	}
+
+	default Optional<GenericTypeID> asGeneric() {
+		return Optional.empty();
+	}
+
+	ResolvedType resolve();
 }

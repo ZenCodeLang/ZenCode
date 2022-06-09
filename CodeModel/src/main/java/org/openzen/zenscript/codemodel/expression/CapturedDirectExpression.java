@@ -31,9 +31,4 @@ public class CapturedDirectExpression extends CapturedExpression {
 		Expression tValue = transformer.transform(value);
 		return tValue == value ? this : new CapturedDirectExpression(position, closure, tValue);
 	}
-
-	@Override
-	public CapturedExpression normalize(TypeScope scope) {
-		return new CapturedDirectExpression(position, closure, value.normalize(scope));
-	}
 }

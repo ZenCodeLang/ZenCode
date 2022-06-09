@@ -13,6 +13,7 @@ import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
@@ -60,6 +61,10 @@ public class ConstructorMember extends FunctionalMember {
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
 		if (priority == TypeMemberPriority.SPECIFIED)
 			type.addConstructor(ref(type.type, mapper), priority);
+	}
+
+	public void registerTo(MemberSet members, GenericMapper mapper) {
+		members.addConstructor(ref(mapper));
 	}
 
 	@Override

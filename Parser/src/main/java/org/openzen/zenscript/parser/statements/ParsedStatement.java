@@ -1,9 +1,11 @@
 package org.openzen.zenscript.parser.statements;
 
+import org.openzen.zenscript.codemodel.compilation.CompilableStatement;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.WhitespacePostComment;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
@@ -18,7 +20,7 @@ import java.util.List;
 
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 
-public abstract class ParsedStatement {
+public abstract class ParsedStatement implements CompilableStatement {
 	public final CodePosition position;
 	public final ParsedAnnotation[] annotations;
 	public final WhitespaceInfo whitespace;
@@ -38,7 +40,7 @@ public abstract class ParsedStatement {
 
 			return new ParsedStatementsFunctionBody(new ParsedStatementBlock(position, ParsedAnnotation.NONE, null, null, statements));
 		} else {
-			ParsedFunctionBody result = new ParsedLambdaFunctionBody(ParsedExpression.parse(tokens));
+			ParsedFunctionBody result = new ParsedLambdaFunctionBody(position, ParsedExpression.parse(tokens));
 			if (!inExpression)
 				tokens.required(T_SEMICOLON, "; expected");
 			return result;
@@ -91,7 +93,7 @@ public abstract class ParsedStatement {
 
 			case K_RETURN: {
 				parser.next();
-				ParsedExpression expression = null;
+				CompilableExpression expression = null;
 				if (!parser.isNext(T_SEMICOLON)) {
 					expression = ParsedExpression.parse(parser);
 				}
@@ -106,7 +108,7 @@ public abstract class ParsedStatement {
 				String name = parser.required(T_IDENTIFIER, "identifier expected").content;
 
 				IParsedType type = null;
-				ParsedExpression initializer = null;
+				CompilableExpression initializer = null;
 				if (parser.optional(K_AS) != null || parser.optional(T_COLON) != null) {
 					type = IParsedType.parse(parser);
 				}
@@ -120,7 +122,7 @@ public abstract class ParsedStatement {
 			}
 			case K_IF: {
 				parser.next();
-				ParsedExpression expression = ParsedExpression.parse(parser);
+				CompilableExpression expression = ParsedExpression.parse(parser);
 				parser.skipWhitespaceNewline();
 				ParsedStatement onIf = parse(parser);
 				ParsedStatement onElse = null;
@@ -143,7 +145,7 @@ public abstract class ParsedStatement {
 				}
 
 				parser.required(K_IN, "in expected");
-				ParsedExpression source = ParsedExpression.parse(parser);
+				CompilableExpression source = ParsedExpression.parse(parser);
 				ParsedStatement content = parse(parser);
 
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
@@ -151,7 +153,7 @@ public abstract class ParsedStatement {
 						position,
 						annotations,
 						whitespace,
-						names.toArray(new String[names.size()]),
+						names.toArray(new String[0]),
 						source,
 						content);
 			}
@@ -163,7 +165,7 @@ public abstract class ParsedStatement {
 
 				ParsedStatement content = parse(parser);
 				parser.required(K_WHILE, "while expected");
-				ParsedExpression condition = ParsedExpression.parse(parser);
+				CompilableExpression condition = ParsedExpression.parse(parser);
 				parser.required(T_SEMICOLON, "; expected");
 
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
@@ -175,7 +177,7 @@ public abstract class ParsedStatement {
 				if (parser.optional(T_COLON) != null)
 					label = parser.required(T_IDENTIFIER, "identifier expected").content;
 
-				ParsedExpression condition = ParsedExpression.parse(parser);
+				CompilableExpression condition = ParsedExpression.parse(parser);
 				ParsedStatement content = parse(parser);
 
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
@@ -183,7 +185,7 @@ public abstract class ParsedStatement {
 			}
 			case K_LOCK: {
 				ZSToken t = parser.next();
-				ParsedExpression object = ParsedExpression.parse(parser);
+				CompilableExpression object = ParsedExpression.parse(parser);
 				ParsedStatement content = parse(parser);
 
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
@@ -191,7 +193,7 @@ public abstract class ParsedStatement {
 			}
 			case K_THROW: {
 				ZSToken t = parser.next();
-				ParsedExpression value = ParsedExpression.parse(parser);
+				CompilableExpression value = ParsedExpression.parse(parser);
 				parser.required(T_SEMICOLON, "; expected");
 
 				WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
@@ -210,7 +212,7 @@ public abstract class ParsedStatement {
 				parser.popMark();
 
 				String name = null;
-				ParsedExpression initializer = null;
+				CompilableExpression initializer = null;
 
 				if (parser.isNext(ZSTokenType.T_IDENTIFIER)) {
 					name = parser.next().content;
@@ -270,7 +272,7 @@ public abstract class ParsedStatement {
 				if (parser.optional(T_COLON) != null)
 					name = parser.next().content;
 
-				ParsedExpression value = ParsedExpression.parse(parser);
+				CompilableExpression value = ParsedExpression.parse(parser);
 				ParsedSwitchCase currentCase = null;
 				List<ParsedSwitchCase> cases = new ArrayList<>();
 
@@ -296,7 +298,7 @@ public abstract class ParsedStatement {
 			}
 		}
 
-		ParsedExpression expression = ParsedExpression.parse(parser);
+		CompilableExpression expression = ParsedExpression.parse(parser);
 		parser.required(T_SEMICOLON, "; expected");
 		WhitespaceInfo whitespace = parser.collectWhitespaceInfo(ws, isFirst);
 
@@ -304,21 +306,19 @@ public abstract class ParsedStatement {
 		return result;
 	}
 
-	public static List<Statement> compile(List<ParsedStatement> statements, StatementScope scope) {
+	public static List<Statement> compile(List<ParsedStatement> statements, StatementCompiler compiler) {
 		if (statements == null) // no body
 			return null;
 
 		List<Statement> result = new ArrayList<>();
 		for (ParsedStatement statement : statements)
-			result.add(statement.compile(scope));
+			result.add(statement.compile(compiler));
 		return result;
 	}
 
-	public abstract Statement compile(StatementScope scope);
-
-	protected Statement result(Statement statement, StatementScope scope) {
+	protected Statement result(Statement statement, StatementCompiler compiler) {
 		statement.setTag(WhitespaceInfo.class, whitespace);
-		statement.annotations = ParsedAnnotation.compileForStatement(annotations, statement, scope);
+		statement.annotations = ParsedAnnotation.compileForStatement(annotations, statement, compiler);
 		return statement;
 	}
 }

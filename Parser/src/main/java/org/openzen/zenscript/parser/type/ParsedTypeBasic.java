@@ -1,8 +1,8 @@
 package org.openzen.zenscript.parser.type;
 
+import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.TypeBuilder;
 
 public enum ParsedTypeBasic implements IParsedType {
 	VOID(BasicTypeID.VOID),
@@ -25,7 +25,7 @@ public enum ParsedTypeBasic implements IParsedType {
 
 	private final BasicTypeID type;
 
-	private ParsedTypeBasic(BasicTypeID type) {
+	ParsedTypeBasic(BasicTypeID type) {
 		this.type = type;
 	}
 

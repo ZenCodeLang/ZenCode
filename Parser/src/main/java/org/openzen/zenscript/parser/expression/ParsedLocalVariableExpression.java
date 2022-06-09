@@ -1,15 +1,12 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.expression.GetFieldExpression;
-import org.openzen.zenscript.codemodel.expression.ThisExpression;
-import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
+import org.openzen.zenscript.codemodel.expression.Expression;
+
+import java.util.Optional;
 
 public class ParsedLocalVariableExpression extends ParsedExpression {
 	private final String name;
@@ -21,18 +18,62 @@ public class ParsedLocalVariableExpression extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		TypeMembers members = scope.getTypeMembers(scope.getThisType());
-		FieldMemberRef field = members.getGroup(name)
-				.orElseThrow(() -> new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "No such field: " + name))
-				.getField()
-				.orElseThrow(() -> new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "No such field: " + name));
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		Optional<LocalType> localType = compiler.getLocalType();
+		if (!localType.isPresent())
+			return compiler.invalid(position, CompileErrors.noThisInScope());
 
-		return new GetFieldExpression(position, new ThisExpression(position, scope.getThisType()), field);
+		ResolvedType resolved = compiler.resolve(localType.get().getThisType());
+		Optional<ResolvedType.Field> field = resolved.findField(name);
+		if (!field.isPresent())
+			return compiler.invalid(position, CompileErrors.noFieldInType(localType.get().getThisType(), name));
+
+		return new Compiling(compiler, position, field.get());
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return true;
+	private static class Compiling extends AbstractCompilingExpression {
+		private final ResolvedType.Field field;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, ResolvedType.Field field) {
+			super(compiler, position);
+			this.field = field;
+		}
+
+		@Override
+		public Expression eval() {
+			return field.get(compiler.at(position));
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
+
+		@Override
+		public CompilingExpression assign(CompilingExpression value) {
+			return new CompilingAssign(compiler, position, field, value);
+		}
+	}
+
+	private static class CompilingAssign extends AbstractCompilingExpression {
+		private final ResolvedType.Field field;
+		private final CompilingExpression value;
+
+		public CompilingAssign(ExpressionCompiler compiler, CodePosition position, ResolvedType.Field field, CompilingExpression value) {
+			super(compiler, position);
+
+			this.field = field;
+			this.value = value;
+		}
+
+		@Override
+		public Expression eval() {
+			return field.set(compiler.at(position), value.cast(cast(field.getType())).value);
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
 	}
 }

@@ -32,9 +32,4 @@ public class CastExpression extends Expression {
 		Expression tTarget = target.transform(transformer);
 		return target == tTarget ? this : new CastExpression(position, tTarget, member, isImplicit);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new CastExpression(position, target.normalize(scope), member, isImplicit);
-	}
 }

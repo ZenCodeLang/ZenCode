@@ -12,10 +12,11 @@ import org.openzen.zenscript.codemodel.Module;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
+import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.builtin.BuiltinMethodSymbol;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -30,12 +31,13 @@ public class JavaCompiledModule {
 	public final Module module;
 	public final FunctionParameter[] scriptParameters;
 
-	private final Map<HighLevelDefinition, JavaClass> classes = new HashMap<>();
-	private final Map<HighLevelDefinition, JavaClass> expansionClasses = new HashMap<>();
-	private final Map<HighLevelDefinition, JavaNativeClass> nativeClasses = new HashMap<>();
+	private final Map<DefinitionSymbol, JavaClass> classes = new HashMap<>();
+	private final Map<DefinitionSymbol, JavaClass> expansionClasses = new HashMap<>();
+	private final Map<DefinitionSymbol, JavaNativeClass> nativeClasses = new HashMap<>();
 	private final Map<ImplementationMember, JavaImplementation> implementations = new HashMap<>();
-	private final Map<IDefinitionMember, JavaField> fields = new HashMap<>();
-	private final Map<IDefinitionMember, JavaMethod> methods = new HashMap<>();
+	private final Map<FieldSymbol, JavaField> fields = new HashMap<>();
+	private final Map<MethodSymbol, JavaField> fieldsAlt = new HashMap<>();
+	private final Map<MethodSymbol, JavaMethod> methods = new HashMap<>();
 	private final Map<TypeParameter, JavaTypeParameterInfo> typeParameters = new HashMap<>();
 	private final Map<FunctionParameter, JavaParameterInfo> parameters = new IdentityHashMap<>();
 	private final Map<VariantDefinition.Option, JavaVariantOption> variantOptions = new HashMap<>();
@@ -46,18 +48,17 @@ public class JavaCompiledModule {
 		this.scriptParameters = scriptParameters;
 	}
 
-	public void loadMappings(String mappings) {
-
-	}
-
 	public String generateMappings() {
 		JavaMappingWriter writer = new JavaMappingWriter(this);
-		for (HighLevelDefinition definition : classes.keySet()) {
-			if (!(definition instanceof ExpansionDefinition))
-				definition.accept(writer);
+		for (DefinitionSymbol definition : classes.keySet()) {
+			if (definition instanceof HighLevelDefinition) {
+				if (!(definition instanceof ExpansionDefinition))
+					((HighLevelDefinition)definition).accept(writer);
+			}
 		}
-		for (HighLevelDefinition definition : expansionClasses.keySet()) {
-			definition.accept(writer);
+		for (DefinitionSymbol definition : expansionClasses.keySet()) {
+			if (definition instanceof ExpansionDefinition)
+				((ExpansionDefinition)definition).accept(writer);
 		}
 
 		return writer.getOutput();
@@ -71,10 +72,10 @@ public class JavaCompiledModule {
 		expansionClasses.put(definition, cls);
 	}
 
-	public JavaClass getClassInfo(HighLevelDefinition definition) {
+	public JavaClass getClassInfo(DefinitionSymbol definition) {
 		JavaClass cls = classes.get(definition);
 		if (cls == null)
-			throw new IllegalStateException("Missing class info for class " + definition.name);
+			throw new IllegalStateException("Missing class info for class " + definition.describe());
 
 		return cls;
 	}
@@ -131,40 +132,44 @@ public class JavaCompiledModule {
 		return implementation;
 	}
 
-	public void setFieldInfo(IDefinitionMember member, JavaField field) {
+	public void setFieldInfo(FieldSymbol member, JavaField field) {
 		fields.put(member, field);
 	}
 
-	public JavaField optFieldInfo(IDefinitionMember member) {
+	public void setFieldInfo(MethodSymbol getterOrSetter, JavaField field) {
+		fieldsAlt.put(getterOrSetter, field);
+	}
+
+	public JavaField optFieldInfo(FieldSymbol member) {
 		return fields.get(member);
 	}
 
-	public JavaField getFieldInfo(IDefinitionMember member) {
+	public JavaField optFieldInfo(MethodSymbol getterOrSetter) {
+		return fieldsAlt.get(getterOrSetter);
+	}
+
+	public JavaField getFieldInfo(FieldSymbol member) {
 		JavaField field = fields.get(member);
 		if (field == null)
-			throw new IllegalStateException("Missing field info for field " + member.getDefinition().name + "." + member.describe());
+			throw new IllegalStateException("Missing field info for field " + member.getDefiningType().getName() + "." + member.getName());
 
 		return field;
 	}
 
-	public void setMethodInfo(IDefinitionMember member, JavaMethod method) {
+	public void setMethodInfo(MethodSymbol member, JavaMethod method) {
 		methods.put(member, method);
 	}
 
-	public JavaMethod optMethodInfo(IDefinitionMember member) {
+	public JavaMethod optMethodInfo(MethodSymbol member) {
 		return methods.get(member);
 	}
 
-	public JavaMethod getMethodInfo(DefinitionMemberRef member) {
-		return getMethodInfo(member.getTarget());
-	}
-
-	public JavaMethod getMethodInfo(IDefinitionMember member) {
+	public JavaMethod getMethodInfo(MethodSymbol member) {
 		JavaMethod method = methods.get(member);
-		if (member.getBuiltin() == BuiltinID.CLASS_DEFAULT_CONSTRUCTOR) // TODO: handle this differently
-			return new JavaMethod(getClassInfo(member.getDefinition()), JavaMethod.Kind.CONSTRUCTOR, "<init>", true, "()V", Modifiers.PUBLIC, false);
+		if (member == BuiltinMethodSymbol.CLASS_DEFAULT_CONSTRUCTOR) // TODO: handle this differently
+			return new JavaMethod(getClassInfo(member.getDefiningType()), JavaMethod.Kind.CONSTRUCTOR, "<init>", true, "()V", Modifiers.PUBLIC, false);
 		if (method == null)
-			throw new IllegalStateException("Missing method info for method " + member.getDefinition().name + "." + member.describe());
+			throw new IllegalStateException("Missing method info for method " + member.getDefiningType().describe() + "." + member.getName());
 
 		return method;
 	}

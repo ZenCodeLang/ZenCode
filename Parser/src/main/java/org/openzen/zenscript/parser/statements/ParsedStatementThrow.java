@@ -1,36 +1,37 @@
 package org.openzen.zenscript.parser.statements;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
-import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.InvalidExpression;
-import org.openzen.zenscript.codemodel.expression.PanicExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
+import org.openzen.zenscript.codemodel.statement.InvalidStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.ThrowStatement;
-import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.expression.ParsedExpression;
+
+import java.util.Optional;
 
 public class ParsedStatementThrow extends ParsedStatement {
-	private final ParsedExpression expression;
+	private final CompilableExpression expression;
 
-	public ParsedStatementThrow(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, ParsedExpression expression) {
+	public ParsedStatementThrow(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, CompilableExpression expression) {
 		super(position, annotations, whitespace);
 
 		this.expression = expression;
 	}
 
 	@Override
-	public Statement compile(StatementScope scope) {
-		try {
-			Expression value = expression.compile(new ExpressionScope(scope)).eval();
-			return result(new ThrowStatement(position, value), scope);
-		} catch (CompileException ex) {
-			return result(new ExpressionStatement(position, new PanicExpression(position, scope.getFunctionHeader().getReturnType(), new InvalidExpression(BasicTypeID.STRING, ex))), scope);
-		}
+	public Statement compile(StatementCompiler compiler) {
+		Optional<FunctionHeader> maybeHeader = compiler.getFunctionHeader();
+		if (!maybeHeader.isPresent())
+			return new InvalidStatement(position, CompileErrors.cannotThrowHere());
+
+		FunctionHeader header = maybeHeader.get();
+		if (header.thrownType == null)
+			return new InvalidStatement(position, CompileErrors.cannotThrowHere());
+
+		return result(new ThrowStatement(position, compiler.compile(expression, header.thrownType)), compiler);
 	}
 }

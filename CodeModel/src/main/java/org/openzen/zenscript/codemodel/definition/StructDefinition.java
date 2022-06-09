@@ -3,9 +3,10 @@ package org.openzen.zenscript.codemodel.definition;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 
 public class StructDefinition extends HighLevelDefinition {
-	public StructDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+	public StructDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 

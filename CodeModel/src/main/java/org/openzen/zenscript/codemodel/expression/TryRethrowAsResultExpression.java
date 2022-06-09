@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class TryRethrowAsResultExpression extends Expression {
@@ -27,10 +26,5 @@ public class TryRethrowAsResultExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new TryRethrowAsResultExpression(position, type, tValue);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new TryRethrowAsResultExpression(position, type, value.normalize(scope));
 	}
 }

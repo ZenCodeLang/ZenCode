@@ -1,19 +1,13 @@
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.*;
-import org.openzen.zencode.shared.logging.CompileExceptionLogger;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.FileResolutionContext;
-import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.scope.FileScope;
-import org.openzen.zenscript.codemodel.scope.GlobalScriptScope;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.ISymbol;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -23,6 +17,7 @@ import org.openzen.zenscript.parser.statements.ParsedStatement;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.openzen.zenscript.lexer.ZSTokenType.EOF;
 import static org.openzen.zenscript.lexer.ZSTokenType.K_IMPORT;
@@ -47,44 +42,6 @@ public class ParsedFile {
 			FunctionParameter[] parameters,
 			ParserLogger logger) {
 		boolean failed = false;
-		// We are considering all these files to be in the same package, so make
-		// a single PackageDefinition instance. If these files were in multiple
-		// packages, we'd need an instance for every package.
-		PackageDefinitions definitions = new PackageDefinitions();
-		for (ParsedFile file : files) {
-			// listDefinitions will merely register all definitions (classes,
-			// interfaces, functions ...) so they can later be available to
-			// the other files as well. It doesn't yet compile anything.
-			file.listDefinitions(definitions);
-		}
-
-		ZSPackage rootPackage = registry.collectPackages();
-		List<ExpansionDefinition> expansions = registry.collectExpansions();
-		definitions.registerExpansionsTo(expansions);
-
-		Map<String, ISymbol> globals = registry.collectGlobals();
-
-		ModuleTypeResolutionContext moduleContext = new ModuleTypeResolutionContext(
-				registry.registry,
-				registry.getAnnotations(),
-				rootPackage,
-				pkg,
-				globals);
-
-
-		//Map so we don't print multiple compile exceptions for a single import
-		Map<String, CompileException> importErrors = new HashMap<>();
-		for (ParsedFile file : files) {
-			file.registerTypes(moduleContext, rootPackage, pkg, importErrors);
-		}
-
-		for (ParsedFile file : files) {
-			// compileMembers will register all definition members to their
-			// respective definitions, such as fields, constructors, methods...
-			// It doesn't yet compile the method contents.
-			file.compileTypes(moduleContext, rootPackage, pkg, importErrors);
-		}
-
 		for (ParsedFile file : files) {
 			if (file.hasErrors()) {
 				failed = true;
@@ -92,6 +49,64 @@ public class ParsedFile {
 					logger.logParseException(error);
 				}
 			}
+		}
+
+		// We are considering all these files to be in the same package, so make
+		// a single PackageDefinition instance. If these files were in multiple
+		// packages, we'd need an instance for every package.
+		List<CompilingDefinition> definitions = new ArrayList<>();
+		List<CompilingExpansion> expansions = new ArrayList<>();
+		Map<ParsedFile, ParsedFileCompiler> definitionCompilers = new HashMap<>();
+
+		CompileContext context = new CompileContext(
+				registry.rootPackage,
+				pkg.getPackage(),
+				registry.collectExpansions(),
+				registry.collectGlobals());
+
+		for (ParsedFile file : files) {
+			// listDefinitions will merely register all definitions (classes,
+			// interfaces, functions ...) so they can later be available to
+			// the other files as well. It doesn't yet compile anything.
+			ParsedFileCompiler fileCompiler = new ParsedFileCompiler(context);
+			definitionCompilers.put(file, fileCompiler);
+
+			for (ParsedDefinition definition : file.definitions) {
+				definition.registerCompiling(definitions, expansions, pkg, fileCompiler, null);
+			}
+		}
+
+
+		ZSPackage rootPackage = registry.collectPackages();
+
+		definitions = sortTopologically(definitions);
+
+		for (ParsedFile file : files) {
+			ParsedFileCompiler fileCompiler = definitionCompilers.get(file);
+			for (ParsedImport import_ : file.imports) {
+				if (import_.isRelative()) {
+					TypeSymbol type = pkg.getPackage().getImport(import_.getPath(), 0);
+					fileCompiler.addImport(import_.getName(), type);
+				} else {
+					TypeSymbol type = registry.rootPackage.getImport(import_.getPath(), 0);
+					fileCompiler.addImport(import_.getName(), type);
+				}
+			}
+		}
+
+		for (CompilingExpansion expansion : expansions) {
+			context.addExpansion(expansion.getCompiling());
+		}
+		for (CompilingDefinition definition : definitions) {
+			if (!definition.isInner()) {
+				definition.linkTypes();
+			}
+		}
+		for (CompilingDefinition definition : definitions) {
+			definition.prepareMembers();
+		}
+		for (CompilingExpansion expansion : expansions) {
+			expansion.prepareMembers();
 		}
 
 		if (failed) {
@@ -105,28 +120,34 @@ public class ParsedFile {
 					definitions,
 					Collections.emptyList(),
 					registry.registry,
-					expansions,
+					expansions.stream().map(CompilingExpansion::getCompiling).collect(Collectors.toList()),
 					registry.getAnnotations(),
 					logger
 			);
 		}
-
-		// scripts will store all the script blocks encountered in the files
-		PrecompilationState precompiler = new PrecompilationState();
-		for (ParsedFile file : files) {
-			file.registerMembers(moduleContext, precompiler, rootPackage, pkg, expansions, globals, importErrors);
+		List<CompileException> errors = new ArrayList<>();
+		for (CompilingDefinition definition : definitions) {
+			definition.compileMembers(errors);
+		}
+		for (CompilingExpansion expansion : expansions) {
+			expansion.compileMembers(errors);
 		}
 
 		List<ScriptBlock> scripts = new ArrayList<>();
 		FunctionHeader scriptHeader = new FunctionHeader(BasicTypeID.VOID, parameters);
 		for (ParsedFile file : files) {
-			// compileCode will convert the parsed statements and expressions
-			// into semantic code. This semantic code can then be compiled
-			// to various targets.
-			file.compileCode(moduleContext, precompiler, rootPackage, pkg, expansions, scripts, globals, scriptHeader, logger, importErrors);
+			if (!file.statements.isEmpty() || file.postComment != null) {
+				StatementCompiler compiler = definitionCompilers.get(file).forScripts(scriptHeader);
+				List<Statement> statements = file.statements.stream()
+					.map(statement -> statement.compile(compiler))
+					.collect(Collectors.toList());
+				ScriptBlock block = new ScriptBlock(file.file, pkg.module, pkg.getPackage(), scriptHeader, statements);
+				block.setTag(WhitespacePostComment.class, file.postComment);
+				scripts.add(block);
+			}
 		}
 
-		for (CompileException error : importErrors.values()) {
+		for (CompileException error : errors) {
 			logger.logCompileException(error);
 		}
 		return new SemanticModule(
@@ -144,24 +165,58 @@ public class ParsedFile {
 				logger);
 	}
 
-	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, File file) throws ParseException {
-		return parse(compilingPackage, bracketParser, new FileSourceFile(file.getName(), file));
+	private static List<CompilingDefinition> sortTopologically(List<CompilingDefinition> definitions) {
+		List<CompilingDefinition> result = new ArrayList<>();
+		Set<TypeSymbol> visited = new HashSet<>();
+		Map<TypeSymbol, CompilingDefinition> definitionsByType = new HashMap<>();
+
+		for (CompilingDefinition definition : definitions) {
+			definitionsByType.put(definition.getDefinition(), definition);
+		}
+
+		for (CompilingDefinition definition : definitions) {
+			sortTopologically(result, definition, visited, definitionsByType);
+		}
+
+		return result;
 	}
 
-	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, String filename, String content) throws ParseException {
-		return parse(compilingPackage, bracketParser, new LiteralSourceFile(filename, content));
+	private static void sortTopologically(
+			List<CompilingDefinition> result,
+			CompilingDefinition definition,
+			Set<TypeSymbol> visited,
+			Map<TypeSymbol, CompilingDefinition> definitionsByType
+	) {
+		if (visited.contains(definition.getDefinition()))
+			return;
+
+		visited.add(definition.getDefinition());
+		for (TypeSymbol type : definition.getDependencies()) {
+			if (definitionsByType.containsKey(type)) {
+				sortTopologically(result, definitionsByType.get(type), visited, definitionsByType);
+			}
+		}
+		result.add(definition);
 	}
 
-	public static ParsedFile parse(CompilingPackage compilingPackage, BracketExpressionParser bracketParser, SourceFile file) throws ParseException {
+	public static ParsedFile parse(BracketExpressionParser bracketParser, File file) throws ParseException {
+		return parse(bracketParser, new FileSourceFile(file.getName(), file));
+	}
+
+	public static ParsedFile parse(BracketExpressionParser bracketParser, String filename, String content) throws ParseException {
+		return parse( bracketParser, new LiteralSourceFile(filename, content));
+	}
+
+	public static ParsedFile parse(BracketExpressionParser bracketParser, SourceFile file) throws ParseException {
 		try {
 			ZSTokenParser tokens = ZSTokenParser.create(file, bracketParser);
-			return parse(compilingPackage, tokens);
+			return parse(tokens);
 		} catch (IOException ex) {
 			throw new ParseException(new CodePosition(file, 0, 0, 0, 0), ex.getMessage());
 		}
 	}
 
-	public static ParsedFile parse(CompilingPackage compilingPackage, ZSTokenParser tokens) throws ParseException {
+	public static ParsedFile parse(ZSTokenParser tokens) throws ParseException {
 		ParsedFile result = new ParsedFile(tokens.getFile());
 
 		while (true) {
@@ -209,7 +264,7 @@ public class ParsedFile {
 			} else if ((tokens.optional(EOF)) != null) {
 				break;
 			} else {
-				ParsedDefinition definition = ParsedDefinition.parse(compilingPackage, position, modifiers, annotations, tokens, null);
+				ParsedDefinition definition = ParsedDefinition.parse(position, modifiers, annotations, tokens);
 				if (definition == null) {
 					try {
 						result.statements.add(ParsedStatement.parse(tokens, annotations));
@@ -234,110 +289,5 @@ public class ParsedFile {
 
 	public List<ParseException> getErrors() {
 		return errors;
-	}
-
-	public void listDefinitions(PackageDefinitions definitions) {
-		for (ParsedDefinition definition : this.definitions) {
-			definitions.add(definition.getCompiled());
-		}
-	}
-
-	public void registerTypes(
-			ModuleTypeResolutionContext moduleContext,
-			ZSPackage rootPackage,
-			CompilingPackage modulePackage, Map<String, CompileException> importErrors) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
-		loadImports(context, rootPackage, modulePackage, importErrors);
-
-		for (ParsedDefinition definition : this.definitions) {
-			if (definition.getName() != null)
-				definition.pkg.addType(definition.getName(), definition.getCompiling(context));
-		}
-	}
-
-	public void compileTypes(
-			ModuleTypeResolutionContext moduleContext,
-			ZSPackage rootPackage,
-			CompilingPackage modulePackage, Map<String, CompileException> importErrors) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
-		loadImports(context, rootPackage, modulePackage, importErrors);
-
-		for (ParsedDefinition definition : this.definitions) {
-			if (definition.getName() != null)
-				modulePackage.addType(definition.getName(), definition.getCompiling(context));
-		}
-
-		for (ParsedDefinition definition : this.definitions) {
-			definition.getCompiling(context).load();
-		}
-	}
-
-	public void registerMembers(
-			ModuleTypeResolutionContext moduleContext,
-			PrecompilationState precompiler,
-			ZSPackage rootPackage,
-			CompilingPackage modulePackage,
-			List<ExpansionDefinition> expansions,
-			Map<String, ISymbol> globals, Map<String, CompileException> importErrors) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
-		loadImports(context, rootPackage, modulePackage, importErrors);
-
-		FileScope scope = new FileScope(context, expansions, globals, precompiler);
-		for (ParsedDefinition definition : this.definitions) {
-			definition.registerMembers(scope, precompiler);
-		}
-	}
-
-	public void compileCode(
-			ModuleTypeResolutionContext moduleContext,
-			PrecompilationState precompiler,
-			ZSPackage rootPackage,
-			CompilingPackage modulePackage,
-			List<ExpansionDefinition> expansions,
-			List<ScriptBlock> scripts,
-			Map<String, ISymbol> globals,
-			FunctionHeader scriptHeader,
-			CompileExceptionLogger exceptionLogger,
-			Map<String, CompileException> importErrors) {
-		FileResolutionContext context = new FileResolutionContext(moduleContext, rootPackage, modulePackage);
-		loadImports(context, rootPackage, modulePackage, importErrors);
-
-		FileScope scope = new FileScope(context, expansions, globals, precompiler);
-		for (ParsedDefinition definition : this.definitions) {
-			try {
-				definition.compile(scope);
-			} catch (CompileException ex) {
-				exceptionLogger.logCompileException(ex);
-			}
-		}
-
-		if (!statements.isEmpty() || postComment != null) {
-			StatementScope statementScope = new GlobalScriptScope(scope, scriptHeader);
-			List<Statement> statements = new ArrayList<>();
-			for (ParsedStatement statement : this.statements) {
-				statements.add(statement.compile(statementScope));
-			}
-
-			ScriptBlock block = new ScriptBlock(file, modulePackage.module, modulePackage.getPackage(), scriptHeader, statements);
-			block.setTag(WhitespacePostComment.class, postComment);
-			scripts.add(block);
-		}
-	}
-
-	private void loadImports(FileResolutionContext context, ZSPackage rootPackage, CompilingPackage modulePackage, Map<String, CompileException> importErrors) {
-		for (ParsedImport importEntry : imports) {
-			HighLevelDefinition definition;
-			if (importEntry.isRelative()) {
-				definition = modulePackage.getImport(context, importEntry.getPath());
-			} else {
-				definition = rootPackage.getImport(importEntry.getPath(), 0);
-			}
-
-			if (definition == null)
-				importErrors.put(importEntry.toString(), new CompileException(importEntry.position, CompileExceptionCode.IMPORT_NOT_FOUND, "Could not find type " + importEntry.toString()));
-
-			if (definition != null)
-				context.addImport(importEntry.getName(), definition);
-		}
 	}
 }

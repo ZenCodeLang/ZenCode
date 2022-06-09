@@ -6,6 +6,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
@@ -45,7 +46,6 @@ public final class TypeMembers {
 	}
 
 	public boolean extendsOrImplements(TypeID other) {
-		other = other.getNormalized();
 		checkBoundaries:
 		if (this.type instanceof DefinitionTypeID && other instanceof DefinitionTypeID) {
 			DefinitionTypeID thisTypeId = (DefinitionTypeID) this.type;
@@ -55,19 +55,19 @@ public final class TypeMembers {
 				break checkBoundaries;
 			}
 
-			if (thisTypeId.definition.typeParameters.length != otherTypeId.typeArguments.length) {
+			if (thisTypeId.definition.getTypeParameters().length != otherTypeId.typeArguments.length) {
 				break checkBoundaries;
 			}
 
-			for (int i = 0; i < thisTypeId.definition.typeParameters.length; i++) {
+			for (int i = 0; i < thisTypeId.definition.getTypeParameters().length; i++) {
 				final TypeID type = otherTypeId.typeArguments[i];
 				if (type == BasicTypeID.UNDETERMINED) {
 					continue;
 				}
-				if (type instanceof InvalidTypeID && ((InvalidTypeID) type).code == CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE) {
+				if (type instanceof InvalidTypeID && ((InvalidTypeID) type).error.code == CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE) {
 					continue;
 				}
-				if (thisTypeId.definition.typeParameters[i].matches(cache, type)) {
+				if (thisTypeId.definition.getTypeParameters()[i].matches(cache, type)) {
 					continue;
 				}
 				break checkBoundaries;
@@ -75,7 +75,7 @@ public final class TypeMembers {
 			return true;
 		}
 
-		TypeID superType = type.getSuperType(cache.getRegistry());
+		TypeID superType = type.getSuperType();
 		if (superType != null) {
 			if (superType == other)
 				return true;
@@ -153,39 +153,6 @@ public final class TypeMembers {
 		}
 
 		return Optional.empty();
-	}
-
-	public TypeID union(TypeID other) {
-		other = other.getNormalized();
-		if (type == other)
-			return type;
-
-		if (this.canCastImplicit(other))
-			return other;
-		if (cache.get(other).canCastImplicit(type))
-			return type;
-
-
-		for (TypeMember<ImplementationMemberRef> implementation : this.implementations) {
-			final TypeID union = cache.get(implementation.member.implementsType).union(other);
-			if (union != null)
-				return union;
-		}
-
-		if (this.type instanceof ArrayTypeID && other instanceof ArrayTypeID) {
-			ArrayTypeID thisArray = (ArrayTypeID) this.type;
-			ArrayTypeID otherArray = (ArrayTypeID) other;
-
-			if (thisArray.dimension == otherArray.dimension) {
-				final TypeID union = cache.get(thisArray.elementType).union(otherArray.elementType);
-				if (union != null) {
-					return getTypeRegistry().getArray(union, thisArray.dimension);
-				}
-			}
-		}
-
-
-		return null;
 	}
 
 	public List<IDefinitionMember> getUnimplementedMembers(Set<IDefinitionMember> implemented) {
@@ -618,9 +585,9 @@ public final class TypeMembers {
 		return innerTypes.containsKey(name);
 	}
 
-	public DefinitionTypeID getInnerType(CodePosition position, GenericName name) throws CompileException {
+	public TypeID getInnerType(CodePosition position, GenericName name) {
 		if (!innerTypes.containsKey(name.name))
-			throw new CompileException(position, CompileExceptionCode.NO_SUCH_TYPE, "No such inner type in " + type + ": " + name.name);
+			return new InvalidTypeID(position, CompileErrors.noInnerType(type, name.name));
 
 		return innerTypes.get(name.name).instance(cache.getRegistry(), name.arguments, (DefinitionTypeID) type);
 	}

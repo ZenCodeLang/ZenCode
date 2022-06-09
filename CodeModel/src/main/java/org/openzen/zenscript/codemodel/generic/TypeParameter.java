@@ -32,9 +32,9 @@ public class TypeParameter extends Taggable {
 		return false;
 	}
 
-	public boolean matches(LocalMemberCache cache, TypeID type) {
+	public boolean matches(TypeID type) {
 		for (TypeParameterBound bound : bounds) {
-			if (!bound.matches(cache, type))
+			if (!bound.matches(type))
 				return false;
 		}
 

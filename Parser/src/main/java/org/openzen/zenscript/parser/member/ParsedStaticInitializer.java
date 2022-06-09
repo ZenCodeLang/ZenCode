@@ -17,8 +17,8 @@ public class ParsedStaticInitializer extends ParsedDefinitionMember {
 
 	private final StaticInitializerMember compiled;
 
-	public ParsedStaticInitializer(HighLevelDefinition definition, CodePosition position, ParsedAnnotation[] annotations, ParsedStatement body) {
-		super(definition, annotations);
+	public ParsedStaticInitializer(CodePosition position, ParsedAnnotation[] annotations, ParsedStatement body) {
+		super(annotations);
 
 		this.body = body;
 		compiled = new StaticInitializerMember(position, definition);

@@ -1,18 +1,17 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.expression.BinaryExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.OrOrExpression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ParsedExpressionOrOr extends ParsedExpression {
-	private final ParsedExpression left;
-	private final ParsedExpression right;
+	private final CompilableExpression left;
+	private final CompilableExpression right;
 
-	public ParsedExpressionOrOr(CodePosition position, ParsedExpression left, ParsedExpression right) {
+	public ParsedExpressionOrOr(CodePosition position, CompilableExpression left, CompilableExpression right) {
 		super(position);
 
 		this.left = left;
@@ -20,14 +19,32 @@ public class ParsedExpressionOrOr extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		Expression cLeft = left.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL);
-		Expression cRight = right.compile(scope.withHints(BasicTypeID.HINT_BOOL)).eval().castImplicit(position, scope, BasicTypeID.BOOL);
-		return new OrOrExpression(position, cLeft, cRight);
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, left.compile(compiler), right.compile(compiler));
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return left.hasStrongType() && right.hasStrongType();
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression left;
+		private final CompilingExpression right;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression left, CompilingExpression right) {
+			super(compiler, position);
+
+			this.left = left;
+			this.right = right;
+		}
+
+		@Override
+		public Expression eval() {
+			return compiler.at(position).binary(
+					BinaryExpression.Operator.OR_OR,
+					left.cast(cast(BasicTypeID.BOOL)).value,
+					right.cast(cast(BasicTypeID.BOOL)).value);
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
 	}
 }

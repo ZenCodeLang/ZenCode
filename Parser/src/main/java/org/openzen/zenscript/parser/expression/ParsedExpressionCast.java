@@ -1,15 +1,10 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.InferredType;
-import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.compiler.expression.TypeMatch;
-import org.openzen.zenscript.compiler.types.ResolvedType;
-import org.openzen.zenscript.compiler.expression.CompilingExpression;
-import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
@@ -17,12 +12,14 @@ import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
 import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
+import java.util.Optional;
+
 public class ParsedExpressionCast extends ParsedExpression {
-	private final ParsedExpression value;
+	private final CompilableExpression value;
 	private final IParsedType type;
 	private final boolean optional;
 
-	public ParsedExpressionCast(CodePosition position, ParsedExpression value, IParsedType type, boolean optional) {
+	public ParsedExpressionCast(CodePosition position, CompilableExpression value, IParsedType type, boolean optional) {
 		super(position);
 
 		this.value = value;
@@ -36,9 +33,9 @@ public class ParsedExpressionCast extends ParsedExpression {
 	}
 
 	@Override
-	public ParsedFunctionHeader toLambdaHeader() throws ParseException {
+	public Optional<CompilableLambdaHeader> toLambdaHeader() {
 		if (optional)
-			throw new ParseException(position, "Not a valid lambda header");
+			return Optional.empty();
 
 		ParsedFunctionHeader header = value.toLambdaHeader();
 		if (header.returnType != ParsedTypeBasic.UNDETERMINED)
@@ -72,22 +69,13 @@ public class ParsedExpressionCast extends ParsedExpression {
 		}
 
 		@Override
-		public Expression as(TypeID type) {
-			Expression value = this.value.as(type);
-			ResolvedType resolvedType = compiler.resolve(this.type);
-			return resolvedType.findExplicitCast(type)
-					.map(cast -> cast.apply(value, optional))
-					.orElseGet(() -> compiler.at(position, type).invalid(CompileExceptionCode.INVALID_CAST, "Cannot cast " + value.type + " to " + type));
+		public Expression eval() {
+			return value.cast(new CastedEval(compiler, position, type, true, optional)).value;
 		}
 
 		@Override
-		public TypeMatch matches(TypeID returnType) {
-			return compiler.matchType(type, returnType);
-		}
-
-		@Override
-		public InferredType inferType() {
-			return InferredType.success(type);
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
 		}
 	}
 }

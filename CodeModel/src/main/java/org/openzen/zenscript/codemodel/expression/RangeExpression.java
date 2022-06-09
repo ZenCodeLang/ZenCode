@@ -1,8 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class RangeExpression extends Expression {
@@ -38,15 +36,5 @@ public class RangeExpression extends Expression {
 		Expression tFrom = from.transform(transformer);
 		Expression tTo = to.transform(transformer);
 		return tFrom == from && tTo == to ? this : new RangeExpression(position, type, tFrom, tTo, thrownType);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		TypeID baseType = ((RangeTypeID) type).baseType;
-		return new RangeExpression(
-				position,
-				type.getNormalized(),
-				from.normalize(scope).castImplicit(position, scope, baseType),
-				to.normalize(scope).castImplicit(position, scope, baseType));
 	}
 }

@@ -58,11 +58,6 @@ public class StaticInitializerMember extends DefinitionMember {
 	}
 
 	@Override
-	public void normalize(TypeScope scope) {
-		body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
-	}
-
-	@Override
 	public boolean isAbstract() {
 		return false;
 	}

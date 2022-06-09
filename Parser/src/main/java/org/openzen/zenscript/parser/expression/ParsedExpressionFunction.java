@@ -1,18 +1,18 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.FunctionExpression;
 import org.openzen.zenscript.codemodel.expression.InvalidExpression;
 import org.openzen.zenscript.codemodel.expression.LambdaClosure;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.LambdaScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -20,21 +20,16 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.InferredType;
-import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.compiler.expression.CompilingExpression;
-import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
-import org.openzen.zenscript.compiler.expression.TypeMatch;
-import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class ParsedExpressionFunction extends ParsedExpression {
-	public final ParsedFunctionHeader header;
+	public final CompilableLambdaHeader header;
 	public final ParsedFunctionBody body;
 
-	public ParsedExpressionFunction(CodePosition position, ParsedFunctionHeader header, ParsedFunctionBody body) {
+	public ParsedExpressionFunction(CodePosition position, CompilableLambdaHeader header, ParsedFunctionBody body) {
 		super(position);
 
 		this.header = header;
@@ -43,7 +38,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 
 	@Override
 	public CompilingExpression compile(ExpressionCompiler compiler) {
-		FunctionHeader definedHeader = header.compile(scope);
+		FunctionHeader definedHeader = header.compile(compiler.types());
 		FunctionHeader header = definedHeader;
 		FunctionTypeID type = null;
 		for (TypeID hint : scope.hints) {
@@ -90,8 +85,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 			// perform type parameter inference
 			TypeID returnType = statements.getReturnType();
 			if (returnType != null) {
-				Map<TypeParameter, TypeID> inferredTypes = returnType.inferTypeParameters(scope.getMemberCache(), genericHeader
-						.getReturnType());
+				Map<TypeParameter, TypeID> inferredTypes = returnType.inferTypeParameters(genericHeader.getReturnType());
 				if (inferredTypes == null) {
 					throw new CompileException(position, CompileExceptionCode.TYPE_ARGUMENTS_NOT_INFERRABLE, "Could not infer generic type parameters");
 				}
@@ -128,32 +122,24 @@ public class ParsedExpressionFunction extends ParsedExpression {
 		private final FunctionHeader header;
 		private final CompilingStatement body;
 
-		public Compiling(FunctionHeader header, CompilingStatement body) {
+		public Compiling(ExpressionCompiler compiler, CodePosition position, FunctionHeader header, CompilingStatement body) {
+			super(compiler, position);
 			this.header = header;
 			this.body = body;
 		}
 
 		@Override
-		public Expression as(TypeID type) {
-
+		public Expression eval() {
+			ExpressionCompiler functionCompiler = compiler.forFunction(header);
 		}
 
 		@Override
-		public TypeMatch matches(TypeID returnType) {
-			if (returnType.isOptional())
-				returnType = returnType.withoutOptional();
-
-			return returnType.asFunction()
-					.map(function -> compiler.matchHeader(header, function.header))
-					.orElse(TypeMatch.NONE);
-		}
-
-		@Override
-		public InferredType inferType() {
-			if (header.isComplete()) {
-				return InferredType.success(compiler.types().functionOf(header));
-			} else {
-				return InferredType.failure(CompileExceptionCode.INCOMPLETE_HEADER, "Header incomplete: " + header.toString());
+		public CastedExpression cast(CastedEval cast) {
+			TypeID type = cast.type.simplified();
+			Optional<FunctionTypeID> maybeFunction = type.asFunction();
+			if (maybeFunction.isPresent()) {
+				ExpressionCompiler functionCompiler = compiler.forFunction(maybeFunction.get().header);
+				Statement body = this.body.
 			}
 		}
 	}

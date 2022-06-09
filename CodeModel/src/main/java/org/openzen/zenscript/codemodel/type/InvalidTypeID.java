@@ -1,21 +1,21 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.List;
 
 public class InvalidTypeID implements TypeID {
 	public final CodePosition position;
-	public final CompileExceptionCode code;
-	public final String message;
+	public final CompileError error;
 
-	public InvalidTypeID(CodePosition position, CompileExceptionCode code, String message) {
+	public InvalidTypeID(CodePosition position, CompileError error) {
 		this.position = position;
-		this.code = code;
-		this.message = message;
+		this.error = error;
 	}
 
 	@Override
@@ -39,8 +39,8 @@ public class InvalidTypeID implements TypeID {
 	}
 
 	@Override
-	public TypeID getNormalized() {
-		return this;
+	public ResolvedType resolve() {
+		return new MemberSet();
 	}
 
 	@Override

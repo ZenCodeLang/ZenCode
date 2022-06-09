@@ -1,59 +1,68 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.TryRethrowAsExceptionExpression;
-import org.openzen.zenscript.codemodel.expression.TryRethrowAsResultExpression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.ResultTypeSymbol;
+
+import java.util.Optional;
 
 public class ParsedTryRethrowExpression extends ParsedExpression {
-	private final ParsedExpression source;
+	private final CompilableExpression source;
 
-	public ParsedTryRethrowExpression(CodePosition position, ParsedExpression source) {
+	public ParsedTryRethrowExpression(CodePosition position, CompilableExpression source) {
 		super(position);
 
 		this.source = source;
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		HighLevelDefinition result = scope.getTypeRegistry().stdlib.getDefinition("Result");
-
-		Expression cSource = source.compile(scope).eval();
-		if (cSource.thrownType != null) {
-			// expression throws
-			if (scope.getFunctionHeader() == null || scope.getFunctionHeader().thrownType != null) {
-				// rethrow as exception
-				return new TryRethrowAsExceptionExpression(position, cSource.type, cSource, cSource.thrownType);
-			} else {
-				// rethrow as result
-				TypeID resultType = scope.getTypeRegistry().getForDefinition(result, cSource.type, cSource.thrownType);
-				return new TryRethrowAsResultExpression(position, resultType, cSource);
-			}
-		} else {
-			// expression
-			if (cSource.type instanceof DefinitionTypeID) {
-				DefinitionTypeID sourceType = (DefinitionTypeID) cSource.type;
-				if (sourceType.definition == result) {
-					return new TryRethrowAsResultExpression(position, sourceType.typeArguments[0], cSource);
-				}
-			}
-
-			if (scope.getFunctionHeader() == null)
-				throw new CompileException(position, CompileExceptionCode.TRY_RETHROW_NOT_A_RESULT, "type is not a Result type, cannot convert");
-
-			throw new CompileException(position, CompileExceptionCode.TRY_RETHROW_NOT_A_RESULT, "this expression doesn't throw an exception nor returns a result");
-		}
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, source.compile(compiler));
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return true;
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression value;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value) {
+			super(compiler, position);
+
+			this.value = value;
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			if (compiler.getThrowableType().isPresent()) {
+				TypeID result = compiler.types().definitionOf(ResultTypeSymbol.INSTANCE, cast.type, compiler.getThrowableType().get());
+				CastedExpression original = value.cast(cast(result));
+				return cast.of(original.level, compiler.at(position).tryRethrowAsException(original.value, original.value.type));
+			} else {
+				Optional<DefinitionTypeID> maybeResult = cast.type.simplified().asDefinition();
+				if (!maybeResult.isPresent() || maybeResult.get().definition != ResultTypeSymbol.INSTANCE)
+					return cast.invalid(CompileErrors.tryRethrowRequiresResult());
+
+				DefinitionTypeID result = maybeResult.get();
+				CastedExpression original = value.cast(cast(result));
+				return cast.of(original.level, compiler.at(position).tryRethrowAsResult(original.value, result.typeArguments[0]));
+			}
+		}
+
+		@Override
+		public Expression eval() {
+			Expression original = value.eval();
+			if (compiler.getThrowableType().isPresent()) {
+				return compiler.at(position).tryRethrowAsException(original, original.type);
+			} else {
+				Optional<DefinitionTypeID> maybeResult = original.type.simplified().asDefinition();
+				if (!maybeResult.isPresent() || maybeResult.get().definition != ResultTypeSymbol.INSTANCE)
+					return compiler.at(position).invalid(CompileErrors.tryRethrowRequiresResult());
+
+				DefinitionTypeID result = maybeResult.get();
+				return compiler.at(position).tryRethrowAsResult(cast(result).of(original).value, result.typeArguments[0]);
+			}
+		}
 	}
 }

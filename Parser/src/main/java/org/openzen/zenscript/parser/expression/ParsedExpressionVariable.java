@@ -1,30 +1,16 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.expression.switchvalue.EnumConstantSwitchValue;
+import org.openzen.zenscript.codemodel.expression.switchvalue.ErrorSwitchValue;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
-import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
-import org.openzen.zenscript.compiler.InferredType;
-import org.openzen.zenscript.compiler.ResolvedCallable;
-import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.compiler.expression.TypeMatch;
-import org.openzen.zenscript.compiler.types.ResolvedType;
-import org.openzen.zenscript.compiler.expression.CompilingExpression;
-import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
-import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
-import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.type.IParsedType;
-import org.openzen.zenscript.parser.type.ParsedTypeBasic;
 
 import java.util.*;
 
@@ -43,11 +29,38 @@ public class ParsedExpressionVariable extends ParsedExpression {
 	public CompilingExpression compile(ExpressionCompiler compiler) {
 		TypeID[] typeArguments = IParsedType.compileTypes(this.typeArguments, compiler.types());
 
-		Optional<CompilingExpression> resolved = compiler.resolve(new GenericName(name, typeArguments));
+		Optional<CompilingExpression> resolved = compiler.resolve(position, new GenericName(name, typeArguments));
 		return new Compiling(compiler, position, name, resolved.orElse(null));
 	}
 
-	private static class Compiling extends AbstractCompilingExpression implements ResolvedCallable {
+	@Override
+	public CompilingExpression compileKey(ExpressionCompiler compiler) {
+		if (!typeArguments.isEmpty())
+			return compiler.invalid(position, CompileErrors.associativeKeyCannotHaveTypeParameters());
+
+		return new CompilingKey(compiler, position, name);
+	}
+
+	private static class CompilingKey extends AbstractCompilingExpression {
+		private final String name;
+
+		public CompilingKey(ExpressionCompiler compiler, CodePosition position, String name) {
+			super(compiler, position);
+			this.name = name;
+		}
+
+		@Override
+		public Expression eval() {
+			return new ConstantStringExpression(position, name);
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
+	}
+
+	private static class Compiling extends AbstractCompilingExpression implements StaticCallable {
 		private final String name;
 		private final CompilingExpression resolved; // can be null
 
@@ -58,33 +71,28 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		}
 
 		@Override
-		public Expression as(TypeID type) {
+		public Expression eval() {
 			if (resolved != null) {
-				return resolved.as(type);
+				return resolved.eval();
+			} else {
+				return compiler.at(position).invalid(CompileErrors.noSuchVariable(compiler, name));
+			}
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			TypeID type = cast.type.simplified();
+			if (resolved != null) {
+				return resolved.cast(cast);
 			} else {
 				return compiler.resolve(type).getContextMember(name)
-						.map(member -> member.as(type))
-						.orElseGet(() -> compiler.at(position, type).invalid(
-								CompileExceptionCode.NO_SUCH_MEMBER,
-								"Could not find context member " + name + " in " + type));
+						.map(member -> member.cast(cast))
+						.orElseGet(() -> cast.invalid(CompileErrors.noContextMemberInType(type, name)));
 			}
 		}
 
 		@Override
-		public TypeMatch matches(TypeID returnType) {
-			if (resolved != null) {
-				return resolved.matches(returnType);
-			} else {
-				ResolvedType resolved = compiler.resolve(returnType);
-				if (resolved.getContextMember(name).isPresent())
-					return TypeMatch.EXACT;
-				else
-					return TypeMatch.NONE;
-			}
-		}
-
-		@Override
-		public Optional<ResolvedCallable> call() {
+		public Optional<StaticCallable> call() {
 			if (resolved == null) {
 				return Optional.of(this);
 			} else {
@@ -93,33 +101,26 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		}
 
 		@Override
-		public Expression assign(Expression value) {
+		public CompilingExpression assign(CompilingExpression value) {
 			if (resolved != null) {
 				return resolved.assign(value);
 			} else {
-				return compiler.at(position, value.type).invalid(CompileExceptionCode.UNDEFINED_VARIABLE, "No such variable: " + name);
+				return compiler.invalid(position, CompileErrors.noSuchVariable(compiler, name));
 			}
 		}
 
 		@Override
-		public InferredType inferType() {
+		public CompilingExpression getMember(CodePosition position, GenericName name) {
 			if (resolved != null) {
-				return resolved.inferType();
+				return resolved.getMember(position, name);
 			} else {
-				return InferredType.failure(CompileExceptionCode.UNDEFINED_VARIABLE, generateNotFoundMessage());
+				return compiler.invalid(position, CompileErrors.noSuchVariable(compiler, this.name));
 			}
 		}
 
-		private String generateNotFoundMessage() {
-			StringBuilder builder = new StringBuilder("No such symbol: " + name);
-			List<String> possibleImports = compiler.findCandidateImports(name);
-			if(!possibleImports.isEmpty()){
-				builder.append("\nPossible imports:");
-				possibleImports.forEach(name -> {
-					builder.append("\n").append(name);
-				});
-			}
-			return builder.toString();
+		@Override
+		public Optional<String> asStringKey() {
+			return Optional.of(name);
 		}
 
 		// ###########################################
@@ -128,66 +129,45 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		// ###########################################
 
 		@Override
-		public Expression call(TypeID returnType, CompilingExpression... arguments) {
-			ResolvedType resolvedType = compiler.resolve(returnType);
+		public Expression call(ExpressionBuilder builder, CompilingExpression... arguments) {
+			return compiler.at(position).invalid(CompileErrors.noSuchVariable(compiler, name));
+		}
+
+		@Override
+		public CastedExpression casted(ExpressionBuilder builder, CastedEval cast, CompilingExpression... arguments) {
+			TypeID type = cast.type.simplified();
+			ResolvedType resolvedType = compiler.resolve(type);
 			return resolvedType.getContextMember(name)
 					.map(member -> member.call()
-								.map(call -> call.call(returnType, arguments))
-								.orElseGet(() -> compiler.at(position, returnType).invalid(
-										CompileExceptionCode.CALL_NO_VALID_METHOD,
-										"Cannot call this expression"))
-					)
-					.orElseGet(() -> compiler.at(position, returnType).invalid(
-							CompileExceptionCode.UNDEFINED_VARIABLE,
-							"No such variable: " + name));
+							.map(c -> c.casted(compiler.at(position), cast, arguments))
+							.orElseGet(() -> cast.invalid(CompileErrors.cannotCall())))
+					.orElseGet(() -> cast.invalid(CompileErrors.noContextMemberInType(type, name)));
 		}
 
 		@Override
-		public TypeMatch matches(TypeID returnType, CompilingExpression... arguments) {
-			ResolvedType resolvedType = compiler.resolve(returnType);
-			return resolvedType.getContextMember(name).isPresent() ? TypeMatch.EXACT : TypeMatch.NONE;
-		}
-
-		@Override
-		public InferredType inferReturnType(CompilingExpression... arguments) {
-			return InferredType.failure(CompileExceptionCode.UNDEFINED_VARIABLE, "No such variable: " + name);
+		public Optional<FunctionHeader> getSingleHeader() {
+			return Optional.empty();
 		}
 	}
 
 	@Override
-	public Expression compileKey(ExpressionCompiler compiler, TypeID type) {
-		return new ConstantStringExpression(position, name);
-	}
-
-	@Override
-	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
-		TypeMembers members = scope.getTypeMembers(type);
-		if (type.isEnum()) {
-			EnumConstantMember member = members.getEnumMember(name);
-			if (member == null)
-				throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Enum member does not exist: " + name);
-
-			return new EnumConstantSwitchValue(member);
-		} else if (type.isVariant()) {
-			VariantOptionRef option = members.getVariantOption(name);
-			if (option == null)
-				throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "Variant option does not exist: " + name);
-			if (option.types.length > 0)
-				throw new CompileException(position, CompileExceptionCode.MISSING_VARIANT_CASEPARAMETERS, "Variant case is missing parameters");
-
-			return new VariantOptionSwitchValue(option, new String[0]);
+	public SwitchValue asSwitchValue(TypeID type, ExpressionCompiler compiler) {
+		ResolvedType resolved = compiler.resolve(type);
+		Optional<ResolvedType.SwitchMember> switchMember = resolved.findSwitchMember(name);
+		if (switchMember.isPresent()) {
+			return switchMember.get().toSwitchValue(new String[0]);
 		} else {
-			throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
+			return new ErrorSwitchValue(position, CompileErrors.invalidSwitchCaseExpression());
 		}
 	}
 
 	@Override
-	public ParsedFunctionHeader toLambdaHeader() {
-		return new ParsedFunctionHeader(position, Collections.singletonList(toLambdaParameter()), ParsedTypeBasic.UNDETERMINED);
+	public Optional<CompilableLambdaHeader> asLambdaHeader() {
+		return Optional.of(new CompilableLambdaHeader(BasicTypeID.UNDETERMINED, asLambdaHeaderParameter().get()));
 	}
 
 	@Override
-	public ParsedFunctionParameter toLambdaParameter() {
-		return new ParsedFunctionParameter(ParsedAnnotation.NONE, name, ParsedTypeBasic.UNDETERMINED, null, false);
+	public Optional<CompilableLambdaHeader.Parameter> asLambdaHeaderParameter() {
+		return Optional.of(new CompilableLambdaHeader.Parameter(name, BasicTypeID.UNDETERMINED));
 	}
 }

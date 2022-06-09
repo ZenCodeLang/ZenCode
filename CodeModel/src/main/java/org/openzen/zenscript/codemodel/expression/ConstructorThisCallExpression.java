@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -36,10 +35,5 @@ public class ConstructorThisCallExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
 		return tArguments == arguments ? this : new ConstructorThisCallExpression(position, objectType, constructor, tArguments);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new ConstructorThisCallExpression(position, objectType, constructor, arguments.normalize(position, scope, constructor.getHeader()));
 	}
 }

@@ -5,7 +5,6 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeContext;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 
 public class InvalidDefinitionAnnotation implements DefinitionAnnotation {
@@ -31,12 +30,12 @@ public class InvalidDefinitionAnnotation implements DefinitionAnnotation {
 	}
 
 	@Override
-	public void apply(HighLevelDefinition definition, BaseScope scope) {
+	public void apply(HighLevelDefinition definition) {
 
 	}
 
 	@Override
-	public void applyOnSubtype(HighLevelDefinition definition, BaseScope scope) {
+	public void applyOnSubtype(HighLevelDefinition definition) {
 
 	}
 

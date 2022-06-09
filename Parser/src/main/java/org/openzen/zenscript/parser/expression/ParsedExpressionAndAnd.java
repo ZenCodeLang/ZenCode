@@ -1,24 +1,20 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.BinaryExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.compiler.expression.CompilingExpression;
-import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
-import org.openzen.zenscript.compiler.InferredType;
-import org.openzen.zenscript.compiler.expression.TypeMatch;
 
 public class ParsedExpressionAndAnd extends ParsedExpression {
-	private final ParsedExpression left;
-	private final ParsedExpression right;
+	private final CompilableExpression left;
+	private final CompilableExpression right;
 
 	public ParsedExpressionAndAnd(
 			CodePosition position,
-			ParsedExpression left,
-			ParsedExpression right) {
+			CompilableExpression left,
+			CompilableExpression right) {
 		super(position);
 
 		this.left = left;
@@ -41,21 +37,15 @@ public class ParsedExpressionAndAnd extends ParsedExpression {
 		}
 
 		@Override
-		public Expression as(TypeID type) {
-			return compiler.at(position, type).binary(
-					BinaryExpression.Operator.AND_AND,
-					left.as(BasicTypeID.BOOL),
-					right.as(BasicTypeID.BOOL));
+		public Expression eval() {
+			return compiler.at(position).binary(BinaryExpression.Operator.AND_AND,
+					left.cast(cast(BasicTypeID.BOOL)).value,
+					right.cast(cast(BasicTypeID.BOOL)).value);
 		}
 
 		@Override
-		public TypeMatch matches(TypeID returnType) {
-			return compiler.matchType(BasicTypeID.BOOL, returnType);
-		}
-
-		@Override
-		public InferredType inferType() {
-			return InferredType.success(BasicTypeID.BOOL);
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
 		}
 	}
 }

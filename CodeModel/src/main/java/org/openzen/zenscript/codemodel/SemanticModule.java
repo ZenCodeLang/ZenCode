@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SemanticModule {
+
 	public static final SemanticModule[] NONE = new SemanticModule[0];
 
 	public final String name;
@@ -85,7 +86,6 @@ public class SemanticModule {
 
 		for (HighLevelDefinition definition : definitions.getAll()) {
 			annotationProcessor.process(definition);
-			definition.normalize(fileScope);
 		}
 
 		return new SemanticModule(

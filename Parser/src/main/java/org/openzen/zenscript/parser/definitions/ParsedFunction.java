@@ -1,97 +1,117 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.CompilingType;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.FunctionScope;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.ParsedDefinition;
-import org.openzen.zenscript.parser.PrecompilationState;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.openzen.zenscript.lexer.ZSTokenType.T_IDENTIFIER;
 
 public class ParsedFunction extends ParsedDefinition {
 	private final ParsedFunctionHeader header;
 	private final ParsedFunctionBody body;
-	private final FunctionDefinition compiled;
+	private final String name;
 
-	private ParsedFunction(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, ParsedFunctionHeader header, ParsedFunctionBody body, HighLevelDefinition outerDefinition) {
-		super(position, modifiers, pkg, annotations);
+	private ParsedFunction(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, ParsedFunctionHeader header, ParsedFunctionBody body) {
+		super(position, modifiers, annotations);
 
 		this.header = header;
 		this.body = body;
-
-		compiled = new FunctionDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
+		this.name = name;
 	}
 
 	public static ParsedFunction parseFunction(
-			CompilingPackage pkg,
 			CodePosition position,
 			int modifiers,
 			ParsedAnnotation[] annotations,
-			ZSTokenParser parser,
-			HighLevelDefinition outerDefinition) throws ParseException {
+			ZSTokenParser parser
+	) throws ParseException {
 		String name = parser.required(T_IDENTIFIER, "identifier expected").content;
 		ParsedFunctionHeader header = ParsedFunctionHeader.parse(parser);
 		ParsedFunctionBody body = ParsedStatement.parseFunctionBody(parser);
-		return new ParsedFunction(pkg, position, modifiers, annotations, name, header, body, outerDefinition);
+		return new ParsedFunction(position, modifiers, annotations, name, header, body);
 	}
 
 	@Override
-	public HighLevelDefinition getCompiled() {
-		return compiled;
+	public void registerCompiling(
+		List<CompilingDefinition> definitions,
+		List<CompilingExpansion> expansions,
+		CompilingPackage pkg,
+		DefinitionCompiler compiler,
+		CompilingDefinition outer
+	) {
+		FunctionDefinition compiled = new FunctionDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
+		Compiling compiling = new Compiling(compiler, compiled, outer != null);
+		definitions.add(compiling);
 	}
 
-	@Override
-	public void linkTypes(TypeResolutionContext context) {
-		if (compiled.header == null)
-			compiled.setHeader(context.getTypeRegistry(), header.compile(context));
-	}
+	private class Compiling implements CompilingDefinition {
+		private final DefinitionCompiler compiler;
+		private final FunctionDefinition compiled;
+		private final boolean inner;
 
-	@Override
-	public void registerMembers(BaseScope scope, PrecompilationState state) {
-
-	}
-
-	@Override
-	public void compile(BaseScope scope) {
-		FunctionScope innerScope = new FunctionScope(position, scope, compiled.header);
-		compiled.setCode(body.compile(innerScope, compiled.header));
-
-		if (compiled.header.getReturnType() == BasicTypeID.UNDETERMINED)
-			compiled.header.setReturnType(compiled.caller.body.getReturnType());
-	}
-
-	@Override
-	public CompilingType getCompiling(TypeResolutionContext context) {
-		return new Compiling(context);
-	}
-
-	private class Compiling implements CompilingType {
-		private final TypeResolutionContext context;
-
-		public Compiling(TypeResolutionContext context) {
-			this.context = context;
+		public Compiling(DefinitionCompiler compiler, FunctionDefinition compiled, boolean inner) {
+			this.compiler = compiler;
+			this.compiled = compiled;
+			this.inner = inner;
 		}
 
 		@Override
-		public CompilingType getInner(String name) {
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public TypeSymbol getDefinition() {
+			return compiled;
+		}
+
+		@Override
+		public boolean isInner() {
+			return inner;
+		}
+
+		@Override
+		public void linkTypes() {
+			if (compiled.header == null)
+				compiled.setHeader(compiler.types(), header.compile(compiler.types()));
+		}
+
+		@Override
+		public Set<TypeSymbol> getDependencies() {
 			return null;
 		}
 
 		@Override
-		public HighLevelDefinition load() {
-			linkTypes(context);
-			return compiled;
+		public void prepareMembers() {
+
+		}
+
+		@Override
+		public void compileMembers(List<CompileException> errors) {
+			StatementCompiler compiler = this.compiler.forMembers(compiled).forMethod(compiled.header);
+			compiled.setCode(body.compile(compiler, compiled.header));
+
+			if (compiled.header.getReturnType() == BasicTypeID.UNDETERMINED)
+				compiled.header.setReturnType(compiled.caller.body.getReturnType());
+		}
+
+		@Override
+		public Optional<CompilingDefinition> getInner(String name) {
+			return Optional.empty();
 		}
 	}
 }

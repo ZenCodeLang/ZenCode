@@ -1,17 +1,16 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 
 public class ParsedExpressionPostCall extends ParsedExpression {
-	private final ParsedExpression value;
+	private final CompilableExpression value;
 	private final OperatorType operator;
 
-	public ParsedExpressionPostCall(CodePosition position, ParsedExpression value, OperatorType operator) {
+	public ParsedExpressionPostCall(CodePosition position, CompilableExpression value, OperatorType operator) {
 		super(position);
 
 		this.value = value;
@@ -19,13 +18,32 @@ public class ParsedExpressionPostCall extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		Expression cValue = value.compile(scope).eval();
-		return scope.getTypeMembers(cValue.type).getOrCreateGroup(operator).callPostfix(position, scope, cValue);
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, value.compile(compiler), operator);
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return value.hasStrongType();
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression value;
+		private final OperatorType operator;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value, OperatorType operator) {
+			super(compiler, position);
+
+			this.value = value;
+			this.operator = operator;
+		}
+
+		@Override
+		public Expression eval() {
+			Expression value = this.value.eval();
+			return compiler.resolve(value.type).findOperator(operator)
+					.map(operator -> operator.callPostfix(compiler.at(position), value))
+					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noOperatorInType(value.type, operator)));
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
 	}
 }

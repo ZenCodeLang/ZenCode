@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
@@ -71,8 +70,8 @@ public class OperatorMember extends FunctionalMember {
 		return overrides;
 	}
 
-	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {
+	public void setOverrides(FunctionalMemberRef overrides) {
 		this.overrides = overrides;
-		header = header.inferFromOverride(registry, overrides.getHeader());
+		header = header.inferFromOverride(overrides.getHeader());
 	}
 }

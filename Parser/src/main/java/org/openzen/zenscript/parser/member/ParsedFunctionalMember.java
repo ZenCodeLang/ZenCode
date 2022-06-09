@@ -5,7 +5,12 @@ import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompilingMember;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.scope.FunctionScope;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -17,36 +22,28 @@ import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	protected final CodePosition position;
 	protected final int modifiers;
-	protected final ParsedImplementation implementation;
 	protected final ParsedFunctionBody body;
-	private boolean isCompiled = false;
 
 	public ParsedFunctionalMember(
 			CodePosition position,
-			HighLevelDefinition definition,
-			ParsedImplementation implementation,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			ParsedFunctionBody body) {
-		super(definition, annotations);
+		super(annotations);
 
-		this.implementation = implementation;
 		this.position = position;
 		this.modifiers = modifiers;
 		this.body = body;
 	}
 
-	@Override
-	public abstract FunctionalMember getCompiled();
-
-	protected void inferHeaders(BaseScope scope) throws CompileException {
+	protected void inferHeaders(MemberCompiler compiler) throws CompileException {
 		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(scope, implementation.getCompiled().type);
+			fillOverride(compiler, implementation.getCompiled().type);
 		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
 			if (definition.getSuperType() == null)
 				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
 
-			fillOverride(scope, definition.getSuperType());
+			fillOverride(compiler, definition.getSuperType());
 		}
 
 		if (getCompiled() == null || getCompiled().header == null)
@@ -54,16 +51,12 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public final void compile(BaseScope scope) throws CompileException {
-		if (isCompiled)
-			return;
-		isCompiled = true;
+	public final CompilingMember compile(CompilingDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
+		inferHeaders(compiler);
 
-		inferHeaders(scope);
-
-		FunctionScope innerScope = new FunctionScope(position, scope, getCompiled().header);
-		getCompiled().annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
-		getCompiled().setBody(body.compile(innerScope, getCompiled().header));
+		StatementCompiler statementCompiler = compiler.forMethod(getCompiled().header);
+		getCompiled().annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), compiler);
+		getCompiled().setBody(body.compile(statementCompiler, getCompiled().header));
 
 		if (getCompiled().header.getReturnType() == BasicTypeID.UNDETERMINED) {
 			if (getCompiled().body == null)
@@ -78,5 +71,5 @@ public abstract class ParsedFunctionalMember extends ParsedDefinitionMember {
 		}
 	}
 
-	protected abstract void fillOverride(TypeScope scope, TypeID baseType) throws CompileException;
+	protected abstract void fillOverride(MemberCompiler compiler, TypeID baseType) throws CompileException;
 }

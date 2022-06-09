@@ -3,6 +3,7 @@ package org.openzen.zenscript.codemodel.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -14,7 +15,7 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
-public class SetterMember extends PropertyMember {
+public class SetterMember extends PropertyMember implements MethodSymbol {
 	public final String name;
 	public Statement body;
 	public FunctionParameter parameter;
@@ -84,12 +85,6 @@ public class SetterMember extends PropertyMember {
 			result |= Modifiers.INTERNAL;
 
 		return result;
-	}
-
-	@Override
-	public void normalize(TypeScope scope) {
-		if (body != null)
-			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}
 
 	@Override

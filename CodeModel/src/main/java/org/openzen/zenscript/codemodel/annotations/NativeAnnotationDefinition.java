@@ -1,9 +1,12 @@
 package org.openzen.zenscript.codemodel.annotations;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -18,6 +21,7 @@ import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class NativeAnnotationDefinition implements AnnotationDefinition {
 	public static final NativeAnnotationDefinition INSTANCE = new NativeAnnotationDefinition();
@@ -61,15 +65,23 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	@Override
 	public MemberAnnotation createForMember(CodePosition position, CallArguments arguments) {
 		Expression value = arguments.arguments[0];
-		String constant = value.evaluateStringConstant();
-		return new NativeMemberAnnotation(constant);
+		Optional<String> constant = value.evaluate().flatMap(CompileTimeConstant::asString).map(c -> c.value);
+		if (constant.isPresent()) {
+			return new NativeMemberAnnotation(constant.get());
+		} else {
+			return new InvalidMemberAnnotation(new CompileException(position, CompileErrors.notAStringConstant()));
+		}
 	}
 
 	@Override
 	public DefinitionAnnotation createForDefinition(CodePosition position, CallArguments arguments) {
 		Expression value = arguments.arguments[0];
-		String constant = value.evaluateStringConstant();
-		return new NativeDefinitionAnnotation(constant);
+		Optional<String> constant = value.evaluate().flatMap(CompileTimeConstant::asString).map(c -> c.value);
+		if (constant.isPresent()) {
+			return new NativeDefinitionAnnotation(constant.get());
+		} else {
+			return new InvalidDefinitionAnnotation(new CompileException(position, CompileErrors.notAStringConstant()));
+		}
 	}
 
 	@Override

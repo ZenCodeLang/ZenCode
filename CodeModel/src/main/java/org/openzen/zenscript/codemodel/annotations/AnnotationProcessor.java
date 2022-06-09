@@ -6,6 +6,8 @@ import org.openzen.zenscript.codemodel.ModuleProcessor;
 import org.openzen.zenscript.codemodel.ScriptBlock;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
@@ -29,8 +31,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 
 	@Override
 	public ScriptBlock process(ScriptBlock block) {
-		FileScope fileScope = new FileScope(context, expansions, new HashMap<>(), member -> {
-		});
+		FileScope fileScope = new FileScope(context, expansions, new HashMap<>(), member -> {});
 		StatementScope scope = new GlobalScriptScope(fileScope, block.scriptHeader);
 		List<Statement> transformed = new ArrayList<>();
 		boolean unchanged = true;
@@ -44,11 +45,10 @@ public class AnnotationProcessor implements ModuleProcessor {
 
 	@Override
 	public void process(HighLevelDefinition definition) {
-		FileScope fileScope = new FileScope(context, expansions, new HashMap<>(), member -> {
-		});
+		FileScope fileScope = new FileScope(context, expansions, new HashMap<>(), member -> {});
 		DefinitionScope scope = new DefinitionScope(fileScope, definition);
 		for (DefinitionAnnotation annotation : definition.annotations) {
-			annotation.apply(definition, scope);
+			annotation.apply(definition);
 		}
 
 		MemberAnnotationVisitor visitor = new MemberAnnotationVisitor(scope);
@@ -207,22 +207,14 @@ public class AnnotationProcessor implements ModuleProcessor {
 			return null;
 		}
 
-		private void functional(FunctionalMember member, DefinitionMemberRef overrides) {
+		private void functional(FunctionalMember member, MethodSymbol overrides) {
 			for (MemberAnnotation annotation : overrides.getAnnotations())
 				annotation.applyOnOverridingMethod(member, scope);
-
-			if (overrides.getOverrides() != null) {
-				functional(member, overrides.getOverrides());
-			}
 		}
 
-		private void getter(GetterMember member, GetterMemberRef overrides) {
+		private void getter(GetterMember member, MethodSymbol overrides) {
 			for (MemberAnnotation annotation : overrides.getAnnotations())
 				annotation.applyOnOverridingGetter(member, scope);
-
-			if (overrides.getOverrides() != null) {
-				getter(member, overrides.getOverrides());
-			}
 		}
 
 		private void setter(SetterMember member, SetterMemberRef overrides) {

@@ -7,11 +7,11 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.WhitespaceInfo;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.scope.StatementScope;
-import org.openzen.zenscript.codemodel.statement.InvalidStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.statement.SwitchStatement;
@@ -19,16 +19,15 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPreparer;
 import org.openzen.zenscript.parser.ParsedAnnotation;
-import org.openzen.zenscript.parser.expression.ParsedExpression;
 
 import java.util.List;
 
 public class ParsedStatementSwitch extends ParsedStatement {
 	private final String name;
-	private final ParsedExpression value;
+	private final CompilableExpression value;
 	private final List<ParsedSwitchCase> cases;
 
-	public ParsedStatementSwitch(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, String name, ParsedExpression value, List<ParsedSwitchCase> cases) {
+	public ParsedStatementSwitch(CodePosition position, ParsedAnnotation[] annotations, WhitespaceInfo whitespace, String name, CompilableExpression value, List<ParsedSwitchCase> cases) {
 		super(position, annotations, whitespace);
 
 		this.name = name;
@@ -37,23 +36,15 @@ public class ParsedStatementSwitch extends ParsedStatement {
 	}
 
 	@Override
-	public Statement compile(StatementScope scope) {
-		try {
-			SwitchStatement result = new SwitchStatement(position, name, value.compile(new ExpressionScope(scope)).eval());
-			SwitchScope innerScope = new SwitchScope(scope, result);
+	public Statement compile(StatementCompiler compiler) {
+		SwitchStatement result = new SwitchStatement(position, name, compiler.compile(value));
+		StatementCompiler innerScope = compiler.forSwitch(result);
 
-			for (ParsedSwitchCase switchCase : cases) {
-				try {
-					result.cases.add(switchCase.compile(result.value.type, innerScope));
-				} catch (CompileException ex) {
-					return result(new InvalidStatement(ex), scope);
-				}
-			}
-
-			return result;
-		} catch (CompileException ex) {
-			return result(new InvalidStatement(ex), scope);
+		for (ParsedSwitchCase switchCase : cases) {
+			result.cases.add(switchCase.compile(result.value.type, innerScope));
 		}
+
+		return result;
 	}
 
 	private static class SwitchScope extends StatementScope {

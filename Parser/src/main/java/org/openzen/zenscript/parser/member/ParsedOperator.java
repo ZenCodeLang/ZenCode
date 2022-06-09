@@ -22,14 +22,12 @@ public class ParsedOperator extends ParsedFunctionalMember {
 
 	public ParsedOperator(
 			CodePosition position,
-			HighLevelDefinition definition,
-			ParsedImplementation implementation,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			OperatorType operator,
 			ParsedFunctionHeader header,
 			ParsedFunctionBody body) {
-		super(position, definition, implementation, modifiers, annotations, body);
+		super(position, modifiers, annotations, body);
 
 		this.operator = operator;
 		this.header = header;
@@ -59,6 +57,6 @@ public class ParsedOperator extends ParsedFunctionalMember {
 					.getOverride(position, scope, compiled); // to refresh the header
 		}
 
-		compiled.setOverrides(scope.getTypeRegistry(), override);
+		compiled.setOverrides(override);
 	}
 }

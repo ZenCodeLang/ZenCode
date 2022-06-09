@@ -2,15 +2,14 @@ package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.definition.AliasDefinition;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.SubtypeCastExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 
@@ -18,70 +17,43 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class DefinitionTypeID implements TypeID {
-	public final HighLevelDefinition definition;
-	public final TypeID[] typeArguments;
-	public final DefinitionTypeID outer;
-	private TypeID normalized;
+	public static TypeID create(TypeSymbol definition, TypeID[] typeArguments) {
+		return definition.normalize(typeArguments);
+	}
 
-	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, TypeID[] typeArguments) {
-		this(typeRegistry, definition, typeArguments, null);
+	public final TypeSymbol definition;
+	public final TypeID[] typeArguments;
+	public final DefinitionTypeID original;
+	public final DefinitionTypeID outer;
+
+	public DefinitionTypeID(TypeSymbol definition, TypeID[] typeArguments, DefinitionTypeID original) {
+		this(definition, typeArguments, original, null);
 	}
 
 	// For inner classes of generic outer classes
-	public DefinitionTypeID(GlobalTypeRegistry typeRegistry, HighLevelDefinition definition, TypeID[] typeArguments, DefinitionTypeID outer) {
+	public DefinitionTypeID(TypeSymbol definition, TypeID[] typeArguments, DefinitionTypeID original, DefinitionTypeID outer) {
 		if (typeArguments == null)
 			throw new NullPointerException("typeParameters cannot be null");
-		if (typeArguments.length != definition.getNumberOfGenericParameters())
-			throw new IllegalArgumentException("Wrong number of type parameters! " + definition.name + " expected: " + definition.getNumberOfGenericParameters() + " got: " + typeArguments.length);
-		if (definition.isInnerDefinition() && !definition.isStatic() && outer == null)
+		if (typeArguments.length != definition.getTypeParameters().length)
+			throw new IllegalArgumentException("Wrong number of type parameters! " + definition.getName() + " expected: " + definition.getTypeParameters().length + " got: " + typeArguments.length);
+		if (definition.getOuter().isPresent() && !definition.isStatic() && outer == null)
 			throw new IllegalArgumentException("Inner definition requires outer instance");
-		if ((!definition.isInnerDefinition() || definition.isStatic()) && outer != null)
+		if ((!definition.getOuter().isPresent() || definition.isStatic()) && outer != null)
 			throw new IllegalArgumentException("Static inner definition must not have outer instance");
 
 		this.definition = definition;
 		this.typeArguments = typeArguments;
+		this.original = original;
 		this.outer = outer;
-
-		normalized = isDenormalized() ? normalize(typeRegistry) : this;
-		if (normalized instanceof DefinitionTypeID && ((DefinitionTypeID) normalized).isDenormalized())
-			throw new AssertionError();
 	}
 
-	public DefinitionTypeID(HighLevelDefinition definition) {
-		this.definition = definition;
-		this.typeArguments = TypeID.NONE;
-		this.outer = null;
-	}
-
-	private boolean isDenormalized() {
-		if (definition instanceof AliasDefinition)
-			return true;
-
-		for (TypeID typeArgument : typeArguments)
-			if (!typeArgument.getNormalized().equals(typeArgument))
-				return true;
-
-		return outer != null && !outer.getNormalized().equals(outer);
-	}
-
-	private TypeID normalize(GlobalTypeRegistry typeRegistry) {
-		if (definition instanceof AliasDefinition) {
-			AliasDefinition alias = (AliasDefinition) definition;
-			if (alias.type == null)
-				throw new IllegalStateException("Alias type not yet initialized!");
-
-			Map<TypeParameter, TypeID> typeMapping = new HashMap<>();
-			for (int i = 0; i < definition.typeParameters.length; i++)
-				typeMapping.put(definition.typeParameters[i], typeArguments[i].getNormalized());
-			GenericMapper mapper = new GenericMapper(definition.position, typeRegistry, typeMapping);
-			return alias.type.instance(mapper).getNormalized();
-		}
-
-		TypeID[] normalizedTypeParameters = new TypeID[typeArguments.length];
-		for (int i = 0; i < normalizedTypeParameters.length; i++)
-			normalizedTypeParameters[i] = typeArguments[i].getNormalized();
-
-		return typeRegistry.getForDefinition(definition, normalizedTypeParameters, outer == null ? null : (DefinitionTypeID) outer.getNormalized());
+	/**
+	 * Resolves this type to its type members. Excludes applicable expansions!
+	 *
+	 * @return base type members
+	 */
+	public ResolvedType resolve() {
+		return definition.resolve(typeArguments);
 	}
 
 	public boolean hasTypeParameters() {
@@ -93,12 +65,10 @@ public class DefinitionTypeID implements TypeID {
 		DefinitionTypeID current = this;
 		do {
 			if (current.typeArguments != null) {
-				if (current.definition.typeParameters != null) {
+				if (current.definition.getTypeParameters() != null) {
 					for (int i = 0; i < current.typeArguments.length; i++)
-						mapping.put(current.definition.typeParameters[i], current.typeArguments[i]);
-				}//else {
-				//    System.out.println("Type parameters but no generic parameters");
-				//}
+						mapping.put(current.definition.getTypeParameters()[i], current.typeArguments[i]);
+				}
 			}
 
 			current = current.outer;
@@ -107,18 +77,11 @@ public class DefinitionTypeID implements TypeID {
 	}
 
 	@Override
-	public TypeID getNormalized() {
-		return normalized;
-	}
-
-	@Override
 	public TypeID instance(GenericMapper mapper) {
 		if (!hasTypeParameters() && outer == null)
 			return this;
 		if (mapper == null || mapper.getMapping().isEmpty())
 			return this;
-		if (mapper.registry == null)
-			throw new NullPointerException();
 
 		TypeID[] instancedArguments = TypeID.NONE;
 		if (hasTypeParameters()) {
@@ -128,12 +91,12 @@ public class DefinitionTypeID implements TypeID {
 		}
 
 		DefinitionTypeID instancedOuter = outer == null ? null : (DefinitionTypeID) outer.instance(mapper);
-		return mapper.registry.getForDefinition(definition, instancedArguments, instancedOuter);
+		return new DefinitionTypeID(definition, instancedArguments, original, instancedOuter);
 	}
 
 	@Override
-	public TypeID getSuperType(GlobalTypeRegistry registry) {
-		return definition.getSuperType() == null ? null : definition.getSuperType().instance(new GenericMapper(definition.position, registry, getTypeParameterMapping()));
+	public TypeID getSuperType() {
+		return definition.getSupertype(typeArguments).orElse(null);
 	}
 
 	@Override
@@ -163,18 +126,12 @@ public class DefinitionTypeID implements TypeID {
 
 	@Override
 	public boolean isEnum() {
-		return definition instanceof EnumDefinition;
+		return definition.isEnum();
 	}
 
 	@Override
 	public boolean isVariant() {
 		return definition instanceof VariantDefinition;
-	}
-
-	@Override
-	public boolean isDefinition(HighLevelDefinition definition) {
-
-		return this.definition.equals(definition);
 	}
 
 	@Override
@@ -206,13 +163,13 @@ public class DefinitionTypeID implements TypeID {
 	@Override
 	public String toString() {
 		if (!hasTypeParameters() && outer == null)
-			return definition.name;
+			return definition.getName();
 
 		StringBuilder result = new StringBuilder();
 		if (outer != null)
-			result.append(outer.toString()).append('.');
+			result.append(outer).append('.');
 
-		result.append(definition.name);
+		result.append(definition.getName());
 		result.append('<');
 		for (int i = 0; i < typeArguments.length; i++) {
 			if (i > 0)
@@ -225,7 +182,7 @@ public class DefinitionTypeID implements TypeID {
 
 	@Override
 	public boolean hasDefaultValue() {
-		return definition.hasEmptyConstructor();
+		return false;
 	}
 
 	@Override
@@ -234,18 +191,13 @@ public class DefinitionTypeID implements TypeID {
 			type.extractTypeParameters(typeParameters);
 	}
 
-	public DefinitionTypeID getInnerType(GenericName name, GlobalTypeRegistry registry) {
-		HighLevelDefinition type = definition.getInnerType(name.name);
-		return registry.getForDefinition(type, name.arguments, this);
-	}
-
 	@Override
 	public boolean canCastImplicitFrom(TypeID other) {
 		if (!(other instanceof DefinitionTypeID)) {
 			return false;
 		}
 
-		if(this.definition.isSubclassOf(((DefinitionTypeID) other).definition)){
+		if (this.definition.isSubclassOf(((DefinitionTypeID) other).definition)){
 			return true;
 		}
 

@@ -1,35 +1,46 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.ThrowExpression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedThrowExpression extends ParsedExpression {
-	public final ParsedExpression value;
+	public final CompilableExpression value;
 
-	public ParsedThrowExpression(CodePosition position, ParsedExpression value) {
+	public ParsedThrowExpression(CodePosition position, CompilableExpression value) {
 		super(position);
 
 		this.value = value;
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		Expression cValue = value.compile(scope).eval();
-		TypeID resultType = BasicTypeID.VOID;
-		if (scope.getResultTypeHints().size() == 1)
-			resultType = scope.getResultTypeHints().get(0);
-
-		return new ThrowExpression(position, resultType, cValue);
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, value.compile(compiler));
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return false;
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression value;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value) {
+			super(compiler, position);
+
+			this.value = value;
+		}
+
+		@Override
+		public Expression eval() {
+			return compiler.getThrowableType()
+					.map(t -> compiler.at(position).throw_(BasicTypeID.VOID, value.cast(cast(t)).value))
+					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.cannotThrowHere()));
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return CastedExpression.exact(compiler.getThrowableType()
+					.map(t -> compiler.at(position).throw_(cast.type, value.cast(cast(t)).value))
+					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.cannotThrowHere(), cast.type)));
+		}
 	}
 }

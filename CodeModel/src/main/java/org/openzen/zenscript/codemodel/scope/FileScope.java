@@ -69,8 +69,8 @@ public class FileScope extends BaseScope {
 		if (type != null)
 			return new PartialTypeExpression(position, type, name.arguments);
 
-		if (globals.containsKey(name.name)) {
-			IPartialExpression resolution = globals.get(name.name).getExpression(position, this, name.arguments);
+		/*if (globals.containsKey(name.name)) {
+			IPartialExpression resolution = globals.get(name.name).getExpression(position, name.arguments);
 			return new PartialGlobalExpression(position, name.name, resolution, name.arguments);
 		} else if (root.contains(name.name)) {
 			try {
@@ -78,7 +78,7 @@ public class FileScope extends BaseScope {
 			} catch (CompileException ex) {
 				return new InvalidExpression(BasicTypeID.UNDETERMINED, ex);
 			}
-		}
+		}*/
 
 		return null;
 	}
@@ -89,7 +89,7 @@ public class FileScope extends BaseScope {
 		if (type != null)
 			return type;
 
-		if (globals.containsKey(name.get(0).name)) {
+		/*if (globals.containsKey(name.get(0).name)) {
 			type = globals.get(name.get(0).name).getType(position, context, name.get(0).arguments);
 			for (int i = 1; i < name.size(); i++) {
 				type = getTypeMembers(type).getInnerType(position, name.get(i));
@@ -99,7 +99,7 @@ public class FileScope extends BaseScope {
 
 			if (type != null)
 				return type;
-		}
+		}*/
 
 		return null;
 	}

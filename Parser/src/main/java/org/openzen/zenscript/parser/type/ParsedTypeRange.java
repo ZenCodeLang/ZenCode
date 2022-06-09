@@ -1,10 +1,10 @@
 package org.openzen.zenscript.parser.type;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.TypeBuilder;
 
 public class ParsedTypeRange implements IParsedType {
 	private final CodePosition position;
@@ -22,7 +22,7 @@ public class ParsedTypeRange implements IParsedType {
 		TypeID from = this.from.compile(typeBuilder);
 		TypeID to = this.to.compile(typeBuilder);
 		if (from != to)
-			return new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "from and to in a range must be the same type");
+			return new InvalidTypeID(position, CompileErrors.rangeTypeFromToDifferent());
 
 		return typeBuilder.rangeOf(from);
 	}

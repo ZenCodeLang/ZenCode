@@ -1,9 +1,12 @@
 package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+
+import java.util.Optional;
 
 public final class ParameterSuperBound implements TypeParameterBound {
 	public final TypeID type;
@@ -20,6 +23,11 @@ public final class ParameterSuperBound implements TypeParameterBound {
 	@Override
 	public void registerMembers(LocalMemberCache cache, TypeMembers type) {
 		// TODO: nothing?
+	}
+
+	@Override
+	public Optional<ResolvedType> resolveMembers() {
+		return Optional.empty();
 	}
 
 	@Override

@@ -175,22 +175,23 @@ public class InferenceBlockingTypeParameterVisitor implements TypeVisitor<Boolea
 			}
 		}
 
-		TypeID superType = definition.definition.getSuperType();
-		if (superType != null) {
-			Optional<Boolean> knownSuperType = getKnownResult(superType);
-			if (knownSuperType.isPresent() && knownSuperType.get()) {
-				visitedTypes.put(definition, true);
-				return true;
-			}
-			visitedTypes.put(superType, false);
-			Boolean blocking = superType.accept(this);
-			visitedTypes.put(superType, blocking);
-			if (blocking) {
-				visitedTypes.put(definition, true);
-				return true;
-			}
-		}
-		return false;
+		return definition.definition.getSupertype(definition.typeArguments)
+				.map(superType -> {
+					Optional<Boolean> knownSuperType = getKnownResult(superType);
+					if (knownSuperType.isPresent() && knownSuperType.get()) {
+						visitedTypes.put(definition, true);
+						return true;
+					}
+					visitedTypes.put(superType, false);
+					Boolean blocking = superType.accept(this);
+					visitedTypes.put(superType, blocking);
+					if (blocking) {
+						visitedTypes.put(definition, true);
+						return true;
+					}
+
+					return false;
+				}).orElse(false);
 	}
 
 	@Override

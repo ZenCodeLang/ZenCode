@@ -1,12 +1,16 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 
-public interface ISymbol {
-	IPartialExpression getExpression(CodePosition position, BaseScope scope, TypeID[] typeArguments);
+import java.util.Optional;
 
-	TypeID getType(CodePosition position, TypeResolutionContext context, TypeID[] typeArguments);
+public interface ISymbol {
+	CompilableExpression getExpression(CodePosition position, TypeID[] typeArguments);
+
+	Optional<TypeID> getType(CodePosition position, TypeBuilder types, TypeID[] typeArguments);
 }

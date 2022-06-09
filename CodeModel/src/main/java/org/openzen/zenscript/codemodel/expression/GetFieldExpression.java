@@ -4,10 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.TypeID;
-
-import java.util.Collections;
-import java.util.List;
 
 public class GetFieldExpression extends Expression {
 	public final Expression target;
@@ -21,18 +17,8 @@ public class GetFieldExpression extends Expression {
 	}
 
 	@Override
-	public List<TypeID> getAssignHints() {
-		return Collections.singletonList(type);
-	}
-
-	@Override
 	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
 		return new CapturedDirectExpression(position, closure, this);
-	}
-
-	@Override
-	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
-		return new SetFieldExpression(position, target, field, value);
 	}
 
 	@Override
@@ -54,10 +40,5 @@ public class GetFieldExpression extends Expression {
 	@Override
 	public IDefinitionMember getMember() {
 		return field.member;
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new GetFieldExpression(position, target.normalize(scope), field);
 	}
 }

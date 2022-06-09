@@ -2709,7 +2709,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
-			if (context.hasJavaField(expression.getter)) {
+			if (context.hasJavaField(expression.getter.getTarget())) {
 				javaWriter.getField(context.getJavaField(expression.getter));
 				handleReturnValue(expression.getter.member.getType(), expression.getter.getType());
 				return null;

@@ -4,6 +4,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public class GlobalTypeRegistry {
 	}
 
 	public AssocTypeID getAssociative(TypeID keyType, TypeID valueType) {
-		AssocTypeID id = new AssocTypeID(this, keyType, valueType);
+		AssocTypeID id = new AssocTypeID(keyType, valueType);
 		return internalize(assocTypes, id);
 	}
 
@@ -103,26 +104,21 @@ public class GlobalTypeRegistry {
 		return getForDefinition(definition, typeArguments, outer);
 	}
 
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeID... typeArguments) {
+	public DefinitionTypeID getForDefinition(TypeSymbol definition, TypeID... typeArguments) {
 		return this.getForDefinition(definition, typeArguments, null);
 	}
 
-	public DefinitionTypeID getForDefinition(HighLevelDefinition definition, TypeID[] typeArguments, DefinitionTypeID outer) {
+	public DefinitionTypeID getForDefinition(TypeSymbol definition, TypeID[] typeArguments, DefinitionTypeID outer) {
 		DefinitionTypeID id = new DefinitionTypeID(this, definition, typeArguments, definition.isStatic() ? null : outer);
 		return internalize(definitionTypes, id);
 	}
 
-	public TypeID getOptional(TypeID original) {
+	public OptionalTypeID getOptional(TypeID original) {
 		return internalize(optionalTypes, new OptionalTypeID(this, original));
 	}
 
 	private <T> T internalize(Map<T, T> identityMap, T id) {
-		if (identityMap.containsKey(id)) {
-			return identityMap.get(id);
-		} else {
-			identityMap.put(id, id);
-			return id;
-		}
+		return identityMap.computeIfAbsent(id, k -> id);
 	}
 
 	public <T extends TypeID> T internalize(Class<T> clazz, T id) {

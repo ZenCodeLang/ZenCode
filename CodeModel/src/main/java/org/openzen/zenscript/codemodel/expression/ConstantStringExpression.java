@@ -1,8 +1,12 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
+import org.openzen.zenscript.codemodel.constant.StringConstant;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+
+import java.util.Optional;
 
 public class ConstantStringExpression extends Expression {
 	public final String value;
@@ -29,12 +33,7 @@ public class ConstantStringExpression extends Expression {
 	}
 
 	@Override
-	public String evaluateStringConstant() {
-		return value;
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return this;
+	public Optional<CompileTimeConstant> evaluate() {
+		return Optional.of(new StringConstant(value));
 	}
 }

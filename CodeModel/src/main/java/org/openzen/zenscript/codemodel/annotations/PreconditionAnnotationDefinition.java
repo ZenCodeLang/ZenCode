@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.definition.FunctionDefinition;
@@ -80,7 +81,9 @@ public class PreconditionAnnotationDefinition implements AnnotationDefinition {
 
 	@Override
 	public MemberAnnotation createForMember(CodePosition position, CallArguments arguments) {
-		String enforcement = arguments.arguments[0].evaluateEnumConstant().name;
+		String enforcement = arguments.arguments[0].evaluate().flatMap(CompileTimeConstant::asEnumValue)
+				.map(c -> c.member.name)
+				.orElse("INVALID");
 		Expression condition = arguments.arguments[1];
 		Expression message = arguments.arguments[2];
 		return new PreconditionForMethod(position, enforcement, condition, message);

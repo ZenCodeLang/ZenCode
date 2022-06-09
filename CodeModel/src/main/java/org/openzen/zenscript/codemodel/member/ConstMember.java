@@ -6,15 +6,16 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
-public class ConstMember extends PropertyMember {
+public class ConstMember extends PropertyMember implements FieldSymbol {
 	public final String name;
 	public Expression value;
 
@@ -45,7 +46,7 @@ public class ConstMember extends PropertyMember {
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
+	public MethodSymbol getOverrides() {
 		return null;
 	}
 
@@ -58,12 +59,6 @@ public class ConstMember extends PropertyMember {
 			result |= Modifiers.INTERNAL;
 
 		return result;
-	}
-
-	@Override
-	public void normalize(TypeScope scope) {
-		setType(getType().getNormalized());
-		value = value.normalize(scope);
 	}
 
 	@Override

@@ -3,21 +3,19 @@ package org.openzen.zenscript.codemodel;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.DefinitionAnnotation;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.member.ConstructorMember;
-import org.openzen.zenscript.codemodel.member.FieldMember;
-import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class HighLevelDefinition extends Taggable {
+public abstract class HighLevelDefinition extends Taggable implements TypeSymbol {
 	public final CodePosition position;
 	public final Module module;
 	public final ZSPackage pkg;
@@ -27,10 +25,10 @@ public abstract class HighLevelDefinition extends Taggable {
 	public TypeParameter[] typeParameters = TypeParameter.NONE;
 	public DefinitionAnnotation[] annotations = DefinitionAnnotation.NONE;
 
-	public HighLevelDefinition outerDefinition;
+	public TypeSymbol outerDefinition;
 	private TypeID superType;
 
-	public HighLevelDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+	public HighLevelDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, TypeSymbol outerDefinition) {
 		if (module == null)
 			throw new NullPointerException();
 
@@ -45,6 +43,16 @@ public abstract class HighLevelDefinition extends Taggable {
 			pkg.register(this);
 	}
 
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public Optional<TypeSymbol> getOuter() {
+		return Optional.ofNullable(outerDefinition);
+	}
+
 	public String getFullName() {
 		return pkg.fullName + '.' + name;
 	}
@@ -55,19 +63,6 @@ public abstract class HighLevelDefinition extends Taggable {
 
 	public void setSuperType(TypeID superType) {
 		this.superType = superType;
-	}
-
-	public boolean isSubclassOf(HighLevelDefinition other) {
-		if(superType == null){
-			return false;
-		}
-		if (superType.isDefinition(other))
-			return true;
-		if (!(superType instanceof DefinitionTypeID))
-			return false;
-
-		DefinitionTypeID superDefinition = (DefinitionTypeID) superType;
-		return superDefinition.definition.isSubclassOf(other);
 	}
 
 	public int getNumberOfGenericParameters() {
@@ -88,10 +83,6 @@ public abstract class HighLevelDefinition extends Taggable {
 
 	public boolean isInterface() {
 		return this instanceof InterfaceDefinition;
-	}
-
-	public boolean isAlias() {
-		return this instanceof AliasDefinition;
 	}
 
 	public boolean isEnum() { return this instanceof EnumDefinition; }
@@ -127,61 +118,43 @@ public abstract class HighLevelDefinition extends Taggable {
 		return fields;
 	}
 
-	public boolean hasEmptyConstructor() {
-		for (IDefinitionMember member : members) {
-			if (member instanceof ConstructorMember) {
-				if (((ConstructorMember) member).header.parameters.length == 0)
-					return true;
-			}
-		}
-
-		return false;
-	}
-
 	public boolean isStatic() {
 		return (modifiers & Modifiers.STATIC) > 0;
-	}
-
-	public void normalize(TypeScope scope) {
-		List<FieldMember> fields = new ArrayList<>();
-
-		for (IDefinitionMember member : members) {
-			member.normalize(scope);
-
-			if (member instanceof FieldMember)
-				fields.add((FieldMember) member);
-		}
-
-		for (FieldMember field : fields) {
-			if (field.autoGetter != null)
-				members.add(field.autoGetter);
-			if (field.autoSetter != null)
-				members.add(field.autoSetter);
-		}
 	}
 
 	public abstract <T> T accept(DefinitionVisitor<T> visitor);
 
 	public abstract <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor);
 
-	public HighLevelDefinition getInnerType(String name) {
-		for (IDefinitionMember member : members) {
-			if (member instanceof InnerDefinitionMember) {
-				InnerDefinitionMember inner = (InnerDefinitionMember) member;
-				if (inner.innerDefinition.name.equals(name))
-					return inner.innerDefinition;
-			}
-		}
+	/* TypeSymbol implementation */
 
-		return null;
+	@Override
+	public Module getModule() {
+		return module;
 	}
 
-	public boolean isOuterOf(HighLevelDefinition definition) {
-		if (definition.outerDefinition == this)
-			return true;
-		if (definition.outerDefinition == null)
-			return false;
+	@Override
+	public String describe() {
+		return name;
+	}
 
-		return isOuterOf(definition.outerDefinition);
+	@Override
+	public Optional<TypeSymbol> getSuperclass() {
+		return superType == null ? Optional.empty() : superType.asDefinition().map(t -> t.definition);
+	}
+
+	@Override
+	public ResolvedType resolve(TypeID[] typeArguments) {
+		MemberSet members = new MemberSet();
+		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
+		for (IDefinitionMember member : this.members) {
+			member.registerTo(members, mapper);
+		}
+		return members;
+	}
+
+	@Override
+	public TypeParameter[] getTypeParameters() {
+		return typeParameters;
 	}
 }

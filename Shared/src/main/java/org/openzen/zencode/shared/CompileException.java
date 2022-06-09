@@ -5,6 +5,10 @@ public final class CompileException extends Exception {
 	public final CompileExceptionCode code;
 	public final String message;
 
+	public CompileException(CodePosition position, CompileError error) {
+		this(position, error.code, error.description);
+	}
+
 	public CompileException(CodePosition position, CompileExceptionCode code, String message) {
 		super(position.toString() + ": [" + code.toString() + "] " + message);
 		this.position = position;

@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class TryConvertExpression extends Expression {
@@ -27,10 +26,5 @@ public class TryConvertExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new TryConvertExpression(position, type, tValue);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new TryConvertExpression(position, type, value.normalize(scope));
 	}
 }

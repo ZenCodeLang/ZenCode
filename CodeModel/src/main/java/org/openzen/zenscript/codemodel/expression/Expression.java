@@ -1,12 +1,13 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.member.EnumConstantMember;
+import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -16,8 +17,8 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ public abstract class Expression implements IPartialExpression {
 		//	throw new IllegalArgumentException(position + ": Cannot use undetermined type as expression type");
 
 		this.position = position;
-		this.type = type.getNormalized();
+		this.type = type;
 		this.thrownType = thrownType;
 	}
 
@@ -47,7 +48,7 @@ public abstract class Expression implements IPartialExpression {
 		else if (right == null)
 			return left;
 		else
-			return new InvalidTypeID(position, CompileExceptionCode.DIFFERENT_EXCEPTIONS, "two different exceptions in same operation: " + left.toString() + " and " + right.toString());
+			return new InvalidTypeID(position, new CompileError(CompileExceptionCode.DIFFERENT_EXCEPTIONS, "two different exceptions in same operation: " + left + " and " + right));
 	}
 
 	public static TypeID multiThrow(CodePosition position, Expression[] expressions) {
@@ -87,13 +88,6 @@ public abstract class Expression implements IPartialExpression {
 				return expression;
 			}
 		});
-	}
-
-	public abstract Expression normalize(TypeScope scope);
-
-	@Override
-	public List<TypeID> getAssignHints() {
-		return Collections.singletonList(type);
 	}
 
 	@Override
@@ -166,11 +160,7 @@ public abstract class Expression implements IPartialExpression {
 
 	}
 
-	public String evaluateStringConstant() {
-		throw new UnsupportedOperationException("Cannot evaluate this value to a string constant!");
-	}
-
-	public EnumConstantMember evaluateEnumConstant() {
-		throw new UnsupportedOperationException("Cannot evaluate this value to an enum constant!");
+	public Optional<CompileTimeConstant> evaluate() {
+		return Optional.empty();
 	}
 }

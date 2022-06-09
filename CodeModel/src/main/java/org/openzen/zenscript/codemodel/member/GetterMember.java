@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
@@ -16,10 +17,10 @@ import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
-public class GetterMember extends PropertyMember {
+public class GetterMember extends PropertyMember implements MethodSymbol {
 	public final String name;
 	public Statement body = null;
-	private GetterMemberRef overrides;
+	private MethodSymbol overrides;
 
 	public GetterMember(
 			CodePosition position,
@@ -69,7 +70,7 @@ public class GetterMember extends PropertyMember {
 	}
 
 	@Override
-	public GetterMemberRef getOverrides() {
+	public MethodSymbol getOverrides() {
 		return overrides;
 	}
 
@@ -89,12 +90,6 @@ public class GetterMember extends PropertyMember {
 			result |= Modifiers.INTERNAL;
 
 		return result;
-	}
-
-	@Override
-	public void normalize(TypeScope scope) {
-		if (body != null)
-			body = body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class));
 	}
 
 	@Override

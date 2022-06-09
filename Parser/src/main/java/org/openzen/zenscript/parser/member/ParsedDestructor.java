@@ -16,12 +16,10 @@ public class ParsedDestructor extends ParsedFunctionalMember {
 
 	public ParsedDestructor(
 			CodePosition position,
-			HighLevelDefinition definition,
-			ParsedImplementation implementation,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			ParsedFunctionBody body) {
-		super(position, definition, implementation, modifiers, annotations, body);
+		super(position, modifiers, annotations, body);
 	}
 
 	@Override

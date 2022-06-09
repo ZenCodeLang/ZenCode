@@ -248,7 +248,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		result.append(expression.target.accept(this).value);
 		if (!expression.isImplicit) {
 			result.append(" as ");
-			result.append(typeFormatter.format(expression.member.toType));
+			result.append(typeFormatter.format(expression.type));
 		}
 		return new ExpressionString(result.toString(), ZenScriptOperator.PRIMARY);
 	}
@@ -411,7 +411,7 @@ public class ExpressionFormatter implements ExpressionVisitor<ExpressionString> 
 		StringBuilder result = new StringBuilder();
 		result.append(expression.target.accept(this));
 		result.append('.');
-		result.append(expression.field.member.name);
+		result.append(expression.field.getName());
 		return new ExpressionString(result.toString(), ZenScriptOperator.MEMBER);
 	}
 

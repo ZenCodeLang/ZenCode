@@ -45,15 +45,15 @@ public class DefinitionScope extends BaseScope {
 			ExpansionDefinition expansion = (ExpansionDefinition) definition;
 			type = expansion.target;
 			this.typeParameters = expansion.typeParameters;
-			typeParameters = TypeID.getSelfMapping(outer.getTypeRegistry(), expansion.typeParameters);
+			typeParameters = TypeID.getSelfMapping(expansion.typeParameters);
 		} else {
 			DefinitionTypeID definitionType = outer.getTypeRegistry().getForMyDefinition(definition);
 			type = definitionType;
 
 			List<TypeParameter> typeParameterList = new ArrayList<>();
 			while (definitionType != null) {
-				typeParameters = TypeID.getSelfMapping(outer.getTypeRegistry(), definitionType.definition.typeParameters);
-				typeParameterList.addAll(Arrays.asList(definitionType.definition.typeParameters));
+				typeParameters = TypeID.getSelfMapping(definitionType.definition.getTypeParameters());
+				typeParameterList.addAll(Arrays.asList(definitionType.definition.getTypeParameters()));
 
 				definitionType = definitionType.definition.isStatic() ? null : definitionType.outer;
 			}
@@ -61,7 +61,7 @@ public class DefinitionScope extends BaseScope {
 		}
 
 		members = withMembers ? outer.getMemberCache().get(type) : null;
-		typeParameterMap = outer.getLocalTypeParameters().getInner(definition.position, getTypeRegistry(), typeParameters);
+		typeParameterMap = outer.getLocalTypeParameters().getInner(typeParameters);
 	}
 
 	@Override

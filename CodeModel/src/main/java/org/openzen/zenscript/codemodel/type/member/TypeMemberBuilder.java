@@ -50,7 +50,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 	}
 
 	private Map<TypeParameter, TypeID> matchType(TypeID type, TypeID pattern) {
-		return type.inferTypeParameters(cache, pattern);
+		return type.inferTypeParameters(pattern);
 	}
 
 	@Override

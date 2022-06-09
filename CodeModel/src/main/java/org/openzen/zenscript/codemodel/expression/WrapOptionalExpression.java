@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class WrapOptionalExpression extends Expression {
@@ -10,7 +9,7 @@ public class WrapOptionalExpression extends Expression {
 	public WrapOptionalExpression(CodePosition position, Expression value, TypeID optionalType) {
 		super(position, optionalType, value.thrownType);
 
-		if (value.type.isOptional())
+		if (value.type.asOptional().isPresent())
 			throw new IllegalArgumentException("Value is already optional");
 
 		this.value = value;
@@ -30,10 +29,5 @@ public class WrapOptionalExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new WrapOptionalExpression(position, tValue, type);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new WrapOptionalExpression(position, value.normalize(scope), type);
 	}
 }

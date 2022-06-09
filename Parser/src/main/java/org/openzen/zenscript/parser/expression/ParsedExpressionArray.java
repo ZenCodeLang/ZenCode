@@ -1,29 +1,19 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
+import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.*;
-import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.compiler.expression.CompilingExpression;
-import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
-import org.openzen.zenscript.compiler.expression.TypeMatch;
-import org.openzen.zenscript.compiler.types.ResolvedType;
 
 import java.util.*;
-import java.util.function.BiFunction;
 
 public class ParsedExpressionArray extends ParsedExpression {
+	public final List<CompilableExpression> contents;
 
-	public static final List<BiFunction<ParsedExpressionArray, ExpressionScope, IPartialExpression>> compileOverrides = new ArrayList<>(0);
-	public final List<ParsedExpression> contents;
-
-	public ParsedExpressionArray(CodePosition position, List<ParsedExpression> contents) {
+	public ParsedExpressionArray(CodePosition position, List<CompilableExpression> contents) {
 		super(position);
 
 		this.contents = contents;
@@ -39,11 +29,11 @@ public class ParsedExpressionArray extends ParsedExpression {
 	}
 
 	@Override
-	public Expression compileKey(ExpressionCompiler compiler, TypeID asType) {
+	public CompilingExpression compileKey(ExpressionCompiler compiler) {
 		if (contents.size() == 1) {
-			return contents.get(0).compile(compiler).as(asType);
+			return contents.get(0).compile(compiler);
 		} else {
-			return compile(compiler).as(asType);
+			return compile(compiler);
 		}
 	}
 
@@ -56,72 +46,56 @@ public class ParsedExpressionArray extends ParsedExpression {
 		}
 
 		@Override
-		public Expression as(TypeID type) {
-			Optional<ArrayTypeID> array = type.asArray();
-			if (!array.isPresent()) {
-				// use array constructor instead
-				ResolvedType resolvedType = compiler.resolve(type);
-				Optional<ResolvedCallable> constructor = resolvedType
-						.findConstructor(c -> c.isImplicit() && c.isCompatible(type, t -> t.asArray().isPresent()));
-				if (constructor.isPresent()) {
-					return compiler.at(position, type).call(constructor.get(), this);
-				} else {
-					return compiler.at(position, type).invalid(CompileExceptionCode.INVALID_ARRAY_TYPE, "Invalid array type: " + type);
-				}
+		public Expression eval() {
+			if (elements.length == 0)
+				return compiler.at(position).invalid(
+						CompileErrors.cannotInfer(),
+						compiler.types().arrayOf(BasicTypeID.UNDETERMINED));
+
+			Expression[] elements = new Expression[this.elements.length];
+			TypeID elementType = elements[0].type;
+			elements[0] = this.elements[0].eval();
+			for (int i = 1; i < elements.length; i++) {
+				elements[i] = this.elements[i].eval();
+				Optional<TypeID> maybeJoinedType = compiler.union(elementType, elements[i].type);
+				if (!maybeJoinedType.isPresent())
+					return compiler.at(position).invalid(
+							CompileErrors.noIntersectionBetweenTypes(elementType, elements[i].type),
+							compiler.types().arrayOf(BasicTypeID.UNDETERMINED));
+
+				elementType = maybeJoinedType.get();
 			}
 
-			ArrayTypeID arrayType = array.get();
-			TypeID asBaseType = arrayType.elementType;
-			Expression[] compiled = new Expression[elements.length];
-			for (int i = 0; i < elements.length; i++) {
-				compiled[i] = elements[i].as(asBaseType);
-			}
-			return new ArrayExpression(position, compiled, arrayType);
+			ArrayTypeID type = compiler.types().arrayOf(elementType);
+			CastedEval cast = new CastedEval(compiler, position, type.elementType, false, false);
+			return compiler.at(position).newArray(type, Arrays.stream(elements)
+					.map(e -> cast.of(e).value)
+					.toArray(Expression[]::new));
 		}
 
 		@Override
-		public TypeMatch matches(TypeID returnType) {
-			Optional<ArrayTypeID> actualHint = returnType
-					.withoutOptional()
-					.asArray()
+		public CastedExpression cast(CastedEval cast) {
+			Optional<ArrayTypeID> maybeArray = cast.type.simplified().asArray()
 					.filter(array -> array.dimension == 1);
-			if (!actualHint.isPresent()) {
-				return TypeMatch.NONE;
+			if (!maybeArray.isPresent()) {
+				// try implicit constructor instead
+				ResolvedType resolvedType = compiler.resolve(cast.type);
+				return resolvedType.findImplicitConstructor()
+						.map(constructor -> constructor.casted(compiler.at(position), cast, this))
+						.orElse(cast.invalid(CompileErrors.invalidArrayType(cast.type)));
 			}
 
-			TypeID baseType = actualHint.get().elementType;
-
-			TypeMatch match = TypeMatch.EXACT;
-			for (CompilingExpression element : elements) {
-				match = TypeMatch.min(match, element.matches(baseType));
+			TypeID elementType = maybeArray.get().elementType;
+			Expression[] elements = new Expression[this.elements.length];
+			CastedExpression.Level level = CastedExpression.Level.EXACT;
+			for (int i = 0; i < elements.length; i++) {
+				CastedExpression casted = this.elements[i].cast(cast(elementType));
+				if (casted.isFailed())
+					return casted;
+				elements[i] = casted.value;
+				level = level.max(casted.level);
 			}
-			return match;
-		}
-
-		@Override
-		public InferredType inferType() {
-			if (elements.length == 0) {
-				return InferredType.failure(CompileExceptionCode.UNTYPED_EMPTY_ARRAY, "Cannot infer type of empty array");
-			} else {
-				InferredType inferredElementType = elements[0].inferType();
-				if (inferredElementType.isFailed())
-					return inferredElementType;
-
-				TypeID elementType = inferredElementType.get();
-				for (int i = 1; i < elements.length; i++) {
-					InferredType inferred = elements[i].inferType();
-					if (inferred.isFailed())
-						return inferred;
-
-					Optional<TypeID> joinedType = compiler.union(elementType, inferred.get());
-					if (!joinedType.isPresent()) {
-						return InferredType.failure(CompileExceptionCode.TYPE_CANNOT_UNITE, elementType + " and " + inferred.get() + " are incompatible");
-					}
-
-					elementType = joinedType.get();
-				}
-				return InferredType.success(compiler.types().arrayOf(elementType));
-			}
+			return cast.of(level, compiler.at(position).newArray(maybeArray.get(), elements));
 		}
 	}
 }

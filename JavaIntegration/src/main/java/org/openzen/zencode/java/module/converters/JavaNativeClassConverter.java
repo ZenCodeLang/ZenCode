@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.annotations.NativeDefinitionAnnotation;
 import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.*;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
@@ -23,6 +24,7 @@ import org.openzen.zenscript.javashared.JavaImplementation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import static org.objectweb.asm.Type.getInternalName;
@@ -43,8 +45,9 @@ public class JavaNativeClassConverter {
 	}
 
 
-	public HighLevelDefinition convertClass(Class<?> cls) {
-		HighLevelDefinition definition = checkRegistry(cls);
+	public TypeSymbol convertClass(Class<?> cls) {
+		Optional<TypeSymbol> maybeKnown = checkRegistry(cls);
+
 		final boolean foundRegistry = definition != null;
 
 		if (!foundRegistry) {
@@ -77,7 +80,7 @@ public class JavaNativeClassConverter {
 		return JavaClass.fromInternalName(internalName, kind);
 	}
 
-	private HighLevelDefinition getDefinitionForClass(Class<?> cls) {
+	private TypeSymbol getDefinitionForClass(Class<?> cls) {
 		boolean isStruct = cls.isAnnotationPresent(ZenCodeType.Struct.class);
 		final String specifiedName = getNameForScripts(cls);
 
@@ -120,7 +123,7 @@ public class JavaNativeClassConverter {
 		}
 	}
 
-	private HighLevelDefinition checkRegistry(Class<?> cls) {
+	private Optional<TypeSymbol> checkRegistry(Class<?> cls) {
 		String name = cls.getCanonicalName();
 		if (!name.startsWith("java.lang.") && !name.startsWith("java.util.")) {
 			return null;

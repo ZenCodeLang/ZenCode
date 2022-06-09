@@ -36,14 +36,4 @@ public class CallStaticExpression extends Expression {
 		CallArguments tArguments = arguments.transform(transformer);
 		return arguments == tArguments ? this : new CallStaticExpression(position, target, member, instancedHeader, tArguments);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new CallStaticExpression(
-				position,
-				target.getNormalized(),
-				member,
-				instancedHeader.normalize(scope.getTypeRegistry()),
-				arguments.normalize(position, scope, instancedHeader));
-	}
 }

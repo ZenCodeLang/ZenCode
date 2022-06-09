@@ -44,9 +44,4 @@ public class ConditionalExpression extends Expression {
 				? this
 				: new ConditionalExpression(position, tCondition, tIfThen, tIfElse, type);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new ConditionalExpression(position, condition.normalize(scope), ifThen.normalize(scope), ifElse.normalize(scope), type.getNormalized());
-	}
 }

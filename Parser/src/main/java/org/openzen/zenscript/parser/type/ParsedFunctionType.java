@@ -1,7 +1,7 @@
 package org.openzen.zenscript.parser.type;
 
+import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.TypeBuilder;
 import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
 
 public class ParsedFunctionType implements IParsedType {

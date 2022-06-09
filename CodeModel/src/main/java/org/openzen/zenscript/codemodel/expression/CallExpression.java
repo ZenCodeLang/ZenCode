@@ -2,20 +2,22 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+
+import java.util.Optional;
 
 public class CallExpression extends Expression {
 	public final Expression target;
-	public final FunctionalMemberRef member;
+	public final MethodInstance method;
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
 
-	public CallExpression(CodePosition position, Expression target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments) {
+	public CallExpression(CodePosition position, Expression target, MethodInstance method, FunctionHeader instancedHeader, CallArguments arguments) {
 		super(position, instancedHeader.getReturnType(), multiThrow(position, arguments.arguments));
 
 		this.target = target;
-		this.member = member;
+		this.method = method;
 		this.arguments = arguments;
 		this.instancedHeader = instancedHeader;
 	}
@@ -40,29 +42,21 @@ public class CallExpression extends Expression {
 		CallArguments tArguments = arguments.transform(transformer);
 		return tTarget == target && tArguments == arguments
 				? this
-				: new CallExpression(position, tTarget, member, instancedHeader, tArguments);
+				: new CallExpression(position, tTarget, method, instancedHeader, tArguments);
 	}
 
 	@Override
-	public String evaluateStringConstant() {
-		if (member.getBuiltin() == null)
-			throw new UnsupportedOperationException("Cannot evaluate to a string constant!");
-
-		switch (member.getBuiltin()) {
-			case STRING_ADD_STRING:
-				return target.evaluateStringConstant() + arguments.arguments[0].evaluateStringConstant();
-			default:
-				throw new UnsupportedOperationException("Cannot evaluate to a string constant!");
+	public Optional<CompileTimeConstant> evaluate() {
+		CompileTimeConstant[] arguments = new CompileTimeConstant[this.arguments.arguments.length];
+		for (int i = 0; i < arguments.length; i++) {
+			Optional<CompileTimeConstant> argument = this.arguments.arguments[i].evaluate();
+			if (argument.isPresent()) {
+				arguments[i] = argument.get();
+			} else {
+				return Optional.empty();
+			}
 		}
-	}
 
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new CallExpression(
-				position,
-				target.normalize(scope),
-				member,
-				instancedHeader.normalize(scope.getTypeRegistry()),
-				arguments.normalize(position, scope, instancedHeader));
+		return method.method.evaluate(this.arguments.typeArguments, arguments);
 	}
 }

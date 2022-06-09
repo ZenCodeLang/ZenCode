@@ -2,13 +2,18 @@ package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.builtin.BasicTypeMembers;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-public enum BasicTypeID implements TypeID {
+public enum BasicTypeID implements TypeID, TypeSymbol {
 	VOID("void"),
 	NULL("null"),
 	BOOL("bool"),
@@ -29,19 +34,13 @@ public enum BasicTypeID implements TypeID {
 	UNDETERMINED("undetermined"),
 	INVALID("invalid");
 
-	public static final List<TypeID> HINT_BOOL = Collections.singletonList(BOOL);
-
 	public final String name;
+	private MemberSet members;
 
 	private Expression defaultValue = null;
 
 	BasicTypeID(String name) {
 		this.name = name;
-	}
-
-	@Override
-	public BasicTypeID getNormalized() {
-		return this;
 	}
 
 	@Override
@@ -75,13 +74,18 @@ public enum BasicTypeID implements TypeID {
 	}
 
 	@Override
+	public ResolvedType resolve() {
+		return members;
+	}
+
+	@Override
 	public boolean hasDefaultValue() {
 		return true;
 	}
 
 	@Override
 	public Expression getDefaultValue() {
-		if (defaultValue == null) // lazy init due to circular initialization in the constant expressions
+		if (defaultValue == null) // lazy init due to circular dependency in the constant expressions
 			defaultValue = generateDefaultValue();
 
 		return defaultValue;
@@ -123,5 +127,62 @@ public enum BasicTypeID implements TypeID {
 			default:
 				return null;
 		}
+	}
+
+	// #################################
+	// ### TypeSymbol implementation ###
+	// #################################
+
+	@Override
+	public Module getModule() {
+		return Module.BUILTIN;
+	}
+
+	@Override
+	public String describe() {
+		return name;
+	}
+
+	@Override
+	public boolean isInterface() {
+		return false;
+	}
+
+	@Override
+	public boolean isStatic() {
+		return true;
+	}
+
+	@Override
+	public boolean isEnum() {
+		return false;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public ResolvedType resolve(TypeID[] typeArguments) {
+		if (members == null)
+			members = BasicTypeMembers.get(this);
+
+		return members;
+	}
+
+	@Override
+	public TypeParameter[] getTypeParameters() {
+		return TypeParameter.NONE;
+	}
+
+	@Override
+	public Optional<TypeSymbol> getOuter() {
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<TypeID> getSupertype(TypeID[] typeArguments) {
+		return Optional.empty();
 	}
 }

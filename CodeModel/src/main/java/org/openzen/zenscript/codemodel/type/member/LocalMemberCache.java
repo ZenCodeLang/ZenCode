@@ -26,7 +26,6 @@ public class LocalMemberCache {
 	}
 
 	public TypeMembers get(TypeID type) {
-		type = type.getNormalized();
 		if (types.containsKey(type)) {
 			return types.get(type);
 		} else {

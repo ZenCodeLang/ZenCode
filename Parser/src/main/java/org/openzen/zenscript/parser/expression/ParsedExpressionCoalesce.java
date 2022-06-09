@@ -1,20 +1,16 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.InferredType;
-import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.compiler.expression.CompilingExpression;
-import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
-import org.openzen.zenscript.compiler.expression.TypeMatch;
 
 public class ParsedExpressionCoalesce extends ParsedExpression {
-	private final ParsedExpression left;
-	private final ParsedExpression right;
+	private final CompilableExpression left;
+	private final CompilableExpression right;
 
-	public ParsedExpressionCoalesce(CodePosition position, ParsedExpression left, ParsedExpression right) {
+	public ParsedExpressionCoalesce(CodePosition position, CompilableExpression left, CompilableExpression right) {
 		super(position);
 
 		this.left = left;
@@ -39,33 +35,21 @@ public class ParsedExpressionCoalesce extends ParsedExpression {
 		}
 
 		@Override
-		public Expression as(TypeID type) {
-			Expression cLeft = left.as(compiler.types().optionalOf(type));
-			TypeID rightType = cLeft.type.withoutOptional();
-			Expression cRight = right.as(rightType);
-			return compiler.at(position, type).coalesce(cLeft, cRight);
+		public Expression eval() {
+			Expression left = this.left.eval();
+			TypeID rightType = left.type.withoutOptional();
+			Expression cRight = right.cast(cast(rightType)).value;
+			return compiler.at(position).coalesce(left, cRight);
 		}
 
 		@Override
-		public TypeMatch matches(TypeID returnType) {
-			return TypeMatch.min(
-					left.matches(compiler.types().optionalOf(returnType)),
-					right.matches(returnType));
-		}
+		public CastedExpression cast(CastedEval cast) {
+			CastedExpression cLeft = left.cast(cast(compiler.types().optionalOf(cast.type)));
+			if (cLeft.isFailed())
+				return cLeft;
 
-		@Override
-		public InferredType inferType() {
-			InferredType leftType = left.inferType();
-			if (leftType.isFailed())
-				return leftType;
-
-			InferredType rightType = right.inferType();
-			if (rightType.isFailed())
-				return rightType;
-
-			return compiler.union(leftType.get().withoutOptional(), rightType.get())
-					.map(InferredType::success)
-					.orElseGet(() -> InferredType.failure(CompileExceptionCode.TYPE_CANNOT_UNITE, "The types " + leftType.get() + " and " + rightType.get() + " are unrelated"));
+			Expression cRight = right.cast(cast).value;
+			return cast.of(compiler.at(position).coalesce(cLeft.value, cRight));
 		}
 	}
 }

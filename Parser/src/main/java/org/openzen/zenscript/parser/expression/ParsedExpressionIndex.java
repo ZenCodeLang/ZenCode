@@ -1,32 +1,19 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
-import org.openzen.zenscript.compiler.InferredType;
-import org.openzen.zenscript.compiler.ResolvedCallable;
-import org.openzen.zenscript.compiler.expression.AbstractCompilingExpression;
-import org.openzen.zenscript.compiler.expression.CompilingExpression;
-import org.openzen.zenscript.compiler.expression.ExpressionCompiler;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class ParsedExpressionIndex extends ParsedExpression {
-	private final ParsedExpression value;
-	private final List<ParsedExpression> indexes;
+	private final CompilableExpression value;
+	private final List<CompilableExpression> indexes;
 
-	public ParsedExpressionIndex(CodePosition position, ParsedExpression value, List<ParsedExpression> indexes) {
+	public ParsedExpressionIndex(CodePosition position, CompilableExpression value, List<CompilableExpression> indexes) {
 		super(position);
 
 		this.value = value;
@@ -42,114 +29,68 @@ public class ParsedExpressionIndex extends ParsedExpression {
 				indexes.stream().map(ix -> ix.compile(compiler)).toArray(CompilingExpression[]::new));
 	}
 
-	private class Compiling extends AbstractCompilingExpression {
-		private final CompilingExpression value;
+	private static class Compiling extends AbstractCompilingExpression {
+		private final Expression value;
 		private final CompilingExpression[] indexes;
 
 		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value, CompilingExpression[] indexes) {
 			super(compiler, position);
-			this.value = value;
+			this.value = value.eval();
 			this.indexes = indexes;
 		}
 
 		@Override
-		public Expression as(TypeID type) {
-			InferredType valueType = value.inferType();
+		public Expression eval() {
+			ResolvedType resolved = compiler.resolve(value.type);
+			return resolved.findOperator(OperatorType.INDEXGET)
+					.map(method -> method.call(compiler.at(position), value, indexes))
+					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noOperatorInType(value.type, OperatorType.INDEXGET)));
 		}
 
 		@Override
-		public Optional<ResolvedCallable> call() {
-			return Optional.empty();
+		public CompilingExpression assign(CompilingExpression value) {
+			return new CompilingSet(compiler, position, this.value, indexes, value);
 		}
 
 		@Override
-		public Optional<CompilingExpression> getMember(CodePosition position, GenericName name) {
-			return Optional.empty();
-		}
-
-		@Override
-		public Expression assign(Expression value) {
-			return null;
-		}
-
-		@Override
-		public InferredType inferType() {
-			return null;
-		}
-
-		@Override
-		public Optional<TypeID> inferAssignType() {
-			return Optional.empty();
+		public CastedExpression cast(CastedEval cast) {
+			ResolvedType resolved = compiler.resolve(value.type);
+			return resolved.findOperator(OperatorType.INDEXGET)
+					.map(method -> method.cast(compiler.at(position), cast, value, indexes))
+					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(value.type, OperatorType.INDEXGET)));
 		}
 	}
 
-	private class PartialIndexedExpression implements IPartialExpression {
-		private final ExpressionScope scope;
-		private final Expression target;
+	private static class CompilingSet extends AbstractCompilingExpression {
+		private final Expression instance;
+		private final CompilingExpression[] arguments;
 
-		private PartialIndexedExpression(ExpressionScope scope) throws CompileException {
-			this.scope = scope;
-			target = value.compile(scope.withoutHints()).eval();
+		public CompilingSet(
+				ExpressionCompiler compiler,
+				CodePosition position,
+				Expression instance,
+				CompilingExpression[] indexes,
+				CompilingExpression value
+		) {
+			super(compiler, position);
+
+			this.instance = instance;
+			this.arguments = Arrays.copyOf(indexes, indexes.length + 1);
+			this.arguments[arguments.length - 1] = value;
 		}
 
 		@Override
-		public Expression eval() throws CompileException {
-			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXGET);
-			List<TypeID>[] predictedTypes = members.predictCallTypes(position, scope, scope.hints, indexes.size());
-			Expression[] arguments = new Expression[indexes.size()];
-			for (int i = 0; i < arguments.length; i++)
-				arguments[i] = indexes.get(i).compile(scope.createInner(predictedTypes[i], this::getLength)).eval();
-
-			return members.call(position, scope, target, new CallArguments(arguments), false);
+		public Expression eval() {
+			return compiler.resolve(instance.type).findOperator(OperatorType.INDEXSET)
+					.map(operator -> operator.call(compiler.at(position), instance, arguments))
+					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noOperatorInType(instance.type, OperatorType.INDEXSET)));
 		}
 
 		@Override
-		public List<TypeID>[] predictCallTypes(CodePosition position, TypeScope scope, List<TypeID> hints, int arguments) throws CompileException {
-			return eval().predictCallTypes(position, scope, hints, arguments);
-		}
-
-		@Override
-		public List<FunctionHeader> getPossibleFunctionHeaders(TypeScope scope, List<TypeID> hints, int arguments) throws CompileException {
-			return eval().getPossibleFunctionHeaders(scope, hints, arguments);
-		}
-
-		@Override
-		public IPartialExpression getMember(CodePosition position, TypeScope scope, List<TypeID> hints, GenericName name) throws CompileException {
-			return eval().getMember(position, scope, hints, name);
-		}
-
-		@Override
-		public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
-			return eval().call(position, scope, hints, arguments);
-		}
-
-		@Override
-		public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
-			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXSET);
-			List<TypeID>[] predictedTypes = members.predictCallTypes(position, scope, this.scope.hints, indexes.size() + 1);
-
-			Expression[] arguments = new Expression[indexes.size() + 1];
-			for (int i = 0; i < arguments.length - 1; i++)
-				arguments[i] = indexes.get(i).compile(this.scope.createInner(predictedTypes[i], this::getLength)).eval();
-			arguments[indexes.size()] = value;
-
-			return members.call(position, scope, target, new CallArguments(arguments), false);
-		}
-
-		@Override
-		public List<TypeID> getAssignHints() {
-			TypeMemberGroup members = scope.getTypeMembers(target.type).getOrCreateGroup(OperatorType.INDEXSET);
-			List<TypeID>[] predictedTypes = members.predictCallTypes(position, scope, scope.hints, indexes.size() + 1);
-			return predictedTypes[indexes.size()];
-		}
-
-		private Expression getLength(CodePosition position) throws CompileException {
-			return target.getMember(position, scope, scope.hints, new GenericName("length")).eval();
-		}
-
-		@Override
-		public TypeID[] getTypeArguments() {
-			return null;
+		public CastedExpression cast(CastedEval cast) {
+			return compiler.resolve(instance.type).findOperator(OperatorType.INDEXSET)
+					.map(operator -> operator.cast(compiler.at(position), cast, instance, arguments))
+					.orElseGet(() -> cast.invalid(CompileErrors.noOperatorInType(instance.type, OperatorType.INDEXSET)));
 		}
 	}
 }

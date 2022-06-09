@@ -1,39 +1,18 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class IteratorTypeID implements TypeID {
 	public final TypeID[] iteratorTypes;
-	private final IteratorTypeID normalized;
 
-	public IteratorTypeID(GlobalTypeRegistry registry, TypeID[] iteratorTypes) {
+	public IteratorTypeID(TypeID[] iteratorTypes) {
 		this.iteratorTypes = iteratorTypes;
-
-		normalized = isDenormalized() ? normalize(registry) : this;
-	}
-
-	@Override
-	public IteratorTypeID getNormalized() {
-		return normalized;
-	}
-
-	private boolean isDenormalized() {
-		for (TypeID type : iteratorTypes)
-			if (type.getNormalized() != type)
-				return true;
-
-		return false;
-	}
-
-	private IteratorTypeID normalize(GlobalTypeRegistry registry) {
-		TypeID[] normalizedTypes = new TypeID[iteratorTypes.length];
-		for (int i = 0; i < normalizedTypes.length; i++)
-			normalizedTypes[i] = iteratorTypes[i].getNormalized();
-		return registry.getIterator(normalizedTypes);
 	}
 
 	@Override
@@ -57,9 +36,14 @@ public class IteratorTypeID implements TypeID {
 	}
 
 	@Override
+	public ResolvedType resolve() {
+		return new MemberSet(); // no members yet
+	}
+
+	@Override
 	public TypeID instance(GenericMapper mapper) {
 		TypeID[] instanced = mapper.map(iteratorTypes);
-		return mapper.registry.getIterator(instanced);
+		return new IteratorTypeID(instanced);
 	}
 
 	@Override

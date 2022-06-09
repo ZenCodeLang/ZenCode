@@ -9,8 +9,8 @@ import org.openzen.zencode.shared.StringExpansion;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.annotations.NativeTag;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
@@ -273,9 +273,9 @@ public class JavaPrepareClassMethodVisitor implements MemberVisitor<Void> {
 
 		int modifiers = cls.kind == JavaClass.Kind.INTERFACE ? JavaModifiers.ABSTRACT : 0;
 		if (member.getOverrides() != null) {
-			DefinitionMemberRef base = member.getOverrides();
+			MethodSymbol base = member.getOverrides();
 
-			JavaMethod baseMethod = context.getJavaMethod(base.getTarget());
+			JavaMethod baseMethod = context.getJavaMethod(base);
 
 			method = new JavaMethod(
 					cls,

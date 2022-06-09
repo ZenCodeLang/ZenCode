@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -13,7 +14,7 @@ import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public class CallerMember extends FunctionalMember {
-	public FunctionalMemberRef overrides;
+	public MethodSymbol overrides;
 
 	public CallerMember(
 			CodePosition position,
@@ -57,19 +58,19 @@ public class CallerMember extends FunctionalMember {
 	@Override
 	public int getEffectiveModifiers() {
 		int result = super.getEffectiveModifiers();
-		if (overrides != null && overrides.getTarget().getDefinition().isInterface())
+		if (overrides != null && overrides.getDefiningType().isInterface())
 			result |= Modifiers.PUBLIC;
 
 		return result;
 	}
 
-	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {
+	public void setOverrides(MethodSymbol overrides) {
 		this.overrides = overrides;
-		header = header.inferFromOverride(registry, overrides.getHeader());
+		header = header.inferFromOverride(overrides.getHeader());
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
+	public MethodSymbol getOverrides() {
 		return overrides;
 	}
 }

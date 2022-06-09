@@ -7,6 +7,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.*;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -70,13 +72,13 @@ public class ParsedAnnotation {
 		return results.toArray(NONE);
 	}
 
-	public static MemberAnnotation[] compileForMember(ParsedAnnotation[] annotations, IDefinitionMember member, BaseScope scope) {
+	public static MemberAnnotation[] compileForMember(ParsedAnnotation[] annotations, IDefinitionMember member, MemberCompiler compiler) {
 		if (annotations.length == 0)
 			return MemberAnnotation.NONE;
 
 		MemberAnnotation[] compiled = new MemberAnnotation[annotations.length];
 		for (int i = 0; i < annotations.length; i++) {
-			compiled[i] = annotations[i].compileForMember(member, scope);
+			compiled[i] = annotations[i].compileForMember(member, compiler);
 		}
 		return compiled;
 	}
@@ -92,13 +94,13 @@ public class ParsedAnnotation {
 		return compiled;
 	}
 
-	public static StatementAnnotation[] compileForStatement(ParsedAnnotation[] annotations, Statement statement, StatementScope scope) {
+	public static StatementAnnotation[] compileForStatement(ParsedAnnotation[] annotations, Statement statement, StatementCompiler compiler) {
 		if (annotations.length == 0)
 			return StatementAnnotation.NONE;
 
 		StatementAnnotation[] compiled = new StatementAnnotation[annotations.length];
 		for (int i = 0; i < annotations.length; i++)
-			compiled[i] = annotations[i].compileForStatement(statement, scope);
+			compiled[i] = annotations[i].compileForStatement(statement, compiler);
 		return compiled;
 	}
 
@@ -112,12 +114,13 @@ public class ParsedAnnotation {
 		return compiled;
 	}
 
-	public MemberAnnotation compileForMember(IDefinitionMember member, BaseScope scope) {
+	public MemberAnnotation compileForMember(IDefinitionMember member, MemberCompiler compiler) {
 		try {
-			AnnotationDefinition annotationType = type.compileAnnotation(scope);
-			ExpressionScope evalScope = annotationType.getScopeForMember(member, scope);
-			TypeID[] types = type.compileTypeArguments(scope);
-			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
+			AnnotationDefinition annotationType = type.compileAnnotation(compiler.types());
+			ExpressionScope evalScope = annotationType.getScopeForMember(member, compiler);
+			TypeID[] types = type.compileTypeArguments(compiler);
+
+			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(compiler));
 			return annotationType.createForMember(position, cArguments);
 		} catch (CompileException ex) {
 			return new InvalidMemberAnnotation(ex);
@@ -139,14 +142,14 @@ public class ParsedAnnotation {
 		}
 	}
 
-	public StatementAnnotation compileForStatement(Statement statement, StatementScope scope) {
-		AnnotationDefinition annotationType = type.compileAnnotation(scope);
+	public StatementAnnotation compileForStatement(Statement statement, StatementCompiler compiler) {
+		AnnotationDefinition annotationType = type.compileAnnotation(compiler);
 		if (annotationType == null)
 			return new InvalidStatementAnnotation(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
 
 		try {
 			ExpressionScope evalScope = annotationType.getScopeForStatement(statement, scope);
-			TypeID[] types = type.compileTypeArguments(scope);
+			TypeID[] types = type.compileTypeArguments(compiler.types());
 			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
 			return annotationType.createForStatement(position, cArguments);
 		} catch (CompileException ex) {

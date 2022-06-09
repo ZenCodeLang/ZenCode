@@ -6,10 +6,12 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.definition.InterfaceDefinition;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
@@ -29,6 +31,11 @@ public class InnerDefinitionMember extends DefinitionMember {
 		} else {
 			type.addInnerType(innerDefinition.name, new InnerDefinition(innerDefinition, mapper.getMapping()));
 		}
+	}
+
+	@Override
+	public void registerTo(MemberSet members, GenericMapper mapper) {
+		// TODO
 	}
 
 	@Override
@@ -52,7 +59,7 @@ public class InnerDefinitionMember extends DefinitionMember {
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
+	public MethodSymbol getOverrides() {
 		return null;
 	}
 
@@ -65,11 +72,6 @@ public class InnerDefinitionMember extends DefinitionMember {
 			result |= Modifiers.INTERNAL;
 
 		return result;
-	}
-
-	@Override
-	public void normalize(TypeScope scope) {
-		innerDefinition.normalize(scope);
 	}
 
 	@Override

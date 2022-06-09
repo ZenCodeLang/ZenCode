@@ -1,10 +1,14 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
+import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
+import org.openzen.zenscript.codemodel.type.member.MemberUnion;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class GenericTypeID implements TypeID {
 	public final TypeParameter parameter;
@@ -13,13 +17,8 @@ public class GenericTypeID implements TypeID {
 		this.parameter = parameter;
 	}
 
-	public boolean matches(LocalMemberCache cache, TypeID type) {
-		return parameter.matches(cache, type);
-	}
-
-	@Override
-	public GenericTypeID getNormalized() {
-		return this;
+	public boolean matches(TypeID type) {
+		return parameter.matches(type);
 	}
 
 	@Override
@@ -64,6 +63,21 @@ public class GenericTypeID implements TypeID {
 	}
 
 	@Override
+	public Optional<GenericTypeID> asGeneric() {
+		return Optional.of(this);
+	}
+
+	@Override
+	public ResolvedType resolve() {
+		List<ResolvedType> fromBounds = new ArrayList<>();
+		for (TypeParameterBound bound : parameter.bounds) {
+			// TODO: local expansions will not be applied here
+			bound.resolveMembers().ifPresent(fromBounds::add);
+		}
+		return MemberUnion.of(fromBounds);
+	}
+
+	@Override
 	public int hashCode() {
 		int hash = 7;
 		hash = 47 * hash + parameter.hashCode();
@@ -82,7 +96,7 @@ public class GenericTypeID implements TypeID {
 			return false;
 		}
 		final GenericTypeID other = (GenericTypeID) obj;
-		return this.parameter.equals(other.parameter);
+		return this.parameter == other.parameter;
 	}
 
 	@Override

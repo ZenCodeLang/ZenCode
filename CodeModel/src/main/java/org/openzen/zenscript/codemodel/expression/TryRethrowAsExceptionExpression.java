@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class TryRethrowAsExceptionExpression extends Expression {
@@ -27,10 +26,5 @@ public class TryRethrowAsExceptionExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new TryRethrowAsExceptionExpression(position, type, tValue, thrownType);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new TryRethrowAsExceptionExpression(position, type, value.normalize(scope), thrownType.getNormalized());
 	}
 }

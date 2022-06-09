@@ -8,8 +8,8 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 public class ExpansionDefinition extends HighLevelDefinition {
 	public TypeID target;
 
-	public ExpansionDefinition(CodePosition position, Module module, ZSPackage pkg, int modifiers, HighLevelDefinition outerDefinition) {
-		super(position, module, pkg, null, modifiers, outerDefinition);
+	public ExpansionDefinition(CodePosition position, Module module, ZSPackage pkg, int modifiers) {
+		super(position, module, pkg, null, modifiers, null);
 	}
 
 	@Override
@@ -20,5 +20,10 @@ public class ExpansionDefinition extends HighLevelDefinition {
 	@Override
 	public <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor) {
 		return visitor.visitExpansion(context, this);
+	}
+
+	@Override
+	public String getName() {
+		return null;
 	}
 }

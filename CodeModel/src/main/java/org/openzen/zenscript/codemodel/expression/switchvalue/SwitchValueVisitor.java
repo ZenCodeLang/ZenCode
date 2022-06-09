@@ -10,4 +10,6 @@ public interface SwitchValueVisitor<T> {
 	T acceptEnumConstant(EnumConstantSwitchValue value);
 
 	T acceptVariantOption(VariantOptionSwitchValue value);
+
+	T acceptError(ErrorSwitchValue value);
 }

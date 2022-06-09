@@ -15,26 +15,17 @@ import java.lang.reflect.Method;
 public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
 	public final Method functionalInterfaceMethod;
 	public final JavaMethod method;
-	private final FunctionTypeID normalized;
 
-	public JavaFunctionalInterfaceTypeID(GlobalTypeRegistry registry, FunctionHeader header, Method functionalInterfaceMethod, JavaMethod method) {
-		super(registry, header);
+	public JavaFunctionalInterfaceTypeID(FunctionHeader header, Method functionalInterfaceMethod, JavaMethod method) {
+		super(header);
 
 		this.functionalInterfaceMethod = functionalInterfaceMethod;
 		this.method = method;
-
-		FunctionHeader normalizedHeader = header.normalize(registry);
-		normalized = header == normalizedHeader ? this : internalizeHeaderChange(registry,normalizedHeader);
-	}
-
-	@Override
-	public FunctionTypeID getNormalized() {
-		return normalized;
 	}
 
 	@Override
 	public TypeID instance(GenericMapper mapper) {
-		return internalizeHeaderChange(mapper.registry,mapper.map(header));
+		return new JavaFunctionalInterfaceTypeID(mapper.map(header), functionalInterfaceMethod, method);
 	}
 
 	@Override
@@ -65,10 +56,5 @@ public class JavaFunctionalInterfaceTypeID extends FunctionTypeID {
 				return new JavaFunctionInterfaceCastExpression(position, this, value);
 		}
 		return null;
-	}
-
-	private JavaFunctionalInterfaceTypeID internalizeHeaderChange(GlobalTypeRegistry registry, FunctionHeader header) {
-		JavaFunctionalInterfaceTypeID normalizedTypeId = new JavaFunctionalInterfaceTypeID(registry, header, functionalInterfaceMethod, method);
-		return registry.internalize(JavaFunctionalInterfaceTypeID.class, normalizedTypeId);
 	}
 }

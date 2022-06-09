@@ -1,13 +1,14 @@
 package org.openzen.zenscript.parser.type;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.type.InvalidTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.TypeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class ParsedNamedType implements IParsedType {
 			genericNames.add(namePart.compile(typeBuilder));
 
 		return typeBuilder.resolve(position, genericNames)
-				.orElseGet(() -> new InvalidTypeID(position, CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + toString()));
+				.orElseGet(() -> new InvalidTypeID(position, new CompileError(CompileExceptionCode.NO_SUCH_TYPE, "Type not found: " + this)));
 	}
 
 	@Override

@@ -15,6 +15,10 @@ import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.DefinitionMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
@@ -58,8 +62,11 @@ public abstract class JavaContext {
 	private void addDefaultFunctions() {
 
 		final TypeParameter t = new TypeParameter(CodePosition.BUILTIN, "T");
+		final GenericTypeID tType = new GenericTypeID(t);
 		final TypeParameter u = new TypeParameter(CodePosition.BUILTIN, "U");
+		final GenericTypeID uType = new GenericTypeID(u);
 		final TypeParameter v = new TypeParameter(CodePosition.BUILTIN, "V");
+		final GenericTypeID vType = new GenericTypeID(v);
 		final Map<String, TypeParameter> typeParamMap = new HashMap<>();
 		typeParamMap.put("T", t);
 		typeParamMap.put("U", u);
@@ -108,9 +115,9 @@ public abstract class JavaContext {
 		registerFunction(paramConverter, ToLongBiFunction.class);
 		registerFunction(paramConverter, ToLongFunction.class);
 		// Needs special handling due to it just implementing BiFunction/Function.
-		registerFunction("TTToT", BinaryOperator.class, "apply", new TypeParameter[]{t}, registry.getGeneric(t), registry.getGeneric(t), registry.getGeneric(t));
-		registerFunction("TToT", UnaryOperator.class, "apply", new TypeParameter[]{t}, registry.getGeneric(t));
-		registerFunction("TTToInt", Comparator.class, "compare", new TypeParameter[]{t}, BasicTypeID.INT, registry.getGeneric(t), registry.getGeneric(t));
+		registerFunction("TTToT", BinaryOperator.class, "apply", new TypeParameter[]{t}, tType, tType, tType);
+		registerFunction("TToT", UnaryOperator.class, "apply", new TypeParameter[]{t}, tType);
+		registerFunction("TTToInt", Comparator.class, "compare", new TypeParameter[]{t}, BasicTypeID.INT, registry.getGeneric(t), tType);
 	}
 
 	private void registerFunction(String id, Class<?> clazz, String methodName, TypeParameter[] typeParameters, TypeID returnType, TypeID... parameterTypes) {
@@ -307,23 +314,22 @@ public abstract class JavaContext {
 		getJavaModule(definition.module).setNativeClassInfo(definition, cls);
 	}
 
-	public boolean hasJavaField(DefinitionMemberRef member) {
-		HighLevelDefinition definition = member.getTarget().getDefinition();
-		return getJavaModule(definition.module).optFieldInfo(member.getTarget()) != null;
+	public boolean hasJavaField(MethodSymbol getterOrSetter) {
+		DefinitionSymbol definition = getterOrSetter.getDefiningType();
+		return getJavaModule(definition.getModule()).optFieldInfo(getterOrSetter) != null;
 	}
 
-	public JavaField getJavaField(IDefinitionMember member) {
-		HighLevelDefinition definition = member.getDefinition();
-		return getJavaModule(definition.module).getFieldInfo(member);
+	public JavaField getJavaField(FieldSymbol field) {
+		DefinitionSymbol definition = field.getDefiningType();
+		return getJavaModule(definition.getModule()).getFieldInfo(field);
 	}
 
 	public JavaField getJavaField(DefinitionMemberRef member) {
 		return getJavaField(member.getTarget());
 	}
 
-	public JavaMethod getJavaMethod(IDefinitionMember member) {
-		HighLevelDefinition definition = member.getDefinition();
-		return getJavaModule(definition.module).getMethodInfo(member);
+	public JavaMethod getJavaMethod(MethodSymbol method) {
+		return getJavaModule(method.getDefiningType().getModule()).getMethodInfo(method);
 	}
 
 	public JavaMethod getJavaMethod(DefinitionMemberRef member) {

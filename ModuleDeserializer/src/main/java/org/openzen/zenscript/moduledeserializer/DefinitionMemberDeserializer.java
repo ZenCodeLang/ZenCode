@@ -146,7 +146,7 @@ public class DefinitionMemberDeserializer implements DefinitionVisitorWithContex
 				FunctionHeader header = reader.deserializeHeader(context);
 				MethodMember result = new MethodMember(position, definition, modifiers, name, header, null);
 				reader.enqueueCode(reader -> {
-					result.setOverrides(context.moduleContext.registry, (FunctionalMemberRef) reader.readMember(context, supertype));
+					result.setOverrides((FunctionalMemberRef) reader.readMember(context, supertype));
 					result.setBody(reader.deserializeStatement(new StatementContext(context, header)));
 				});
 				member = result;

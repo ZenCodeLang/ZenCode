@@ -30,9 +30,4 @@ public class InterfaceCastExpression extends Expression {
 		Expression tValue = value.transform(transformer);
 		return value == tValue ? this : new InterfaceCastExpression(position, tValue, implementation);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new InterfaceCastExpression(position, value.normalize(scope), implementation);
-	}
 }

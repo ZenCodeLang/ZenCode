@@ -96,7 +96,7 @@ public class JavaTypeDescriptorVisitor implements TypeVisitor<String> {
 				default:
 					throw new IllegalArgumentException("Not a valid type: " + basic);
 			}
-		}
+		}`
 	}
 
 	@Override

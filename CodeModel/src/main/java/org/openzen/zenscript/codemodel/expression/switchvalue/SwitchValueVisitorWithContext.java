@@ -10,4 +10,6 @@ public interface SwitchValueVisitorWithContext<C, R> {
 	R acceptEnumConstant(C context, EnumConstantSwitchValue value);
 
 	R acceptVariantOption(C context, VariantOptionSwitchValue value);
+
+	R acceptError(C context, ErrorSwitchValue value);
 }

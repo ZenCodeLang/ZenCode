@@ -20,8 +20,5 @@ public abstract class CapturedExpression extends Expression {
 		return result;
 	}
 
-	@Override
-	public abstract CapturedExpression normalize(TypeScope scope);
-
 	public abstract <T> T accept(CapturedExpressionVisitor<T> visitor);
 }

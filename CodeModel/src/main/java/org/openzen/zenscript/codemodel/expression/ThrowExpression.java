@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ThrowExpression extends Expression {
@@ -32,10 +31,5 @@ public class ThrowExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = transformer.transform(value);
 		return tValue == value ? this : new ThrowExpression(position, type, value);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new ThrowExpression(position, type, value.normalize(scope));
 	}
 }

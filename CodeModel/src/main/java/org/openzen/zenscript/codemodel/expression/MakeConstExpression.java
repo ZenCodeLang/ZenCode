@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class MakeConstExpression extends Expression {
@@ -27,10 +26,5 @@ public class MakeConstExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new MakeConstExpression(position, tValue, type);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new MakeConstExpression(position, value.normalize(scope), type.getNormalized());
 	}
 }

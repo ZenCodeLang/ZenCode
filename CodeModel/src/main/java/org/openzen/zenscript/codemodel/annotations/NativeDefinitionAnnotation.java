@@ -18,12 +18,12 @@ public class NativeDefinitionAnnotation implements DefinitionAnnotation {
 	}
 
 	@Override
-	public void apply(HighLevelDefinition definition, BaseScope scope) {
+	public void apply(HighLevelDefinition definition) {
 		definition.setTag(NativeTag.class, new NativeTag(identifier));
 	}
 
 	@Override
-	public void applyOnSubtype(HighLevelDefinition definition, BaseScope scope) {
+	public void applyOnSubtype(HighLevelDefinition definition) {
 		// this annotation is not inherited
 	}
 

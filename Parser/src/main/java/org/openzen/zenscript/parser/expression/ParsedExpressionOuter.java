@@ -1,33 +1,29 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.compilation.CompilingExpression;
+import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-public class ParsedExpressionOuter extends ParsedExpression {
-	private final ParsedExpression value;
+import java.util.Optional;
 
-	public ParsedExpressionOuter(CodePosition position, ParsedExpression value) {
+public class ParsedExpressionOuter extends ParsedExpression {
+	private final CompilableExpression value;
+
+	public ParsedExpressionOuter(CodePosition position, CompilableExpression value) {
 		super(position);
 
 		this.value = value;
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		TypeID thisType = scope.getThisType();
-		if (!(thisType instanceof DefinitionTypeID))
-			throw new CompileException(position, CompileExceptionCode.USING_THIS_OUTSIDE_TYPE, "Not in a type");
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		Optional<TypeID> thisType = compiler.getThisType();
+		if (!thisType.isPresent())
+			return compiler.invalid(position, CompileErrors.noThisInScope());
 
-		return scope.getOuterInstance(position);
-	}
-
-	@Override
-	public boolean hasStrongType() {
-		return value.hasStrongType();
+		throw new UnsupportedOperationException("Not yet supported");
 	}
 }

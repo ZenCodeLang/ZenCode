@@ -5,6 +5,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.Module;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -20,7 +21,7 @@ public class EnumDefinition extends HighLevelDefinition {
 	public TypeID asType;
 	public List<EnumConstantMember> enumConstants = new ArrayList<>();
 
-	public EnumDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, HighLevelDefinition outerDefinition) {
+	public EnumDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 	}
 
@@ -45,15 +46,6 @@ public class EnumDefinition extends HighLevelDefinition {
 
 		for (EnumConstantMember member : enumConstants)
 			collector.enumConstant(member);
-	}
-
-	@Override
-	public void normalize(TypeScope scope) {
-		if (members.stream().noneMatch(m -> m instanceof ConstructorMember)) {
-			ConstructorMember constructor = new ConstructorMember(position, this, Modifiers.PRIVATE | Modifiers.EXTERN, new FunctionHeader(BasicTypeID.VOID), BuiltinID.ENUM_EMPTY_CONSTRUCTOR);
-			addMember(constructor);
-		}
-		super.normalize(scope);
 	}
 
 	public void addEnumConstant(EnumConstantMember constant) {

@@ -59,7 +59,7 @@ public class TypeValidator implements TypeVisitorWithContext<TypeContext, Void, 
 
 	@Override
 	public Void visitInvalid(TypeContext context, InvalidTypeID type) {
-		validator.logError(ValidationLogEntry.Code.INVALID_TYPE, type.position, type.message);
+		validator.logError(ValidationLogEntry.Code.INVALID_TYPE, type.position, type.error.description);
 		return null;
 	}
 

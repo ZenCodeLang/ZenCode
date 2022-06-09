@@ -1,10 +1,10 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ClassDefinition;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
@@ -13,23 +13,22 @@ import org.openzen.zenscript.parser.member.ParsedDefinitionMember;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 import java.util.List;
+import java.util.Set;
 
 public class ParsedClass extends BaseParsedDefinition {
+	private final String name;
 	private final List<ParsedTypeParameter> parameters;
 	private final IParsedType superclass;
-	private final ClassDefinition compiled;
 
-	public ParsedClass(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> parameters, IParsedType superclass, HighLevelDefinition outerDefinition) {
-		super(position, modifiers, pkg, annotations);
+	public ParsedClass(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> parameters, IParsedType superclass) {
+		super(position, modifiers, annotations);
 
+		this.name = name;
 		this.parameters = parameters;
 		this.superclass = superclass;
-
-		compiled = new ClassDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
 	}
 
-	public static ParsedClass parseClass(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) throws ParseException {
+	public static ParsedClass parseClass(CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> genericParameters = ParsedTypeParameter.parseAll(tokens);
 
@@ -40,10 +39,10 @@ public class ParsedClass extends BaseParsedDefinition {
 
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 
-		ParsedClass result = new ParsedClass(pkg, position, modifiers, annotations, name, genericParameters, superclass, outerDefinition);
+		ParsedClass result = new ParsedClass(position, modifiers, annotations, name, genericParameters, superclass);
 		try {
 			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+				result.addMember(ParsedDefinitionMember.parse(tokens));
 			}
 		} catch (ParseException ex) {
 			tokens.logError(ex);
@@ -53,17 +52,46 @@ public class ParsedClass extends BaseParsedDefinition {
 	}
 
 	@Override
-	public HighLevelDefinition getCompiled() {
-		return compiled;
+	public void registerCompiling(
+			List<CompilingDefinition> definitions,
+			List<CompilingExpansion> expansions,
+			CompilingPackage pkg,
+			DefinitionCompiler compiler,
+			CompilingDefinition outer
+	) {
+		ClassDefinition compiled = new ClassDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
+
+		Compiling compiling = new Compiling(compiler, compiled, outer != null);
+		definitions.add(compiling);
+		compiling.registerCompiling(definitions);
 	}
 
-	@Override
-	protected void linkTypesLocal(TypeResolutionContext context) {
-		ParsedTypeParameter.compile(context, compiled.typeParameters, this.parameters);
+	private class Compiling extends BaseCompilingDefinition {
+		private final ClassDefinition compiled;
 
-		if (superclass != null)
-			compiled.setSuperType(superclass.compile(context));
+		public Compiling(DefinitionCompiler compiler, ClassDefinition compiled, boolean inner) {
+			super(ParsedClass.this, compiler, name, compiled, inner);
 
-		super.linkTypesLocal(context);
+			this.compiled = compiled;
+			this.compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
+		}
+
+		@Override
+		public void linkTypes() {
+			ParsedTypeParameter.compile(compiler.types(), compiled.typeParameters, parameters);
+			if (superclass != null)
+				compiled.setSuperType(superclass.compile(compiler.types()));
+			super.linkTypes();
+		}
+
+		@Override
+		public Set<TypeSymbol> getDependencies() {
+			Set<TypeSymbol> result = super.getDependencies();
+			if (compiled.getSuperType() != null)
+				compiled.getSuperType().asDefinition().ifPresent(type -> result.add(type.definition));
+
+			return result;
+		}
 	}
 }

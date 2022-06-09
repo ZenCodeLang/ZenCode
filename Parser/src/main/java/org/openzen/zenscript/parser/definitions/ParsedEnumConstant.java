@@ -1,20 +1,17 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.expression.NewExpression;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.parser.expression.ParsedCallArguments;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
-import org.openzen.zenscript.parser.expression.ParsedNewExpression;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,23 +19,22 @@ import java.util.List;
 public class ParsedEnumConstant {
 	public final CodePosition position;
 	public final String name;
-	public final List<ParsedExpression> arguments;
-	public final ParsedExpression value;
-	private final EnumConstantMember compiled;
+	public final List<CompilableExpression> arguments;
+	public final int ordinal;
+	public final CompilableExpression value;
 
-	public ParsedEnumConstant(CodePosition position, HighLevelDefinition definition, String name, int value, List<ParsedExpression> arguments, ParsedExpression expressionValue) {
+	public ParsedEnumConstant(CodePosition position, String name, int ordinal, List<CompilableExpression> arguments, CompilableExpression expressionValue) {
 		this.position = position;
 		this.name = name;
 		this.arguments = arguments;
+		this.ordinal = ordinal;
 		this.value = expressionValue;
-
-		compiled = new EnumConstantMember(position, definition, name, value);
 	}
 
-	public static ParsedEnumConstant parse(ZSTokenParser tokens, EnumDefinition definition, int value) throws ParseException {
+	public static ParsedEnumConstant parse(ZSTokenParser tokens, int value) throws ParseException {
 		CodePosition position = tokens.getPosition();
 		ZSToken name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected");
-		List<ParsedExpression> arguments = new ArrayList<>();
+		List<CompilableExpression> arguments = new ArrayList<>();
 		if (tokens.optional(ZSTokenType.T_BROPEN) != null) {
 			try {
 				do {
@@ -51,22 +47,33 @@ public class ParsedEnumConstant {
 			}
 		}
 
-		ParsedExpression valueExpression = null;
+		CompilableExpression valueExpression = null;
 		if (tokens.optional(ZSTokenType.T_ASSIGN) != null)
 			valueExpression = ParsedExpression.parse(tokens);
 
-		return new ParsedEnumConstant(position, definition, name.content, value, arguments, valueExpression);
+		return new ParsedEnumConstant(position, name.content, value, arguments, valueExpression);
 	}
 
-	public EnumConstantMember getCompiled() {
-		return compiled;
+	public Compiling compile(EnumDefinition definition) {
+		EnumConstantMember compiled = new EnumConstantMember(position, definition, name, ordinal);
+		return new Compiling(compiled);
 	}
 
-	public void compileCode(DefinitionTypeID type, ExpressionScope scope) throws CompileException {
-		ParsedCallArguments arguments = new ParsedCallArguments(this.arguments);
-		compiled.constructor = (NewExpression) ParsedNewExpression.compile(position, type, arguments, scope);
+	public class Compiling {
+		public final EnumConstantMember compiled;
 
-		if (value != null)
-			compiled.value = value.compile(scope).eval();
+		public Compiling(EnumConstantMember compiled) {
+			this.compiled = compiled;
+		}
+
+		public void compileCode(TypeID type, ExpressionCompiler compiler) {
+			ResolvedType members = compiler.resolve(type);
+			compiled.constructor = (NewExpression) members.getConstructor().call(
+					compiler.at(position),
+					arguments.stream().map(arg -> arg.compile(compiler)).toArray(CompilingExpression[]::new));
+
+			if (value != null)
+				compiled.value = value.compile(compiler).eval();
+		}
 	}
 }

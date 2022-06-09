@@ -10,9 +10,9 @@ public interface DefinitionAnnotation {
 
 	AnnotationDefinition getDefinition();
 
-	void apply(HighLevelDefinition definition, BaseScope scope);
+	void apply(HighLevelDefinition definition);
 
-	void applyOnSubtype(HighLevelDefinition definition, BaseScope scope);
+	void applyOnSubtype(HighLevelDefinition definition);
 
 	void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeContext context);
 }

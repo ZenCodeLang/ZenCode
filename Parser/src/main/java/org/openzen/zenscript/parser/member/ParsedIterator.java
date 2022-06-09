@@ -23,12 +23,11 @@ public class ParsedIterator extends ParsedDefinitionMember {
 
 	public ParsedIterator(
 			CodePosition position,
-			HighLevelDefinition definition,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			ParsedFunctionHeader header,
 			ParsedFunctionBody body) {
-		super(definition, annotations);
+		super(annotations);
 
 		this.position = position;
 		this.modifiers = modifiers;

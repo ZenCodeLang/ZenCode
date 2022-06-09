@@ -4,21 +4,16 @@ import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.module.JavaNativeTypeConversionContext;
 import org.openzen.zencode.java.module.TypeVariableContext;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.FileResolutionContext;
-import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
-import org.openzen.zenscript.codemodel.definition.ZSPackage;
+import org.openzen.zenscript.codemodel.compilation.CastedEval;
+import org.openzen.zenscript.codemodel.compilation.CompileContext;
+import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.javashared.JavaTypeInfo;
@@ -139,16 +134,15 @@ public class JavaNativeHeaderConverter {
 			try {
 				final String filename = "internal: " + parameter.getDeclaringExecutable().getDeclaringClass() + "#" + parameter.getDeclaringExecutable().getName();
 
-				ZSPackage rootPkg = packageInfo.getPkg().getRoot();
-				final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg(), packageInfo.getModule());
-				final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(typeConversionContext.registry, new AnnotationDefinition[0], rootPkg, rootCompiling, typeConversionContext.globals);
-				final FileResolutionContext fContext = new FileResolutionContext(context, rootPkg, rootCompiling);
-				final FileScope fileScope = new FileScope(fContext, typeConversionContext.compiled.getExpansions(), typeConversionContext.globals, member -> {
-				});
-				final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep);
-
-				return ParsedExpression.parse(tokens).compile(new ExpressionScope(fileScope)).eval().castExplicit(CodePosition.GENERATED, fileScope, type, type.isOptional());
-			} catch (IOException | ParseException | CompileException ex) {
+				ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile(filename, s), bep);
+				CompileContext context = new CompileContext(
+						packageInfo.getPkg().getRoot(),
+						packageInfo.getPkg(),
+						typeConversionContext.compiled.getExpansions(),
+						typeConversionContext.globals);
+				ExpressionCompiler compiler = context.createStaticCompiler();
+				return ParsedExpression.parse(tokens).compile(compiler).cast(CastedEval.implicit(compiler, CodePosition.GENERATED, type)).value;
+			} catch (IOException | ParseException ex) {
 				//TODO REMOVE
 				ex.printStackTrace();
 				return null;

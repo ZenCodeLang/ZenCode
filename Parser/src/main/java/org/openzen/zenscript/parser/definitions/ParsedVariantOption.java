@@ -1,7 +1,7 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
+import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -21,10 +21,10 @@ public class ParsedVariantOption {
 		this.types = types;
 	}
 
-	public VariantDefinition.Option compile(VariantDefinition variant, TypeResolutionContext context) {
+	public VariantDefinition.Option compile(VariantDefinition variant, TypeBuilder typeBuilder) {
 		TypeID[] cTypes = new TypeID[types.size()];
 		for (int i = 0; i < cTypes.length; i++)
-			cTypes[i] = types.get(i).compile(context);
+			cTypes[i] = types.get(i).compile(typeBuilder);
 
 		return new VariantDefinition.Option(position, variant, name, ordinal, cTypes);
 	}

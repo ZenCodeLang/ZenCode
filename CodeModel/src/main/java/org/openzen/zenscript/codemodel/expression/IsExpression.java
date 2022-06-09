@@ -31,9 +31,4 @@ public class IsExpression extends Expression {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new IsExpression(position, tValue, isType);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new IsExpression(position, value.normalize(scope), isType.getNormalized());
-	}
 }

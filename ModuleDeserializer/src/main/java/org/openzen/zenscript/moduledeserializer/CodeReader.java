@@ -610,14 +610,14 @@ public class CodeReader implements CodeSerializationInput {
 				Expression target = deserializeExpression(context);
 				FunctionalMemberRef member = (FunctionalMemberRef) readMember(context, target.type);
 				CallArguments arguments = deserializeArguments(context);
-				FunctionHeader instancedHeader = member.getHeader().instanceForCall(position, registry, arguments);
+				FunctionHeader instancedHeader = member.getHeader().instanceForCall(arguments);
 				return new CallExpression(position, target, member, instancedHeader, arguments);
 			}
 			case ExpressionEncoding.TYPE_CALL_STATIC: {
 				TypeID type = deserializeType(context);
 				FunctionalMemberRef member = (FunctionalMemberRef) readMember(context, type);
 				CallArguments arguments = deserializeArguments(context);
-				FunctionHeader instancedHeader = member.getHeader().instanceForCall(position, registry, arguments);
+				FunctionHeader instancedHeader = member.getHeader().instanceForCall(arguments);
 				return new CallStaticExpression(position, type, member, instancedHeader, arguments);
 			}
 			case ExpressionEncoding.TYPE_CAPTURED_CLOSURE: {
@@ -702,7 +702,7 @@ public class CodeReader implements CodeSerializationInput {
 				return new ConstructorThisCallExpression(position, context.thisType, constructor, arguments);
 			}
 			case ExpressionEncoding.TYPE_CONSTRUCTOR_SUPER_CALL: {
-				TypeID superType = context.thisType.getSuperType(registry);
+				TypeID superType = context.thisType.getSuperType();
 				FunctionalMemberRef constructor = (FunctionalMemberRef) readMember(context, superType);
 				CallArguments arguments = deserializeArguments(context);
 				return new ConstructorSuperCallExpression(position, superType, constructor, arguments);

@@ -16,10 +16,6 @@ public interface DefinitionMemberRef {
 		return getTarget().getTag(type);
 	}
 
-	default <T extends Tag> boolean hasTag(Class<T> type) {
-		return getTarget().hasTag(type);
-	}
-
 	TypeID getOwnerType();
 
 	DefinitionMemberRef getOverrides();

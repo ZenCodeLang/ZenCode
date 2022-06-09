@@ -17,13 +17,11 @@ public class ParsedCaster extends ParsedFunctionalMember {
 
 	public ParsedCaster(
 			CodePosition position,
-			HighLevelDefinition definition,
-			ParsedImplementation implementation,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			IParsedType type,
 			ParsedFunctionBody body) {
-		super(position, definition, implementation, modifiers, annotations, body);
+		super(position, modifiers, annotations, body);
 
 		this.type = type;
 	}

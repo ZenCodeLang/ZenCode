@@ -5,17 +5,14 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.UnaryExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class UnaryStaticOperatorMember implements ICallableMember {
 	private final UnaryExpression.Operator operator;
-	private final GlobalTypeRegistry typeRegistry;
 	private final TypeID operandType;
 
-	public UnaryStaticOperatorMember(UnaryExpression.Operator operator, GlobalTypeRegistry typeRegistry, TypeID operandType) {
+	public UnaryStaticOperatorMember(UnaryExpression.Operator operator, TypeID operandType) {
 		this.operator = operator;
-		this.typeRegistry = typeRegistry;
 		this.operandType = operandType;
 	}
 

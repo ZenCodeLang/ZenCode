@@ -1,49 +1,32 @@
 package org.openzen.zenscript.parser;
 
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
-import org.openzen.zenscript.codemodel.expression.CallStaticExpression;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
 import org.openzen.zenscript.parser.expression.ParsedExpression;
-import org.openzen.zenscript.parser.expression.ParsedExpressionBinary;
 import org.openzen.zenscript.parser.expression.ParsedExpressionString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EscapableBracketParser implements BracketExpressionParser {
-	private final FunctionalMemberRef method;
-	private final TypeID targetType;
-
-	public EscapableBracketParser(GlobalTypeRegistry registry, FunctionalMemberRef method) {
-		if (!method.isStatic())
-			throw new IllegalArgumentException("Method must be static");
-		if (method.getHeader().getNumberOfTypeParameters() > 0)
-			throw new IllegalArgumentException("Method cannot have type parameters");
-
-		this.method = method;
-		this.targetType = registry.getForDefinition(method.getTarget().definition);
-	}
+	public static final EscapableBracketParser INSTANCE = new EscapableBracketParser();
 
 	@Override
-	public ParsedExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
+	public CompilableExpression parse(CodePosition position, ZSTokenParser tokens) throws ParseException {
 		StringBuilder string = new StringBuilder();
 
 		//This list will contain the BEP calls
 		//If this is only a normal BEP, then it will contain exactly one String ParsedExpression.
-		final List<ParsedExpression> expressionList = new ArrayList<>();
+		final List<ParsedExpression> parts = new ArrayList<>();
 
 		while (tokens.optional(ZSTokenType.T_GREATER) == null) {
 			ZSTokenType peekType = tokens.peek().getType();
@@ -73,10 +56,10 @@ public class EscapableBracketParser implements BracketExpressionParser {
 			//Now we check if it is a {
 			if (next.type == ZSTokenType.T_AOPEN) {
 				if (string.length() != 0) {
-					expressionList.add(new ParsedExpressionString(position, string.toString(), false));
+					parts.add(new ParsedExpressionString(position, string.toString(), false));
 					string = new StringBuilder();
 				}
-				expressionList.add(ParsedExpression.parse(tokens));
+				parts.add(ParsedExpression.parse(tokens));
 				tokens.required(ZSTokenType.T_ACLOSE, "} expected.");
 				string.append(tokens.getLastWhitespace());
 			} else {
@@ -88,36 +71,56 @@ public class EscapableBracketParser implements BracketExpressionParser {
 		}
 
 		if (string.length() != 0) {
-			expressionList.add(new ParsedExpressionString(position, string.toString(), false));
+			parts.add(new ParsedExpressionString(position, string.toString(), false));
 		}
 
-		return new StaticMethodCallExpression(position, expressionList);
+		return new EscapableBracketExpression(position, parts);
 	}
 
-	private class StaticMethodCallExpression extends ParsedExpression {
+	private static class EscapableBracketExpression implements CompilableExpression {
+		private final CodePosition position;
+		private final List<ParsedExpression> parts;
 
-		private final ParsedExpression call;
+		public EscapableBracketExpression(CodePosition position, List<ParsedExpression> parts) {
+			this.position = position;
+			this.parts = parts;
+		}
 
-		public StaticMethodCallExpression(CodePosition position, List<ParsedExpression> expressions) {
-			super(position);
-			ParsedExpression p = null;
-			for (ParsedExpression expression : expressions) {
-				p = p == null ? expression : new ParsedExpressionBinary(expression.position, p, expression, OperatorType.ADD);
+		@Override
+		public CompilingExpression compile(ExpressionCompiler compiler) {
+			List<CompilingExpression> parts = this.parts.stream()
+					.map(part -> part.compile(compiler))
+					.collect(Collectors.toList());
+			return new Compiling(compiler, position, parts);
+		}
+	}
+
+	private static class Compiling extends AbstractCompilingExpression {
+		private final List<CompilingExpression> parts;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, List<CompilingExpression> parts) {
+			super(compiler, position);
+
+			this.parts = parts;
+		}
+
+		@Override
+		public Expression eval() {
+			ResolvedType string = compiler.resolve(BasicTypeID.STRING);
+			CastedEval asString = CastedEval.implicit(compiler, position, BasicTypeID.STRING);
+			InstanceCallable concat = string.findOperator(OperatorType.ADD)
+					.orElseThrow(() -> new RuntimeException("String always has an add operator"));
+
+			Expression result = parts.get(0).cast(asString).value;
+			for (int i = 1; i < parts.size(); i++) {
+				result = concat.cast(compiler.at(position), asString, result, parts.get(i)).value;
 			}
-
-			this.call = p;
+			return result;
 		}
 
 		@Override
-		public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-			final Expression methodCall = call.compile(scope.withHint(BasicTypeID.STRING)).eval();
-			final CallArguments arguments = new CallArguments(methodCall);
-			return new CallStaticExpression(position, targetType, method, method.getHeader(), arguments);
-		}
-
-		@Override
-		public boolean hasStrongType() {
-			return true;
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
 		}
 	}
 }

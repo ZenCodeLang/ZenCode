@@ -24,11 +24,10 @@ public class ParsedImplementation extends ParsedDefinitionMember {
 
 	public ParsedImplementation(
 			CodePosition position,
-			HighLevelDefinition definition,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			IParsedType type) {
-		super(definition, annotations);
+		super(annotations);
 
 		this.position = position;
 		this.modifiers = modifiers;

@@ -1,28 +1,42 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.expression.PanicExpression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 
 public class ParsedPanicExpression extends ParsedExpression {
-	public final ParsedExpression value;
+	public final CompilableExpression value;
 
-	public ParsedPanicExpression(CodePosition position, ParsedExpression value) {
+	public ParsedPanicExpression(CodePosition position, CompilableExpression value) {
 		super(position);
 
 		this.value = value;
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		return new PanicExpression(position, scope.getResultTypeHints().isEmpty() ? BasicTypeID.VOID : scope.getResultTypeHints().get(0), value.compile(scope).eval());
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, value.compile(compiler));
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return true;
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression value;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value) {
+			super(compiler, position);
+
+			this.value = value;
+		}
+
+		@Override
+		public Expression eval() {
+			return compiler.at(position).panic(BasicTypeID.VOID, value.cast(cast(BasicTypeID.STRING)).value);
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return CastedExpression.exact(compiler.at(position).panic(cast.type, value.cast(cast(BasicTypeID.STRING)).value));
+		}
 	}
 }

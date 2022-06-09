@@ -3,6 +3,7 @@ package org.openzen.zencode.java.module.converters;
 import org.openzen.zencode.java.ZenCodeType;
 import org.openzen.zencode.java.module.JavaNativeTypeConversionContext;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 
 import java.lang.reflect.Modifier;
@@ -32,7 +33,7 @@ public class JavaNativeConverter {
 		typeConverter.setBEP(bep);
 	}
 
-	public HighLevelDefinition addClass(Class<?> cls) {
+	public TypeSymbol addClass(Class<?> cls) {
 		if (typeConversionContext.definitionByClass.containsKey(cls)) {
 			return typeConversionContext.definitionByClass.get(cls);
 		}

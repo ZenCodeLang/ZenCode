@@ -312,8 +312,8 @@ public class TypeMemberGroup {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
 
-			FunctionHeader header = method.member.getHeader().instanceForCall(position, scope.getTypeRegistry(), arguments);
-			if (header.matchesExactly(position, arguments, scope))
+			FunctionHeader header = method.member.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
+			if (header.matchesExactly(arguments, scope))
 				possibleMethods.add(method);
 		}
 		if (!possibleMethods.isEmpty()) {

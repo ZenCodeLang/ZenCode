@@ -6,6 +6,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.GetterMember;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
@@ -20,7 +21,6 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedGetter extends ParsedDefinitionMember {
 	private final CodePosition position;
 	private final int modifiers;
-	private final ParsedImplementation implementation;
 	private final ParsedFunctionBody body;
 
 	private final String name;
@@ -30,16 +30,13 @@ public class ParsedGetter extends ParsedDefinitionMember {
 
 	public ParsedGetter(
 			CodePosition position,
-			HighLevelDefinition definition,
-			ParsedImplementation implementation,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			String name,
 			IParsedType type,
 			ParsedFunctionBody body) {
-		super(definition, annotations);
+		super(annotations);
 
-		this.implementation = implementation;
 		this.position = position;
 		this.modifiers = modifiers;
 		this.body = body;
@@ -79,7 +76,7 @@ public class ParsedGetter extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public final void compile(BaseScope scope) throws CompileException {
+	public final void compile(MemberCompiler compiler) throws CompileException {
 		if (isCompiled)
 			return;
 		isCompiled = true;
@@ -88,7 +85,7 @@ public class ParsedGetter extends ParsedDefinitionMember {
 
 		FunctionHeader header = new FunctionHeader(compiled.getType());
 		FunctionScope innerScope = new FunctionScope(position, scope, header);
-		compiled.annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), scope);
+		compiled.annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), compiler);
 		compiled.setBody(body.compile(innerScope, header));
 	}
 }

@@ -1,10 +1,11 @@
 package org.openzen.zenscript.codemodel;
 
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.List;
+import java.util.Optional;
 
 public class GenericName {
 	public final String name;
@@ -22,15 +23,20 @@ public class GenericName {
 		this.arguments = arguments;
 	}
 
-	public static TypeID getInnerType(GlobalTypeRegistry registry, DefinitionTypeID type, List<GenericName> name, int index) {
+	public static Optional<TypeID> getInnerType(TypeID type, List<GenericName> name, int index) {
 		while (index < name.size()) {
 			GenericName innerName = name.get(index++);
-			type = type.getInnerType(innerName, registry);
-			if (type == null)
-				return null;
+			ResolvedType members = type.resolve();
+			Optional<TypeID> inner = members
+					.findInnerType(innerName.name)
+					.map(t -> DefinitionTypeID.create(t, innerName.arguments));
+			if (!inner.isPresent())
+				return Optional.empty();
+
+			type = inner.get();
 		}
 
-		return type;
+		return Optional.of(type);
 	}
 
 	public int getNumberOfArguments() {

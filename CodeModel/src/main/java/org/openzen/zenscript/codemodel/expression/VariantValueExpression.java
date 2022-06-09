@@ -50,12 +50,4 @@ public class VariantValueExpression extends Expression {
 		Expression[] tArguments = Expression.transform(arguments, transformer);
 		return tArguments == arguments ? this : new VariantValueExpression(position, type, option, tArguments);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		Expression[] normalized = new Expression[arguments.length];
-		for (int i = 0; i < normalized.length; i++)
-			normalized[i] = arguments[i].normalize(scope).castImplicit(position, scope, option.types[i]);
-		return new VariantValueExpression(position, type, option, normalized);
-	}
 }

@@ -9,12 +9,11 @@ import org.openzen.zencode.shared.LiteralSourceFile;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
+import org.openzen.zenscript.codemodel.compilation.CompileContext;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.ArrayTypeID;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -22,15 +21,14 @@ import org.openzen.zenscript.javashared.JavaClass;
 import org.openzen.zenscript.javashared.JavaMethod;
 import org.openzen.zenscript.javashared.JavaModifiers;
 import org.openzen.zenscript.javashared.types.JavaFunctionalInterfaceTypeID;
+import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.parser.BracketExpressionParser;
 import org.openzen.zenscript.parser.type.IParsedType;
 
+import java.io.IOException;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.objectweb.asm.Type.getInternalName;
 import static org.objectweb.asm.Type.getMethodDescriptor;
@@ -153,7 +151,7 @@ public class JavaNativeTypeConverter {
 				map.put(typeParameter, codeParameters[i]);
 			}
 
-			return rawTypeId.instance(new GenericMapper(CodePosition.NATIVE, typeConversionContext.registry, map));
+			return rawTypeId.instance(new GenericMapper(map));
 		}
 		return this.loadType(context, JavaAnnotatedType.of(type), unsigned);
 	}
@@ -171,7 +169,7 @@ public class JavaNativeTypeConverter {
 		}
 		if (type.isArray()) {
 			final TypeID baseType = this.loadType(context, JavaAnnotatedType.of(type.getComponentType()), false, false);
-			return typeConversionContext.registry.getArray(baseType, 1);
+			return new ArrayTypeID(baseType);
 		}
 		if (type.isAnnotationPresent(FunctionalInterface.class)) {
 			return loadFunctionalInterface(context, type);
@@ -184,7 +182,6 @@ public class JavaNativeTypeConverter {
 
 		final List<TypeID> typeParameters = new ArrayList<>();
 		for (TypeVariable<? extends Class<?>> typeParameter : type.getTypeParameters()) {
-			typeParameter.getAnnotatedBounds()[0].
 			typeParameters.add(typeConversionContext.registry.getGeneric(context.get(typeParameter)));
 		}
 
@@ -282,19 +279,16 @@ public class JavaNativeTypeConverter {
 		} catch (IllegalArgumentException ignored) {
 		}
 
-
-		//TODO: Can we get by with only this?
-		final CompilingPackage rootCompiling = new CompilingPackage(packageInfo.getPkg().parent, packageInfo.getModule());
-		final ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(typeConversionContext.registry, new AnnotationDefinition[0], packageInfo.getPkg().parent, rootCompiling, typeConversionContext.globals);
-
 		try {
+			CompileContext context = new CompileContext(typeConversionContext.root, packageInfo.getPkg(), Collections.emptyList(), Collections.emptyMap());
 			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep);
 			return IParsedType.parse(tokens).compile(context);
-		} catch (Exception ignored) {
+		} catch (IOException ex) {
+			throw new AssertionError("Not supposed to happen");
+		} catch (ParseException ex) {
+			// TODO: log this properly
+			return null;
 		}
-
-
-		return null;
 	}
 
 	private TypeID loadFunctionalInterface(TypeVariableContext loadContext, Class<?> cls, JavaAnnotatedType... parameters) {
@@ -310,7 +304,7 @@ public class JavaNativeTypeConverter {
 			mapping.put(context.get(javaParameters[i]), loadType(loadContext, parameters[i], false, false));
 		}
 
-		header = header.withGenericArguments(new GenericMapper(CodePosition.NATIVE, typeConversionContext.registry, mapping));
+		header = header.withGenericArguments(new GenericMapper(mapping));
 		JavaMethod method = new JavaMethod(
 				JavaClass.fromInternalName(getInternalName(cls), JavaClass.Kind.INTERFACE),
 				JavaMethod.Kind.INTERFACE,
@@ -319,7 +313,7 @@ public class JavaNativeTypeConverter {
 				getMethodDescriptor(functionalInterfaceMethod),
 				JavaModifiers.PUBLIC | JavaModifiers.ABSTRACT,
 				header.getReturnType().isGeneric());
-		return new JavaFunctionalInterfaceTypeID(typeConversionContext.registry, header, functionalInterfaceMethod, method);
+		return new JavaFunctionalInterfaceTypeID(header, functionalInterfaceMethod, method);
 	}
 
 	@SuppressWarnings("DuplicatedCode")

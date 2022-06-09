@@ -1,9 +1,12 @@
 package org.openzen.zenscript.codemodel.generic;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+
+import java.util.Optional;
 
 public interface TypeParameterBound {
 	boolean isObjectType();
@@ -14,7 +17,9 @@ public interface TypeParameterBound {
 
 	void registerMembers(LocalMemberCache cache, TypeMembers type);
 
-	boolean matches(LocalMemberCache cache, TypeID type);
+	Optional<ResolvedType> resolveMembers();
+
+	boolean matches(TypeID type);
 
 	TypeParameterBound instance(GenericMapper mapper);
 

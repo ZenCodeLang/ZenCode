@@ -4,6 +4,9 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.InstanceCallable;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
 import org.openzen.zenscript.codemodel.member.MethodMember;
@@ -22,14 +25,12 @@ public class ParsedMethod extends ParsedFunctionalMember {
 
 	public ParsedMethod(
 			CodePosition position,
-			HighLevelDefinition definition,
-			ParsedImplementation implementation,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			String name,
 			ParsedFunctionHeader header,
 			ParsedFunctionBody body) {
-		super(position, definition, implementation, modifiers, annotations, body);
+		super(position, modifiers, annotations, body);
 
 		this.name = name;
 		this.header = header;
@@ -46,7 +47,10 @@ public class ParsedMethod extends ParsedFunctionalMember {
 	}
 
 	@Override
-	protected void fillOverride(TypeScope scope, TypeID baseType) throws CompileException {
+	protected void fillOverride(MemberCompiler compiler, TypeID baseType) throws CompileException {
+		ResolvedType type = compiler.resolve(baseType);
+		InstanceCallable method = type.findMethod(name).orElseThrow(() -> new CompileException(position, CompileExceptionCode.PRECOMPILE_FAILED, "Could not determine overridden method"));
+
 		TypeMembers typeMembers = scope.getTypeMembers(baseType);
 		FunctionalMemberRef override = typeMembers
 				.getOrCreateGroup(name, false)
@@ -60,6 +64,6 @@ public class ParsedMethod extends ParsedFunctionalMember {
 					.getOverride(position, scope, compiled); // to refresh the header
 		}
 
-		compiled.setOverrides(scope.getTypeRegistry(), override);
+		compiled.setOverrides(override);
 	}
 }

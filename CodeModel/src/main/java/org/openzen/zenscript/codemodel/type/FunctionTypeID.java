@@ -3,7 +3,9 @@ package org.openzen.zenscript.codemodel.type;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.builtin.FunctionTypeSymbol;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,23 +13,16 @@ import java.util.Optional;
 
 public class FunctionTypeID implements TypeID {
 	public final FunctionHeader header;
-	protected final FunctionTypeID normalized;
+	private final FunctionTypeSymbol type;
 
-	public FunctionTypeID(GlobalTypeRegistry registry, FunctionHeader header) {
+	public FunctionTypeID(FunctionHeader header) {
 		this.header = header;
-
-		FunctionHeader normalizedHeader = header.normalize(registry);
-		normalized = header == normalizedHeader ? this : registry.getFunction(normalizedHeader);
-	}
-
-	@Override
-	public FunctionTypeID getNormalized() {
-		return normalized;
+		type = new FunctionTypeSymbol(header);
 	}
 
 	@Override
 	public TypeID instance(GenericMapper mapper) {
-		return mapper.registry.getFunction(mapper.map(header));
+		return new FunctionTypeID(mapper.map(header));
 	}
 
 	@Override
@@ -58,6 +53,11 @@ public class FunctionTypeID implements TypeID {
 	@Override
 	public Optional<FunctionTypeID> asFunction() {
 		return Optional.of(this);
+	}
+
+	@Override
+	public ResolvedType resolve() {
+		return type.resolve(TypeID.NONE);
 	}
 
 	@Override

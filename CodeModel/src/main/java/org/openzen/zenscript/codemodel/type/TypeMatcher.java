@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.type.member.LocalMemberCache;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,8 +11,8 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	private TypeMatcher() {
 	}
 
-	public static Map<TypeParameter, TypeID> match(LocalMemberCache cache, TypeID type, TypeID pattern) {
-		Matching matching = new Matching(cache, type);
+	public static Map<TypeParameter, TypeID> match(TypeID type, TypeID pattern) {
+		Matching matching = new Matching(type);
 		if (pattern.accept(matching, INSTANCE))
 			return matching.mapping;
 
@@ -117,7 +116,7 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 		if (context.mapping.containsKey(generic.parameter)) {
 			TypeID argument = context.mapping.get(generic.parameter);
 			return argument == context.type;
-		} else if (context.type == generic || generic.matches(context.cache, context.type)) {
+		} else if (context.type == generic || generic.matches(context.type)) {
 			context.mapping.put(generic.parameter, context.type);
 			return true;
 		} else {
@@ -155,24 +154,21 @@ public class TypeMatcher implements TypeVisitorWithContext<TypeMatcher.Matching,
 	}
 
 	public static final class Matching {
-		public final LocalMemberCache cache;
 		public final TypeID type;
 		public final Map<TypeParameter, TypeID> mapping;
 
-		public Matching(LocalMemberCache cache, TypeID type) {
-			this.cache = cache;
+		public Matching(TypeID type) {
 			this.type = type;
 			mapping = new HashMap<>();
 		}
 
-		private Matching(LocalMemberCache cache, TypeID type, Map<TypeParameter, TypeID> mapping) {
-			this.cache = cache;
+		private Matching(TypeID type, Map<TypeParameter, TypeID> mapping) {
 			this.type = type;
 			this.mapping = mapping;
 		}
 
 		public Matching withType(TypeID type) {
-			return new Matching(cache, type, mapping);
+			return new Matching(type, mapping);
 		}
 	}
 }

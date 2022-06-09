@@ -1,19 +1,17 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.IsExpression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.parser.type.IParsedType;
 
 public class ParsedExpressionIs extends ParsedExpression {
-	private final ParsedExpression expression;
+	private final CompilableExpression expression;
 	private final IParsedType type;
 
-	public ParsedExpressionIs(CodePosition position, ParsedExpression expression, IParsedType type) {
+	public ParsedExpressionIs(CodePosition position, CompilableExpression expression, IParsedType type) {
 		super(position);
 
 		this.expression = expression;
@@ -21,14 +19,29 @@ public class ParsedExpressionIs extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		TypeID isType = type.compile(scope);
-		Expression expression = this.expression.compile(scope.withHint(isType)).eval();
-		return new IsExpression(position, expression, isType);
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, expression.compile(compiler), type.compile(compiler.types()));
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return true;
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression expression;
+		private final TypeID type;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression expression, TypeID type) {
+			super(compiler, position);
+
+			this.expression = expression;
+			this.type = type;
+		}
+
+		@Override
+		public Expression eval() {
+			return compiler.at(position).is(expression.eval(), type);
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(eval());
+		}
 	}
 }

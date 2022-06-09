@@ -83,10 +83,4 @@ public class CasterMember extends FunctionalMember {
 	public CasterMemberRef getOverrides() {
 		return overrides;
 	}
-
-	@Override
-	public void normalize(TypeScope scope) {
-		super.normalize(scope);
-		toType = toType.getNormalized();
-	}
 }

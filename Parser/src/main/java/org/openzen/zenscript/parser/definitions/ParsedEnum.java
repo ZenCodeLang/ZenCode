@@ -2,13 +2,12 @@ package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
+import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
+import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -19,20 +18,21 @@ import org.openzen.zenscript.parser.type.IParsedType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ParsedEnum extends BaseParsedDefinition {
 	private final List<ParsedEnumConstant> enumValues = new ArrayList<>();
 	private final IParsedType asType;
-	private final EnumDefinition compiled;
+	private final String name;
 
-	public ParsedEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, HighLevelDefinition outerDefinition, IParsedType asType) {
-		super(position, modifiers, pkg, annotations);
+	public ParsedEnum(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, IParsedType asType) {
+		super(position, modifiers, annotations);
 
 		this.asType = asType;
-		compiled = new EnumDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
+		this.name = name;
 	}
 
-	public static ParsedEnum parseEnum(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens, HighLevelDefinition outerDefinition) throws ParseException {
+	public static ParsedEnum parseEnum(CodePosition position, int modifiers, ParsedAnnotation[] annotations, ZSTokenParser tokens) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		IParsedType asType = null;
 		if (tokens.optional(ZSTokenType.K_AS) != null)
@@ -40,10 +40,10 @@ public class ParsedEnum extends BaseParsedDefinition {
 
 		tokens.required(ZSTokenType.T_AOPEN, "{ expected");
 
-		ParsedEnum result = new ParsedEnum(pkg, position, modifiers, annotations, name, outerDefinition, asType);
+		ParsedEnum result = new ParsedEnum(position, modifiers, annotations, name, asType);
 
 		while (!tokens.isNext(ZSTokenType.T_ACLOSE) && !tokens.isNext(ZSTokenType.T_SEMICOLON)) {
-			result.addEnumValue(ParsedEnumConstant.parse(tokens, result.compiled, result.enumValues.size()));
+			result.addEnumValue(ParsedEnumConstant.parse(tokens, result.enumValues.size()));
 			if (tokens.optional(ZSTokenType.T_COMMA) == null)
 				break;
 		}
@@ -51,7 +51,7 @@ public class ParsedEnum extends BaseParsedDefinition {
 		if (tokens.optional(ZSTokenType.T_SEMICOLON) != null) {
 			try {
 				while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-					result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+					result.addMember(ParsedDefinitionMember.parse(tokens));
 				}
 			} catch (ParseException ex) {
 				tokens.logError(ex);
@@ -68,30 +68,51 @@ public class ParsedEnum extends BaseParsedDefinition {
 	}
 
 	@Override
-	public HighLevelDefinition getCompiled() {
-		return compiled;
+	public void registerCompiling(
+			List<CompilingDefinition> definitions,
+			List<CompilingExpansion> expansions,
+			CompilingPackage pkg,
+			DefinitionCompiler compiler,
+			CompilingDefinition outer
+	) {
+		EnumDefinition compiled = new EnumDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
+		definitions.add(new Compiling(compiler, compiled, outer != null));
 	}
 
-	@Override
-	protected void linkTypesLocal(TypeResolutionContext context) {
-		if (asType != null)
-			compiled.asType = asType.compile(context);
+	private class Compiling extends BaseCompilingDefinition {
+		private final EnumDefinition compiled;
+		private final List<ParsedEnumConstant.Compiling> enumValues;
 
-		for (ParsedEnumConstant constant : enumValues) {
-			compiled.addEnumConstant(constant.getCompiled());
+		public Compiling(DefinitionCompiler compiler, EnumDefinition compiled, boolean inner) {
+			super(ParsedEnum.this, compiler, name, compiled, inner);
+
+			this.compiled = compiled;
+			enumValues = ParsedEnum.this.enumValues.stream()
+					.map(value -> value.compile(compiled))
+					.collect(Collectors.toList());
 		}
 
-		super.linkTypesLocal(context);
-	}
+		@Override
+		public void linkTypes() {
+			super.linkTypes();
 
-	@Override
-	public void compile(BaseScope scope) throws CompileException {
-		super.compile(scope);
+			if (asType != null)
+				compiled.asType = asType.compile(compiler.types());
 
-		DefinitionTypeID type = scope.getTypeRegistry().getForDefinition(compiled, TypeID.NONE);
-		ExpressionScope evalScope = new ExpressionScope(scope);
-		for (ParsedEnumConstant constant : enumValues) {
-			constant.compileCode(type, evalScope);
+			for (ParsedEnumConstant.Compiling constant : enumValues) {
+				compiled.addEnumConstant(constant.compiled);
+			}
+		}
+
+		@Override
+		public void compileMembers(List<CompileException> errors) {
+			super.compileMembers(errors);
+
+			TypeID type = compiler.types().definitionOf(compiled, TypeID.NONE);
+			ExpressionCompiler expressionCompiler = compiler.forMembers(compiled).forFieldInitializers();
+			for (ParsedEnumConstant.Compiling constant : enumValues) {
+				constant.compileCode(type, expressionCompiler);
+			}
 		}
 	}
 }

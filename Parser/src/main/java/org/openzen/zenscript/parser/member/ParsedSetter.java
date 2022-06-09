@@ -20,7 +20,6 @@ import org.openzen.zenscript.parser.type.IParsedType;
 public class ParsedSetter extends ParsedDefinitionMember {
 	private final CodePosition position;
 	private final int modifiers;
-	private final ParsedImplementation implementation;
 	private final ParsedFunctionBody body;
 
 	private final String name;
@@ -30,16 +29,13 @@ public class ParsedSetter extends ParsedDefinitionMember {
 
 	public ParsedSetter(
 			CodePosition position,
-			HighLevelDefinition definition,
-			ParsedImplementation implementation,
 			int modifiers,
 			ParsedAnnotation[] annotations,
 			String name,
 			IParsedType type,
 			ParsedFunctionBody body) {
-		super(definition, annotations);
+		super(annotations);
 
-		this.implementation = implementation;
 		this.position = position;
 		this.modifiers = modifiers;
 		this.body = body;

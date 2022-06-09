@@ -16,4 +16,5 @@ if (!hasProperty('mainClass')) {
 dependencies {
 	api project(':Shared')
 	api project(':CodeModel')
+	api project(':CodeCompiler')
 }

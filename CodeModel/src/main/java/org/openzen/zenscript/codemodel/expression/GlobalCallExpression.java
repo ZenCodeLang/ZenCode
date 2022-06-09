@@ -32,9 +32,4 @@ public class GlobalCallExpression extends Expression {
 		Expression tResolution = resolution.transform(transformer);
 		return tArguments == arguments && tResolution == resolution ? this : new GlobalCallExpression(position, name, tArguments, tResolution);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new GlobalCallExpression(position, name, arguments, resolution.normalize(scope));
-	}
 }

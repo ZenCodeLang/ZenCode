@@ -31,12 +31,4 @@ public class ArrayExpression extends Expression {
 		Expression[] tExpressions = Expression.transform(expressions, transformer);
 		return tExpressions == expressions ? this : new ArrayExpression(position, tExpressions, type);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		Expression[] normalized = new Expression[expressions.length];
-		for (int i = 0; i < normalized.length; i++)
-			normalized[i] = expressions[i].normalize(scope);
-		return new ArrayExpression(position, normalized, type.getNormalized());
-	}
 }

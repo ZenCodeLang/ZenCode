@@ -6,6 +6,8 @@ import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -14,10 +16,11 @@ import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
-public class FieldMember extends PropertyMember {
+public class FieldMember extends PropertyMember implements FieldSymbol {
 	public final String name;
 	public final int autoGetterAccess;
 	public final int autoSetterAccess;
@@ -114,6 +117,11 @@ public class FieldMember extends PropertyMember {
 	}
 
 	@Override
+	public void registerTo(MemberSet members, GenericMapper mapper) {
+		members.addField(mapper.map(this));
+	}
+
+	@Override
 	public BuiltinID getBuiltin() {
 		return builtin;
 	}
@@ -134,20 +142,13 @@ public class FieldMember extends PropertyMember {
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
+	public MethodSymbol getOverrides() {
 		return null;
 	}
 
 	@Override
 	public int getEffectiveModifiers() {
 		return modifiers;
-	}
-
-	@Override
-	public void normalize(TypeScope scope) {
-		setType(getType().getNormalized());
-		if (initializer != null)
-			initializer = initializer.normalize(scope);
 	}
 
 	@Override

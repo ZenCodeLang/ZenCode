@@ -1,9 +1,10 @@
 package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
+import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
+import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.StructDefinition;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSTokenParser;
@@ -15,33 +16,30 @@ import java.util.List;
 
 public class ParsedStruct extends BaseParsedDefinition {
 	private final List<ParsedTypeParameter> parameters;
-	private final StructDefinition compiled;
+	private final String name;
 
-	public ParsedStruct(CompilingPackage pkg, CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> genericParameters, HighLevelDefinition outerDefinition) {
-		super(position, modifiers, pkg, annotations);
+	public ParsedStruct(CodePosition position, int modifiers, ParsedAnnotation[] annotations, String name, List<ParsedTypeParameter> genericParameters) {
+		super(position, modifiers, annotations);
 
 		this.parameters = genericParameters;
-
-		compiled = new StructDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outerDefinition);
-		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(genericParameters));
+		this.name = name;
 	}
 
 	public static ParsedStruct parseStruct(
-			CompilingPackage pkg,
 			CodePosition position,
 			int modifiers,
 			ParsedAnnotation[] annotations,
-			ZSTokenParser tokens,
-			HighLevelDefinition outerDefinition) throws ParseException {
+			ZSTokenParser tokens
+	) throws ParseException {
 		String name = tokens.required(ZSTokenType.T_IDENTIFIER, "identifier expected").content;
 		List<ParsedTypeParameter> parameters = ParsedTypeParameter.parseAll(tokens);
 
 		tokens.required(ZSTokenType.T_AOPEN, "{");
 
-		ParsedStruct result = new ParsedStruct(pkg, position, modifiers, annotations, name, parameters, outerDefinition);
+		ParsedStruct result = new ParsedStruct(position, modifiers, annotations, name, parameters);
 		try {
 			while (tokens.optional(ZSTokenType.T_ACLOSE) == null) {
-				result.addMember(ParsedDefinitionMember.parse(tokens, result, null));
+				result.addMember(ParsedDefinitionMember.parse(tokens));
 			}
 		} catch (ParseException ex) {
 			tokens.logError(ex);
@@ -51,13 +49,35 @@ public class ParsedStruct extends BaseParsedDefinition {
 	}
 
 	@Override
-	public HighLevelDefinition getCompiled() {
-		return compiled;
+	public void registerCompiling(
+			List<CompilingDefinition> definitions,
+			List<CompilingExpansion> expansions,
+			CompilingPackage pkg,
+			DefinitionCompiler compiler,
+			CompilingDefinition outer
+	) {
+		StructDefinition compiled = new StructDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
+		compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
+
+		Compiling compiling = new Compiling(compiler, compiled, outer != null);
+		definitions.add(compiling);
+		compiling.registerCompiling(definitions);
 	}
 
-	@Override
-	protected void linkTypesLocal(TypeResolutionContext context) {
-		ParsedTypeParameter.compile(context, compiled.typeParameters, parameters);
-		super.linkTypesLocal(context);
+	private class Compiling extends BaseCompilingDefinition {
+		private final StructDefinition compiled;
+
+		public Compiling(DefinitionCompiler compiler, StructDefinition compiled, boolean inner) {
+			super(ParsedStruct.this, compiler, name, compiled, inner);
+
+			this.compiled = compiled;
+			this.compiled.setTypeParameters(ParsedTypeParameter.getCompiled(parameters));
+		}
+
+		@Override
+		public void linkTypes() {
+			ParsedTypeParameter.compile(compiler.types(), compiled.typeParameters, parameters);
+			super.linkTypes();
+		}
 	}
 }

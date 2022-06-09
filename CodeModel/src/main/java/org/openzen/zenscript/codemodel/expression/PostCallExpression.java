@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 /**
  * Used for post-increment and post-decrement.
@@ -39,10 +38,5 @@ public class PostCallExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tTarget = target.transform(transformer);
 		return target == tTarget ? this : new PostCallExpression(position, tTarget, member, instancedHeader);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new PostCallExpression(position, target.normalize(scope), member, instancedHeader.normalize(scope.getTypeRegistry()));
 	}
 }

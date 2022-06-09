@@ -1,5 +1,8 @@
 package org.openzen.zenscript.codemodel;
 
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+
 import java.util.Objects;
 
 public final class AccessScope {
@@ -16,16 +19,27 @@ public final class AccessScope {
 			return true;
 		if (definition == null)
 			return false;
-		if (definition == other.definition || definition.isOuterOf(other.definition) || other.definition.isOuterOf(definition))
+		if (definition == other.definition || isInnerDefinition(other.definition, definition) || isInnerDefinition(definition, other.definition))
 			return true;
 		if (Modifiers.isPrivate(access))
 			return false;
 		if (Modifiers.isInternal(access))
 			return module == other.module;
 		if (Modifiers.isProtected(access))
-			return definition.isSubclassOf(other.definition);
+			return isSubclass(other.definition, definition);
 
 		return false;
+	}
+
+	private static boolean isInnerDefinition(TypeSymbol parent, TypeSymbol child) {
+		return child.getOuter().map(outer -> outer == parent || isInnerDefinition(parent, outer)).orElse(false);
+	}
+
+	private static boolean isSubclass(TypeSymbol superclass, TypeSymbol subclass) {
+		if (superclass == subclass)
+			return true;
+
+		return subclass.getSuperclass().map(super_ -> isSubclass(superclass, super_)).orElse(false);
 	}
 
 	@Override

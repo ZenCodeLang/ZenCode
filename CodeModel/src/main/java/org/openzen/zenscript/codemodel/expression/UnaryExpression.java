@@ -1,11 +1,10 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
 import static org.openzen.zenscript.codemodel.type.BasicTypeID.*;
 
 import org.openzen.zenscript.codemodel.type.ArrayTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Optional;
@@ -35,6 +34,7 @@ public class UnaryExpression extends Expression {
 	public enum Operator {
 		BOOL_NOT(OperatorGroup.BOOLEAN_NOT, BOOL, BOOL),
 		BOOL_PARSE(OperatorGroup.PARSE, BOOL, BOOL),
+		BOOL_TO_STRING(OperatorGroup.CAST_IMPLICIT, BOOL, STRING),
 
 		BYTE_NOT(OperatorGroup.BITWISE_NOT, BYTE, BYTE),
 		BYTE_TO_SBYTE(OperatorGroup.CAST_IMPLICIT, BYTE, SBYTE),
@@ -246,7 +246,7 @@ public class UnaryExpression extends Expression {
 		CHAR_TO_UNICODE(OperatorGroup.OTHER, CHAR, UINT),
 		CHAR_FROM_UNICODE(
 				OperatorGroup.OTHER,
-				(registry, type) -> type == UINT ? Optional.of(registry.getOptional(CHAR)) : Optional.empty()
+				(registry, type) -> type == UINT ? Optional.of(registry.optionalOf(CHAR)) : Optional.empty()
 		),
 		CHAR_TO_STRING(OperatorGroup.CAST_IMPLICIT, CHAR, STRING),
 		CHAR_REMOVE_DIACRITICS(OperatorGroup.OTHER, CHAR, CHAR),
@@ -264,8 +264,8 @@ public class UnaryExpression extends Expression {
 
 		ASSOC_SIZE(OperatorGroup.OTHER, (registry, type) -> type.asAssoc().map(x -> USIZE)),
 		ASSOC_ISEMPTY(OperatorGroup.OTHER, (registry, type) -> type.asArray().map(x -> BOOL)),
-		ASSOC_KEYS(OperatorGroup.OTHER, (registry, type) -> type.asAssoc().map(assoc -> registry.getArray(assoc.keyType))),
-		ASSOC_VALUES(OperatorGroup.OTHER, (registry, type) -> type.asAssoc().map(assoc -> registry.getArray(assoc.valueType))),
+		ASSOC_KEYS(OperatorGroup.OTHER, (registry, type) -> type.asAssoc().map(assoc -> registry.arrayOf(assoc.keyType))),
+		ASSOC_VALUES(OperatorGroup.OTHER, (registry, type) -> type.asAssoc().map(assoc -> registry.arrayOf(assoc.valueType))),
 
 		GENERICMAP_SIZE(OperatorGroup.OTHER, (registry, type) -> type.asGenericMap().map(x -> USIZE)),
 		GENERICMAP_ISEMPTY(OperatorGroup.OTHER, (registry, type) -> type.asGenericMap().map(x -> BOOL)),
@@ -274,8 +274,8 @@ public class UnaryExpression extends Expression {
 		ARRAY_ISEMPTY(OperatorGroup.OTHER, (registry, type) -> type.asArray().map(x -> BOOL)),
 		ARRAY_HASHCODE(OperatorGroup.OTHER, (registry, type) -> type.asArray().map(x -> INT)),
 
-		ENUM_NAME(OperatorGroup.OTHER, (registry, type) -> type.asDefinition().flatMap(x -> x.definition.asEnum()).map(x -> STRING)),
-		ENUM_ORDINAL(OperatorGroup.OTHER, (registry, type) -> type.asDefinition().flatMap(x -> x.definition.asEnum()).map(x -> UINT)),
+		ENUM_NAME(OperatorGroup.OTHER, (registry, type) -> type.asDefinition().map(x -> x.definition.isEnum()).orElse(false) ? Optional.empty() : Optional.of(STRING)),
+		ENUM_ORDINAL(OperatorGroup.OTHER, (registry, type) -> type.asDefinition().map(x -> x.definition.isEnum()).orElse(false) ? Optional.empty() : Optional.of(UINT)),
 
 		SBYTE_ARRAY_AS_BYTE_ARRAY(OperatorGroup.CAST_EXPLICIT, ArrayTypeID.SBYTE, ArrayTypeID.BYTE),
 		BYTE_ARRAY_AS_SBYTE_ARRAY(OperatorGroup.CAST_EXPLICIT, ArrayTypeID.BYTE, ArrayTypeID.SBYTE),
@@ -286,7 +286,7 @@ public class UnaryExpression extends Expression {
 		LONG_ARRAY_AS_ULONG_ARRAY(OperatorGroup.CAST_EXPLICIT, ArrayTypeID.LONG, ArrayTypeID.ULONG),
 		ULONG_ARRAY_AS_LONG_ARRAY(OperatorGroup.CAST_EXPLICIT, ArrayTypeID.ULONG, ArrayTypeID.LONG),
 
-		OPTIONAL_WRAP(OperatorGroup.OTHER, (registry, type) -> Optional.of(registry.getOptional(type))),
+		OPTIONAL_WRAP(OperatorGroup.OTHER, (registry, type) -> Optional.of(registry.optionalOf(type))),
 		OPTIONAL_UNWRAP(OperatorGroup.OTHER, (registry, type) -> type.asOptional().map(x -> x.baseType)),
 
 		RANGE_FROM(OperatorGroup.OTHER, (registry, type) -> type.asRange().map(x -> x.baseType)),
@@ -305,28 +305,27 @@ public class UnaryExpression extends Expression {
 			this.typeMapper = typeMapper;
 		}
 
-		public Optional<TypeID> getOutputType(GlobalTypeRegistry registry, TypeID type) {
-			return typeMapper.apply(registry, type);
+		public Optional<TypeID> getOutputType(TypeBuilder builder, TypeID type) {
+			return typeMapper.apply(builder, type);
 		}
 	}
 
 	@FunctionalInterface
 	interface UnaryTypeMapper {
-		Optional<TypeID> apply(GlobalTypeRegistry registry, TypeID type);
+		Optional<TypeID> apply(TypeBuilder builder, TypeID type);
 	}
 
 	public final Expression target;
 	public final Operator operator;
 
-	private final GlobalTypeRegistry registry;
+	private final TypeBuilder builder;
 
-	public UnaryExpression(CodePosition position, Expression target, Operator operator, GlobalTypeRegistry registry) {
-		super(position, operator.getOutputType(registry, target.type).orElse(INVALID), null);
+	public UnaryExpression(CodePosition position, Expression target, Operator operator, TypeBuilder builder) {
+		super(position, operator.getOutputType(builder, target.type).orElse(INVALID), null);
 
 		this.target = target;
 		this.operator = operator;
-
-		this.registry = registry;
+		this.builder = builder;
 	}
 
 	@Override
@@ -342,11 +341,6 @@ public class UnaryExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tTarget = target.transform(transformer);
-		return target == tTarget ? this : new UnaryExpression(position, tTarget, operator, registry);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new UnaryExpression(position, target.normalize(scope), operator, registry);
+		return target == tTarget ? this : new UnaryExpression(position, tTarget, operator, builder);
 	}
 }

@@ -1,9 +1,11 @@
 package org.openzen.zenscript.codemodel;
 
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.GenericTypeID;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.Collections;
@@ -12,23 +14,33 @@ import java.util.Map;
 
 public class GenericMapper {
 
-	public static final GenericMapper EMPTY = new GenericMapper(CodePosition.BUILTIN, null, Collections
-			.emptyMap());
+	public static final GenericMapper EMPTY = new GenericMapper(Collections.emptyMap());
 
-	public final CodePosition position;
-	public final GlobalTypeRegistry registry;
 	private final Map<TypeParameter, TypeID> mapping;
 
-	public GenericMapper(CodePosition position, GlobalTypeRegistry registry, Map<TypeParameter, TypeID> mapping) {
+	public GenericMapper(Map<TypeParameter, TypeID> mapping) {
 		if (mapping == null)
 			throw new IllegalArgumentException();
 
-		this.position = position;
-		this.registry = registry;
 		this.mapping = mapping;
 	}
 
-	public Map<TypeParameter, TypeID> getMapping() {
+	public static GenericMapper create(TypeParameter[] typeParameters, TypeID[] typeArguments) {
+		if (typeParameters.length != typeArguments.length)
+			throw new IllegalArgumentException("Number of type parameters is different from number of type arguments");
+
+		Map<TypeParameter, TypeID> mapping = new HashMap<>();
+		for (int i = 0; i < typeParameters.length; i++) {
+			mapping.put(typeParameters[i], typeArguments[i]);
+		}
+		return new GenericMapper(mapping);
+	}
+
+	public static GenericMapper single(TypeParameter parameter, TypeID argument) {
+		return new GenericMapper(Collections.singletonMap(parameter, argument));
+	}
+
+    public Map<TypeParameter, TypeID> getMapping() {
 		return mapping;
 	}
 
@@ -57,25 +69,32 @@ public class GenericMapper {
 		return mapping.isEmpty() ? original : original.withGenericArguments(this);
 	}
 
-	public GenericMapper getInner(CodePosition position, GlobalTypeRegistry registry, Map<TypeParameter, TypeID> mapping) {
-		Map<TypeParameter, TypeID> resultMap = new HashMap<>(this.mapping);
-		mapping.forEach((typeParameter, storedType) -> {
-			if (resultMap.containsKey(typeParameter)) {
-				if (storedType instanceof GenericTypeID && ((GenericTypeID) storedType).parameter == typeParameter) {
-					return;
-				}
-			}
-			resultMap.put(typeParameter, storedType);
-		});
-
-		return new GenericMapper(position, registry, resultMap);
+	public FieldInstance map(FieldSymbol field) {
+		return new FieldInstance(field, map(field.getType()));
 	}
 
-	public GenericMapper getInner(CodePosition position, GlobalTypeRegistry registry, TypeParameter[] parameters) {
+	public MethodInstance map(MethodSymbol method) {
+		return new MethodInstance(method, map(method.getHeader()));
+	}
+
+	public GenericMapper getInner(Map<TypeParameter, TypeID> mapping) {
+		Map<TypeParameter, TypeID> resultMap = new HashMap<>(this.mapping);
+		mapping.forEach((typeParameter, type) -> {
+			if (resultMap.containsKey(typeParameter)) {
+				if (type.asGeneric().map(generic -> generic.parameter == typeParameter).orElse(false))
+					return;
+			}
+			resultMap.put(typeParameter, type);
+		});
+
+		return new GenericMapper(resultMap);
+	}
+
+	public GenericMapper getInner(TypeParameter[] parameters) {
 		Map<TypeParameter, TypeID> resultMap = new HashMap<>(this.mapping);
 		for (TypeParameter parameter : parameters)
-			resultMap.put(parameter, registry.getGeneric(parameter));
-		return new GenericMapper(position, registry, resultMap);
+			resultMap.put(parameter, new GenericTypeID(parameter));
+		return new GenericMapper(resultMap);
 	}
 
 	@Override

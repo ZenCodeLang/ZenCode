@@ -2,9 +2,12 @@ package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.ArrayExpression;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.type.builtin.ArrayTypeSymbol;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,28 +25,21 @@ public class ArrayTypeID implements TypeID {
 
 	public final TypeID elementType;
 	public final int dimension;
-	private final ArrayTypeID normalized;
+	private final TypeSymbol type;
 
-	private ArrayTypeID(TypeID elementType, int dimension) {
-		this.elementType = elementType;
-		this.dimension = dimension;
-		this.normalized = this;
+	public ArrayTypeID(TypeID elementType) {
+		this(elementType, 1);
 	}
 
-	public ArrayTypeID(GlobalTypeRegistry registry, TypeID elementType, int dimension) {
+	public ArrayTypeID(TypeID elementType, int dimension) {
 		this.elementType = elementType;
 		this.dimension = dimension;
-		this.normalized = elementType.getNormalized() == elementType ? this : registry.getArray(elementType.getNormalized(), dimension);
+		type = ArrayTypeSymbol.get(dimension);
 	}
 
 	@Override
 	public Expression getDefaultValue() {
 		return new ArrayExpression(CodePosition.UNKNOWN, Expression.NONE, this);
-	}
-
-	@Override
-	public ArrayTypeID getNormalized() {
-		return normalized;
 	}
 
 	@Override
@@ -72,8 +68,13 @@ public class ArrayTypeID implements TypeID {
 	}
 
 	@Override
+	public ResolvedType resolve() {
+		return type.resolve(new TypeID[] { elementType });
+	}
+
+	@Override
 	public TypeID instance(GenericMapper mapper) {
-		return mapper.registry.getArray(elementType.instance(mapper), dimension);
+		return new ArrayTypeID(elementType.instance(mapper), dimension);
 	}
 
 	@Override
@@ -96,18 +97,15 @@ public class ArrayTypeID implements TypeID {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
+
 		final ArrayTypeID other = (ArrayTypeID) obj;
-		return this.dimension == other.dimension
-				&& this.elementType.equals(other.elementType);
+		return this.dimension == other.dimension && this.elementType.equals(other.elementType);
 	}
 
 	@Override

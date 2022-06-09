@@ -1,6 +1,5 @@
 package org.openzen.zenscript.codemodel;
 
-import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -12,6 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class FunctionHeader {
+	public static final FunctionHeader PLACEHOLDER = new FunctionHeader(BasicTypeID.VOID);
+
 	public final TypeParameter[] typeParameters;
 	public final FunctionParameter[] parameters;
 	public final TypeID thrownType;
@@ -182,26 +183,6 @@ public class FunctionHeader {
 		}
 	}
 
-	public boolean isDenormalized() {
-		if (!returnType.getNormalized().equals(returnType))
-			return true;
-		for (FunctionParameter parameter : parameters)
-			if (parameter.type.getNormalized() != parameter.type)
-				return true;
-
-		return false;
-	}
-
-	public FunctionHeader normalize(GlobalTypeRegistry registry) {
-		if (!isDenormalized())
-			return this;
-
-		FunctionParameter[] normalizedParameters = new FunctionParameter[parameters.length];
-		for (int i = 0; i < normalizedParameters.length; i++)
-			normalizedParameters[i] = parameters[i].normalize(registry);
-		return new FunctionHeader(typeParameters, returnType.getNormalized(), thrownType == null ? null : thrownType.getNormalized(), normalizedParameters);
-	}
-
 	public int getNumberOfTypeParameters() {
 		return typeParameters.length;
 	}
@@ -214,7 +195,7 @@ public class FunctionHeader {
 		return false;
 	}
 
-	public FunctionHeader inferFromOverride(GlobalTypeRegistry registry, FunctionHeader overridden) {
+	public FunctionHeader inferFromOverride(FunctionHeader overridden) {
 		TypeParameter[] resultTypeParameters = typeParameters;
 		TypeID resultReturnType = this.returnType;
 		if (resultReturnType == BasicTypeID.UNDETERMINED)
@@ -236,11 +217,11 @@ public class FunctionHeader {
 		return new FunctionHeader(resultTypeParameters, resultReturnType, resultThrownType, resultParameters);
 	}
 
-	public boolean matchesExactly(CodePosition position, CallArguments arguments, TypeScope scope) {
+	public boolean matchesExactly(CallArguments arguments, TypeScope scope) {
 		if (arguments.arguments.length < minParameters || arguments.arguments.length > maxParameters)
 			return false;
 
-		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
+		FunctionHeader header = fillGenericArguments(scope, arguments.typeArguments);
 		final boolean variadicCall = header.isVariadicCall(arguments, scope);
 		for (int i = 0; i < arguments.arguments.length; i++) {
 			if (!arguments.arguments[i].type.equals(header.getParameterType(variadicCall, i)))
@@ -250,11 +231,11 @@ public class FunctionHeader {
 		return true;
 	}
 
-	public boolean matchesImplicitly(CodePosition position, CallArguments arguments, TypeScope scope) {
+	public boolean matchesImplicitly(CallArguments arguments, TypeScope scope) {
 		if (!accepts(arguments.arguments.length))
 			return false;
 
-		FunctionHeader header = fillGenericArguments(position, scope, arguments.typeArguments);
+		FunctionHeader header = fillGenericArguments(scope, arguments.typeArguments);
 		if (isVariadic()) {
 			boolean matches = true;
 			for (int i = 0; i < arguments.arguments.length; i++) {
@@ -322,12 +303,12 @@ public class FunctionHeader {
 		return true;
 	}
 
-	public boolean canOverride(TypeScope scope, FunctionHeader other) {
+	public boolean canOverride(FunctionHeader other) {
 		if (other == null)
 			throw new NullPointerException();
 		if (parameters.length != other.parameters.length)
 			return false;
-		if (returnType != BasicTypeID.UNDETERMINED && !scope.getTypeMembers(returnType).canCastImplicit(other.returnType))
+		if (returnType != BasicTypeID.UNDETERMINED && !returnType.equals(other.returnType) && !returnType.resolve().canCastImplicitlyTo(other.returnType))
 			return false;
 
 		for (int i = 0; i < parameters.length; i++) {
@@ -336,7 +317,9 @@ public class FunctionHeader {
 
 			if (parameters[i].variadic != other.parameters[i].variadic)
 				return false;
-			if (!scope.getTypeMembers(other.parameters[i].type).canCastImplicit(parameters[i].type))
+			if (other.parameters[i].type.equals(parameters[i].type))
+				continue;
+			if (!other.parameters[i].type.resolve().canCastImplicitlyTo(parameters[i].type))
 				return false;
 		}
 
@@ -394,10 +377,10 @@ public class FunctionHeader {
 		return true;
 	}
 
-	public FunctionHeader instanceForCall(CodePosition position, GlobalTypeRegistry registry, CallArguments arguments) {
+	public FunctionHeader instanceForCall(CallArguments arguments) {
 		if (arguments.getNumberOfTypeArguments() > 0) {
 			Map<TypeParameter, TypeID> typeParameters = TypeID.getMapping(this.typeParameters, arguments.typeArguments);
-			return instance(new GenericMapper(position, registry, typeParameters));
+			return instance(new GenericMapper(typeParameters));
 		} else {
 			return this;
 		}
@@ -405,7 +388,7 @@ public class FunctionHeader {
 
 	public FunctionHeader withGenericArguments(GenericMapper mapper) {
 		if (typeParameters.length > 0)
-			mapper = mapper.getInner(mapper.position, mapper.registry, TypeID.getSelfMapping(mapper.registry, typeParameters));
+			mapper = mapper.getInner(TypeID.getSelfMapping(typeParameters));
 
 		return instance(mapper);
 	}
@@ -419,12 +402,12 @@ public class FunctionHeader {
 		return new FunctionHeader(typeParameters, returnType, thrownType == null ? null : thrownType.instance(mapper), parameters);
 	}
 
-	public FunctionHeader fillGenericArguments(CodePosition position, TypeScope scope, TypeID[] arguments) {
+	public FunctionHeader fillGenericArguments(TypeScope scope, TypeID[] arguments) {
 		if (arguments == null || arguments.length == 0)
 			return this;
 
 		Map<TypeParameter, TypeID> typeArguments = TypeID.getMapping(typeParameters, arguments);
-		GenericMapper mapper = scope.getLocalTypeParameters().getInner(position, scope.getTypeRegistry(), typeArguments);
+		GenericMapper mapper = scope.getLocalTypeParameters().getInner(typeArguments);
 
 		TypeID returnType = this.returnType.instance(mapper);
 		FunctionParameter[] parameters = new FunctionParameter[this.parameters.length];

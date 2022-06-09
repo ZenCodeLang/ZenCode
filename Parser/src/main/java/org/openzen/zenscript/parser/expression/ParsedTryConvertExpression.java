@@ -1,42 +1,61 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.expression.Expression;
-import org.openzen.zenscript.codemodel.expression.TryConvertExpression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.builtin.ResultTypeSymbol;
+
+import java.util.Optional;
 
 public class ParsedTryConvertExpression extends ParsedExpression {
-	private final ParsedExpression value;
+	private final CompilableExpression value;
 
-	public ParsedTryConvertExpression(CodePosition position, ParsedExpression value) {
+	public ParsedTryConvertExpression(CodePosition position, CompilableExpression value) {
 		super(position);
 
 		this.value = value;
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) throws CompileException {
-		Expression cValue = value.compile(scope).eval();
-		if (scope.getFunctionHeader() == null)
-			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_OUTSIDE_FUNCTION, "try? can only be used inside functions");
-
-		HighLevelDefinition result = scope.getTypeRegistry().stdlib.getDefinition("Result");
-		if (cValue.thrownType != null) {
-			// this function throws
-			DefinitionTypeID resultType = scope.getTypeRegistry().getForDefinition(result, cValue.type, cValue.thrownType);
-			return new TryConvertExpression(position, resultType, cValue);
-		} else {
-			throw new CompileException(position, CompileExceptionCode.TRY_CONVERT_ILLEGAL_TARGET, "try? can only be used on expressions that throw");
-		}
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position, value.compile(compiler));
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return true;
+	private static class Compiling extends AbstractCompilingExpression {
+		private final CompilingExpression value;
+
+		public Compiling(ExpressionCompiler compiler, CodePosition position, CompilingExpression value) {
+			super(compiler, position);
+
+			this.value = value;
+		}
+
+		@Override
+		public Expression eval() {
+			Expression value = this.value.eval();
+			if (value.thrownType == null)
+				return compiler.at(position).invalid(CompileErrors.tryConvertRequiresThrow());
+
+			TypeID type = compiler.types().resultOf(value.type, value.thrownType);
+			return cast(cast(type)).value;
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			Optional<DefinitionTypeID> maybeResult = cast.type.simplified().asDefinition();
+			if (!maybeResult.isPresent() || maybeResult.get().definition != ResultTypeSymbol.INSTANCE)
+				return cast.invalid(CompileErrors.tryConvertWithoutResult());
+
+			DefinitionTypeID result = maybeResult.get();
+			Expression value = this.value.cast(cast(result.typeArguments[0])).value;
+			if (value.thrownType != null) {
+				return cast.of(compiler.at(position).tryConvert(value, result));
+			} else {
+				return cast.invalid(CompileErrors.tryConvertRequiresThrow());
+			}
+		}
 	}
 }

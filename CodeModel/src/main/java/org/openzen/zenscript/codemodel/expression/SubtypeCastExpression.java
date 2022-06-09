@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 /**
@@ -30,10 +29,5 @@ public class SubtypeCastExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new SubtypeCastExpression(position, tValue, type);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new SubtypeCastExpression(position, value.normalize(scope), type.getNormalized());
 	}
 }

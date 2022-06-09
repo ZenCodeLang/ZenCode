@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.expression;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class SetFieldExpression extends Expression {
 	public final Expression target;
@@ -37,10 +36,5 @@ public class SetFieldExpression extends Expression {
 		return tTarget == target && tValue == value
 				? this
 				: new SetFieldExpression(position, tTarget, field, tValue);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new SetFieldExpression(position, target, field, value.normalize(scope));
 	}
 }

@@ -2,6 +2,7 @@ package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.NullExpression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -12,12 +13,9 @@ import java.util.Optional;
 
 public class OptionalTypeID implements TypeID {
 	public final TypeID baseType;
-	private final TypeID normalized;
 
-	public OptionalTypeID(GlobalTypeRegistry registry, TypeID baseType) {
+	public OptionalTypeID(TypeID baseType) {
 		this.baseType = baseType;
-
-		normalized = baseType.getNormalized() == baseType ? this : registry.getOptional(baseType.getNormalized());
 	}
 
 	@Override
@@ -26,19 +24,19 @@ public class OptionalTypeID implements TypeID {
 	}
 
 	@Override
-	public TypeID getNormalized() {
-		return normalized;
-	}
-
-	@Override
 	public TypeID instance(GenericMapper mapper) {
 		TypeID base = baseType.instance(mapper);
-		return mapper.registry.getOptional(base);
+		return new OptionalTypeID(base);
 	}
 
 	@Override
 	public Optional<OptionalTypeID> asOptional() {
 		return Optional.of(this);
+	}
+
+	@Override
+	public ResolvedType resolve() {
+		return baseType.resolve();
 	}
 
 	@Override
@@ -68,7 +66,7 @@ public class OptionalTypeID implements TypeID {
 
 	@Override
 	public boolean hasDefaultValue() {
-		return isOptional() || baseType.hasDefaultValue();
+		return true;
 	}
 
 	@Override

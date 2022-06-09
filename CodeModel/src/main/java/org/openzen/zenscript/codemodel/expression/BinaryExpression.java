@@ -1,9 +1,8 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.RangeTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -186,16 +185,16 @@ public class BinaryExpression extends Expression {
 		STRING_STARTS_WITH(OperatorGroup.OTHER, STRING, STRING, BOOL),
 		STRING_ENDS_WITH(OperatorGroup.OTHER, STRING, STRING, BOOL),
 
-		ASSOC_INDEXGET(OperatorGroup.OTHER, (registry, value, key) -> value.asAssoc().flatMap(assoc -> assoc.keyType == key ? Optional.of(assoc.valueType) : Optional.empty())),
-		ASSOC_CONTAINS(OperatorGroup.OTHER, (registry, value, key) -> value.asAssoc().flatMap(assoc -> assoc.keyType == key ? Optional.of(BOOL) : Optional.empty())),
+		ASSOC_INDEXGET(OperatorGroup.OTHER, (value, key) -> value.asAssoc().flatMap(assoc -> assoc.keyType.equals(key) ? Optional.of(assoc.valueType) : Optional.empty())),
+		ASSOC_CONTAINS(OperatorGroup.OTHER, (value, key) -> value.asAssoc().flatMap(assoc -> assoc.keyType.equals(key) ? Optional.of(BOOL) : Optional.empty())),
 
-		ARRAY_CONTAINS(OperatorGroup.OTHER, (registry, haystack, needle) -> haystack.asArray().flatMap(array -> array.elementType == needle ? Optional.of(BOOL) : Optional.empty())),
-		ARRAY_EQUALS(OperatorGroup.EQUALS, (registry, left, right) -> left == right ? Optional.of(BOOL) : Optional.empty()),
-		ARRAY_NOTEQUALS(OperatorGroup.NOTEQUALS, (registry, left, right) -> left == right ? Optional.of(BOOL) : Optional.empty()),
+		ARRAY_CONTAINS(OperatorGroup.OTHER, (haystack, needle) -> haystack.asArray().flatMap(array -> array.elementType.equals(needle) ? Optional.of(BOOL) : Optional.empty())),
+		ARRAY_EQUALS(OperatorGroup.EQUALS, (left, right) -> left.equals(right) ? Optional.of(BOOL) : Optional.empty()),
+		ARRAY_NOTEQUALS(OperatorGroup.NOTEQUALS, (left, right) -> left.equals(right) ? Optional.of(BOOL) : Optional.empty()),
 
-		ENUM_COMPARE(OperatorGroup.COMPARE, (registry, left, right) -> {
-			Optional<EnumDefinition> leftEnum = left.asDefinition().flatMap(x -> x.definition.asEnum());
-			Optional<EnumDefinition> rightEnum = right.asDefinition().flatMap(x -> x.definition.asEnum());
+		ENUM_COMPARE(OperatorGroup.COMPARE, (left, right) -> {
+			Optional<TypeSymbol> leftEnum = left.asDefinition().flatMap(x -> x.definition.isEnum() ? Optional.of(x.definition) : Optional.empty());
+			Optional<TypeSymbol> rightEnum = right.asDefinition().flatMap(x -> x.definition.isEnum() ? Optional.of(x.definition) : Optional.empty());
 			if (leftEnum.isPresent() && rightEnum.isPresent() && leftEnum.get() == rightEnum.get()) {
 				return Optional.of(BOOL);
 			} else {
@@ -203,15 +202,15 @@ public class BinaryExpression extends Expression {
 			}
 		}),
 
-		SAME(OperatorGroup.OTHER, (registry, left, right) -> left == right ? Optional.of(BOOL) : Optional.empty()),
-		NOTSAME(OperatorGroup.OTHER, (registry, left, right) -> left == right ? Optional.of(BOOL) : Optional.empty());
+		SAME(OperatorGroup.OTHER, (left, right) -> left.equals(right) ? Optional.of(BOOL) : Optional.empty()),
+		NOTSAME(OperatorGroup.OTHER, (left, right) -> left.equals(right) ? Optional.of(BOOL) : Optional.empty());
 
 		public final OperatorGroup group;
 		private final BinaryTypeMapper mapper;
 
 		Operator(OperatorGroup group, TypeID left, TypeID right, TypeID result) {
 			this.group = group;
-			mapper = (registry, actualLeft, actualRight) -> actualLeft == left && actualRight == right ? Optional.of(result) : Optional.empty();
+			mapper = (actualLeft, actualRight) -> actualLeft == left && actualRight == right ? Optional.of(result) : Optional.empty();
 		}
 
 		Operator(OperatorGroup group, BinaryTypeMapper mapper) {
@@ -219,28 +218,26 @@ public class BinaryExpression extends Expression {
 			this.mapper = mapper;
 		}
 
-		public Optional<TypeID> getOutputType(GlobalTypeRegistry registry, TypeID left, TypeID right) {
-			return mapper.apply(registry, left, right);
+		public Optional<TypeID> getOutputType(TypeID left, TypeID right) {
+			return mapper.apply(left, right);
 		}
 	}
 
 	@FunctionalInterface
 	interface BinaryTypeMapper {
-		Optional<TypeID> apply(GlobalTypeRegistry registry, TypeID left, TypeID right);
+		Optional<TypeID> apply(TypeID left, TypeID right);
 	}
 
 	public final Expression left;
 	public final Expression right;
 	public final Operator operator;
-	private final GlobalTypeRegistry registry;
 
-	public BinaryExpression(CodePosition position, Expression left, Expression right, Operator operator, GlobalTypeRegistry registry) {
-		super(position, operator.getOutputType(registry, left.type, right.type).orElse(INVALID), null);
+	public BinaryExpression(CodePosition position, Expression left, Expression right, Operator operator) {
+		super(position, operator.getOutputType(left.type, right.type).orElse(INVALID), null);
 
 		this.left = left;
 		this.right = right;
 		this.operator = operator;
-		this.registry = registry;
 	}
 
 	@Override
@@ -260,11 +257,6 @@ public class BinaryExpression extends Expression {
 		if (left == this.left && right == this.right)
 			return this;
 
-		return new BinaryExpression(position, left, right, operator, registry);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new BinaryExpression(position, left.normalize(scope), right.normalize(scope), operator, registry);
+		return new BinaryExpression(position, left, right, operator);
 	}
 }

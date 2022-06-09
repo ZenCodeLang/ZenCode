@@ -33,9 +33,4 @@ public class AndAndExpression extends Expression {
 				? this
 				: new AndAndExpression(position, tLeft, tRight);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new AndAndExpression(position, left.normalize(scope), right.normalize(scope));
-	}
 }

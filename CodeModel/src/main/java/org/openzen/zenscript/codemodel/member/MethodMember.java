@@ -5,15 +5,16 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 public class MethodMember extends FunctionalMember {
 	public final String name;
-	private FunctionalMemberRef overrides;
+	private MethodSymbol overrides;
+	private int overrideModifiers = 0;
 
 	public MethodMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header, BuiltinID builtin) {
 		super(position, definition, modifiers, header, builtin);
@@ -34,6 +35,15 @@ public class MethodMember extends FunctionalMember {
 	@Override
 	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
 		type.addMethod(name, ref(type.type, mapper), priority);
+	}
+
+	@Override
+	public void registerTo(MemberSet.Builder members, GenericMapper mapper) {
+		if (isStatic()) {
+			members.staticMethod(name, mapper.map(this));
+		} else {
+			members.method(name, mapper.map(this));
+		}
 	}
 
 	@Override
@@ -64,12 +74,12 @@ public class MethodMember extends FunctionalMember {
 	}
 
 	@Override
-	public FunctionalMemberRef getOverrides() {
+	public MethodSymbol getOverrides() {
 		return overrides;
 	}
 
-	public void setOverrides(GlobalTypeRegistry registry, FunctionalMemberRef overrides) {
+	public void setOverrides(MethodSymbol overrides) {
 		this.overrides = overrides;
-		header = header.inferFromOverride(registry, overrides.getHeader());
+		header = header.inferFromOverride(overrides.getHeader());
 	}
 }

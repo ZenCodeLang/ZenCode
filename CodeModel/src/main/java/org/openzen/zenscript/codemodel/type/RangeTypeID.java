@@ -1,36 +1,26 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.builtin.RangeTypeSymbol;
 
 import java.util.List;
 import java.util.Optional;
 
 public class RangeTypeID implements TypeID {
-	public static final RangeTypeID INT = new RangeTypeID(null, BasicTypeID.INT);
-	public static final RangeTypeID USIZE = new RangeTypeID(null, BasicTypeID.USIZE);
+	public static final RangeTypeID INT = new RangeTypeID(BasicTypeID.INT);
+	public static final RangeTypeID USIZE = new RangeTypeID(BasicTypeID.USIZE);
 
 	public final TypeID baseType;
-	private final RangeTypeID normalized;
 
-	public RangeTypeID(GlobalTypeRegistry registry, TypeID baseType) {
+	public RangeTypeID(TypeID baseType) {
 		this.baseType = baseType;
-
-		if (baseType.getNormalized().equals(baseType)) {
-			normalized = this;
-		} else {
-			normalized = registry.getRange(baseType.getNormalized());
-		}
-	}
-
-	@Override
-	public RangeTypeID getNormalized() {
-		return normalized;
 	}
 
 	@Override
 	public TypeID instance(GenericMapper mapper) {
-		return mapper.registry.getRange(baseType.instance(mapper));
+		return new RangeTypeID(baseType.instance(mapper));
 	}
 
 	@Override
@@ -45,6 +35,11 @@ public class RangeTypeID implements TypeID {
 
 	@Override
 	public Optional<RangeTypeID> asRange() { return Optional.of(this); }
+
+	@Override
+	public ResolvedType resolve() {
+		return RangeTypeSymbol.INSTANCE.resolve(new TypeID[] { baseType });
+	}
 
 	@Override
 	public boolean isOptional() {

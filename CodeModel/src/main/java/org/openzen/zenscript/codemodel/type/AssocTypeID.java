@@ -1,7 +1,9 @@
 package org.openzen.zenscript.codemodel.type;
 
 import org.openzen.zenscript.codemodel.GenericMapper;
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.type.builtin.MapTypeSymbol;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,28 +11,15 @@ import java.util.Optional;
 public class AssocTypeID implements TypeID {
 	public final TypeID keyType;
 	public final TypeID valueType;
-	private final AssocTypeID normalized;
 
-	public AssocTypeID(GlobalTypeRegistry typeRegistry, TypeID keyType, TypeID valueType) {
+	public AssocTypeID(TypeID keyType, TypeID valueType) {
 		this.keyType = keyType;
 		this.valueType = valueType;
-
-		if (keyType != keyType.getNormalized() || valueType != valueType.getNormalized())
-			normalized = typeRegistry.getAssociative(keyType.getNormalized(), valueType.getNormalized());
-		else
-			normalized = this;
 	}
 
 	@Override
 	public TypeID instance(GenericMapper mapper) {
-		return mapper.registry.getAssociative(
-				keyType.instance(mapper),
-				valueType.instance(mapper));
-	}
-
-	@Override
-	public AssocTypeID getNormalized() {
-		return normalized;
+		return new AssocTypeID(keyType.instance(mapper), valueType.instance(mapper));
 	}
 
 	@Override
@@ -64,6 +53,11 @@ public class AssocTypeID implements TypeID {
 	}
 
 	@Override
+	public ResolvedType resolve() {
+		return MapTypeSymbol.INSTANCE.resolve(new TypeID[] { keyType, valueType });
+	}
+
+	@Override
 	public void extractTypeParameters(List<TypeParameter> typeParameters) {
 		keyType.extractTypeParameters(typeParameters);
 		valueType.extractTypeParameters(typeParameters);
@@ -89,8 +83,7 @@ public class AssocTypeID implements TypeID {
 			return false;
 		}
 		final AssocTypeID other = (AssocTypeID) obj;
-		return this.keyType.equals(other.keyType)
-				&& this.valueType.equals(other.valueType);
+		return this.keyType.equals(other.keyType) && this.valueType.equals(other.valueType);
 	}
 
 	@Override

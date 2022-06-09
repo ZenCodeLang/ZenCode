@@ -5,7 +5,6 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitor;
 import org.openzen.zenscript.codemodel.expression.ExpressionVisitorWithContext;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.FunctionTypeID;
 
 public class JavaFunctionInterfaceCastExpression extends Expression {
@@ -32,10 +31,5 @@ public class JavaFunctionInterfaceCastExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		return new JavaFunctionInterfaceCastExpression(position, functionType, transformer.transform(value));
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new JavaFunctionInterfaceCastExpression(position, functionType, value.normalize(scope));
 	}
 }

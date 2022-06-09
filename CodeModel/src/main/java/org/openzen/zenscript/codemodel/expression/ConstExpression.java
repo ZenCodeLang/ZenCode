@@ -1,15 +1,19 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
 
-public class ConstExpression extends Expression {
-	public final ConstMemberRef constant;
+import java.util.Optional;
 
-	public ConstExpression(CodePosition position, ConstMemberRef constant) {
+public class ConstExpression extends Expression {
+	public final FieldInstance constant;
+
+	public ConstExpression(CodePosition position, FieldInstance constant) {
 		super(position, constant.getType(), null);
 
 		this.constant = constant;
@@ -31,22 +35,7 @@ public class ConstExpression extends Expression {
 	}
 
 	@Override
-	public String evaluateStringConstant() {
-		return constant.member.value.evaluateStringConstant();
-	}
-
-	@Override
-	public EnumConstantMember evaluateEnumConstant() {
-		return constant.member.value.evaluateEnumConstant();
-	}
-
-	@Override
-	public IDefinitionMember getMember() {
-		return constant.member;
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return this;
+	public Optional<CompileTimeConstant> evaluate() {
+		return constant.field.evaluate();
 	}
 }

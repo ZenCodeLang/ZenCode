@@ -40,35 +40,9 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 		this.allowStaticUsage = allowStaticMembers;
 	}
 
-	public PartialMemberGroupExpression(
-			CodePosition position,
-			TypeScope scope,
-			Expression target,
-			String name,
-			FunctionalMemberRef member,
-			TypeID[] typeArguments,
-			boolean allowStaticMembers) {
-		this.position = position;
-		this.scope = scope;
-		this.target = target;
-		this.group = TypeMemberGroup.forMethod(name, member);
-		this.typeArguments = typeArguments;
-		this.allowStaticUsage = allowStaticMembers;
-	}
-
 	@Override
-	public Expression eval() throws CompileException {
+	public Expression eval() {
 		return group.getter(position, scope, target, allowStaticUsage);
-	}
-
-	@Override
-	public List<TypeID> getAssignHints() {
-		if (group.getSetter().isPresent())
-			return Collections.singletonList(group.getSetter().get().getType());
-		if (group.getField().isPresent())
-			return Collections.singletonList(group.getField().get().getType());
-
-		return Collections.emptyList();
 	}
 
 	@Override
@@ -103,11 +77,6 @@ public class PartialMemberGroupExpression implements IPartialExpression {
 	@Override
 	public Expression call(CodePosition position, TypeScope scope, List<TypeID> hints, CallArguments arguments) throws CompileException {
 		return group.call(position, scope, target, arguments, allowStaticUsage);
-	}
-
-	@Override
-	public Expression assign(CodePosition position, TypeScope scope, Expression value) throws CompileException {
-		return group.setter(position, scope, target, value, allowStaticUsage);
 	}
 
 	@Override

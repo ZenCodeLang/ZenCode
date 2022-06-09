@@ -1,22 +1,16 @@
 package org.openzen.zenscript.parser.expression;
 
-import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zencode.shared.StringExpansion;
+import org.openzen.zenscript.codemodel.compilation.CompilableExpression;
+import org.openzen.zenscript.codemodel.compilation.CompilableLambdaHeader;
+import org.openzen.zencode.shared.*;
 import org.openzen.zenscript.codemodel.CompareType;
 import org.openzen.zenscript.codemodel.OperatorType;
-import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.compiler.expression.CompilableExpression;
 import org.openzen.zenscript.lexer.ParseException;
 import org.openzen.zenscript.lexer.ZSToken;
 import org.openzen.zenscript.lexer.ZSTokenParser;
 import org.openzen.zenscript.lexer.ZSTokenType;
-import org.openzen.zenscript.parser.definitions.ParsedFunctionHeader;
-import org.openzen.zenscript.parser.definitions.ParsedFunctionParameter;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.statements.ParsedStatement;
 import org.openzen.zenscript.parser.type.IParsedType;
@@ -35,17 +29,17 @@ public abstract class ParsedExpression implements CompilableExpression {
 		this.position = position;
 	}
 
-	public static ParsedExpression parse(ZSTokenParser parser) throws ParseException {
+	public static CompilableExpression parse(ZSTokenParser parser) throws ParseException {
 		return readAssignExpression(parser, ParsingOptions.DEFAULT);
 	}
 
-	public static ParsedExpression parse(ZSTokenParser parser, ParsingOptions options) throws ParseException {
+	public static CompilableExpression parse(ZSTokenParser parser, ParsingOptions options) throws ParseException {
 		return readAssignExpression(parser, options);
 	}
 
-	private static ParsedExpression readAssignExpression(ZSTokenParser parser, ParsingOptions options) throws ParseException {
+	private static CompilableExpression readAssignExpression(ZSTokenParser parser, ParsingOptions options) throws ParseException {
 		CodePosition position = parser.getPosition();
-		ParsedExpression left = readConditionalExpression(position, parser, options);
+		CompilableExpression left = readConditionalExpression(position, parser, options);
 
 		switch (parser.peek().type) {
 			case T_ASSIGN:
@@ -92,122 +86,122 @@ public abstract class ParsedExpression implements CompilableExpression {
 		return left;
 	}
 
-	private static ParsedExpression readConditionalExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readOrOrExpression(position, parser, options);
+	private static CompilableExpression readConditionalExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readOrOrExpression(position, parser, options);
 
 		if (parser.optional(T_QUEST) != null) {
-			ParsedExpression onIf = readOrOrExpression(parser.getPosition(), parser, options);
+			CompilableExpression onIf = readOrOrExpression(parser.getPosition(), parser, options);
 			parser.required(T_COLON, ": expected");
-			ParsedExpression onElse = readConditionalExpression(parser.getPosition(), parser, options);
+			CompilableExpression onElse = readConditionalExpression(parser.getPosition(), parser, options);
 			return new ParsedExpressionConditional(position, left, onIf, onElse);
 		}
 
 		return left;
 	}
 
-	private static ParsedExpression readOrOrExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readAndAndExpression(position, parser, options);
+	private static CompilableExpression readOrOrExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readAndAndExpression(position, parser, options);
 
 		while (parser.optional(T_OROR) != null) {
-			ParsedExpression right = readAndAndExpression(parser.getPosition(), parser, options);
+			CompilableExpression right = readAndAndExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionOrOr(position, left, right);
 		}
 
 		while (parser.optional(T_COALESCE) != null) {
-			ParsedExpression right = readAndAndExpression(parser.getPosition(), parser, options);
+			CompilableExpression right = readAndAndExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionCoalesce(position, left, right);
 		}
 
 		return left;
 	}
 
-	private static ParsedExpression readAndAndExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readOrExpression(position, parser, options);
+	private static CompilableExpression readAndAndExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readOrExpression(position, parser, options);
 
 		while (parser.optional(T_ANDAND) != null) {
-			ParsedExpression right = readOrExpression(parser.getPosition(), parser, options);
+			CompilableExpression right = readOrExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionAndAnd(position, left, right);
 		}
 		return left;
 	}
 
-	private static ParsedExpression readOrExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readXorExpression(position, parser, options);
+	private static CompilableExpression readOrExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readXorExpression(position, parser, options);
 
 		while (parser.optional(T_OR) != null) {
-			ParsedExpression right = readXorExpression(parser.getPosition(), parser, options);
+			CompilableExpression right = readXorExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionBinary(position, left, right, OperatorType.OR);
 		}
 		return left;
 	}
 
-	private static ParsedExpression readXorExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readAndExpression(position, parser, options);
+	private static CompilableExpression readXorExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readAndExpression(position, parser, options);
 
 		while (parser.optional(T_XOR) != null) {
-			ParsedExpression right = readAndExpression(parser.getPosition(), parser, options);
+			CompilableExpression right = readAndExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionBinary(position, left, right, OperatorType.XOR);
 		}
 		return left;
 	}
 
-	private static ParsedExpression readAndExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readCompareExpression(position, parser, options);
+	private static CompilableExpression readAndExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readCompareExpression(position, parser, options);
 
 		while (parser.optional(T_AND) != null) {
-			ParsedExpression right = readCompareExpression(parser.getPosition(), parser, options);
+			CompilableExpression right = readCompareExpression(parser.getPosition(), parser, options);
 			left = new ParsedExpressionBinary(position, left, right, OperatorType.AND);
 		}
 		return left;
 	}
 
-	private static ParsedExpression readCompareExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readShiftExpression(position, parser, options);
+	private static CompilableExpression readCompareExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readShiftExpression(position, parser, options);
 
 		switch (parser.peek().getType()) {
 			case T_EQUAL2: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.EQ);
 			}
 			case T_EQUAL3: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
-				return new ParsedExpressionSame(position, left, right, false);
+				CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
+				return new ParsedExpressionBinary(position, left, right, OperatorType.SAME);
 			}
 			case T_NOTEQUAL: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.NE);
 			}
 			case T_NOTEQUAL2: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
-				return new ParsedExpressionSame(position, left, right, true);
+				CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
+				return new ParsedExpressionBinary(position, left, right, OperatorType.NOTSAME);
 			}
 			case T_LESS: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.LT);
 			}
 			case T_LESSEQ: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.LE);
 			}
 			case T_GREATER: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.GT);
 			}
 			case T_GREATEREQ: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionCompare(position, left, right, CompareType.GE);
 			}
 			case K_IN: {
 				parser.next();
-				ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
 				return new ParsedExpressionBinary(position, right, left, OperatorType.CONTAINS);
 			}
 			case K_IS: {
@@ -218,7 +212,7 @@ public abstract class ParsedExpression implements CompilableExpression {
 			case T_NOT: {
 				parser.next();
 				if (parser.optional(K_IN) != null) {
-					ParsedExpression right = readShiftExpression(parser.getPosition(), parser, options);
+					CompilableExpression right = readShiftExpression(parser.getPosition(), parser, options);
 					return new ParsedExpressionUnary(position, new ParsedExpressionBinary(position, right, left, OperatorType.CONTAINS), OperatorType.NOT);
 				} else if (parser.optional(K_IS) != null) {
 					IParsedType type = IParsedType.parse(parser);
@@ -232,18 +226,18 @@ public abstract class ParsedExpression implements CompilableExpression {
 		return left;
 	}
 
-	private static ParsedExpression readShiftExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readAddExpression(position, parser, options);
+	private static CompilableExpression readShiftExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readAddExpression(position, parser, options);
 
 		while (true) {
 			if (parser.optional(T_SHL) != null) {
-				ParsedExpression right = readAddExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readAddExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.SHL);
 			} else if (parser.optional(T_SHR) != null) {
-				ParsedExpression right = readAddExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readAddExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.SHR);
 			} else if (parser.optional(T_USHR) != null) {
-				ParsedExpression right = readAddExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readAddExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.USHR);
 			} else {
 				break;
@@ -253,18 +247,18 @@ public abstract class ParsedExpression implements CompilableExpression {
 		return left;
 	}
 
-	private static ParsedExpression readAddExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readMulExpression(position, parser, options);
+	private static CompilableExpression readAddExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readMulExpression(position, parser, options);
 
 		while (true) {
 			if (parser.optional(T_ADD) != null) {
-				ParsedExpression right = readMulExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readMulExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.ADD);
 			} else if (parser.optional(T_SUB) != null) {
-				ParsedExpression right = readMulExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readMulExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.SUB);
 			} else if (parser.optional(T_CAT) != null) {
-				ParsedExpression right = readMulExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readMulExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.CAT);
 			} else {
 				// Check if x-1 was scanned as T_INT instead of [T_SUB, T_INT]
@@ -272,7 +266,7 @@ public abstract class ParsedExpression implements CompilableExpression {
 				final ZSToken peek = parser.peek();
 				if (peek.content.startsWith("-") && !peek.content.equals("-=") && peek.content.length() >= 2) {
 					parser.replace(new ZSToken(peek.type, peek.content.substring(1)));
-					ParsedExpression right = readMulExpression(parser.getPosition(), parser, options);
+					CompilableExpression right = readMulExpression(parser.getPosition(), parser, options);
 					left = new ParsedExpressionBinary(position, left, right, OperatorType.SUB);
 				} else {
 					break;
@@ -283,18 +277,18 @@ public abstract class ParsedExpression implements CompilableExpression {
 		return left;
 	}
 
-	private static ParsedExpression readMulExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression left = readUnaryExpression(position, parser, options);
+	private static CompilableExpression readMulExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression left = readUnaryExpression(position, parser, options);
 
 		while (true) {
 			if (parser.optional(T_MUL) != null) {
-				ParsedExpression right = readUnaryExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readUnaryExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.MUL);
 			} else if (parser.optional(T_DIV) != null) {
-				ParsedExpression right = readUnaryExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readUnaryExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.DIV);
 			} else if (parser.optional(T_MOD) != null) {
-				ParsedExpression right = readUnaryExpression(parser.getPosition(), parser, options);
+				CompilableExpression right = readUnaryExpression(parser.getPosition(), parser, options);
 				left = new ParsedExpressionBinary(position, left, right, OperatorType.MOD);
 			} else {
 				break;
@@ -304,7 +298,7 @@ public abstract class ParsedExpression implements CompilableExpression {
 		return left;
 	}
 
-	private static ParsedExpression readUnaryExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+	private static CompilableExpression readUnaryExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
 		switch (parser.peek().getType()) {
 			case T_NOT:
 				parser.next();
@@ -359,8 +353,8 @@ public abstract class ParsedExpression implements CompilableExpression {
 		}
 	}
 
-	private static ParsedExpression readPostfixExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
-		ParsedExpression base = readPrimaryExpression(position, parser, options);
+	private static CompilableExpression readPostfixExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+		CompilableExpression base = readPrimaryExpression(position, parser, options);
 
 		while (true) {
 			if (parser.optional(T_DOT) != null) {
@@ -385,10 +379,10 @@ public abstract class ParsedExpression implements CompilableExpression {
 					}
 				}
 			} else if (parser.optional(T_DOT2) != null) {
-				ParsedExpression to = readAssignExpression(parser, options);
+				CompilableExpression to = readAssignExpression(parser, options);
 				return new ParsedExpressionRange(position.until(parser.getPositionBeforeWhitespace()), base, to);
 			} else if (parser.optional(T_SQOPEN) != null) {
-				List<ParsedExpression> indexes = new ArrayList<>();
+				List<CompilableExpression> indexes = new ArrayList<>();
 				do {
 					indexes.add(readAssignExpression(parser, options));
 				} while (parser.optional(ZSTokenType.T_COMMA) != null);
@@ -406,7 +400,10 @@ public abstract class ParsedExpression implements CompilableExpression {
 				base = new ParsedExpressionPostCall(position, base, OperatorType.DECREMENT);
 			} else if (options.allowLambda && parser.optional(T_LAMBDA) != null) {
 				ParsedFunctionBody body = ParsedStatement.parseLambdaBody(parser, true);
-				base = new ParsedExpressionFunction(position, base.toLambdaHeader(), body);
+				CodePosition fposition = position;
+				CompilableLambdaHeader lambdaHeader = base.asLambdaHeader()
+						.orElseThrow(() -> new ParseException(fposition, "Not a valid lambda header"));
+				base = new ParsedExpressionFunction(position, lambdaHeader, body);
 			} else {
 				break;
 			}
@@ -415,7 +412,7 @@ public abstract class ParsedExpression implements CompilableExpression {
 		return base;
 	}
 
-	private static ParsedExpression readPrimaryExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
+	private static CompilableExpression readPrimaryExpression(CodePosition position, ZSTokenParser parser, ParsingOptions options) throws ParseException {
 		switch (parser.peek().getType()) {
 			case T_INT:
 				return new ParsedExpressionInt(position, parser.next().content);
@@ -458,7 +455,7 @@ public abstract class ParsedExpression implements CompilableExpression {
 				return new ParsedDollarExpression(position);
 			case T_SQOPEN: {
 				parser.next();
-				List<ParsedExpression> contents = new ArrayList<>();
+				List<CompilableExpression> contents = new ArrayList<>();
 				if (parser.optional(T_SQCLOSE) == null) {
 					while (parser.optional(T_SQCLOSE) == null) {
 						contents.add(readAssignExpression(parser, options));
@@ -473,10 +470,10 @@ public abstract class ParsedExpression implements CompilableExpression {
 			case T_AOPEN: {
 				parser.next();
 
-				List<ParsedExpression> keys = new ArrayList<>();
-				List<ParsedExpression> values = new ArrayList<>();
+				List<CompilableExpression> keys = new ArrayList<>();
+				List<CompilableExpression> values = new ArrayList<>();
 				while (parser.optional(T_ACLOSE) == null) {
-					ParsedExpression expression = readAssignExpression(parser, options);
+					CompilableExpression expression = readAssignExpression(parser, options);
 					if (parser.optional(T_COLON) == null) {
 						keys.add(null);
 						values.add(expression);
@@ -503,7 +500,7 @@ public abstract class ParsedExpression implements CompilableExpression {
 				return new ParsedExpressionNull(position);
 			case T_BROPEN: {
 				parser.next();
-				List<ParsedExpression> expressions = new ArrayList<>();
+				List<CompilableExpression> expressions = new ArrayList<>();
 				do {
 					if (parser.peek().type == T_BRCLOSE) {
 						break;
@@ -524,27 +521,27 @@ public abstract class ParsedExpression implements CompilableExpression {
 			}
 			case K_THROW: {
 				parser.next();
-				ParsedExpression value = parse(parser);
+				CompilableExpression value = parse(parser);
 				return new ParsedThrowExpression(position, value);
 			}
 			case K_PANIC: {
 				parser.next();
-				ParsedExpression value = parse(parser);
+				CompilableExpression value = parse(parser);
 				return new ParsedPanicExpression(position, value);
 			}
 			case K_MATCH: {
 				parser.next();
-				ParsedExpression source = parse(parser);
+				CompilableExpression source = parse(parser);
 				parser.required(T_AOPEN, "{ expected");
 
 				List<ParsedMatchExpression.Case> cases = new ArrayList<>();
 				while (parser.optional(T_ACLOSE) == null) {
-					ParsedExpression key = null;
+					CompilableExpression key = null;
 					if (parser.optional(K_DEFAULT) == null)
 						key = parse(parser, new ParsingOptions(false));
 
 					parser.required(T_LAMBDA, "=> expected");
-					ParsedExpression value = parse(parser);
+					CompilableExpression value = parse(parser);
 					cases.add(new ParsedMatchExpression.Case(key, value));
 
 					if (parser.optional(T_COMMA) == null)
@@ -561,26 +558,13 @@ public abstract class ParsedExpression implements CompilableExpression {
 				return parser.bracketParser.parse(position, parser);
 			default: {
 				IParsedType type = IParsedType.parse(parser);
-				if (type == null) {
-					ZSToken last = parser.next();
-					throw new ParseException(parser.getPosition(), "Invalid expression, last token: " + last.content);
-				} else {
-					return new ParsedTypeExpression(position, type);
-				}
+				return new ParsedTypeExpression(position, type);
 			}
 		}
 	}
 
-	public SwitchValue compileToSwitchValue(TypeID type, ExpressionScope scope) throws CompileException {
-		throw new CompileException(position, CompileExceptionCode.INVALID_SWITCH_CASE, "Invalid switch case");
-	}
-
-	public ParsedFunctionHeader toLambdaHeader() throws ParseException {
-		throw new ParseException(position, "Not a valid lambda header");
-	}
-
-	public ParsedFunctionParameter toLambdaParameter() throws ParseException {
-		throw new ParseException(position, "Not a valid lambda parameter");
+	public CodePosition getPosition() {
+		return position;
 	}
 
 	public boolean isCompatibleWith(BaseScope scope, TypeID type) {

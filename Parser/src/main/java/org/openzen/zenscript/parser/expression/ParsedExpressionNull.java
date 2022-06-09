@@ -1,9 +1,9 @@
 package org.openzen.zenscript.parser.expression;
 
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.expression.NullExpression;
-import org.openzen.zenscript.codemodel.partial.IPartialExpression;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
+import org.openzen.zenscript.codemodel.compilation.*;
+import org.openzen.zenscript.codemodel.expression.Expression;
 
 public class ParsedExpressionNull extends ParsedExpression {
 	public ParsedExpressionNull(CodePosition position) {
@@ -11,12 +11,23 @@ public class ParsedExpressionNull extends ParsedExpression {
 	}
 
 	@Override
-	public IPartialExpression compile(ExpressionScope scope) {
-		return new NullExpression(position);
+	public CompilingExpression compile(ExpressionCompiler compiler) {
+		return new Compiling(compiler, position);
 	}
 
-	@Override
-	public boolean hasStrongType() {
-		return false;
+	private static class Compiling extends AbstractCompilingExpression {
+		public Compiling(ExpressionCompiler compiler, CodePosition position) {
+			super(compiler, position);
+		}
+
+		@Override
+		public Expression eval() {
+			return compiler.at(position).invalid(CompileErrors.cannotInferNull());
+		}
+
+		@Override
+		public CastedExpression cast(CastedEval cast) {
+			return cast.of(compiler.at(position).constantNull(cast.type));
+		}
 	}
 }

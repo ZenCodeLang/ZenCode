@@ -5,11 +5,16 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.compilation.ExpressionBuilder;
+import org.openzen.zenscript.codemodel.compilation.InstanceCallableMethod;
+import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.expression.Expression;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
@@ -40,6 +45,31 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
+	public void registerTo(MemberSet.Builder members, GenericMapper mapper) {
+		FunctionHeader header = new FunctionHeader(mapper.map(type));
+		members.implicitCast(new InstanceCallableMethod() {
+			@Override
+			public FunctionHeader getHeader() {
+				return header;
+			}
+
+			@Override
+			public Optional<MethodSymbol> asMethod() {
+				return Optional.empty();
+			}
+
+			@Override
+			public Expression call(ExpressionBuilder builder, Expression instance, CallArguments arguments) {
+				return builder.interfaceCast(ImplementationMember.this, instance);
+			}
+		});
+
+		for (IDefinitionMember member : this.members) {
+			member.registerTo(members, mapper);
+		}
+	}
+
+	@Override
 	public String describe() {
 		return "implementation of " + type.toString();
 	}
@@ -60,7 +90,7 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
+	public MethodSymbol getOverrides() {
 		return null;
 	}
 
@@ -73,22 +103,6 @@ public class ImplementationMember extends DefinitionMember {
 			result |= Modifiers.PUBLIC;
 
 		return result;
-	}
-
-	@Override
-	public void normalize(TypeScope scope) {
-		Set<IDefinitionMember> implemented = new HashSet<>();
-		for (IDefinitionMember member : members) {
-			member.normalize(scope);
-			if (member.getOverrides() != null)
-				implemented.add(member.getOverrides().getTarget());
-		}
-
-		TypeMembers interfaceMembers = scope.getTypeMembers(type);
-		TypeMembers definitionMembers = scope.getTypeMembers(scope.getTypeRegistry().getForMyDefinition(definition));
-
-		definitionBorrowedMembers.clear();
-		definitionBorrowedMembers.putAll(interfaceMembers.borrowInterfaceMembersFromDefinition(implemented, definitionMembers));
 	}
 
 	@Override

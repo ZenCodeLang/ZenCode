@@ -10,18 +10,10 @@ import java.util.Optional;
 public class GenericMapTypeID implements TypeID {
 	public final TypeID value;
 	public final TypeParameter key;
-	private final GenericMapTypeID normalized;
 
-	public GenericMapTypeID(GlobalTypeRegistry registry, TypeID value, TypeParameter key) {
+	public GenericMapTypeID(TypeID value, TypeParameter key) {
 		this.value = value;
 		this.key = key;
-
-		normalized = value.getNormalized() == value ? this : registry.getGenericMap(value.getNormalized(), key);
-	}
-
-	@Override
-	public GenericMapTypeID getNormalized() {
-		return normalized;
 	}
 
 	@Override
@@ -51,7 +43,7 @@ public class GenericMapTypeID implements TypeID {
 
 	@Override
 	public TypeID instance(GenericMapper mapper) {
-		return mapper.registry.getGenericMap(value.instance(mapper), key);
+		return new GenericMapTypeID(value.instance(mapper), key);
 	}
 
 	@Override

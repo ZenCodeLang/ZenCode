@@ -30,9 +30,4 @@ public class CheckNullExpression extends Expression {
 		Expression tValue = transformer.transform(value);
 		return value == tValue ? this : new CheckNullExpression(position, tValue);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new CheckNullExpression(position, value.normalize(scope));
-	}
 }

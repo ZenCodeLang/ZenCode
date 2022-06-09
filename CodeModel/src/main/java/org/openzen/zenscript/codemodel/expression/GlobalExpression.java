@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class GlobalExpression extends Expression {
 	public final String name;
@@ -28,10 +27,5 @@ public class GlobalExpression extends Expression {
 	public Expression transform(ExpressionTransformer transformer) {
 		Expression tResolution = resolution.transform(transformer);
 		return resolution == tResolution ? this : new GlobalExpression(position, name, resolution);
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new GlobalExpression(position, name, resolution.normalize(scope));
 	}
 }

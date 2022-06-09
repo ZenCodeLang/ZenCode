@@ -72,8 +72,8 @@ public class TypeContext {
 	}
 
 	public GenericMapper getMapper() {
-		Map<TypeParameter, TypeID> mapper = TypeID.getSelfMapping(moduleContext.registry, typeParameters);
-		return new GenericMapper(position, moduleContext.registry, mapper);
+		Map<TypeParameter, TypeID> mapper = TypeID.getSelfMapping(typeParameters);
+		return new GenericMapper(mapper);
 	}
 
 	public CodePosition getPosition() {

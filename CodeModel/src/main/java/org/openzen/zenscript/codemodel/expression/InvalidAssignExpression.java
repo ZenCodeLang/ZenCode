@@ -31,9 +31,4 @@ public class InvalidAssignExpression extends Expression {
 				target,
 				transformer.transform(source));
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new InvalidAssignExpression(position, target, source.normalize(scope));
-	}
 }

@@ -3,7 +3,6 @@ package org.openzen.zenscript.parser.member;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.member.ConstructorMember;
 import org.openzen.zenscript.codemodel.member.FunctionalMember;
@@ -17,8 +16,8 @@ public class ParsedConstructor extends ParsedFunctionalMember {
 	private final ParsedFunctionHeader header;
 	private ConstructorMember compiled;
 
-	public ParsedConstructor(CodePosition position, HighLevelDefinition definition, ParsedImplementation implementation, int modifiers, ParsedAnnotation[] annotations, ParsedFunctionHeader header, ParsedFunctionBody body) {
-		super(position, definition, implementation, modifiers, annotations, body);
+	public ParsedConstructor(CodePosition position, int modifiers, ParsedAnnotation[] annotations, ParsedFunctionHeader header, ParsedFunctionBody body) {
+		super(position, modifiers, annotations, body);
 
 		this.header = header;
 	}

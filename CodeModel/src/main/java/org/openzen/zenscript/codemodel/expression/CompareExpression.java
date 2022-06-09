@@ -41,14 +41,4 @@ public class CompareExpression extends Expression {
 		Expression tRight = right.transform(transformer);
 		return left == tLeft && right == tRight ? this : new CompareExpression(position, tLeft, tRight, operator, comparison);
 	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new CompareExpression(
-				position,
-				left.normalize(scope),
-				right.normalize(scope).castImplicit(position, scope, operator.getHeader().parameters[0].type),
-				operator,
-				comparison);
-	}
 }

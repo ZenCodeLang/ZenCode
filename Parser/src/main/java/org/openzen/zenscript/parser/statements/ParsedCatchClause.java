@@ -6,6 +6,7 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
+import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.expression.GetLocalVariableExpression;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
@@ -34,10 +35,9 @@ public class ParsedCatchClause {
 		this.content = content;
 	}
 
-	public CatchClause compile(StatementScope scope) {
-		VarStatement exceptionVariable = new VarStatement(position, new VariableID(), exceptionName, exceptionType.compile(scope), null, true);
-		CatchScope localScope = new CatchScope(scope, exceptionVariable);
-		return new CatchClause(position, exceptionVariable, content.compile(localScope));
+	public CatchClause compile(StatementCompiler compiler) {
+		VarStatement exceptionVariable = new VarStatement(position, new VariableID(), exceptionName, exceptionType.compile(compiler.types()), null, true);
+		return new CatchClause(position, exceptionVariable, content.compile(compiler.forCatch(exceptionVariable)));
 	}
 
 	private static class CatchScope extends StatementScope {
