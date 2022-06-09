@@ -41,7 +41,7 @@ public class BasicTypeMembers {
 		builder.operator(OperatorType.EQUALS, new MethodInstance(BuiltinMethodSymbol.BOOL_EQUALS));
 		builder.operator(OperatorType.NOTEQUALS, new MethodInstance(BuiltinMethodSymbol.BOOL_NOTEQUALS));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.BOOL_TO_STRING));
-		builder.staticMethod("parse", new MethodInstance(BuiltinMethodSymbol.BOOL_PARSE));
+		builder.staticMethod(new MethodInstance(BuiltinMethodSymbol.BOOL_PARSE));
 		return builder.build();
 	}
 

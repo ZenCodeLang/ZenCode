@@ -271,6 +271,10 @@ public class MemberSet implements ResolvedType {
 
 		/* End of operators */
 
+		public Builder staticMethod(MethodInstance method) {
+			return staticMethod(method.getName(), method);
+		}
+
 		public Builder staticMethod(String name, StaticCallableMethod method) {
 			target.staticMethods.computeIfAbsent(name, k -> new ArrayList<>()).add(method);
 			return this;
