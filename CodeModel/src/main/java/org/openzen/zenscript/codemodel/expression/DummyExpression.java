@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class DummyExpression extends Expression {
@@ -22,10 +21,5 @@ public class DummyExpression extends Expression {
 	@Override
 	public <C, R> R accept(C context, ExpressionVisitorWithContext<C, R> visitor) {
 		throw new UnsupportedOperationException("This is a dummy expression");
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return this;
 	}
 }

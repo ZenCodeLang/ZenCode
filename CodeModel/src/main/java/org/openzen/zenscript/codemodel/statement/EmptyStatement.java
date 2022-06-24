@@ -36,9 +36,4 @@ public class EmptyStatement extends Statement {
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		return this;
 	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return this;
-	}
 }

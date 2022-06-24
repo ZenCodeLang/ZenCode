@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.ArrayList;
@@ -61,16 +60,6 @@ public class SwitchStatement extends LoopStatement {
 		ConcatMap<LoopStatement, LoopStatement> tModified = modified.concat(this, result);
 		for (SwitchCase case_ : cases) {
 			result.cases.add(case_.transform(transformer, tModified));
-		}
-		return result;
-	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		SwitchStatement result = new SwitchStatement(position, label, value.normalize(scope));
-		ConcatMap<LoopStatement, LoopStatement> tModified = modified.concat(this, result);
-		for (SwitchCase case_ : cases) {
-			result.cases.add(case_.normalize(scope, tModified));
 		}
 		return result;
 	}

@@ -73,16 +73,16 @@ public class BaseCompilingDefinition implements CompilingDefinition {
 	}
 
 	@Override
-	public void prepareMembers() {
+	public void prepareMembers(List<CompileException> errors) {
 		for (CompilingMember member : members) {
-			member.prepare();
+			member.prepare(errors);
 		}
 	}
 
 	@Override
 	public void compileMembers(List<CompileException> errors) {
 		for (CompilingMember member : members) {
-			member.compile();
+			member.compile(errors);
 		}
 	}
 

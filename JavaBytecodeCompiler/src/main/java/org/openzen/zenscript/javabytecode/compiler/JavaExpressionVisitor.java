@@ -11,6 +11,7 @@ import org.openzen.zenscript.codemodel.annotations.NativeTag;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.expression.switchvalue.VariantOptionSwitchValue;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
@@ -1605,18 +1606,18 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 		return null;
 	}
 
-	private void handleTypeArguments(FunctionalMemberRef member, CallArguments arguments) {
+	private void handleTypeArguments(MethodInstance member, CallArguments arguments) {
 		final List<TypeParameter> typeParameters;
 		{
 
 			final List<TypeParameter> parameters = new ArrayList<>();
-			if (member.getTarget().definition.isExpansion()) {
+			if (member.method.getDefiningType().isExpansion()) {
 				parameters.addAll(Arrays.asList(member.getTarget().definition.typeParameters));
 			}
 
 			//expression.member.getOwnerType().type.extractTypeParameters(parameters);
 			//expression.instancedHeader.typeParameters
-			for (TypeParameter typeParameter : member.getTarget().getHeader().typeParameters) {
+			for (TypeParameter typeParameter : member.method.getHeader().typeParameters) {
 				if (!parameters.contains(typeParameter)) {
 					parameters.add(typeParameter);
 				}
@@ -1624,7 +1625,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 			typeParameters = parameters.stream().distinct().collect(Collectors.toList());
 		}
 
-		JavaMethod methodInfo = context.getJavaMethod(member);
+		JavaMethod methodInfo = context.getJavaMethod(member.method);
 
 		if (methodInfo.compile) {
 			if (typeParameters.size() == arguments.typeArguments.length) {
@@ -2709,7 +2710,7 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 		BuiltinID builtin = expression.getter.member.builtin;
 		if (builtin == null) {
-			if (context.hasJavaField(expression.getter.getTarget())) {
+			if (context.hasJavaField(expression.getter.method)) {
 				javaWriter.getField(context.getJavaField(expression.getter));
 				handleReturnValue(expression.getter.member.getType(), expression.getter.getType());
 				return null;
@@ -2717,9 +2718,9 @@ public class JavaExpressionVisitor implements ExpressionVisitor<Void>, JavaNativ
 
 
 			final List<TypeParameter> typeParameters = new ArrayList<>();
-			expression.getter.member.getType().extractTypeParameters(typeParameters);
+			expression.getter.getHeader().getReturnType().extractTypeParameters(typeParameters);
 
-			if (expression.getter.member.definition.isExpansion()) {
+			if (expression.getter.method.getDefiningType().isExpansion()) {
 				for (TypeParameter typeParameter : typeParameters) {
 					javaWriter.aConstNull(); //TODO: Replace with actual type
 					javaWriter.checkCast("java/lang/Class");

@@ -1,9 +1,9 @@
 package org.openzen.zenscript.codemodel.compilation;
 
 import org.openzen.zencode.shared.CompileError;
-import org.openzen.zencode.shared.CompileExceptionCode;
+import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.expression.*;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
@@ -35,7 +35,13 @@ public interface ExpressionBuilder {
 
 	Expression getThis(TypeID thisType);
 
+	Expression getInstanceField(Expression target, FieldInstance field);
+
+	Expression getFunctionParameter(FunctionParameter parameter);
+
 	Expression getLocalVariable(VarStatement variable);
+
+	Expression getStaticField(FieldInstance field);
 
 	Expression interfaceCast(ImplementationMember implementation, Expression value);
 
@@ -57,7 +63,13 @@ public interface ExpressionBuilder {
 
 	Expression panic(TypeID type, Expression value);
 
+	Expression setFunctionParameter(FunctionParameter parameter, Expression value);
+
+	Expression setInstanceField(Expression target, FieldInstance field, Expression value);
+
 	Expression setLocalVariable(VarStatement variable, Expression value);
+
+	Expression setStaticField(FieldInstance field, Expression value);
 
 	Expression ternary(Expression condition, Expression ifThen, Expression ifElse);
 

@@ -5,6 +5,7 @@
  */
 package org.openzen.zenscript.moduleserializer;
 
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
 import compactio.CompactDataOutput;
 
@@ -27,6 +28,7 @@ import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.moduleserialization.SwitchValueEncoding;
 import org.openzen.zenscript.moduleserialization.TypeEncoding;
@@ -187,18 +189,18 @@ public class CodeWriter implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void write(HighLevelDefinition definition) {
+	public void write(TypeSymbol type) {
 		if (currentStage != members && currentStage != code)
 			throw new IllegalStateException("definitions not yet available!");
-		if (!definitionsMap.containsKey(definition))
-			throw new IllegalStateException("Definition not yet prepared: " + definition.name);
+		if (!definitionsMap.containsKey(type))
+			throw new IllegalStateException("Definition not yet prepared: " + type.getName());
 
-		int id = definitionsMap.get(definition) + 1;
+		int id = definitionsMap.get(type) + 1;
 		output.writeVarUInt(id);
 	}
 
 	@Override
-	public void write(TypeContext context, DefinitionMemberRef member) {
+	public void write(TypeSerializationContext context, DefinitionMemberRef member) {
 		if (currentStage != code)
 			throw new IllegalStateException("members not yet available!");
 

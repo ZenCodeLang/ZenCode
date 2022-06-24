@@ -3,7 +3,6 @@ package org.openzen.zenscript.codemodel.statement;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 import java.util.function.Consumer;
 
@@ -38,11 +37,6 @@ public class BreakStatement extends Statement {
 
 	@Override
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return modified.contains(target) ? new BreakStatement(position, modified.getAt(target)) : this;
-	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
 		return modified.contains(target) ? new BreakStatement(position, modified.getAt(target)) : this;
 	}
 }

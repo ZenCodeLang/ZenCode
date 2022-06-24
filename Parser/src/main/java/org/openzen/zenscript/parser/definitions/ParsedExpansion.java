@@ -79,7 +79,7 @@ public class ParsedExpansion extends BaseParsedDefinition {
 
 			MemberCompiler memberCompiler = compiler.forMembers(compiled);
 			members = ParsedExpansion.this.members.stream()
-					.map(member -> member.compile(compiled, memberCompiler))
+					.map(member -> member.compile(compiled, null, memberCompiler))
 					.toArray(CompilingMember[]::new);
 
 			for (CompilingMember member : members) {
@@ -110,16 +110,16 @@ public class ParsedExpansion extends BaseParsedDefinition {
 		}
 
 		@Override
-		public void prepareMembers() {
+		public void prepareMembers(List<CompileException> errors) {
 			for (CompilingMember member : members) {
-				member.prepare();
+				member.prepare(errors);
 			}
 		}
 
 		@Override
 		public void compileMembers(List<CompileException> errors) {
 			for (CompilingMember member : members) {
-				member.compile();
+				member.compile(errors);
 			}
 		}
 	}

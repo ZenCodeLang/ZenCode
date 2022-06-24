@@ -26,5 +26,7 @@ public interface CompilingMember {
 	 *
 	 * @return inner definition of this member, if any
 	 */
-	Optional<CompilingDefinition> asInner();
+	default Optional<CompilingDefinition> asInner() {
+		return Optional.empty();
+	}
 }

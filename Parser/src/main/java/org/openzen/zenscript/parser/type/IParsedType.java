@@ -14,6 +14,7 @@ import org.openzen.zenscript.parser.definitions.ParsedTypeParameter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.openzen.zenscript.lexer.ZSTokenType.*;
 
@@ -218,8 +219,8 @@ public interface IParsedType {
 
 	TypeID compile(TypeBuilder typeBuilder);
 
-	default AnnotationDefinition compileAnnotation(BaseScope scope) {
-		return null;
+	default Optional<AnnotationDefinition> compileAnnotation(TypeBuilder typeBuilder) {
+		return Optional.empty();
 	}
 
 	default TypeID[] compileTypeArguments(TypeBuilder typeBuilder) {

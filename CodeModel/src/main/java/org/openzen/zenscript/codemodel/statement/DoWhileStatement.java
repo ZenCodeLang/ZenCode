@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.function.Consumer;
@@ -56,13 +55,6 @@ public class DoWhileStatement extends LoopStatement {
 
 		DoWhileStatement result = new DoWhileStatement(position, label, tCondition);
 		result.content = content.transform(transformer, modified.concat(this, result));
-		return result;
-	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		DoWhileStatement result = new DoWhileStatement(position, label, condition.normalize(scope));
-		result.content = content.normalize(scope, modified.concat(this, result));
 		return result;
 	}
 

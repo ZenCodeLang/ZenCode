@@ -1,27 +1,26 @@
 package org.openzen.zenscript.codemodel.annotations;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zencode.shared.CompileError;
 import org.openzen.zencode.shared.CompileException;
 import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 
 public class InvalidDefinitionAnnotation implements DefinitionAnnotation {
 	public final CodePosition position;
-	public final CompileExceptionCode code;
-	public final String message;
+	public final CompileError error;
 
-	public InvalidDefinitionAnnotation(CodePosition position, CompileExceptionCode code, String message) {
+	public InvalidDefinitionAnnotation(CodePosition position, CompileError error) {
 		this.position = position;
-		this.code = code;
-		this.message = message;
+		this.error = error;
 	}
 
 	public InvalidDefinitionAnnotation(CompileException ex) {
 		this.position = ex.position;
-		this.code = ex.code;
-		this.message = ex.getMessage();
+		this.error = ex.error;
 	}
 
 	@Override
@@ -40,7 +39,7 @@ public class InvalidDefinitionAnnotation implements DefinitionAnnotation {
 	}
 
 	@Override
-	public void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeContext context) {
+	public void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeSerializationContext context) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }

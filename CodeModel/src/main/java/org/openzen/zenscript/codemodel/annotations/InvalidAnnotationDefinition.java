@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
@@ -34,7 +35,7 @@ public class InvalidAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public ExpressionScope getScopeForMember(IDefinitionMember member, BaseScope scope) {
+	public ExpressionScope getScopeForMember(IDefinitionMember member, MemberCompiler compiler) {
 		throw new UnsupportedOperationException("Not a valid annotation");
 	}
 

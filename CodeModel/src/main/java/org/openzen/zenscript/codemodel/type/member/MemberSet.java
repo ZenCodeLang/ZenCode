@@ -1,8 +1,8 @@
 package org.openzen.zenscript.codemodel.type.member;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.compilation.*;
-import org.openzen.zenscript.codemodel.compilation.impl.CallUtilities;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
@@ -60,31 +60,31 @@ public class MemberSet implements ResolvedType {
 	}
 
 	@Override
-	public Optional<Expression> tryCastExplicit(TypeID target, ExpressionBuilder builder, Expression value, boolean optional) {
+	public Optional<Expression> tryCastExplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
 		for (InstanceCallableMethod method : explicitCasts) {
-			CallArguments arguments = CallUtilities.match(method, target);
+			CallArguments arguments = MatchedCallArguments.match(compiler, position, method, target, null);
 			if (arguments.level != CastedExpression.Level.INVALID)
-				return Optional.of(method.call(builder, value, arguments));
+				return Optional.of(method.call(compiler.at(position), value, arguments));
 		}
 
 		return Optional.empty();
 	}
 
 	@Override
-	public Optional<Expression> tryCastImplicit(TypeID target, ExpressionBuilder builder, Expression value, boolean optional) {
+	public Optional<Expression> tryCastImplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional) {
 		for (InstanceCallableMethod method : implicitCasts) {
-			CallArguments arguments = CallUtilities.match(method, target);
+			CallArguments arguments = MatchedCallArguments.match(compiler, position, method, target, null);
 			if (arguments.level != CastedExpression.Level.INVALID)
-				return Optional.of(method.call(builder, value, arguments));
+				return Optional.of(method.call(compiler.at(position), value, arguments));
 		}
 
 		return Optional.empty();
 	}
 
 	@Override
-	public boolean canCastImplicitlyTo(TypeID target) {
+	public boolean canCastImplicitlyTo(ExpressionCompiler compiler, CodePosition position, TypeID target) {
 		for (InstanceCallableMethod method : implicitCasts) {
-			CallArguments arguments = CallUtilities.match(method, target);
+			CallArguments arguments = MatchedCallArguments.match(compiler, position, method, target, null);
 			if (arguments.level != CastedExpression.Level.INVALID)
 				return true;
 		}
@@ -139,7 +139,7 @@ public class MemberSet implements ResolvedType {
 
 	@Override
 	public Optional<Field> findField(String name) {
-
+		return Optional.ofNullable(fields.get(name));
 	}
 
 	@Override

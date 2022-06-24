@@ -20,7 +20,7 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 	public final Module module;
 	public final ZSPackage pkg;
 	public final String name;
-	public final int modifiers;
+	public final Modifiers modifiers;
 	public final List<IDefinitionMember> members = new ArrayList<>();
 	public TypeParameter[] typeParameters = TypeParameter.NONE;
 	public DefinitionAnnotation[] annotations = DefinitionAnnotation.NONE;
@@ -28,7 +28,7 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 	public TypeSymbol outerDefinition;
 	private TypeID superType;
 
-	public HighLevelDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, TypeSymbol outerDefinition) {
+	public HighLevelDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		if (module == null)
 			throw new NullPointerException();
 
@@ -41,16 +41,6 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 
 		if (pkg != null)
 			pkg.register(this);
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public Optional<TypeSymbol> getOuter() {
-		return Optional.ofNullable(outerDefinition);
 	}
 
 	public String getFullName() {
@@ -81,16 +71,6 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 		return outerDefinition != null;
 	}
 
-	public boolean isInterface() {
-		return this instanceof InterfaceDefinition;
-	}
-
-	public boolean isEnum() { return this instanceof EnumDefinition; }
-
-	public Optional<EnumDefinition> asEnum() {
-		return Optional.empty();
-	}
-
 	public void addMember(IDefinitionMember member) {
 		if (!members.contains(member))
 			members.add(member);
@@ -118,10 +98,6 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 		return fields;
 	}
 
-	public boolean isStatic() {
-		return (modifiers & Modifiers.STATIC) > 0;
-	}
-
 	public abstract <T> T accept(DefinitionVisitor<T> visitor);
 
 	public abstract <C, R> R accept(C context, DefinitionVisitorWithContext<C, R> visitor);
@@ -139,22 +115,54 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 	}
 
 	@Override
-	public Optional<TypeSymbol> getSuperclass() {
-		return superType == null ? Optional.empty() : superType.asDefinition().map(t -> t.definition);
+	public boolean isInterface() {
+		return this instanceof InterfaceDefinition;
+	}
+
+	@Override
+	public Modifiers getModifiers() {
+		return modifiers;
+	}
+
+	@Override
+	public boolean isStatic() {
+		return modifiers.isStatic() || outerDefinition == null;
+	}
+
+	@Override
+	public boolean isEnum() { return this instanceof EnumDefinition; }
+
+	@Override
+	public String getName() {
+		return name;
 	}
 
 	@Override
 	public ResolvedType resolve(TypeID[] typeArguments) {
-		MemberSet members = new MemberSet();
+		MemberSet.Builder members = MemberSet.create();
 		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
 		for (IDefinitionMember member : this.members) {
 			member.registerTo(members, mapper);
 		}
-		return members;
+		return members.build();
 	}
 
 	@Override
 	public TypeParameter[] getTypeParameters() {
 		return typeParameters;
+	}
+
+	@Override
+	public Optional<TypeSymbol> getOuter() {
+		return Optional.ofNullable(outerDefinition);
+	}
+
+	@Override
+	public Optional<TypeID> getSupertype(TypeID[] typeArguments) {
+		return Optional.ofNullable(superType)
+				.map(t -> {
+					GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
+					return mapper.map(t);
+				});
 	}
 }

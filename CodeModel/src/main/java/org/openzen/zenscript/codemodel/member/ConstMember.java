@@ -5,21 +5,26 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+
+import java.util.Optional;
 
 public class ConstMember extends PropertyMember implements FieldSymbol {
 	public final String name;
 	public Expression value;
 
-	public ConstMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, TypeID type, BuiltinID builtin) {
+	public ConstMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, String name, TypeID type, BuiltinID builtin) {
 		super(position, definition, modifiers, type, builtin);
 
 		this.name = name;
@@ -33,6 +38,11 @@ public class ConstMember extends PropertyMember implements FieldSymbol {
 	@Override
 	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
 		members.addConst(new ConstMemberRef(members.type, this, mapper));
+	}
+
+	@Override
+	public void registerTo(MemberSet.Builder members, GenericMapper mapper) {
+
 	}
 
 	@Override
@@ -51,12 +61,12 @@ public class ConstMember extends PropertyMember implements FieldSymbol {
 	}
 
 	@Override
-	public int getEffectiveModifiers() {
-		int result = modifiers;
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = modifiers;
 		if (definition.isInterface())
-			result |= Modifiers.PUBLIC;
-		if (!Modifiers.hasAccess(result))
-			result |= Modifiers.INTERNAL;
+			result = result.withPublic();
+		if (!result.hasAccessModifiers())
+			result = result.withInternal();
 
 		return result;
 	}
@@ -74,5 +84,22 @@ public class ConstMember extends PropertyMember implements FieldSymbol {
 	@Override
 	public FunctionHeader getHeader() {
 		return null;
+	}
+
+	/* FieldSymbol implementation */
+
+	@Override
+	public TypeSymbol getDefiningType() {
+		return definition;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public Optional<CompileTimeConstant> evaluate() {
+		return value.evaluate();
 	}
 }

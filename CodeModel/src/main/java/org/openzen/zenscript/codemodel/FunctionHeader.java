@@ -1,5 +1,7 @@
 package org.openzen.zenscript.codemodel;
 
+import org.openzen.zenscript.codemodel.compilation.ResolvedType;
+import org.openzen.zenscript.codemodel.compilation.TypeResolver;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
@@ -438,7 +440,11 @@ public class FunctionHeader {
 			return Optional.empty();
 	}
 
-	public String explainWhyIncompatible(TypeScope scope, CallArguments arguments) {
+	public Optional<TypeID> getVariadicParameterType() {
+		return getVariadicParameter().map(p -> p.type);
+	}
+
+	public String explainWhyIncompatible(TypeResolver scope, CallArguments arguments) {
 		if (this.parameters.length != arguments.arguments.length)
 			return parameters.length + " parameters expected but " + arguments.arguments.length + " given.";
 
@@ -446,7 +452,8 @@ public class FunctionHeader {
 			return getNumberOfTypeParameters() + " type parameters expected but " + arguments.getNumberOfTypeArguments() + " given.";
 
 		for (int i = 0; i < parameters.length; i++) {
-			if (!scope.getTypeMembers(arguments.arguments[i].type).canCastImplicit(parameters[i].type)) {
+			ResolvedType resolved = scope.resolve(arguments.arguments[i].type);
+			if (!resolved.canCastImplicitlyTo(parameters[i].type)) {
 				return "Parameter " + i + ": cannot cast " + arguments.arguments[i].type + " to " + parameters[i].type;
 			}
 		}

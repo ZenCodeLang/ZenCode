@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 
@@ -11,15 +10,13 @@ public class CallExpression extends Expression {
 	public final Expression target;
 	public final MethodInstance method;
 	public final CallArguments arguments;
-	public final FunctionHeader instancedHeader;
 
-	public CallExpression(CodePosition position, Expression target, MethodInstance method, FunctionHeader instancedHeader, CallArguments arguments) {
-		super(position, instancedHeader.getReturnType(), multiThrow(position, arguments.arguments));
+	public CallExpression(CodePosition position, Expression target, MethodInstance method, CallArguments arguments) {
+		super(position, method.getHeader().getReturnType(), multiThrow(position, arguments.arguments));
 
 		this.target = target;
 		this.method = method;
 		this.arguments = arguments;
-		this.instancedHeader = instancedHeader;
 	}
 
 	public Expression getFirstArgument() {
@@ -42,7 +39,7 @@ public class CallExpression extends Expression {
 		CallArguments tArguments = arguments.transform(transformer);
 		return tTarget == target && tArguments == arguments
 				? this
-				: new CallExpression(position, tTarget, method, instancedHeader, tArguments);
+				: new CallExpression(position, tTarget, method, tArguments);
 	}
 
 	@Override

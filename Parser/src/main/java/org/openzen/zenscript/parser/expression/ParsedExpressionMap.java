@@ -109,7 +109,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 			Optional<StaticCallable> maybeImplicitConstructor = resolvedType.findImplicitConstructor();
 			if (maybeImplicitConstructor.isPresent()) {
 				StaticCallable implicitConstructor = maybeImplicitConstructor.get();
-				CastedExpression constructed = implicitConstructor.casted(compiler.at(position), cast, this);
+				CastedExpression constructed = implicitConstructor.casted(compiler, position, cast, null, this);
 				if (!constructed.isFailed())
 					return constructed;
 
@@ -139,7 +139,7 @@ public class ParsedExpressionMap extends ParsedExpression {
 						if (!handledArguments.contains(key))
 							return cast.invalid(CompileErrors.unknownParameter(key));
 					}
-					return implicitConstructor.casted(compiler.at(position), cast, arguments);
+					return implicitConstructor.casted(compiler, position, cast, null, arguments);
 				}
 			}
 

@@ -43,7 +43,7 @@ public class TypeMemberBuilder implements TypeVisitorWithContext<Void, Void, Run
 			if (mapping == null)
 				continue;
 
-			GenericMapper mapper = new GenericMapper(definition.position, registry, mapping);
+			GenericMapper mapper = new GenericMapper(mapping);
 			for (IDefinitionMember member : expansion.members)
 				member.registerTo(members, TypeMemberPriority.SPECIFIED, mapper);
 		}

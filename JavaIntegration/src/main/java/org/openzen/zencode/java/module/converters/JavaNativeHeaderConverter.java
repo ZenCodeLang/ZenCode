@@ -25,6 +25,7 @@ import org.openzen.zenscript.parser.expression.ParsedExpression;
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class JavaNativeHeaderConverter {
 	private final JavaNativeTypeConverter typeConverter;
@@ -139,7 +140,8 @@ public class JavaNativeHeaderConverter {
 						packageInfo.getPkg().getRoot(),
 						packageInfo.getPkg(),
 						typeConversionContext.compiled.getExpansions(),
-						typeConversionContext.globals);
+						typeConversionContext.globals,
+						Collections.emptyList());
 				ExpressionCompiler compiler = context.createStaticCompiler();
 				return ParsedExpression.parse(tokens).compile(compiler).cast(CastedEval.implicit(compiler, CodePosition.GENERATED, type)).value;
 			} catch (IOException | ParseException ex) {

@@ -20,7 +20,7 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 	public FunctionalMember(
 			CodePosition position,
 			HighLevelDefinition definition,
-			int modifiers,
+			Modifiers modifiers,
 			FunctionHeader header,
 			BuiltinID builtin) {
 		super(position, definition, modifiers);
@@ -52,12 +52,17 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 	}
 
 	@Override
-	public int getEffectiveModifiers() {
-		int result = modifiers;
+	public Modifiers getModifiers() {
+		return modifiers;
+	}
+
+	@Override
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = modifiers;
 		if (definition.isInterface())
-			result |= Modifiers.PUBLIC;
-		if (!Modifiers.hasAccess(result))
-			result |= Modifiers.INTERNAL;
+			result = result.withPublic();
+		if (!result.hasAccessModifiers())
+			result = result.withInternal();
 
 		return result;
 	}

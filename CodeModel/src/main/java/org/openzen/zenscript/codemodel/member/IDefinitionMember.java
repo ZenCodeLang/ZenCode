@@ -2,10 +2,7 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.Tag;
-import org.openzen.zenscript.codemodel.AccessScope;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -19,9 +16,9 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public interface IDefinitionMember {
 	CodePosition getPosition();
 
-	int getSpecifiedModifiers();
+	Modifiers getSpecifiedModifiers();
 
-	int getEffectiveModifiers();
+	Modifiers getEffectiveModifiers();
 
 	MemberAnnotation[] getAnnotations();
 

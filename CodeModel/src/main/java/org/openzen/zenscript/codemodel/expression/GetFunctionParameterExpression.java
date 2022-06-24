@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 public class GetFunctionParameterExpression extends Expression {
 	public final FunctionParameter parameter;
@@ -11,11 +10,6 @@ public class GetFunctionParameterExpression extends Expression {
 		super(position, parameter.type, null);
 
 		this.parameter = parameter;
-	}
-
-	@Override
-	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
-		return new SetFunctionParameterExpression(position, parameter, value.castImplicit(position, scope, type));
 	}
 
 	@Override
@@ -37,11 +31,6 @@ public class GetFunctionParameterExpression extends Expression {
 
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
-		return this;
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
 		return this;
 	}
 }

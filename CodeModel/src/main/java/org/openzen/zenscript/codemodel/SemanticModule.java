@@ -4,10 +4,8 @@ import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationProcessor;
 import org.openzen.zenscript.codemodel.context.ModuleContext;
-import org.openzen.zenscript.codemodel.context.ModuleTypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
-import org.openzen.zenscript.codemodel.scope.FileScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.ISymbol;
 
@@ -75,14 +73,11 @@ public class SemanticModule {
 		if (state != State.ASSEMBLED)
 			throw new IllegalStateException("Module is invalid");
 
-		ModuleTypeResolutionContext context = new ModuleTypeResolutionContext(registry, annotations, rootPackage, null, globals);
-		AnnotationProcessor annotationProcessor = new AnnotationProcessor(context, expansions);
+		AnnotationProcessor annotationProcessor = new AnnotationProcessor(expansions);
 		List<ScriptBlock> processedScripts = new ArrayList<>();
-		FileScope fileScope = new FileScope(context, expansions, globals, member -> {
-		});
 
 		for (ScriptBlock block : scripts)
-			processedScripts.add(annotationProcessor.process(block).normalize(fileScope));
+			processedScripts.add(annotationProcessor.process(block));
 
 		for (HighLevelDefinition definition : definitions.getAll()) {
 			annotationProcessor.process(definition);

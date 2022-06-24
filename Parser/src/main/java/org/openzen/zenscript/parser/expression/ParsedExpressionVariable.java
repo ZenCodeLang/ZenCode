@@ -94,7 +94,7 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		@Override
 		public Optional<StaticCallable> call() {
 			if (resolved == null) {
-				return Optional.of(this);
+				return Optional.of(new StaticCallable(Collections.singletonList(this)));
 			} else {
 				return resolved.call();
 			}
@@ -129,17 +129,17 @@ public class ParsedExpressionVariable extends ParsedExpression {
 		// ###########################################
 
 		@Override
-		public Expression call(ExpressionBuilder builder, CompilingExpression... arguments) {
+		public Expression call(ExpressionCompiler compiler, CodePosition position, TypeID[] typeArguments, CompilingExpression... arguments) {
 			return compiler.at(position).invalid(CompileErrors.noSuchVariable(compiler, name));
 		}
 
 		@Override
-		public CastedExpression casted(ExpressionBuilder builder, CastedEval cast, CompilingExpression... arguments) {
+		public CastedExpression casted(ExpressionCompiler compiler, CodePosition position, CastedEval cast, TypeID[] typeArguments, CompilingExpression... arguments) {
 			TypeID type = cast.type.simplified();
 			ResolvedType resolvedType = compiler.resolve(type);
 			return resolvedType.getContextMember(name)
 					.map(member -> member.call()
-							.map(c -> c.casted(compiler.at(position), cast, arguments))
+							.map(c -> c.casted(compiler, position, cast, typeArguments, arguments))
 							.orElseGet(() -> cast.invalid(CompileErrors.cannotCall())))
 					.orElseGet(() -> cast.invalid(CompileErrors.noContextMemberInType(type, name)));
 		}

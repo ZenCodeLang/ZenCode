@@ -2,6 +2,7 @@ package org.openzen.zenscript.parser.definitions;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.CompileException;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.compilation.CompilingDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompilingExpansion;
 import org.openzen.zenscript.codemodel.compilation.DefinitionCompiler;
@@ -66,7 +67,7 @@ public class ParsedAlias extends ParsedDefinition {
 			DefinitionCompiler compiler,
 			CompilingDefinition outer
 	) {
-		AliasDefinition compiled = new AliasDefinition(position, pkg.module, pkg.getPackage(), name, modifiers, outer == null ? null : outer.getDefinition());
+		AliasDefinition compiled = new AliasDefinition(position, pkg.module, pkg.getPackage(), name, new Modifiers(modifiers), outer == null ? null : outer.getDefinition());
 		if (parameters != null && parameters.size() > 0) {
 			TypeParameter[] typeParameters = new TypeParameter[parameters.size()];
 			for (int i = 0; i < parameters.size(); i++) {
@@ -125,7 +126,7 @@ public class ParsedAlias extends ParsedDefinition {
 		}
 
 		@Override
-		public void prepareMembers() {
+		public void prepareMembers(List<CompileException> errors) {
 
 		}
 

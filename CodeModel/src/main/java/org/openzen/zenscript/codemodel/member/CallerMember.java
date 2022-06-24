@@ -1,15 +1,11 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
 import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
 import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
@@ -19,7 +15,7 @@ public class CallerMember extends FunctionalMember {
 	public CallerMember(
 			CodePosition position,
 			HighLevelDefinition definition,
-			int modifiers,
+			Modifiers modifiers,
 			FunctionHeader header,
 			BuiltinID builtin) {
 		super(position, definition, modifiers, header, builtin);
@@ -41,6 +37,11 @@ public class CallerMember extends FunctionalMember {
 	}
 
 	@Override
+	public void registerTo(MemberSet.Builder members, GenericMapper mapper) {
+		members.operator(OperatorType.CALL, new MethodInstance(this, mapper.map(header)));
+	}
+
+	@Override
 	public String describe() {
 		return "caller " + header.toString();
 	}
@@ -56,10 +57,10 @@ public class CallerMember extends FunctionalMember {
 	}
 
 	@Override
-	public int getEffectiveModifiers() {
-		int result = super.getEffectiveModifiers();
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = super.getEffectiveModifiers();
 		if (overrides != null && overrides.getDefiningType().isInterface())
-			result |= Modifiers.PUBLIC;
+			result = result.withPublic();
 
 		return result;
 	}
@@ -72,5 +73,10 @@ public class CallerMember extends FunctionalMember {
 	@Override
 	public MethodSymbol getOverrides() {
 		return overrides;
+	}
+
+	@Override
+	public String getName() {
+		return "()";
 	}
 }

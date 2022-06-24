@@ -25,6 +25,7 @@ import org.openzen.zenscript.validator.analysis.ExpressionScope;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -90,8 +91,8 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	public Void visitCall(CallExpression expression) {
 		expression.target.accept(this);
 
-		checkMemberAccess(expression.position, expression.member);
-		checkCallArguments(expression.position, expression.member.getHeader(), expression.instancedHeader, expression.arguments);
+		checkMemberAccess(expression.position, expression.method);
+		checkCallArguments(expression.position, expression.getHeader(), expression.instancedHeader, expression.arguments);
 		checkNotStatic(expression.position, expression.member);
 		return null;
 	}
@@ -741,12 +742,12 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 	}
 
 	private void checkStatic(CodePosition position, DefinitionMemberRef member) {
-		if (!Modifiers.isStatic(member.getTarget().getSpecifiedModifiers()))
+		if (!member.getTarget().getSpecifiedModifiers().isStatic())
 			validator.logError(ValidationLogEntry.Code.MUST_BE_STATIC, position, "Member is not static");
 	}
 
 	private void checkNotStatic(CodePosition position, DefinitionMemberRef member) {
-		if (Modifiers.isStatic(member.getTarget().getSpecifiedModifiers()))
+		if (member.getTarget().getSpecifiedModifiers().isStatic())
 			validator.logError(ValidationLogEntry.Code.MUST_NOT_BE_STATIC, position, "Member must not be static");
 	}
 
@@ -759,15 +760,20 @@ public class ExpressionValidator implements ExpressionVisitor<Void> {
 			argument.accept(this);
 
 			if (i >= instancedHeader.parameters.length) {
-				FunctionParameter variadic = instancedHeader.getVariadicParameter();
-				if (variadic == null) {
+				Optional<FunctionParameter> variadic = instancedHeader.getVariadicParameter();
+				if (!variadic.isPresent()) {
 					validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "too many call arguments");
 					break;
-				} else if (variadic.type instanceof ArrayTypeID) {
-					TypeID elementType = ((ArrayTypeID) variadic.type).elementType;
-					if (!elementType.equals(argument.type)) {
-						validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "invalid type for variadic call argument");
-						break;
+				} else {
+					Optional<ArrayTypeID> maybeArray = variadic.get().type.asArray();
+					if (maybeArray.isPresent()) {
+						TypeID elementType = maybeArray.get().elementType;
+						if (!elementType.equals(argument.type)) {
+							validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "invalid type for variadic call argument");
+							break;
+						}
+					} else {
+						validator.logError(ValidationLogEntry.Code.INVALID_CALL_ARGUMENT, position, "variadic parameter is not an array");
 					}
 				}
 			}

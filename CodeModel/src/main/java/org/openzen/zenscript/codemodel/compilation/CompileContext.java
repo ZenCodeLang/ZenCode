@@ -4,6 +4,7 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.GenericName;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.compilation.impl.AbstractTypeBuilder;
 import org.openzen.zenscript.codemodel.compilation.impl.compiler.ExpressionCompilerImpl;
 import org.openzen.zenscript.codemodel.compilation.impl.compiler.LocalSymbols;
@@ -27,17 +28,23 @@ public class CompileContext extends AbstractTypeBuilder {
 	private final List<ExpansionDefinition> expansions;
 	private final Map<String, ISymbol> globals;
 	private final Map<String, CompilingDefinition> compiling = new HashMap<>();
+	private final Map<String, AnnotationDefinition> annotations = new HashMap<>();
 
 	public CompileContext(
 			ZSPackage rootPackage,
 			ZSPackage modulePackage,
 			List<ExpansionDefinition> expansions,
-			Map<String, ISymbol> globals
+			Map<String, ISymbol> globals,
+			List<AnnotationDefinition> annotations
 	) {
 		this.rootPackage = rootPackage;
 		this.modulePackage = modulePackage;
 		this.expansions = expansions;
 		this.globals = globals;
+
+		for (AnnotationDefinition annotation : annotations) {
+			this.annotations.put(annotation.getAnnotationName(), annotation);
+		}
 	}
 
 	/**
@@ -64,6 +71,10 @@ public class CompileContext extends AbstractTypeBuilder {
 
 	public void addCompiling(CompilingDefinition definition) {
 		compiling.put(definition.getName(), definition);
+	}
+
+	public void addExpansion(ExpansionDefinition expansion) {
+		expansions.add(expansion);
 	}
 
 	public Optional<ISymbol> findGlobal(String name) {
@@ -126,6 +137,15 @@ public class CompileContext extends AbstractTypeBuilder {
 					}
 					return Optional.of(t);
 				});
+	}
+
+	@Override
+	public Optional<AnnotationDefinition> resolveAnnotation(List<GenericName> name) {
+		if (name.size() > 1) {
+			return Optional.empty();
+		} else {
+			return Optional.ofNullable(annotations.get(name.get(0).name));
+		}
 	}
 
 	@Override

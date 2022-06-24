@@ -25,6 +25,7 @@ import org.openzen.zenscript.codemodel.definition.VariantDefinition;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.InnerDefinitionMember;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.moduleserialization.DefinitionEncoding;
 import org.openzen.zenscript.moduleserializer.SerializationOptions;
 
@@ -52,14 +53,14 @@ public class DefinitionSerializer implements DefinitionVisitorWithContext<Module
 			flags |= DefinitionEncoding.FLAG_ANNOTATIONS;
 
 		output.writeUInt(flags);
-		output.writeUInt(definition.modifiers);
+		output.writeUInt(definition.modifiers.value);
 		if (definition.position != CodePosition.UNKNOWN && options.positions)
 			output.serialize(definition.position);
 		output.writeString(definition.pkg.fullName);
 		if (definition.name != null)
 			output.writeString(definition.name);
 
-		TypeContext typeContext = new TypeContext(context, definition.typeParameters, null);
+		TypeSerializationContext typeContext = new TypeSerializationContext(context, definition.typeParameters, null);
 		if (definition.typeParameters.length > 0)
 			output.serialize(typeContext, definition.typeParameters);
 

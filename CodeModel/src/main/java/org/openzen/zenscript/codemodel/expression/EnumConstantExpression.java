@@ -1,11 +1,14 @@
 package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
+import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
+import org.openzen.zenscript.codemodel.constant.EnumValueConstant;
 import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
 import org.openzen.zenscript.codemodel.type.TypeID;
+
+import java.util.Optional;
 
 public class EnumConstantExpression extends Expression {
 	public final EnumConstantMember value;
@@ -38,12 +41,7 @@ public class EnumConstantExpression extends Expression {
 	}
 
 	@Override
-	public EnumConstantMember evaluateEnumConstant() {
-		return value;
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return this;
+	public Optional<CompileTimeConstant> evaluate() {
+		return Optional.of(new EnumValueConstant(value));
 	}
 }

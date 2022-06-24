@@ -12,6 +12,7 @@ import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ParsedNamedType implements IParsedType {
 	public final List<ParsedNamePart> name;
@@ -44,7 +45,8 @@ public class ParsedNamedType implements IParsedType {
 	}
 
 	@Override
-	public AnnotationDefinition compileAnnotation(BaseScope scope) {
+	public Optional<AnnotationDefinition> compileAnnotation(TypeBuilder typeBuilder) {
+		return typeBuilder.resolveAnnotation(name);
 		if (name.size() != 1)
 			return null;
 

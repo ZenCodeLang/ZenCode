@@ -280,7 +280,7 @@ public class JavaNativeTypeConverter {
 		}
 
 		try {
-			CompileContext context = new CompileContext(typeConversionContext.root, packageInfo.getPkg(), Collections.emptyList(), Collections.emptyMap());
+			CompileContext context = new CompileContext(typeConversionContext.root, packageInfo.getPkg(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
 			final ZSTokenParser tokens = ZSTokenParser.create(new LiteralSourceFile("type reading: " + className, className), bep);
 			return IParsedType.parse(tokens).compile(context);
 		} catch (IOException ex) {

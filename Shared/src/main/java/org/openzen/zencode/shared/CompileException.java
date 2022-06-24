@@ -2,22 +2,16 @@ package org.openzen.zencode.shared;
 
 public final class CompileException extends Exception {
 	public final CodePosition position;
-	public final CompileExceptionCode code;
-	public final String message;
+	public final CompileError error;
 
 	public CompileException(CodePosition position, CompileError error) {
-		this(position, error.code, error.description);
-	}
-
-	public CompileException(CodePosition position, CompileExceptionCode code, String message) {
-		super(position.toString() + ": [" + code.toString() + "] " + message);
+		super(position.toString() + ": [" + error.code.toString() + "] " + error.description);
 		this.position = position;
-		this.code = code;
-		this.message = position.toString() + ": " + message;
+		this.error = error;
 	}
 
 	public static CompileException internalError(String message) {
-		return new CompileException(CodePosition.BUILTIN, CompileExceptionCode.INTERNAL_ERROR, message);
+		return new CompileException(CodePosition.BUILTIN, new CompileError(CompileExceptionCode.INTERNAL_ERROR, message));
 	}
 
 	public CodePosition getPosition() {
@@ -25,10 +19,11 @@ public final class CompileException extends Exception {
 	}
 
 	public CompileExceptionCode getCode() {
-		return code;
+		return error.code;
 	}
 
+	@Override
 	public String getMessage() {
-		return message;
+		return position.toString() + ": " + error.description;
 	}
 }

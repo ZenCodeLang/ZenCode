@@ -48,10 +48,6 @@ public class CasterMember extends FunctionalMember {
 		return "caster to " + toType.toString();
 	}
 
-	public TypeID getTargetType() {
-		return toType;
-	}
-
 	public boolean isImplicit() {
 		return Modifiers.isImplicit(modifiers);
 	}

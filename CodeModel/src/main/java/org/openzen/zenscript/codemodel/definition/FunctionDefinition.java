@@ -16,12 +16,12 @@ public class FunctionDefinition extends HighLevelDefinition {
 	public FunctionHeader header;
 	public CallerMember caller;
 
-	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, TypeSymbol outerDefinition) {
+	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, TypeSymbol outerDefinition) {
 		super(position, module, pkg, name, modifiers, outerDefinition);
 		callerGroup = new TypeMemberGroup(true, name);
 	}
 
-	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, int modifiers, FunctionHeader header, TypeBuilder types) {
+	public FunctionDefinition(CodePosition position, Module module, ZSPackage pkg, String name, Modifiers modifiers, FunctionHeader header, TypeBuilder types) {
 		this(position, module, pkg, name, modifiers, null);
 		setHeader(types, header);
 	}

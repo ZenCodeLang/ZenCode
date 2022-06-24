@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel.definition;
 
 import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -16,7 +15,7 @@ public class ZSPackage {
 	public final String fullName;
 	public final ZSPackage parent;
 	private final Map<String, ZSPackage> subPackages = new HashMap<>();
-	private final Map<String, HighLevelDefinition> types = new HashMap<>();
+	private final Map<String, TypeSymbol> types = new HashMap<>();
 
 	public ZSPackage(ZSPackage parent, String name) {
 		this.parent = parent;
@@ -109,8 +108,8 @@ public class ZSPackage {
 		return result;
 	}
 
-	public void register(HighLevelDefinition definition) {
-		types.put(definition.name, definition);
+	public void register(TypeSymbol definition) {
+		types.put(definition.getName(), definition);
 	}
 
 	public ZSPackage getRoot() {
@@ -119,5 +118,4 @@ public class ZSPackage {
 		}
 		return this.parent.getRoot();
 	}
-
 }

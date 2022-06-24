@@ -13,7 +13,7 @@ public interface CompilingExpansion {
 
 	TypeID getTarget();
 
-	void prepareMembers();
+	void prepareMembers(List<CompileException> errors);
 
 	void compileMembers(List<CompileException> errors);
 }

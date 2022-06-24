@@ -2,6 +2,7 @@ package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.*;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.CompilingPackage;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
@@ -62,7 +63,8 @@ public class ParsedFile {
 				registry.rootPackage,
 				pkg.getPackage(),
 				registry.collectExpansions(),
-				registry.collectGlobals());
+				registry.collectGlobals(),
+				registry.getAnnotations());
 
 		for (ParsedFile file : files) {
 			// listDefinitions will merely register all definitions (classes,
@@ -102,11 +104,14 @@ public class ParsedFile {
 				definition.linkTypes();
 			}
 		}
-		for (CompilingDefinition definition : definitions) {
-			definition.prepareMembers();
-		}
-		for (CompilingExpansion expansion : expansions) {
-			expansion.prepareMembers();
+		{
+			List<CompileException> errors = new ArrayList<>();
+			for (CompilingDefinition definition : definitions) {
+				definition.prepareMembers(errors);
+			}
+			for (CompilingExpansion expansion : expansions) {
+				expansion.prepareMembers(errors);
+			}
 		}
 
 		if (failed) {
@@ -121,7 +126,7 @@ public class ParsedFile {
 					Collections.emptyList(),
 					registry.registry,
 					expansions.stream().map(CompilingExpansion::getCompiling).collect(Collectors.toList()),
-					registry.getAnnotations(),
+					registry.getAnnotations().toArray(new AnnotationDefinition[0]),
 					logger
 			);
 		}

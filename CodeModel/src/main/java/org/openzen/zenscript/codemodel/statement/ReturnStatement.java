@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
@@ -30,11 +29,6 @@ public class ReturnStatement extends Statement {
 	}
 
 	@Override
-	public Statement withReturnType(TypeScope scope, TypeID returnType) {
-		return new ReturnStatement(position, value == null ? null : value.castImplicit(position, scope, returnType));
-	}
-
-	@Override
 	public <T> T accept(StatementVisitor<T> visitor) {
 		return visitor.visitReturn(this);
 	}
@@ -54,10 +48,5 @@ public class ReturnStatement extends Statement {
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tValue = value == null ? null : value.transform(transformer);
 		return tValue == value ? this : new ReturnStatement(position, tValue);
-	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return new ReturnStatement(position, value == null ? null : value.normalize(scope));
 	}
 }

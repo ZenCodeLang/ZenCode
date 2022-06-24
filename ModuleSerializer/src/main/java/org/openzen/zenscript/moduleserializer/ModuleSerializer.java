@@ -82,7 +82,7 @@ public class ModuleSerializer {
 		List<HighLevelDefinition> definitions = new ArrayList<>();
 		for (EncodingModule module : tableBuilder.modules.values()) {
 			for (EncodingDefinition definition : module.definitions)
-				definitions.add(definition.definition);
+				definitions.add(definition.type);
 		}
 
 		for (AnnotationDefinition annotation : tableBuilder.getAnnotations())
@@ -179,8 +179,8 @@ public class ModuleSerializer {
 
 			DefinitionSerializer definitionEncoder = new DefinitionSerializer(options, output);
 			for (EncodingDefinition definition : module.definitions) {
-				System.out.println("Encoding definition " + definition.definition.name);
-				definition.definition.accept(module.context, definitionEncoder);
+				System.out.println("Encoding definition " + definition.type.name);
+				definition.type.accept(module.context, definitionEncoder);
 			}
 		}
 	}

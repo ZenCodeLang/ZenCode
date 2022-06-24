@@ -42,8 +42,11 @@ public interface TypeID {
 		return null;
 	}
 
-	// Infers type parameters for this type so it matches with targetType
-	// returns false if that isn't possible
+	/**
+	 * Infers type parameters for this type so it matches with targetType
+	 *
+	 * @return inferred type parameters, or null if no match was found
+ 	 */
 	default Map<TypeParameter, TypeID> inferTypeParameters(TypeID targetType) {
 		return TypeMatcher.match(this, targetType);
 	}

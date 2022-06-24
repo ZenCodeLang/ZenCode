@@ -73,7 +73,7 @@ public class ParsedExpressionString extends ParsedExpression {
 				ResolvedType resolvedType = compiler.resolve(type);
 				Optional<StaticCallable> constructor = resolvedType.findImplicitConstructor();
 				if (constructor.isPresent()) {
-					return constructor.get().casted(compiler.at(position), cast, this);
+					return constructor.get().casted(compiler, position, cast, null, this);
 				} else {
 					return cast.of(eval());
 				}

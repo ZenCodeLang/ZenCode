@@ -5,17 +5,17 @@
  */
 package org.openzen.zenscript.moduleserializer.encoder;
 
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.generic.GenericParameterBoundVisitorWithContext;
 import org.openzen.zenscript.codemodel.generic.ParameterSuperBound;
 import org.openzen.zenscript.codemodel.generic.ParameterTypeBound;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.moduleserialization.TypeParameterEncoding;
 
 /**
  * @author Hoofdgebruiker
  */
-public class TypeParameterBoundSerializer implements GenericParameterBoundVisitorWithContext<TypeContext, Void> {
+public class TypeParameterBoundSerializer implements GenericParameterBoundVisitorWithContext<TypeSerializationContext, Void> {
 	private final CodeSerializationOutput output;
 
 	public TypeParameterBoundSerializer(CodeSerializationOutput output) {
@@ -23,14 +23,14 @@ public class TypeParameterBoundSerializer implements GenericParameterBoundVisito
 	}
 
 	@Override
-	public Void visitSuper(TypeContext context, ParameterSuperBound bound) {
+	public Void visitSuper(TypeSerializationContext context, ParameterSuperBound bound) {
 		output.writeUInt(TypeParameterEncoding.TYPE_SUPER_BOUND);
 		output.serialize(context, bound.type);
 		return null;
 	}
 
 	@Override
-	public Void visitType(TypeContext context, ParameterTypeBound bound) {
+	public Void visitType(TypeSerializationContext context, ParameterTypeBound bound) {
 		output.writeUInt(TypeParameterEncoding.TYPE_TYPE_BOUND);
 		output.serialize(context, bound.type);
 		return null;

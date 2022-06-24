@@ -36,14 +36,14 @@ public class CastedEval {
 
 		Optional<StaticCallable> implicitConstructor = resolvedTargetType.findImplicitConstructor();
 		if (implicitConstructor.isPresent()) {
-			CastedExpression fromImplicitConstructor = implicitConstructor.get().casted(compiler.at(position), this, new WrappedCompilingExpression(compiler, position, value));
+			CastedExpression fromImplicitConstructor = implicitConstructor.get().casted(compiler, position, this, null, new WrappedCompilingExpression(compiler, position, value));
 			if (!fromImplicitConstructor.isFailed())
 				return fromImplicitConstructor;
 		}
 
 		ResolvedType resolvedValueType = compiler.resolve(value.type);
 
-		Optional<Expression> implicitCast = resolvedValueType.tryCastImplicit(type, compiler.at(position), value, optional);
+		Optional<Expression> implicitCast = resolvedValueType.tryCastImplicit(type, compiler, position, value, optional);
 		if (implicitCast.isPresent())
 			return new CastedExpression(CastedExpression.Level.IMPLICIT, implicitCast.get());
 
@@ -71,7 +71,7 @@ public class CastedEval {
 		//	return CastedExpression.implicit(new SupertypeCastExpression(position, value, type));
 
 		if (explicit) {
-			Optional<Expression> casted = compiler.resolve(value.type).tryCastExplicit(type, compiler.at(position), value, optional);
+			Optional<Expression> casted = compiler.resolve(value.type).tryCastExplicit(type, compiler, position, value, optional);
 			if (casted.isPresent())
 				return new CastedExpression(CastedExpression.Level.EXPLICIT, casted.get());
 		}

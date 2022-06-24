@@ -1,19 +1,12 @@
 package org.openzen.zenscript.parser;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.CompileException;
-import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.*;
-import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
-import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.lexer.ParseException;
@@ -83,13 +76,13 @@ public class ParsedAnnotation {
 		return compiled;
 	}
 
-	public static DefinitionAnnotation[] compileForDefinition(ParsedAnnotation[] annotations, HighLevelDefinition definition, BaseScope scope) {
+	public static DefinitionAnnotation[] compileForDefinition(ParsedAnnotation[] annotations, HighLevelDefinition definition, DefinitionCompiler compiler) {
 		if (annotations.length == 0)
 			return DefinitionAnnotation.NONE;
 
 		DefinitionAnnotation[] compiled = new DefinitionAnnotation[annotations.length];
 		for (int i = 0; i < annotations.length; i++) {
-			compiled[i] = annotations[i].compileForDefinition(definition, scope);
+			compiled[i] = annotations[i].compileForDefinition(definition, compiler);
 		}
 		return compiled;
 	}
@@ -104,71 +97,69 @@ public class ParsedAnnotation {
 		return compiled;
 	}
 
-	public static ParameterAnnotation[] compileForParameter(ParsedAnnotation[] annotations, FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
+	public static ParameterAnnotation[] compileForParameter(ParsedAnnotation[] annotations, FunctionHeader header, FunctionParameter parameter, ExpressionCompiler compiler) {
 		if (annotations.length == 0)
 			return ParameterAnnotation.NONE;
 
 		ParameterAnnotation[] compiled = new ParameterAnnotation[annotations.length];
 		for (int i = 0; i < annotations.length; i++)
-			compiled[i] = annotations[i].compileForParameter(header, parameter, scope);
+			compiled[i] = annotations[i].compileForParameter(header, parameter, compiler);
 		return compiled;
 	}
 
 	public MemberAnnotation compileForMember(IDefinitionMember member, MemberCompiler compiler) {
-		try {
-			AnnotationDefinition annotationType = type.compileAnnotation(compiler.types());
-			ExpressionScope evalScope = annotationType.getScopeForMember(member, compiler);
-			TypeID[] types = type.compileTypeArguments(compiler);
+		return type.compileAnnotation(compiler.types()).map(annotationType -> {
+			ExpressionCompiler evalScope = annotationType.getScopeForMember(member, compiler);
+			TypeID[] types = type.compileTypeArguments(compiler.types());
+			CompilingExpression[] arguments = this.arguments.compile(evalScope);
 
-			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(compiler));
-			return annotationType.createForMember(position, cArguments);
-		} catch (CompileException ex) {
-			return new InvalidMemberAnnotation(ex);
-		}
+			MatchedCallArguments<StaticCallableMethod> matched
+					= annotationType.getInitializers().match(evalScope, position, types, arguments);
+			return matched.getArguments()
+					.map(args -> annotationType.createForMember(position, args))
+					.orElseGet(() -> new InvalidMemberAnnotation(position, matched.getError().orElse(null)));
+		}).orElseGet(() -> new InvalidMemberAnnotation(position, CompileErrors.annotationNotFound(type.toString())));
 	}
 
-	public DefinitionAnnotation compileForDefinition(HighLevelDefinition definition, BaseScope scope) {
-		AnnotationDefinition annotationType = type.compileAnnotation(scope);
-		if (annotationType == null)
-			return new InvalidDefinitionAnnotation(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
+	public DefinitionAnnotation compileForDefinition(HighLevelDefinition definition, DefinitionCompiler compiler) {
+		return type.compileAnnotation(compiler.types()).map(annotationType -> {
+			ExpressionCompiler evalScope = annotationType.getScopeForType(definition, compiler);
+			TypeID[] types = type.compileTypeArguments(compiler.types());
+			CompilingExpression[] arguments = this.arguments.compile(evalScope);
 
-		try {
-			ExpressionScope evalScope = annotationType.getScopeForType(definition, scope);
-			TypeID[] types = type.compileTypeArguments(scope);
-			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
-			return annotationType.createForDefinition(position, cArguments);
-		} catch (CompileException ex) {
-			return new InvalidDefinitionAnnotation(ex);
-		}
+			MatchedCallArguments<StaticCallableMethod> matched
+					= annotationType.getInitializers().match(evalScope, position, types, arguments);
+			return matched.getArguments()
+					.map(args -> annotationType.createForDefinition(position, args))
+					.orElseGet(() -> new InvalidDefinitionAnnotation(position, matched.getError().orElse(null)));
+		}).orElseGet(() -> new InvalidDefinitionAnnotation(position, CompileErrors.annotationNotFound(type.toString())));
 	}
 
 	public StatementAnnotation compileForStatement(Statement statement, StatementCompiler compiler) {
-		AnnotationDefinition annotationType = type.compileAnnotation(compiler);
-		if (annotationType == null)
-			return new InvalidStatementAnnotation(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
-
-		try {
-			ExpressionScope evalScope = annotationType.getScopeForStatement(statement, scope);
+		return type.compileAnnotation(compiler.types()).map(annotationType -> {
+			ExpressionCompiler evalScope = annotationType.getScopeForStatement(statement, compiler);
 			TypeID[] types = type.compileTypeArguments(compiler.types());
-			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
-			return annotationType.createForStatement(position, cArguments);
-		} catch (CompileException ex) {
-			return new InvalidStatementAnnotation(ex);
-		}
+			CompilingExpression[] arguments = this.arguments.compile(evalScope);
+
+			MatchedCallArguments<StaticCallableMethod> matched
+					= annotationType.getInitializers().match(evalScope, position, types, arguments);
+			return matched.getArguments()
+					.map(args -> annotationType.createForStatement(position, args))
+					.orElseGet(() -> new InvalidStatementAnnotation(position, matched.getError().orElse(null)));
+		}).orElseGet(() -> new InvalidStatementAnnotation(position, CompileErrors.annotationNotFound(type.toString())));
 	}
 
-	public ParameterAnnotation compileForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope) {
-		AnnotationDefinition annotationType = type.compileAnnotation(scope);
-		if (annotationType == null)
-			return new InvalidParameterAnnotation(position, CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type.toString());
+	public ParameterAnnotation compileForParameter(FunctionHeader header, FunctionParameter parameter, ExpressionCompiler compiler) {
+		return type.compileAnnotation(compiler.types()).map(annotationType -> {
+			ExpressionCompiler evalScope = annotationType.getScopeForParameter(header, parameter, compiler);
+			TypeID[] types = type.compileTypeArguments(compiler.types());
+			CompilingExpression[] arguments = this.arguments.compile(evalScope);
 
-		try {
-			ExpressionScope evalScope = annotationType.getScopeForParameter(header, parameter, scope);
-			TypeID[] types = type.compileTypeArguments(scope);
-			CallArguments cArguments = arguments.compileCall(position, evalScope, types, annotationType.getInitializers(scope));
-			return annotationType.createForParameter(position, cArguments);
-		} catch (CompileException ex) {
-			return new InvalidParameterAnnotation(ex);
-		}
+			MatchedCallArguments<StaticCallableMethod> matched
+					= annotationType.getInitializers().match(evalScope, position, types, arguments);
+			return matched.getArguments()
+					.map(args -> annotationType.createForParameter(position, args))
+					.orElseGet(() -> new InvalidParameterAnnotation(position, matched.getError().orElse(null)));
+		}).orElseGet(() -> new InvalidParameterAnnotation(position, CompileErrors.annotationNotFound(type.toString())));
 	}
 }

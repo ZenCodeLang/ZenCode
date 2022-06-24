@@ -1,23 +1,21 @@
 package org.openzen.zenscript.codemodel.compilation.impl.compiler;
 
+import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.compilation.expression.AbstractCompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.TypeCompilingExpression;
 import org.openzen.zenscript.codemodel.compilation.expression.InstanceMemberCompilingExpression;
 import org.openzen.zencode.shared.CompileError;
-import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.LocalVariable;
 import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.compilation.expression.InvalidCompilingExpression;
-import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.expression.*;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.statement.VarStatement;
 import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class ExpressionCompilerImpl implements ExpressionCompiler {
@@ -84,7 +82,7 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		if (header != null) {
 			for (FunctionParameter parameter : header.parameters) {
 				if (parameter.name.equals(name.name))
-					return Optional.of(new ParameterCompiling(position));
+					return Optional.of(new ParameterCompiling(this, position, parameter));
 			}
 		}
 
@@ -111,10 +109,10 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		ResolvedType leftResolved = resolve(left);
 		ResolvedType rightResolved = resolve(right);
 
-		if (leftResolved.canCastImplicitlyTo(right))
+		if (leftResolved.canCastImplicitlyTo(this, CodePosition.UNKNOWN, right))
 			return Optional.of(right);
 
-		if (rightResolved.canCastImplicitlyTo(left))
+		if (rightResolved.canCastImplicitlyTo(this, CodePosition.UNKNOWN, left))
 			return Optional.of(left);
 
 		Optional<ArrayTypeID> maybeLeftArray = left.asArray();
@@ -134,12 +132,16 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 
 	@Override
 	public ExpressionCompiler withLocalVariables(List<LocalVariable> variables) {
-
+		LocalSymbols newLocals = new LocalSymbols(locals);
+		for (LocalVariable variable : variables) {
+			newLocals.add(variable);
+		}
+		return new ExpressionCompilerImpl(context, localType, thrownType, newLocals, header);
 	}
 
 	@Override
 	public ExpressionCompiler forFunction(FunctionHeader header) {
-
+		return new ExpressionCompilerImpl(context, localType, thrownType, locals, header);
 	}
 
 	@Override
@@ -157,6 +159,16 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		@Override
 		public Expression binary(BinaryExpression.Operator operator, Expression left, Expression right) {
 			return new BinaryExpression(position, left, right, operator);
+		}
+
+		@Override
+		public Expression callStatic(MethodInstance method, CallArguments arguments) {
+			return new CallStaticExpression(position, method, arguments);
+		}
+
+		@Override
+		public Expression callVirtual(MethodInstance method, Expression target, CallArguments arguments) {
+			return new CallExpression(position, target, method, arguments);
 		}
 
 		@Override
@@ -192,6 +204,21 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		@Override
 		public Expression getThis(TypeID thisType) {
 			return new ThisExpression(position, thisType);
+		}
+
+		@Override
+		public Expression getFunctionParameter(FunctionParameter parameter) {
+			return new GetFunctionParameterExpression(position, parameter);
+		}
+
+		@Override
+		public Expression getLocalVariable(VarStatement variable) {
+			return new GetLocalVariableExpression(position, variable);
+		}
+
+		@Override
+		public Expression interfaceCast(ImplementationMember implementation, Expression value) {
+			return new InterfaceCastExpression(position, value, implementation);
 		}
 
 		@Override
@@ -237,6 +264,16 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		@Override
 		public Expression panic(TypeID type, Expression value) {
 			return new PanicExpression(position, type, value);
+		}
+
+		@Override
+		public Expression setFunctionParameter(FunctionParameter parameter, Expression value) {
+			return new SetFunctionParameterExpression(position, parameter, value);
+		}
+
+		@Override
+		public Expression setLocalVariable(VarStatement variable, Expression value) {
+			return new SetLocalVariableExpression(position, variable, value);
 		}
 
 		@Override
@@ -340,6 +377,43 @@ public class ExpressionCompilerImpl implements ExpressionCompiler {
 		@Override
 		public CompilingExpression assign(CompilingExpression value) {
 			throw new UnsupportedOperationException("To be implemented"); // TODO
+		}
+	}
+
+	private static class ParameterCompiling extends AbstractCompilingExpression {
+		private final FunctionParameter parameter;
+
+		public ParameterCompiling(ExpressionCompiler compiler, CodePosition position, FunctionParameter parameter) {
+			super(compiler, position);
+
+			this.parameter = parameter;
+		}
+
+		@Override
+		public Expression eval() {
+			return compiler.at(position).getFunctionParameter(parameter);
+		}
+
+		@Override
+		public CompilingExpression assign(CompilingExpression value) {
+			return new SetParameterCompiling(compiler, position, parameter, value);
+		}
+	}
+
+	private static class SetParameterCompiling extends AbstractCompilingExpression {
+		private final FunctionParameter parameter;
+		private final CompilingExpression value;
+
+		public SetParameterCompiling(ExpressionCompiler compiler, CodePosition position, FunctionParameter parameter, CompilingExpression value) {
+			super(compiler, position);
+
+			this.parameter = parameter;
+			this.value = value;
+		}
+
+		@Override
+		public Expression eval() {
+			return compiler.at(position).setFunctionParameter(parameter, value.cast(cast(parameter.type)).value);
 		}
 	}
 }

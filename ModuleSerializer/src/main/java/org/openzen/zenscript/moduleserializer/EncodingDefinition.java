@@ -14,6 +14,7 @@ import org.openzen.zencode.shared.Tag;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.definition.MemberCollector;
 import org.openzen.zenscript.codemodel.definition.VariantDefinition;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 
@@ -22,7 +23,7 @@ import org.openzen.zenscript.codemodel.member.IDefinitionMember;
  */
 public class EncodingDefinition implements Tag {
 	public static final EncodingDefinition BUILTIN = new EncodingDefinition(null);
-	public final HighLevelDefinition definition;
+	public final TypeSymbol type;
 	public final List<IDefinitionMember> members = new ArrayList<>();
 	public final List<EnumConstantMember> enumConstants = new ArrayList<>();
 	public final List<VariantDefinition.Option> variantOptions = new ArrayList<>();
@@ -30,8 +31,8 @@ public class EncodingDefinition implements Tag {
 	public final Set<EnumConstantMember> enumConstantSet = new HashSet<>();
 	public final Set<VariantDefinition.Option> variantOptionSet = new HashSet<>();
 
-	public EncodingDefinition(HighLevelDefinition definition) {
-		this.definition = definition;
+	public EncodingDefinition(TypeSymbol type) {
+		this.type = type;
 	}
 
 	public static EncodingDefinition complete(HighLevelDefinition definition) {

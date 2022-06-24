@@ -6,6 +6,8 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.compilation.CompileErrors;
+import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
+import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
@@ -43,7 +45,7 @@ public class NativeAnnotationDefinition implements AnnotationDefinition {
 	}
 
 	@Override
-	public ExpressionScope getScopeForMember(IDefinitionMember member, BaseScope scope) {
+	public ExpressionCompiler getScopeForMember(IDefinitionMember member, MemberCompiler compiler) {
 		return new ExpressionScope(scope);
 	}
 

@@ -11,7 +11,6 @@ import java.util.List;
 import org.openzen.zencode.shared.logging.IZSLogger;
 import org.openzen.zenscript.codemodel.*;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
-import org.openzen.zenscript.codemodel.context.ModuleContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
 import org.openzen.zenscript.codemodel.definition.ZSPackage;
 import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
@@ -23,7 +22,6 @@ public class DeserializingModule {
 	public final String name;
 	public final Module module;
 	private final IZSLogger logger;
-	public final ModuleContext context;
 	private final SemanticModule loaded;
 	private final DeserializingModule[] dependencies;
 	private final ZSPackage rootPackage;
@@ -53,7 +51,6 @@ public class DeserializingModule {
 
 
 		expansions = new ArrayList<>();
-		context = new ModuleContext(registry, module, expansions, rootPackage);
 	}
 
 	public DeserializingModule(SemanticModule module) {
@@ -67,7 +64,6 @@ public class DeserializingModule {
 		this.logger = module.logger;
 
 		expansions = module.expansions;
-		context = module.getContext();
 	}
 
 	public boolean hasCode() {

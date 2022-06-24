@@ -8,4 +8,6 @@ public interface DefinitionSymbol {
 	String describe();
 
 	boolean isInterface();
+
+	boolean isExpansion();
 }

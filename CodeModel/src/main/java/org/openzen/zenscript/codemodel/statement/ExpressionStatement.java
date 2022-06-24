@@ -44,9 +44,4 @@ public class ExpressionStatement extends Statement {
 		Expression tExpression = expression.transform(transformer);
 		return tExpression == expression ? this : new ExpressionStatement(position, tExpression);
 	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return new ExpressionStatement(position, expression.normalize(scope));
-	}
 }

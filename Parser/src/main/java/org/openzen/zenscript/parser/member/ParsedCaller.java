@@ -73,12 +73,17 @@ public class ParsedCaller extends ParsedFunctionalMember {
 
 		@Override
 		public void linkTypes() {
-			compiled = new CallerMember(position, definition, modifiers, header.compile(compiler.types()), null);
+			compiled = new CallerMember(position, definition, new Modifiers(modifiers), header.compile(compiler.types()), null);
 		}
 
 		@Override
 		public void prepare(List<CompileException> errors) {
 			inferHeaders(errors);
+		}
+
+		@Override
+		public void compile(List<CompileException> errors) {
+
 		}
 
 		private void inferHeaders(List<CompileException> errors) {
@@ -102,16 +107,6 @@ public class ParsedCaller extends ParsedFunctionalMember {
 
 			compiled.setOverrides(base);
 			return base.isPresent();
-		}
-
-		@Override
-		public void compile() {
-
-		}
-
-		@Override
-		public Optional<CompilingDefinition> asInner() {
-			return Optional.empty();
 		}
 	}
 }

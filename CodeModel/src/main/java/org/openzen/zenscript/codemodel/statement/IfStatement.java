@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.function.Consumer;
@@ -65,15 +64,6 @@ public class IfStatement extends Statement {
 		return tCondition == condition && onThen == tOnThen && onElse == tOnElse
 				? this
 				: new IfStatement(position, tCondition, tOnThen, tOnElse);
-	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return new IfStatement(
-				position,
-				condition.normalize(scope),
-				onThen.normalize(scope, modified),
-				onElse == null ? null : onElse.normalize(scope, modified));
 	}
 
 	@Override

@@ -143,7 +143,7 @@ public class ParsedExpressionInt extends ParsedExpression {
 				ResolvedType resolved = compiler.resolve(type);
 				Optional<StaticCallable> maybeSuffixConstructor = resolved.findSuffixConstructor(suffix);
 				if (maybeSuffixConstructor.isPresent())
-					return maybeSuffixConstructor.get().casted(compiler.at(position), cast, this);
+					return maybeSuffixConstructor.get().casted(compiler, position, cast, null, this);
 			}
 
 			return cast.of(eval());

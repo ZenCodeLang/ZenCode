@@ -96,14 +96,14 @@ public class ParsedFunction extends ParsedDefinition {
 		}
 
 		@Override
-		public void prepareMembers() {
+		public void prepareMembers(List<CompileException> errors) {
 
 		}
 
 		@Override
 		public void compileMembers(List<CompileException> errors) {
 			StatementCompiler compiler = this.compiler.forMembers(compiled).forMethod(compiled.header);
-			compiled.setCode(body.compile(compiler, compiled.header));
+			compiled.setCode(body.compile(compiler));
 
 			if (compiled.header.getReturnType() == BasicTypeID.UNDETERMINED)
 				compiled.header.setReturnType(compiled.caller.body.getReturnType());

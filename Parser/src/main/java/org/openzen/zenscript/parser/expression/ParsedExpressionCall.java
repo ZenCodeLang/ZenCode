@@ -39,14 +39,14 @@ public class ParsedExpressionCall extends ParsedExpression {
 		@Override
 		public Expression eval() {
 			return receiver.call()
-					.map(call -> call.call(compiler.at(position), arguments))
+					.map(call -> call.call(compiler, position, null, arguments))
 					.orElseGet(() -> compiler.at(position).invalid(CompileErrors.cannotCall()));
 		}
 
 		@Override
 		public CastedExpression cast(CastedEval cast) {
 			return receiver.call()
-					.map(call -> call.casted(compiler.at(position), cast, arguments))
+					.map(call -> call.casted(compiler, position, cast, null, arguments))
 					.orElseGet(() -> cast.invalid(CompileErrors.cannotCall()));
 		}
 	}
@@ -62,7 +62,7 @@ public class ParsedExpressionCall extends ParsedExpression {
 		if (maybeSwitchMember.isPresent()) {
 			String[] values = new String[arguments.arguments.size()];
 			for (int i = 0; i < values.length; i++) {
-				ParsedExpression argument = arguments.arguments.get(i);
+				CompilableExpression argument = arguments.arguments.get(i);
 				Optional<CompilableLambdaHeader.Parameter> lambdaHeader = argument.asLambdaHeaderParameter();
 				if (lambdaHeader.isPresent()) {
 					values[i] = lambdaHeader.get().getName();

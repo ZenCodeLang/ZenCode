@@ -4,8 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.LoopStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
@@ -54,16 +52,6 @@ public class FunctionExpression extends Expression {
 		body.forEachStatement(consumer);
 	}
 
-	/**
-	 * Checks if this is a simple function expression. A simple function
-	 * expression consists of a body with just a expression or return statement.
-	 *
-	 * @return
-	 */
-	public boolean isSimple() {
-		return body instanceof ReturnStatement || body instanceof ExpressionStatement;
-	}
-
 	public Expression asReturnExpression(Expression... arguments) {
 		Map<FunctionParameter, Expression> filledArguments = new HashMap<>();
 		if (body instanceof ReturnStatement) {
@@ -71,11 +59,6 @@ public class FunctionExpression extends Expression {
 		} else {
 			return null;
 		}
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
-		return new FunctionExpression(position, type, closure, header, body.normalize(scope, ConcatMap.empty(LoopStatement.class, LoopStatement.class)));
 	}
 
 	private static class ReturnExpressionTransformer implements ExpressionTransformer {

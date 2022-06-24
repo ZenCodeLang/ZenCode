@@ -5,5 +5,5 @@ import org.openzen.zenscript.codemodel.compilation.StatementCompiler;
 import org.openzen.zenscript.codemodel.statement.Statement;
 
 public interface ParsedFunctionBody {
-	Statement compile(StatementCompiler compiler, FunctionHeader header);
+	Statement compile(StatementCompiler compiler);
 }

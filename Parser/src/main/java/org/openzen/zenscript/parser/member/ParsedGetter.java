@@ -6,17 +6,15 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.compilation.MemberCompiler;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.member.GetterMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.FunctionScope;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.member.ImplementationMember;
 import org.openzen.zenscript.codemodel.type.TypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberGroup;
 import org.openzen.zenscript.parser.ParsedAnnotation;
 import org.openzen.zenscript.parser.statements.ParsedFunctionBody;
 import org.openzen.zenscript.parser.type.IParsedType;
+
+import java.util.List;
 
 public class ParsedGetter extends ParsedDefinitionMember {
 	private final CodePosition position;
@@ -25,8 +23,6 @@ public class ParsedGetter extends ParsedDefinitionMember {
 
 	private final String name;
 	private final IParsedType type;
-	private GetterMember compiled;
-	private boolean isCompiled = false;
 
 	public ParsedGetter(
 			CodePosition position,
@@ -46,46 +42,57 @@ public class ParsedGetter extends ParsedDefinitionMember {
 	}
 
 	@Override
-	public void linkTypes(TypeResolutionContext context) {
-		compiled = new GetterMember(position, definition, modifiers, name, type.compile(context), null);
+	public CompilingMember compile(HighLevelDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
+		return new Compiling(definition, implementation, compiler);
 	}
 
-	@Override
-	public GetterMember getCompiled() {
-		return compiled;
-	}
+	private class Compiling implements CompilingMember {
+		private final HighLevelDefinition definition;
+		private final ImplementationMember implementation;
+		private final MemberCompiler compiler;
+		private GetterMember compiled;
 
-	private void inferHeaders(BaseScope scope) throws CompileException {
-		if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
-			fillOverride(scope, implementation.getCompiled().type);
-		} else if (implementation == null && Modifiers.isOverride(modifiers)) {
-			if (definition.getSuperType() == null)
-				throw new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type");
-
-			fillOverride(scope, definition.getSuperType());
+		public Compiling(HighLevelDefinition definition, ImplementationMember implementation, MemberCompiler compiler) {
+			this.definition = definition;
+			this.implementation = implementation;
+			this.compiler = compiler;
 		}
 
-		if (compiled == null)
-			throw new IllegalStateException("Types not yet linked");
-	}
+		@Override
+		public void linkTypes() {
+			compiled = new GetterMember(position, definition, modifiers, name, type.compile(compiler.types()), null);
+		}
 
-	private void fillOverride(TypeScope scope, TypeID baseType) {
-		scope.getTypeMembers(baseType).getGroup(name)
-				.flatMap(TypeMemberGroup::getGetter)
-				.ifPresent(getter -> compiled.setOverrides(getter));
-	}
+		@Override
+		public void prepare(List<CompileException> errors) {
+			inferHeaders(errors);
+		}
 
-	@Override
-	public final void compile(MemberCompiler compiler) throws CompileException {
-		if (isCompiled)
-			return;
-		isCompiled = true;
+		@Override
+		public void compile(List<CompileException> errors) {
+			FunctionHeader header = new FunctionHeader(compiled.getType());
+			compiled.annotations = ParsedAnnotation.compileForMember(annotations, compiled, compiler);
+			StatementCompiler statementCompiler = compiler.forMethod(header);
+			compiled.setBody(body.compile(statementCompiler));
+		}
 
-		inferHeaders(scope);
+		private void inferHeaders(List<CompileException> errors) {
+			if ((implementation != null && !Modifiers.isPrivate(modifiers))) {
+				fillOverride(implementation.type);
+			} else if (implementation == null && Modifiers.isOverride(modifiers)) {
+				if (definition.getSuperType() == null)
+					errors.add(new CompileException(position, CompileExceptionCode.OVERRIDE_WITHOUT_BASE, "Override specified without base type"));
+				else
+					fillOverride(definition.getSuperType());
+			}
 
-		FunctionHeader header = new FunctionHeader(compiled.getType());
-		FunctionScope innerScope = new FunctionScope(position, scope, header);
-		compiled.annotations = ParsedAnnotation.compileForMember(annotations, getCompiled(), compiler);
-		compiled.setBody(body.compile(innerScope, header));
+			if (compiled == null)
+				throw new IllegalStateException("Types not yet linked");
+		}
+
+		private void fillOverride(TypeID baseType) {
+			ResolvedType resolved = compiler.resolve(baseType);
+			resolved.findGetter(name).ifPresent(getter -> compiled.setOverrides(getter));
+		}
 	}
 }

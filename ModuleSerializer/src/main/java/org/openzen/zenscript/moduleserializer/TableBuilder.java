@@ -28,6 +28,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.generic.TypeParameterBound;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
@@ -54,7 +55,7 @@ public class TableBuilder implements CodeSerializationOutput {
 	//public final List<EncodingModule> modules = new ArrayList<>();
 	public final Map<Module, EncodingModule> modules = new HashMap<>();
 	private final Map<String, Integer> strings = new HashMap<>();
-	private final Set<HighLevelDefinition> definitions = new HashSet<>();
+	private final Set<TypeSymbol> definitions = new HashSet<>();
 	private final Set<Module> moduleSet = new HashSet<>();
 	private final Set<SourceFile> sourceFiles = new HashSet<>();
 	private final List<IDefinitionMember> members = new ArrayList<>();
@@ -118,11 +119,11 @@ public class TableBuilder implements CodeSerializationOutput {
 		return annotations.toArray(new AnnotationDefinition[annotations.size()]);
 	}
 
-	private EncodingDefinition prepare(HighLevelDefinition definition) {
-		register(definition.module, null);
+	private EncodingDefinition prepare(TypeSymbol type) {
+		register(type.getModule(), null);
 
-		if (definitions.add(definition)) {
-			EncodingDefinition result = new EncodingDefinition(definition);
+		if (definitions.add(type)) {
+			EncodingDefinition result = new EncodingDefinition(type);
 			definition.setTag(EncodingDefinition.class, result);
 			return result;
 		} else {
@@ -194,8 +195,8 @@ public class TableBuilder implements CodeSerializationOutput {
 	}
 
 	@Override
-	public void write(HighLevelDefinition definition) {
-		prepare(definition);
+	public void write(TypeSymbol type) {
+		prepare(type);
 	}
 
 	@Override

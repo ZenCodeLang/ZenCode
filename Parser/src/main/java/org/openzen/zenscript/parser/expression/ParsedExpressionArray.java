@@ -81,7 +81,7 @@ public class ParsedExpressionArray extends ParsedExpression {
 				// try implicit constructor instead
 				ResolvedType resolvedType = compiler.resolve(cast.type);
 				return resolvedType.findImplicitConstructor()
-						.map(constructor -> constructor.casted(compiler.at(position), cast, this))
+						.map(constructor -> constructor.casted(compiler, position, cast, null, this))
 						.orElse(cast.invalid(CompileErrors.invalidArrayType(cast.type)));
 			}
 

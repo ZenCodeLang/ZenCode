@@ -14,7 +14,6 @@ import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 public class MethodMember extends FunctionalMember {
 	public final String name;
 	private MethodSymbol overrides;
-	private int overrideModifiers = 0;
 
 	public MethodMember(CodePosition position, HighLevelDefinition definition, int modifiers, String name, FunctionHeader header, BuiltinID builtin) {
 		super(position, definition, modifiers, header, builtin);
@@ -62,13 +61,13 @@ public class MethodMember extends FunctionalMember {
 	}
 
 	@Override
-	public int getEffectiveModifiers() {
-		int result = super.getEffectiveModifiers();
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = super.getEffectiveModifiers();
 		if (overrides != null) {
-			if (overrides.getTarget().isPublic())
-				result |= Modifiers.PUBLIC;
-			if (overrides.getTarget().isProtected())
-				result |= Modifiers.PROTECTED;
+			if (overrides.getModifiers().isPublic())
+				result = result.withPublic();
+			if (overrides.getModifiers().isProtected())
+				result = result.withProtected();
 		}
 		return result;
 	}
@@ -81,5 +80,10 @@ public class MethodMember extends FunctionalMember {
 	public void setOverrides(MethodSymbol overrides) {
 		this.overrides = overrides;
 		header = header.inferFromOverride(overrides.getHeader());
+	}
+
+	@Override
+	public String getName() {
+		return name;
 	}
 }

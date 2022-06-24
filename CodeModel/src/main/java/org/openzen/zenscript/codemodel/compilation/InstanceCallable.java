@@ -1,17 +1,14 @@
 package org.openzen.zenscript.codemodel.compilation;
 
+import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.compilation.impl.BoundInstanceCallable;
-import org.openzen.zenscript.codemodel.compilation.impl.CallUtilities;
-import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public final class InstanceCallable {
 	private final List<InstanceCallableMethod> overloads;
@@ -20,99 +17,15 @@ public final class InstanceCallable {
 		this.overloads = overloads;
 	}
 
-	public Expression call(ExpressionBuilder builder, Expression instance, CompilingExpression... arguments) {
-		Expression result = null;
-		List<FunctionHeader> candidates = new ArrayList<>();
-		boolean implicit = false;
-		boolean ambiguous = false;
-
-		for (InstanceCallableMethod method : overloads) {
-			if (method.getHeader().accepts(arguments.length)) {
-				CallArguments matched = CallUtilities.match(method, arguments);
-
-				if (matched.level == CastedExpression.Level.EXACT) {
-					if (result == null || implicit) {
-						if (implicit) {
-							candidates = new ArrayList<>();
-							ambiguous = false;
-						}
-
-						result = method.call(builder, instance, matched.arguments);
-						implicit = false;
-					} else {
-						ambiguous = true;
-					}
-					candidates.add(method.getHeader());
-				} else if (matched.level == CastedExpression.Level.IMPLICIT) {
-					if (result == null) {
-						result = method.call(builder, instance, matched.arguments);
-						implicit = true;
-					} else {
-						ambiguous = true;
-					}
-					candidates.add(method.getHeader());
-				}
-			}
-		}
-
-		if (ambiguous) {
-			return builder.invalid(CompileErrors.ambiguousCall(candidates));
-		} else if (result == null) {
-			return builder.invalid(CompileErrors.noMethodMatched(overloads.stream()
-					.map(AnyMethod::getHeader)
-					.collect(Collectors.toList())));
-		} else {
-			return result;
-		}
+	public Expression call(ExpressionCompiler compiler, CodePosition position, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {
+		MatchedCallArguments<InstanceCallableMethod> matched = MatchedCallArguments.match(compiler, position, overloads, null, typeArguments, arguments);
+		return matched.eval(compiler.at(position), (buildr, method, args) -> method.call(buildr, instance, args));
 	}
 
-
-	public CastedExpression cast(ExpressionBuilder builder, CastedEval cast, Expression instance, CompilingExpression... arguments) {
-		Expression result = null;
-		List<FunctionHeader> candidates = new ArrayList<>();
-		boolean implicit = false;
-		boolean ambiguous = false;
-
-		for (InstanceCallableMethod method : overloads) {
-			if (method.getHeader().accepts(arguments.length)) {
-				CallArguments matched = CallUtilities.match(method, cast.type, arguments);
-
-				if (matched.level == CastedExpression.Level.EXACT) {
-					if (result == null || implicit) {
-						if (implicit) {
-							candidates = new ArrayList<>();
-							ambiguous = false;
-						}
-
-						result = method.call(builder, instance, matched.arguments);
-						implicit = false;
-					} else {
-						ambiguous = true;
-					}
-					candidates.add(method.getHeader());
-				} else if (matched.level == CastedExpression.Level.IMPLICIT) {
-					if (result == null) {
-						result = method.call(builder, instance, matched.arguments);
-						implicit = true;
-					} else {
-						ambiguous = true;
-					}
-					candidates.add(method.getHeader());
-				}
-			}
-		}
-
-		if (ambiguous) {
-			return CastedExpression.invalid(builder.invalid(CompileErrors.ambiguousCall(candidates)));
-		} else if (result == null) {
-			return CastedExpression.invalid(builder.invalid(CompileErrors.noMethodMatched(overloads.stream()
-					.map(AnyMethod::getHeader)
-					.collect(Collectors.toList()))));
-		} else {
-			return cast.of(result);
-		}
+	public CastedExpression cast(ExpressionCompiler compiler, CodePosition position, CastedEval cast, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {
+		MatchedCallArguments<InstanceCallableMethod> matched = MatchedCallArguments.match(compiler, position, overloads, cast.type, typeArguments, arguments);
+		return matched.cast(compiler.at(position), cast, (buildr, method, args) -> method.call(buildr, instance, args));
 	}
-
 
 	public Expression callPostfix(ExpressionBuilder builder, Expression instance) {
 		return builder.invalid(CompileErrors.invalidPostfix());

@@ -4,7 +4,6 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 import java.util.function.Consumer;
 
@@ -42,10 +41,5 @@ public class ThrowStatement extends Statement {
 	public Statement transform(ExpressionTransformer transformer, ConcatMap<LoopStatement, LoopStatement> modified) {
 		Expression tValue = value.transform(transformer);
 		return tValue == value ? this : new ThrowStatement(position, value);
-	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return new ThrowStatement(position, value.normalize(scope));
 	}
 }

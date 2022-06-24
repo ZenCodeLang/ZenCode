@@ -74,11 +74,11 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 		return overrides;
 	}
 
-	public void setOverrides(GetterMemberRef override) {
+	public void setOverrides(MethodSymbol override) {
 		this.overrides = override;
 
 		if (getType() == BasicTypeID.UNDETERMINED)
-			setType(override.getType());
+			setType(override.getHeader().getReturnType());
 	}
 
 	@Override

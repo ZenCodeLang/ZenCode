@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.expression.*;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.FieldMemberRef;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -31,7 +32,7 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	public FieldMember(
 			CodePosition position,
 			HighLevelDefinition definition,
-			int modifiers,
+			Modifiers modifiers,
 			String name,
 			TypeID thisType,
 			TypeID type,
@@ -77,7 +78,7 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	private FieldMember(
 			CodePosition position,
 			HighLevelDefinition definition,
-			int modifiers,
+			Modifiers modifiers,
 			String name,
 			TypeID type,
 			int autoGetterAccess,
@@ -117,8 +118,13 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	}
 
 	@Override
-	public void registerTo(MemberSet members, GenericMapper mapper) {
-		members.addField(mapper.map(this));
+	public void registerTo(MemberSet.Builder members, GenericMapper mapper) {
+		members.field(mapper.map(this));
+
+		if (autoGetter != null)
+			autoGetter.registerTo(members, mapper);
+		if (autoSetter != null)
+			autoSetter.registerTo(members, mapper);
 	}
 
 	@Override
@@ -164,5 +170,22 @@ public class FieldMember extends PropertyMember implements FieldSymbol {
 	@Override
 	public FunctionHeader getHeader() {
 		return null;
+	}
+
+	/* FieldSymbol implementation */
+
+	@Override
+	public TypeSymbol getDefiningType() {
+		return definition;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public TypeID getType() {
+		return type;
 	}
 }

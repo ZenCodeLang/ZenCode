@@ -5,7 +5,6 @@ import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.annotations.StatementAnnotation;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 import java.util.function.Consumer;
@@ -24,17 +23,11 @@ public abstract class Statement extends Taggable {
 		return null;
 	}
 
-	public Statement withReturnType(TypeScope scope, TypeID returnType) {
-		return this;
-	}
-
 	public abstract <T> T accept(StatementVisitor<T> visitor);
 
 	public abstract <C, R> R accept(C context, StatementVisitorWithContext<C, R> visitor);
 
 	public abstract void forEachStatement(Consumer<Statement> consumer);
-
-	public abstract Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified);
 
 	public final Statement transform(StatementTransformer transformer) {
 		return transform(transformer, ConcatMap.empty(LoopStatement.class, LoopStatement.class));

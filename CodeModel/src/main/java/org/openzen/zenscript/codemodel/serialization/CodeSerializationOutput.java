@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.serialization;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.annotations.AnnotationDefinition;
 import org.openzen.zenscript.codemodel.context.StatementContext;
 import org.openzen.zenscript.codemodel.context.TypeContext;
@@ -10,9 +9,11 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.expression.switchvalue.SwitchValue;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
+import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
+import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.EnumConstantMember;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
 import org.openzen.zenscript.codemodel.member.ref.VariantOptionRef;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.TypeID;
@@ -44,27 +45,29 @@ public interface CodeSerializationOutput {
 
 	void writeString(String value);
 
-	void write(HighLevelDefinition definition);
+	void write(TypeSymbol type);
 
 	void write(EnumConstantMember constant);
 
 	void write(VariantOptionRef option);
 
-	void write(TypeContext context, DefinitionMemberRef member);
+	void write(TypeContext context, FieldSymbol field);
+
+	void write(TypeContext context, MethodSymbol method);
 
 	void write(AnnotationDefinition annotationType);
 
-	void serialize(TypeContext context, IDefinitionMember member);
+	void serialize(TypeSerializationContext context, IDefinitionMember member);
 
-	void serialize(TypeContext context, TypeID type);
+	void serialize(TypeSerializationContext context, TypeID type);
 
-	void serialize(TypeContext context, TypeParameter parameter);
+	void serialize(TypeSerializationContext context, TypeParameter parameter);
 
-	void serialize(TypeContext context, TypeParameter[] parameters);
+	void serialize(TypeSerializationContext context, TypeParameter[] parameters);
 
 	void serialize(CodePosition position);
 
-	void serialize(TypeContext context, FunctionHeader header);
+	void serialize(TypeSerializationContext context, FunctionHeader header);
 
 	void serialize(StatementContext context, CallArguments arguments);
 

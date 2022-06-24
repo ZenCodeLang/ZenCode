@@ -2,21 +2,20 @@ package org.openzen.zenscript.codemodel.expression;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class CallStaticExpression extends Expression {
-	public final FunctionalMemberRef member;
+	public final MethodInstance member;
 	public final TypeID target;
 	public final CallArguments arguments;
 	public final FunctionHeader instancedHeader;
 
-	public CallStaticExpression(CodePosition position, TypeID target, FunctionalMemberRef member, FunctionHeader instancedHeader, CallArguments arguments) {
+	public CallStaticExpression(CodePosition position, MethodInstance method, FunctionHeader instancedHeader, CallArguments arguments) {
 		super(position, instancedHeader.getReturnType(), multiThrow(position, arguments.arguments));
 
-		this.member = member;
-		this.target = target;
+		this.member = method;
+		this.target = method.getTarget();
 		this.arguments = arguments;
 		this.instancedHeader = instancedHeader;
 	}
@@ -34,6 +33,6 @@ public class CallStaticExpression extends Expression {
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
 		CallArguments tArguments = arguments.transform(transformer);
-		return arguments == tArguments ? this : new CallStaticExpression(position, target, member, instancedHeader, tArguments);
+		return arguments == tArguments ? this : new CallStaticExpression(position, member, instancedHeader, tArguments);
 	}
 }

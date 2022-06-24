@@ -15,30 +15,30 @@ public class FormattingUtils {
 	private FormattingUtils() {
 	}
 
-	public static void formatModifiers(StringBuilder output, int modifiers) {
-		if (Modifiers.isPrivate(modifiers))
+	public static void formatModifiers(StringBuilder output, Modifiers modifiers) {
+		if (modifiers.isPrivate())
 			output.append("private ");
-		if (Modifiers.isProtected(modifiers))
+		if (modifiers.isProtected())
 			output.append("protected ");
-		if (Modifiers.isPublic(modifiers))
+		if (modifiers.isPublic())
 			output.append("public ");
-		if (Modifiers.isInternal(modifiers))
+		if (modifiers.isInternal())
 			output.append("internal ");
-		if (Modifiers.isStatic(modifiers))
+		if (modifiers.isStatic())
 			output.append("static ");
-		if (Modifiers.isAbstract(modifiers))
+		if (modifiers.isAbstract())
 			output.append("abstract ");
-		if (Modifiers.isVirtual(modifiers))
+		if (modifiers.isVirtual())
 			output.append("virtual ");
-		if (Modifiers.isFinal(modifiers))
+		if (modifiers.isFinal())
 			output.append("final ");
-		if (Modifiers.isExtern(modifiers))
+		if (modifiers.isExtern())
 			output.append("extern ");
-		if (Modifiers.isImplicit(modifiers))
+		if (modifiers.isImplicit())
 			output.append("implicit ");
-		if (Modifiers.isConst(modifiers))
+		if (modifiers.isConst())
 			output.append("const ");
-		if (Modifiers.isConstOptional(modifiers))
+		if (modifiers.isConstOptional())
 			output.append("const? ");
 	}
 

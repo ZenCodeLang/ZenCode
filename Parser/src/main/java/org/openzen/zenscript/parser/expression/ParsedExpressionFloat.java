@@ -65,11 +65,11 @@ public class ParsedExpressionFloat extends ParsedExpression {
 			ResolvedType resolvedType = compiler.resolve(actualType);
 			if (suffix.isEmpty()) {
 				return resolvedType.findImplicitConstructor()
-						.map(constructor -> constructor.casted(compiler.at(position), cast, this))
+						.map(constructor -> constructor.casted(compiler, position, cast, null, this))
 						.orElseGet(() -> cast.invalid(CompileErrors.cannotCompileFloatLiteralAs(cast.type)));
 			} else {
 				return resolvedType.findSuffixConstructor(suffix)
-						.map(method -> method.casted(compiler.at(position), cast, this))
+						.map(method -> method.casted(compiler, position, cast, null, this))
 						.orElseGet(() -> cast.invalid(CompileErrors.cannotCompileFloatLiteralAs(cast.type, suffix)));
 			}
 		}

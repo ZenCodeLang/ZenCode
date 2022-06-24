@@ -1,9 +1,8 @@
 package org.openzen.zenscript.codemodel.annotations;
 
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.context.TypeContext;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationOutput;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 
 public interface DefinitionAnnotation {
 	DefinitionAnnotation[] NONE = new DefinitionAnnotation[0];
@@ -14,5 +13,5 @@ public interface DefinitionAnnotation {
 
 	void applyOnSubtype(HighLevelDefinition definition);
 
-	void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeContext context);
+	void serialize(CodeSerializationOutput output, HighLevelDefinition definition, TypeSerializationContext context);
 }

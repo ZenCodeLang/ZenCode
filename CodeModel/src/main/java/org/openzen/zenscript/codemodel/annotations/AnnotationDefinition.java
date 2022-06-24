@@ -4,30 +4,26 @@ import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.FunctionParameter;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
+import org.openzen.zenscript.codemodel.compilation.*;
 import org.openzen.zenscript.codemodel.context.StatementContext;
-import org.openzen.zenscript.codemodel.context.TypeContext;
 import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.member.IDefinitionMember;
-import org.openzen.zenscript.codemodel.scope.BaseScope;
-import org.openzen.zenscript.codemodel.scope.ExpressionScope;
-import org.openzen.zenscript.codemodel.scope.StatementScope;
 import org.openzen.zenscript.codemodel.serialization.CodeSerializationInput;
+import org.openzen.zenscript.codemodel.serialization.TypeSerializationContext;
 import org.openzen.zenscript.codemodel.statement.Statement;
-
-import java.util.List;
 
 public interface AnnotationDefinition {
 	String getAnnotationName();
 
-	List<FunctionHeader> getInitializers(BaseScope scope);
+	StaticCallable getInitializers();
 
-	ExpressionScope getScopeForMember(IDefinitionMember member, BaseScope scope);
+	ExpressionCompiler getScopeForMember(IDefinitionMember member, MemberCompiler compiler);
 
-	ExpressionScope getScopeForType(HighLevelDefinition definition, BaseScope scope);
+	ExpressionCompiler getScopeForType(HighLevelDefinition definition, DefinitionCompiler compiler);
 
-	ExpressionScope getScopeForStatement(Statement statement, StatementScope scope);
+	ExpressionCompiler getScopeForStatement(Statement statement, StatementCompiler compiler);
 
-	ExpressionScope getScopeForParameter(FunctionHeader header, FunctionParameter parameter, BaseScope scope);
+	ExpressionCompiler getScopeForParameter(FunctionHeader header, FunctionParameter parameter, ExpressionCompiler compiler);
 
 	MemberAnnotation createForMember(CodePosition position, CallArguments arguments);
 
@@ -37,11 +33,11 @@ public interface AnnotationDefinition {
 
 	ParameterAnnotation createForParameter(CodePosition position, CallArguments arguments);
 
-	MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeContext context, IDefinitionMember member);
+	MemberAnnotation deserializeForMember(CodeSerializationInput input, TypeSerializationContext context, IDefinitionMember member);
 
-	DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeContext context);
+	DefinitionAnnotation deserializeForDefinition(CodeSerializationInput input, TypeSerializationContext context);
 
 	StatementAnnotation deserializeForStatement(CodeSerializationInput input, StatementContext context);
 
-	ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeContext context);
+	ParameterAnnotation deserializeForParameter(CodeSerializationInput input, TypeSerializationContext context);
 }

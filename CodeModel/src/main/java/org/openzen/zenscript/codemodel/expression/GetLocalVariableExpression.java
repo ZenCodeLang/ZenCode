@@ -14,11 +14,6 @@ public class GetLocalVariableExpression extends Expression {
 	}
 
 	@Override
-	public Expression assign(CodePosition position, TypeScope scope, Expression value) {
-		return new SetLocalVariableExpression(position, variable, value.castImplicit(position, scope, type));
-	}
-
-	@Override
 	public CapturedExpression capture(CodePosition position, LambdaClosure closure) {
 		CapturedExpression result = new CapturedLocalVariableExpression(position, variable, closure);
 		closure.add(result);
@@ -37,11 +32,6 @@ public class GetLocalVariableExpression extends Expression {
 
 	@Override
 	public Expression transform(ExpressionTransformer transformer) {
-		return this;
-	}
-
-	@Override
-	public Expression normalize(TypeScope scope) {
 		return this;
 	}
 }

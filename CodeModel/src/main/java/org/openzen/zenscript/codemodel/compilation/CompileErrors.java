@@ -257,7 +257,13 @@ public class CompileErrors {
 		StringBuilder message = new StringBuilder("Method invocation invalid, none of these overloads match:");
 		for (FunctionHeader header : candidates) {
 			message.append("\n").append(header.toString());
+			// for (FunctionHeader candidate : candidateFunctions)
+			//   explanation.append(candidate.explainWhyIncompatible(scope, arguments)).append("\n");
 		}
 		return new CompileError(CompileExceptionCode.CALL_NO_VALID_METHOD, message.toString());
+	}
+
+	public static CompileError annotationNotFound(String type) {
+		return new CompileError(CompileExceptionCode.UNKNOWN_ANNOTATION, "Unknown annotation type: " + type);
 	}
 }

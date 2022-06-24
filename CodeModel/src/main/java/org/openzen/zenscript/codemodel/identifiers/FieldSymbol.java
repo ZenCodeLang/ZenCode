@@ -16,5 +16,7 @@ public interface FieldSymbol {
 	TypeID getType();
 
 	/* Calculates the compile-time value of this constant field, if applicable */
-	Optional<CompileTimeConstant> evaluate();
+	default Optional<CompileTimeConstant> evaluate() {
+		return Optional.empty();
+	}
 }

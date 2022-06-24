@@ -32,9 +32,4 @@ public class CapturedLocalVariableExpression extends CapturedExpression {
 	public Expression transform(ExpressionTransformer transformer) {
 		return this;
 	}
-
-	@Override
-	public CapturedExpression normalize(TypeScope scope) {
-		return this;
-	}
 }

@@ -21,7 +21,7 @@ public interface CompilingDefinition {
 	// prepareMembers will register all definition members to their
 	// respective definitions, such as fields, constructors, methods...
 	// It doesn't yet compile the method contents.
-	void prepareMembers();
+	void prepareMembers(List<CompileException> errors);
 
 	void compileMembers(List<CompileException> errors);
 

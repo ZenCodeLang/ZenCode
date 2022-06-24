@@ -9,7 +9,7 @@ import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.statement.ReturnStatement;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.parser.expression.ParsedExpression;
+import org.openzen.zenscript.codemodel.type.TypeID;
 
 public class ParsedLambdaFunctionBody implements ParsedFunctionBody {
 	private final CodePosition position;
@@ -21,12 +21,13 @@ public class ParsedLambdaFunctionBody implements ParsedFunctionBody {
 	}
 
 	@Override
-	public Statement compile(StatementCompiler compiler, FunctionHeader header) {
-		if (header.getReturnType() == BasicTypeID.VOID) {
+	public Statement compile(StatementCompiler compiler) {
+		TypeID returnType = compiler.getFunctionHeader().map(FunctionHeader::getReturnType).orElse(BasicTypeID.VOID);
+		if (returnType == BasicTypeID.VOID) {
 			Expression value = compiler.compile(this.value);
 			return new ExpressionStatement(value.position, value);
 		} else {
-			Expression returnValue = compiler.compile(value, header.getReturnType());
+			Expression returnValue = compiler.compile(value, returnType);
 			return new ReturnStatement(position, returnValue);
 		}
 	}

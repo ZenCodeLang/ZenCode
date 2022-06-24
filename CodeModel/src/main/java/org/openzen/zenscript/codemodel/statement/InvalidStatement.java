@@ -2,7 +2,6 @@ package org.openzen.zenscript.codemodel.statement;
 
 import org.openzen.zencode.shared.*;
 import org.openzen.zenscript.codemodel.expression.ExpressionTransformer;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
 
 import java.util.function.Consumer;
 
@@ -32,11 +31,6 @@ public class InvalidStatement extends Statement {
 	@Override
 	public void forEachStatement(Consumer<Statement> consumer) {
 
-	}
-
-	@Override
-	public Statement normalize(TypeScope scope, ConcatMap<LoopStatement, LoopStatement> modified) {
-		return this;
 	}
 
 	@Override

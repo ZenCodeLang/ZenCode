@@ -18,11 +18,11 @@ public interface ResolvedType {
 
 	Optional<StaticCallable> findSuffixConstructor(String suffix);
 
-	Optional<Expression> tryCastExplicit(TypeID target, ExpressionBuilder builder, Expression value, boolean optional);
+	Optional<Expression> tryCastExplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional);
 
-	Optional<Expression> tryCastImplicit(TypeID target, ExpressionBuilder builder, Expression value, boolean optional);
+	Optional<Expression> tryCastImplicit(TypeID target, ExpressionCompiler compiler, CodePosition position, Expression value, boolean optional);
 
-	boolean canCastImplicitlyTo(TypeID target);
+	boolean canCastImplicitlyTo(ExpressionCompiler compiler, CodePosition position, TypeID target);
 
 	Optional<StaticCallable> findStaticMethod(String name);
 
@@ -87,6 +87,14 @@ public interface ResolvedType {
 	}
 
 	interface Field {
+		TypeID getType();
+
+		Expression get(ExpressionBuilder builder, Expression target);
+
+		Expression set(ExpressionBuilder builder, Expression target, Expression value);
+	}
+
+	interface StaticField {
 		TypeID getType();
 
 		Expression get(ExpressionBuilder builder);
