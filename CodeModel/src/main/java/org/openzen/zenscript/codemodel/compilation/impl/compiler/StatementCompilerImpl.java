@@ -52,7 +52,7 @@ public class StatementCompilerImpl implements StatementCompiler {
 
 	@Override
 	public ResolvedType resolve(TypeID type) {
-		List<ExpansionSymbol> expansions =
+		List<ExpansionSymbol> expansions = null;
 	}
 
 	@Override

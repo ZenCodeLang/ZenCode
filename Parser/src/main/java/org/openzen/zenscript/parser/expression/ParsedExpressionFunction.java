@@ -139,7 +139,7 @@ public class ParsedExpressionFunction extends ParsedExpression {
 			Optional<FunctionTypeID> maybeFunction = type.asFunction();
 			if (maybeFunction.isPresent()) {
 				ExpressionCompiler functionCompiler = compiler.forFunction(maybeFunction.get().header);
-				Statement body = this.body.
+				Statement body = this.body;
 			}
 		}
 	}

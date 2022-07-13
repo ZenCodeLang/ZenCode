@@ -33,7 +33,7 @@ public class ParsedInnerDefinition extends ParsedDefinitionMember {
 		public Compiling(MemberCompiler compiler, HighLevelDefinition definition) {
 			this.compiler = compiler;
 			this.definition = definition;
-			innerDefinition = ParsedInnerDefinition.this.innerDefinition.?;
+			innerDefinition = ParsedInnerDefinition.this.innerDefinition;
 		}
 
 		@Override

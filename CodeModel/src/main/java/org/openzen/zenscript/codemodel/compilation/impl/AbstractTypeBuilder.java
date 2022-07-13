@@ -3,13 +3,8 @@ package org.openzen.zenscript.codemodel.compilation.impl;
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
-import org.openzen.zenscript.codemodel.HighLevelDefinition;
-import org.openzen.zenscript.codemodel.compilation.ExpressionCompiler;
 import org.openzen.zenscript.codemodel.compilation.TypeBuilder;
-import org.openzen.zenscript.codemodel.compilation.impl.compiler.ExpressionCompilerImpl;
-import org.openzen.zenscript.codemodel.compilation.impl.compiler.LocalSymbols;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
-import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.*;
 

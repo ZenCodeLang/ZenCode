@@ -1,7 +1,6 @@
 package org.openzen.zenscript.codemodel;
 
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
-import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 
 import java.util.Objects;
 

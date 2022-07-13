@@ -1,11 +1,13 @@
 package org.openzen.zenscript.codemodel.type.builtin;
 
 import org.openzen.zenscript.codemodel.FunctionHeader;
+import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.OperatorType;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.constant.StringConstant;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.type.*;
 
 import java.util.Optional;
@@ -519,19 +521,18 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	FUNCTION_SAME(FunctionTypeSymbol.PLACEHOLDER, "===", FunctionHeader.PLACEHOLDER),
 	FUNCTION_NOTSAME(FunctionTypeSymbol.PLACEHOLDER, "!==", FunctionHeader.PLACEHOLDER),
 
-	CLASS_DEFAULT_CONSTRUCTOR,
-	STRUCT_EMPTY_CONSTRUCTOR,
-	STRUCT_VALUE_CONSTRUCTOR,
-	ENUM_EMPTY_CONSTRUCTOR,
-	ENUM_NAME,
-	ENUM_ORDINAL,
-	ENUM_VALUES,
-	ENUM_TO_STRING,
-	ENUM_COMPARE,
+	CLASS_DEFAULT_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, "this", FunctionHeader.PLACEHOLDER),
+	STRUCT_EMPTY_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, "this", VOID),
+	ENUM_EMPTY_CONSTRUCTOR(FunctionTypeSymbol.PLACEHOLDER, "this", VOID),
+	ENUM_NAME(FunctionTypeSymbol.PLACEHOLDER, "name", STRING),
+	ENUM_ORDINAL(FunctionTypeSymbol.PLACEHOLDER, "ordinal", USIZE),
+	ENUM_VALUES(FunctionTypeSymbol.PLACEHOLDER, "values", FunctionHeader.PLACEHOLDER),
+	ENUM_TO_STRING(FunctionTypeSymbol.PLACEHOLDER, "as string", STRING),
+	ENUM_COMPARE(FunctionTypeSymbol.PLACEHOLDER, COMPARE, FunctionHeader.PLACEHOLDER),
 
-	OBJECT_HASHCODE,
-	OBJECT_SAME,
-	OBJECT_NOTSAME,
+	OBJECT_HASHCODE(FunctionTypeSymbol.PLACEHOLDER, "hashCode", UINT),
+	OBJECT_SAME(FunctionTypeSymbol.PLACEHOLDER, "===", BOOL),
+	OBJECT_NOTSAME(FunctionTypeSymbol.PLACEHOLDER, "!==", BOOL),
 
 	RANGE_FROM(RangeTypeSymbol.INSTANCE, "from", new GenericTypeID(RangeTypeSymbol.PARAMETER)),
 	RANGE_TO(RangeTypeSymbol.INSTANCE, "to", new GenericTypeID(RangeTypeSymbol.PARAMETER)),
@@ -547,31 +548,47 @@ public enum BuiltinMethodSymbol implements MethodSymbol {
 	ITERATOR_STRING_CHARS(STRING, "iterator", FunctionHeader.PLACEHOLDER),
 	/*ITERATOR_ITERABLE()*/;
 
-	private final DefinitionSymbol definingType;
+	private final TypeSymbol definingType;
 	private final String name;
 	private final FunctionHeader header;
 
-	BuiltinMethodSymbol(DefinitionSymbol definingType, String name, FunctionHeader header) {
+	BuiltinMethodSymbol(TypeSymbol definingType, String name, FunctionHeader header) {
 		this.definingType = definingType;
 		this.name = name;
 		this.header = header;
 	}
 
-	BuiltinMethodSymbol(DefinitionSymbol definingType, OperatorType operator, TypeID result, TypeID... parameters) {
+	BuiltinMethodSymbol(TypeSymbol definingType, String name, TypeID result, TypeID... parameters) {
 		this.definingType = definingType;
-		this.name = operator.operator;
+		this.name = name;
 		header = new FunctionHeader(result, parameters);
 	}
 
-	BuiltinMethodSymbol(DefinitionSymbol definingType, String name, TypeID result, TypeID... parameters) {
+	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, FunctionHeader header) {
 		this.definingType = definingType;
-		this.name = name;
+		this.name = operator.operator;
+		this.header = header;
+	}
+
+	BuiltinMethodSymbol(TypeSymbol definingType, OperatorType operator, TypeID result, TypeID... parameters) {
+		this.definingType = definingType;
+		this.name = operator.operator;
 		header = new FunctionHeader(result, parameters);
 	}
 
 	@Override
 	public DefinitionSymbol getDefiningType() {
 		return definingType;
+	}
+
+	@Override
+	public TypeSymbol getTargetType() {
+		return definingType;
+	}
+
+	@Override
+	public Modifiers getModifiers() {
+		return new Modifiers(Modifiers.PUBLIC | Modifiers.FINAL);
 	}
 
 	@Override

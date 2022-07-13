@@ -247,7 +247,6 @@ public class BasicTypeMembers {
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_LONG));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_ULONG));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_USHORT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_FLOAT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_DOUBLE));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.INT_TO_CHAR));
@@ -296,7 +295,6 @@ public class BasicTypeMembers {
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_LONG));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_ULONG));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_USHORT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_FLOAT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_DOUBLE));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.UINT_TO_CHAR));
@@ -346,7 +344,6 @@ public class BasicTypeMembers {
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_UINT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_ULONG));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_USHORT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_FLOAT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_DOUBLE));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.LONG_TO_CHAR));
@@ -397,7 +394,6 @@ public class BasicTypeMembers {
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_UINT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_LONG));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_USIZE));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_USHORT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_FLOAT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_DOUBLE));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.ULONG_TO_CHAR));
@@ -447,7 +443,6 @@ public class BasicTypeMembers {
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_UINT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_LONG));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_ULONG));
-		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_USHORT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_FLOAT));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_DOUBLE));
 		builder.implicitCast(new MethodInstance(BuiltinMethodSymbol.USIZE_TO_CHAR));
