@@ -295,13 +295,13 @@ public class TypeMemberGroup {
 			CallArguments arguments,
 			CompareType compareType) throws CompileException {
 		FunctionalMemberRef method = selectMethod(position, scope, arguments, true, false);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(position, scope, arguments.typeArguments);
+		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope, arguments.typeArguments);
 		return method.callWithComparator(position, compareType, target, instancedHeader, arguments, scope);
 	}
 
 	public Expression callStatic(CodePosition position, TypeID target, TypeScope scope, CallArguments arguments) throws CompileException {
 		FunctionalMemberRef method = selectMethod(position, scope, arguments, false, true);
-		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(position, scope, arguments.typeArguments);
+		FunctionHeader instancedHeader = method.getHeader().fillGenericArguments(scope, arguments.typeArguments);
 		return method.callStatic(position, target, instancedHeader, arguments, scope);
 	}
 
@@ -312,7 +312,7 @@ public class TypeMemberGroup {
 			if (!(method.member.isStatic() ? allowStatic : allowNonStatic))
 				continue;
 
-			FunctionHeader header = method.member.getHeader().instanceForCall(scope.getTypeRegistry(), arguments);
+			FunctionHeader header = method.member.getHeader().instanceForCall(arguments);
 			if (header.matchesExactly(arguments, scope))
 				possibleMethods.add(method);
 		}

@@ -2,15 +2,15 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.*;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+
+import java.util.Optional;
 
 public class CallerMember extends FunctionalMember {
-	public MethodSymbol overrides;
+	public MethodInstance overrides;
 
 	public CallerMember(
 			CodePosition position,
@@ -32,13 +32,8 @@ public class CallerMember extends FunctionalMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addCaller(ref(type.type, mapper), priority);
-	}
-
-	@Override
-	public void registerTo(MemberSet.Builder members, GenericMapper mapper) {
-		members.operator(OperatorType.CALL, new MethodInstance(this, mapper.map(header)));
+	public void registerTo(TypeID target, MemberSet.Builder members, GenericMapper mapper) {
+		members.operator(OperatorType.CALL, mapper.map(target, this));
 	}
 
 	@Override
@@ -59,20 +54,20 @@ public class CallerMember extends FunctionalMember {
 	@Override
 	public Modifiers getEffectiveModifiers() {
 		Modifiers result = super.getEffectiveModifiers();
-		if (overrides != null && overrides.getDefiningType().isInterface())
+		if (overrides != null && overrides.method.getDefiningType().isInterface())
 			result = result.withPublic();
 
 		return result;
 	}
 
-	public void setOverrides(MethodSymbol overrides) {
+	public void setOverrides(MethodInstance overrides) {
 		this.overrides = overrides;
 		header = header.inferFromOverride(overrides.getHeader());
 	}
 
 	@Override
-	public MethodSymbol getOverrides() {
-		return overrides;
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.ofNullable(overrides);
 	}
 
 	@Override

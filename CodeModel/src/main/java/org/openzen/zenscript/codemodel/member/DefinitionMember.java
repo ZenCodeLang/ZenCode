@@ -5,16 +5,20 @@ import org.openzen.zencode.shared.Taggable;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.annotations.MemberAnnotation;
+import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 
 public abstract class DefinitionMember extends Taggable implements IDefinitionMember {
 	public final CodePosition position;
 	public final HighLevelDefinition definition;
+	public final TypeSymbol target;
 	protected final Modifiers modifiers;
 	public MemberAnnotation[] annotations = MemberAnnotation.NONE;
 
 	public DefinitionMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers) {
 		this.position = position;
 		this.definition = definition;
+		this.target = (definition instanceof ExpansionDefinition) ? ((ExpansionDefinition)definition).target.asDefinition().get().definition : definition;
 		this.modifiers = modifiers;
 	}
 

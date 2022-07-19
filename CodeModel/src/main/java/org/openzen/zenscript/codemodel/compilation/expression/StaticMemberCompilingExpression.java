@@ -26,7 +26,7 @@ public class StaticMemberCompilingExpression extends AbstractCompilingExpression
 
 		ResolvedType resolved = compiler.resolve(type);
 		return resolved.findStaticGetter(name.name)
-				.map(getter -> getter.apply(compiler.at(position)))
+				.map(getter -> getter.call(compiler, position, TypeID.NONE))
 				.orElseGet(() -> compiler.at(position).invalid(CompileErrors.noMemberInType(type, name.name)));
 	}
 
@@ -52,10 +52,10 @@ public class StaticMemberCompilingExpression extends AbstractCompilingExpression
 	}
 
 	private static class CompilingSet extends AbstractCompilingExpression {
-		private final ResolvedType.StaticSetter setter;
+		private final StaticCallable setter;
 		private final CompilingExpression value;
 
-		public CompilingSet(ExpressionCompiler compiler, CodePosition position, ResolvedType.StaticSetter setter, CompilingExpression value) {
+		public CompilingSet(ExpressionCompiler compiler, CodePosition position, StaticCallable setter, CompilingExpression value) {
 			super(compiler, position);
 
 			this.setter = setter;
@@ -64,7 +64,7 @@ public class StaticMemberCompilingExpression extends AbstractCompilingExpression
 
 		@Override
 		public Expression eval() {
-			return setter.apply(compiler.at(position), value.cast(cast(setter.getType())).value);
+			return setter.call(compiler, position, TypeID.NONE, value);
 		}
 
 		@Override

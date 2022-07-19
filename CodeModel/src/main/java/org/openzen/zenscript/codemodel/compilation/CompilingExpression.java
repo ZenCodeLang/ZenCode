@@ -7,6 +7,8 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import java.util.Optional;
 
 public interface CompilingExpression {
+	CompilingExpression[] NONE = new CompilingExpression[0];
+
 	/**
 	 * Compiles this expression. The return type is inferred from the expression.
 	 *

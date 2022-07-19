@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,10 @@ public final class InstanceCallable {
 
 	public InstanceCallable(List<InstanceCallableMethod> overloads) {
 		this.overloads = overloads;
+	}
+
+	public InstanceCallable(InstanceCallableMethod method) {
+		this.overloads = Collections.singletonList(method);
 	}
 
 	public Expression call(ExpressionCompiler compiler, CodePosition position, Expression instance, TypeID[] typeArguments, CompilingExpression... arguments) {

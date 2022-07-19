@@ -77,6 +77,7 @@ public class Modifiers {
 		return new Modifiers(value | ABSTRACT);
 	}
 
+
 	public static boolean isAbstract(int modifiers) {
 		return (modifiers & ABSTRACT) > 0;
 	}
@@ -121,9 +122,14 @@ public class Modifiers {
 		return (value & STATIC) > 0;
 	}
 
+	public Modifiers withStatic() {
+		return new Modifiers(value | STATIC);
+	}
+
 	public static boolean isStatic(int modifiers) {
 		return (modifiers & STATIC) > 0;
 	}
+
 
 	public boolean isImplicit() {
 		return (value & IMPLICIT) > 0;

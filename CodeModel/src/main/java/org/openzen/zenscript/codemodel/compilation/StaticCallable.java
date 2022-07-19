@@ -7,6 +7,7 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.type.TypeID;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,10 @@ public final class StaticCallable {
 
 	public StaticCallable(List<StaticCallableMethod> overloads) {
 		this.overloads = overloads;
+	}
+
+	public StaticCallable(StaticCallableMethod method) {
+		this.overloads = Collections.singletonList(method);
 	}
 
 	public Expression call(ExpressionCompiler compiler, CodePosition position, TypeID[] typeArguments, CompilingExpression... arguments) {

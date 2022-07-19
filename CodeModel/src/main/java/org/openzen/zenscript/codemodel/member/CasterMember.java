@@ -5,22 +5,21 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.member.ref.CasterMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.type.GlobalTypeRegistry;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
+
+import java.util.Optional;
 
 public class CasterMember extends FunctionalMember {
 	public TypeID toType;
-	public CasterMemberRef overrides;
+	public MethodInstance overrides;
 
 	public CasterMember(
 			CodePosition position,
 			HighLevelDefinition definition,
-			int modifiers,
+			Modifiers modifiers,
 			TypeID toType,
 			BuiltinID builtin) {
 		super(position, definition, modifiers, new FunctionHeader(toType), builtin);
@@ -39,17 +38,21 @@ public class CasterMember extends FunctionalMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		type.addCaster(new CasterMemberRef(this, type.type, mapper == null ? toType : toType.instance(mapper)), priority);
-	}
-
-	@Override
 	public String describe() {
 		return "caster to " + toType.toString();
 	}
 
+	@Override
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
+		if (modifiers.isImplicit()) {
+			members.implicitCast(mapper.map(targetType, this));
+		} else {
+			members.explicitCast(mapper.map(targetType, this));
+		}
+	}
+
 	public boolean isImplicit() {
-		return Modifiers.isImplicit(modifiers);
+		return modifiers.isImplicit();
 	}
 
 	@Override
@@ -63,20 +66,21 @@ public class CasterMember extends FunctionalMember {
 	}
 
 	@Override
-	public int getEffectiveModifiers() {
-		int result = super.getEffectiveModifiers();
-		if (overrides != null && overrides.getTarget().getDefinition().isInterface())
-			result |= Modifiers.PUBLIC;
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = super.getEffectiveModifiers();
+		if (overrides != null && overrides.method.getDefiningType().isInterface())
+			result = result.withPublic();
 
 		return result;
 	}
 
-	public void setOverrides(GlobalTypeRegistry registry, CasterMemberRef overrides) {
-		this.overrides = overrides;
+	@Override
+	public String getName() {
+		return "as " + toType;
 	}
 
 	@Override
-	public CasterMemberRef getOverrides() {
-		return overrides;
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.ofNullable(overrides);
 	}
 }

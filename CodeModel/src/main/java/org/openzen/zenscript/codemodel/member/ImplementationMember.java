@@ -11,12 +11,9 @@ import org.openzen.zenscript.codemodel.expression.CallArguments;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.ImplementationMemberRef;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 import java.util.*;
 
@@ -25,7 +22,7 @@ public class ImplementationMember extends DefinitionMember {
 	public final List<IDefinitionMember> members = new ArrayList<>();
 	public final Map<DefinitionMemberRef, IDefinitionMember> definitionBorrowedMembers = new HashMap<>(); // contains members from the outer definition to implement interface members
 
-	public ImplementationMember(CodePosition position, HighLevelDefinition definition, int modifiers, TypeID type) {
+	public ImplementationMember(CodePosition position, HighLevelDefinition definition, Modifiers modifiers, TypeID type) {
 		super(position, definition, modifiers);
 
 		this.type = type;
@@ -36,16 +33,17 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		TypeID instancedType = mapper == null ? type : mapper.map(type);
-		members.addImplementation(new ImplementationMemberRef(this, members.type, instancedType), priority);
-
-		TypeMembers interfaceTypeMembers = members.getMemberCache().get(instancedType);
-		interfaceTypeMembers.copyMembersTo(members, TypeMemberPriority.INTERFACE);
+	public String describe() {
+		return "implementation of " + type.toString();
 	}
 
 	@Override
-	public void registerTo(MemberSet.Builder members, GenericMapper mapper) {
+	public BuiltinID getBuiltin() {
+		return null;
+	}
+
+	@Override
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
 		FunctionHeader header = new FunctionHeader(mapper.map(type));
 		members.implicitCast(new InstanceCallableMethod() {
 			@Override
@@ -65,18 +63,8 @@ public class ImplementationMember extends DefinitionMember {
 		});
 
 		for (IDefinitionMember member : this.members) {
-			member.registerTo(members, mapper);
+			member.registerTo(targetType, members, mapper);
 		}
-	}
-
-	@Override
-	public String describe() {
-		return "implementation of " + type.toString();
-	}
-
-	@Override
-	public BuiltinID getBuiltin() {
-		return null;
 	}
 
 	@Override
@@ -90,17 +78,12 @@ public class ImplementationMember extends DefinitionMember {
 	}
 
 	@Override
-	public MethodSymbol getOverrides() {
-		return null;
-	}
-
-	@Override
-	public int getEffectiveModifiers() {
-		int result = modifiers;
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = modifiers;
 		if (definition.isInterface())
-			result |= Modifiers.PUBLIC;
-		if (!Modifiers.hasAccess(result))
-			result |= Modifiers.PUBLIC;
+			result = result.withPublic();
+		if (!result.hasAccessModifiers())
+			result = result.withPublic();
 
 		return result;
 	}
@@ -108,11 +91,6 @@ public class ImplementationMember extends DefinitionMember {
 	@Override
 	public boolean isAbstract() {
 		return false;
-	}
-
-	@Override
-	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
-		throw new UnsupportedOperationException("Cannot create an implementation reference");
 	}
 
 	@Override

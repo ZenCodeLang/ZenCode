@@ -351,7 +351,6 @@ public final class TypeMembers {
 	}
 
 	public boolean canCastImplicit(TypeID toType) {
-		toType = toType.getNormalized();
 		if (type == toType)
 			return true;
 		if (toType == BasicTypeID.UNDETERMINED)
@@ -388,7 +387,6 @@ public final class TypeMembers {
 	}
 
 	private CasterMemberRef getCaster(TypeID toType, boolean explicit) {
-		toType = toType.getNormalized();
 		CasterMemberRef foundCaster = null;
 		TypeMemberPriority priority = null;
 		for (TypeMember<CasterMemberRef> caster : casters) {
@@ -403,7 +401,6 @@ public final class TypeMembers {
 	}
 
 	public boolean canCast(TypeID toType) {
-		toType = toType.getNormalized();
 		if (canCastImplicit(toType))
 			return true;
 		if (type.canCastExplicitTo(toType))

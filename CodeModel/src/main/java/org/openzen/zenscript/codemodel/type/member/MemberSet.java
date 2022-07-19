@@ -32,6 +32,7 @@ public class MemberSet implements ResolvedType {
 	private final List<InstanceCallableMethod> implicitCasts = new ArrayList<>();
 	private final List<InstanceCallableMethod> explicitCasts = new ArrayList<>();
 	private final List<InstanceCallableMethod> iterators = new ArrayList<>();
+	private InstanceCallableMethod destructor;
 
 	@Override
 	public StaticCallable getConstructor() {
@@ -102,13 +103,13 @@ public class MemberSet implements ResolvedType {
 	}
 
 	@Override
-	public Optional<StaticGetter> findStaticGetter(String name) {
-		return Optional.ofNullable(staticGetters.get(name));
+	public Optional<StaticCallable> findStaticGetter(String name) {
+		return Optional.ofNullable(staticGetters.get(name)).map(StaticCallable::new);
 	}
 
 	@Override
-	public Optional<StaticSetter> findStaticSetter(String name) {
-		return Optional.ofNullable(staticSetters.get(name));
+	public Optional<StaticCallable> findStaticSetter(String name) {
+		return Optional.ofNullable(staticSetters.get(name)).map(StaticCallable::new);
 	}
 
 	@Override
@@ -120,13 +121,13 @@ public class MemberSet implements ResolvedType {
 	}
 
 	@Override
-	public Optional<InstanceGetter> findGetter(String name) {
-		return Optional.ofNullable(getters.get(name));
+	public Optional<InstanceCallable> findGetter(String name) {
+		return Optional.ofNullable(getters.get(name)).map(InstanceCallable::new);
 	}
 
 	@Override
-	public Optional<InstanceSetter> findSetter(String name) {
-		return Optional.ofNullable(setters.get(name));
+	public Optional<InstanceCallable> findSetter(String name) {
+		return Optional.ofNullable(setters.get(name)).map(InstanceCallable::new);
 	}
 
 	@Override
@@ -287,6 +288,11 @@ public class MemberSet implements ResolvedType {
 
 		public Builder explicitCast(InstanceCallableMethod method) {
 			target.explicitCasts.add(method);
+			return this;
+		}
+
+		public Builder destructor(InstanceCallableMethod method) {
+			target.destructor = method;
 			return this;
 		}
 

@@ -1,31 +1,31 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
+import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.member.ref.GetterMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
+
+import java.util.Optional;
 
 public class GetterMember extends PropertyMember implements MethodSymbol {
 	public final String name;
 	public Statement body = null;
-	private MethodSymbol overrides;
+	private MethodInstance overrides;
 
 	public GetterMember(
 			CodePosition position,
 			HighLevelDefinition definition,
-			int modifiers,
+			Modifiers modifiers,
 			String name,
 			TypeID type,
 			BuiltinID builtin) {
@@ -50,13 +50,13 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 	}
 
 	@Override
-	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addGetter(new GetterMemberRef(members.type, this, mapper), priority);
+	public String describe() {
+		return "getter " + name;
 	}
 
 	@Override
-	public String describe() {
-		return "getter " + name;
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
+
 	}
 
 	@Override
@@ -70,11 +70,11 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 	}
 
 	@Override
-	public MethodSymbol getOverrides() {
-		return overrides;
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.ofNullable(overrides);
 	}
 
-	public void setOverrides(MethodSymbol override) {
+	public void setOverrides(MethodInstance override) {
 		this.overrides = override;
 
 		if (getType() == BasicTypeID.UNDETERMINED)
@@ -82,19 +82,34 @@ public class GetterMember extends PropertyMember implements MethodSymbol {
 	}
 
 	@Override
-	public int getEffectiveModifiers() {
-		int result = modifiers;
-		if (definition.isInterface() || (overrides != null && overrides.getTarget().getDefinition().isInterface()))
-			result |= Modifiers.PUBLIC;
-		if (!Modifiers.hasAccess(result))
-			result |= Modifiers.INTERNAL;
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = modifiers;
+		if (definition.isInterface() || (overrides != null && overrides.getTarget().asDefinition().map(d -> d.definition.isInterface()).orElse(false)))
+			result = result.withPublic();
+		if (!result.hasAccessModifiers())
+			result = result.withInternal();
 
 		return result;
 	}
 
 	@Override
-	public GetterMemberRef ref(TypeID type, GenericMapper mapper) {
-		return new GetterMemberRef(type, this, mapper);
+	public DefinitionSymbol getDefiningType() {
+		return definition;
+	}
+
+	@Override
+	public TypeSymbol getTargetType() {
+		return target;
+	}
+
+	@Override
+	public Modifiers getModifiers() {
+		return modifiers;
+	}
+
+	@Override
+	public String getName() {
+		return name;
 	}
 
 	@Override

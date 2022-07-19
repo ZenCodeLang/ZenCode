@@ -8,6 +8,7 @@ import org.openzen.zenscript.codemodel.definition.*;
 import org.openzen.zenscript.codemodel.generic.TypeParameter;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.member.*;
+import org.openzen.zenscript.codemodel.type.DefinitionTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
 
@@ -141,8 +142,9 @@ public abstract class HighLevelDefinition extends Taggable implements TypeSymbol
 	public ResolvedType resolve(TypeID[] typeArguments) {
 		MemberSet.Builder members = MemberSet.create();
 		GenericMapper mapper = GenericMapper.create(typeParameters, typeArguments);
+		TypeID type = DefinitionTypeID.create(this, typeArguments);
 		for (IDefinitionMember member : this.members) {
-			member.registerTo(members, mapper);
+			member.registerTo(type, members, mapper);
 		}
 		return members.build();
 	}

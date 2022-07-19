@@ -15,10 +15,15 @@ import org.openzen.zenscript.codemodel.member.ImplementationMember;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class DefinitionTypeID implements TypeID {
 	public static TypeID create(TypeSymbol definition, TypeID[] typeArguments) {
 		return definition.normalize(typeArguments);
+	}
+
+	public static TypeID createThis(TypeSymbol definition) {
+		return create(definition, Arrays.stream(definition.getTypeParameters()).map(GenericTypeID::new).toArray(TypeID[]::new));
 	}
 
 	public final TypeSymbol definition;

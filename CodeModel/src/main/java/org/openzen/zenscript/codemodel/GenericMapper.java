@@ -73,8 +73,8 @@ public class GenericMapper {
 		return new FieldInstance(field, map(field.getType()));
 	}
 
-	public MethodInstance map(MethodSymbol method) {
-		return new MethodInstance(method, map(method.getHeader()));
+	public MethodInstance map(TypeID target, MethodSymbol method) {
+		return new MethodInstance(method, map(method.getHeader()), target);
 	}
 
 	public GenericMapper getInner(Map<TypeParameter, TypeID> mapping) {

@@ -5,23 +5,23 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.definition.EnumDefinition;
 import org.openzen.zenscript.codemodel.expression.ConstructorSuperCallExpression;
 import org.openzen.zenscript.codemodel.expression.ConstructorThisCallExpression;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.BlockStatement;
 import org.openzen.zenscript.codemodel.statement.ExpressionStatement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
+import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+
+import java.util.Optional;
 
 public class ConstructorMember extends FunctionalMember {
 	public ConstructorMember(
 			CodePosition position,
 			HighLevelDefinition definition,
-			int modifiers,
+			Modifiers modifiers,
 			FunctionHeader header,
 			BuiltinID builtin) {
 		super(
@@ -58,18 +58,13 @@ public class ConstructorMember extends FunctionalMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		if (priority == TypeMemberPriority.SPECIFIED)
-			type.addConstructor(ref(type.type, mapper), priority);
-	}
-
-	public void registerTo(MemberSet members, GenericMapper mapper) {
-		members.addConstructor(ref(mapper));
+	public String describe() {
+		return "constructor " + header.toString();
 	}
 
 	@Override
-	public String describe() {
-		return "constructor " + header.toString();
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
+		members.constructor(new MethodInstance(this, mapper.map(header), targetType));
 	}
 
 	@Override
@@ -83,17 +78,22 @@ public class ConstructorMember extends FunctionalMember {
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
-		return null;
+	public String getName() {
+		return "this";
 	}
 
 	@Override
-	public int getEffectiveModifiers() {
-		int result = modifiers;
-		if (definition instanceof EnumDefinition)
-			result |= Modifiers.PRIVATE;
-		else if (!Modifiers.hasAccess(result))
-			result |= Modifiers.INTERNAL;
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.empty();
+	}
+
+	@Override
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = modifiers;
+		if (definition.isEnum())
+			result = result.withPrivate();
+		else if (!modifiers.hasAccessModifiers())
+			result = result.withInternal();
 
 		return result;
 	}

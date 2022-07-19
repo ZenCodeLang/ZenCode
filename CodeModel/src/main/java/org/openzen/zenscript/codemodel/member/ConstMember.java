@@ -8,15 +8,11 @@ import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.expression.Expression;
 import org.openzen.zenscript.codemodel.identifiers.FieldSymbol;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
 import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
-import org.openzen.zenscript.codemodel.member.ref.ConstMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.FieldInstance;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 import org.openzen.zenscript.codemodel.type.member.MemberSet;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
 
 import java.util.Optional;
 
@@ -36,13 +32,8 @@ public class ConstMember extends PropertyMember implements FieldSymbol {
 	}
 
 	@Override
-	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addConst(new ConstMemberRef(members.type, this, mapper));
-	}
-
-	@Override
-	public void registerTo(MemberSet.Builder members, GenericMapper mapper) {
-
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
+		members.field(new FieldInstance(this, mapper.map(type)));
 	}
 
 	@Override
@@ -53,11 +44,6 @@ public class ConstMember extends PropertyMember implements FieldSymbol {
 	@Override
 	public <C, R> R accept(C context, MemberVisitorWithContext<C, R> visitor) {
 		return visitor.visitConst(context, this);
-	}
-
-	@Override
-	public MethodSymbol getOverrides() {
-		return null;
 	}
 
 	@Override
@@ -74,11 +60,6 @@ public class ConstMember extends PropertyMember implements FieldSymbol {
 	@Override
 	public boolean isAbstract() {
 		return false;
-	}
-
-	@Override
-	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
-		return new ConstMemberRef(type, this, mapper);
 	}
 
 	@Override

@@ -3,16 +3,12 @@ package org.openzen.zenscript.codemodel.annotations;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.ModuleProcessor;
 import org.openzen.zenscript.codemodel.ScriptBlock;
-import org.openzen.zenscript.codemodel.context.TypeResolutionContext;
 import org.openzen.zenscript.codemodel.definition.ExpansionDefinition;
-import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.*;
-import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
-import org.openzen.zenscript.codemodel.scope.*;
 import org.openzen.zenscript.codemodel.statement.Statement;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class AnnotationProcessor implements ModuleProcessor {
@@ -146,9 +142,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 			for (MemberAnnotation annotation : member.annotations)
 				annotation.apply(member);
 
-			if (member.getOverrides() != null) {
-				functional(member, member.getOverrides());
-			}
+			member.getOverrides().ifPresent(overrides -> functional(member, overrides));
 
 			if (member.body == null)
 				return null;
@@ -161,9 +155,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 			for (MemberAnnotation annotation : member.annotations)
 				annotation.apply(member);
 
-			if (member.getOverrides() != null) {
-				getter(member, member.getOverrides());
-			}
+			member.getOverrides().ifPresent(overrides -> getter(member, overrides));
 
 			if (member.body == null)
 				return null;
@@ -176,9 +168,7 @@ public class AnnotationProcessor implements ModuleProcessor {
 			for (MemberAnnotation annotation : member.annotations)
 				annotation.apply(member);
 
-			if (member.getOverrides() != null) {
-				setter(member, member.getOverrides());
-			}
+			member.getOverrides().ifPresent(overrides -> setter(member, overrides));
 
 			if (member.body == null)
 				return null;
@@ -187,23 +177,25 @@ public class AnnotationProcessor implements ModuleProcessor {
 			return null;
 		}
 
-		private void functional(FunctionalMember member, MethodSymbol overrides) {
-			for (MemberAnnotation annotation : overrides.getAnnotations())
+		private void functional(FunctionalMember member, MethodInstance overrides) {
+			for (MemberAnnotation annotation : overrides.method.getAnnotations())
 				annotation.applyOnOverridingMethod(member);
+
+			overrides.method.getOverrides().ifPresent(overrides2 -> functional(member, overrides2));
 		}
 
-		private void getter(GetterMember member, MethodSymbol overrides) {
-			for (MemberAnnotation annotation : overrides.getAnnotations())
+		private void getter(GetterMember member, MethodInstance overrides) {
+			for (MemberAnnotation annotation : overrides.method.getAnnotations())
 				annotation.applyOnOverridingGetter(member);
+
+			overrides.method.getOverrides().ifPresent(overrides2 -> getter(member, overrides2));
 		}
 
-		private void setter(SetterMember member, SetterMemberRef overrides) {
-			for (MemberAnnotation annotation : overrides.getAnnotations())
+		private void setter(SetterMember member, MethodInstance overrides) {
+			for (MemberAnnotation annotation : overrides.method.getAnnotations())
 				annotation.applyOnOverridingSetter(member);
 
-			if (overrides.getOverrides() != null) {
-				setter(member, overrides.getOverrides());
-			}
+			overrides.method.getOverrides().ifPresent(overrides2 -> setter(member, overrides2));
 		}
 	}
 }

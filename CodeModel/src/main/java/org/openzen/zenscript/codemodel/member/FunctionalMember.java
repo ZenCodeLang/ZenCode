@@ -2,14 +2,12 @@ package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
 import org.openzen.zenscript.codemodel.FunctionHeader;
-import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
 import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
 import org.openzen.zenscript.codemodel.statement.Statement;
-import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
 
 public abstract class FunctionalMember extends DefinitionMember implements MethodSymbol {
@@ -36,15 +34,6 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 	public abstract String getCanonicalName();
 
 	public abstract FunctionalKind getKind();
-
-	public FunctionalMemberRef ref(TypeID type) {
-		return new FunctionalMemberRef(this, type, null);
-	}
-
-	@Override
-	public FunctionalMemberRef ref(TypeID type, GenericMapper mapper) {
-		return new FunctionalMemberRef(this, type, mapper);
-	}
 
 	@Override
 	public BuiltinID getBuiltin() {
@@ -77,6 +66,11 @@ public abstract class FunctionalMember extends DefinitionMember implements Metho
 	@Override
 	public DefinitionSymbol getDefiningType() {
 		return definition;
+	}
+
+	@Override
+	public TypeSymbol getTargetType() {
+		return target;
 	}
 
 	@Override

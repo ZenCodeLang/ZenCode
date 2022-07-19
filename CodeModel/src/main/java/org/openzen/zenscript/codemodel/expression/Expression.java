@@ -7,6 +7,7 @@ import org.openzen.zencode.shared.CompileExceptionCode;
 import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericName;
 import org.openzen.zenscript.codemodel.OperatorType;
+import org.openzen.zenscript.codemodel.compilation.CompileErrors;
 import org.openzen.zenscript.codemodel.constant.CompileTimeConstant;
 import org.openzen.zenscript.codemodel.partial.IPartialExpression;
 import org.openzen.zenscript.codemodel.scope.TypeScope;
@@ -148,7 +149,7 @@ public abstract class Expression implements IPartialExpression {
 			return memberGetter.call(position, scope, this, new CallArguments(new ConstantStringExpression(position, name.name)), false);
 		}
 
-		throw new CompileException(position, CompileExceptionCode.NO_SUCH_MEMBER, "No such member: " + name.name);
+		throw new CompileException(position, CompileErrors.noMemberInType(type, name.name));
 	}
 
 	@Override

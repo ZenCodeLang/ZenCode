@@ -26,15 +26,15 @@ public interface ResolvedType {
 
 	Optional<StaticCallable> findStaticMethod(String name);
 
-	Optional<StaticGetter> findStaticGetter(String name);
+	Optional<StaticCallable> findStaticGetter(String name);
 
-	Optional<StaticSetter> findStaticSetter(String name);
+	Optional<StaticCallable> findStaticSetter(String name);
 
 	Optional<InstanceCallable> findMethod(String name);
 
-	Optional<InstanceGetter> findGetter(String name);
+	Optional<InstanceCallable> findGetter(String name);
 
-	Optional<InstanceSetter> findSetter(String name);
+	Optional<InstanceCallable> findSetter(String name);
 
 	Optional<InstanceCallable> findOperator(OperatorType operator);
 
@@ -55,26 +55,6 @@ public interface ResolvedType {
 	Optional<Comparator> compare();
 
     Optional<IteratorMemberRef> findIterator(int variables);
-
-	interface StaticGetter {
-		TypeID getType();
-
-		Expression apply(ExpressionBuilder builder);
-	}
-
-	interface StaticSetter {
-		TypeID getType();
-
-		Expression apply(ExpressionBuilder builder, Expression value);
-	}
-
-	interface InstanceGetter {
-		TypeID getType();
-
-		Expression apply(ExpressionBuilder builder, Expression instance);
-
-		CastedExpression cast(ExpressionBuilder builder, CastedEval cast, Expression instance);
-	}
 
 	interface InstanceSetter {
 		TypeID getType();
@@ -100,10 +80,6 @@ public interface ResolvedType {
 		Expression get(ExpressionBuilder builder);
 
 		Expression set(ExpressionBuilder builder, Expression value);
-	}
-
-	interface Caster {
-		Expression call(ExpressionBuilder builder, Expression value, boolean optional);
 	}
 
 	interface Comparator {

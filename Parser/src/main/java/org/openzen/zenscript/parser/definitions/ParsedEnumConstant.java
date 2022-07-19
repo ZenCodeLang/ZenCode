@@ -69,7 +69,9 @@ public class ParsedEnumConstant {
 		public void compileCode(TypeID type, ExpressionCompiler compiler) {
 			ResolvedType members = compiler.resolve(type);
 			compiled.constructor = (NewExpression) members.getConstructor().call(
-					compiler.at(position),
+					compiler,
+					position,
+					TypeID.NONE,
 					arguments.stream().map(arg -> arg.compile(compiler)).toArray(CompilingExpression[]::new));
 
 			if (value != null)

@@ -151,7 +151,7 @@ public class RustExpressionCompiler {
 
 		@Override
 		public ExpressionString visitConstantChar(ConstantCharExpression expression) {
-			// TOOD: escape
+			// TODO: escape
 			return new ExpressionString("'" + expression.value +  "'", RustOperator.PRIMARY);
 		}
 

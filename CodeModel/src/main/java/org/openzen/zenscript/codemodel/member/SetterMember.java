@@ -1,30 +1,29 @@
 package org.openzen.zenscript.codemodel.member;
 
 import org.openzen.zencode.shared.CodePosition;
-import org.openzen.zencode.shared.ConcatMap;
 import org.openzen.zenscript.codemodel.*;
+import org.openzen.zenscript.codemodel.identifiers.DefinitionSymbol;
 import org.openzen.zenscript.codemodel.identifiers.MethodSymbol;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
-import org.openzen.zenscript.codemodel.member.ref.SetterMemberRef;
-import org.openzen.zenscript.codemodel.scope.TypeScope;
-import org.openzen.zenscript.codemodel.statement.LoopStatement;
+import org.openzen.zenscript.codemodel.identifiers.TypeSymbol;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.statement.Statement;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
 import org.openzen.zenscript.codemodel.type.TypeID;
 import org.openzen.zenscript.codemodel.type.member.BuiltinID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
+
+import java.util.Optional;
 
 public class SetterMember extends PropertyMember implements MethodSymbol {
 	public final String name;
 	public Statement body;
 	public FunctionParameter parameter;
-	private SetterMemberRef overrides;
+	private MethodInstance overrides;
 
 	public SetterMember(
 			CodePosition position,
 			HighLevelDefinition definition,
-			int modifiers,
+			Modifiers modifiers,
 			String name,
 			TypeID type,
 			BuiltinID builtin) {
@@ -43,13 +42,13 @@ public class SetterMember extends PropertyMember implements MethodSymbol {
 	}
 
 	@Override
-	public void registerTo(TypeMembers members, TypeMemberPriority priority, GenericMapper mapper) {
-		members.addSetter(new SetterMemberRef(members.type, this, mapper), priority);
+	public String describe() {
+		return "setter " + name;
 	}
 
 	@Override
-	public String describe() {
-		return "setter " + name;
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
+
 	}
 
 	@Override
@@ -63,26 +62,26 @@ public class SetterMember extends PropertyMember implements MethodSymbol {
 	}
 
 	@Override
-	public SetterMemberRef getOverrides() {
-		return overrides;
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.ofNullable(overrides);
 	}
 
-	public void setOverrides(SetterMemberRef overrides) {
+	public void setOverrides(MethodInstance overrides) {
 		this.overrides = overrides;
 
 		if (getType() == BasicTypeID.UNDETERMINED) {
-			setType(overrides.getType());
-			parameter = new FunctionParameter(overrides.getType(), "value");
+			setType(overrides.getHeader().getReturnType());
+			parameter = new FunctionParameter(overrides.getHeader().getReturnType(), "value");
 		}
 	}
 
 	@Override
-	public int getEffectiveModifiers() {
-		int result = modifiers;
-		if (definition.isInterface() || (overrides != null && overrides.getTarget().getDefinition().isInterface()))
-			result |= Modifiers.PUBLIC;
-		if (!Modifiers.hasAccess(result))
-			result |= Modifiers.INTERNAL;
+	public Modifiers getEffectiveModifiers() {
+		Modifiers result = modifiers;
+		if (definition.isInterface() || (overrides != null && overrides.getTarget().asDefinition().map(t -> t.definition.isInterface()).orElse(false)))
+			result = result.withPublic();
+		if (!result.hasAccessModifiers())
+			result = result.withInternal();
 
 		return result;
 	}
@@ -93,8 +92,23 @@ public class SetterMember extends PropertyMember implements MethodSymbol {
 	}
 
 	@Override
-	public DefinitionMemberRef ref(TypeID type, GenericMapper mapper) {
-		return new SetterMemberRef(type, this, mapper);
+	public DefinitionSymbol getDefiningType() {
+		return definition;
+	}
+
+	@Override
+	public TypeSymbol getTargetType() {
+		return target;
+	}
+
+	@Override
+	public Modifiers getModifiers() {
+		return getEffectiveModifiers();
+	}
+
+	@Override
+	public String getName() {
+		return name;
 	}
 
 	@Override

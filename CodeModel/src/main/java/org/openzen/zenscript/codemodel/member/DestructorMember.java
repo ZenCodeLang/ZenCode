@@ -5,11 +5,13 @@ import org.openzen.zenscript.codemodel.FunctionHeader;
 import org.openzen.zenscript.codemodel.GenericMapper;
 import org.openzen.zenscript.codemodel.HighLevelDefinition;
 import org.openzen.zenscript.codemodel.Modifiers;
-import org.openzen.zenscript.codemodel.member.ref.DefinitionMemberRef;
+import org.openzen.zenscript.codemodel.identifiers.instances.MethodInstance;
 import org.openzen.zenscript.codemodel.member.ref.FunctionalMemberRef;
 import org.openzen.zenscript.codemodel.type.BasicTypeID;
-import org.openzen.zenscript.codemodel.type.member.TypeMemberPriority;
-import org.openzen.zenscript.codemodel.type.member.TypeMembers;
+import org.openzen.zenscript.codemodel.type.TypeID;
+import org.openzen.zenscript.codemodel.type.member.MemberSet;
+
+import java.util.Optional;
 
 public class DestructorMember extends FunctionalMember {
 	private static final FunctionHeader HEADER = new FunctionHeader(BasicTypeID.VOID);
@@ -30,14 +32,13 @@ public class DestructorMember extends FunctionalMember {
 	}
 
 	@Override
-	public void registerTo(TypeMembers type, TypeMemberPriority priority, GenericMapper mapper) {
-		if (priority == TypeMemberPriority.SPECIFIED)
-			type.addDestructor(ref(type.type, mapper), priority);
+	public String describe() {
+		return "destructor";
 	}
 
 	@Override
-	public String describe() {
-		return "destructor";
+	public void registerTo(TypeID targetType, MemberSet.Builder members, GenericMapper mapper) {
+		members.destructor(new MethodInstance(this, header, targetType));
 	}
 
 	@Override
@@ -51,7 +52,12 @@ public class DestructorMember extends FunctionalMember {
 	}
 
 	@Override
-	public DefinitionMemberRef getOverrides() {
-		return overrides;
+	public String getName() {
+		return "~this";
+	}
+
+	@Override
+	public Optional<MethodInstance> getOverrides() {
+		return Optional.empty();
 	}
 }
